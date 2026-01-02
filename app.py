@@ -8983,146 +8983,658 @@ elif page == "Study Notes":
     
     NOTE_TEMPLATES = {
         "blank": {"name": "Blank Document", "icon": "description", "content": ""},
-        "concept": {"name": "Concept Summary", "icon": "lightbulb", "content": """<h2>Concept Name</h2>
-<p><strong>Definition:</strong></p>
-<p>[Write the definition here]</p>
-<p><strong>Key Points:</strong></p>
-<ul>
-<li>Point 1</li>
-<li>Point 2</li>
-<li>Point 3</li>
+        "concept": {"name": "Concept Summary", "icon": "lightbulb", "content": """<h1 style="color: #1a1a1a; border-bottom: 3px solid #4A90D9; padding-bottom: 12px;">Konsept: [Konseptnavn]</h1>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #4A90D9; padding-left: 12px; margin-top: 30px;">📖 Definisjon</h2>
+<blockquote style="border-left: 4px solid #4A90D9; background: #f8f9fa; padding: 15px 20px; margin: 15px 0; border-radius: 4px;">
+<p><strong style="color: #2c3e50;">Hva er det?</strong> [Klar og konsis definisjon av konseptet]</p>
+<p><strong style="color: #2c3e50;">Hvorfor er det viktig?</strong> [Forklar relevansen og betydningen]</p>
+</blockquote>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #28a745; padding-left: 12px; margin-top: 30px;">🎯 Hovedpoeng</h2>
+<ul style="line-height: 1.8;">
+<li><strong style="color: #2c3e50;">Poeng 1:</strong> [Detaljert forklaring av første hovedpoeng]
+    <ul>
+        <li><em style="color: #6c757d;">Detalj:</em> [Ytterligere informasjon]</li>
+    </ul>
+</li>
+<li><strong style="color: #2c3e50;">Poeng 2:</strong> [Detaljert forklaring av andre hovedpoeng]
+    <ul>
+        <li><em style="color: #6c757d;">Detalj:</em> [Ytterligere informasjon]</li>
+    </ul>
+</li>
+<li><strong style="color: #2c3e50;">Poeng 3:</strong> [Detaljert forklaring av tredje hovedpoeng]
+    <ul>
+        <li><em style="color: #6c757d;">Detalj:</em> [Ytterligere informasjon]</li>
+    </ul>
+</li>
 </ul>
-<p><strong>Examples:</strong></p>
-<ol>
-<li>Example 1</li>
-<li>Example 2</li>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #ffc107; padding-left: 12px; margin-top: 30px;">💡 Eksempler</h2>
+<ol style="line-height: 1.8;">
+<li><strong style="color: #2c3e50;">Eksempel 1:</strong> [Konkret eksempel]
+    <ul>
+        <li><em style="color: #6c757d;">Situasjon:</em> [Når dette gjelder]</li>
+        <li><em style="color: #6c757d;">Anvendelse:</em> [Hvordan det brukes]</li>
+    </ul>
+</li>
+<li><strong style="color: #2c3e50;">Eksempel 2:</strong> [Konkret eksempel]
+    <ul>
+        <li><em style="color: #6c757d;">Situasjon:</em> [Når dette gjelder]</li>
+        <li><em style="color: #6c757d;">Anvendelse:</em> [Hvordan det brukes]</li>
+    </ul>
+</li>
+<li><strong style="color: #2c3e50;">Eksempel 3:</strong> [Konkret eksempel]
+    <ul>
+        <li><em style="color: #6c757d;">Situasjon:</em> [Når dette gjelder]</li>
+        <li><em style="color: #6c757d;">Anvendelse:</em> [Hvordan det brukes]</li>
+    </ul>
+</li>
 </ol>
-<p><strong>Common Mistakes:</strong></p>
-<ul><li>Mistake to avoid</li></ul>
-<p><strong>Related Concepts:</strong></p>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #dc3545; padding-left: 12px; margin-top: 30px;">⚠️ Vanlige Feil</h2>
+<ul style="line-height: 1.8;">
+<li><strong style="color: #dc3545;">Feil 1:</strong> [Beskriv feilen]
+    <ul>
+        <li><em style="color: #6c757d;">Hvorfor skjer det:</em> [Årsak]</li>
+        <li><em style="color: #28a745;">Hvordan unngå:</em> [Løsning]</li>
+    </ul>
+</li>
+<li><strong style="color: #dc3545;">Feil 2:</strong> [Beskriv feilen]
+    <ul>
+        <li><em style="color: #6c757d;">Hvorfor skjer det:</em> [Årsak]</li>
+        <li><em style="color: #28a745;">Hvordan unngå:</em> [Løsning]</li>
+    </ul>
+</li>
+</ul>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #17a2b8; padding-left: 12px; margin-top: 30px;">🔗 Relaterte Konsepter</h2>
+<ul style="line-height: 1.8;">
+<li><strong style="color: #2c3e50;">[Relatert konsept 1]:</strong> [Beskriv sammenhengen og hvordan de henger sammen]</li>
+<li><strong style="color: #2c3e50;">[Relatert konsept 2]:</strong> [Beskriv sammenhengen og hvordan de henger sammen]</li>
+<li><strong style="color: #2c3e50;">[Relatert konsept 3]:</strong> [Beskriv sammenhengen og hvordan de henger sammen]</li>
+</ul>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #6f42c1; padding-left: 12px; margin-top: 30px;">📊 Praktisk Anvendelse</h2>
+<blockquote style="border-left: 4px solid #6f42c1; background: #f8f9fa; padding: 15px 20px; margin: 15px 0; border-radius: 4px;">
+<p><strong style="color: #2c3e50;">Når bruker man dette konseptet?</strong></p>
+<ul style="margin-top: 10px;">
+<li style="color: #28a745;">✓ [Situasjon 1]</li>
+<li style="color: #28a745;">✓ [Situasjon 2]</li>
+<li style="color: #28a745;">✓ [Situasjon 3]</li>
+</ul>
+</blockquote>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #6c757d; padding-left: 12px; margin-top: 30px;">📝 Notater</h2>
+<blockquote style="border-left: 4px solid #6c757d; background: #f8f9fa; padding: 15px 20px; margin: 15px 0; border-radius: 4px;">
+<p><em style="color: #6c757d;">[Ekstra notater, observasjoner, eller viktige påminnelser om dette konseptet]</em></p>
+</blockquote>
+
+<h2>🔗 Ressurser</h2>
 <ul>
-<li>Related concept 1</li>
-<li>Related concept 2</li>
+<li>[Lenke til relevant materiale]</li>
+<li>[Lenke til relevant materiale]</li>
 </ul>"""},
-        "case_study": {"name": "Case Study", "icon": "bar_chart", "content": """<h2>Case Study: [Title]</h2>
-<h3>Background</h3>
-<p>[Describe the business context]</p>
-<h3>Problem Statement</h3>
-<p>[What problem needs to be solved?]</p>
-<h3>Data Available</h3>
-<ul>
-<li>Data source 1</li>
-<li>Data source 2</li>
+        "case_study": {"name": "Case Study", "icon": "bar_chart", "content": """<h1 style="color: #1a1a1a; border-bottom: 3px solid #4A90D9; padding-bottom: 12px;">Case Study: [Prosjekt/Klientnavn]</h1>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #4A90D9; padding-left: 12px; margin-top: 30px;">📋 Executive Summary</h2>
+<blockquote style="border-left: 4px solid #4A90D9; background: #f8f9fa; padding: 15px 20px; margin: 15px 0; border-radius: 4px;">
+<p><em style="color: #6c757d;">Kort oversikt over case study, mål og nøkkelresultater (2-3 setninger).</em></p>
+</blockquote>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #17a2b8; padding-left: 12px; margin-top: 30px;">🏢 Bakgrunn & Kontekst</h2>
+<ul style="line-height: 1.8;">
+<li><strong style="color: #2c3e50;">Organisasjon:</strong> [Bedrift/avdeling]</li>
+<li><strong style="color: #2c3e50;">Bransje:</strong> [Bransjesektor]</li>
+<li><strong style="color: #2c3e50;">Kontekst:</strong> [Forretningssituasjon eller utfordring]</li>
+<li><strong style="color: #2c3e50;">Tidsramme:</strong> [Prosjektvarighet eller tidsperiode]</li>
+<li><strong style="color: #2c3e50;">Stakeholders:</strong> [Hvem er involvert?]</li>
 </ul>
-<h3>Analysis Approach</h3>
-<ol>
-<li>Step 1</li>
-<li>Step 2</li>
-<li>Step 3</li>
-</ol>
-<h3>Findings</h3>
-<p>[Key insights from the analysis]</p>
-<h3>Recommendations</h3>
-<ol>
-<li>Recommendation 1</li>
-<li>Recommendation 2</li>
-</ol>
-<h3>Lessons Learned</h3>
+
+<h2>❓ Problemstilling</h2>
+<p><strong>Primær Utfordring:</strong> [Hovedproblemet som må løses]</p>
+<p><strong>Påvirkning:</strong> [Hvorfor dette problemet betyr noe - forretningspåvirkning, kostnader, etc.]</p>
+<p><strong>Suksesskriterier:</strong> [Hvordan vi måler suksess]</p>
+<p><strong>Begrensninger:</strong> [Hvilke begrensninger finnes?]</p>
+
+<h2>📊 Tilgjengelig Data</h2>
 <ul>
-<li>Lesson 1</li>
-<li>Lesson 2</li>
+<li><strong>Datakilde 1:</strong> [Beskrivelse, størrelse, kvalitet]</li>
+<li><strong>Datakilde 2:</strong> [Beskrivelse, størrelse, kvalitet]</li>
+<li><strong>Datakilde 3:</strong> [Beskrivelse, størrelse, kvalitet]</li>
+</ul>
+<p><strong>Datakvalitet:</strong> [Eventuelle begrensninger, manglende verdier, eller datakvalitetsproblemer]</p>
+
+<h2>🔍 Analyse Tilnærming</h2>
+<ol>
+<li><strong>Fase 1 - [Fasnavn]:</strong> [Beskrivelse av analyse-steg]
+    <ul>
+        <li><em>Metode:</em> [Hvilken metode ble brukt?]</li>
+        <li><em>Resultat:</em> [Hva ble funnet?]</li>
+    </ul>
+</li>
+<li><strong>Fase 2 - [Fasnavn]:</strong> [Beskrivelse av analyse-steg]
+    <ul>
+        <li><em>Metode:</em> [Hvilken metode ble brukt?]</li>
+        <li><em>Resultat:</em> [Hva ble funnet?]</li>
+    </ul>
+</li>
+<li><strong>Fase 3 - [Fasnavn]:</strong> [Beskrivelse av analyse-steg]
+    <ul>
+        <li><em>Metode:</em> [Hvilken metode ble brukt?]</li>
+        <li><em>Resultat:</em> [Hva ble funnet?]</li>
+    </ul>
+</li>
+</ol>
+
+<h2>💎 Nøkkelfunn</h2>
+<ul>
+<li><strong>Funn 1:</strong> [Nøkkelinnsikt med støttende data]
+    <ul>
+        <li><em>Bevis:</em> [Kvantitativ eller kvalitativ støtte]</li>
+    </ul>
+</li>
+<li><strong>Funn 2:</strong> [Nøkkelinnsikt med støttende data]
+    <ul>
+        <li><em>Bevis:</em> [Kvantitativ eller kvalitativ støtte]</li>
+    </ul>
+</li>
+<li><strong>Funn 3:</strong> [Nøkkelinnsikt med støttende data]
+    <ul>
+        <li><em>Bevis:</em> [Kvantitativ eller kvalitativ støtte]</li>
+    </ul>
+</li>
+</ul>
+<p><strong>Kvantitative Resultater:</strong> [Hvis relevant, legg inn tall og mål]</p>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #ffc107; padding-left: 12px; margin-top: 30px;">💼 Anbefalinger</h2>
+<ol style="line-height: 1.8;">
+<li><strong style="color: #2c3e50;">Anbefaling 1:</strong> [Handlingspunkt med forventet påvirkning]
+    <ul>
+        <li><em style="color: #6c757d;">Prioritet:</em> [Høy/Middels/Lav]</li>
+        <li><em style="color: #6c757d;">Forventet Effekt:</em> [Hva forventer vi å oppnå?]</li>
+    </ul>
+</li>
+<li><strong style="color: #2c3e50;">Anbefaling 2:</strong> [Handlingspunkt med forventet påvirkning]
+    <ul>
+        <li><em style="color: #6c757d;">Prioritet:</em> [Høy/Middels/Lav]</li>
+        <li><em style="color: #6c757d;">Forventet Effekt:</em> [Hva forventer vi å oppnå?]</li>
+    </ul>
+</li>
+<li><strong style="color: #2c3e50;">Anbefaling 3:</strong> [Handlingspunkt med forventet påvirkning]
+    <ul>
+        <li><em style="color: #6c757d;">Prioritet:</em> [Høy/Middels/Lav]</li>
+        <li><em style="color: #6c757d;">Forventet Effekt:</em> [Hva forventer vi å oppnå?]</li>
+    </ul>
+</li>
+</ol>
+
+<h2>📚 Lærdommer</h2>
+<ul>
+<li><strong>Hva Fungerte Bra:</strong> [Suksessfulle tilnærminger eller teknikker]</li>
+<li><strong>Hva Kunne Forbedres:</strong> [Områder for fremtidig forbedring]</li>
+<li><strong>Nøkkel Læring:</strong> [Hovedlæring fra denne case study]</li>
+</ul>
+
+<h2>🔗 Relaterte Ressurser</h2>
+<ul>
+<li>[Lenke eller referanse til relaterte materialer]</li>
+<li>[Lenke eller referanse til relaterte materialer]</li>
 </ul>"""},
-        "formula": {"name": "Formula Sheet", "icon": "functions", "content": """<h2>Formula Reference: [Topic]</h2>
-<h3>Basic Formulas</h3>
-<p><strong>Formula 1:</strong> Description - Use case</p>
-<p><strong>Formula 2:</strong> Description - Use case</p>
-<h3>Key Variables</h3>
+        "formula": {"name": "Formula Sheet", "icon": "functions", "content": """<h1 style="color: #1a1a1a; border-bottom: 3px solid #4A90D9; padding-bottom: 12px;">Formel Referanse: [Emne/Fag]</h1>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #4A90D9; padding-left: 12px; margin-top: 30px;">📐 Grunnleggende Formler</h2>
+
+<h3 style="color: #2c3e50; margin-top: 25px;">Formel 1: [Formelnavn]</h3>
+<blockquote style="border-left: 4px solid #4A90D9; background: #f8f9fa; padding: 15px 20px; margin: 15px 0; border-radius: 4px;">
+<p><strong style="color: #2c3e50;">Formel:</strong> <code style="background: #ffffff; padding: 4px 8px; border-radius: 4px; color: #e83e8c; font-size: 1.1em; border: 1px solid #dee2e6;">[Skriv formelen her, f.eks. E = mc²]</code></p>
+<p><strong style="color: #2c3e50;">Beskrivelse:</strong> [Hva beregner eller representerer denne formelen?]</p>
+<p><strong style="color: #2c3e50;">Når Brukes Den:</strong> [Situasjoner hvor denne formelen gjelder]</p>
+<p><strong style="color: #2c3e50;">Enheter:</strong> [Inngangs- og utgangsenheter]</p>
+<p><strong style="color: #2c3e50;">Eksempel:</strong> [Kort eksempel på bruk]</p>
+</blockquote>
+
+<h3 style="color: #2c3e50; margin-top: 25px;">Formel 2: [Formelnavn]</h3>
+<blockquote style="border-left: 4px solid #4A90D9; background: #f8f9fa; padding: 15px 20px; margin: 15px 0; border-radius: 4px;">
+<p><strong style="color: #2c3e50;">Formel:</strong> <code style="background: #ffffff; padding: 4px 8px; border-radius: 4px; color: #e83e8c; font-size: 1.1em; border: 1px solid #dee2e6;">[Skriv formelen her]</code></p>
+<p><strong style="color: #2c3e50;">Beskrivelse:</strong> [Hva beregner eller representerer denne formelen?]</p>
+<p><strong style="color: #2c3e50;">Når Brukes Den:</strong> [Situasjoner hvor denne formelen gjelder]</p>
+<p><strong style="color: #2c3e50;">Enheter:</strong> [Inngangs- og utgangsenheter]</p>
+<p><strong style="color: #2c3e50;">Eksempel:</strong> [Kort eksempel på bruk]</p>
+</blockquote>
+
+<h3 style="color: #2c3e50; margin-top: 25px;">Formel 3: [Formelnavn]</h3>
+<blockquote style="border-left: 4px solid #4A90D9; background: #f8f9fa; padding: 15px 20px; margin: 15px 0; border-radius: 4px;">
+<p><strong style="color: #2c3e50;">Formel:</strong> <code style="background: #ffffff; padding: 4px 8px; border-radius: 4px; color: #e83e8c; font-size: 1.1em; border: 1px solid #dee2e6;">[Skriv formelen her]</code></p>
+<p><strong style="color: #2c3e50;">Beskrivelse:</strong> [Hva beregner eller representerer denne formelen?]</p>
+<p><strong style="color: #2c3e50;">Når Brukes Den:</strong> [Situasjoner hvor denne formelen gjelder]</p>
+<p><strong style="color: #2c3e50;">Enheter:</strong> [Inngangs- og utgangsenheter]</p>
+<p><strong style="color: #2c3e50;">Eksempel:</strong> [Kort eksempel på bruk]</p>
+</blockquote>
+
+<h2>🔤 Nøkkelvariabler & Symboler</h2>
 <ul>
-<li><strong>Variable 1:</strong> Definition</li>
-<li><strong>Variable 2:</strong> Definition</li>
+<li><strong>Variabel 1 (symbol):</strong> [Definisjon og typisk område/verdier]
+    <ul>
+        <li><em>Enhet:</em> [Enhet for variabelen]</li>
+        <li><em>Typisk Verdi:</em> [Vanlig verdiområde]</li>
+    </ul>
+</li>
+<li><strong>Variabel 2 (symbol):</strong> [Definisjon og typisk område/verdier]
+    <ul>
+        <li><em>Enhet:</em> [Enhet for variabelen]</li>
+        <li><em>Typisk Verdi:</em> [Vanlig verdiområde]</li>
+    </ul>
+</li>
+<li><strong>Variabel 3 (symbol):</strong> [Definisjon og typisk område/verdier]
+    <ul>
+        <li><em>Enhet:</em> [Enhet for variabelen]</li>
+        <li><em>Typisk Verdi:</em> [Vanlig verdiområde]</li>
+    </ul>
+</li>
 </ul>
-<h3>Worked Example</h3>
-<p><strong>Problem:</strong> [Describe the problem]</p>
-<p><strong>Solution:</strong></p>
-<ol>
-<li>Step 1</li>
-<li>Step 2</li>
-<li>Result</li>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #28a745; padding-left: 12px; margin-top: 30px;">📝 Arbeidet Eksempel</h2>
+<blockquote style="border-left: 4px solid #28a745; background: #f0fff4; padding: 15px 20px; margin: 15px 0; border-radius: 4px;">
+<p><strong style="color: #2c3e50;">Problem:</strong> [Beskriv et eksempelproblem som skal løses]</p>
+<p><strong style="color: #2c3e50;">Gitt:</strong></p>
+<ul style="line-height: 1.8;">
+<li>Variabel 1 = [verdi] [enhet]</li>
+<li>Variabel 2 = [verdi] [enhet]</li>
+<li>Variabel 3 = [verdi] [enhet]</li>
+</ul>
+</blockquote>
+<p><strong style="color: #28a745;">Løsning:</strong></p>
+<ol style="line-height: 1.8;">
+<li><strong style="color: #2c3e50;">Steg 1:</strong> [Første beregning eller manipulasjon]
+    <ul>
+        <li><em style="color: #6c757d;">Beregning:</em> [Vis beregningen]</li>
+    </ul>
+</li>
+<li><strong style="color: #2c3e50;">Steg 2:</strong> [Andre beregning eller manipulasjon]
+    <ul>
+        <li><em style="color: #6c757d;">Beregning:</em> [Vis beregningen]</li>
+    </ul>
+</li>
+<li><strong style="color: #2c3e50;">Steg 3:</strong> [Siste beregning]
+    <ul>
+        <li><em style="color: #6c757d;">Beregning:</em> [Vis beregningen]</li>
+    </ul>
+</li>
 </ol>
-<h3>Quick Reference</h3>
+<blockquote style="border-left: 4px solid #28a745; background: #f0fff4; padding: 15px 20px; margin: 15px 0; border-radius: 4px;">
+<p><strong style="color: #28a745; font-size: 1.1em;">Svar:</strong> [Sluttresultat med enheter]</p>
+</blockquote>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #ffc107; padding-left: 12px; margin-top: 30px;">💡 Rask Referanse</h2>
+<blockquote style="border-left: 4px solid #ffc107; background: #fffbf0; padding: 15px 20px; margin: 15px 0; border-radius: 4px;">
+<ul style="line-height: 1.8;">
+<li><strong style="color: #ffc107;">Husk:</strong> [Viktig tips eller huskeregel]</li>
+<li><strong style="color: #dc3545;">Vanlig Feil:</strong> [Hva man skal unngå når man bruker disse formlene]</li>
+<li><strong style="color: #17a2b8;">Pro Tips:</strong> [Hjelpsomt hint for anvendelse]</li>
+<li><strong style="color: #2c3e50;">Når Skal Man Bruke:</strong> [Situasjoner hvor disse formlene er mest relevante]</li>
+</ul>
+</blockquote>
+
+<h2>🔗 Relaterte Formler</h2>
 <ul>
-<li>Remember: [Key tip]</li>
-<li>Common error: [What to avoid]</li>
+<li><strong>[Relatert formel eller konsept]:</strong> [Beskriv sammenhengen]</li>
+<li><strong>[Relatert formel eller konsept]:</strong> [Beskriv sammenhengen]</li>
 </ul>"""},
-        "comparison": {"name": "Comparison Chart", "icon": "compare_arrows", "content": """<h2>Comparison: [Topic A] vs [Topic B]</h2>
-<h3>Topic A</h3>
-<ul>
-<li><strong>Definition:</strong> </li>
-<li><strong>Use Case:</strong> </li>
-<li><strong>Advantages:</strong> </li>
-<li><strong>Disadvantages:</strong> </li>
+        "comparison": {"name": "Comparison Chart", "icon": "compare_arrows", "content": """<h1 style="color: #1a1a1a; border-bottom: 3px solid #4A90D9; padding-bottom: 12px;">Sammenligning: [Emne A] vs [Emne B]</h1>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #4A90D9; padding-left: 12px; margin-top: 30px;">📊 Oversikt</h2>
+<blockquote style="border-left: 4px solid #4A90D9; background: #f8f9fa; padding: 15px 20px; margin: 15px 0; border-radius: 4px;">
+<p><em style="color: #6c757d;">Kort introduksjon til hva som sammenlignes og hvorfor denne sammenligningen er viktig.</em></p>
+</blockquote>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #007bff; padding-left: 12px; margin-top: 30px;">🔵 [Emne A]</h2>
+<blockquote style="border-left: 4px solid #007bff; background: #f0f7ff; padding: 15px 20px; margin: 15px 0; border-radius: 4px;">
+<p><strong style="color: #2c3e50;">Definisjon:</strong> [Tydelig definisjon av emne A]</p>
+<p><strong style="color: #2c3e50;">Primær Bruksområde:</strong> [Når og hvorfor bruker man emne A?]</p>
+</blockquote>
+<p><strong style="color: #28a745;">Fordeler:</strong></p>
+<ul style="line-height: 1.8;">
+<li style="color: #28a745;">✅ <strong>Fordel 1:</strong> [Forklaring og hvorfor det er en fordel]</li>
+<li style="color: #28a745;">✅ <strong>Fordel 2:</strong> [Forklaring og hvorfor det er en fordel]</li>
+<li style="color: #28a745;">✅ <strong>Fordel 3:</strong> [Forklaring og hvorfor det er en fordel]</li>
 </ul>
-<h3>Topic B</h3>
-<ul>
-<li><strong>Definition:</strong> </li>
-<li><strong>Use Case:</strong> </li>
-<li><strong>Advantages:</strong> </li>
-<li><strong>Disadvantages:</strong> </li>
+<p><strong style="color: #dc3545;">Ulemper:</strong></p>
+<ul style="line-height: 1.8;">
+<li style="color: #dc3545;">❌ <strong>Ulempe 1:</strong> [Forklaring og konsekvenser]</li>
+<li style="color: #dc3545;">❌ <strong>Ulempe 2:</strong> [Forklaring og konsekvenser]</li>
 </ul>
-<h3>When to Choose Topic A</h3>
-<ul>
-<li>Situation 1</li>
-<li>Situation 2</li>
+<p><strong>Best For:</strong> [Spesifikke scenarioer eller bruksområder]</p>
+<p><strong>Eksempel:</strong> [Virkelig verden eksempel eller anvendelse]</p>
+<p><strong>Kostnad/Kompleksitet:</strong> [Vurdering av kostnad eller kompleksitet]</p>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #28a745; padding-left: 12px; margin-top: 30px;">🟢 [Emne B]</h2>
+<blockquote style="border-left: 4px solid #28a745; background: #f0fff4; padding: 15px 20px; margin: 15px 0; border-radius: 4px;">
+<p><strong style="color: #2c3e50;">Definisjon:</strong> [Tydelig definisjon av emne B]</p>
+<p><strong style="color: #2c3e50;">Primær Bruksområde:</strong> [Når og hvorfor bruker man emne B?]</p>
+</blockquote>
+<p><strong style="color: #28a745;">Fordeler:</strong></p>
+<ul style="line-height: 1.8;">
+<li style="color: #28a745;">✅ <strong>Fordel 1:</strong> [Forklaring og hvorfor det er en fordel]</li>
+<li style="color: #28a745;">✅ <strong>Fordel 2:</strong> [Forklaring og hvorfor det er en fordel]</li>
+<li style="color: #28a745;">✅ <strong>Fordel 3:</strong> [Forklaring og hvorfor det er en fordel]</li>
 </ul>
-<h3>When to Choose Topic B</h3>
-<ul>
-<li>Situation 1</li>
-<li>Situation 2</li>
+<p><strong style="color: #dc3545;">Ulemper:</strong></p>
+<ul style="line-height: 1.8;">
+<li style="color: #dc3545;">❌ <strong>Ulempe 1:</strong> [Forklaring og konsekvenser]</li>
+<li style="color: #dc3545;">❌ <strong>Ulempe 2:</strong> [Forklaring og konsekvenser]</li>
 </ul>
-<h3>Key Takeaway</h3>
-<p>[Main insight from comparison]</p>"""},
-        "meeting": {"name": "Meeting Notes", "icon": "event_note", "content": """<h2>Meeting Notes: [Date]</h2>
-<p><strong>Attendees:</strong> [Names]</p>
-<p><strong>Topic:</strong> [Meeting topic]</p>
-<h3>Key Discussion Points</h3>
+<p><strong>Best For:</strong> [Spesifikke scenarioer eller bruksområder]</p>
+<p><strong>Eksempel:</strong> [Virkelig verden eksempel eller anvendelse]</p>
+<p><strong>Kostnad/Kompleksitet:</strong> [Vurdering av kostnad eller kompleksitet]</p>
+
+<h2>🎯 Beslutningsmatrise</h2>
+<p><strong>Velg [Emne A] når:</strong></p>
+<ul>
+<li>✓ <strong>Situasjon 1:</strong> [Beskrivelse av når emne A er best]</li>
+<li>✓ <strong>Situasjon 2:</strong> [Beskrivelse av når emne A er best]</li>
+<li>✓ <strong>Situasjon 3:</strong> [Beskrivelse av når emne A er best]</li>
+</ul>
+<p><strong>Velg [Emne B] når:</strong></p>
+<ul>
+<li>✓ <strong>Situasjon 1:</strong> [Beskrivelse av når emne B er best]</li>
+<li>✓ <strong>Situasjon 2:</strong> [Beskrivelse av når emne B er best]</li>
+<li>✓ <strong>Situasjon 3:</strong> [Beskrivelse av når emne B er best]</li>
+</ul>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #ffc107; padding-left: 12px; margin-top: 30px;">💡 Nøkkelinnsikt</h2>
+<blockquote style="border-left: 4px solid #ffc107; background: #fffbf0; padding: 15px 20px; margin: 15px 0; border-radius: 4px;">
+<p><strong style="color: #2c3e50; font-size: 1.1em;">Hovedkonklusjon:</strong> [Den viktigste konklusjonen fra denne sammenligningen]</p>
+<p><em style="color: #6c757d;">[Tilleggskontekst eller nyanser om når hvert alternativ er å foretrekke]</em></p>
+</blockquote>
+
+<h2>📝 Notater</h2>
+<p><em>Tilleggshensyn, edge cases, eller viktige påminnelser om denne sammenligningen.</em></p>"""},
+        "meeting": {"name": "Meeting Notes", "icon": "event_note", "content": """<h1 style="color: #1a1a1a; border-bottom: 3px solid #4A90D9; padding-bottom: 12px;">Møtenotater</h1>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #4A90D9; padding-left: 12px; margin-top: 30px;">📅 Møteinformasjon</h2>
+<blockquote style="border-left: 4px solid #4A90D9; background: #f8f9fa; padding: 15px 20px; margin: 15px 0; border-radius: 4px;">
+<ul style="line-height: 1.8;">
+<li><strong style="color: #2c3e50;">Dato:</strong> [Dato]</li>
+<li><strong style="color: #2c3e50;">Tid:</strong> [Starttid] - [Sluttid]</li>
+<li><strong style="color: #2c3e50;">Sted/Plattform:</strong> [Fysisk sted eller virtuell plattform]</li>
+<li><strong style="color: #2c3e50;">Møtetype:</strong> [Regelmessig, Engangs, Prosjektgjennomgang, etc.]</li>
+</ul>
+</blockquote>
+
+<h2>👥 Deltakere</h2>
+<ul>
+<li><strong>Tilstede:</strong> [Navn 1], [Navn 2], [Navn 3]</li>
+<li><strong>Fraværende:</strong> [Navn 1], [Navn 2]</li>
+<li><strong>Fasilitator:</strong> [Navn]</li>
+</ul>
+
+<h2>🎯 Møtemål</h2>
 <ol>
-<li>Point 1</li>
-<li>Point 2</li>
-<li>Point 3</li>
+<li>[Mål 1]</li>
+<li>[Mål 2]</li>
+<li>[Mål 3]</li>
 </ol>
-<h3>Decisions Made</h3>
-<ul>
-<li>Decision 1</li>
-<li>Decision 2</li>
-</ul>
-<h3>Action Items</h3>
-<ul>
-<li>☐ Task 1 - Owner: [Name] - Due: [Date]</li>
-<li>☐ Task 2 - Owner: [Name] - Due: [Date]</li>
-</ul>
-<h3>Next Steps</h3>
-<p>[What happens next]</p>"""},
-        "exam_prep": {"name": "Exam Prep", "icon": "quiz", "content": """<h2>Exam Preparation: [Subject]</h2>
-<h3>Key Topics to Review</h3>
-<ul>
-<li>☐ Topic 1</li>
-<li>☐ Topic 2</li>
-<li>☐ Topic 3</li>
-</ul>
-<h3>Important Definitions</h3>
-<p><strong>Term 1:</strong> Definition</p>
-<p><strong>Term 2:</strong> Definition</p>
-<h3>Practice Questions</h3>
+
+<h2>📋 Agenda</h2>
 <ol>
-<li>Question 1?<br><em>Answer:</em> </li>
-<li>Question 2?<br><em>Answer:</em> </li>
+<li><strong>[Punkt 1]:</strong> [Beskrivelse]</li>
+<li><strong>[Punkt 2]:</strong> [Beskrivelse]</li>
+<li><strong>[Punkt 3]:</strong> [Beskrivelse]</li>
 </ol>
-<h3>Quick Memory Aids</h3>
-<blockquote>Mnemonic or memory trick here</blockquote>
-<h3>Common Exam Mistakes</h3>
+
+<h2>💬 Nøkkel Diskusjonspunkter</h2>
+<ol>
+<li><strong>Tema 1:</strong> [Sammendrag av diskusjonspunkt]
+    <ul>
+        <li>Nøkkelpoeng nevnt</li>
+        <li>Beslutning eller konklusjon nådd</li>
+    </ul>
+</li>
+<li><strong>Tema 2:</strong> [Sammendrag av diskusjonspunkt]
+    <ul>
+        <li>Nøkkelpoeng nevnt</li>
+        <li>Beslutning eller konklusjon nådd</li>
+    </ul>
+</li>
+<li><strong>Tema 3:</strong> [Sammendrag av diskusjonspunkt]
+    <ul>
+        <li>Nøkkelpoeng nevnt</li>
+        <li>Beslutning eller konklusjon nådd</li>
+    </ul>
+</li>
+</ol>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #28a745; padding-left: 12px; margin-top: 30px;">✅ Beslutninger Tatt</h2>
+<blockquote style="border-left: 4px solid #28a745; background: #f0fff4; padding: 15px 20px; margin: 15px 0; border-radius: 4px;">
+<ul style="line-height: 1.8;">
+<li><strong style="color: #28a745;">Beslutning 1:</strong> [Hva ble bestemt] - <em style="color: #6c757d;">Begrunnelse: [Hvorfor]</em></li>
+<li><strong style="color: #28a745;">Beslutning 2:</strong> [Hva ble bestemt] - <em style="color: #6c757d;">Begrunnelse: [Hvorfor]</em></li>
+<li><strong style="color: #28a745;">Beslutning 3:</strong> [Hva ble bestemt] - <em style="color: #6c757d;">Begrunnelse: [Hvorfor]</em></li>
+</ul>
+</blockquote>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #ffc107; padding-left: 12px; margin-top: 30px;">📋 Handlingspunkter</h2>
+<ul style="line-height: 1.8;">
+<li>☐ <strong style="color: #2c3e50;">Oppgave 1:</strong> [Beskrivelse]
+    <ul>
+        <li><strong style="color: #6c757d;">Ansvarlig:</strong> [Navn]</li>
+        <li><strong style="color: #6c757d;">Forfallsdato:</strong> [Dato]</li>
+        <li><strong style="color: #6c757d;">Status:</strong> [Ikke Startet / Pågår / Fullført]</li>
+    </ul>
+</li>
+<li>☐ <strong style="color: #2c3e50;">Oppgave 2:</strong> [Beskrivelse]
+    <ul>
+        <li><strong style="color: #6c757d;">Ansvarlig:</strong> [Navn]</li>
+        <li><strong style="color: #6c757d;">Forfallsdato:</strong> [Dato]</li>
+        <li><strong style="color: #6c757d;">Status:</strong> [Ikke Startet / Pågår / Fullført]</li>
+    </ul>
+</li>
+<li>☐ <strong style="color: #2c3e50;">Oppgave 3:</strong> [Beskrivelse]
+    <ul>
+        <li><strong style="color: #6c757d;">Ansvarlig:</strong> [Navn]</li>
+        <li><strong style="color: #6c757d;">Forfallsdato:</strong> [Dato]</li>
+        <li><strong style="color: #6c757d;">Status:</strong> [Ikke Startet / Pågår / Fullført]</li>
+    </ul>
+</li>
+</ul>
+
+<h2>🚀 Neste Steg</h2>
+<ol>
+<li>[Umiddelbar neste handling]</li>
+<li>[Oppfølgingshandling]</li>
+<li>[Langtids handling]</li>
+</ol>
+
+<h2>📅 Oppfølging</h2>
 <ul>
-<li>Mistake to avoid 1</li>
-<li>Mistake to avoid 2</li>
+<li><strong>Neste Møte:</strong> [Dato og tid]</li>
+<li><strong>Agendapunkter:</strong> [Temaer å diskutere neste gang]</li>
+</ul>
+
+<h2>📎 Vedlegg & Ressurser</h2>
+<ul>
+<li>[Lenke til delt dokument eller ressurs]</li>
+<li>[Lenke til delt dokument eller ressurs]</li>
+</ul>"""},
+        "exam_prep": {"name": "Exam Prep", "icon": "quiz", "content": """<h1>Eksamen Forberedelse: [Fag/Kursnavn]</h1>
+
+<h2>📚 Eksamen Informasjon</h2>
+<ul>
+<li><strong>Fag:</strong> [Kurs/Fagnavn]</li>
+<li><strong>Eksamen Dato:</strong> [Dato]</li>
+<li><strong>Eksamen Tid:</strong> [Tidspunkt]</li>
+<li><strong>Varighet:</strong> [Lengde på eksamen]</li>
+<li><strong>Format:</strong> [Flervalg, Essay, Praktisk, etc.]</li>
+<li><strong>Vekt:</strong> [Prosent av sluttkarakter]</li>
+</ul>
+
+<h2>✅ Nøkkelemner å Gjennomgå</h2>
+<ul>
+<li>☐ <strong>Emne 1:</strong> [Kort beskrivelse] - <em>Prioritet: Høy/Middels/Lav</em>
+    <ul>
+        <li><em>Fokus:</em> [Hva spesifikt skal gjennomgås?]</li>
+    </ul>
+</li>
+<li>☐ <strong>Emne 2:</strong> [Kort beskrivelse] - <em>Prioritet: Høy/Middels/Lav</em>
+    <ul>
+        <li><em>Fokus:</em> [Hva spesifikt skal gjennomgås?]</li>
+    </ul>
+</li>
+<li>☐ <strong>Emne 3:</strong> [Kort beskrivelse] - <em>Prioritet: Høy/Middels/Lav</em>
+    <ul>
+        <li><em>Fokus:</em> [Hva spesifikt skal gjennomgås?]</li>
+    </ul>
+</li>
+<li>☐ <strong>Emne 4:</strong> [Kort beskrivelse] - <em>Prioritet: Høy/Middels/Lav</em>
+    <ul>
+        <li><em>Fokus:</em> [Hva spesifikt skal gjennomgås?]</li>
+    </ul>
+</li>
+<li>☐ <strong>Emne 5:</strong> [Kort beskrivelse] - <em>Prioritet: Høy/Middels/Lav</em>
+    <ul>
+        <li><em>Fokus:</em> [Hva spesifikt skal gjennomgås?]</li>
+    </ul>
+</li>
+</ul>
+
+<h2>📖 Viktige Definisjoner</h2>
+<ul>
+<li><strong>Term 1:</strong> [Tydelig, konsis definisjon]
+    <ul>
+        <li><em>Eksempel:</em> [Eksempel på bruk eller kontekst]</li>
+    </ul>
+</li>
+<li><strong>Term 2:</strong> [Tydelig, konsis definisjon]
+    <ul>
+        <li><em>Eksempel:</em> [Eksempel på bruk eller kontekst]</li>
+    </ul>
+</li>
+<li><strong>Term 3:</strong> [Tydelig, konsis definisjon]
+    <ul>
+        <li><em>Eksempel:</em> [Eksempel på bruk eller kontekst]</li>
+    </ul>
+</li>
+<li><strong>Term 4:</strong> [Tydelig, konsis definisjon]
+    <ul>
+        <li><em>Eksempel:</em> [Eksempel på bruk eller kontekst]</li>
+    </ul>
+</li>
+</ul>
+
+<h2>🧮 Formler å Pugge</h2>
+<ul>
+<li><strong>Formel 1:</strong> <code>[Formel]</code> - <em>Bruksområde: [Når brukes den?]</em></li>
+<li><strong>Formel 2:</strong> <code>[Formel]</code> - <em>Bruksområde: [Når brukes den?]</em></li>
+<li><strong>Formel 3:</strong> <code>[Formel]</code> - <em>Bruksområde: [Når brukes den?]</em></li>
+</ul>
+
+<h2>❓ Øvingsspørsmål</h2>
+<ol>
+<li><strong>Spørsmål 1:</strong> [Spørsmålstekst]
+    <ul>
+        <li><em>Svar:</em> [Ditt svar]</li>
+        <li><em>Nøkkelpoeng:</em> [Viktige konsepter dette spørsmålet tester]</li>
+        <li><em>Læring:</em> [Hva lærte du fra dette spørsmålet?]</li>
+    </ul>
+</li>
+<li><strong>Spørsmål 2:</strong> [Spørsmålstekst]
+    <ul>
+        <li><em>Svar:</em> [Ditt svar]</li>
+        <li><em>Nøkkelpoeng:</em> [Viktige konsepter dette spørsmålet tester]</li>
+        <li><em>Læring:</em> [Hva lærte du fra dette spørsmålet?]</li>
+    </ul>
+</li>
+<li><strong>Spørsmål 3:</strong> [Spørsmålstekst]
+    <ul>
+        <li><em>Svar:</em> [Ditt svar]</li>
+        <li><em>Nøkkelpoeng:</em> [Viktige konsepter dette spørsmålet tester]</li>
+        <li><em>Læring:</em> [Hva lærte du fra dette spørsmålet?]</li>
+    </ul>
+</li>
+<li><strong>Spørsmål 4:</strong> [Spørsmålstekst]
+    <ul>
+        <li><em>Svar:</em> [Ditt svar]</li>
+        <li><em>Nøkkelpoeng:</em> [Viktige konsepter dette spørsmålet tester]</li>
+        <li><em>Læring:</em> [Hva lærte du fra dette spørsmålet?]</li>
+    </ul>
+</li>
+</ol>
+
+<h2>🧠 Rask Hukommelseshjelp</h2>
+<ul>
+<li><strong>Huskeregel 1:</strong> [Huskeregel eller akronym] - <em>For: [Hva det hjelper å huske]</em></li>
+<li><strong>Huskeregel 2:</strong> [Huskeregel eller akronym] - <em>For: [Hva det hjelper å huske]</em></li>
+<li><strong>Huskeregel 3:</strong> [Huskeregel eller akronym] - <em>For: [Hva det hjelper å huske]</em></li>
+</ul>
+<blockquote>
+<p><strong>Viktig Påminnelse:</strong> [Viktig konsept eller regel å huske]</p>
+</blockquote>
+
+<h2>⚠️ Vanlige Eksamenfeil</h2>
+<ul>
+<li><strong>Feil 1:</strong> [Beskrivelse av vanlig feil]
+    <ul>
+        <li><em>Hvorfor skjer det:</em> [Årsak]</li>
+        <li><em>Hvordan unngå:</em> [Forebyggingsstrategi]</li>
+    </ul>
+</li>
+<li><strong>Feil 2:</strong> [Beskrivelse av vanlig feil]
+    <ul>
+        <li><em>Hvorfor skjer det:</em> [Årsak]</li>
+        <li><em>Hvordan unngå:</em> [Forebyggingsstrategi]</li>
+    </ul>
+</li>
+<li><strong>Feil 3:</strong> [Beskrivelse av vanlig feil]
+    <ul>
+        <li><em>Hvorfor skjer det:</em> [Årsak]</li>
+        <li><em>Hvordan unngå:</em> [Forebyggingsstrategi]</li>
+    </ul>
+</li>
+</ul>
+
+<h2>📝 Studieplan</h2>
+<ul>
+<li><strong>Uke 1:</strong> [Emner å dekke]
+    <ul>
+        <li><em>Fokus:</em> [Hva skal fokuseres på denne uken?]</li>
+    </ul>
+</li>
+<li><strong>Uke 2:</strong> [Emner å dekke]
+    <ul>
+        <li><em>Fokus:</em> [Hva skal fokuseres på denne uken?]</li>
+    </ul>
+</li>
+<li><strong>Uke 3:</strong> [Gjennomgang og praksis]
+    <ul>
+        <li><em>Fokus:</em> [Hva skal fokuseres på denne uken?]</li>
+    </ul>
+</li>
+</ul>
+
+<h2>✅ Studie Sjekkliste</h2>
+<ul>
+<li>☐ Gjennomgått alle hovedtemaer</li>
+<li>☐ Løst øvingsoppgaver</li>
+<li>☐ Gjennomgått formler og definisjoner</li>
+<li>☐ Gjennomgått tidligere eksamener</li>
+<li>☐ Fullført selvtester</li>
+<li>☐ Gjennomgått vanlige feil</li>
+</ul>
+
+<h2>📊 Selvtest</h2>
+<ul>
+<li>☐ [Selvtest 1: Beskriv hva du skal teste deg selv på]</li>
+<li>☐ [Selvtest 2: Beskriv hva du skal teste deg selv på]</li>
+<li>☐ [Selvtest 3: Beskriv hva du skal teste deg selv på]</li>
+</ul>
+
+<h2>🔗 Ressurser</h2>
+<ul>
+<li><strong>Lærebok:</strong> [Lenke til lærebok kapittel eller seksjon]</li>
+<li><strong>Øvingsproblemer:</strong> [Lenke til praksisproblemer]</li>
+<li><strong>Forelesningsnotater:</strong> [Lenke til forelesningsnotater eller slides]</li>
+<li><strong>Videoer:</strong> [Lenke til relevante videoer]</li>
 </ul>"""}
     }
     
@@ -9146,6 +9658,10 @@ elif page == "Study Notes":
             st.session_state.current_note_content = ""
             st.session_state.pop('editing_note_idx', None)
             st.session_state.pop('current_note_title', None)
+            st.session_state.pop('current_note_category', None)
+            st.session_state.pop('current_note_importance', None)
+            st.session_state.pop('current_note_tags', None)
+            st.session_state.pop('current_note_outcome', None)
             st.session_state.pop('last_applied_template', None)
             st.session_state.quill_key_counter = st.session_state.get('quill_key_counter', 0) + 1
             st.rerun()
@@ -9382,10 +9898,19 @@ elif page == "Study Notes":
                             })
                         note_data['version_history'] = history[-10:]
                         st.session_state.study_notes[selected_course_code][editing_idx] = note_data
+                        st.success("✅ Note updated!")
                     else:
                         st.session_state.study_notes[selected_course_code].append(note_data)
+                        st.session_state.current_note_content = ""
+                        st.session_state.pop('current_note_title', None)
+                        st.session_state.pop('current_note_category', None)
+                        st.session_state.pop('current_note_importance', None)
+                        st.session_state.pop('current_note_tags', None)
+                        st.session_state.pop('current_note_outcome', None)
+                        st.session_state.pop('last_applied_template', None)
+                        st.session_state.quill_key_counter = st.session_state.get('quill_key_counter', 0) + 1
+                        st.success("✅ New note created! Editor cleared for next note.")
                     
-                    st.success("✅ Saved!")
                     st.rerun()
                 else:
                     st.warning("Please add a title and content.")
