@@ -39,6 +39,14 @@ A comprehensive student study app for the Data Analyst 2 (PDAN) vocational progr
 - **Documentation & Presentation**: Analysis report structure, visualization best practices, presentation building, reflection reports
 - **Soft Skills for Data Analysts**: Communicating with non-technical stakeholders, active listening, working with different roles, handling feedback
 
+### Evaluation of Outcomes (FI1BBEO10)
+- **KPIs & Decision Heuristics**: KPIs as heuristics, thresholds/alerts, decision trees, KPI-driven escalation
+- **Statistical Result Analysis**: Regression interpretation, variance/spread analysis, z-testing for significance, sampled sets and statistical inference
+- **Confidence Levels & Scenarios**: Understanding confidence intervals, probability scenario building, decision-making under uncertainty
+- **Iterative Error Elimination**: 5 Whys root cause analysis, common error types, debugging techniques, error prevention, plus ethical model evaluation (bias detection, fairness, escalation)
+- **Data Ensembling & Reliability**: Bagging, boosting, stacking ensemble methods, improving model reliability, data quality ensembling
+- **ETL & Version Control**: ETL pipeline design, Git fundamentals, branching strategies, collaborative workflows
+
 ### Tool Training Environments (Simulated)
 - **Excel & Google Sheets**: Formulas (VLOOKUP, SUMIF, etc.), pivot tables, data cleaning, automation with macros
 - **Python Programming**: pandas DataFrames, data manipulation, cleaning scripts, analysis automation
