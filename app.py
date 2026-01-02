@@ -7596,6 +7596,9 @@ elif page == "Playground":
     # Organize playground tools by course/category
     playground_tools = {
         "Semester 1 - Tool Skills": {
+            "FI1BBDF05 - Data Analysis Fundamentals": [
+                "BI & Big Data Explorer"
+            ],
             "FI1BBSF05 - Spreadsheet Fundamentals": [
                 "Excel Formula Simulator",
                 "Power Query Simulator"
@@ -7614,6 +7617,13 @@ elif page == "Playground":
             ],
             "FI1BBDV15 - Data Visualisation": [
                 "Chart Builder"
+            ],
+            "FI1BBDD75 - Data Driven Decision-Making": [
+                "KPI Dashboard Builder",
+                "Decision Analysis Tool"
+            ],
+            "FI1BBP175 - Semester Project 1": [
+                "Project Planning Workshop"
             ]
         },
         "Semester 3 - Competence Skills": {
@@ -9829,6 +9839,508 @@ ESCALATION:
                 label="Download Work Method Document",
                 data=work_method_template,
                 file_name=f"work_method_{selected_domain.lower().replace('/', '_')}.txt",
+                mime="text/plain"
+            )
+    
+    elif playground_tab == "BI & Big Data Explorer":
+        st.subheader("📊 BI & Big Data Explorer")
+        st.markdown("*Explore Business Intelligence concepts and identify Big Data scenarios*")
+        st.markdown("---")
+        
+        explorer_mode = st.radio(
+            "Choose exploration mode:",
+            ["BI vs Big Data Classifier", "Data Volume Calculator", "BI Tool Selector"],
+            horizontal=True
+        )
+        
+        if explorer_mode == "BI vs Big Data Classifier":
+            st.markdown("### Classify Your Data Scenario")
+            st.markdown("*Answer these questions to determine if your scenario is BI or Big Data*")
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                data_volume = st.select_slider(
+                    "Data Volume:",
+                    options=["Megabytes", "Gigabytes", "Terabytes", "Petabytes"],
+                    value="Gigabytes"
+                )
+                data_velocity = st.select_slider(
+                    "Data Velocity:",
+                    options=["Daily updates", "Hourly updates", "Real-time streaming", "Millisecond events"],
+                    value="Daily updates"
+                )
+            with col2:
+                data_variety = st.multiselect(
+                    "Data Types (Variety):",
+                    ["Structured tables", "Text documents", "Images", "Videos", "Sensor data", "Social media"],
+                    default=["Structured tables"]
+                )
+                analysis_goal = st.selectbox(
+                    "Primary Goal:",
+                    ["Report what happened", "Understand why it happened", "Predict what will happen", "Automate decisions"]
+                )
+            
+            if st.button("🔍 Classify Scenario", type="primary"):
+                score = 0
+                reasons = []
+                
+                if data_volume in ["Terabytes", "Petabytes"]:
+                    score += 2
+                    reasons.append(f"High volume ({data_volume})")
+                if data_velocity in ["Real-time streaming", "Millisecond events"]:
+                    score += 2
+                    reasons.append(f"High velocity ({data_velocity})")
+                if len(data_variety) > 2:
+                    score += 1
+                    reasons.append(f"High variety ({len(data_variety)} types)")
+                if "Images" in data_variety or "Videos" in data_variety or "Sensor data" in data_variety:
+                    score += 1
+                    reasons.append("Unstructured data types")
+                if analysis_goal in ["Predict what will happen", "Automate decisions"]:
+                    score += 1
+                    reasons.append(f"Advanced analytics goal")
+                
+                st.markdown("---")
+                if score >= 4:
+                    st.error("🔴 **Big Data Scenario**")
+                    st.markdown("Your scenario exhibits Big Data characteristics:")
+                    for r in reasons:
+                        st.markdown(f"- {r}")
+                    st.markdown("**Recommended Tools:** Hadoop, Spark, Python, Cloud Data Platforms")
+                elif score >= 2:
+                    st.warning("🟡 **Hybrid Scenario**")
+                    st.markdown("Your scenario has some Big Data elements but may work with BI tools:")
+                    for r in reasons:
+                        st.markdown(f"- {r}")
+                    st.markdown("**Recommended:** Start with BI tools, scale to Big Data if needed")
+                else:
+                    st.success("🟢 **Business Intelligence Scenario**")
+                    st.markdown("Your scenario is well-suited for traditional BI approaches.")
+                    st.markdown("**Recommended Tools:** Excel, Tableau, Power BI, SQL databases")
+        
+        elif explorer_mode == "Data Volume Calculator":
+            st.markdown("### Calculate Your Data Volume")
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                records_per_day = st.number_input("Records generated per day:", min_value=1, value=1000)
+                bytes_per_record = st.number_input("Average bytes per record:", min_value=1, value=500)
+                retention_years = st.number_input("Years of data to retain:", min_value=1, value=3)
+            
+            with col2:
+                daily_bytes = records_per_day * bytes_per_record
+                yearly_bytes = daily_bytes * 365
+                total_bytes = yearly_bytes * retention_years
+                
+                def format_bytes(b):
+                    if b >= 1e15:
+                        return f"{b/1e15:.2f} PB"
+                    elif b >= 1e12:
+                        return f"{b/1e12:.2f} TB"
+                    elif b >= 1e9:
+                        return f"{b/1e9:.2f} GB"
+                    elif b >= 1e6:
+                        return f"{b/1e6:.2f} MB"
+                    else:
+                        return f"{b/1e3:.2f} KB"
+                
+                st.metric("Daily Data", format_bytes(daily_bytes))
+                st.metric("Yearly Data", format_bytes(yearly_bytes))
+                st.metric(f"Total ({retention_years} years)", format_bytes(total_bytes))
+                
+                if total_bytes >= 1e12:
+                    st.warning("⚠️ This volume may require Big Data infrastructure")
+                else:
+                    st.success("✓ This volume is manageable with traditional BI tools")
+        
+        elif explorer_mode == "BI Tool Selector":
+            st.markdown("### Find the Right BI Tool")
+            
+            user_needs = st.multiselect(
+                "What do you need to do?",
+                ["Create dashboards", "Ad-hoc analysis", "Share reports", "Self-service analytics",
+                 "Advanced calculations", "Real-time monitoring", "Mobile access", "Embedded analytics"]
+            )
+            
+            budget = st.radio("Budget:", ["Free/Low cost", "Medium", "Enterprise"], horizontal=True)
+            tech_level = st.radio("Technical level:", ["Beginner", "Intermediate", "Advanced"], horizontal=True)
+            
+            if st.button("🎯 Get Recommendations"):
+                st.markdown("### Recommended Tools")
+                
+                recommendations = []
+                
+                if budget == "Free/Low cost" and tech_level == "Beginner":
+                    recommendations.append(("Google Sheets + Looker Studio", "Free, easy to use, good for basic dashboards"))
+                    recommendations.append(("Excel + Power BI (free tier)", "Familiar interface, powerful calculations"))
+                
+                if "Create dashboards" in user_needs:
+                    recommendations.append(("Tableau Public", "Beautiful visualizations, free for public data"))
+                    recommendations.append(("Power BI Desktop", "Free, integrates with Microsoft ecosystem"))
+                
+                if "Advanced calculations" in user_needs and tech_level in ["Intermediate", "Advanced"]:
+                    recommendations.append(("Python + Jupyter", "Maximum flexibility, requires coding"))
+                
+                if budget == "Enterprise":
+                    recommendations.append(("Tableau Server/Cloud", "Full-featured, enterprise security"))
+                    recommendations.append(("Power BI Premium", "Microsoft integration, AI features"))
+                
+                if not recommendations:
+                    recommendations.append(("Excel", "Versatile starting point for any analysis"))
+                
+                for tool, reason in recommendations:
+                    st.markdown(f"**{tool}**")
+                    st.caption(reason)
+    
+    elif playground_tab == "KPI Dashboard Builder":
+        st.subheader("📈 KPI Dashboard Builder")
+        st.markdown("*Design and visualize Key Performance Indicators for different business functions*")
+        st.markdown("---")
+        
+        business_function = st.selectbox(
+            "Select business function:",
+            ["Sales", "Marketing", "Finance", "Operations", "HR", "Customer Service"]
+        )
+        
+        kpi_templates = {
+            "Sales": {
+                "kpis": [
+                    {"name": "Revenue", "target": 100000, "actual": 0, "unit": "$", "higher_better": True},
+                    {"name": "Deals Closed", "target": 50, "actual": 0, "unit": "", "higher_better": True},
+                    {"name": "Conversion Rate", "target": 25, "actual": 0, "unit": "%", "higher_better": True},
+                    {"name": "Average Deal Size", "target": 2000, "actual": 0, "unit": "$", "higher_better": True},
+                    {"name": "Sales Cycle (days)", "target": 30, "actual": 0, "unit": "days", "higher_better": False}
+                ]
+            },
+            "Marketing": {
+                "kpis": [
+                    {"name": "Website Traffic", "target": 50000, "actual": 0, "unit": "visits", "higher_better": True},
+                    {"name": "Lead Generation", "target": 500, "actual": 0, "unit": "leads", "higher_better": True},
+                    {"name": "Cost per Lead", "target": 50, "actual": 0, "unit": "$", "higher_better": False},
+                    {"name": "Email Open Rate", "target": 25, "actual": 0, "unit": "%", "higher_better": True},
+                    {"name": "Social Engagement", "target": 5, "actual": 0, "unit": "%", "higher_better": True}
+                ]
+            },
+            "Finance": {
+                "kpis": [
+                    {"name": "Gross Margin", "target": 40, "actual": 0, "unit": "%", "higher_better": True},
+                    {"name": "Operating Expenses", "target": 50000, "actual": 0, "unit": "$", "higher_better": False},
+                    {"name": "Cash Flow", "target": 25000, "actual": 0, "unit": "$", "higher_better": True},
+                    {"name": "Accounts Receivable Days", "target": 30, "actual": 0, "unit": "days", "higher_better": False},
+                    {"name": "Budget Variance", "target": 5, "actual": 0, "unit": "%", "higher_better": False}
+                ]
+            },
+            "Operations": {
+                "kpis": [
+                    {"name": "Production Output", "target": 1000, "actual": 0, "unit": "units", "higher_better": True},
+                    {"name": "Defect Rate", "target": 2, "actual": 0, "unit": "%", "higher_better": False},
+                    {"name": "On-Time Delivery", "target": 95, "actual": 0, "unit": "%", "higher_better": True},
+                    {"name": "Inventory Turnover", "target": 6, "actual": 0, "unit": "x", "higher_better": True},
+                    {"name": "Equipment Uptime", "target": 98, "actual": 0, "unit": "%", "higher_better": True}
+                ]
+            },
+            "HR": {
+                "kpis": [
+                    {"name": "Employee Turnover", "target": 10, "actual": 0, "unit": "%", "higher_better": False},
+                    {"name": "Time to Hire", "target": 30, "actual": 0, "unit": "days", "higher_better": False},
+                    {"name": "Training Hours", "target": 40, "actual": 0, "unit": "hrs", "higher_better": True},
+                    {"name": "Employee Satisfaction", "target": 80, "actual": 0, "unit": "%", "higher_better": True},
+                    {"name": "Absenteeism Rate", "target": 3, "actual": 0, "unit": "%", "higher_better": False}
+                ]
+            },
+            "Customer Service": {
+                "kpis": [
+                    {"name": "Customer Satisfaction", "target": 90, "actual": 0, "unit": "%", "higher_better": True},
+                    {"name": "First Response Time", "target": 2, "actual": 0, "unit": "hrs", "higher_better": False},
+                    {"name": "Resolution Rate", "target": 85, "actual": 0, "unit": "%", "higher_better": True},
+                    {"name": "NPS Score", "target": 50, "actual": 0, "unit": "", "higher_better": True},
+                    {"name": "Tickets per Agent", "target": 20, "actual": 0, "unit": "", "higher_better": True}
+                ]
+            }
+        }
+        
+        st.markdown(f"### {business_function} KPIs")
+        st.markdown("*Enter your actual values to see RAG status*")
+        
+        template = kpi_templates[business_function]
+        kpi_data = []
+        
+        for i, kpi in enumerate(template["kpis"]):
+            col1, col2, col3, col4 = st.columns([2, 1, 1, 1])
+            with col1:
+                st.markdown(f"**{kpi['name']}**")
+            with col2:
+                actual = st.number_input(
+                    f"Actual",
+                    value=float(kpi["target"] * 0.9),
+                    key=f"kpi_{business_function}_{i}",
+                    label_visibility="collapsed"
+                )
+            with col3:
+                st.caption(f"Target: {kpi['target']}{kpi['unit']}")
+            with col4:
+                if kpi["higher_better"]:
+                    pct = (actual / kpi["target"]) * 100 if kpi["target"] > 0 else 0
+                else:
+                    if actual <= 0:
+                        pct = 100
+                    else:
+                        pct = (kpi["target"] / actual) * 100
+                
+                if pct >= 100:
+                    st.success("🟢")
+                elif pct >= 80:
+                    st.warning("🟡")
+                else:
+                    st.error("🔴")
+            
+            kpi_data.append({"KPI": kpi["name"], "Actual": actual, "Target": kpi["target"], "Achievement": f"{pct:.0f}%"})
+        
+        st.markdown("---")
+        st.markdown("### Dashboard Summary")
+        
+        df_kpi = pd.DataFrame(kpi_data)
+        st.dataframe(df_kpi, use_container_width=True)
+        
+        st.markdown("**RAG Legend:** 🟢 On track (≥100%) | 🟡 At risk (80-99%) | 🔴 Off track (<80%)")
+    
+    elif playground_tab == "Decision Analysis Tool":
+        st.subheader("🎯 Decision Analysis Tool")
+        st.markdown("*Practice the four analytics philosophies: Descriptive, Diagnostic, Predictive, Prescriptive*")
+        st.markdown("---")
+        
+        analysis_type = st.radio(
+            "Select analysis type:",
+            ["Descriptive (What happened?)", "Diagnostic (Why did it happen?)", 
+             "Predictive (What will happen?)", "Prescriptive (What should we do?)"],
+            horizontal=False
+        )
+        
+        if "Descriptive" in analysis_type:
+            st.markdown("### Descriptive Analysis: What Happened?")
+            st.markdown("*Summarize historical data to understand past performance*")
+            
+            if 'decision_data' not in st.session_state:
+                st.session_state.decision_data = pd.DataFrame({
+                    'Month': ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    'Sales': [45000, 52000, 48000, 61000, 55000, 67000],
+                    'Customers': [120, 135, 128, 152, 145, 168],
+                    'Returns': [12, 8, 15, 9, 11, 7]
+                })
+            
+            st.markdown("**Your Data:**")
+            st.session_state.decision_data = st.data_editor(
+                st.session_state.decision_data,
+                num_rows="dynamic",
+                use_container_width=True
+            )
+            
+            if st.button("📊 Generate Descriptive Summary"):
+                data = st.session_state.decision_data
+                st.markdown("### Summary Statistics")
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.metric("Total Sales", f"${data['Sales'].sum():,}")
+                    st.metric("Avg Monthly Sales", f"${data['Sales'].mean():,.0f}")
+                with col2:
+                    st.metric("Total Customers", f"{data['Customers'].sum():,}")
+                    st.metric("Avg Monthly Customers", f"{data['Customers'].mean():.0f}")
+                with col3:
+                    st.metric("Total Returns", f"{data['Returns'].sum()}")
+                    st.metric("Return Rate", f"{(data['Returns'].sum() / data['Sales'].sum()) * 100:.2f}%")
+        
+        elif "Diagnostic" in analysis_type:
+            st.markdown("### Diagnostic Analysis: Why Did It Happen?")
+            st.markdown("*Investigate root causes using the 5 Whys technique*")
+            
+            problem = st.text_input("What problem are you investigating?", "Sales dropped 20% in March")
+            
+            st.markdown("**Apply the 5 Whys:**")
+            why1 = st.text_input("Why #1:", placeholder="Enter first why...")
+            why2 = st.text_input("Why #2:", placeholder="Enter second why...")
+            why3 = st.text_input("Why #3:", placeholder="Enter third why...")
+            why4 = st.text_input("Why #4:", placeholder="Enter fourth why...")
+            why5 = st.text_input("Why #5:", placeholder="Enter fifth why (root cause)...")
+            
+            if why5:
+                st.markdown("---")
+                st.success(f"**Root Cause Identified:** {why5}")
+                st.markdown("**Next Steps:**")
+                st.markdown("1. Validate this root cause with data")
+                st.markdown("2. Develop action plan to address it")
+                st.markdown("3. Implement preventive measures")
+        
+        elif "Predictive" in analysis_type:
+            st.markdown("### Predictive Analysis: What Will Happen?")
+            st.markdown("*Use trends to forecast future outcomes*")
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                current_value = st.number_input("Current month value:", value=50000)
+                growth_rate = st.slider("Expected monthly growth rate (%):", -20, 50, 5)
+                months_ahead = st.slider("Months to forecast:", 1, 12, 6)
+            
+            with col2:
+                st.markdown("### Forecast")
+                forecast = []
+                value = current_value
+                for m in range(1, months_ahead + 1):
+                    value = value * (1 + growth_rate / 100)
+                    forecast.append({"Month": f"M+{m}", "Forecast": value})
+                
+                df_forecast = pd.DataFrame(forecast)
+                st.dataframe(df_forecast.style.format({"Forecast": "${:,.0f}"}), use_container_width=True)
+                
+                st.metric(f"Predicted value in {months_ahead} months", f"${value:,.0f}")
+                st.metric("Total growth", f"{((value - current_value) / current_value) * 100:.1f}%")
+        
+        elif "Prescriptive" in analysis_type:
+            st.markdown("### Prescriptive Analysis: What Should We Do?")
+            st.markdown("*Evaluate options and recommend actions*")
+            
+            st.markdown("**Define Your Decision Options:**")
+            
+            option1_name = st.text_input("Option 1:", "Increase marketing spend")
+            option1_cost = st.number_input("Cost ($):", value=10000, key="opt1_cost")
+            option1_benefit = st.number_input("Expected benefit ($):", value=25000, key="opt1_ben")
+            option1_risk = st.slider("Risk level:", 1, 10, 3, key="opt1_risk")
+            
+            st.markdown("---")
+            
+            option2_name = st.text_input("Option 2:", "Hire more sales staff")
+            option2_cost = st.number_input("Cost ($):", value=50000, key="opt2_cost")
+            option2_benefit = st.number_input("Expected benefit ($):", value=80000, key="opt2_ben")
+            option2_risk = st.slider("Risk level:", 1, 10, 5, key="opt2_risk")
+            
+            if st.button("🎯 Get Recommendation"):
+                st.markdown("### Decision Matrix")
+                
+                roi1 = ((option1_benefit - option1_cost) / option1_cost) * 100 if option1_cost > 0 else 0
+                roi2 = ((option2_benefit - option2_cost) / option2_cost) * 100 if option2_cost > 0 else 0
+                
+                score1 = roi1 / (option1_risk + 1)
+                score2 = roi2 / (option2_risk + 1)
+                
+                comparison = pd.DataFrame({
+                    'Option': [option1_name, option2_name],
+                    'Cost': [f"${option1_cost:,}", f"${option2_cost:,}"],
+                    'Benefit': [f"${option1_benefit:,}", f"${option2_benefit:,}"],
+                    'ROI': [f"{roi1:.0f}%", f"{roi2:.0f}%"],
+                    'Risk': [option1_risk, option2_risk],
+                    'Score': [f"{score1:.1f}", f"{score2:.1f}"]
+                })
+                st.dataframe(comparison, use_container_width=True)
+                
+                if score1 > score2:
+                    st.success(f"**Recommendation:** {option1_name} (higher risk-adjusted return)")
+                else:
+                    st.success(f"**Recommendation:** {option2_name} (higher risk-adjusted return)")
+    
+    elif playground_tab == "Project Planning Workshop":
+        st.subheader("📋 Project Planning Workshop")
+        st.markdown("*Practice planning a data analysis project with proper phases and deliverables*")
+        st.markdown("---")
+        
+        st.markdown("### Define Your Project")
+        
+        project_name = st.text_input("Project Name:", "Customer Churn Analysis")
+        project_duration = st.slider("Total Project Duration (weeks):", 2, 16, 8)
+        
+        st.markdown("### Project Phases")
+        st.markdown("*Allocate percentage of time to each phase (should total 100%)*")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            phase1 = st.slider("1. Problem Definition & Scoping", 0, 100, 15, format="%d%%")
+            phase2 = st.slider("2. Data Collection & Cleaning", 0, 100, 25, format="%d%%")
+            phase3 = st.slider("3. Exploratory Analysis", 0, 100, 20, format="%d%%")
+        with col2:
+            phase4 = st.slider("4. In-depth Analysis", 0, 100, 20, format="%d%%")
+            phase5 = st.slider("5. Reporting & Presentation", 0, 100, 15, format="%d%%")
+            phase6 = st.slider("6. Review & Documentation", 0, 100, 5, format="%d%%")
+        
+        total = phase1 + phase2 + phase3 + phase4 + phase5 + phase6
+        
+        if total != 100:
+            st.warning(f"⚠️ Total allocation is {total}%. Please adjust to equal 100%.")
+        else:
+            st.success("✓ Allocation totals 100%")
+        
+        st.markdown("---")
+        st.markdown("### Project Timeline")
+        
+        phases = [
+            ("Problem Definition & Scoping", phase1),
+            ("Data Collection & Cleaning", phase2),
+            ("Exploratory Analysis", phase3),
+            ("In-depth Analysis", phase4),
+            ("Reporting & Presentation", phase5),
+            ("Review & Documentation", phase6)
+        ]
+        
+        timeline_data = []
+        current_week = 0
+        for phase_name, pct in phases:
+            weeks = (pct / 100) * project_duration
+            timeline_data.append({
+                "Phase": phase_name,
+                "Weeks": f"{weeks:.1f}",
+                "Start": f"Week {current_week + 1:.0f}",
+                "End": f"Week {current_week + weeks:.0f}"
+            })
+            current_week += weeks
+        
+        df_timeline = pd.DataFrame(timeline_data)
+        st.dataframe(df_timeline, use_container_width=True)
+        
+        st.markdown("---")
+        st.markdown("### Deliverables Checklist")
+        
+        deliverables = {
+            "Problem Definition & Scoping": ["Problem statement document", "Stakeholder requirements", "Success criteria defined"],
+            "Data Collection & Cleaning": ["Data sources identified", "Data quality report", "Clean dataset ready"],
+            "Exploratory Analysis": ["Summary statistics", "Initial visualizations", "Key patterns identified"],
+            "In-depth Analysis": ["Analysis methodology documented", "Statistical tests completed", "Findings validated"],
+            "Reporting & Presentation": ["Executive summary", "Detailed report", "Presentation slides"],
+            "Review & Documentation": ["Peer review completed", "Documentation finalized", "Lessons learned"]
+        }
+        
+        for phase_name, items in deliverables.items():
+            with st.expander(f"📁 {phase_name}"):
+                for item in items:
+                    st.checkbox(item, key=f"del_{phase_name}_{item}")
+        
+        st.markdown("---")
+        if st.button("📥 Generate Project Plan Summary", type="primary"):
+            plan_summary = f"""PROJECT PLAN: {project_name}
+========================================
+Duration: {project_duration} weeks
+
+PHASE ALLOCATION:
+"""
+            for phase_name, pct in phases:
+                weeks = (pct / 100) * project_duration
+                plan_summary += f"- {phase_name}: {pct}% ({weeks:.1f} weeks)\n"
+            
+            plan_summary += f"""
+KEY MILESTONES:
+- Week 1: Project kickoff
+- Week {int(project_duration * 0.4)}: Data ready for analysis
+- Week {int(project_duration * 0.7)}: Analysis complete
+- Week {project_duration}: Final delivery
+
+DELIVERABLES:
+- Problem statement and scope document
+- Data quality and cleaning report
+- Analysis report with findings
+- Executive presentation
+- Project documentation
+"""
+            st.text_area("Project Plan Summary:", value=plan_summary, height=400)
+            st.download_button(
+                "Download Project Plan",
+                data=plan_summary,
+                file_name=f"project_plan_{project_name.lower().replace(' ', '_')}.txt",
                 mime="text/plain"
             )
 
