@@ -2596,7 +2596,7 @@ def evaluate_answer(question, correct_answer, user_answer):
 st.sidebar.title("📊 Navigation")
 page = st.sidebar.radio(
     "Select page:",
-    ["Overview", "Course Plan", "Training Center", "Learn & Practice", "Progress", "Learning Outcomes", "About"]
+    ["Overview", "Course Plan", "Training Center", "Playground", "Learn & Practice", "Progress", "Learning Outcomes", "About"]
 )
 
 if page == "Overview":
@@ -3063,6 +3063,405 @@ elif page == "Learning Outcomes":
         completed = sum(st.session_state.competence_progress)
         st.progress(completed / len(competence_outcomes))
         st.caption(f"{completed} / {len(competence_outcomes)} learning goals achieved")
+
+elif page == "Playground":
+    st.title("🎮 Interactive Playground")
+    st.markdown("*Practice with real tools - enter data, run code, and see results instantly*")
+    st.markdown("---")
+    
+    playground_tab = st.selectbox(
+        "Choose a tool:",
+        ["Python Code Runner", "Excel Formula Simulator", "SQL Query Tester", "Chart Builder"]
+    )
+    
+    if playground_tab == "Python Code Runner":
+        st.subheader("🐍 Python Code Playground")
+        st.markdown("Practice pandas operations and see the output. Select an exercise to try!")
+        
+        # Pre-built sample data
+        sales_data = pd.DataFrame({
+            'Product': ['Laptop', 'Phone', 'Tablet', 'Watch', 'Headphones'],
+            'Price': [999, 699, 449, 299, 149],
+            'Units_Sold': [150, 300, 200, 400, 500],
+            'Region': ['North', 'South', 'North', 'East', 'West']
+        })
+        
+        employee_data = pd.DataFrame({
+            'Name': ['Alice', 'Bob', 'Charlie', 'Diana', 'Eve'],
+            'Department': ['Sales', 'IT', 'Sales', 'HR', 'IT'],
+            'Salary': [55000, 72000, 48000, 61000, 68000],
+            'Years': [3, 5, 2, 7, 4]
+        })
+        
+        st.markdown("### Available Datasets")
+        data_tab1, data_tab2 = st.tabs(["sales_data", "employee_data"])
+        with data_tab1:
+            st.dataframe(sales_data, use_container_width=True)
+        with data_tab2:
+            st.dataframe(employee_data, use_container_width=True)
+        
+        st.markdown("### Select an Exercise")
+        
+        exercises = {
+            "View DataFrame": {
+                "code": "# View the sales data\nprint(sales_data)",
+                "description": "Display the entire DataFrame"
+            },
+            "Add calculated column": {
+                "code": "# Add a Revenue column\nsales_data['Revenue'] = sales_data['Price'] * sales_data['Units_Sold']\nprint(sales_data)",
+                "description": "Create new columns from calculations"
+            },
+            "Basic statistics": {
+                "code": "# Get summary statistics\nprint(sales_data.describe())\n\n# Specific calculations\nprint(f\"Total Revenue: ${(sales_data['Price'] * sales_data['Units_Sold']).sum():,}\")\nprint(f\"Average Price: ${sales_data['Price'].mean():.2f}\")",
+                "description": "Calculate mean, sum, and other statistics"
+            },
+            "Filter data": {
+                "code": "# Filter products with price over $300\nexpensive = sales_data[sales_data['Price'] > 300]\nprint(expensive)",
+                "description": "Select rows based on conditions"
+            },
+            "Group By aggregation": {
+                "code": "# Total units sold by region\nby_region = sales_data.groupby('Region')['Units_Sold'].sum()\nprint(by_region)",
+                "description": "Aggregate data by categories"
+            },
+            "Sort data": {
+                "code": "# Sort by price (highest first)\nsorted_data = sales_data.sort_values('Price', ascending=False)\nprint(sorted_data)",
+                "description": "Order rows by column values"
+            },
+            "Employee analysis": {
+                "code": "# Average salary by department\navg_salary = employee_data.groupby('Department')['Salary'].mean()\nprint(avg_salary)\n\n# Highest paid employee\ntop_earner = employee_data.loc[employee_data['Salary'].idxmax()]\nprint(f\"\\nHighest paid: {top_earner['Name']} (${top_earner['Salary']:,})\")",
+                "description": "Practice with employee dataset"
+            }
+        }
+        
+        selected_exercise = st.selectbox("Choose exercise:", list(exercises.keys()))
+        
+        st.markdown(f"*{exercises[selected_exercise]['description']}*")
+        
+        st.markdown("### Code")
+        st.code(exercises[selected_exercise]['code'], language="python")
+        
+        if st.button("▶️ Run Code", type="primary"):
+            st.markdown("### Output:")
+            
+            # Execute the selected exercise safely with pre-defined data
+            import io
+            import sys as _sys
+            
+            old_stdout = _sys.stdout
+            _sys.stdout = buffer = io.StringIO()
+            
+            try:
+                # Create a copy of the data for this execution
+                local_sales = sales_data.copy()
+                local_employee = employee_data.copy()
+                
+                # Execute based on selected exercise
+                if selected_exercise == "View DataFrame":
+                    print(local_sales)
+                elif selected_exercise == "Add calculated column":
+                    local_sales['Revenue'] = local_sales['Price'] * local_sales['Units_Sold']
+                    print(local_sales)
+                elif selected_exercise == "Basic statistics":
+                    print(local_sales.describe())
+                    print(f"\nTotal Revenue: ${(local_sales['Price'] * local_sales['Units_Sold']).sum():,}")
+                    print(f"Average Price: ${local_sales['Price'].mean():.2f}")
+                elif selected_exercise == "Filter data":
+                    expensive = local_sales[local_sales['Price'] > 300]
+                    print(expensive)
+                elif selected_exercise == "Group By aggregation":
+                    by_region = local_sales.groupby('Region')['Units_Sold'].sum()
+                    print(by_region)
+                elif selected_exercise == "Sort data":
+                    sorted_data = local_sales.sort_values('Price', ascending=False)
+                    print(sorted_data)
+                elif selected_exercise == "Employee analysis":
+                    avg_salary = local_employee.groupby('Department')['Salary'].mean()
+                    print(avg_salary)
+                    top_earner = local_employee.loc[local_employee['Salary'].idxmax()]
+                    print(f"\nHighest paid: {top_earner['Name']} (${top_earner['Salary']:,})")
+                
+                output = buffer.getvalue()
+                _sys.stdout = old_stdout
+                
+                st.code(output, language="text")
+                
+                # Show resulting DataFrame if applicable
+                if selected_exercise == "Add calculated column":
+                    st.markdown("**Result DataFrame:**")
+                    st.dataframe(local_sales, use_container_width=True)
+                elif selected_exercise == "Filter data":
+                    expensive = local_sales[local_sales['Price'] > 300]
+                    st.dataframe(expensive, use_container_width=True)
+                elif selected_exercise == "Sort data":
+                    sorted_data = local_sales.sort_values('Price', ascending=False)
+                    st.dataframe(sorted_data, use_container_width=True)
+                    
+            except Exception as e:
+                _sys.stdout = old_stdout
+                st.error(f"Error: {str(e)}")
+        
+        st.markdown("---")
+        st.markdown("**Key pandas methods demonstrated:**")
+        st.markdown("- `df.describe()` - Summary statistics")
+        st.markdown("- `df.groupby()` - Group and aggregate")
+        st.markdown("- `df.sort_values()` - Sort rows")
+        st.markdown("- `df[condition]` - Filter rows")
+    
+    elif playground_tab == "Excel Formula Simulator":
+        st.subheader("📊 Excel Formula Simulator")
+        st.markdown("Enter data and apply formulas to see the results - just like in Excel!")
+        
+        st.markdown("### Sample Data")
+        
+        # Editable sample data
+        if 'excel_data' not in st.session_state:
+            st.session_state.excel_data = pd.DataFrame({
+                'Name': ['Alice', 'Bob', 'Charlie', 'Diana', 'Eve'],
+                'Region': ['North', 'South', 'North', 'East', 'West'],
+                'Sales': [15000, 22000, 18000, 12000, 25000],
+                'Target': [14000, 20000, 17000, 15000, 22000]
+            })
+        
+        edited_data = st.data_editor(
+            st.session_state.excel_data,
+            num_rows="dynamic",
+            use_container_width=True,
+            key="excel_editor"
+        )
+        st.session_state.excel_data = edited_data
+        
+        st.markdown("### Apply Formulas")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            formula_type = st.selectbox(
+                "Choose a formula:",
+                ["SUM", "AVERAGE", "COUNT", "MAX", "MIN", "SUMIF", "Custom Calculation"]
+            )
+        
+        with col2:
+            if formula_type in ["SUM", "AVERAGE", "COUNT", "MAX", "MIN"]:
+                column = st.selectbox("Select column:", edited_data.select_dtypes(include=['number']).columns.tolist())
+            elif formula_type == "SUMIF":
+                column = st.selectbox("Sum column:", edited_data.select_dtypes(include=['number']).columns.tolist())
+        
+        if formula_type == "SUMIF":
+            crit_col = st.selectbox("Criteria column:", edited_data.columns.tolist())
+            criteria = st.text_input("Criteria (e.g., 'North'):", "North")
+        
+        if st.button("Calculate", type="primary"):
+            st.markdown("### Result:")
+            
+            try:
+                if formula_type == "SUM":
+                    result = edited_data[column].sum()
+                    st.success(f"=SUM({column}) = **{result:,.2f}**")
+                    st.code(f"Excel: =SUM({column}2:{column}{len(edited_data)+1})")
+                    
+                elif formula_type == "AVERAGE":
+                    result = edited_data[column].mean()
+                    st.success(f"=AVERAGE({column}) = **{result:,.2f}**")
+                    st.code(f"Excel: =AVERAGE({column}2:{column}{len(edited_data)+1})")
+                    
+                elif formula_type == "COUNT":
+                    result = edited_data[column].count()
+                    st.success(f"=COUNT({column}) = **{result}**")
+                    st.code(f"Excel: =COUNT({column}2:{column}{len(edited_data)+1})")
+                    
+                elif formula_type == "MAX":
+                    result = edited_data[column].max()
+                    st.success(f"=MAX({column}) = **{result:,.2f}**")
+                    st.code(f"Excel: =MAX({column}2:{column}{len(edited_data)+1})")
+                    
+                elif formula_type == "MIN":
+                    result = edited_data[column].min()
+                    st.success(f"=MIN({column}) = **{result:,.2f}**")
+                    st.code(f"Excel: =MIN({column}2:{column}{len(edited_data)+1})")
+                    
+                elif formula_type == "SUMIF":
+                    mask = edited_data[crit_col].astype(str).str.contains(criteria, case=False, na=False)
+                    result = edited_data.loc[mask, column].sum()
+                    st.success(f"=SUMIF({crit_col}, \"{criteria}\", {column}) = **{result:,.2f}**")
+                    st.code(f"Excel: =SUMIF({crit_col}:{crit_col}, \"{criteria}\", {column}:{column})")
+                    
+                elif formula_type == "Custom Calculation":
+                    st.info("Add a new calculated column below:")
+                    
+            except Exception as e:
+                st.error(f"Error: {str(e)}")
+        
+        if formula_type == "Custom Calculation":
+            st.markdown("### Add Calculated Column")
+            new_col_name = st.text_input("New column name:", "Performance")
+            
+            calc_options = ["Sales - Target (Variance)", "Sales / Target (% of Target)", "Sales * 0.1 (Commission)"]
+            calc_type = st.selectbox("Calculation:", calc_options)
+            
+            if st.button("Add Column"):
+                if calc_type == "Sales - Target (Variance)":
+                    edited_data[new_col_name] = edited_data['Sales'] - edited_data['Target']
+                elif calc_type == "Sales / Target (% of Target)":
+                    edited_data[new_col_name] = (edited_data['Sales'] / edited_data['Target'] * 100).round(1)
+                elif calc_type == "Sales * 0.1 (Commission)":
+                    edited_data[new_col_name] = edited_data['Sales'] * 0.1
+                
+                st.session_state.excel_data = edited_data
+                st.success(f"Added column: {new_col_name}")
+                st.rerun()
+    
+    elif playground_tab == "SQL Query Tester":
+        st.subheader("🗄️ SQL Query Tester")
+        st.markdown("Write SQL queries against sample data and see the results!")
+        
+        # Create sample tables
+        customers = pd.DataFrame({
+            'id': [1, 2, 3, 4, 5],
+            'name': ['Alice Smith', 'Bob Johnson', 'Charlie Brown', 'Diana Ross', 'Eve Wilson'],
+            'city': ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix'],
+            'joined_date': ['2023-01-15', '2023-03-22', '2023-02-10', '2023-04-05', '2023-01-30']
+        })
+        
+        orders = pd.DataFrame({
+            'order_id': [101, 102, 103, 104, 105, 106, 107, 108],
+            'customer_id': [1, 2, 1, 3, 4, 2, 5, 1],
+            'product': ['Laptop', 'Phone', 'Tablet', 'Laptop', 'Phone', 'Watch', 'Headphones', 'Phone'],
+            'amount': [999, 699, 449, 999, 699, 299, 149, 699],
+            'order_date': ['2024-01-10', '2024-01-12', '2024-01-15', '2024-02-01', '2024-02-05', '2024-02-10', '2024-02-15', '2024-03-01']
+        })
+        
+        st.markdown("### Available Tables")
+        
+        tab1, tab2 = st.tabs(["customers", "orders"])
+        with tab1:
+            st.dataframe(customers, use_container_width=True)
+        with tab2:
+            st.dataframe(orders, use_container_width=True)
+        
+        st.markdown("### Write Your Query")
+        
+        example_queries = {
+            "Select all customers": "SELECT * FROM customers",
+            "Orders over $500": "SELECT * FROM orders WHERE amount > 500",
+            "Total sales by product": "SELECT product, SUM(amount) as total FROM orders GROUP BY product",
+            "Join customers and orders": "SELECT c.name, o.product, o.amount FROM orders o JOIN customers c ON o.customer_id = c.id",
+            "Top customers by spend": "SELECT c.name, SUM(o.amount) as total_spent FROM orders o JOIN customers c ON o.customer_id = c.id GROUP BY c.name ORDER BY total_spent DESC"
+        }
+        
+        selected_example = st.selectbox("Try an example:", ["Custom Query"] + list(example_queries.keys()))
+        
+        if selected_example == "Custom Query":
+            default_query = "SELECT * FROM customers"
+        else:
+            default_query = example_queries[selected_example]
+        
+        query = st.text_area("SQL Query:", value=default_query, height=100)
+        
+        if st.button("▶️ Run Query", type="primary"):
+            st.markdown("### Results:")
+            
+            try:
+                import sqlite3
+                
+                # Create in-memory database
+                conn = sqlite3.connect(':memory:')
+                customers.to_sql('customers', conn, index=False, if_exists='replace')
+                orders.to_sql('orders', conn, index=False, if_exists='replace')
+                
+                # Execute query
+                result = pd.read_sql_query(query, conn)
+                
+                st.dataframe(result, use_container_width=True)
+                st.caption(f"Returned {len(result)} row(s)")
+                
+                conn.close()
+                
+            except Exception as e:
+                st.error(f"Query Error: {str(e)}")
+        
+        st.markdown("---")
+        st.markdown("**Practice Exercises:**")
+        st.markdown("1. Find all orders from customer_id 1")
+        st.markdown("2. Calculate average order amount")
+        st.markdown("3. List customers who have placed more than 1 order")
+    
+    elif playground_tab == "Chart Builder":
+        st.subheader("📈 Chart Builder")
+        st.markdown("Create visualizations from your data!")
+        
+        # Sample data options
+        data_source = st.radio("Choose data:", ["Sample Sales Data", "Enter Custom Data"], horizontal=True)
+        
+        if data_source == "Sample Sales Data":
+            chart_data = pd.DataFrame({
+                'Month': ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                'Revenue': [45000, 52000, 48000, 61000, 55000, 67000],
+                'Expenses': [32000, 35000, 33000, 38000, 36000, 40000],
+                'Customers': [120, 145, 138, 162, 155, 178]
+            })
+        else:
+            st.markdown("Enter your data (comma-separated):")
+            labels = st.text_input("Labels:", "Product A, Product B, Product C, Product D")
+            values = st.text_input("Values:", "25, 40, 30, 35")
+            
+            try:
+                label_list = [l.strip() for l in labels.split(',')]
+                value_list = [float(v.strip()) for v in values.split(',')]
+                chart_data = pd.DataFrame({
+                    'Category': label_list,
+                    'Value': value_list
+                })
+            except:
+                st.warning("Please enter valid data")
+                chart_data = pd.DataFrame({'Category': ['A', 'B', 'C'], 'Value': [10, 20, 30]})
+        
+        st.markdown("### Your Data")
+        st.dataframe(chart_data, use_container_width=True)
+        
+        st.markdown("### Choose Chart Type")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            chart_type = st.selectbox(
+                "Chart type:",
+                ["Bar Chart", "Line Chart", "Area Chart", "Scatter Plot"]
+            )
+        
+        with col2:
+            if data_source == "Sample Sales Data":
+                y_column = st.selectbox("Y-axis value:", ["Revenue", "Expenses", "Customers"])
+                x_column = "Month"
+            else:
+                y_column = "Value"
+                x_column = "Category"
+        
+        st.markdown("### Your Chart")
+        
+        if chart_type == "Bar Chart":
+            st.bar_chart(chart_data.set_index(x_column)[y_column])
+        elif chart_type == "Line Chart":
+            st.line_chart(chart_data.set_index(x_column)[y_column])
+        elif chart_type == "Area Chart":
+            st.area_chart(chart_data.set_index(x_column)[y_column])
+        elif chart_type == "Scatter Plot":
+            if data_source == "Sample Sales Data":
+                import altair as alt
+                scatter = alt.Chart(chart_data).mark_circle(size=100).encode(
+                    x='Revenue',
+                    y='Expenses',
+                    tooltip=['Month', 'Revenue', 'Expenses']
+                ).properties(width=600, height=400)
+                st.altair_chart(scatter, use_container_width=True)
+            else:
+                st.bar_chart(chart_data.set_index(x_column)[y_column])
+        
+        st.markdown("---")
+        st.markdown("**Chart Best Practices:**")
+        st.markdown("- **Bar charts**: Best for comparing categories")
+        st.markdown("- **Line charts**: Best for showing trends over time")
+        st.markdown("- **Area charts**: Good for showing volume/cumulative data")
+        st.markdown("- **Scatter plots**: Best for showing relationships between two variables")
 
 elif page == "About":
     st.title("ℹ️ About the Data Analyst Program")
