@@ -1967,6 +1967,1076 @@ This tells the full story: significant, meaningful, and practical!
                 "explanation": "Cohen's d of 0.8 or higher is considered a large effect size. Small=0.2, Medium=0.5, Large=0.8."
             }
         ]
+    },
+    "Four Data Analysis Philosophies": {
+        "course": "Data Driven Decision-Making",
+        "description": "Master the four fundamental approaches to data analysis: Descriptive, Diagnostic, Predictive, and Prescriptive analytics.",
+        "lessons": [
+            {
+                "title": "Overview: The Analytics Continuum",
+                "content": """
+**The Four Types of Data Analytics**
+
+Data analysis follows a continuum from understanding the past to shaping the future:
+
+```
+DESCRIPTIVE → DIAGNOSTIC → PREDICTIVE → PRESCRIPTIVE
+"What happened?" → "Why?" → "What will happen?" → "What should we do?"
+```
+
+**Value and Complexity:**
+| Type | Question | Complexity | Business Value |
+|------|----------|------------|----------------|
+| Descriptive | What happened? | Low | Foundation |
+| Diagnostic | Why did it happen? | Medium | Understanding |
+| Predictive | What will happen? | High | Foresight |
+| Prescriptive | What should we do? | Highest | Optimization |
+
+**Real-World Example - Retail Store:**
+1. **Descriptive**: "Sales dropped 15% last month"
+2. **Diagnostic**: "Sales dropped because competitor opened nearby"
+3. **Predictive**: "Sales will drop another 10% next quarter"
+4. **Prescriptive**: "Launch loyalty program and price match campaign"
+
+Each level builds on the previous, creating a complete analytical picture.
+                """,
+                "key_points": ["Four types form a continuum of increasing value", "Each answers a different question", "Most organizations start with descriptive and mature toward prescriptive"]
+            },
+            {
+                "title": "Descriptive Analytics: What Happened?",
+                "content": """
+**Descriptive Analytics** summarizes historical data to understand what has occurred.
+
+**Key Characteristics:**
+- Looks at **past data** only
+- Provides **summaries and aggregations**
+- Answers: "What happened?" and "How many?"
+- Foundation for all other analytics types
+
+**Common Techniques:**
+- Calculating averages, totals, percentages
+- Creating dashboards and reports
+- Trend analysis over time
+- Data visualization (charts, graphs)
+
+**Tools Used:**
+- Excel/Google Sheets
+- Power BI / Tableau
+- SQL queries (SELECT, GROUP BY, SUM)
+
+**Business Examples:**
+
+| Industry | Descriptive Question | Output |
+|----------|---------------------|--------|
+| Retail | "What were total sales last quarter?" | $2.5M revenue |
+| Healthcare | "How many patients visited in 2024?" | 45,000 patients |
+| Marketing | "What was our email open rate?" | 22% open rate |
+| HR | "What is our employee turnover?" | 15% annual turnover |
+
+**Sample Dashboard Metrics:**
+- Total Revenue: $2.5M
+- Orders: 12,500
+- Average Order Value: $200
+- Top Product: Widget A (3,000 units)
+
+**Limitations:**
+Descriptive analytics tells you WHAT happened but not WHY or what to do about it.
+                """,
+                "key_points": ["Summarizes historical data", "Foundation of all analytics", "Uses dashboards, reports, and KPIs", "Cannot explain causes or predict future"]
+            },
+            {
+                "title": "Diagnostic Analytics: Why Did It Happen?",
+                "content": """
+**Diagnostic Analytics** examines data to understand the causes behind outcomes.
+
+**Key Characteristics:**
+- Investigates **root causes**
+- Uses drill-down and data mining
+- Answers: "Why did this happen?"
+- Requires deeper analysis skills
+
+**Common Techniques:**
+- **Drill-down analysis**: Breaking data into smaller segments
+- **Correlation analysis**: Finding relationships between variables
+- **Root cause analysis (RCA)**: Systematic problem investigation
+- **Data discovery**: Exploring data for unexpected patterns
+
+**The 5 Whys Technique:**
+1. Sales dropped 15% → Why?
+2. Fewer customers visited → Why?
+3. Negative reviews increased → Why?
+4. Wait times were too long → Why?
+5. Staff shortage due to turnover → **ROOT CAUSE**
+
+**Business Examples:**
+
+| Descriptive Finding | Diagnostic Investigation | Root Cause |
+|--------------------|-------------------------|------------|
+| Sales dropped 15% | Analyze by region, product, time | New competitor opened |
+| Website bounce rate up 20% | Check page load times, device types | Mobile site broken |
+| Customer complaints doubled | Categorize complaint types | Shipping delays |
+| Employee productivity down | Compare teams, projects, tools | Outdated software |
+
+**Correlation Example:**
+"We noticed sales spike when temperature exceeds 30°C. Correlation analysis shows r=0.85 between temperature and ice cream sales."
+
+**Tools Used:**
+- Excel Pivot Tables (drill-down)
+- SQL (JOINs, subqueries)
+- Statistical software
+- BI tools with drill-through
+                """,
+                "key_points": ["Investigates root causes", "Uses drill-down and correlation", "5 Whys technique is powerful", "Correlation ≠ Causation"]
+            },
+            {
+                "title": "Predictive Analytics: What Will Happen?",
+                "content": """
+**Predictive Analytics** uses historical data and statistical models to forecast future outcomes.
+
+**Key Characteristics:**
+- Uses **statistical models and machine learning**
+- Provides **probabilities**, not certainties
+- Answers: "What is likely to happen?"
+- Requires historical data patterns
+
+**Common Techniques:**
+- **Regression analysis**: Predict numeric outcomes
+- **Classification**: Predict categories (yes/no, high/medium/low)
+- **Time series forecasting**: Predict trends over time
+- **Machine learning models**: More complex predictions
+
+**Business Examples:**
+
+| Industry | Predictive Question | Model Type |
+|----------|-------------------|------------|
+| Retail | "What will next month's sales be?" | Time series forecast |
+| Banking | "Will this customer default on loan?" | Classification (Yes/No) |
+| Marketing | "Which customers will churn?" | Churn prediction model |
+| Healthcare | "What's the patient readmission risk?" | Risk scoring |
+
+**Example: Sales Forecasting**
+```
+Historical Data: Jan=100K, Feb=110K, Mar=105K, Apr=115K, May=120K
+Model identifies: 3% monthly growth trend
+Prediction: June = 124K, July = 128K, August = 132K
+Confidence interval: ±8%
+```
+
+**Key Concepts:**
+- **Training Data**: Historical data used to build the model
+- **Features**: Variables used to make predictions
+- **Accuracy**: How often predictions are correct
+- **Confidence Interval**: Range of likely outcomes
+
+**Important Limitations:**
+- Predictions are probabilistic, not certain
+- Models are only as good as historical data
+- Unexpected events (black swans) break predictions
+- "Past performance doesn't guarantee future results"
+                """,
+                "key_points": ["Forecasts future using historical patterns", "Provides probabilities not certainties", "Requires quality historical data", "Common: regression, classification, time series"]
+            },
+            {
+                "title": "Prescriptive Analytics: What Should We Do?",
+                "content": """
+**Prescriptive Analytics** recommends specific actions to achieve desired outcomes.
+
+**Key Characteristics:**
+- **Recommends actions**, not just predictions
+- Uses optimization and simulation
+- Answers: "What is the best course of action?"
+- Most advanced and valuable analytics type
+
+**Common Techniques:**
+- **Optimization algorithms**: Find the best solution
+- **Simulation**: Test scenarios without real-world risk
+- **Decision trees**: Map out action paths
+- **A/B testing**: Compare action effectiveness
+- **What-if analysis**: Explore different scenarios
+
+**Business Examples:**
+
+| Predictive Insight | Prescriptive Recommendation |
+|-------------------|----------------------------|
+| "30% churn risk for customers" | "Offer 20% discount to high-risk customers; expected to reduce churn by 15% and save $50K" |
+| "Demand will spike 40% in December" | "Increase inventory by 35%, hire 10 temporary staff, extend operating hours" |
+| "Campaign A outperforms B by 25%" | "Reallocate 80% of budget to Campaign A, expected ROI increase of $120K" |
+| "Equipment failure likely in 2 weeks" | "Schedule preventive maintenance on Day 10, estimated cost savings of $25K" |
+
+**Real-World Scenario:**
+A delivery company uses prescriptive analytics:
+
+1. **Descriptive**: "We made 10,000 deliveries last week"
+2. **Diagnostic**: "Late deliveries were 30% higher in Zone C due to traffic"
+3. **Predictive**: "Tomorrow Zone C will have 45% late deliveries"
+4. **Prescriptive**: "Route trucks through Highway 5 instead of Main Street. Start Zone C deliveries 1 hour earlier. Deploy 2 additional drivers. **Expected result: Reduce late deliveries to 10%**"
+
+**Tools Used:**
+- Optimization software (solver tools)
+- Simulation platforms
+- Decision support systems
+- AI/ML recommendation engines
+                """,
+                "key_points": ["Recommends specific actions", "Uses optimization and simulation", "Highest value but most complex", "Combines prediction with decision-making"]
+            }
+        ],
+        "exercises": [
+            {
+                "title": "Classify the Analytics Type",
+                "type": "scenario",
+                "question": "Your manager says: 'We need to know why customer satisfaction scores dropped from 85% to 72% last quarter.' Which type of analytics is needed?",
+                "answer": "This requires DIAGNOSTIC analytics. The question 'why did it drop?' indicates root cause investigation. You would drill down by customer segment, product line, service channel, and time period to identify what changed and caused the decline.",
+                "hint": "Which question is being asked: What happened? Why? What will happen? What should we do?"
+            },
+            {
+                "title": "Match Insights to Actions",
+                "type": "practical",
+                "question": "Your predictive model shows that 200 customers (worth $500K annual revenue) have 80% probability of churning next month. Recommend specific prescriptive actions.",
+                "answer": "Prescriptive recommendations: 1) Segment the 200 customers by value - focus on top 50 (80/20 rule), 2) Assign account managers to personally call top 20 customers, 3) Offer tailored retention discounts (15-25% based on customer lifetime value), 4) Send personalized email campaign highlighting new features, 5) Create loyalty rewards for continued subscription. Expected outcome: Reduce churn to 30%, save ~$250K in revenue.",
+                "hint": "Think about specific actions with measurable expected outcomes"
+            },
+            {
+                "title": "Complete Analytics Journey",
+                "type": "scenario",
+                "question": "A coffee shop chain notices sales are declining. Walk through all four analytics types to address this problem.",
+                "answer": "DESCRIPTIVE: 'Sales are down 20% over 3 months. Morning sales stable, afternoon sales down 35%.' DIAGNOSTIC: 'New competitor (bubble tea shop) opened nearby targeting afternoon customers. Weather data shows no correlation.' PREDICTIVE: 'If trend continues, afternoon sales will drop another 25% next quarter, totaling $50K lost revenue.' PRESCRIPTIVE: 'Launch afternoon happy hour (buy-one-get-one from 2-5pm), introduce 3 new iced drinks, partner with local businesses for afternoon delivery. Expected to recover 60% of lost afternoon sales within 2 months.'",
+                "hint": "Address each of the four questions in sequence: What? Why? What next? What to do?"
+            }
+        ],
+        "quiz": [
+            {
+                "question": "Which analytics type answers 'What should we do?'",
+                "options": ["Descriptive", "Diagnostic", "Predictive", "Prescriptive"],
+                "correct": 3,
+                "explanation": "Prescriptive analytics recommends specific actions to achieve desired outcomes. It goes beyond prediction to optimization."
+            },
+            {
+                "question": "'Our website had 50,000 visitors last month, with 2% conversion rate' is an example of:",
+                "options": ["Descriptive analytics", "Diagnostic analytics", "Predictive analytics", "Prescriptive analytics"],
+                "correct": 0,
+                "explanation": "This is descriptive analytics - it summarizes what happened (visitors, conversion rate) without explaining why or predicting future."
+            },
+            {
+                "question": "Using drill-down analysis to find why sales dropped in a specific region is:",
+                "options": ["Descriptive analytics", "Diagnostic analytics", "Predictive analytics", "Prescriptive analytics"],
+                "correct": 1,
+                "explanation": "Diagnostic analytics investigates root causes using techniques like drill-down analysis to understand WHY something happened."
+            },
+            {
+                "question": "A model that forecasts '85% probability this customer will churn' is:",
+                "options": ["Descriptive analytics", "Diagnostic analytics", "Predictive analytics", "Prescriptive analytics"],
+                "correct": 2,
+                "explanation": "Predictive analytics uses statistical models to forecast future outcomes with probabilities."
+            },
+            {
+                "question": "Which analytics type is the foundation for all others?",
+                "options": ["Descriptive", "Diagnostic", "Predictive", "Prescriptive"],
+                "correct": 0,
+                "explanation": "Descriptive analytics is the foundation - you must understand what happened before analyzing why, predicting future, or recommending actions."
+            }
+        ]
+    },
+    "Data Analysis Lifecycle": {
+        "course": "Data Driven Decision-Making",
+        "description": "Learn the complete data analysis lifecycle from data collection to actionable insights and continuous improvement.",
+        "lessons": [
+            {
+                "title": "Overview: The Data Lifecycle",
+                "content": """
+**The Data Analysis Lifecycle**
+
+The data analysis lifecycle is a structured process that transforms raw data into actionable insights.
+
+**The 6 Stages:**
+```
+1. DEFINE → 2. COLLECT → 3. CLEAN → 4. ANALYZE → 5. INTERPRET → 6. ACT
+     ↑                                                              |
+     └──────────────────── ITERATE ←────────────────────────────────┘
+```
+
+**Stage Overview:**
+
+| Stage | Question | Output |
+|-------|----------|--------|
+| 1. Define | What problem are we solving? | Clear objectives, KPIs |
+| 2. Collect | Where is the data? | Raw datasets |
+| 3. Clean | Is the data reliable? | Clean, validated data |
+| 4. Analyze | What patterns exist? | Statistical findings |
+| 5. Interpret | What does it mean? | Insights and recommendations |
+| 6. Act | What do we do? | Decisions and actions |
+
+**Key Principle: ITERATION**
+The lifecycle is not linear - you often need to go back to previous stages:
+- Analysis reveals data quality issues → Return to Clean
+- Interpretation raises new questions → Return to Define
+- Actions create new data → Restart the cycle
+
+**Time Distribution (Typical):**
+- Define: 10%
+- Collect: 15%
+- **Clean: 40-60%** ← Most time-consuming!
+- Analyze: 15%
+- Interpret: 10%
+- Act: 5%
+                """,
+                "key_points": ["6 stages from Define to Act", "Cleaning takes most time (40-60%)", "Process is iterative, not linear", "Each stage has clear outputs"]
+            },
+            {
+                "title": "Stage 1: Define the Problem",
+                "content": """
+**Define: Setting Clear Objectives**
+
+The most critical stage - a poorly defined problem leads to useless analysis.
+
+**Key Activities:**
+1. **Identify the business problem**
+2. **Define success metrics (KPIs)**
+3. **Scope the project** (what's in/out)
+4. **Identify stakeholders**
+5. **Set timeline and resources**
+
+**SMART Goals Framework:**
+- **S**pecific: "Reduce customer churn" → "Reduce monthly churn rate"
+- **M**easurable: "Reduce from 5% to 3%"
+- **A**chievable: Based on benchmarks and resources
+- **R**elevant: Aligned with business strategy
+- **T**ime-bound: "Within Q2 2025"
+
+**Questions to Ask:**
+| Category | Questions |
+|----------|-----------|
+| Problem | What exactly are we trying to solve? |
+| Impact | Why does this matter? What's the cost of not solving it? |
+| Success | How will we measure success? What KPIs? |
+| Scope | What's included? What's explicitly excluded? |
+| Data | What data do we need? Do we have access? |
+| Timeline | When are results needed? |
+
+**Example - Well-Defined Problem:**
+
+❌ **Vague**: "We need to understand our customers better"
+
+✅ **Well-defined**: "Identify the top 3 factors that predict customer churn for our subscription service, measured by monthly churn rate reduction from 5% to 3%, to be completed by end of Q2 with findings presented to the retention team."
+
+**Output of Define Stage:**
+- Problem statement document
+- Success metrics and KPIs
+- Project scope and timeline
+- Data requirements list
+                """,
+                "key_points": ["Clear problem definition is critical", "Use SMART goals framework", "Define specific KPIs for success", "Document scope and constraints"]
+            },
+            {
+                "title": "Stage 2: Collect Data",
+                "content": """
+**Collect: Gathering the Right Data**
+
+Finding and acquiring data from various sources to answer your questions.
+
+**Data Source Types:**
+
+| Source Type | Examples | Pros | Cons |
+|-------------|----------|------|------|
+| **Internal** | CRM, ERP, databases | Trusted, accessible | May be incomplete |
+| **External** | Government data, APIs | Broader context | Quality varies |
+| **Primary** | Surveys, experiments | Tailored to needs | Time-consuming, costly |
+| **Secondary** | Reports, research | Already analyzed | May not fit exactly |
+
+**Common Data Collection Methods:**
+1. **Database queries** (SQL)
+2. **API connections** (automated data pulls)
+3. **Web scraping** (public websites)
+4. **Surveys/forms** (Google Forms, SurveyMonkey)
+5. **Manual data entry** (observations, logs)
+6. **File imports** (CSV, Excel from partners)
+
+**Data Quality Considerations:**
+When collecting, evaluate:
+- **Completeness**: Are there missing values?
+- **Accuracy**: Is the data correct?
+- **Timeliness**: How recent is it?
+- **Relevance**: Does it answer our questions?
+- **Consistency**: Same format across sources?
+
+**Ethical Considerations (GDPR):**
+- ✅ Only collect data you need (data minimization)
+- ✅ Get consent for personal data
+- ✅ Document data sources and permissions
+- ✅ Secure sensitive information
+- ❌ Don't collect data "just in case"
+
+**Example - Data Collection Plan:**
+
+| Data Needed | Source | Method | Owner | Timeline |
+|-------------|--------|--------|-------|----------|
+| Customer info | CRM | SQL query | Data team | Day 1-2 |
+| Transactions | ERP | API | IT | Day 2-3 |
+| Satisfaction | Survey | Google Forms | Marketing | Day 3-7 |
+| Industry benchmarks | External | Web research | Analyst | Day 5-7 |
+                """,
+                "key_points": ["Multiple source types: internal, external, primary, secondary", "Evaluate quality before using", "Follow GDPR and ethical guidelines", "Document sources and permissions"]
+            },
+            {
+                "title": "Stage 3: Clean the Data",
+                "content": """
+**Clean: Ensuring Data Quality**
+
+The most time-consuming stage - "garbage in, garbage out."
+
+**Common Data Quality Issues:**
+
+| Issue | Example | Solution |
+|-------|---------|----------|
+| Missing values | Empty cells | Delete, impute, or flag |
+| Duplicates | Same record twice | Remove duplicates |
+| Inconsistent formats | "USA", "U.S.A.", "United States" | Standardize |
+| Typos | "Jonh" instead of "John" | Correct or fuzzy match |
+| Outliers | Age = 200 | Investigate, cap, or remove |
+| Wrong data types | Numbers stored as text | Convert types |
+| Invalid values | Date = "32/13/2025" | Validate and correct |
+
+**Data Cleaning Steps:**
+1. **Explore** - Get overview of data structure and values
+2. **Validate** - Check for invalid or impossible values
+3. **Standardize** - Consistent formats, units, naming
+4. **Deduplicate** - Remove repeated records
+5. **Handle missing** - Delete, impute, or flag
+6. **Handle outliers** - Investigate before removing
+7. **Document** - Record all changes made
+
+**Handling Missing Data:**
+
+| Strategy | When to Use |
+|----------|-------------|
+| **Delete rows** | Few missing values, large dataset |
+| **Delete columns** | >50% missing in column |
+| **Impute with mean/median** | Numeric data, random missing |
+| **Impute with mode** | Categorical data |
+| **Flag as "Unknown"** | Missing has meaning |
+
+**Tools for Data Cleaning:**
+- Excel: Find/Replace, Remove Duplicates, TRIM(), CLEAN()
+- Power Query: Transform steps, replace values
+- Python: pandas library (dropna, fillna, replace)
+- SQL: UPDATE, CASE WHEN, string functions
+
+**Best Practice: Document Everything!**
+```
+Data Cleaning Log - Customer Data
+- Removed 145 duplicate records (same email)
+- Standardized country names (15 variations → 3)
+- Imputed 23 missing ages with median (34)
+- Flagged 5 outliers (age > 100) for review
+- Converted phone numbers to E.164 format
+```
+                """,
+                "key_points": ["Cleaning takes 40-60% of project time", "Common issues: missing, duplicates, inconsistencies", "Document all cleaning decisions", "Never assume data is clean"]
+            },
+            {
+                "title": "Stages 4-6: Analyze, Interpret, Act",
+                "content": """
+**Stage 4: ANALYZE - Finding Patterns**
+
+Apply statistical and analytical techniques to discover insights.
+
+**Analysis Techniques:**
+| Technique | Purpose | Example |
+|-----------|---------|---------|
+| Descriptive stats | Summarize data | Mean order value = $85 |
+| Correlation | Find relationships | Temperature ↔ Sales |
+| Regression | Predict outcomes | Price impact on demand |
+| Segmentation | Group similar items | Customer clusters |
+| Trend analysis | Track over time | Monthly growth rate |
+
+**Key Questions:**
+- What patterns emerge from the data?
+- Are there unexpected findings?
+- Do the numbers support or contradict our hypothesis?
+
+---
+
+**Stage 5: INTERPRET - Understanding Meaning**
+
+Translate analytical findings into business insights.
+
+**From Analysis to Insight:**
+| Analysis Finding | Business Interpretation |
+|-----------------|------------------------|
+| "r = 0.85 between ads and sales" | "Ad spending strongly drives sales; $1 spent returns ~$3.40" |
+| "Churn highest in month 3" | "Customers decide to stay/leave early; focus onboarding on first 90 days" |
+| "Segment A has 3x LTV of Segment B" | "Prioritize acquiring more Segment A customers in marketing" |
+
+**Avoiding Misinterpretation:**
+- ❌ Correlation ≠ Causation
+- ❌ Cherry-picking data that supports your view
+- ❌ Ignoring confidence intervals
+- ✅ Consider alternative explanations
+- ✅ Validate with domain experts
+
+---
+
+**Stage 6: ACT - Taking Action**
+
+Convert insights into decisions and monitor results.
+
+**Action Planning:**
+| Insight | Recommended Action | Owner | Timeline | Success Metric |
+|---------|-------------------|-------|----------|----------------|
+| 3-month churn spike | Redesign onboarding | Product | Q2 | -30% month-3 churn |
+| Segment A high value | Target ads to lookalikes | Marketing | Q2 | +20% Segment A acquisition |
+
+**After Acting:**
+1. Monitor KPIs for impact
+2. Compare actual vs. expected results
+3. Document learnings
+4. Start next iteration of the lifecycle
+                """,
+                "key_points": ["Analyze: Find patterns with statistics", "Interpret: Translate to business meaning", "Act: Make decisions and monitor", "Always iterate based on results"]
+            }
+        ],
+        "exercises": [
+            {
+                "title": "Identify the Stage",
+                "type": "scenario",
+                "question": "You discover that 15% of your customer records have the country field as blank, while others have variations like 'USA', 'United States', and 'U.S.' What stage are you in and what should you do?",
+                "answer": "You are in the CLEAN stage. Actions: 1) Standardize country variations to one format (e.g., all 'USA'), 2) For blank countries, decide whether to impute based on other fields (phone area code, city) or flag as 'Unknown', 3) Document these decisions in your cleaning log, 4) Consider adding validation rules to prevent this in future data collection.",
+                "hint": "This involves data quality issues - which stage handles those?"
+            },
+            {
+                "title": "Write a Problem Statement",
+                "type": "practical",
+                "question": "A retail manager says: 'Our online sales seem low.' Transform this into a well-defined problem statement with SMART goals.",
+                "answer": "SMART Problem Statement: 'Identify the top 3 factors causing low online conversion rates (currently 1.2%, industry benchmark 2.5%) by analyzing website analytics, customer journey data, and competitor benchmarks. Success metric: Actionable recommendations that can increase conversion rate to 2.0% within 6 months. Timeline: Analysis complete within 4 weeks, presented to e-commerce team by [date].'",
+                "hint": "Use the SMART framework: Specific, Measurable, Achievable, Relevant, Time-bound"
+            },
+            {
+                "title": "Plan Data Collection",
+                "type": "practical",
+                "question": "You need to analyze why customer support calls have increased 40% this quarter. Create a data collection plan listing at least 4 data sources.",
+                "answer": "Data Collection Plan: 1) INTERNAL - Support ticket system: Extract all tickets from this quarter vs. previous (categories, resolution time, customer info), 2) INTERNAL - CRM: Customer details, product ownership, account history, 3) INTERNAL - Product/Engineering: Recent releases, known bugs, feature changes, 4) PRIMARY - Customer survey: Post-call satisfaction survey with open-ended feedback, 5) EXTERNAL - Social media: Mentions and complaints on Twitter/Facebook for sentiment analysis. Method: SQL queries for internal data, survey tool for primary, social listening tool for external.",
+                "hint": "Think about internal vs. external sources and what data would explain increased calls"
+            }
+        ],
+        "quiz": [
+            {
+                "question": "Which stage typically takes the most time in the data analysis lifecycle?",
+                "options": ["Define", "Collect", "Clean", "Analyze"],
+                "correct": 2,
+                "explanation": "Data cleaning typically takes 40-60% of project time. Real-world data is messy and requires significant effort to prepare for analysis."
+            },
+            {
+                "question": "Which SMART criterion is missing? 'Increase sales next year'",
+                "options": ["Specific", "Measurable", "Achievable", "All of the above"],
+                "correct": 3,
+                "explanation": "This goal is vague. It should be: Specific (which product line?), Measurable (by how much?), Achievable (based on what?), and more Time-bound (Q1? Q4?)."
+            },
+            {
+                "question": "You find that 'correlation between ice cream sales and drowning deaths is 0.95.' The correct interpretation is:",
+                "options": ["Ice cream causes drowning", "We should ban ice cream sales", "Both are likely caused by a third factor (summer heat)", "This is statistically impossible"],
+                "correct": 2,
+                "explanation": "Correlation does not imply causation. Both ice cream sales and drowning increase in summer due to hot weather - a confounding variable."
+            },
+            {
+                "question": "When should you return to an earlier stage in the lifecycle?",
+                "options": ["Never - the lifecycle is strictly linear", "Only if the project fails", "Whenever new information suggests it's needed", "Only at management request"],
+                "correct": 2,
+                "explanation": "The lifecycle is iterative. You might return to Clean if analysis reveals data issues, or to Define if interpretation raises new questions."
+            }
+        ]
+    },
+    "Data-Driven Case Studies": {
+        "course": "Data Driven Decision-Making",
+        "description": "Apply data-driven decision-making through real-world case studies with before-and-after scenarios.",
+        "lessons": [
+            {
+                "title": "Case Study: Retail Inventory Optimization",
+                "content": """
+**Company: MegaMart Retail Chain**
+**Problem: Stockouts and Overstock**
+
+**Before (Data-Free Decision Making):**
+- Store managers ordered inventory based on "gut feeling"
+- Frequent stockouts of popular items (lost sales)
+- Overstock of slow items (tied-up capital, markdowns)
+- Annual loss: $2.5M in stockouts + $1.8M in excess inventory
+
+**Data Analysis Approach:**
+
+**1. DEFINE:**
+"Optimize inventory levels to reduce stockouts by 50% and excess inventory by 40% within 12 months."
+
+**2. COLLECT:**
+- 3 years of sales data by product, store, date
+- Supplier lead times
+- Promotional calendars
+- Weather data
+- Local event schedules
+
+**3. ANALYZE:**
+| Finding | Insight |
+|---------|---------|
+| 80% of revenue from 15% of products | Focus on top SKUs first |
+| Sales spike 300% during local events | Align inventory with event calendar |
+| Rain increases umbrella sales 500% | Weather-based ordering |
+| Lead time varies 2-14 days by supplier | Buffer stock for slow suppliers |
+
+**4. PRESCRIPTIVE ACTION:**
+- Implemented automated reorder points based on demand forecasting
+- Created event-triggered ordering rules
+- Integrated weather forecast into daily orders
+
+**After (Data-Driven Results):**
+| Metric | Before | After | Improvement |
+|--------|--------|-------|-------------|
+| Stockout rate | 12% | 4% | -67% |
+| Excess inventory | $1.8M | $950K | -47% |
+| Lost sales | $2.5M | $800K | -68% |
+| Inventory turnover | 4x/year | 7x/year | +75% |
+
+**Total Annual Savings: $2.55M**
+                """,
+                "key_points": ["Data replaced gut-feeling decisions", "Combined multiple data sources", "Automated decision-making with rules", "Measurable ROI from analytics"]
+            },
+            {
+                "title": "Case Study: Healthcare Readmission Reduction",
+                "content": """
+**Organization: Regional Hospital Network**
+**Problem: High 30-Day Readmission Rates**
+
+**Before:**
+- 30-day readmission rate: 22% (national target: 15%)
+- Medicare penalties: $3.2M annually
+- Readmissions cost average $15,000 each
+- No systematic way to identify at-risk patients
+
+**Data Analysis Approach:**
+
+**1. DEFINE:**
+"Identify patients at high risk of 30-day readmission and create targeted interventions to reduce rate from 22% to 15% within 18 months."
+
+**2. COLLECT:**
+- 5 years of patient records (anonymized)
+- Diagnosis codes, procedures, medications
+- Length of stay, discharge disposition
+- Social factors (living alone, transport access)
+- Prior admissions history
+
+**3. ANALYZE - Key Predictors Found:**
+
+| Risk Factor | Impact on Readmission |
+|-------------|----------------------|
+| 3+ admissions in past year | 4.2x higher risk |
+| Lives alone, age 75+ | 2.8x higher risk |
+| Discharged Friday afternoon | 1.9x higher risk |
+| Heart failure + diabetes combo | 2.5x higher risk |
+| No follow-up scheduled | 2.1x higher risk |
+
+**4. PREDICTIVE MODEL:**
+Created a risk score (0-100) calculated at admission:
+- Score 0-30: Low risk (standard care)
+- Score 31-60: Medium risk (phone follow-up)
+- Score 61-100: High risk (intensive interventions)
+
+**5. PRESCRIPTIVE ACTIONS:**
+For high-risk patients:
+- Discharge planning starts Day 1
+- Social worker consultation
+- Schedule follow-up before discharge
+- Home health visit within 48 hours
+- Medication reconciliation call
+
+**After (Data-Driven Results):**
+| Metric | Before | After | Improvement |
+|--------|--------|-------|-------------|
+| 30-day readmission | 22% | 14.5% | -34% |
+| Medicare penalties | $3.2M | $0 | -100% |
+| Readmission costs | $8.2M | $5.1M | -38% |
+| Patient satisfaction | 72% | 84% | +12pts |
+
+**ROI:** Invested $800K in analytics program, saved $6.3M annually.
+                """,
+                "key_points": ["Predictive model identified at-risk patients", "Targeted interventions based on risk level", "Combined clinical and social data", "Massive ROI from prevented readmissions"]
+            },
+            {
+                "title": "Case Study: Marketing Campaign Optimization",
+                "content": """
+**Company: E-Commerce Fashion Retailer**
+**Problem: Inefficient Marketing Spend**
+
+**Before:**
+- Annual marketing budget: $5M
+- Spent equally across all channels
+- No attribution modeling
+- Overall ROAS (Return on Ad Spend): 2.5x
+- Many campaigns ran without performance tracking
+
+**Data Analysis Approach:**
+
+**1. DEFINE:**
+"Optimize marketing spend allocation to achieve ROAS of 4.0x while maintaining revenue, using data-driven attribution."
+
+**2. COLLECT:**
+- All ad platform data (Google, Meta, TikTok)
+- Website analytics (Google Analytics)
+- Customer purchase history
+- Email campaign performance
+- Customer surveys (how did you hear about us?)
+
+**3. ANALYZE - Channel Performance:**
+
+| Channel | Spend | Revenue | ROAS | Customer Type |
+|---------|-------|---------|------|---------------|
+| Google Search | $1M | $4.5M | 4.5x | High intent |
+| Meta Ads | $1.5M | $3M | 2.0x | Discovery |
+| TikTok | $800K | $1.2M | 1.5x | Young demo |
+| Email | $200K | $2.4M | 12x | Existing customers |
+| Display | $1M | $1.5M | 1.5x | Brand awareness |
+| Influencer | $500K | $800K | 1.6x | Mixed |
+
+**Key Insights:**
+- Email had highest ROAS but was underfunded
+- Display ads often credited with conversions actually started by search
+- TikTok reached new demographic not accessible elsewhere
+- Influencer ROI varied wildly (2 out of 20 drove 80% of results)
+
+**4. PRESCRIPTIVE RECOMMENDATIONS:**
+
+| Channel | Before | After | Rationale |
+|---------|--------|-------|-----------|
+| Email | $200K | $600K | Highest ROAS, expand segments |
+| Google Search | $1M | $1.5M | Proven high-intent performer |
+| Meta | $1.5M | $1.2M | Focus on lookalike audiences only |
+| Display | $1M | $400K | Reduce, use for retargeting only |
+| TikTok | $800K | $800K | Maintain for new customer acquisition |
+| Influencer | $500K | $500K | Focus on top 2 performers only |
+
+**After (Data-Driven Results):**
+| Metric | Before | After | Improvement |
+|--------|--------|-------|-------------|
+| Total Spend | $5M | $5M | Same |
+| Total Revenue | $12.5M | $19.8M | +58% |
+| ROAS | 2.5x | 3.96x | +58% |
+| New customers | 45K | 52K | +16% |
+| Email subscribers | 80K | 145K | +81% |
+                """,
+                "key_points": ["Attribution modeling revealed true channel value", "Reallocated budget without increasing total spend", "58% revenue increase with same budget", "Focused influencer spend on top performers"]
+            }
+        ],
+        "exercises": [
+            {
+                "title": "Analyze the Case",
+                "type": "scenario",
+                "question": "In the MegaMart case, the team discovered that 80% of revenue came from 15% of products. What is this principle called, and how should it influence their analysis priority?",
+                "answer": "This is the Pareto Principle (80/20 rule). Influence on analysis: 1) Focus demand forecasting efforts on the top 15% of SKUs first - errors here have the biggest impact, 2) These products should have tighter safety stock and more frequent reorder monitoring, 3) The remaining 85% of products can use simpler forecasting methods, 4) When presenting to stakeholders, lead with insights about top products.",
+                "hint": "Think about the famous 80/20 principle and how to prioritize limited analytical resources"
+            },
+            {
+                "title": "Calculate ROI",
+                "type": "practical",
+                "question": "The hospital case invested $800K in their analytics program. They saved $6.3M annually. Calculate: 1) Simple ROI, 2) Payback period in months, 3) 3-year total value.",
+                "answer": "1) Simple ROI = (Savings - Investment) / Investment = ($6.3M - $0.8M) / $0.8M = 687.5% ROI in year 1. 2) Payback period = $800K / ($6.3M/12 months) = $800K / $525K per month = 1.52 months (about 6-7 weeks). 3) 3-year value = ($6.3M × 3) - $0.8M = $18.1M net value. Note: This assumes the $800K is a one-time investment; if there are annual operating costs, subtract those.",
+                "hint": "ROI = (Gain - Cost) / Cost. Payback = Investment / Monthly Savings."
+            },
+            {
+                "title": "Design Your Own Intervention",
+                "type": "practical",
+                "question": "A streaming service sees that 35% of free trial users cancel before converting to paid. Design a data-driven approach to reduce cancellations.",
+                "answer": "DEFINE: 'Increase free trial to paid conversion from 65% to 80% within 6 months.' COLLECT: User behavior logs (features used, videos watched, engagement time), demographics, signup source, device type, time to first content. ANALYZE: Look for patterns - maybe users who watch 5+ shows convert at 90% vs 40% for those watching 1-2. PREDICTIVE: Build model to identify users at risk of not converting by Day 7. PRESCRIPTIVE: For at-risk users: personalized content recommendations, mid-trial email highlighting popular shows, offer extended trial or discounted first month, in-app tips highlighting premium features. Monitor conversion rate and adjust interventions.",
+                "hint": "Follow the lifecycle: Define the goal with KPIs, collect relevant behavioral data, analyze patterns, then prescribe actions"
+            }
+        ],
+        "quiz": [
+            {
+                "question": "In the MegaMart case, what was the total annual savings achieved?",
+                "options": ["$1.8M", "$2.5M", "$2.55M", "$4.3M"],
+                "correct": 2,
+                "explanation": "Total savings = Reduced lost sales ($2.5M - $0.8M = $1.7M) + Reduced excess inventory ($1.8M - $0.95M = $0.85M) = $2.55M"
+            },
+            {
+                "question": "The hospital's risk score model is an example of which analytics type?",
+                "options": ["Descriptive", "Diagnostic", "Predictive", "All of the above"],
+                "correct": 2,
+                "explanation": "The risk score (0-100) predicts which patients are likely to be readmitted. This is predictive analytics - forecasting future outcomes based on current data."
+            },
+            {
+                "question": "In the marketing case, which channel had the highest ROAS?",
+                "options": ["Google Search", "Meta Ads", "Email", "TikTok"],
+                "correct": 2,
+                "explanation": "Email had ROAS of 12x ($200K spend → $2.4M revenue), far exceeding other channels. This insight led to tripling the email budget."
+            },
+            {
+                "question": "What common theme appears across all three case studies?",
+                "options": ["They all used AI/machine learning", "They all measured ROI and documented improvements", "They all focused on customer acquisition", "They all had unlimited budgets"],
+                "correct": 1,
+                "explanation": "All cases defined clear metrics, measured before/after results, and documented improvements with specific numbers. This proves the value of data-driven approaches."
+            }
+        ]
+    },
+    "KPI Selection and Tracking": {
+        "course": "Data Driven Decision-Making",
+        "description": "Learn to select appropriate KPIs, set targets, and create tracking systems to guide decision-making.",
+        "lessons": [
+            {
+                "title": "Choosing the Right KPIs",
+                "content": """
+**What Makes a Good KPI?**
+
+Not all metrics are KPIs. Key Performance Indicators are the vital few metrics that truly matter for success.
+
+**The SMART Framework for KPIs:**
+
+| Criterion | Question | Example |
+|-----------|----------|---------|
+| **S**pecific | What exactly are we measuring? | "Monthly active users" not "engagement" |
+| **M**easurable | Can we quantify it? | Number, percentage, ratio |
+| **A**chievable | Is the target realistic? | Based on benchmarks and capability |
+| **R**elevant | Does it connect to goals? | Aligned with business strategy |
+| **T**ime-bound | What's the timeframe? | Monthly, quarterly, annually |
+
+**Types of KPIs:**
+
+| Type | Purpose | Examples |
+|------|---------|----------|
+| **Lagging** | Measure outcomes (past) | Revenue, profit, customer count |
+| **Leading** | Predict outcomes (future) | Pipeline value, website traffic, leads |
+| **Input** | Resources invested | Marketing spend, hiring, training hours |
+| **Process** | Efficiency of activities | Cycle time, defect rate, response time |
+| **Output** | Results produced | Units sold, tickets resolved, content published |
+
+**KPI Selection Process:**
+1. Start with strategic objectives
+2. Ask: "What would tell us if we're succeeding?"
+3. Limit to 5-7 KPIs per area (avoid dashboard overload)
+4. Ensure a mix of leading and lagging indicators
+5. Verify data is available and reliable
+
+**Common Mistakes:**
+- ❌ Too many KPIs (vanity metrics)
+- ❌ Only lagging indicators (no early warning)
+- ❌ KPIs that can't be influenced
+- ❌ No clear connection to strategy
+- ✅ Focus on 5-7 metrics that drive decisions
+                """,
+                "key_points": ["KPIs are vital few metrics, not all metrics", "Use SMART framework", "Balance leading and lagging indicators", "Limit to 5-7 KPIs to stay focused"]
+            },
+            {
+                "title": "KPIs by Business Function",
+                "content": """
+**Industry-Standard KPIs by Department**
+
+**SALES KPIs:**
+| KPI | Formula | Target Example |
+|-----|---------|----------------|
+| Revenue | Sum of all sales | $1M/month |
+| Conversion Rate | Deals Won / Deals Created | 25% |
+| Average Deal Size | Revenue / # Deals | $10,000 |
+| Sales Cycle Length | Avg days from lead to close | 45 days |
+| Pipeline Coverage | Pipeline Value / Quota | 3x |
+
+**MARKETING KPIs:**
+| KPI | Formula | Target Example |
+|-----|---------|----------------|
+| Customer Acquisition Cost (CAC) | Marketing Spend / New Customers | $50 |
+| Return on Ad Spend (ROAS) | Revenue from Ads / Ad Spend | 4x |
+| Website Conversion Rate | Conversions / Visitors | 3% |
+| Email Open Rate | Opens / Emails Sent | 25% |
+| Lead-to-Customer Rate | Customers / Leads | 10% |
+
+**CUSTOMER SUCCESS KPIs:**
+| KPI | Formula | Target Example |
+|-----|---------|----------------|
+| Customer Churn Rate | Lost Customers / Total Customers | <5%/month |
+| Net Promoter Score (NPS) | % Promoters - % Detractors | >50 |
+| Customer Lifetime Value (CLV) | Avg Revenue × Avg Lifespan | $500 |
+| First Response Time | Avg time to first reply | <2 hours |
+| Customer Satisfaction (CSAT) | Satisfied / Total Responses | >90% |
+
+**OPERATIONS KPIs:**
+| KPI | Formula | Target Example |
+|-----|---------|----------------|
+| On-Time Delivery Rate | On-time / Total Deliveries | >98% |
+| Defect Rate | Defective Units / Total Units | <1% |
+| Inventory Turnover | Cost of Goods Sold / Avg Inventory | 6x/year |
+| Employee Productivity | Output / Employee Hours | Varies |
+| Equipment Uptime | Operating Hours / Total Hours | >99% |
+
+**Pro Tip:** The most valuable insight often comes from ratios and comparisons, not absolute numbers. "$1M revenue" means little without context like "vs. $800K last year" or "vs. $1.2M target."
+                """,
+                "key_points": ["Different functions have different KPIs", "Formulas make KPIs actionable", "Include targets for context", "Ratios and comparisons add meaning"]
+            },
+            {
+                "title": "Building a KPI Dashboard",
+                "content": """
+**Creating Effective KPI Dashboards**
+
+A dashboard should enable quick decisions, not just display numbers.
+
+**Dashboard Design Principles:**
+
+| Principle | Description |
+|-----------|-------------|
+| **5-second rule** | Key insight visible in 5 seconds |
+| **Information hierarchy** | Most important KPIs at top |
+| **Context always** | Show vs. target, vs. last period |
+| **Actionable** | Each KPI links to a decision |
+| **Real-time when needed** | Update frequency matches decision speed |
+
+**Dashboard Layout Template:**
+```
+┌─────────────────────────────────────────────────────────────┐
+│  EXECUTIVE DASHBOARD - [Month/Year]     [Last Updated: Now] │
+├─────────────────────────────────────────────────────────────┤
+│  [KPI Card 1]    [KPI Card 2]    [KPI Card 3]   [KPI Card 4]│
+│   Revenue         New Users      Churn Rate     NPS Score   │
+│   $1.2M ↑12%     5,240 ↑8%      3.2% ↓0.5%     72 ↑5       │
+├─────────────────────────────────────────────────────────────┤
+│                    [Main Trend Chart]                       │
+│        Monthly Revenue Trend with Target Line               │
+├─────────────────┬───────────────────────────────────────────┤
+│ [Secondary      │  [Supporting Detail Table]                │
+│  Chart 1]       │   Product    Revenue    Growth            │
+│  Revenue by     │   Product A  $500K      +15%              │
+│  Region         │   Product B  $400K      +8%               │
+│                 │   Product C  $300K      -3%               │
+└─────────────────┴───────────────────────────────────────────┘
+```
+
+**KPI Card Components:**
+- Metric name
+- Current value
+- Comparison (↑↓ vs target or previous)
+- Color coding (Green/Yellow/Red)
+- Sparkline trend (optional)
+
+**Effective Visualizations by KPI Type:**
+
+| KPI Type | Best Visualization |
+|----------|-------------------|
+| Single metric | Big number card |
+| Trend over time | Line chart |
+| Part of whole | Pie/donut chart |
+| Comparison | Bar chart |
+| Geographic | Map |
+| Progress to goal | Gauge / progress bar |
+| Multiple dimensions | Table with conditional formatting |
+                """,
+                "key_points": ["5-second rule - key insight immediately visible", "Always show context (vs target, vs previous)", "Use color coding for status", "Match visualization to KPI type"]
+            },
+            {
+                "title": "Setting Targets and Monitoring",
+                "content": """
+**Setting Meaningful KPI Targets**
+
+A KPI without a target is just a number. Targets make KPIs actionable.
+
+**Methods for Setting Targets:**
+
+| Method | Description | When to Use |
+|--------|-------------|-------------|
+| **Historical** | Based on past performance | Stable, mature processes |
+| **Benchmark** | Based on industry standards | New metrics, competitive pressure |
+| **Aspirational** | Stretch goals beyond current | Growth mode, transformation |
+| **Bottoms-up** | Calculated from team capacity | Resource-constrained |
+| **Negotiated** | Agreed with stakeholders | Political environments |
+
+**Target-Setting Formula (Historical + Growth):**
+```
+Target = Last Year's Actual × (1 + Growth Rate)
+
+Example:
+Last year revenue: $10M
+Target growth: 20%
+This year target: $10M × 1.20 = $12M
+```
+
+**RAG Status (Red/Amber/Green):**
+
+| Status | Definition | Action |
+|--------|------------|--------|
+| 🟢 Green | On track (≥95% of target) | Continue current approach |
+| 🟡 Amber | At risk (80-95% of target) | Investigate, adjust plans |
+| 🔴 Red | Off track (<80% of target) | Immediate intervention required |
+
+**Monitoring Cadence:**
+
+| KPI Type | Review Frequency | Action Threshold |
+|----------|-----------------|------------------|
+| Strategic (Revenue, Customers) | Weekly/Monthly | Amber for 2+ weeks |
+| Operational (Efficiency, Quality) | Daily/Weekly | Red for 1 day |
+| Leading (Pipeline, Traffic) | Daily | Any negative trend |
+| Lagging (NPS, Retention) | Monthly/Quarterly | Compare to target |
+
+**KPI Review Meeting Agenda:**
+1. **Current Status** - Dashboard walkthrough (5 min)
+2. **Reds and Ambers** - What's off track? (10 min)
+3. **Root Cause** - Why? (10 min)
+4. **Action Items** - What are we doing about it? (10 min)
+5. **Greens at Risk** - Early warnings? (5 min)
+
+**Document Decisions:**
+Every KPI review should end with:
+- What we learned
+- Decisions made
+- Action items with owners and deadlines
+                """,
+                "key_points": ["Use multiple methods to set targets", "RAG status enables quick decisions", "Review frequency matches KPI type", "Document decisions and actions from reviews"]
+            }
+        ],
+        "exercises": [
+            {
+                "title": "Select KPIs for a Scenario",
+                "type": "practical",
+                "question": "You're the new data analyst at a subscription meal kit company. The CEO wants to 'grow the business.' Select 5 KPIs you would recommend tracking and explain why.",
+                "answer": "Recommended KPIs: 1) Monthly Recurring Revenue (MRR) - Primary growth indicator, directly measures business size. 2) Customer Acquisition Cost (CAC) - Ensures growth is sustainable and profitable. 3) Monthly Churn Rate - Critical for subscription businesses; growth is pointless if customers leave faster than they join. 4) Customer Lifetime Value (CLV) - Combined with CAC, shows if unit economics work (CLV should be 3x+ CAC). 5) Active Subscriber Count - Simple, easy to communicate growth metric. BONUS LEADING: Website conversion rate - Predicts future subscriber growth.",
+                "hint": "Think about what metrics truly indicate a subscription business is growing sustainably"
+            },
+            {
+                "title": "Calculate Target",
+                "type": "practical",
+                "question": "Last year's quarterly revenue was: Q1=$2M, Q2=$2.3M, Q3=$2.1M, Q4=$2.8M. Calculate the targets for next year if the goal is 25% annual growth, distributed proportionally by quarter.",
+                "answer": "Step 1: Last year's total = $2M + $2.3M + $2.1M + $2.8M = $9.2M. Step 2: Next year's total with 25% growth = $9.2M × 1.25 = $11.5M. Step 3: Calculate each quarter's proportion of annual revenue: Q1=21.7%, Q2=25%, Q3=22.8%, Q4=30.4%. Step 4: Apply proportions to new total: Q1=$2.5M, Q2=$2.88M, Q3=$2.63M, Q4=$3.5M. These targets maintain the seasonal pattern (Q4 is peak) while achieving 25% growth.",
+                "hint": "Calculate each quarter as a percentage of the year, then apply those percentages to the new annual target"
+            },
+            {
+                "title": "Design a Dashboard",
+                "type": "practical",
+                "question": "An e-commerce manager wants a dashboard to monitor their holiday sales campaign (Nov-Dec). What KPIs would you include and how would you arrange them?",
+                "answer": "Holiday Sales Dashboard: TOP ROW (Big Number Cards): 1) Daily Revenue vs Target (with ↑↓ and % of goal), 2) Conversion Rate (vs. campaign avg), 3) Average Order Value, 4) Cart Abandonment Rate. MIDDLE: Main line chart showing Daily Revenue with Target Line and Last Year comparison. Split into: LEFT - Revenue by Channel (pie or bar: Direct, Paid Search, Social, Email), RIGHT - Top Selling Products (table with stock status). BOTTOM: Hourly traffic heatmap to optimize staffing, and Promotional Code usage (which discounts are working). Update frequency: Real-time for revenue/traffic, hourly for others. Alert if daily revenue falls below 80% of target by 3pm.",
+                "hint": "Think about what decisions need to be made during a high-stakes campaign period"
+            }
+        ],
+        "quiz": [
+            {
+                "question": "Which of these is a LEADING indicator?",
+                "options": ["Last month's revenue", "Customer satisfaction score", "Sales pipeline value", "Annual profit"],
+                "correct": 2,
+                "explanation": "Sales pipeline value is a leading indicator - it predicts future revenue. Revenue, satisfaction, and profit are lagging indicators that measure past outcomes."
+            },
+            {
+                "question": "A KPI is at 87% of target. What RAG status should it show?",
+                "options": ["Green - on track", "Amber - at risk", "Red - off track", "Depends on the KPI"],
+                "correct": 1,
+                "explanation": "87% falls in the Amber zone (80-95% of target), indicating the KPI is at risk and requires attention and possible plan adjustment."
+            },
+            {
+                "question": "How many KPIs should each business function typically track?",
+                "options": ["1-2", "5-7", "15-20", "As many as possible"],
+                "correct": 1,
+                "explanation": "Best practice is 5-7 KPIs per function. Too few miss important aspects; too many cause 'dashboard overload' and dilute focus."
+            },
+            {
+                "question": "CLV/CAC ratio of 4:1 means:",
+                "options": ["Company is losing money on each customer", "Each customer is worth 4× what it costs to acquire them", "4% of customers are profitable", "Acquisition takes 4 months"],
+                "correct": 1,
+                "explanation": "CLV/CAC of 4:1 means Customer Lifetime Value is 4× Customer Acquisition Cost. This is excellent - typically 3:1 or higher is considered healthy."
+            },
+            {
+                "question": "For strategic KPIs like annual revenue, the typical review frequency is:",
+                "options": ["Hourly", "Daily", "Weekly/Monthly", "Annually"],
+                "correct": 2,
+                "explanation": "Strategic KPIs are typically reviewed weekly or monthly. Daily is for operational metrics, and annual-only reviews don't allow time to course-correct."
+            }
+        ]
     }
 }
 

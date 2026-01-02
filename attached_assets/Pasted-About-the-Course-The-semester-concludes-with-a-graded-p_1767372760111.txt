@@ -1,0 +1,29 @@
+About the Course
+The semester concludes with a graded project where the candidate must demonstrate practical skills and competence from courses in the first semester. Candidates work independently or in a group on a project, which must be planned, documented, and executed according to project criteria. The aim is to carry out a practical project consisting of elements from the previous courses. The candidate also prepares a project plan and an individual reflection report documenting the process and choices made along the way.
+
+The project challenges candidates to use and combine accumulated competence from the first semester and showcase how they can complete larger projects, either individually or across disciplinary boundaries. Candidates are challenged to think and work holistically, which provides a solid platform for further learning and understanding of the data analysis field.
+
+Course Learning Outcomes
+Knowledge
+The candidate:
+
+can update their own knowledge of the data analysis paradigm through the subjects and topics in the first semester
+understands the importance of applying a statistically viable approach to real world problem using data analytical techniques
+understands that theoretical knowledge requires first-hand practice and experience to help guide business decisions
+has insights into economic sense, industry understanding, and independent work
+Skills
+The candidate:
+
+can apply knowledge to solve practical tasks with data analysis and ensure data is upheld to a high standard during collection, storage and use
+masters relevant design methods and tools to select the appropriate procedure according to the project scope and user needs
+can find information and material that is relevant to the data analysis project
+can study their own solution and identify errors and increase accuracy
+can communicate ideas and approaches to industry partners and engage in mentorship programmes
+General Competence
+The candidate:
+
+understands the ethical principles that apply in appropriately sourced, stored, and used data
+has developed an ethical attitude to solving real world problems using data analysis
+can carry out design processes, data models, and applicable techniques based on the needs of selected project brief
+can build relations with their peers and other data specialists such as system architects, data scientists, data engineers, and business intelligence agents
+can expand their soft skills such as listening, patience, collaboration, etc, which are desired traits in industry

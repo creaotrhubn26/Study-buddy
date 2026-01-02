@@ -1,0 +1,29 @@
+Om kurset
+Semesteret avsluttes med et karaktergitt prosjekt der kandidaten må demonstrere praktiske ferdigheter og kompetanse fra emner i første semester. Kandidatene jobber selvstendig eller i gruppe med et prosjekt, som må planlegges, dokumenteres og utføres i henhold til prosjektets kriterier. Målet er å gjennomføre et praktisk prosjekt bestående av elementer fra de tidligere emnene. Kandidaten utarbeider også en prosjektplan og en individuell refleksjonsrapport som dokumenterer prosessen og valgene som er tatt underveis.
+
+Prosjektet utfordrer kandidatene til å bruke og kombinere opparbeidet kompetanse fra første semester og vise hvordan de kan gjennomføre større prosjekter, enten individuelt eller på tvers av faggrenser. Kandidatene utfordres til å tenke og jobbe helhetlig, noe som gir en solid plattform for videre læring og forståelse av dataanalysefeltet.
+
+Læringsutbytte for kurset
+Kunnskap
+Kandidaten:
+
+kan oppdatere sin egen kunnskap om dataanalyseparadigmet gjennom fagene og temaene i første semester
+forstår viktigheten av å anvende en statistisk levedyktig tilnærming til virkelige problemer ved hjelp av dataanalytiske teknikker
+forstår at teoretisk kunnskap krever førstehåndspraksis og erfaring for å veilede forretningsbeslutninger
+har innsikt i økonomisk sans, bransjeforståelse og selvstendig arbeid
+Ferdigheter
+Kandidaten:
+
+kan anvende kunnskap til å løse praktiske oppgaver med dataanalyse og sørge for at data opprettholdes til en høy standard under innsamling, lagring og bruk
+behersker relevante designmetoder og verktøy for å velge riktig prosedyre i henhold til prosjektets omfang og brukerbehov
+kan finne informasjon og materiale som er relevant for dataanalyseprosjektet
+kan studere sin egen løsning og identifisere feil og øke nøyaktigheten
+kan kommunisere ideer og tilnærminger til industripartnere og delta i mentorprogrammer
+Generell kompetanse
+Kandidaten:
+
+forstår de etiske prinsippene som gjelder for data som er hentet, lagret og brukt på riktig måte
+har utviklet en etisk holdning til å løse problemer i den virkelige verden ved hjelp av dataanalyse
+kan utføre designprosesser, datamodeller og anvendelige teknikker basert på behovene til den valgte prosjektbeskrivelsen
+kan bygge relasjoner med sine kolleger og andre dataspesialister som systemarkitekter, dataforskere, dataingeniører og forretningsintelligensagenter
+kan utvide sine myke ferdigheter som lytting, tålmodighet, samarbeid osv., som er ønskede egenskaper i bransjen
