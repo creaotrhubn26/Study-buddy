@@ -12,6 +12,44 @@ try:
 except ImportError:
     SPELLCHECK_AVAILABLE = False
 
+# Material Icons CSS and helper function
+MATERIAL_ICONS_CSS = """
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<style>
+.material-icons {
+    font-family: 'Material Icons';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+    vertical-align: middle;
+}
+.material-icons.md-18 { font-size: 18px; }
+.material-icons.md-24 { font-size: 24px; }
+.material-icons.md-36 { font-size: 36px; }
+.material-icons.md-48 { font-size: 48px; }
+.mui-icon { 
+    font-family: 'Material Icons';
+    font-size: 20px;
+    vertical-align: middle;
+    margin-right: 4px;
+}
+</style>
+"""
+st.markdown(MATERIAL_ICONS_CSS, unsafe_allow_html=True)
+
+def mui_icon(icon_name, size=20):
+    """Helper function to render Material Icons"""
+    return f'<span class="mui-icon" style="font-size: {size}px;">{icon_name}</span>'
+
 st.set_page_config(
     page_title="Data Analyst Study App",
     page_icon="📊",
@@ -8911,18 +8949,22 @@ elif page == "Study Notes":
     """, unsafe_allow_html=True)
     
     NOTE_CATEGORIES = {
-        "lecture": {"icon": "📚", "label": "Lecture Notes", "color": "#4A90D9"},
-        "exercise": {"icon": "✏️", "label": "Exercise Notes", "color": "#50C878"},
-        "exam": {"icon": "📋", "label": "Exam Prep", "color": "#FF6B6B"},
-        "tips": {"icon": "💡", "label": "Tips & Tricks", "color": "#FFD700"},
-        "summary": {"icon": "📄", "label": "Summary", "color": "#9B59B6"}
+        "lecture": {"icon": "menu_book", "label": "Lecture Notes", "color": "#4A90D9"},
+        "exercise": {"icon": "edit", "label": "Exercise Notes", "color": "#50C878"},
+        "exam": {"icon": "assignment", "label": "Exam Prep", "color": "#FF6B6B"},
+        "tips": {"icon": "lightbulb", "label": "Tips & Tricks", "color": "#FFD700"},
+        "summary": {"icon": "description", "label": "Summary", "color": "#9B59B6"}
     }
     
     IMPORTANCE_LEVELS = {
-        "normal": {"icon": "○", "label": "Normal", "color": "#888"},
-        "important": {"icon": "⭐", "label": "Important", "color": "#FFD700"},
-        "critical": {"icon": "🔥", "label": "Exam Critical", "color": "#FF6B6B"}
+        "normal": {"icon": "circle", "label": "Normal", "color": "#888"},
+        "important": {"icon": "star", "label": "Important", "color": "#FFD700"},
+        "critical": {"icon": "local_fire_department", "label": "Exam Critical", "color": "#FF6B6B"}
     }
+    
+    def render_mui_icon(icon_name, size=20):
+        """Render Material Icon as HTML"""
+        return f'<span class="material-icons md-{size}" style="vertical-align: middle; font-size: {size}px;">{icon_name}</span>'
     
     QUICK_INSERTS = {
         "heading": "## ",
@@ -8940,8 +8982,8 @@ elif page == "Study Notes":
     }
     
     NOTE_TEMPLATES = {
-        "blank": {"name": "📄 Blank Document", "icon": "📄", "content": ""},
-        "concept": {"name": "💡 Concept Summary", "icon": "💡", "content": """## Concept Name
+        "blank": {"name": "Blank Document", "icon": "description", "content": ""},
+        "concept": {"name": "Concept Summary", "icon": "lightbulb", "content": """## Concept Name
 
 **Definition:**
 [Write the definition here]
@@ -8962,7 +9004,7 @@ elif page == "Study Notes":
 - Related concept 1
 - Related concept 2
 """},
-        "case_study": {"name": "📊 Case Study", "icon": "📊", "content": """## Case Study: [Title]
+        "case_study": {"name": "Case Study", "icon": "bar_chart", "content": """## Case Study: [Title]
 
 ### Background
 [Describe the business context]
@@ -8990,7 +9032,7 @@ elif page == "Study Notes":
 - Lesson 1
 - Lesson 2
 """},
-        "formula": {"name": "🔢 Formula Sheet", "icon": "🔢", "content": """## Formula Reference: [Topic]
+        "formula": {"name": "Formula Sheet", "icon": "functions", "content": """## Formula Reference: [Topic]
 
 ### Basic Formulas
 | Formula | Description | When to Use |
@@ -9014,7 +9056,7 @@ elif page == "Study Notes":
 - Remember: [Key tip]
 - Common error: [What to avoid]
 """},
-        "comparison": {"name": "⚖️ Comparison Chart", "icon": "⚖️", "content": """## Comparison: [Topic A] vs [Topic B]
+        "comparison": {"name": "Comparison Chart", "icon": "compare_arrows", "content": """## Comparison: [Topic A] vs [Topic B]
 
 | Aspect | Topic A | Topic B |
 |--------|---------|---------|
@@ -9035,7 +9077,7 @@ elif page == "Study Notes":
 ### Key Takeaway
 [Main insight from comparison]
 """},
-        "meeting": {"name": "📝 Meeting Notes", "icon": "📝", "content": """## Meeting Notes: [Date]
+        "meeting": {"name": "Meeting Notes", "icon": "event_note", "content": """## Meeting Notes: [Date]
 
 **Attendees:** [Names]
 **Topic:** [Meeting topic]
@@ -9056,7 +9098,7 @@ elif page == "Study Notes":
 ### Next Steps
 [What happens next]
 """},
-        "exam_prep": {"name": "📋 Exam Prep", "icon": "📋", "content": """## Exam Preparation: [Subject]
+        "exam_prep": {"name": "Exam Prep", "icon": "quiz", "content": """## Exam Preparation: [Subject]
 
 ### Key Topics to Review
 - [ ] Topic 1
@@ -9094,27 +9136,32 @@ elif page == "Study Notes":
     
     header_col1, header_col2 = st.columns([3, 1])
     with header_col1:
-        st.markdown("## 📝 Study Notes")
+        st.markdown(f"## {render_mui_icon('note', 28)} Study Notes", unsafe_allow_html=True)
     with header_col2:
         view_mode = st.radio("View:", ["Edit", "Preview", "Split"], horizontal=True, key="word_view", label_visibility="collapsed")
     
     menu_col1, menu_col2, menu_col3, menu_col4, menu_col5 = st.columns([1, 1, 1, 1, 1])
     with menu_col1:
-        if st.button("📄 New", key="word_new", use_container_width=True):
+        st.markdown(render_mui_icon('note_add', 18), unsafe_allow_html=True)
+        if st.button("New", key="word_new", use_container_width=True, help="Create new note"):
             st.session_state.current_note_content = ""
             st.session_state.pop('editing_note_idx', None)
             st.session_state.pop('current_note_title', None)
     with menu_col2:
-        if st.button("💾 Save", key="word_save_top", use_container_width=True):
+        st.markdown(render_mui_icon('save', 18), unsafe_allow_html=True)
+        if st.button("Save", key="word_save_top", use_container_width=True, help="Save note"):
             st.session_state.trigger_save = True
     with menu_col3:
-        if st.button("📥 Export", key="word_export", use_container_width=True):
+        st.markdown(render_mui_icon('download', 18), unsafe_allow_html=True)
+        if st.button("Export", key="word_export", use_container_width=True, help="Export notes"):
             st.session_state.show_export = True
     with menu_col4:
-        if st.button("🤖 AI Help", key="word_ai", use_container_width=True):
+        st.markdown(render_mui_icon('smart_toy', 18), unsafe_allow_html=True)
+        if st.button("AI Help", key="word_ai", use_container_width=True, help="AI Assistant"):
             st.session_state.show_ai_panel = not st.session_state.get('show_ai_panel', False)
     with menu_col5:
-        if st.button("📊 Stats", key="word_stats", use_container_width=True):
+        st.markdown(render_mui_icon('analytics', 18), unsafe_allow_html=True)
+        if st.button("Stats", key="word_stats", use_container_width=True, help="Statistics"):
             st.session_state.show_stats = not st.session_state.get('show_stats', False)
     
     st.markdown("---")
@@ -9144,13 +9191,15 @@ elif page == "Study Notes":
             label_visibility="collapsed"
         )
         
-        search_term = st.text_input("🔍", placeholder="Search...", key="word_search", label_visibility="collapsed")
+        search_term = st.text_input(render_mui_icon('search', 18), placeholder="Search...", key="word_search", label_visibility="collapsed")
         
         filtered_notes = course_notes.copy()
         if cat_filter != "All":
-            cat_key = [k for k, v in NOTE_CATEGORIES.items() if f"{v['icon']} {v['label']}" == cat_filter]
-            if cat_key:
-                filtered_notes = [n for n in filtered_notes if n.get('category') == cat_key[0]]
+            # Extract category key from filter
+            for k, v in NOTE_CATEGORIES.items():
+                if v['label'] == cat_filter:
+                    filtered_notes = [n for n in filtered_notes if n.get('category') == k]
+                    break
         if search_term:
             filtered_notes = [n for n in filtered_notes if search_term.lower() in n.get('title', '').lower() or search_term.lower() in n.get('content', '').lower()]
         
@@ -9161,18 +9210,22 @@ elif page == "Study Notes":
             cat = note.get('category', 'lecture')
             cat_info = NOTE_CATEGORIES.get(cat, NOTE_CATEGORIES['lecture'])
             imp = note.get('importance', 'normal')
-            imp_icon = IMPORTANCE_LEVELS.get(imp, {}).get('icon', '')
+            imp_info = IMPORTANCE_LEVELS.get(imp, IMPORTANCE_LEVELS['normal'])
             
-            btn_label = f"{cat_info['icon']} {imp_icon} {note.get('title', 'Untitled')[:20]}"
-            if st.button(btn_label, key=f"open_{selected_course_code}_{orig_idx}", use_container_width=True):
-                st.session_state.current_note_content = note.get('content', '')
-                st.session_state.current_note_title = note.get('title', '')
-                st.session_state.current_note_category = note.get('category', 'lecture')
-                st.session_state.current_note_importance = note.get('importance', 'normal')
-                st.session_state.current_note_tags = ', '.join(note.get('tags', []))
-                st.session_state.current_note_outcome = note.get('learning_outcome', '')
-                st.session_state.editing_note_idx = orig_idx
-                st.rerun()
+            # Display icon and button separately
+            icon_col, btn_col = st.columns([1, 9])
+            with icon_col:
+                st.markdown(f"{render_mui_icon(cat_info['icon'], 16)}{render_mui_icon(imp_info['icon'], 16)}", unsafe_allow_html=True)
+            with btn_col:
+                if st.button(note.get('title', 'Untitled')[:30], key=f"open_{selected_course_code}_{orig_idx}", use_container_width=True):
+                    st.session_state.current_note_content = note.get('content', '')
+                    st.session_state.current_note_title = note.get('title', '')
+                    st.session_state.current_note_category = note.get('category', 'lecture')
+                    st.session_state.current_note_importance = note.get('importance', 'normal')
+                    st.session_state.current_note_tags = ', '.join(note.get('tags', []))
+                    st.session_state.current_note_outcome = note.get('learning_outcome', '')
+                    st.session_state.editing_note_idx = orig_idx
+                    st.rerun()
     
     with main_col:
         st.markdown("""
@@ -9184,89 +9237,113 @@ elif page == "Study Notes":
         </div>
         """, unsafe_allow_html=True)
         
-        toolbar_tab1, toolbar_tab2, toolbar_tab3 = st.tabs(["📝 Text Format", "📋 Lists & Tables", "🔗 Insert"])
+        toolbar_tab1, toolbar_tab2, toolbar_tab3 = st.tabs(["Text Format", "Lists & Tables", "Insert"])
         
         insert_text = ""
         
         with toolbar_tab1:
             fmt_cols = st.columns(8)
             with fmt_cols[0]:
-                if st.button("📌 H1", key="tb_h1", help="Main Heading", use_container_width=True):
+                st.markdown(render_mui_icon('title', 18), unsafe_allow_html=True)
+                if st.button("H1", key="tb_h1", help="Main Heading", use_container_width=True):
                     insert_text = "\n## "
             with fmt_cols[1]:
-                if st.button("📎 H2", key="tb_h2", help="Sub Heading", use_container_width=True):
+                st.markdown(render_mui_icon('subtitles', 18), unsafe_allow_html=True)
+                if st.button("H2", key="tb_h2", help="Sub Heading", use_container_width=True):
                     insert_text = "\n### "
             with fmt_cols[2]:
-                if st.button("📍 H3", key="tb_h3", help="Section", use_container_width=True):
+                st.markdown(render_mui_icon('text_fields', 18), unsafe_allow_html=True)
+                if st.button("H3", key="tb_h3", help="Section", use_container_width=True):
                     insert_text = "\n#### "
             with fmt_cols[3]:
-                if st.button("**B**", key="tb_bold", help="Bold text", use_container_width=True):
+                st.markdown(render_mui_icon('format_bold', 18), unsafe_allow_html=True)
+                if st.button("Bold", key="tb_bold", help="Bold text", use_container_width=True):
                     insert_text = "**bold text**"
             with fmt_cols[4]:
-                if st.button("*I*", key="tb_italic", help="Italic text", use_container_width=True):
+                st.markdown(render_mui_icon('format_italic', 18), unsafe_allow_html=True)
+                if st.button("Italic", key="tb_italic", help="Italic text", use_container_width=True):
                     insert_text = "*italic text*"
             with fmt_cols[5]:
-                if st.button("~~S~~", key="tb_strike", help="Strikethrough", use_container_width=True):
+                st.markdown(render_mui_icon('strikethrough_s', 18), unsafe_allow_html=True)
+                if st.button("Strike", key="tb_strike", help="Strikethrough", use_container_width=True):
                     insert_text = "~~strikethrough~~"
             with fmt_cols[6]:
-                if st.button("`Code`", key="tb_inline", help="Inline code", use_container_width=True):
+                st.markdown(render_mui_icon('code', 18), unsafe_allow_html=True)
+                if st.button("Code", key="tb_inline", help="Inline code", use_container_width=True):
                     insert_text = "`code`"
             with fmt_cols[7]:
-                if st.button("🔤 Text", key="tb_normal", help="Normal paragraph", use_container_width=True):
+                st.markdown(render_mui_icon('text_format', 18), unsafe_allow_html=True)
+                if st.button("Text", key="tb_normal", help="Normal paragraph", use_container_width=True):
                     insert_text = "\n\n"
         
         with toolbar_tab2:
             list_cols = st.columns(8)
             with list_cols[0]:
-                if st.button("• Bullet", key="tb_bullet", help="Bullet list", use_container_width=True):
+                st.markdown(render_mui_icon('format_list_bulleted', 18), unsafe_allow_html=True)
+                if st.button("Bullet", key="tb_bullet", help="Bullet list", use_container_width=True):
                     insert_text = "\n- Item 1\n- Item 2\n- Item 3\n"
             with list_cols[1]:
-                if st.button("1. Number", key="tb_num", help="Numbered list", use_container_width=True):
+                st.markdown(render_mui_icon('format_list_numbered', 18), unsafe_allow_html=True)
+                if st.button("Number", key="tb_num", help="Numbered list", use_container_width=True):
                     insert_text = "\n1. First\n2. Second\n3. Third\n"
             with list_cols[2]:
-                if st.button("☑️ Tasks", key="tb_check", help="Checklist", use_container_width=True):
+                st.markdown(render_mui_icon('checklist', 18), unsafe_allow_html=True)
+                if st.button("Tasks", key="tb_check", help="Checklist", use_container_width=True):
                     insert_text = "\n- [ ] Task 1\n- [ ] Task 2\n- [ ] Task 3\n"
             with list_cols[3]:
-                if st.button("📊 Table", key="tb_table", help="Insert table", use_container_width=True):
+                st.markdown(render_mui_icon('table_chart', 18), unsafe_allow_html=True)
+                if st.button("Table", key="tb_table", help="Insert table", use_container_width=True):
                     insert_text = "\n| Column 1 | Column 2 | Column 3 |\n|----------|----------|----------|\n| Data | Data | Data |\n| Data | Data | Data |\n"
             with list_cols[4]:
-                if st.button("❝ Quote", key="tb_quote", help="Block quote", use_container_width=True):
+                st.markdown(render_mui_icon('format_quote', 18), unsafe_allow_html=True)
+                if st.button("Quote", key="tb_quote", help="Block quote", use_container_width=True):
                     insert_text = "\n> Quote text here\n"
             with list_cols[5]:
-                if st.button("📦 Code", key="tb_code", help="Code block", use_container_width=True):
+                st.markdown(render_mui_icon('code', 18), unsafe_allow_html=True)
+                if st.button("Code", key="tb_code", help="Code block", use_container_width=True):
                     insert_text = "\n```python\n# Your code here\n```\n"
             with list_cols[6]:
-                if st.button("➖ Line", key="tb_div", help="Horizontal line", use_container_width=True):
+                st.markdown(render_mui_icon('remove', 18), unsafe_allow_html=True)
+                if st.button("Line", key="tb_div", help="Horizontal line", use_container_width=True):
                     insert_text = "\n\n---\n\n"
             with list_cols[7]:
-                if st.button("📑 Note", key="tb_callout", help="Callout box", use_container_width=True):
+                st.markdown(render_mui_icon('note', 18), unsafe_allow_html=True)
+                if st.button("Note", key="tb_callout", help="Callout box", use_container_width=True):
                     insert_text = "\n> **Note:** Important information here\n"
         
         with toolbar_tab3:
             ins_cols = st.columns(8)
             with ins_cols[0]:
-                if st.button("🔗 Link", key="tb_link", help="Insert link", use_container_width=True):
+                st.markdown(render_mui_icon('link', 18), unsafe_allow_html=True)
+                if st.button("Link", key="tb_link", help="Insert link", use_container_width=True):
                     insert_text = "[Link text](https://url.com)"
             with ins_cols[1]:
-                if st.button("🖼️ Image", key="tb_img", help="Image link", use_container_width=True):
+                st.markdown(render_mui_icon('image', 18), unsafe_allow_html=True)
+                if st.button("Image", key="tb_img", help="Image link", use_container_width=True):
                     insert_text = "![Alt text](image_url)"
             with ins_cols[2]:
-                if st.button("📅 Date", key="tb_date", help="Insert today's date", use_container_width=True):
+                st.markdown(render_mui_icon('calendar_today', 18), unsafe_allow_html=True)
+                if st.button("Date", key="tb_date", help="Insert today's date", use_container_width=True):
                     insert_text = f"\n**Date:** {datetime.now().strftime('%Y-%m-%d')}\n"
             with ins_cols[3]:
-                if st.button("⏰ Time", key="tb_time", help="Insert current time", use_container_width=True):
+                st.markdown(render_mui_icon('access_time', 18), unsafe_allow_html=True)
+                if st.button("Time", key="tb_time", help="Insert current time", use_container_width=True):
                     insert_text = f" ({datetime.now().strftime('%H:%M')}) "
             with ins_cols[4]:
-                if st.button("✅ Done", key="tb_done", help="Mark as done", use_container_width=True):
+                st.markdown(render_mui_icon('check_circle', 18), unsafe_allow_html=True)
+                if st.button("Done", key="tb_done", help="Mark as done", use_container_width=True):
                     insert_text = " ✅ "
             with ins_cols[5]:
-                if st.button("⚠️ Warn", key="tb_warn", help="Warning marker", use_container_width=True):
+                st.markdown(render_mui_icon('warning', 18), unsafe_allow_html=True)
+                if st.button("Warn", key="tb_warn", help="Warning marker", use_container_width=True):
                     insert_text = "\n> ⚠️ **Warning:** \n"
             with ins_cols[6]:
-                if st.button("💡 Tip", key="tb_tip", help="Tip marker", use_container_width=True):
+                st.markdown(render_mui_icon('lightbulb', 18), unsafe_allow_html=True)
+                if st.button("Tip", key="tb_tip", help="Tip marker", use_container_width=True):
                     insert_text = "\n> 💡 **Tip:** \n"
             with ins_cols[7]:
-                if st.button("📌 Key", key="tb_key", help="Key point marker", use_container_width=True):
+                st.markdown(render_mui_icon('push_pin', 18), unsafe_allow_html=True)
+                if st.button("Key", key="tb_key", help="Key point marker", use_container_width=True):
                     insert_text = "\n> 📌 **Key Point:** \n"
         
         if insert_text:
@@ -9282,18 +9359,20 @@ elif page == "Study Notes":
             note_category = st.selectbox(
                 "Category:",
                 options=list(NOTE_CATEGORIES.keys()),
-                format_func=lambda x: f"{NOTE_CATEGORIES[x]['icon']} {NOTE_CATEGORIES[x]['label']}",
+                format_func=lambda x: NOTE_CATEGORIES[x]['label'],
                 index=list(NOTE_CATEGORIES.keys()).index(st.session_state.get('current_note_category', 'lecture')),
                 key="word_category"
             )
+            st.markdown(render_mui_icon(NOTE_CATEGORIES[note_category]['icon'], 16), unsafe_allow_html=True)
         with prop_col3:
             note_importance = st.selectbox(
                 "Importance:",
                 options=list(IMPORTANCE_LEVELS.keys()),
-                format_func=lambda x: f"{IMPORTANCE_LEVELS[x]['icon']} {IMPORTANCE_LEVELS[x]['label']}",
+                format_func=lambda x: IMPORTANCE_LEVELS[x]['label'],
                 index=list(IMPORTANCE_LEVELS.keys()).index(st.session_state.get('current_note_importance', 'normal')),
                 key="word_importance"
             )
+            st.markdown(render_mui_icon(IMPORTANCE_LEVELS[note_importance]['icon'], 16), unsafe_allow_html=True)
         with prop_col4:
             template_choice = st.selectbox(
                 "Template:",
@@ -9301,12 +9380,16 @@ elif page == "Study Notes":
                 key="word_template"
             )
             if template_choice != "(None)":
-                template_key = [k for k, v in NOTE_TEMPLATES.items() if v['name'] == template_choice]
-                if template_key and not st.session_state.get('editing_note_idx'):
-                    if st.session_state.get('last_applied_template') != template_choice:
-                        st.session_state.current_note_content = NOTE_TEMPLATES[template_key[0]]['content']
-                        st.session_state.last_applied_template = template_choice
-                        st.rerun()
+                # Extract template key from choice
+                for k, v in NOTE_TEMPLATES.items():
+                    if v['name'] == template_choice:
+                        template_key = k
+                        if not st.session_state.get('editing_note_idx'):
+                            if st.session_state.get('last_applied_template') != template_choice:
+                                st.session_state.current_note_content = NOTE_TEMPLATES[template_key]['content']
+                                st.session_state.last_applied_template = template_choice
+                                st.rerun()
+                        break
         
         if view_mode == "Edit":
             note_content = st.text_area(
@@ -9364,7 +9447,8 @@ elif page == "Study Notes":
         
         save_col1, save_col2, save_col3 = st.columns([1, 1, 2])
         with save_col1:
-            if st.button("💾 Save Note", type="primary", key="word_save_main", use_container_width=True) or st.session_state.get('trigger_save'):
+            st.markdown(render_mui_icon('save', 18), unsafe_allow_html=True)
+            if st.button("Save Note", type="primary", key="word_save_main", use_container_width=True) or st.session_state.get('trigger_save'):
                 st.session_state.pop('trigger_save', None)
                 if note_title and st.session_state.get('current_note_content', ''):
                     tags_list = [t.strip() for t in note_tags.split(',') if t.strip()] if note_tags else []
@@ -9401,19 +9485,20 @@ elif page == "Study Notes":
         
         with save_col2:
             if st.session_state.get('editing_note_idx') is not None:
-                if st.button("🗑️ Delete", key="word_delete", use_container_width=True):
+                st.markdown(render_mui_icon('delete', 18), unsafe_allow_html=True)
+                if st.button("Delete", key="word_delete", use_container_width=True):
                     idx = st.session_state.editing_note_idx
                     if idx < len(course_notes):
                         st.session_state.study_notes[selected_course_code].pop(idx)
                         st.session_state.current_note_content = ""
                         st.session_state.pop('editing_note_idx', None)
                         st.session_state.pop('current_note_title', None)
-                        st.success("Deleted!")
+                        st.success("✅ Deleted!")
                         st.rerun()
     
     if st.session_state.get('show_ai_panel'):
         st.markdown("---")
-        st.markdown("### 🤖 AI Assistant")
+        st.markdown(f"### {render_mui_icon('smart_toy', 24)} AI Assistant", unsafe_allow_html=True)
         
         ai_col1, ai_col2 = st.columns([1, 2])
         with ai_col1:
@@ -9424,7 +9509,8 @@ elif page == "Study Notes":
             )
         
         with ai_col2:
-            if st.button("🚀 Apply AI", type="primary", key="word_ai_apply"):
+            st.markdown(render_mui_icon('auto_awesome', 18), unsafe_allow_html=True)
+            if st.button("Apply AI", type="primary", key="word_ai_apply"):
                 content = st.session_state.get('current_note_content', '')
                 if content:
                     with st.spinner("Processing..."):
@@ -9448,10 +9534,12 @@ elif page == "Study Notes":
                             result = response.choices[0].message.content
                             st.markdown("**AI Result:**")
                             st.markdown(result)
-                            if st.button("📋 Replace Content", key="ai_replace"):
+                            st.markdown(render_mui_icon('content_copy', 18), unsafe_allow_html=True)
+                            if st.button("Replace Content", key="ai_replace"):
                                 st.session_state.current_note_content = result
                                 st.rerun()
-                            if st.button("➕ Append to Content", key="ai_append"):
+                            st.markdown(render_mui_icon('add', 18), unsafe_allow_html=True)
+                            if st.button("Append to Content", key="ai_append"):
                                 st.session_state.current_note_content += f"\n\n---\n\n{result}"
                                 st.rerun()
                         except Exception as e:
@@ -9461,7 +9549,7 @@ elif page == "Study Notes":
     
     if st.session_state.get('show_stats'):
         st.markdown("---")
-        st.markdown("### 📊 Statistics")
+        st.markdown(f"### {render_mui_icon('analytics', 24)} Statistics", unsafe_allow_html=True)
         
         total_notes = sum(len(notes) for notes in st.session_state.study_notes.values())
         
@@ -9489,7 +9577,7 @@ elif page == "Study Notes":
                         cat_counts[cat] = cat_counts.get(cat, 0) + 1
                 for cat, count in sorted(cat_counts.items(), key=lambda x: x[1], reverse=True):
                     cat_info = NOTE_CATEGORIES.get(cat, NOTE_CATEGORIES['lecture'])
-                    st.write(f"{cat_info['icon']} {cat_info['label']}: {count}")
+                    st.markdown(f"{render_mui_icon(cat_info['icon'], 18)} {cat_info['label']}: {count}", unsafe_allow_html=True)
             
             with course_col:
                 st.markdown("**By Course:**")
@@ -9499,7 +9587,7 @@ elif page == "Study Notes":
     
     if st.session_state.get('show_export'):
         st.markdown("---")
-        st.markdown("### 📥 Export Notes")
+        st.markdown(f"### {render_mui_icon('download', 24)} Export Notes", unsafe_allow_html=True)
         
         if course_notes:
             export_format = st.radio("Format:", ["JSON", "Markdown"], horizontal=True, key="export_format")
@@ -9507,8 +9595,9 @@ elif page == "Study Notes":
             if export_format == "JSON":
                 export_data = {selected_course_code: course_notes}
                 export_json = json.dumps(export_data, indent=2, ensure_ascii=False)
+                st.markdown(render_mui_icon('download', 18), unsafe_allow_html=True)
                 st.download_button(
-                    "⬇️ Download JSON",
+                    "Download JSON",
                     data=export_json,
                     file_name=f"notes_{selected_course_code}_{datetime.now().strftime('%Y%m%d')}.json",
                     mime="application/json"
@@ -9519,8 +9608,9 @@ elif page == "Study Notes":
                     md_content += f"## {note.get('title', 'Untitled')}\n"
                     md_content += f"*{note.get('date', '')}* | {NOTE_CATEGORIES.get(note.get('category', 'lecture'), {}).get('label', '')}\n\n"
                     md_content += note.get('content', '') + "\n\n---\n\n"
+                st.markdown(render_mui_icon('download', 18), unsafe_allow_html=True)
                 st.download_button(
-                    "⬇️ Download Markdown",
+                    "Download Markdown",
                     data=md_content,
                     file_name=f"notes_{selected_course_code}_{datetime.now().strftime('%Y%m%d')}.md",
                     mime="text/markdown"
@@ -9532,7 +9622,7 @@ elif page == "Study Notes":
     
     word_count = len(st.session_state.get('current_note_content', '').split())
     char_count = len(st.session_state.get('current_note_content', ''))
-    st.caption(f"📝 {word_count} words | {char_count} characters | Course: {selected_course_code}")
+    st.markdown(f"{render_mui_icon('description', 16)} {word_count} words | {char_count} characters | Course: {selected_course_code}", unsafe_allow_html=True)
 elif page == "Flashcards":
     st.title("🎴 Flashcards")
     st.markdown("*Learn with spaced repetition*")
