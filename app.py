@@ -9146,6 +9146,9 @@ elif page == "Study Notes":
             st.session_state.current_note_content = ""
             st.session_state.pop('editing_note_idx', None)
             st.session_state.pop('current_note_title', None)
+            st.session_state.pop('last_applied_template', None)
+            st.session_state.quill_key_counter = st.session_state.get('quill_key_counter', 0) + 1
+            st.rerun()
     with menu_col2:
         st.markdown(render_mui_icon('save', 18), unsafe_allow_html=True)
         if st.button("Save", key="word_save_top", use_container_width=True, help="Save note"):
@@ -9224,6 +9227,7 @@ elif page == "Study Notes":
                     st.session_state.current_note_tags = ', '.join(note.get('tags', []))
                     st.session_state.current_note_outcome = note.get('learning_outcome', '')
                     st.session_state.editing_note_idx = orig_idx
+                    st.session_state.quill_key_counter = st.session_state.get('quill_key_counter', 0) + 1
                     st.rerun()
     
     with main_col:
@@ -9261,10 +9265,14 @@ elif page == "Study Notes":
                             if st.session_state.get('last_applied_template') != template_choice:
                                 st.session_state.current_note_content = NOTE_TEMPLATES[template_key]['content']
                                 st.session_state.last_applied_template = template_choice
+                                st.session_state.quill_key_counter = st.session_state.get('quill_key_counter', 0) + 1
                                 st.rerun()
                         break
         
         st.markdown("---")
+        
+        # Dynamic key to force Quill refresh when template changes
+        quill_key = f"quill_editor_{st.session_state.get('quill_key_counter', 0)}"
         
         if view_mode == "Edit":
             from streamlit_quill import st_quill
@@ -9285,7 +9293,7 @@ elif page == "Study Notes":
                     ['blockquote', 'code-block'],
                     ['clean']
                 ],
-                key="quill_editor"
+                key=quill_key
             )
             
             if quill_content:
@@ -9315,7 +9323,7 @@ elif page == "Study Notes":
                         ['link'],
                         ['clean']
                     ],
-                    key="quill_editor_split"
+                    key=f"{quill_key}_split"
                 )
                 if quill_content_split:
                     st.session_state.current_note_content = quill_content_split
