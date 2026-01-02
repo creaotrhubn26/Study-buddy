@@ -7593,12 +7593,104 @@ elif page == "Playground":
     st.markdown("*Practice with real tools - enter data, run code, and see results instantly*")
     st.markdown("---")
     
+    # Organize playground tools by course/category
+    playground_tools = {
+        "Semester 1 - Tool Skills": {
+            "FI1BBSF05 - Spreadsheet Fundamentals": [
+                "Excel Formula Simulator",
+                "Power Query Simulator"
+            ],
+            "FI1BBST05 - Statistical Tools": [
+                "Statistical Analysis",
+                "Z-Score & Outlier Tool"
+            ],
+            "FI1BBPF20 - Programming Fundamentals": [
+                "Python Code Runner"
+            ]
+        },
+        "Semester 2 - Data & Visualization": {
+            "FI1BBDC20 - Databases and Cloud Services": [
+                "SQL Query Tester"
+            ],
+            "FI1BBDV15 - Data Visualisation": [
+                "Chart Builder"
+            ]
+        },
+        "Semester 3 - Competence Skills": {
+            "FI1BBEO10 - Evaluation of Outcomes": [
+                "Ethical Analysis Critique",
+                "Error Detection Workshop",
+                "Confidence Level Planner"
+            ]
+        }
+    }
+    
+    st.markdown("### Choose a Practice Tool")
+    
+    col1, col2 = st.columns([1, 2])
+    
+    with col1:
+        # Category filter
+        available_categories = list(playground_tools.keys())
+        selected_category = st.selectbox(
+            "📅 Semester/Category:",
+            options=["All Categories"] + available_categories
+        )
+    
+    with col2:
+        # Course filter
+        if selected_category == "All Categories":
+            all_courses = []
+            for cat in available_categories:
+                for course in playground_tools[cat].keys():
+                    if course not in all_courses:
+                        all_courses.append(course)
+            available_pg_courses = all_courses
+        else:
+            available_pg_courses = list(playground_tools[selected_category].keys())
+        
+        selected_pg_course = st.selectbox(
+            "📚 Course:",
+            options=["All Courses"] + available_pg_courses,
+            key="pg_course"
+        )
+    
+    # Get filtered tools
+    filtered_tools = []
+    for category, courses in playground_tools.items():
+        if selected_category != "All Categories" and category != selected_category:
+            continue
+        for course, tools in courses.items():
+            if selected_pg_course != "All Courses" and course != selected_pg_course:
+                continue
+            for tool in tools:
+                filtered_tools.append((tool, course, category))
+    
+    if not filtered_tools:
+        st.warning("No tools found for the selected filters.")
+        st.stop()
+    
+    # Show tool count
+    st.caption(f"🔧 {len(filtered_tools)} tools available")
+    
+    # Tool selector
+    tool_options = [t[0] for t in filtered_tools]
     playground_tab = st.selectbox(
-        "Choose a tool:",
-        ["Python Code Runner", "Excel Formula Simulator", "SQL Query Tester", "Chart Builder", 
-         "Statistical Analysis", "Power Query Simulator", "Z-Score & Outlier Tool",
-         "Ethical Analysis Critique", "Error Detection Workshop", "Confidence Level Planner"]
+        "🎯 Select Tool:",
+        options=tool_options
     )
+    
+    # Find course info for selected tool
+    tool_course = None
+    tool_category = None
+    for tool, course, category in filtered_tools:
+        if tool == playground_tab:
+            tool_course = course
+            tool_category = category
+            break
+    
+    # Show context
+    st.markdown(f"**{tool_category}** | **{tool_course}**")
     
     if playground_tab == "Python Code Runner":
         st.subheader("🐍 Python Code Playground")
