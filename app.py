@@ -3076,29 +3076,47 @@ elif page == "Playground":
     
     if playground_tab == "Python Code Runner":
         st.subheader("🐍 Python Code Playground")
-        st.markdown("Practice pandas operations and see the output. Select an exercise to try!")
+        st.markdown("Practice pandas operations on your own data! Edit the tables below, then run exercises.")
         
-        # Pre-built sample data
-        sales_data = pd.DataFrame({
-            'Product': ['Laptop', 'Phone', 'Tablet', 'Watch', 'Headphones'],
-            'Price': [999, 699, 449, 299, 149],
-            'Units_Sold': [150, 300, 200, 400, 500],
-            'Region': ['North', 'South', 'North', 'East', 'West']
-        })
+        # Initialize session state for editable data
+        if 'python_sales_data' not in st.session_state:
+            st.session_state.python_sales_data = pd.DataFrame({
+                'Product': ['Laptop', 'Phone', 'Tablet', 'Watch', 'Headphones'],
+                'Price': [999, 699, 449, 299, 149],
+                'Units_Sold': [150, 300, 200, 400, 500],
+                'Region': ['North', 'South', 'North', 'East', 'West']
+            })
         
-        employee_data = pd.DataFrame({
-            'Name': ['Alice', 'Bob', 'Charlie', 'Diana', 'Eve'],
-            'Department': ['Sales', 'IT', 'Sales', 'HR', 'IT'],
-            'Salary': [55000, 72000, 48000, 61000, 68000],
-            'Years': [3, 5, 2, 7, 4]
-        })
+        if 'python_employee_data' not in st.session_state:
+            st.session_state.python_employee_data = pd.DataFrame({
+                'Name': ['Alice', 'Bob', 'Charlie', 'Diana', 'Eve'],
+                'Department': ['Sales', 'IT', 'Sales', 'HR', 'IT'],
+                'Salary': [55000, 72000, 48000, 61000, 68000],
+                'Years': [3, 5, 2, 7, 4]
+            })
         
-        st.markdown("### Available Datasets")
+        st.markdown("### Your Datasets (Edit to add your own data!)")
         data_tab1, data_tab2 = st.tabs(["sales_data", "employee_data"])
         with data_tab1:
-            st.dataframe(sales_data, use_container_width=True)
+            st.caption("Click any cell to edit. Use the + button to add rows.")
+            st.session_state.python_sales_data = st.data_editor(
+                st.session_state.python_sales_data,
+                num_rows="dynamic",
+                use_container_width=True,
+                key="python_sales_editor"
+            )
         with data_tab2:
-            st.dataframe(employee_data, use_container_width=True)
+            st.caption("Click any cell to edit. Use the + button to add rows.")
+            st.session_state.python_employee_data = st.data_editor(
+                st.session_state.python_employee_data,
+                num_rows="dynamic",
+                use_container_width=True,
+                key="python_employee_editor"
+            )
+        
+        # Use the session state data
+        sales_data = st.session_state.python_sales_data
+        employee_data = st.session_state.python_employee_data
         
         st.markdown("### Select an Exercise")
         
