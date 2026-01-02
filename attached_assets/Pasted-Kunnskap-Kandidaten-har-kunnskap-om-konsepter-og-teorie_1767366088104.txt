@@ -1,0 +1,48 @@
+Kunnskap
+Kandidaten:
+
+har kunnskap om konsepter og teorier som brukes innen dataanalyse
+har kunnskap om prosessene og verktøyene som brukes til dataanalyse
+har kunnskap om databaser, skytjenester og native skyverktøy som brukes innen dataanalyse
+har kunnskap om programmering og programmatisk dataanalyse
+har kunnskap om prosesser og verktøy som brukes til datavisualisering
+har kunnskap om metoder, prosesser og verktøy for problemidentifisering som brukes til problemløsning og oppdagelse av datafeil
+har kunnskap om konkluderende rapportskrivingsmetoder som brukes til å kommunisere resultater klart og konsist
+har kunnskap om dataanalysefeltet og er kjent med virkelige situasjoner for å veilede beslutningstaking
+har kunnskap om bransjerelevante, gjensidig utelukkende verktøy som brukes i feltdataanalyse
+har kunnskap om bransjerelevante, gjensidig utelukkende verktøy som brukes i feltdataanalyse
+har kunnskap om essensielle konsepter og teorier som brukes innen datavitenskap og -teknikk i forbindelse med stordata og dataanalyse
+har kunnskap om dashbordteori, universelle designprinsipper og utvikling av interaktive dashbord
+har innsikt i regelverk, dataanalysens livssyklus og kvantitative versus kvalitative data
+har innsikt i egne utviklingsmuligheter innen dataanalyse
+kan vurdere eget arbeid innen dataanalyse i forhold til relevante forskrifter og retningslinjer for GDPR, datavedlikehold og kritisk datatenkning
+er kjent med dataanalysedisiplinens historie, tradisjoner, særpreg og plass i samfunnet
+Ferdigheter
+Kandidaten:
+
+kan anvende kunnskap om datamodellresultater på forretningsproblemer
+kan anvende kunnskap om datainnsamling og -rensing fra ulike kilder for å sikre lagring og optimalisere vedlikeholdsverktøy
+behersker relevante verktøy, teknikker og materiale som brukes i dataanalyse og presentasjon av resultater
+kan mestre verktøy og teknikker for å generere og visualisere data gjennom rapporter og infografer
+kan anvende kunnskap om passende brukstilfeller for dataanalyse på problemer i et pågående prosjekt
+kan forklare yrkesvalg innen dataanalyse
+kan forklare yrkesmessige valg av verktøy, metoder og teknikker for dataanalyse
+kan reflektere over egen yrkespraksis innen dataanalyse og justere den under veiledning
+kan reflektere over egne valg av relevante dataanalyseverktøy og arbeidsmetoder og justere under veiledning
+kan finne informasjon om dataanalyseteknikker og -metoder som er relevante for prosjekter
+kan finne og referere til informasjon og yrkesrettet materiale og vurdere relevansen for dataanalyse
+kan studere arbeidsmiljøer og identifisere problemer gjennom dataanalyse og hvilke tiltak som må iverksettes basert på resultatene
+kan studere en prosjektbeskrivelse og identifisere arbeidsflytproblemer og hvilke tiltak som er nødvendige for å gi innsikt i et prosjekt
+kan finne og samhandle med data fra store datakilder som lokale databaser og skybaserte systemer
+kan finne relevante datamodeller for datasett i løpet av en prosjektplanleggingsfase
+Generell kompetanse
+Kandidaten:
+
+forstår de etiske prinsippene som gjelder for innhentede, lagrede og brukte data
+har utviklet en etisk holdning som en ansvarlig dataanalytiker
+kan planlegge og utføre dataanalyseoppgaver og -prosjekter alene eller som en del av en gruppe, og i samsvar med etiske krav til databehandling og GDPR-prinsipper og -praksis
+kan utveksle synspunkter med andre med bakgrunn innen dataanalyse og delta i diskusjoner om utvikling av god praksis
+kan bidra til kvalitetssikring, effektivisering og optimalisering i organisasjonen gjennom dataanalysepraksis
+kan bidra til å løse praktiske problemer knyttet til datalivssyklusen gjennom beregningsorienterte tenkningsteknikker
+kan bidra til datasikkerhet ved å vurdere sikkerhetstiltak i hver fase av ethvert dataanalyseprosjekt
+kan utvikle produkter av relevans for dataanalyse og optimalisere egne arbeidsmetoder
