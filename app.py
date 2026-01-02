@@ -7476,7 +7476,8 @@ elif page == "Playground":
     playground_tab = st.selectbox(
         "Choose a tool:",
         ["Python Code Runner", "Excel Formula Simulator", "SQL Query Tester", "Chart Builder", 
-         "Statistical Analysis", "Power Query Simulator", "Z-Score & Outlier Tool"]
+         "Statistical Analysis", "Power Query Simulator", "Z-Score & Outlier Tool",
+         "Ethical Analysis Critique", "Error Detection Workshop", "Confidence Level Planner"]
     )
     
     if playground_tab == "Python Code Runner":
@@ -9002,6 +9003,622 @@ elif page == "Playground":
                     st.error(f"Error: {str(e)}")
         else:
             st.warning("Need at least 1 numeric column.")
+    
+    elif playground_tab == "Ethical Analysis Critique":
+        st.subheader("⚖️ Ethical Analysis Critique")
+        st.markdown("*Practice assessing and critiquing analysis approaches using ethical principles*")
+        st.markdown("---")
+        
+        ethical_scenarios = {
+            "Hiring Algorithm Bias": {
+                "scenario": """
+**Scenario: AI-Powered Hiring Recommendations**
+
+A company has deployed an AI model to screen job applications. The model was trained on 5 years of historical hiring decisions.
+
+**Analysis Approach Used:**
+- Model trained on past successful hires
+- Features include: education, experience, skills, resume keywords
+- 87% accuracy on test data
+- No demographic data explicitly used
+
+**Recent Findings:**
+- Female candidates rejected at 2x rate of male candidates
+- Candidates from certain universities favored regardless of qualifications
+- Model seems to prefer resumes with "aggressive" language
+
+**The data team says:** "The model is objective - it's just learning from data."
+                """,
+                "critique_points": [
+                    "Historical bias: Training on past decisions encodes past discrimination",
+                    "Proxy discrimination: Non-demographic features may correlate with protected groups",
+                    "Outcome fairness: Disparate impact on protected groups requires investigation",
+                    "Transparency: Can decisions be explained to rejected candidates?",
+                    "Accountability: Who is responsible when the model discriminates?",
+                    "Alternative approaches: Blind resume screening, structured interviews, diverse training data"
+                ],
+                "suggested_alternatives": [
+                    "Audit model for demographic disparities before deployment",
+                    "Remove features that correlate with protected characteristics",
+                    "Use balanced training data or apply fairness constraints",
+                    "Implement human review for borderline decisions",
+                    "Regularly monitor outcomes for bias after deployment"
+                ]
+            },
+            "Healthcare Risk Scoring": {
+                "scenario": """
+**Scenario: Patient Risk Prediction**
+
+A hospital uses a predictive model to identify high-risk patients who need extra care.
+
+**Analysis Approach Used:**
+- Model predicts risk based on past healthcare costs
+- Higher predicted cost = higher risk score
+- Used to allocate care management resources
+
+**Problem Discovered:**
+- Black patients assigned systematically lower risk scores than equally sick white patients
+- Root cause: Using healthcare cost as proxy for health need
+- Black patients historically had less access to care, so lower costs
+- Result: Sicker Black patients denied extra care resources
+
+**The vendor says:** "We don't use race in the model, so it can't be biased."
+                """,
+                "critique_points": [
+                    "Construct validity: Healthcare cost ≠ health need",
+                    "Historical inequity: Past access barriers encoded in data",
+                    "Disparate impact: Equal treatment doesn't mean equitable outcomes",
+                    "Proxy variables: Cost correlates with race due to systemic factors",
+                    "Harm potential: Life-or-death consequences of misallocation",
+                    "The 'colorblind' fallacy: Not using race doesn't prevent racial bias"
+                ],
+                "suggested_alternatives": [
+                    "Use actual health outcomes (diagnoses, lab results) instead of costs",
+                    "Validate model performance across demographic groups",
+                    "Apply equity-aware adjustments to scores",
+                    "Involve affected communities in model design",
+                    "Regular audits for disparate impact"
+                ]
+            },
+            "Credit Scoring Transparency": {
+                "scenario": """
+**Scenario: Loan Application Denial**
+
+A bank uses a machine learning model to approve or deny loan applications.
+
+**Analysis Approach Used:**
+- Complex neural network with 200+ features
+- Very high accuracy (94% on test data)
+- Considers: income, employment, credit history, spending patterns, social media activity
+
+**Customer Complaint:**
+A customer with good credit history and stable income was denied. When they asked why:
+- Bank said: "Our model determined you're high risk"
+- Customer asked for specifics: "We can't explain the model's decision"
+- Customer discovered neighbors with similar profiles were approved
+
+**The bank says:** "The model is proprietary and we can't reveal how it works."
+                """,
+                "critique_points": [
+                    "Explainability: Customers have right to understand decisions affecting them",
+                    "GDPR Article 22: Right to explanation for automated decisions",
+                    "Fairness: Similar cases should have similar outcomes",
+                    "Social media data: Ethical concerns about using personal data",
+                    "Accountability gap: Who is responsible if model is wrong?",
+                    "Trust: Unexplainable decisions erode public trust"
+                ],
+                "suggested_alternatives": [
+                    "Use interpretable models (decision trees, logistic regression)",
+                    "Implement SHAP/LIME for feature importance explanations",
+                    "Provide customers with key factors in their decision",
+                    "Remove social media features (privacy concerns)",
+                    "Create appeals process with human review"
+                ]
+            },
+            "Predictive Policing": {
+                "scenario": """
+**Scenario: Crime Prediction Hotspots**
+
+A city police department uses predictive analytics to allocate patrol resources.
+
+**Analysis Approach Used:**
+- Model trained on historical arrest data
+- Predicts "crime hotspots" for next week
+- More officers sent to high-prediction areas
+
+**Observed Feedback Loop:**
+- Model sends more officers to historically over-policed areas
+- More officers → more arrests (for same crime rates)
+- More arrests → model predicts more crime there
+- Cycle reinforces itself regardless of actual crime rates
+
+**Police chief says:** "We're just following the data."
+                """,
+                "critique_points": [
+                    "Feedback loops: Predictions become self-fulfilling",
+                    "Historical bias: Arrest data reflects policing patterns, not crime rates",
+                    "Disparate impact: Certain communities disproportionately affected",
+                    "Measurement error: Arrests ≠ crimes committed",
+                    "Amplification: Model amplifies existing biases over time",
+                    "Community harm: Erodes trust, over-surveillance of communities"
+                ],
+                "suggested_alternatives": [
+                    "Use victimization surveys instead of arrest data",
+                    "Include decay factor to break feedback loops",
+                    "Monitor and cap predictions for any single area",
+                    "Community input on policing priorities",
+                    "Regular equity audits of model predictions vs outcomes"
+                ]
+            }
+        }
+        
+        selected_scenario = st.selectbox("Select a scenario to critique:", list(ethical_scenarios.keys()))
+        
+        scenario_data = ethical_scenarios[selected_scenario]
+        
+        st.markdown("### The Scenario")
+        st.markdown(scenario_data["scenario"])
+        
+        st.markdown("---")
+        st.markdown("### Your Ethical Critique")
+        st.markdown("*Consider: What ethical issues do you see? What principles are violated? What would you recommend?*")
+        
+        user_critique = st.text_area(
+            "Write your critique here:",
+            height=200,
+            placeholder="Identify ethical issues, violated principles, and suggest alternatives..."
+        )
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            show_critique = st.button("📋 Show Expert Critique", type="primary")
+        with col2:
+            show_alternatives = st.button("💡 Show Recommended Alternatives")
+        
+        if show_critique:
+            st.markdown("### Expert Critique Points")
+            for point in scenario_data["critique_points"]:
+                st.markdown(f"- {point}")
+        
+        if show_alternatives:
+            st.markdown("### Recommended Alternatives")
+            for alt in scenario_data["suggested_alternatives"]:
+                st.markdown(f"✓ {alt}")
+        
+        st.markdown("---")
+        st.markdown("### Ethical Principles Checklist")
+        
+        principles = [
+            ("Fairness", "Does the approach treat all groups equitably?"),
+            ("Transparency", "Can decisions be explained to affected parties?"),
+            ("Accountability", "Is there clear responsibility for outcomes?"),
+            ("Privacy", "Is personal data used appropriately?"),
+            ("Non-maleficence", "Could this cause harm to individuals or groups?"),
+            ("Autonomy", "Do people have meaningful choice about data use?")
+        ]
+        
+        st.markdown("*Rate this analysis approach on each principle:*")
+        
+        for principle, description in principles:
+            col1, col2 = st.columns([1, 3])
+            with col1:
+                st.selectbox(
+                    principle,
+                    ["Not assessed", "Serious concern", "Minor concern", "Acceptable", "Good practice"],
+                    key=f"eth_{principle}"
+                )
+            with col2:
+                st.caption(description)
+    
+    elif playground_tab == "Error Detection Workshop":
+        st.subheader("🔍 Error Detection Workshop")
+        st.markdown("*Practice identifying erroneous data and facilitating solution discussions*")
+        st.markdown("---")
+        
+        if 'error_workshop_data' not in st.session_state:
+            st.session_state.error_workshop_data = pd.DataFrame({
+                'Customer_ID': ['C001', 'C002', 'C003', 'C004', 'C002', 'C006', 'C007', 'C008'],
+                'Name': ['Alice Brown', 'Bob Smith', 'Carol White', 'David Lee', 'Bob Smith', 'Eve Clark', 'Frank Miller', 'Grace Kim'],
+                'Age': [28, 35, -5, 42, 35, 150, 31, 29],
+                'Email': ['alice@email.com', 'bob@email', 'carol@email.com', '', 'bob@email', 'eve@email.com', 'frank@email.com', 'grace@email.com'],
+                'Order_Amount': [150.00, 2500.00, 89.50, 320.00, 2500.00, 175.00, 999999.99, 210.00],
+                'Order_Date': ['2024-01-15', '2024-13-01', '2024-02-28', '2024-03-10', '2024-01-15', '2024-04-05', '2024-05-20', '1924-06-15'],
+                'Region': ['North', 'South', 'East', 'West', 'South', 'north', 'NORTH', 'East']
+            })
+        
+        st.markdown("### Dataset with Errors")
+        st.markdown("*This dataset contains various data quality issues. Can you identify them all?*")
+        
+        st.dataframe(st.session_state.error_workshop_data, use_container_width=True)
+        
+        st.markdown("---")
+        st.markdown("### Error Identification")
+        st.markdown("*Select all the errors you can identify:*")
+        
+        error_types = {
+            "Duplicate records": {
+                "hint": "Look for identical Customer_ID and Name combinations",
+                "location": "Rows 2 and 5 (C002 - Bob Smith appears twice)",
+                "impact": "Double-counting customers, inflated metrics",
+                "solution": "Deduplicate based on Customer_ID, keep most recent record"
+            },
+            "Invalid age values": {
+                "hint": "Age should be between 0 and ~120",
+                "location": "Row 3: Age=-5, Row 6: Age=150",
+                "impact": "Statistical calculations will be skewed, demographic analysis invalid",
+                "solution": "Flag for review, set to NULL or impute based on customer segment"
+            },
+            "Invalid email format": {
+                "hint": "Emails should contain @ and a domain extension",
+                "location": "Row 2: 'bob@email' (missing .com), Row 4: empty",
+                "impact": "Email campaigns will fail, communication gaps",
+                "solution": "Validate format, request corrections from customers"
+            },
+            "Outlier amounts": {
+                "hint": "Look for unusually high or low order amounts",
+                "location": "Row 7: $999,999.99 is suspiciously high",
+                "impact": "Revenue metrics distorted, may indicate data entry error or fraud",
+                "solution": "Investigate source, verify with order system, cap or remove if erroneous"
+            },
+            "Invalid date format": {
+                "hint": "Check for impossible dates",
+                "location": "Row 2: '2024-13-01' (month 13 doesn't exist)",
+                "impact": "Date parsing will fail, time-series analysis broken",
+                "solution": "Parse dates strictly, flag failures for manual review"
+            },
+            "Historical date anomaly": {
+                "hint": "Check if dates make business sense",
+                "location": "Row 8: '1924-06-15' is 100 years ago",
+                "impact": "Time-based analysis will include ancient outliers",
+                "solution": "Set business rules for valid date ranges (e.g., company founding date)"
+            },
+            "Inconsistent region coding": {
+                "hint": "Check for case sensitivity issues",
+                "location": "'North', 'north', 'NORTH' are all different",
+                "impact": "Grouping by region will split what should be one category",
+                "solution": "Standardize to consistent case (e.g., Title Case)"
+            }
+        }
+        
+        identified_errors = []
+        for error_type in error_types.keys():
+            if st.checkbox(error_type, key=f"err_{error_type}"):
+                identified_errors.append(error_type)
+        
+        if st.button("📊 Check My Answers", type="primary"):
+            score = len(identified_errors)
+            total = len(error_types)
+            
+            if score == total:
+                st.success(f"🎉 Excellent! You found all {total} error types!")
+            elif score >= total * 0.7:
+                st.info(f"Good job! You found {score}/{total} error types.")
+            else:
+                st.warning(f"You found {score}/{total} error types. Keep looking!")
+            
+            st.markdown("### Detailed Error Analysis")
+            
+            for error_type, details in error_types.items():
+                with st.expander(f"{'✓' if error_type in identified_errors else '✗'} {error_type}"):
+                    st.markdown(f"**Location:** {details['location']}")
+                    st.markdown(f"**Impact:** {details['impact']}")
+                    st.markdown(f"**Solution:** {details['solution']}")
+        
+        st.markdown("---")
+        st.markdown("### Facilitating Solution Discussions")
+        st.markdown("*Practice communicating data issues to stakeholders*")
+        
+        discussion_scenario = st.selectbox(
+            "Select a discussion scenario:",
+            [
+                "Presenting errors to business stakeholders",
+                "Discussing impact with analytics team",
+                "Proposing fixes to data engineering",
+                "Escalating critical issues to management"
+            ]
+        )
+        
+        discussion_templates = {
+            "Presenting errors to business stakeholders": """
+**Template: Business Stakeholder Briefing**
+
+1. **Summary Statement** (plain language)
+   "We've found some data quality issues that could affect our [X] reports."
+
+2. **Business Impact** (focus on what they care about)
+   - "Our customer count may be inflated by X% due to duplicates"
+   - "Revenue figures could be off because of data entry errors"
+
+3. **Recommended Actions**
+   - "We recommend pausing the report until data is cleaned"
+   - "This will take approximately X days to fix"
+
+4. **Ask**
+   - "Do you need the approximate numbers now, or can you wait for accurate data?"
+            """,
+            "Discussing impact with analytics team": """
+**Template: Analytics Team Discussion**
+
+1. **Technical Summary**
+   "I've identified X types of data quality issues in the customer dataset"
+
+2. **Specific Issues** (with evidence)
+   - Issue 1: Duplicates on Customer_ID (X records affected)
+   - Issue 2: Invalid values in Age column (Y records affected)
+
+3. **Impact on Analysis**
+   - "Demographic segmentation will be skewed"
+   - "Time-series trends may show artifacts"
+
+4. **Proposed Validation Rules**
+   - Age: 0 < age < 120
+   - Email: regex pattern matching
+   - Date: within business operation period
+
+5. **Discussion Points**
+   - "How should we handle edge cases?"
+   - "What's our tolerance for missing data?"
+            """,
+            "Proposing fixes to data engineering": """
+**Template: Data Engineering Request**
+
+1. **Issue Identification**
+   "Request to add data validation rules to the ingestion pipeline"
+
+2. **Specific Rules Needed**
+   ```
+   - Deduplicate on Customer_ID (keep latest)
+   - Validate: Age BETWEEN 0 AND 120
+   - Validate: Email matches pattern '@.+\\.'
+   - Validate: Order_Date > '2020-01-01'
+   - Standardize: Region to Title Case
+   ```
+
+3. **Priority Justification**
+   "These issues affect X% of records and impact downstream reports"
+
+4. **Suggested Implementation**
+   - Add validation at ingestion
+   - Route failures to quarantine table
+   - Alert on failure rate threshold
+            """,
+            "Escalating critical issues to management": """
+**Template: Management Escalation**
+
+1. **Issue Summary** (1-2 sentences)
+   "We've discovered data quality issues that affect the accuracy of [critical report/decision]"
+
+2. **Business Risk** (quantified if possible)
+   - "Customer metrics may be overstated by X%"
+   - "This affects decisions worth $Y"
+
+3. **Current Status**
+   - Issue identified on [date]
+   - Root cause: [brief explanation]
+   - Estimated fix time: [duration]
+
+4. **Decision Required**
+   - "Should we pause reporting until fixed?"
+   - "What's the acceptable error margin?"
+
+5. **Recommendation**
+   "We recommend [specific action] because [reasoning]"
+            """
+        }
+        
+        st.markdown(discussion_templates[discussion_scenario])
+        
+        st.markdown("---")
+        st.markdown("### Practice Your Communication")
+        user_discussion = st.text_area(
+            f"Write your own message for: {discussion_scenario}",
+            height=150,
+            placeholder="Draft your message to stakeholders..."
+        )
+        
+        if user_discussion and st.button("Get Feedback"):
+            st.info("💡 **Tips for effective communication:**\n"
+                   "- Lead with impact, not technical details\n"
+                   "- Quantify issues when possible\n"
+                   "- Always propose solutions, not just problems\n"
+                   "- Be clear about what decision or action you need")
+    
+    elif playground_tab == "Confidence Level Planner":
+        st.subheader("📊 Confidence Level Planner")
+        st.markdown("*Develop work methods for handling data with different confidence levels*")
+        st.markdown("---")
+        
+        st.markdown("### Understanding Confidence Levels")
+        
+        confidence_info = pd.DataFrame({
+            'Confidence Level': ['99%', '95%', '90%', '80%', '70%'],
+            'Z-Score': [2.576, 1.960, 1.645, 1.282, 1.036],
+            'Margin of Error (n=100)': ['±12.9%', '±9.8%', '±8.2%', '±6.4%', '±5.2%'],
+            'Typical Use': ['Medical/safety decisions', 'Academic research', 'Quality control', 'Business planning', 'Quick estimates']
+        })
+        st.dataframe(confidence_info, use_container_width=True)
+        
+        st.markdown("---")
+        st.markdown("### Confidence Level Decision Framework")
+        
+        problem_domains = {
+            "Medical/Healthcare": {
+                "recommended_confidence": "99%",
+                "reasoning": "Patient safety is paramount; false negatives could mean missed diagnoses",
+                "work_methods": [
+                    "Require large sample sizes for clinical decisions",
+                    "Always report confidence intervals in results",
+                    "Use conservative estimates (lower bound of CI)",
+                    "Require peer review before recommendations",
+                    "Document uncertainty explicitly in reports"
+                ],
+                "decision_rules": {
+                    "High confidence (>99%)": "Proceed with treatment recommendation",
+                    "Medium confidence (95-99%)": "Recommend additional testing",
+                    "Low confidence (<95%)": "Do not make clinical recommendations"
+                }
+            },
+            "Financial/Investment": {
+                "recommended_confidence": "95%",
+                "reasoning": "Balance between action and risk; financial impact can be significant",
+                "work_methods": [
+                    "Use 95% CI for major investment decisions",
+                    "90% acceptable for operational decisions",
+                    "Always calculate potential loss at confidence bounds",
+                    "Stress test with worst-case scenarios",
+                    "Document assumptions and limitations"
+                ],
+                "decision_rules": {
+                    "High confidence (>95%)": "Recommend investment/action",
+                    "Medium confidence (90-95%)": "Present options with risk assessment",
+                    "Low confidence (<90%)": "Recommend gathering more data"
+                }
+            },
+            "Marketing/Customer Analytics": {
+                "recommended_confidence": "90%",
+                "reasoning": "Speed often matters; decisions are reversible; cost of error is lower",
+                "work_methods": [
+                    "Use 90% CI for campaign decisions",
+                    "80% acceptable for exploratory analysis",
+                    "A/B test with statistical significance checks",
+                    "Monitor results and iterate quickly",
+                    "Build in review cycles to catch errors"
+                ],
+                "decision_rules": {
+                    "High confidence (>90%)": "Launch campaign/feature",
+                    "Medium confidence (80-90%)": "Small-scale pilot test first",
+                    "Low confidence (<80%)": "Continue testing or try different approach"
+                }
+            },
+            "Operations/Supply Chain": {
+                "recommended_confidence": "95%",
+                "reasoning": "Inventory and logistics decisions have cost implications both ways",
+                "work_methods": [
+                    "Use 95% CI for demand forecasting",
+                    "Build safety stock based on confidence bounds",
+                    "Monitor forecast accuracy over time",
+                    "Adjust confidence requirements by product criticality",
+                    "Document service level agreements tied to confidence"
+                ],
+                "decision_rules": {
+                    "High confidence (>95%)": "Set optimal inventory levels",
+                    "Medium confidence (90-95%)": "Add safety stock buffer",
+                    "Low confidence (<90%)": "Increase safety stock significantly or source alternatives"
+                }
+            },
+            "Research/Academic": {
+                "recommended_confidence": "95% (p < 0.05)",
+                "reasoning": "Scientific credibility requires rigorous standards",
+                "work_methods": [
+                    "Pre-register hypotheses before analysis",
+                    "Use 95% CI as minimum for publication",
+                    "Report exact p-values, not just significance",
+                    "Calculate and report effect sizes",
+                    "Acknowledge limitations and confidence bounds"
+                ],
+                "decision_rules": {
+                    "Statistically significant (p<0.05)": "Report finding with confidence interval",
+                    "Marginally significant (0.05<p<0.10)": "Report as suggestive, needs replication",
+                    "Not significant (p>0.10)": "Report null result, discuss sample size"
+                }
+            }
+        }
+        
+        selected_domain = st.selectbox("Select a problem domain:", list(problem_domains.keys()))
+        
+        domain_data = problem_domains[selected_domain]
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            st.metric("Recommended Confidence Level", domain_data["recommended_confidence"])
+        with col2:
+            st.info(f"**Reasoning:** {domain_data['reasoning']}")
+        
+        st.markdown("### Work Methods for This Domain")
+        for method in domain_data["work_methods"]:
+            st.markdown(f"• {method}")
+        
+        st.markdown("### Decision Rules Based on Confidence")
+        for level, action in domain_data["decision_rules"].items():
+            st.markdown(f"**{level}:** {action}")
+        
+        st.markdown("---")
+        st.markdown("### Interactive Confidence Calculator")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            sample_size = st.number_input("Sample Size (n):", min_value=10, max_value=10000, value=100)
+            sample_mean = st.number_input("Sample Mean:", value=50.0)
+            sample_std = st.number_input("Sample Std Dev:", min_value=0.1, value=10.0)
+        
+        with col2:
+            confidence_level = st.selectbox(
+                "Confidence Level:",
+                ["99%", "95%", "90%", "80%"],
+                index=1
+            )
+            
+            z_scores = {"99%": 2.576, "95%": 1.960, "90%": 1.645, "80%": 1.282}
+            z = z_scores[confidence_level]
+            
+            margin_error = z * (sample_std / (sample_size ** 0.5))
+            lower_bound = sample_mean - margin_error
+            upper_bound = sample_mean + margin_error
+        
+        st.markdown("### Results")
+        
+        result_col1, result_col2, result_col3 = st.columns(3)
+        with result_col1:
+            st.metric("Lower Bound", f"{lower_bound:.2f}")
+        with result_col2:
+            st.metric("Point Estimate", f"{sample_mean:.2f}")
+        with result_col3:
+            st.metric("Upper Bound", f"{upper_bound:.2f}")
+        
+        st.markdown(f"**{confidence_level} Confidence Interval:** [{lower_bound:.2f}, {upper_bound:.2f}]")
+        st.markdown(f"**Margin of Error:** ±{margin_error:.2f} ({(margin_error/sample_mean)*100:.1f}% of mean)")
+        
+        st.markdown("---")
+        st.markdown("### Create Your Work Method Document")
+        
+        st.markdown("*Based on your domain and confidence requirements, document your work method:*")
+        
+        work_method_template = st.text_area(
+            "Your Work Method Document:",
+            value=f"""WORK METHOD: {selected_domain} Analysis
+
+CONFIDENCE STANDARD: {domain_data['recommended_confidence']}
+
+DATA REQUIREMENTS:
+- Minimum sample size: [specify based on required precision]
+- Data quality checks: [list validation rules]
+- Exclusion criteria: [what data to remove]
+
+ANALYSIS PROTOCOL:
+1. Calculate point estimate and confidence interval
+2. Apply decision rules based on confidence level
+3. Document assumptions and limitations
+4. Review with [stakeholder/peer]
+
+REPORTING REQUIREMENTS:
+- Always report confidence intervals
+- Flag results below confidence threshold
+- Document sample size and methodology
+
+ESCALATION:
+- If confidence < threshold: [specific action]
+- If data quality issues: [specific action]
+""",
+            height=400
+        )
+        
+        if st.button("💾 Save Work Method (Download)", type="primary"):
+            st.download_button(
+                label="Download Work Method Document",
+                data=work_method_template,
+                file_name=f"work_method_{selected_domain.lower().replace('/', '_')}.txt",
+                mime="text/plain"
+            )
 
 elif page == "About":
     st.title("ℹ️ About the Data Analyst Program")

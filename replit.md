@@ -63,6 +63,9 @@ Hands-on practice tools with editable data:
 - **Statistical Analysis**: Correlation, regression, ANOVA, histogram, covariance, descriptive statistics (using scipy)
 - **Power Query Simulator**: Data transformation steps (deduplication, fill missing, trim, case standardization, calculated columns)
 - **Z-Score & Outlier Tool**: Calculate z-scores, detect outliers, apply handling methods (remove, cap, replace)
+- **Ethical Analysis Critique**: Real-world scenarios (hiring bias, healthcare, credit scoring, policing) with expert critique comparison and ethical principles rating
+- **Error Detection Workshop**: Identify 7 types of data errors, learn impacts/solutions, practice stakeholder communication with templates
+- **Confidence Level Planner**: Domain-specific work methods (Medical, Financial, Marketing, Operations, Research), interactive CI calculator, work method document generator
 
 ## Data Source
 Course content is sourced from the official Noroff study catalog:
