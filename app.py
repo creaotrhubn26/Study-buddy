@@ -9724,7 +9724,15 @@ elif page == "Study Notes":
         st.markdown(f"**{len(filtered_notes)} notes**")
         
         for idx, note in enumerate(filtered_notes):
-            orig_idx = course_notes.index(note) if note in course_notes else idx
+            # Find actual index in course_notes by iterating to avoid duplicate index issues
+            orig_idx = None
+            for i, cn in enumerate(course_notes):
+                if cn is note:  # Check by identity, not equality
+                    orig_idx = i
+                    break
+            if orig_idx is None:
+                orig_idx = idx
+            
             cat = note.get('category', 'lecture')
             cat_info = NOTE_CATEGORIES.get(cat, NOTE_CATEGORIES['lecture'])
             imp = note.get('importance', 'normal')
@@ -9735,7 +9743,8 @@ elif page == "Study Notes":
             with icon_col:
                 st.markdown(f"{render_mui_icon(cat_info['icon'], 16)}{render_mui_icon(imp_info['icon'], 16)}", unsafe_allow_html=True)
             with btn_col:
-                if st.button(note.get('title', 'Untitled')[:30], key=f"open_{selected_course_code}_{orig_idx}", use_container_width=True):
+                # Use idx from filtered list to ensure unique keys
+                if st.button(note.get('title', 'Untitled')[:30], key=f"open_{selected_course_code}_{idx}_{orig_idx}", use_container_width=True):
                     st.session_state.current_note_content = note.get('content', '')
                     st.session_state.current_note_title = note.get('title', '')
                     st.session_state.current_note_category = note.get('category', 'lecture')
