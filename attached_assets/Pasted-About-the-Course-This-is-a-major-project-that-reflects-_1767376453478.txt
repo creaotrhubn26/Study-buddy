@@ -1,0 +1,28 @@
+About the Course
+This is a major project that reflects competence the candidates have acquired during the academic year. The candidate must solve the assignment independently, or as a group, from a given practical problem. Internship projects are encouraged and the project challenges candidates to find a real-world project to acquire practical experience in a professional setting. The candidate is responsible for all aspects of the project, in accordance with the supervisor through the internship, if applicable. If the candidate is not working on a real-world project, an alternative case project will be presented by the academic staff. The completed project will be presented to the teacher, sensor, fellow students and if applicable, the customer. The course builds on competence from all courses during the academic year.
+
+The aim of the course is to provide candidates with the ability to make independent choices and deliver a comprehensive product from start to finish with professional standards, deadline compliance and focus on efficient workflows. The candidate must demonstrate their ability to make reasonable and efficient choices though the use of software tools and detailed documentation, in addition to communicating with professional terminology and expressions during a project. The project work is independent, and the project scope is set with guidance from the academic staff and industry.
+
+Course Learning Outcomes
+Knowledge
+The candidate:
+
+has insight into data analysis industry-relevant standards and quality requirements for project preparation, presentation and delivery
+has knowledge of the data analysis industry and is familiar with developing selective data models to find results
+can update their knowledge within data analysis field and the subject areas from courses in the first and second semester
+understands the importance of the data analysis discipline as a process to create accessible visualizations and reports to express results
+Skills
+The candidate:
+
+can apply knowledge to perform data analysis on data sets that are ethically sources
+masters industry relevant tools, techniques and methods to execute a data analysis based on a client brief
+can find information and material that is relevant to the data project
+can study their own project and identify possible data errors or issues, and what measures need to be implemented to optimize the result and meet the quality requirements
+General Competence
+The candidate:
+
+understands the ethical principles that apply in data analysis
+has developed an ethical attitude as a responsible data analyst
+can plan and carry out a data analysis project based on the needs of selected audiences and project briefs, alone or as part of a group
+can build relations with their peers also across disciplines, project owners, participants and other interaction designers
+can develop work methods and products of relevance to data analysis

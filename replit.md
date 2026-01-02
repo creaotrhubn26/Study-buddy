@@ -55,6 +55,15 @@ A comprehensive student study app for the Data Analyst 2 (PDAN) vocational progr
 - **Visualization Tools**: Excel/Sheets, Tableau, Power BI, Python libraries comparison
 - **Ethics in Visualization**: Truncated axes, cherry-picking, missing context, ethical guidelines
 
+### Analysis Reporting (FI1BBAR05)
+- **Introduction to Analysis Reporting**: Purpose of reports, types (ad-hoc, regular, research), audiences
+- **Report Structure & Organization**: Executive summary, sections (intro, methods, findings, recommendations), appendix usage
+- **Academic Writing Style**: Clarity, objectivity, avoiding jargon, present/past tense conventions
+- **Integrating Visualizations**: Figure/table placement, captions, referencing in text, chart selection for reports
+- **Universal Design & Accessibility**: Alt text, color contrast, logical reading order, accessibility checklist
+- **Report Tools & Distribution**: Word/LaTeX/Markdown, PDF vs interactive, versioning, stakeholder review
+- **Ethical Reporting**: Data limitations, uncertainty, avoiding misleading conclusions, reproducibility
+
 ### Tool Training Environments (Simulated)
 - **Excel & Google Sheets**: Formulas (VLOOKUP, SUMIF, etc.), pivot tables, data cleaning, automation with macros
 - **Python Programming**: pandas DataFrames, data manipulation, cleaning scripts, analysis automation
@@ -75,6 +84,7 @@ Hands-on practice tools with editable data:
 - **Ethical Analysis Critique**: Real-world scenarios (hiring bias, healthcare, credit scoring, policing) with expert critique comparison and ethical principles rating
 - **Error Detection Workshop**: Identify 7 types of data errors, learn impacts/solutions, practice stakeholder communication with templates
 - **Confidence Level Planner**: Domain-specific work methods (Medical, Financial, Marketing, Operations, Research), interactive CI calculator, work method document generator
+- **Report Writing Workshop**: Executive summary builder, clarity rewriter, report structure planner, caption writer
 
 ## Data Source
 Course content is sourced from the official Noroff study catalog:
