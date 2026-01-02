@@ -531,6 +531,1442 @@ Always document which outliers were removed and why!
                 "explanation": "Z = 3.5 is beyond the ±3 threshold commonly used to identify outliers. Only 0.3% of data falls beyond ±3 SDs."
             }
         ]
+    },
+    "Tool: Excel & Google Sheets": {
+        "course": "Spreadsheet Fundamentals",
+        "tool_type": "spreadsheet",
+        "description": "Master spreadsheet tools for data analysis - learn formulas, pivot tables, data cleaning, and automation techniques.",
+        "lessons": [
+            {
+                "title": "Essential Formulas for Data Analysis",
+                "content": """
+**Key Formulas Every Data Analyst Needs:**
+
+**1. VLOOKUP / XLOOKUP (Finding Data)**
+```
+=VLOOKUP(lookup_value, table_array, col_index, FALSE)
+=XLOOKUP(lookup_value, lookup_array, return_array)
+```
+*Use case:* Match customer IDs to their names across different sheets.
+
+**2. SUMIF / COUNTIF (Conditional Calculations)**
+```
+=SUMIF(range, criteria, sum_range)
+=COUNTIF(range, criteria)
+```
+*Use case:* Sum all sales for a specific product or count orders from a region.
+
+**3. IF / IFS (Logic)**
+```
+=IF(condition, value_if_true, value_if_false)
+=IFS(condition1, value1, condition2, value2, ...)
+```
+*Use case:* Categorize sales as "High", "Medium", or "Low" based on amount.
+
+**4. INDEX/MATCH (Advanced Lookup)**
+```
+=INDEX(return_range, MATCH(lookup_value, lookup_range, 0))
+```
+*Use case:* More flexible than VLOOKUP - can look left or right in a table.
+
+**Real-World Scenario:**
+You have a sales report with 10,000 rows. Your manager wants to know total sales by region. Instead of manually calculating, you use:
+```
+=SUMIF(B:B, "North", D:D)
+```
+This instantly sums all sales where region (column B) equals "North".
+                """,
+                "key_points": ["VLOOKUP finds data across sheets", "SUMIF/COUNTIF calculate with conditions", "INDEX/MATCH is more powerful than VLOOKUP"]
+            },
+            {
+                "title": "Pivot Tables for Quick Analysis",
+                "content": """
+**Pivot Tables: Your Data Analysis Superpower**
+
+Pivot tables summarize thousands of rows of data in seconds without writing formulas.
+
+**Creating a Pivot Table (Excel):**
+1. Select your data (including headers)
+2. Insert → Pivot Table
+3. Drag fields to Rows, Columns, Values, and Filters
+
+**Example Scenario:**
+You have a dataset of 50,000 sales transactions with columns:
+- Date, Product, Region, Salesperson, Amount
+
+**Analysis Tasks Made Easy:**
+
+| Task | Pivot Table Setup |
+|------|-------------------|
+| Total sales by product | Rows: Product, Values: Sum of Amount |
+| Sales by region and month | Rows: Region, Columns: Month, Values: Sum of Amount |
+| Top salespeople | Rows: Salesperson, Values: Sum of Amount (sort descending) |
+| Average order size by product | Rows: Product, Values: Average of Amount |
+
+**Key Features:**
+- **Filters**: Show only specific products or date ranges
+- **Grouping**: Group dates by month/quarter/year
+- **Calculated Fields**: Create new calculations within the pivot
+- **Slicers**: Visual filters for easy data exploration
+
+**Pro Tip:** Right-click on values → "Show Values As" → "% of Column Total" to see percentages instead of raw numbers.
+                """,
+                "key_points": ["Pivot tables summarize data without formulas", "Drag and drop fields to analyze different angles", "Use filters and slicers for interactive exploration"]
+            },
+            {
+                "title": "Data Cleaning Techniques",
+                "content": """
+**Common Data Problems and Solutions:**
+
+**1. Removing Duplicates**
+- Excel: Data → Remove Duplicates
+- Sheets: Data → Data Cleanup → Remove Duplicates
+- Formula: `=UNIQUE(range)` to create a clean list
+
+**2. Handling Blank Cells**
+```
+=IF(A1="", "Missing", A1)
+```
+Or use Find & Replace: Find blank cells → Replace with "N/A"
+
+**3. Text Cleaning**
+```
+=TRIM(A1)           -- Remove extra spaces
+=UPPER(A1)          -- Convert to uppercase
+=PROPER(A1)         -- Capitalize first letters
+=CLEAN(A1)          -- Remove non-printable characters
+```
+
+**4. Splitting Text**
+```
+=LEFT(A1, 5)        -- First 5 characters
+=RIGHT(A1, 3)       -- Last 3 characters
+=MID(A1, 2, 4)      -- 4 characters starting at position 2
+=TEXTSPLIT(A1, ",") -- Split by delimiter (Excel 365)
+```
+Or: Data → Text to Columns
+
+**5. Date Standardization**
+```
+=DATEVALUE("2024-01-15")  -- Convert text to date
+=TEXT(A1, "YYYY-MM-DD")   -- Format date consistently
+```
+
+**Real-World Scenario:**
+You receive customer data with:
+- Names in all caps: "JOHN SMITH"
+- Extra spaces: "  Chicago  "
+- Inconsistent dates: "01/15/24", "2024-01-15", "Jan 15, 2024"
+
+**Cleaning Process:**
+```
+=PROPER(TRIM(A2))           -- Clean names
+=TRIM(B2)                   -- Clean cities
+=DATEVALUE(C2)              -- Standardize dates
+```
+                """,
+                "key_points": ["Remove duplicates before analysis", "TRIM removes extra spaces", "Use Text to Columns to split data"]
+            },
+            {
+                "title": "Automation with Macros and Scripts",
+                "content": """
+**Automating Repetitive Tasks**
+
+**Excel: Recording Macros**
+1. View → Macros → Record Macro
+2. Give it a name and shortcut key
+3. Perform your actions
+4. Stop recording
+5. Run the macro anytime with your shortcut
+
+**Example Macro Tasks:**
+- Format all reports the same way
+- Copy data from one sheet to another
+- Apply consistent styling to tables
+
+**Google Sheets: Apps Script**
+Google Sheets uses JavaScript-based Apps Script for automation.
+
+**Example Script (Auto-email report):**
+```javascript
+function sendWeeklyReport() {
+  var sheet = SpreadsheetApp.getActiveSheet();
+  var data = sheet.getRange("A1:D10").getValues();
+  
+  MailApp.sendEmail({
+    to: "manager@company.com",
+    subject: "Weekly Sales Report",
+    body: "See attached data..."
+  });
+}
+```
+
+**Common Automation Use Cases:**
+1. **Data Import**: Pull data from external sources automatically
+2. **Report Generation**: Create formatted reports with one click
+3. **Email Alerts**: Send notifications when thresholds are met
+4. **Data Validation**: Automatically check for errors in new entries
+
+**Power Query (Excel):**
+- Connect to databases, websites, or other files
+- Transform data with a visual interface
+- Refresh data automatically
+
+**Pro Tip:** Start with recording macros to learn the basics, then graduate to VBA (Excel) or Apps Script (Sheets) for more complex automation.
+                """,
+                "key_points": ["Macros record repetitive actions", "Google Sheets uses Apps Script for automation", "Power Query connects to external data sources"]
+            }
+        ],
+        "exercises": [
+            {
+                "title": "Calculate Regional Sales",
+                "type": "practical",
+                "question": "You have sales data with columns: Region (A), Product (B), Amount (C). Write a formula to sum all sales for the 'East' region.",
+                "answer": "=SUMIF(A:A, \"East\", C:C) - This formula checks column A for 'East' and sums the corresponding values in column C.",
+                "hint": "Use SUMIF with the region column as the range and 'East' as the criteria"
+            },
+            {
+                "title": "Create a Pivot Table Summary",
+                "type": "scenario",
+                "question": "Your manager wants a report showing total sales by month for each product category. Describe how you would set up a pivot table to show this.",
+                "answer": "1. Select all data including headers. 2. Insert Pivot Table. 3. Drag 'Product Category' to Rows. 4. Drag 'Date' to Columns and group by Month. 5. Drag 'Sales Amount' to Values (set to SUM). This creates a matrix with products as rows, months as columns, and sales totals in each cell.",
+                "hint": "Think about what goes in rows vs columns, and what value you're summarizing"
+            },
+            {
+                "title": "Clean Messy Data",
+                "type": "practical",
+                "question": "Cell A1 contains '  JOHN DOE  ' (with extra spaces and all caps). Write a formula to clean this to 'John Doe'.",
+                "answer": "=PROPER(TRIM(A1)) - TRIM removes the extra spaces, then PROPER capitalizes only the first letter of each word, resulting in 'John Doe'.",
+                "hint": "Combine TRIM to remove spaces and PROPER for proper capitalization"
+            }
+        ],
+        "quiz": [
+            {
+                "question": "Which formula finds a value in the first column and returns a value from another column?",
+                "options": ["SUMIF", "VLOOKUP", "COUNTIF", "TRIM"],
+                "correct": 1,
+                "explanation": "VLOOKUP (Vertical Lookup) searches the first column of a range for a value and returns a value from a specified column."
+            },
+            {
+                "question": "What does =SUMIF(A:A, \"North\", B:B) do?",
+                "options": ["Counts cells containing 'North'", "Sums column B where column A equals 'North'", "Finds 'North' in column A", "Averages column B"],
+                "correct": 1,
+                "explanation": "SUMIF adds up values in the sum_range (B:B) where the corresponding cells in the criteria_range (A:A) match the criteria ('North')."
+            },
+            {
+                "question": "Which feature summarizes large datasets without formulas?",
+                "options": ["VLOOKUP", "Conditional Formatting", "Pivot Table", "Data Validation"],
+                "correct": 2,
+                "explanation": "Pivot Tables allow you to summarize, analyze, and explore large datasets by dragging and dropping fields - no formulas required."
+            },
+            {
+                "question": "=PROPER(TRIM(\"  HELLO WORLD  \")) returns:",
+                "options": ["HELLO WORLD", "hello world", "Hello World", "  Hello World  "],
+                "correct": 2,
+                "explanation": "TRIM removes extra spaces, then PROPER capitalizes the first letter of each word, resulting in 'Hello World'."
+            }
+        ]
+    },
+    "Tool: Python Programming": {
+        "course": "Programming Fundamentals",
+        "tool_type": "programming",
+        "description": "Learn Python for data analysis - pandas for data manipulation, data cleaning scripts, and automated analysis pipelines.",
+        "lessons": [
+            {
+                "title": "Introduction to Pandas DataFrames",
+                "content": """
+**Pandas: The Data Analyst's Best Friend**
+
+Pandas is a Python library that makes working with data easy and intuitive.
+
+**Creating a DataFrame:**
+```python
+import pandas as pd
+
+# From a dictionary
+data = {
+    'Name': ['Alice', 'Bob', 'Charlie'],
+    'Age': [25, 30, 35],
+    'Salary': [50000, 60000, 70000]
+}
+df = pd.DataFrame(data)
+
+# From a CSV file
+df = pd.read_csv('sales_data.csv')
+
+# From an Excel file
+df = pd.read_excel('report.xlsx')
+```
+
+**Exploring Your Data:**
+```python
+df.head()           # First 5 rows
+df.tail()           # Last 5 rows
+df.info()           # Column types and non-null counts
+df.describe()       # Statistical summary
+df.shape            # (rows, columns)
+df.columns          # List of column names
+```
+
+**Selecting Data:**
+```python
+df['Name']                    # Single column
+df[['Name', 'Age']]          # Multiple columns
+df.loc[0]                    # Row by label/index
+df.iloc[0:5]                 # Rows by position
+df[df['Age'] > 30]           # Filter rows by condition
+```
+
+**Real-World Example:**
+```python
+# Load sales data
+sales = pd.read_csv('sales.csv')
+
+# Quick exploration
+print(f"Total records: {len(sales)}")
+print(f"Columns: {sales.columns.tolist()}")
+print(f"Date range: {sales['date'].min()} to {sales['date'].max()}")
+```
+                """,
+                "key_points": ["pandas uses DataFrames to organize data in rows and columns", "read_csv() and read_excel() load external data", "Use head(), info(), describe() to explore data quickly"]
+            },
+            {
+                "title": "Data Manipulation with Pandas",
+                "content": """
+**Common Data Operations:**
+
+**1. Adding and Modifying Columns:**
+```python
+# New column from calculation
+df['Bonus'] = df['Salary'] * 0.10
+
+# New column from condition
+df['Senior'] = df['Age'] > 30
+
+# Modify existing column
+df['Name'] = df['Name'].str.upper()
+```
+
+**2. Aggregations:**
+```python
+df['Salary'].sum()      # Total
+df['Salary'].mean()     # Average
+df['Age'].max()         # Maximum
+df['Name'].count()      # Count
+
+# Group by and aggregate
+df.groupby('Department')['Salary'].mean()
+df.groupby('Region').agg({
+    'Sales': 'sum',
+    'Orders': 'count',
+    'Amount': 'mean'
+})
+```
+
+**3. Sorting:**
+```python
+df.sort_values('Salary', ascending=False)  # Sort by column
+df.sort_values(['Dept', 'Salary'])         # Sort by multiple columns
+```
+
+**4. Merging DataFrames:**
+```python
+# Like VLOOKUP in Excel
+merged = pd.merge(orders, customers, on='customer_id', how='left')
+
+# Combine datasets vertically
+all_data = pd.concat([jan_data, feb_data, mar_data])
+```
+
+**Real-World Scenario:**
+```python
+# Calculate sales metrics by region
+summary = sales.groupby('Region').agg({
+    'Amount': ['sum', 'mean', 'count'],
+    'Profit': 'sum'
+}).round(2)
+
+# Find top 10 customers
+top_customers = sales.groupby('Customer')['Amount'].sum().nlargest(10)
+```
+                """,
+                "key_points": ["groupby() aggregates data like pivot tables", "merge() combines DataFrames like VLOOKUP", "Method chaining allows multiple operations in one line"]
+            },
+            {
+                "title": "Data Cleaning in Python",
+                "content": """
+**Handling Common Data Issues:**
+
+**1. Missing Values:**
+```python
+# Find missing values
+df.isnull().sum()                    # Count per column
+
+# Handle missing values
+df.dropna()                          # Remove rows with any missing
+df.dropna(subset=['Name'])           # Remove if Name is missing
+df.fillna(0)                         # Fill with 0
+df['Age'].fillna(df['Age'].mean())   # Fill with mean
+```
+
+**2. Duplicates:**
+```python
+# Find duplicates
+df.duplicated().sum()                # Count duplicates
+df[df.duplicated()]                  # Show duplicate rows
+
+# Remove duplicates
+df.drop_duplicates()                 # Remove exact duplicates
+df.drop_duplicates(subset=['Email']) # Remove based on column
+```
+
+**3. Data Type Conversion:**
+```python
+df['Date'] = pd.to_datetime(df['Date'])        # Convert to datetime
+df['Price'] = df['Price'].astype(float)        # Convert to float
+df['ID'] = df['ID'].astype(str)                # Convert to string
+```
+
+**4. Text Cleaning:**
+```python
+df['Name'] = df['Name'].str.strip()            # Remove whitespace
+df['Name'] = df['Name'].str.lower()            # Lowercase
+df['Name'] = df['Name'].str.title()            # Title Case
+df['Code'] = df['Code'].str.replace('-', '')   # Remove characters
+```
+
+**5. Outlier Detection:**
+```python
+# Using Z-score
+from scipy import stats
+df['z_score'] = stats.zscore(df['Value'])
+outliers = df[abs(df['z_score']) > 3]
+
+# Using IQR
+Q1 = df['Value'].quantile(0.25)
+Q3 = df['Value'].quantile(0.75)
+IQR = Q3 - Q1
+outliers = df[(df['Value'] < Q1 - 1.5*IQR) | (df['Value'] > Q3 + 1.5*IQR)]
+```
+                """,
+                "key_points": ["isnull().sum() shows missing value counts", "drop_duplicates() removes duplicate rows", "to_datetime() converts text to proper dates"]
+            },
+            {
+                "title": "Analysis Scripts and Automation",
+                "content": """
+**Creating Reusable Analysis Scripts:**
+
+**Basic Analysis Template:**
+```python
+import pandas as pd
+
+def analyze_sales(filepath):
+    # Load data
+    df = pd.read_csv(filepath)
+    
+    # Clean data
+    df = df.dropna(subset=['Amount'])
+    df['Date'] = pd.to_datetime(df['Date'])
+    
+    # Calculate metrics
+    results = {
+        'total_sales': df['Amount'].sum(),
+        'avg_order': df['Amount'].mean(),
+        'num_orders': len(df),
+        'top_product': df.groupby('Product')['Amount'].sum().idxmax()
+    }
+    
+    return results
+
+# Run analysis
+metrics = analyze_sales('sales_2024.csv')
+print(f"Total Sales: ${metrics['total_sales']:,.2f}")
+```
+
+**Scheduling Automated Reports:**
+```python
+import schedule
+import time
+
+def daily_report():
+    data = pd.read_csv('daily_data.csv')
+    summary = data.groupby('Category').sum()
+    summary.to_csv(f'report_{date.today()}.csv')
+    print("Report generated!")
+
+# Run every day at 9 AM
+schedule.every().day.at("09:00").do(daily_report)
+
+while True:
+    schedule.run_pending()
+    time.sleep(60)
+```
+
+**Exporting Results:**
+```python
+# To CSV
+df.to_csv('output.csv', index=False)
+
+# To Excel with formatting
+with pd.ExcelWriter('report.xlsx') as writer:
+    summary.to_excel(writer, sheet_name='Summary')
+    details.to_excel(writer, sheet_name='Details')
+
+# To JSON
+df.to_json('data.json', orient='records')
+```
+                """,
+                "key_points": ["Functions make analysis reusable", "schedule library automates recurring tasks", "Export to CSV, Excel, or JSON formats"]
+            }
+        ],
+        "exercises": [
+            {
+                "title": "Calculate Sales Summary",
+                "type": "practical",
+                "question": "Write Python code to load 'sales.csv' and calculate the total sales amount and number of unique customers.",
+                "answer": "```python\nimport pandas as pd\ndf = pd.read_csv('sales.csv')\ntotal_sales = df['Amount'].sum()\nunique_customers = df['CustomerID'].nunique()\nprint(f'Total: ${total_sales:,.2f}')\nprint(f'Unique Customers: {unique_customers}')\n```\nThe .sum() method adds all values, and .nunique() counts unique values.",
+                "hint": "Use pd.read_csv to load, .sum() for total, and .nunique() for unique count"
+            },
+            {
+                "title": "Group By Analysis",
+                "type": "practical",
+                "question": "Write code to find the average order amount by product category from a DataFrame called 'orders'.",
+                "answer": "```python\navg_by_category = orders.groupby('Category')['Amount'].mean()\nprint(avg_by_category.sort_values(ascending=False))\n```\nThis groups orders by Category, then calculates the mean Amount for each group.",
+                "hint": "Use groupby('Category') followed by .mean() on the Amount column"
+            },
+            {
+                "title": "Clean Missing Data",
+                "type": "scenario",
+                "question": "Your DataFrame 'customers' has missing values in the 'Email' column and duplicate rows. Describe the steps to clean this data.",
+                "answer": "```python\n# Step 1: Check missing values\nprint(customers['Email'].isnull().sum())\n\n# Step 2: Remove rows with missing emails\ncustomers = customers.dropna(subset=['Email'])\n\n# Step 3: Remove duplicate rows\ncustomers = customers.drop_duplicates()\n\n# Step 4: Verify cleaning\nprint(f'Remaining rows: {len(customers)}')\n```",
+                "hint": "Use dropna() for missing values and drop_duplicates() for duplicates"
+            }
+        ],
+        "quiz": [
+            {
+                "question": "Which pandas function loads a CSV file?",
+                "options": ["pd.load_csv()", "pd.read_csv()", "pd.import_csv()", "pd.open_csv()"],
+                "correct": 1,
+                "explanation": "pd.read_csv() is the standard function to load CSV files into a pandas DataFrame."
+            },
+            {
+                "question": "df.groupby('Region')['Sales'].sum() does what?",
+                "options": ["Counts rows by region", "Averages sales by region", "Sums sales by region", "Lists all regions"],
+                "correct": 2,
+                "explanation": "This groups data by Region, then sums the Sales column for each region - like a pivot table."
+            },
+            {
+                "question": "How do you check for missing values in a DataFrame?",
+                "options": ["df.missing()", "df.isnull().sum()", "df.check_null()", "df.find_empty()"],
+                "correct": 1,
+                "explanation": "df.isnull().sum() returns the count of missing (null) values for each column."
+            },
+            {
+                "question": "What does df.drop_duplicates() do?",
+                "options": ["Removes columns", "Removes null values", "Removes duplicate rows", "Removes the first row"],
+                "correct": 2,
+                "explanation": "drop_duplicates() removes rows that are exact copies of other rows in the DataFrame."
+            }
+        ]
+    },
+    "Tool: SQL & Databases": {
+        "course": "Databases and Cloud Services",
+        "tool_type": "database",
+        "description": "Master SQL for querying databases - learn SELECT statements, JOINs, aggregations, and data extraction from relational databases.",
+        "lessons": [
+            {
+                "title": "SQL Basics: SELECT Queries",
+                "content": """
+**SQL (Structured Query Language)** is the standard language for working with databases.
+
+**Basic SELECT Statement:**
+```sql
+SELECT column1, column2
+FROM table_name
+WHERE condition
+ORDER BY column1;
+```
+
+**Examples:**
+
+**1. Select All Data:**
+```sql
+SELECT * FROM customers;
+```
+
+**2. Select Specific Columns:**
+```sql
+SELECT first_name, last_name, email
+FROM customers;
+```
+
+**3. Filter with WHERE:**
+```sql
+SELECT * FROM orders
+WHERE order_date > '2024-01-01';
+
+SELECT * FROM products
+WHERE price BETWEEN 10 AND 50;
+
+SELECT * FROM customers
+WHERE city IN ('New York', 'Los Angeles', 'Chicago');
+```
+
+**4. Sort Results:**
+```sql
+SELECT * FROM sales
+ORDER BY amount DESC;  -- Highest first
+
+SELECT * FROM employees
+ORDER BY department, hire_date;
+```
+
+**5. Limit Results:**
+```sql
+SELECT * FROM products
+ORDER BY sales DESC
+LIMIT 10;  -- Top 10 best sellers
+```
+
+**Common WHERE Operators:**
+| Operator | Example | Description |
+|----------|---------|-------------|
+| = | WHERE city = 'Oslo' | Exact match |
+| > < >= <= | WHERE price > 100 | Comparisons |
+| BETWEEN | WHERE age BETWEEN 20 AND 30 | Range |
+| LIKE | WHERE name LIKE 'J%' | Pattern match |
+| IN | WHERE status IN ('Active', 'Pending') | Multiple values |
+| IS NULL | WHERE email IS NULL | Missing values |
+                """,
+                "key_points": ["SELECT retrieves data from tables", "WHERE filters rows based on conditions", "ORDER BY sorts results, LIMIT restricts row count"]
+            },
+            {
+                "title": "JOINs: Combining Tables",
+                "content": """
+**JOINs connect data from multiple tables** based on related columns.
+
+**Types of JOINs:**
+
+**1. INNER JOIN (Most Common)**
+Returns only matching rows from both tables.
+```sql
+SELECT orders.order_id, customers.name, orders.amount
+FROM orders
+INNER JOIN customers ON orders.customer_id = customers.id;
+```
+
+**2. LEFT JOIN**
+Returns all rows from the left table, matched rows from the right.
+```sql
+SELECT customers.name, orders.order_id
+FROM customers
+LEFT JOIN orders ON customers.id = orders.customer_id;
+-- Shows all customers, even those without orders (NULL for orders)
+```
+
+**3. RIGHT JOIN**
+Returns all rows from the right table, matched rows from the left.
+```sql
+SELECT customers.name, orders.order_id
+FROM customers
+RIGHT JOIN orders ON customers.id = orders.customer_id;
+```
+
+**Visual Representation:**
+```
+INNER JOIN:     [A ∩ B]     - Only matching records
+LEFT JOIN:      [A + (A∩B)] - All from left + matches
+RIGHT JOIN:     [(A∩B) + B] - All from right + matches
+FULL OUTER JOIN:[A + B]     - All records from both
+```
+
+**Real-World Example:**
+You have three tables: `orders`, `customers`, `products`
+
+```sql
+SELECT 
+    o.order_id,
+    c.customer_name,
+    p.product_name,
+    o.quantity,
+    o.order_date
+FROM orders o
+INNER JOIN customers c ON o.customer_id = c.id
+INNER JOIN products p ON o.product_id = p.id
+WHERE o.order_date >= '2024-01-01'
+ORDER BY o.order_date DESC;
+```
+                """,
+                "key_points": ["INNER JOIN returns only matching rows", "LEFT JOIN keeps all rows from the first table", "Use aliases (o, c, p) to simplify queries"]
+            },
+            {
+                "title": "Aggregations and GROUP BY",
+                "content": """
+**Aggregate Functions** calculate values across multiple rows.
+
+**Common Aggregate Functions:**
+```sql
+COUNT(*)        -- Number of rows
+COUNT(column)   -- Non-null values in column
+SUM(column)     -- Total
+AVG(column)     -- Average
+MIN(column)     -- Minimum value
+MAX(column)     -- Maximum value
+```
+
+**GROUP BY: Aggregate by Category**
+```sql
+SELECT category, SUM(amount) as total_sales
+FROM sales
+GROUP BY category;
+```
+
+**Example Results:**
+| category | total_sales |
+|----------|-------------|
+| Electronics | 150000 |
+| Clothing | 85000 |
+| Home | 62000 |
+
+**HAVING: Filter Grouped Results**
+```sql
+SELECT customer_id, COUNT(*) as order_count
+FROM orders
+GROUP BY customer_id
+HAVING COUNT(*) >= 5;  -- Only customers with 5+ orders
+```
+
+**Difference: WHERE vs HAVING**
+- WHERE filters rows BEFORE grouping
+- HAVING filters groups AFTER aggregation
+
+**Complex Example:**
+```sql
+SELECT 
+    region,
+    COUNT(*) as num_orders,
+    SUM(amount) as total_revenue,
+    AVG(amount) as avg_order,
+    MAX(amount) as largest_order
+FROM orders
+WHERE order_date >= '2024-01-01'
+GROUP BY region
+HAVING SUM(amount) > 10000
+ORDER BY total_revenue DESC;
+```
+                """,
+                "key_points": ["SUM, COUNT, AVG, MIN, MAX are aggregate functions", "GROUP BY creates groups for aggregation", "HAVING filters after grouping, WHERE filters before"]
+            },
+            {
+                "title": "Subqueries and Advanced Techniques",
+                "content": """
+**Subqueries: Queries Within Queries**
+
+**1. Subquery in WHERE:**
+```sql
+-- Find customers who spent above average
+SELECT customer_name, total_spent
+FROM customers
+WHERE total_spent > (SELECT AVG(total_spent) FROM customers);
+```
+
+**2. Subquery in FROM:**
+```sql
+-- Calculate metrics on aggregated data
+SELECT region, avg_order
+FROM (
+    SELECT region, AVG(amount) as avg_order
+    FROM orders
+    GROUP BY region
+) as region_summary
+WHERE avg_order > 100;
+```
+
+**Common Table Expressions (CTEs):**
+```sql
+WITH monthly_sales AS (
+    SELECT 
+        DATE_TRUNC('month', order_date) as month,
+        SUM(amount) as revenue
+    FROM orders
+    GROUP BY DATE_TRUNC('month', order_date)
+)
+SELECT month, revenue,
+       revenue - LAG(revenue) OVER (ORDER BY month) as change
+FROM monthly_sales;
+```
+
+**Window Functions:**
+```sql
+-- Rank salespeople by performance
+SELECT 
+    salesperson,
+    total_sales,
+    RANK() OVER (ORDER BY total_sales DESC) as rank
+FROM sales_summary;
+
+-- Running total
+SELECT 
+    order_date,
+    amount,
+    SUM(amount) OVER (ORDER BY order_date) as running_total
+FROM orders;
+```
+
+**CASE Statements:**
+```sql
+SELECT 
+    product_name,
+    price,
+    CASE 
+        WHEN price < 10 THEN 'Budget'
+        WHEN price < 50 THEN 'Mid-range'
+        ELSE 'Premium'
+    END as category
+FROM products;
+```
+                """,
+                "key_points": ["Subqueries can be used in WHERE, FROM, or SELECT", "CTEs make complex queries more readable", "Window functions calculate across rows without grouping"]
+            }
+        ],
+        "exercises": [
+            {
+                "title": "Basic Query",
+                "type": "practical",
+                "question": "Write a SQL query to find all orders over $500 from 2024, sorted by amount (highest first).",
+                "answer": "```sql\nSELECT *\nFROM orders\nWHERE amount > 500\n  AND order_date >= '2024-01-01'\nORDER BY amount DESC;\n```\nThis filters orders by amount AND date, then sorts descending.",
+                "hint": "Use WHERE with two conditions (AND), ORDER BY with DESC"
+            },
+            {
+                "title": "JOIN Two Tables",
+                "type": "practical",
+                "question": "Write a query to show order_id, customer_name, and amount by joining 'orders' and 'customers' tables on customer_id.",
+                "answer": "```sql\nSELECT o.order_id, c.customer_name, o.amount\nFROM orders o\nINNER JOIN customers c ON o.customer_id = c.id;\n```\nINNER JOIN connects the tables where customer_id matches.",
+                "hint": "Use INNER JOIN with ON clause to specify the matching columns"
+            },
+            {
+                "title": "Aggregation Challenge",
+                "type": "practical",
+                "question": "Write a query to find total sales by product category, but only show categories with total sales over $10,000.",
+                "answer": "```sql\nSELECT category, SUM(amount) as total_sales\nFROM sales\nGROUP BY category\nHAVING SUM(amount) > 10000\nORDER BY total_sales DESC;\n```\nGROUP BY aggregates by category, HAVING filters the grouped results.",
+                "hint": "Use GROUP BY for categories, HAVING (not WHERE) to filter after aggregation"
+            }
+        ],
+        "quiz": [
+            {
+                "question": "Which SQL clause filters rows BEFORE grouping?",
+                "options": ["HAVING", "WHERE", "GROUP BY", "ORDER BY"],
+                "correct": 1,
+                "explanation": "WHERE filters individual rows before any grouping. HAVING filters after grouping."
+            },
+            {
+                "question": "What does LEFT JOIN do?",
+                "options": ["Returns only matching rows", "Returns all rows from the left table plus matches", "Returns all rows from both tables", "Joins tables side by side"],
+                "correct": 1,
+                "explanation": "LEFT JOIN returns all rows from the left (first) table, and matching rows from the right table. Non-matches show NULL."
+            },
+            {
+                "question": "SELECT COUNT(*) FROM orders returns:",
+                "options": ["All order details", "Number of columns", "Total order amount", "Number of rows"],
+                "correct": 3,
+                "explanation": "COUNT(*) counts all rows in the table. COUNT(column) would count non-null values in that column."
+            },
+            {
+                "question": "To show only top 5 results, use:",
+                "options": ["TOP 5", "FIRST 5", "LIMIT 5", "MAX 5"],
+                "correct": 2,
+                "explanation": "LIMIT 5 restricts the result to 5 rows. (Note: TOP is used in SQL Server, LIMIT in MySQL/PostgreSQL)"
+            }
+        ]
+    },
+    "Tool: Tableau & Power BI": {
+        "course": "Data Visualisation",
+        "tool_type": "visualization",
+        "description": "Learn to create professional dashboards and data visualizations using Business Intelligence tools like Tableau and Power BI.",
+        "lessons": [
+            {
+                "title": "Dashboard Design Principles",
+                "content": """
+**Creating Effective Dashboards**
+
+**The 5-Second Rule:**
+Users should understand the main message within 5 seconds of viewing your dashboard.
+
+**Key Design Principles:**
+
+**1. Hierarchy: Most Important First**
+- Place key metrics at the top-left (where eyes naturally start)
+- Use size to indicate importance
+- Group related information together
+
+**2. Layout Patterns:**
+```
+┌─────────────────────────────────┐
+│     KPI Cards (Top Metrics)     │
+├───────────────┬─────────────────┤
+│  Main Chart   │  Supporting     │
+│  (Trend/Map)  │  Charts         │
+├───────────────┴─────────────────┤
+│     Detail Table / Filters      │
+└─────────────────────────────────┘
+```
+
+**3. Color Best Practices:**
+- Use a consistent color palette (3-5 colors max)
+- Reserve red for negative/alerts
+- Reserve green for positive/good
+- Use gray for context/secondary info
+- Ensure color-blind accessibility
+
+**4. White Space:**
+- Don't overcrowd - let visualizations breathe
+- Group related elements with subtle borders or backgrounds
+- Consistent margins and padding
+
+**5. Interactivity:**
+- Add filters for user exploration
+- Use drill-down for details on demand
+- Cross-filter charts when one is clicked
+- Include tooltips for additional context
+
+**Common Mistakes to Avoid:**
+- Too many charts (aim for 4-6 per dashboard)
+- 3D charts (distort perception)
+- Pie charts with many slices (use bar charts instead)
+- Inconsistent formatting across charts
+                """,
+                "key_points": ["Key metrics go top-left", "Limit to 3-5 colors", "Less is more - avoid clutter"]
+            },
+            {
+                "title": "Choosing the Right Visualization",
+                "content": """
+**Match Your Chart to Your Data Story**
+
+**1. Comparisons:**
+| Chart Type | Best For |
+|------------|----------|
+| Bar Chart | Comparing categories |
+| Column Chart | Comparing over time (few periods) |
+| Bullet Chart | Comparing to a target |
+| Lollipop Chart | Many categories, cleaner than bars |
+
+**2. Trends Over Time:**
+| Chart Type | Best For |
+|------------|----------|
+| Line Chart | Continuous time series |
+| Area Chart | Showing volume over time |
+| Sparklines | Compact trends in tables |
+
+**3. Parts of a Whole:**
+| Chart Type | Best For |
+|------------|----------|
+| Stacked Bar | Composition with few categories |
+| Treemap | Hierarchical part-to-whole |
+| Donut Chart | Simple 2-3 part breakdowns |
+
+**4. Relationships:**
+| Chart Type | Best For |
+|------------|----------|
+| Scatter Plot | Correlation between variables |
+| Bubble Chart | Three variables (x, y, size) |
+| Heat Map | Patterns across two dimensions |
+
+**5. Geographic:**
+| Chart Type | Best For |
+|------------|----------|
+| Choropleth Map | Values by region |
+| Symbol Map | Point locations with values |
+
+**Decision Framework:**
+1. What question are you answering?
+2. How many variables?
+3. What type of data? (categories, time, geography)
+4. Who is the audience?
+
+**Example:**
+"How have sales changed by region over the past year?"
+- Time + Categories = Line chart with one line per region
+- Or: Small multiples (one chart per region)
+                """,
+                "key_points": ["Bar charts for comparisons, line charts for trends", "Avoid pie charts with many slices", "Consider your audience when choosing complexity"]
+            },
+            {
+                "title": "Building in Tableau",
+                "content": """
+**Tableau Workflow:**
+
+**1. Connect to Data:**
+- File → New → Connect to data source
+- Supports: Excel, CSV, databases, cloud services
+- Use "Data Interpreter" to clean messy files
+
+**2. Understand the Interface:**
+```
+┌──────────────────────────────────────────┐
+│ Data Pane │ Cards & Shelves  │ Worksheet │
+│ (Fields)  │ (Rows, Columns,  │ (Canvas)  │
+│           │  Filters, Marks) │           │
+└──────────────────────────────────────────┘
+```
+
+**3. Building Visualizations:**
+- Drag DIMENSIONS (categorical) to Rows/Columns
+- Drag MEASURES (numerical) to create charts
+- Tableau automatically suggests chart types
+
+**4. Key Actions:**
+```
+Show Me Panel     → Quick chart suggestions
+Marks Card        → Color, Size, Label, Tooltip
+Filters Shelf     → Filter data
+Pages Shelf       → Animation through data
+```
+
+**5. Calculated Fields:**
+```
+// Example: Profit Margin
+[Profit] / [Sales]
+
+// Example: Sales Category
+IF [Sales] > 10000 THEN "High"
+ELSEIF [Sales] > 5000 THEN "Medium"
+ELSE "Low"
+END
+```
+
+**6. Creating Dashboards:**
+- New → Dashboard
+- Drag worksheets onto the canvas
+- Add filters, text boxes, images
+- Set up actions (filter, highlight, URL)
+
+**Pro Tips:**
+- Use Ctrl+click to multi-select fields
+- Right-click for format options
+- Save as .twbx to include data with workbook
+                """,
+                "key_points": ["Dimensions are categories, Measures are numbers", "Drag fields to Rows/Columns to build charts", "Dashboards combine multiple worksheets"]
+            },
+            {
+                "title": "Building in Power BI",
+                "content": """
+**Power BI Workflow:**
+
+**1. Get Data:**
+- Home → Get Data → Choose source
+- Transform data in Power Query Editor
+- Load to data model
+
+**2. Interface Overview:**
+```
+┌────────────────────────────────────────────┐
+│ Report View │ Data View │ Model View       │
+├────────────────────────────────────────────┤
+│ Fields │ Visualizations │ Report Canvas    │
+│ Pane   │ Pane           │                  │
+└────────────────────────────────────────────┘
+```
+
+**3. Creating Visuals:**
+1. Click visual type in Visualizations pane
+2. Drag fields to Values, Axis, Legend
+3. Format in Format pane (paint roller icon)
+
+**4. DAX Formulas:**
+```
+// Total Sales
+Total Sales = SUM(Sales[Amount])
+
+// Year-over-Year Growth
+YoY Growth = 
+DIVIDE(
+    [Total Sales] - CALCULATE([Total Sales], SAMEPERIODLASTYEAR('Date'[Date])),
+    CALCULATE([Total Sales], SAMEPERIODLASTYEAR('Date'[Date]))
+)
+
+// Running Total
+Running Total = 
+CALCULATE(
+    [Total Sales],
+    FILTER(ALL('Date'), 'Date'[Date] <= MAX('Date'[Date]))
+)
+```
+
+**5. Key Features:**
+- **Slicers**: Interactive filters
+- **Drill Through**: Right-click to see details
+- **Bookmarks**: Save views/states
+- **Q&A**: Natural language queries
+
+**6. Publishing:**
+- Publish → Select workspace
+- Share dashboards with colleagues
+- Schedule data refresh
+- Set up alerts on metrics
+
+**Tableau vs Power BI:**
+| Feature | Tableau | Power BI |
+|---------|---------|----------|
+| Strengths | Visualization | Microsoft integration |
+| Learning | Steeper curve | Easier for Excel users |
+| Cost | Higher | Lower (included in Microsoft 365) |
+                """,
+                "key_points": ["Power BI uses DAX for calculations", "Slicers are interactive dashboard filters", "Publish to Power BI Service to share online"]
+            }
+        ],
+        "exercises": [
+            {
+                "title": "Choose the Right Chart",
+                "type": "scenario",
+                "question": "You need to show how market share has changed over 5 years for 4 companies. What chart type would you use and why?",
+                "answer": "A stacked area chart or 100% stacked area chart would work best. It shows: 1) Time progression (x-axis), 2) Each company's share (different colors), 3) How shares changed relative to each other. Alternative: Line chart if you want to emphasize individual company trends.",
+                "hint": "You're showing parts of a whole (market share) over time"
+            },
+            {
+                "title": "Dashboard Layout",
+                "type": "scenario",
+                "question": "Design a sales dashboard layout for a manager who needs to see: Total Revenue, Monthly Trend, Sales by Region, and Top Products. Describe where each element should go.",
+                "answer": "Layout: 1) TOP: KPI cards for Total Revenue, Orders, Avg Order Value (most important, immediate visibility). 2) MIDDLE-LEFT: Line chart showing Monthly Sales Trend (main story, largest space). 3) MIDDLE-RIGHT: Map or bar chart for Sales by Region. 4) BOTTOM: Table or horizontal bar chart for Top 10 Products with details. Add date filter at top-right.",
+                "hint": "Think about visual hierarchy - what's most important goes where the eye looks first"
+            },
+            {
+                "title": "Create a DAX Measure",
+                "type": "practical",
+                "question": "Write a DAX formula to calculate the percentage of sales that came from the 'Online' channel (where Sales[Channel] = 'Online').",
+                "answer": "```\nOnline % = \nDIVIDE(\n    CALCULATE(SUM(Sales[Amount]), Sales[Channel] = \"Online\"),\n    SUM(Sales[Amount])\n)\n```\nThis calculates Online sales divided by Total sales. CALCULATE applies the filter for Online channel.",
+                "hint": "Use CALCULATE to filter for Online, then DIVIDE by total"
+            }
+        ],
+        "quiz": [
+            {
+                "question": "What's the best chart for showing sales trends over 12 months?",
+                "options": ["Pie chart", "Bar chart", "Line chart", "Scatter plot"],
+                "correct": 2,
+                "explanation": "Line charts are ideal for showing continuous trends over time. They clearly show patterns, increases, and decreases."
+            },
+            {
+                "question": "In dashboard design, key metrics should be placed:",
+                "options": ["At the bottom", "In the center", "At the top-left", "Hidden behind filters"],
+                "correct": 2,
+                "explanation": "Eyes naturally start at the top-left, so key metrics should be placed there for immediate visibility."
+            },
+            {
+                "question": "In Tableau, what are DIMENSIONS?",
+                "options": ["Numerical values for calculations", "Categorical fields for grouping", "Chart types", "Color settings"],
+                "correct": 1,
+                "explanation": "Dimensions are categorical fields (like Region, Product Name) used to group and categorize data. Measures are numerical values."
+            },
+            {
+                "question": "In Power BI, DAX is used for:",
+                "options": ["Connecting to databases", "Creating calculated measures and columns", "Designing visual layouts", "Sharing dashboards"],
+                "correct": 1,
+                "explanation": "DAX (Data Analysis Expressions) is Power BI's formula language for creating calculated columns, measures, and tables."
+            }
+        ]
+    },
+    "Tool: Statistical Analysis": {
+        "course": "Statistical Tools",
+        "tool_type": "statistics",
+        "description": "Learn statistical analysis techniques including hypothesis testing, confidence intervals, and when to use different statistical methods.",
+        "lessons": [
+            {
+                "title": "Descriptive Statistics Fundamentals",
+                "content": """
+**Summarizing Data with Numbers**
+
+**Measures of Central Tendency:**
+
+**1. Mean (Average)**
+```
+Mean = Sum of all values / Number of values
+
+Example: 10, 20, 30, 40, 50
+Mean = 150 / 5 = 30
+```
+Use when: Data is symmetric, no extreme outliers
+
+**2. Median (Middle Value)**
+```
+Sort values, find the middle
+Example: 10, 20, 30, 40, 100
+Median = 30 (middle value)
+```
+Use when: Data has outliers (median is resistant to extremes)
+
+**3. Mode (Most Frequent)**
+```
+Example: 10, 20, 20, 30, 20
+Mode = 20 (appears most often)
+```
+Use when: Working with categorical data
+
+**Measures of Spread:**
+
+**1. Range**
+```
+Range = Maximum - Minimum
+Example: Max=100, Min=10 → Range = 90
+```
+
+**2. Variance**
+```
+Average of squared deviations from mean
+σ² = Σ(x - μ)² / n
+```
+
+**3. Standard Deviation**
+```
+Square root of variance
+σ = √(Variance)
+
+Interpretation:
+- 68% of data within ±1 SD of mean
+- 95% of data within ±2 SD of mean
+- 99.7% of data within ±3 SD of mean
+```
+
+**4. Interquartile Range (IQR)**
+```
+IQR = Q3 - Q1 (75th percentile - 25th percentile)
+Used for identifying outliers:
+Outlier if value < Q1 - 1.5×IQR or > Q3 + 1.5×IQR
+```
+
+**Real-World Application:**
+Salary data: [30K, 35K, 40K, 45K, 500K]
+- Mean = 130K (misleading due to outlier)
+- Median = 40K (more representative)
+- Report BOTH with explanation of the outlier
+                """,
+                "key_points": ["Mean is affected by outliers, median is not", "Standard deviation shows data spread", "Always report both mean and median for skewed data"]
+            },
+            {
+                "title": "Hypothesis Testing Basics",
+                "content": """
+**Making Data-Driven Decisions**
+
+**What is Hypothesis Testing?**
+A method to determine if observed results are statistically significant or due to chance.
+
+**Key Concepts:**
+
+**1. Null Hypothesis (H₀)**
+The "nothing special" assumption
+Example: "There is no difference in sales before and after the marketing campaign."
+
+**2. Alternative Hypothesis (H₁)**
+What you're trying to prove
+Example: "The marketing campaign increased sales."
+
+**3. P-value**
+Probability of seeing your results if H₀ is true
+- p < 0.05: Statistically significant (reject H₀)
+- p ≥ 0.05: Not significant (fail to reject H₀)
+
+**4. Significance Level (α)**
+Usually set at 0.05 (5%)
+- α = 0.05 means 5% chance of false positive
+
+**Common Tests:**
+
+| Test | When to Use |
+|------|-------------|
+| T-test | Compare means of 2 groups |
+| ANOVA | Compare means of 3+ groups |
+| Chi-square | Test categorical relationships |
+| Correlation | Test relationship strength |
+
+**Example Workflow:**
+1. **Question**: Did the new website design increase conversions?
+2. **H₀**: Conversion rate is the same (no effect)
+3. **H₁**: New design has higher conversion rate
+4. **Collect Data**: Old design: 3.2%, New design: 4.1%
+5. **Run Test**: Calculate p-value
+6. **Interpret**: p = 0.02 < 0.05 → Significant!
+7. **Conclude**: New design significantly improved conversions
+
+**Caution:**
+- Statistical significance ≠ practical importance
+- p = 0.04 is not "more significant" than p = 0.03
+- Always consider effect size alongside p-value
+                """,
+                "key_points": ["p < 0.05 typically means statistically significant", "Null hypothesis assumes no effect", "Statistical significance doesn't guarantee practical importance"]
+            },
+            {
+                "title": "Choosing the Right Statistical Test",
+                "content": """
+**Decision Framework for Statistical Tests**
+
+**Step 1: What Type of Data?**
+- Continuous (numbers): Age, Sales, Temperature
+- Categorical (groups): Gender, Region, Product Type
+
+**Step 2: How Many Groups/Variables?**
+
+**Comparing Groups:**
+```
+Comparing 2 groups:
+├── Continuous outcome → T-test
+│   Example: Compare sales between Region A and B
+│
+└── Categorical outcome → Chi-square test
+    Example: Compare click rates between 2 designs
+
+Comparing 3+ groups:
+├── Continuous outcome → ANOVA
+│   Example: Compare satisfaction across 5 departments
+│
+└── Categorical outcome → Chi-square test
+    Example: Compare preferences across age groups
+```
+
+**Analyzing Relationships:**
+```
+Two continuous variables → Correlation / Regression
+Example: Relationship between ad spend and sales
+
+One continuous + categories → T-test / ANOVA
+Example: Effect of training (yes/no) on performance
+
+Two categorical variables → Chi-square
+Example: Relationship between gender and product preference
+```
+
+**Quick Reference Table:**
+
+| Scenario | Test |
+|----------|------|
+| Compare 2 group means | Independent t-test |
+| Compare same group before/after | Paired t-test |
+| Compare 3+ group means | One-way ANOVA |
+| Predict outcome from variables | Regression |
+| Test category relationships | Chi-square |
+| Measure relationship strength | Correlation |
+
+**Sample Size Considerations:**
+- Small samples (n < 30): Use non-parametric tests
+- Large samples: Central Limit Theorem helps
+- Rule of thumb: At least 30 per group for t-tests
+                """,
+                "key_points": ["T-test for 2 groups, ANOVA for 3+", "Chi-square for categorical data", "Always check sample size requirements"]
+            },
+            {
+                "title": "Confidence Intervals and Effect Size",
+                "content": """
+**Beyond P-values: Practical Significance**
+
+**Confidence Intervals:**
+Range where the true value likely falls.
+
+**Interpreting a 95% CI:**
+```
+Average order value: $45 (95% CI: $42 - $48)
+
+Meaning: We're 95% confident the true average
+is between $42 and $48.
+```
+
+**Key Insights from CIs:**
+- Narrow CI = More precise estimate
+- If CI includes 0 (for differences): Not significant
+- CIs that don't overlap → Significantly different
+
+**Example:**
+```
+Group A mean: 50 (95% CI: 45-55)
+Group B mean: 60 (95% CI: 56-64)
+
+CIs don't overlap → Significant difference!
+```
+
+**Effect Size:**
+Measures the magnitude of an effect, independent of sample size.
+
+**Common Effect Size Measures:**
+
+**1. Cohen's d (for mean differences):**
+```
+d = (Mean1 - Mean2) / Pooled SD
+
+Interpretation:
+d = 0.2: Small effect
+d = 0.5: Medium effect
+d = 0.8: Large effect
+```
+
+**2. R-squared (for regression):**
+```
+R² = Proportion of variance explained
+
+Example: R² = 0.64 means 64% of variation
+in Y is explained by X
+```
+
+**3. Correlation Coefficient (r):**
+```
+r = 0.1-0.3: Weak
+r = 0.3-0.5: Moderate
+r = 0.5-0.7: Strong
+r > 0.7: Very strong
+```
+
+**Real-World Example:**
+"The new training program significantly improved test scores (p < 0.01), with a medium effect size (d = 0.52). Scores increased from 72 (±8) to 76 (±7)."
+
+This tells the full story: significant, meaningful, and practical!
+                """,
+                "key_points": ["Confidence intervals show the range of plausible values", "Effect size shows practical importance", "Report both p-value AND effect size"]
+            }
+        ],
+        "exercises": [
+            {
+                "title": "Choose Correct Test",
+                "type": "scenario",
+                "question": "You want to compare customer satisfaction scores (1-10) across 4 different store locations. Which statistical test should you use?",
+                "answer": "Use One-Way ANOVA. Reasons: 1) You're comparing means (satisfaction scores are continuous), 2) You have more than 2 groups (4 stores), 3) Groups are independent. If ANOVA shows significance, follow up with post-hoc tests to see which specific stores differ.",
+                "hint": "You have continuous data (scores) and 3+ independent groups"
+            },
+            {
+                "title": "Interpret Results",
+                "type": "practical",
+                "question": "A study reports: 'Mean difference = 5 points, p = 0.03, 95% CI: [1.2, 8.8], Cohen's d = 0.45'. What does this tell you?",
+                "answer": "This tells us: 1) The difference (5 points) is statistically significant (p < 0.05). 2) The true difference is likely between 1.2 and 8.8 points (CI doesn't include 0). 3) The effect size is 'small to medium' (d = 0.45). 4) The finding is statistically significant but the practical impact is moderate.",
+                "hint": "Consider what each metric (p-value, CI, effect size) tells you about the finding"
+            },
+            {
+                "title": "Descriptive Statistics",
+                "type": "practical",
+                "question": "Calculate the mean and median for this salary data (in thousands): 40, 45, 42, 48, 150, 44, 46. Which measure better represents the typical salary?",
+                "answer": "Mean = (40+45+42+48+150+44+46)/7 = 415/7 = 59.3K. Median = 45K (middle value when sorted: 40,42,44,45,46,48,150). The MEDIAN (45K) better represents typical salary because the 150K outlier pulls the mean up significantly. Most employees earn around 45K, not 59K.",
+                "hint": "Sort the values to find the median. Consider which measure is affected by the outlier"
+            }
+        ],
+        "quiz": [
+            {
+                "question": "A p-value of 0.03 means:",
+                "options": ["97% chance the result is true", "3% chance of seeing this result if null hypothesis is true", "The effect size is 0.03", "3% of data is significant"],
+                "correct": 1,
+                "explanation": "P-value is the probability of observing results at least as extreme as yours, assuming the null hypothesis is true. p=0.03 means 3% chance."
+            },
+            {
+                "question": "To compare means across 5 different groups, use:",
+                "options": ["T-test", "Chi-square", "ANOVA", "Correlation"],
+                "correct": 2,
+                "explanation": "ANOVA (Analysis of Variance) is designed to compare means across 3 or more groups. T-test is for 2 groups only."
+            },
+            {
+                "question": "A 95% confidence interval of [2, 8] for a difference means:",
+                "options": ["95% of data falls in this range", "We're 95% confident the true difference is between 2 and 8", "The p-value is 0.95", "The effect is 95% significant"],
+                "correct": 1,
+                "explanation": "A 95% CI means we're 95% confident the true population value falls within this range. Since it doesn't include 0, the difference is significant."
+            },
+            {
+                "question": "Cohen's d = 0.8 indicates:",
+                "options": ["Not significant", "Small effect", "Medium effect", "Large effect"],
+                "correct": 3,
+                "explanation": "Cohen's d of 0.8 or higher is considered a large effect size. Small=0.2, Medium=0.5, Large=0.8."
+            }
+        ]
     }
 }
 
