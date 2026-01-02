@@ -3071,7 +3071,8 @@ elif page == "Playground":
     
     playground_tab = st.selectbox(
         "Choose a tool:",
-        ["Python Code Runner", "Excel Formula Simulator", "SQL Query Tester", "Chart Builder"]
+        ["Python Code Runner", "Excel Formula Simulator", "SQL Query Tester", "Chart Builder", 
+         "Statistical Analysis", "Power Query Simulator", "Z-Score & Outlier Tool"]
     )
     
     if playground_tab == "Python Code Runner":
@@ -3699,6 +3700,622 @@ elif page == "Playground":
         st.markdown("- **Line charts**: Best for showing trends over time")
         st.markdown("- **Area charts**: Good for showing volume/cumulative data")
         st.markdown("- **Scatter plots**: Best for showing relationships between two variables")
+    
+    elif playground_tab == "Statistical Analysis":
+        st.subheader("📊 Statistical Analysis Tool")
+        st.markdown("Perform correlation, regression, ANOVA, histogram, and covariance analysis on your data!")
+        
+        from scipy import stats
+        import numpy as np
+        
+        # Initialize sample data for statistical analysis
+        if 'stats_data' not in st.session_state:
+            np.random.seed(42)
+            st.session_state.stats_data = pd.DataFrame({
+                'Advertising': [10, 15, 20, 25, 30, 35, 40, 45, 50, 55],
+                'Sales': [100, 120, 150, 170, 200, 220, 250, 280, 300, 320],
+                'Region': ['A', 'B', 'A', 'B', 'A', 'B', 'A', 'B', 'A', 'B'],
+                'Quarter': ['Q1', 'Q1', 'Q2', 'Q2', 'Q3', 'Q3', 'Q4', 'Q4', 'Q1', 'Q2'],
+                'Employees': [5, 8, 10, 12, 15, 18, 20, 22, 25, 28]
+            })
+        
+        st.markdown("### Your Data (Edit to add your own!)")
+        st.caption("Click cells to edit. Use + to add rows.")
+        st.session_state.stats_data = st.data_editor(
+            st.session_state.stats_data,
+            num_rows="dynamic",
+            use_container_width=True,
+            key="stats_data_editor"
+        )
+        
+        stats_data = st.session_state.stats_data
+        numeric_cols = stats_data.select_dtypes(include=['number']).columns.tolist()
+        categorical_cols = stats_data.select_dtypes(include=['object']).columns.tolist()
+        
+        st.markdown("### Choose Analysis Type")
+        
+        analysis_type = st.selectbox(
+            "Analysis:",
+            ["Correlation Analysis", "Linear Regression", "ANOVA (Analysis of Variance)", 
+             "Histogram", "Covariance Analysis", "Descriptive Statistics"]
+        )
+        
+        st.markdown("---")
+        
+        if analysis_type == "Correlation Analysis":
+            st.markdown("**Correlation** measures the strength and direction of relationship between two variables.")
+            st.markdown("- Values range from -1 to +1")
+            st.markdown("- +1 = perfect positive correlation, -1 = perfect negative correlation, 0 = no correlation")
+            
+            if len(numeric_cols) >= 2:
+                col1, col2 = st.columns(2)
+                with col1:
+                    var1 = st.selectbox("Variable 1:", numeric_cols)
+                with col2:
+                    var2 = st.selectbox("Variable 2:", [c for c in numeric_cols if c != var1])
+                
+                if st.button("Calculate Correlation", type="primary"):
+                    try:
+                        correlation, p_value = stats.pearsonr(stats_data[var1], stats_data[var2])
+                        
+                        st.markdown("### Results")
+                        
+                        col1, col2, col3 = st.columns(3)
+                        with col1:
+                            st.metric("Correlation (r)", f"{correlation:.4f}")
+                        with col2:
+                            st.metric("R-squared", f"{correlation**2:.4f}")
+                        with col3:
+                            st.metric("P-value", f"{p_value:.4f}")
+                        
+                        # Interpretation
+                        if abs(correlation) >= 0.7:
+                            strength = "strong"
+                        elif abs(correlation) >= 0.4:
+                            strength = "moderate"
+                        else:
+                            strength = "weak"
+                        
+                        direction = "positive" if correlation > 0 else "negative"
+                        
+                        st.success(f"There is a **{strength} {direction}** correlation between {var1} and {var2}.")
+                        
+                        if p_value < 0.05:
+                            st.info("The correlation is statistically significant (p < 0.05).")
+                        else:
+                            st.warning("The correlation is NOT statistically significant (p >= 0.05).")
+                        
+                        # Show scatter plot
+                        st.markdown("### Scatter Plot")
+                        import altair as alt
+                        scatter = alt.Chart(stats_data).mark_circle(size=60).encode(
+                            x=var1,
+                            y=var2,
+                            tooltip=[var1, var2]
+                        ).properties(width=600, height=300)
+                        
+                        # Add trend line
+                        line = scatter.transform_regression(var1, var2).mark_line(color='red')
+                        st.altair_chart(scatter + line, use_container_width=True)
+                        
+                        st.code(f"Excel: =CORREL({var1}:{var1}, {var2}:{var2})")
+                        st.code(f"Python: scipy.stats.pearsonr(df['{var1}'], df['{var2}'])")
+                    except Exception as e:
+                        st.error(f"Error: {str(e)}")
+            else:
+                st.warning("Need at least 2 numeric columns for correlation analysis.")
+        
+        elif analysis_type == "Linear Regression":
+            st.markdown("**Linear Regression** finds the best-fit line to predict one variable from another.")
+            st.markdown("Formula: y = mx + b (where m = slope, b = intercept)")
+            
+            if len(numeric_cols) >= 2:
+                col1, col2 = st.columns(2)
+                with col1:
+                    x_var = st.selectbox("Independent Variable (X):", numeric_cols)
+                with col2:
+                    y_var = st.selectbox("Dependent Variable (Y):", [c for c in numeric_cols if c != x_var])
+                
+                if st.button("Run Regression", type="primary"):
+                    try:
+                        slope, intercept, r_value, p_value, std_err = stats.linregress(
+                            stats_data[x_var], stats_data[y_var]
+                        )
+                        
+                        st.markdown("### Regression Results")
+                        
+                        col1, col2, col3, col4 = st.columns(4)
+                        with col1:
+                            st.metric("Slope (m)", f"{slope:.4f}")
+                        with col2:
+                            st.metric("Intercept (b)", f"{intercept:.4f}")
+                        with col3:
+                            st.metric("R-squared", f"{r_value**2:.4f}")
+                        with col4:
+                            st.metric("P-value", f"{p_value:.4f}")
+                        
+                        st.success(f"**Equation:** {y_var} = {slope:.2f} * {x_var} + {intercept:.2f}")
+                        
+                        st.markdown("**Interpretation:**")
+                        st.markdown(f"- For every 1 unit increase in {x_var}, {y_var} increases by {slope:.2f}")
+                        st.markdown(f"- The model explains {r_value**2*100:.1f}% of the variance in {y_var}")
+                        
+                        # Prediction tool
+                        st.markdown("### Make a Prediction")
+                        pred_x = st.number_input(f"Enter {x_var} value:", value=float(stats_data[x_var].mean()))
+                        pred_y = slope * pred_x + intercept
+                        st.info(f"Predicted {y_var}: **{pred_y:.2f}**")
+                        
+                        # Show regression plot
+                        import altair as alt
+                        scatter = alt.Chart(stats_data).mark_circle(size=60).encode(
+                            x=x_var,
+                            y=y_var,
+                            tooltip=[x_var, y_var]
+                        ).properties(width=600, height=300)
+                        line = scatter.transform_regression(x_var, y_var).mark_line(color='red')
+                        st.altair_chart(scatter + line, use_container_width=True)
+                        
+                        st.code(f"Excel: =SLOPE({y_var}:{y_var}, {x_var}:{x_var}), =INTERCEPT({y_var}:{y_var}, {x_var}:{x_var})")
+                        st.code(f"Python: scipy.stats.linregress(df['{x_var}'], df['{y_var}'])")
+                    except Exception as e:
+                        st.error(f"Error: {str(e)}")
+            else:
+                st.warning("Need at least 2 numeric columns for regression analysis.")
+        
+        elif analysis_type == "ANOVA (Analysis of Variance)":
+            st.markdown("**ANOVA** tests if there are significant differences between group means.")
+            st.markdown("- Used when comparing means across 2+ groups")
+            st.markdown("- Null hypothesis: All group means are equal")
+            
+            if categorical_cols and numeric_cols:
+                col1, col2 = st.columns(2)
+                with col1:
+                    group_col = st.selectbox("Grouping Variable (categorical):", categorical_cols)
+                with col2:
+                    value_col = st.selectbox("Value Variable (numeric):", numeric_cols)
+                
+                if st.button("Run ANOVA", type="primary"):
+                    try:
+                        groups = [group[value_col].values for name, group in stats_data.groupby(group_col)]
+                        
+                        if len(groups) >= 2:
+                            f_stat, p_value = stats.f_oneway(*groups)
+                            
+                            st.markdown("### ANOVA Results")
+                            
+                            col1, col2 = st.columns(2)
+                            with col1:
+                                st.metric("F-statistic", f"{f_stat:.4f}")
+                            with col2:
+                                st.metric("P-value", f"{p_value:.4f}")
+                            
+                            if p_value < 0.05:
+                                st.success("**Result:** The differences between groups ARE statistically significant (p < 0.05).")
+                                st.markdown("At least one group mean is different from the others.")
+                            else:
+                                st.info("**Result:** The differences between groups are NOT statistically significant (p >= 0.05).")
+                                st.markdown("The group means are not significantly different.")
+                            
+                            # Show group statistics
+                            st.markdown("### Group Statistics")
+                            group_stats = stats_data.groupby(group_col)[value_col].agg(['count', 'mean', 'std'])
+                            group_stats.columns = ['Count', 'Mean', 'Std Dev']
+                            st.dataframe(group_stats, use_container_width=True)
+                            
+                            # Box plot
+                            import altair as alt
+                            box = alt.Chart(stats_data).mark_boxplot().encode(
+                                x=group_col,
+                                y=value_col
+                            ).properties(width=600, height=300)
+                            st.altair_chart(box, use_container_width=True)
+                            
+                            st.code("Excel: Data Analysis ToolPak > Anova: Single Factor")
+                            st.code(f"Python: scipy.stats.f_oneway(*groups)")
+                        else:
+                            st.warning("Need at least 2 groups for ANOVA.")
+                    except Exception as e:
+                        st.error(f"Error: {str(e)}")
+            else:
+                st.warning("Need at least 1 categorical column and 1 numeric column for ANOVA.")
+        
+        elif analysis_type == "Histogram":
+            st.markdown("**Histogram** shows the distribution of values in a dataset.")
+            st.markdown("- Helps identify patterns like normal distribution, skewness, outliers")
+            
+            if numeric_cols:
+                hist_col = st.selectbox("Select column:", numeric_cols)
+                bins = st.slider("Number of bins:", 5, 30, 10)
+                
+                if st.button("Create Histogram", type="primary"):
+                    try:
+                        import altair as alt
+                        
+                        hist = alt.Chart(stats_data).mark_bar().encode(
+                            alt.X(hist_col, bin=alt.Bin(maxbins=bins)),
+                            y='count()'
+                        ).properties(width=600, height=300)
+                        st.altair_chart(hist, use_container_width=True)
+                        
+                        # Distribution statistics
+                        st.markdown("### Distribution Statistics")
+                        col1, col2, col3, col4 = st.columns(4)
+                        with col1:
+                            st.metric("Mean", f"{stats_data[hist_col].mean():.2f}")
+                        with col2:
+                            st.metric("Median", f"{stats_data[hist_col].median():.2f}")
+                        with col3:
+                            st.metric("Std Dev", f"{stats_data[hist_col].std():.2f}")
+                        with col4:
+                            skewness = stats.skew(stats_data[hist_col])
+                            st.metric("Skewness", f"{skewness:.2f}")
+                        
+                        # Interpretation
+                        if abs(skewness) < 0.5:
+                            st.success("The distribution is approximately **symmetric** (normal-like).")
+                        elif skewness > 0:
+                            st.info("The distribution is **right-skewed** (tail extends to the right).")
+                        else:
+                            st.info("The distribution is **left-skewed** (tail extends to the left).")
+                        
+                        st.code("Excel: Insert > Charts > Histogram")
+                        st.code(f"Python: plt.hist(df['{hist_col}'], bins={bins})")
+                    except Exception as e:
+                        st.error(f"Error: {str(e)}")
+            else:
+                st.warning("Need at least 1 numeric column for histogram.")
+        
+        elif analysis_type == "Covariance Analysis":
+            st.markdown("**Covariance** measures how two variables change together.")
+            st.markdown("- Positive: variables increase together")
+            st.markdown("- Negative: one increases as other decreases")
+            st.markdown("- Unlike correlation, covariance is not standardized (affected by scale)")
+            
+            if len(numeric_cols) >= 2:
+                if st.button("Calculate Covariance Matrix", type="primary"):
+                    try:
+                        cov_matrix = stats_data[numeric_cols].cov()
+                        
+                        st.markdown("### Covariance Matrix")
+                        st.dataframe(cov_matrix.round(2), use_container_width=True)
+                        
+                        st.markdown("### Interpretation")
+                        st.markdown("- **Diagonal values**: Variance of each variable")
+                        st.markdown("- **Off-diagonal values**: Covariance between variable pairs")
+                        st.markdown("- Larger absolute values = stronger relationship")
+                        
+                        # Also show correlation for comparison
+                        st.markdown("### Correlation Matrix (for comparison)")
+                        corr_matrix = stats_data[numeric_cols].corr()
+                        st.dataframe(corr_matrix.round(2), use_container_width=True)
+                        
+                        st.info("Correlation is preferred when comparing relationships because it's standardized (-1 to +1).")
+                        
+                        st.code("Excel: Data Analysis ToolPak > Covariance")
+                        st.code("Python: df.cov()")
+                    except Exception as e:
+                        st.error(f"Error: {str(e)}")
+            else:
+                st.warning("Need at least 2 numeric columns for covariance analysis.")
+        
+        elif analysis_type == "Descriptive Statistics":
+            st.markdown("**Descriptive Statistics** summarize the main features of a dataset.")
+            
+            if numeric_cols:
+                selected_col = st.selectbox("Select column:", numeric_cols)
+                
+                if st.button("Calculate Statistics", type="primary"):
+                    try:
+                        data = stats_data[selected_col]
+                        
+                        st.markdown("### Summary Statistics")
+                        
+                        col1, col2, col3 = st.columns(3)
+                        with col1:
+                            st.metric("Count", f"{len(data)}")
+                            st.metric("Mean", f"{data.mean():.2f}")
+                            st.metric("Median", f"{data.median():.2f}")
+                        with col2:
+                            st.metric("Std Dev", f"{data.std():.2f}")
+                            st.metric("Variance", f"{data.var():.2f}")
+                            st.metric("Range", f"{data.max() - data.min():.2f}")
+                        with col3:
+                            st.metric("Min", f"{data.min():.2f}")
+                            st.metric("Max", f"{data.max():.2f}")
+                            st.metric("Sum", f"{data.sum():.2f}")
+                        
+                        st.markdown("### Quartiles")
+                        q1 = data.quantile(0.25)
+                        q2 = data.quantile(0.50)
+                        q3 = data.quantile(0.75)
+                        iqr = q3 - q1
+                        
+                        col1, col2, col3, col4 = st.columns(4)
+                        with col1:
+                            st.metric("Q1 (25%)", f"{q1:.2f}")
+                        with col2:
+                            st.metric("Q2 (50%)", f"{q2:.2f}")
+                        with col3:
+                            st.metric("Q3 (75%)", f"{q3:.2f}")
+                        with col4:
+                            st.metric("IQR", f"{iqr:.2f}")
+                        
+                        st.code("Excel: =AVERAGE(), =MEDIAN(), =STDEV(), =QUARTILE()")
+                        st.code(f"Python: df['{selected_col}'].describe()")
+                    except Exception as e:
+                        st.error(f"Error: {str(e)}")
+            else:
+                st.warning("Need at least 1 numeric column.")
+    
+    elif playground_tab == "Power Query Simulator":
+        st.subheader("⚡ Power Query Simulator")
+        st.markdown("Learn data transformation steps like Power Query in Excel!")
+        
+        # Sample raw data that needs cleaning
+        if 'pq_raw_data' not in st.session_state:
+            st.session_state.pq_raw_data = pd.DataFrame({
+                'Date': ['2024-01-15', '2024-01-16', '2024-01-17', '2024-01-18', '2024-01-19'],
+                'Product_ID': ['P001', 'P002', 'P001', 'P003', 'P002'],
+                'Sales_Amount': [1500, 2200, 1800, None, 2500],
+                'Region': ['north', 'SOUTH', 'North', 'east', 'South'],
+                'Notes': ['  Good sale  ', 'Discount applied', None, 'New customer', 'Repeat']
+            })
+        
+        st.markdown("### Source Data")
+        st.caption("This data has common issues: missing values, inconsistent casing, extra spaces")
+        st.session_state.pq_raw_data = st.data_editor(
+            st.session_state.pq_raw_data,
+            num_rows="dynamic",
+            use_container_width=True,
+            key="pq_raw_editor"
+        )
+        
+        raw_data = st.session_state.pq_raw_data.copy()
+        
+        st.markdown("### Transform Steps")
+        st.markdown("Select transformations to apply (like Power Query steps):")
+        
+        transformations = {
+            "Remove Duplicates": st.checkbox("Remove Duplicates", key="pq_dedup"),
+            "Fill Missing Values": st.checkbox("Fill Missing Values (with 0 or 'Unknown')", key="pq_fill"),
+            "Standardize Text Case": st.checkbox("Standardize Text Case (Title Case)", key="pq_case"),
+            "Trim Whitespace": st.checkbox("Trim Whitespace", key="pq_trim"),
+            "Filter Rows": st.checkbox("Filter Rows (remove nulls)", key="pq_filter"),
+            "Add Calculated Column": st.checkbox("Add Calculated Column", key="pq_calc"),
+            "Change Data Types": st.checkbox("Convert Date Column", key="pq_types"),
+            "Sort Data": st.checkbox("Sort Data", key="pq_sort")
+        }
+        
+        if st.button("Apply Transformations", type="primary"):
+            transformed = raw_data.copy()
+            steps_applied = []
+            
+            try:
+                if transformations["Remove Duplicates"]:
+                    before = len(transformed)
+                    transformed = transformed.drop_duplicates()
+                    steps_applied.append(f"Removed Duplicates: {before - len(transformed)} rows removed")
+                
+                if transformations["Fill Missing Values"]:
+                    for col in transformed.columns:
+                        if transformed[col].dtype == 'object':
+                            transformed[col] = transformed[col].fillna('Unknown')
+                        else:
+                            transformed[col] = transformed[col].fillna(0)
+                    steps_applied.append("Filled Missing Values: Numeric with 0, Text with 'Unknown'")
+                
+                if transformations["Standardize Text Case"]:
+                    for col in transformed.select_dtypes(include=['object']).columns:
+                        transformed[col] = transformed[col].astype(str).str.title()
+                    steps_applied.append("Standardized Text Case: Converted to Title Case")
+                
+                if transformations["Trim Whitespace"]:
+                    for col in transformed.select_dtypes(include=['object']).columns:
+                        transformed[col] = transformed[col].astype(str).str.strip()
+                    steps_applied.append("Trimmed Whitespace: Removed leading/trailing spaces")
+                
+                if transformations["Filter Rows"]:
+                    before = len(transformed)
+                    transformed = transformed.dropna()
+                    steps_applied.append(f"Filtered Rows: Removed {before - len(transformed)} rows with nulls")
+                
+                if transformations["Add Calculated Column"]:
+                    if 'Sales_Amount' in transformed.columns:
+                        transformed['Sales_Amount'] = pd.to_numeric(transformed['Sales_Amount'], errors='coerce')
+                        transformed['Tax_10pct'] = transformed['Sales_Amount'] * 0.10
+                        steps_applied.append("Added Column: Tax_10pct = Sales_Amount * 0.10")
+                
+                if transformations["Change Data Types"]:
+                    if 'Date' in transformed.columns:
+                        transformed['Date'] = pd.to_datetime(transformed['Date'], errors='coerce')
+                        transformed['Year'] = transformed['Date'].dt.year
+                        transformed['Month'] = transformed['Date'].dt.month
+                        steps_applied.append("Changed Types: Converted Date, extracted Year and Month")
+                
+                if transformations["Sort Data"]:
+                    if 'Date' in transformed.columns:
+                        transformed = transformed.sort_values('Date')
+                        steps_applied.append("Sorted Data: By Date ascending")
+                
+                st.markdown("### Applied Steps")
+                for i, step in enumerate(steps_applied, 1):
+                    st.markdown(f"{i}. {step}")
+                
+                if not steps_applied:
+                    st.info("No transformations selected. Check some boxes above.")
+                else:
+                    st.markdown("### Transformed Data")
+                    st.dataframe(transformed, use_container_width=True)
+                    
+                    st.markdown("### Power Query M Code Equivalent")
+                    m_code = "let\n    Source = Excel.CurrentWorkbook(){[Name=\"Table1\"]}[Content],\n"
+                    for step in steps_applied:
+                        m_code += f"    // {step}\n"
+                    m_code += "    Result = Source\nin\n    Result"
+                    st.code(m_code, language="text")
+                    
+            except Exception as e:
+                st.error(f"Error: {str(e)}")
+        
+        st.markdown("---")
+        st.markdown("**Common Power Query Operations:**")
+        st.markdown("- **Remove Duplicates**: Eliminate duplicate rows")
+        st.markdown("- **Fill Down/Replace Nulls**: Handle missing data")
+        st.markdown("- **Change Type**: Convert data types")
+        st.markdown("- **Split/Merge Columns**: Restructure data")
+        st.markdown("- **Pivot/Unpivot**: Reshape tables")
+        st.markdown("- **Group By**: Aggregate data")
+    
+    elif playground_tab == "Z-Score & Outlier Tool":
+        st.subheader("📏 Z-Score & Outlier Detection")
+        st.markdown("Calculate z-scores and identify outliers in your data!")
+        
+        from scipy import stats
+        import numpy as np
+        
+        st.markdown("### What is a Z-Score?")
+        st.markdown("""
+        - **Z-score** measures how many standard deviations a value is from the mean
+        - Formula: z = (x - mean) / standard_deviation
+        - Values with |z| > 2 or 3 are often considered outliers
+        """)
+        
+        # Sample data with potential outliers
+        if 'zscore_data' not in st.session_state:
+            st.session_state.zscore_data = pd.DataFrame({
+                'Employee': ['Alice', 'Bob', 'Charlie', 'Diana', 'Eve', 'Frank', 'Grace', 'Henry', 'Ivy', 'Jack'],
+                'Salary': [52000, 55000, 48000, 150000, 53000, 51000, 54000, 49000, 56000, 52000],
+                'Performance': [85, 78, 92, 88, 15, 82, 79, 91, 84, 80],
+                'Hours_Worked': [42, 45, 40, 38, 80, 41, 43, 39, 44, 42]
+            })
+        
+        st.markdown("### Your Data (Edit to add your own!)")
+        st.caption("This sample data contains some outliers. Can you spot them?")
+        st.session_state.zscore_data = st.data_editor(
+            st.session_state.zscore_data,
+            num_rows="dynamic",
+            use_container_width=True,
+            key="zscore_data_editor"
+        )
+        
+        zscore_data = st.session_state.zscore_data
+        numeric_cols = zscore_data.select_dtypes(include=['number']).columns.tolist()
+        
+        if numeric_cols:
+            col1, col2 = st.columns(2)
+            with col1:
+                selected_col = st.selectbox("Select column to analyze:", numeric_cols)
+            with col2:
+                threshold = st.slider("Z-score threshold for outliers:", 1.0, 4.0, 2.0, 0.5)
+            
+            if st.button("Calculate Z-Scores", type="primary"):
+                try:
+                    data = zscore_data[selected_col]
+                    mean = data.mean()
+                    std = data.std()
+                    
+                    # Calculate z-scores
+                    z_scores = (data - mean) / std
+                    
+                    # Create results dataframe
+                    results = zscore_data.copy()
+                    results['Z_Score'] = z_scores.round(2)
+                    results['Is_Outlier'] = abs(z_scores) > threshold
+                    
+                    st.markdown("### Statistics")
+                    col1, col2, col3 = st.columns(3)
+                    with col1:
+                        st.metric("Mean", f"{mean:.2f}")
+                    with col2:
+                        st.metric("Std Dev", f"{std:.2f}")
+                    with col3:
+                        outlier_count = results['Is_Outlier'].sum()
+                        st.metric("Outliers Found", f"{outlier_count}")
+                    
+                    st.markdown("### Results with Z-Scores")
+                    
+                    # Highlight outliers
+                    def highlight_outliers(row):
+                        if row['Is_Outlier']:
+                            return ['background-color: #ffcccc'] * len(row)
+                        return [''] * len(row)
+                    
+                    styled = results.style.apply(highlight_outliers, axis=1)
+                    st.dataframe(results, use_container_width=True)
+                    
+                    if outlier_count > 0:
+                        st.markdown("### Identified Outliers")
+                        outliers = results[results['Is_Outlier']]
+                        st.dataframe(outliers, use_container_width=True)
+                        
+                        st.warning(f"Found {outlier_count} outlier(s) with |z-score| > {threshold}")
+                        
+                        # Show how to handle outliers
+                        st.markdown("### How to Handle Outliers")
+                        handling = st.selectbox(
+                            "Choose handling method:",
+                            ["View only", "Remove outliers", "Cap outliers (Winsorization)", "Replace with mean"]
+                        )
+                        
+                        if handling == "Remove outliers":
+                            cleaned = zscore_data[abs(z_scores) <= threshold]
+                            st.markdown("**Data with outliers removed:**")
+                            st.dataframe(cleaned, use_container_width=True)
+                            st.info(f"Removed {len(zscore_data) - len(cleaned)} rows")
+                        
+                        elif handling == "Cap outliers (Winsorization)":
+                            lower_bound = mean - threshold * std
+                            upper_bound = mean + threshold * std
+                            capped = zscore_data.copy()
+                            capped[selected_col] = capped[selected_col].clip(lower_bound, upper_bound)
+                            st.markdown("**Data with outliers capped:**")
+                            st.dataframe(capped, use_container_width=True)
+                            st.info(f"Values capped to range [{lower_bound:.2f}, {upper_bound:.2f}]")
+                        
+                        elif handling == "Replace with mean":
+                            replaced = zscore_data.copy()
+                            replaced.loc[abs(z_scores) > threshold, selected_col] = mean
+                            st.markdown("**Data with outliers replaced by mean:**")
+                            st.dataframe(replaced, use_container_width=True)
+                    else:
+                        st.success(f"No outliers found with |z-score| > {threshold}")
+                    
+                    # Visualization
+                    st.markdown("### Z-Score Distribution")
+                    import altair as alt
+                    
+                    z_df = pd.DataFrame({
+                        'Value': data,
+                        'Z_Score': z_scores,
+                        'Is_Outlier': abs(z_scores) > threshold
+                    })
+                    
+                    scatter = alt.Chart(z_df).mark_circle(size=100).encode(
+                        x='Value',
+                        y='Z_Score',
+                        color=alt.condition(
+                            alt.datum.Is_Outlier,
+                            alt.value('red'),
+                            alt.value('steelblue')
+                        ),
+                        tooltip=['Value', 'Z_Score']
+                    ).properties(width=600, height=300)
+                    
+                    # Add threshold lines
+                    rule_upper = alt.Chart(pd.DataFrame({'y': [threshold]})).mark_rule(color='orange', strokeDash=[5,5]).encode(y='y')
+                    rule_lower = alt.Chart(pd.DataFrame({'y': [-threshold]})).mark_rule(color='orange', strokeDash=[5,5]).encode(y='y')
+                    
+                    st.altair_chart(scatter + rule_upper + rule_lower, use_container_width=True)
+                    st.caption("Red points are outliers. Orange lines show the threshold.")
+                    
+                    st.code(f"Excel: =(A2-AVERAGE(A:A))/STDEV(A:A)")
+                    st.code(f"Python: scipy.stats.zscore(df['{selected_col}'])")
+                    
+                except Exception as e:
+                    st.error(f"Error: {str(e)}")
+        else:
+            st.warning("Need at least 1 numeric column.")
 
 elif page == "About":
     st.title("ℹ️ About the Data Analyst Program")
