@@ -27,6 +27,12 @@ A comprehensive student study app for the Data Analyst 2 (PDAN) vocational progr
 - Correlation, regression, ANOVA, histogram and covariance analysis
 - Z-scores and z-testing for outlier reduction
 
+### Data Driven Decision-Making (FI1BBDD75)
+- **Four Analysis Philosophies**: Descriptive, Diagnostic, Predictive, Prescriptive analytics with business examples
+- **Data Lifecycle**: Define → Collect → Clean → Analyze → Interpret → Act (with SMART goals)
+- **Case Studies**: Retail inventory, healthcare readmission, marketing optimization (with before/after metrics)
+- **KPI Selection & Tracking**: SMART KPIs, KPIs by function, dashboard design, RAG status, target setting
+
 ### Tool Training Environments (Simulated)
 - **Excel & Google Sheets**: Formulas (VLOOKUP, SUMIF, etc.), pivot tables, data cleaning, automation with macros
 - **Python Programming**: pandas DataFrames, data manipulation, cleaning scripts, analysis automation
