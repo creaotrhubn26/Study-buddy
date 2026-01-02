@@ -9228,130 +9228,7 @@ elif page == "Study Notes":
                     st.rerun()
     
     with main_col:
-        st.markdown("""
-        <div style="background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%); 
-                    border: 1px solid #dee2e6; border-radius: 8px; padding: 12px; margin-bottom: 16px;">
-            <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: center;">
-                <span style="font-weight: 600; color: #495057; font-size: 14px;">Format</span>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        toolbar_tab1, toolbar_tab2, toolbar_tab3 = st.tabs(["Text Format", "Lists & Tables", "Insert"])
-        
-        insert_text = ""
-        
-        with toolbar_tab1:
-            fmt_cols = st.columns(8)
-            with fmt_cols[0]:
-                st.markdown(render_mui_icon('title', 18), unsafe_allow_html=True)
-                if st.button("H1", key="tb_h1", help="Main Heading", use_container_width=True):
-                    insert_text = "\n## "
-            with fmt_cols[1]:
-                st.markdown(render_mui_icon('subtitles', 18), unsafe_allow_html=True)
-                if st.button("H2", key="tb_h2", help="Sub Heading", use_container_width=True):
-                    insert_text = "\n### "
-            with fmt_cols[2]:
-                st.markdown(render_mui_icon('text_fields', 18), unsafe_allow_html=True)
-                if st.button("H3", key="tb_h3", help="Section", use_container_width=True):
-                    insert_text = "\n#### "
-            with fmt_cols[3]:
-                st.markdown(render_mui_icon('format_bold', 18), unsafe_allow_html=True)
-                if st.button("Bold", key="tb_bold", help="Bold text", use_container_width=True):
-                    insert_text = "**bold text**"
-            with fmt_cols[4]:
-                st.markdown(render_mui_icon('format_italic', 18), unsafe_allow_html=True)
-                if st.button("Italic", key="tb_italic", help="Italic text", use_container_width=True):
-                    insert_text = "*italic text*"
-            with fmt_cols[5]:
-                st.markdown(render_mui_icon('strikethrough_s', 18), unsafe_allow_html=True)
-                if st.button("Strike", key="tb_strike", help="Strikethrough", use_container_width=True):
-                    insert_text = "~~strikethrough~~"
-            with fmt_cols[6]:
-                st.markdown(render_mui_icon('code', 18), unsafe_allow_html=True)
-                if st.button("Code", key="tb_inline", help="Inline code", use_container_width=True):
-                    insert_text = "`code`"
-            with fmt_cols[7]:
-                st.markdown(render_mui_icon('text_format', 18), unsafe_allow_html=True)
-                if st.button("Text", key="tb_normal", help="Normal paragraph", use_container_width=True):
-                    insert_text = "\n\n"
-        
-        with toolbar_tab2:
-            list_cols = st.columns(8)
-            with list_cols[0]:
-                st.markdown(render_mui_icon('format_list_bulleted', 18), unsafe_allow_html=True)
-                if st.button("Bullet", key="tb_bullet", help="Bullet list", use_container_width=True):
-                    insert_text = "\n- Item 1\n- Item 2\n- Item 3\n"
-            with list_cols[1]:
-                st.markdown(render_mui_icon('format_list_numbered', 18), unsafe_allow_html=True)
-                if st.button("Number", key="tb_num", help="Numbered list", use_container_width=True):
-                    insert_text = "\n1. First\n2. Second\n3. Third\n"
-            with list_cols[2]:
-                st.markdown(render_mui_icon('checklist', 18), unsafe_allow_html=True)
-                if st.button("Tasks", key="tb_check", help="Checklist", use_container_width=True):
-                    insert_text = "\n- [ ] Task 1\n- [ ] Task 2\n- [ ] Task 3\n"
-            with list_cols[3]:
-                st.markdown(render_mui_icon('table_chart', 18), unsafe_allow_html=True)
-                if st.button("Table", key="tb_table", help="Insert table", use_container_width=True):
-                    insert_text = "\n| Column 1 | Column 2 | Column 3 |\n|----------|----------|----------|\n| Data | Data | Data |\n| Data | Data | Data |\n"
-            with list_cols[4]:
-                st.markdown(render_mui_icon('format_quote', 18), unsafe_allow_html=True)
-                if st.button("Quote", key="tb_quote", help="Block quote", use_container_width=True):
-                    insert_text = "\n> Quote text here\n"
-            with list_cols[5]:
-                st.markdown(render_mui_icon('code', 18), unsafe_allow_html=True)
-                if st.button("Code", key="tb_code", help="Code block", use_container_width=True):
-                    insert_text = "\n```python\n# Your code here\n```\n"
-            with list_cols[6]:
-                st.markdown(render_mui_icon('remove', 18), unsafe_allow_html=True)
-                if st.button("Line", key="tb_div", help="Horizontal line", use_container_width=True):
-                    insert_text = "\n\n---\n\n"
-            with list_cols[7]:
-                st.markdown(render_mui_icon('note', 18), unsafe_allow_html=True)
-                if st.button("Note", key="tb_callout", help="Callout box", use_container_width=True):
-                    insert_text = "\n> **Note:** Important information here\n"
-        
-        with toolbar_tab3:
-            ins_cols = st.columns(8)
-            with ins_cols[0]:
-                st.markdown(render_mui_icon('link', 18), unsafe_allow_html=True)
-                if st.button("Link", key="tb_link", help="Insert link", use_container_width=True):
-                    insert_text = "[Link text](https://url.com)"
-            with ins_cols[1]:
-                st.markdown(render_mui_icon('image', 18), unsafe_allow_html=True)
-                if st.button("Image", key="tb_img", help="Image link", use_container_width=True):
-                    insert_text = "![Alt text](image_url)"
-            with ins_cols[2]:
-                st.markdown(render_mui_icon('calendar_today', 18), unsafe_allow_html=True)
-                if st.button("Date", key="tb_date", help="Insert today's date", use_container_width=True):
-                    insert_text = f"\n**Date:** {datetime.now().strftime('%Y-%m-%d')}\n"
-            with ins_cols[3]:
-                st.markdown(render_mui_icon('access_time', 18), unsafe_allow_html=True)
-                if st.button("Time", key="tb_time", help="Insert current time", use_container_width=True):
-                    insert_text = f" ({datetime.now().strftime('%H:%M')}) "
-            with ins_cols[4]:
-                st.markdown(render_mui_icon('check_circle', 18), unsafe_allow_html=True)
-                if st.button("Done", key="tb_done", help="Mark as done", use_container_width=True):
-                    insert_text = " ✅ "
-            with ins_cols[5]:
-                st.markdown(render_mui_icon('warning', 18), unsafe_allow_html=True)
-                if st.button("Warn", key="tb_warn", help="Warning marker", use_container_width=True):
-                    insert_text = "\n> ⚠️ **Warning:** \n"
-            with ins_cols[6]:
-                st.markdown(render_mui_icon('lightbulb', 18), unsafe_allow_html=True)
-                if st.button("Tip", key="tb_tip", help="Tip marker", use_container_width=True):
-                    insert_text = "\n> 💡 **Tip:** \n"
-            with ins_cols[7]:
-                st.markdown(render_mui_icon('push_pin', 18), unsafe_allow_html=True)
-                if st.button("Key", key="tb_key", help="Key point marker", use_container_width=True):
-                    insert_text = "\n> 📌 **Key Point:** \n"
-        
-        if insert_text:
-            st.session_state.current_note_content = st.session_state.get('current_note_content', '') + insert_text
-            st.rerun()
-        
-        st.markdown("---")
-        
+        # Note properties
         prop_col1, prop_col2, prop_col3, prop_col4 = st.columns(4)
         with prop_col1:
             note_title = st.text_input("Title:", value=st.session_state.get('current_note_title', ''), key="word_title", placeholder="Document title...")
@@ -9363,7 +9240,6 @@ elif page == "Study Notes":
                 index=list(NOTE_CATEGORIES.keys()).index(st.session_state.get('current_note_category', 'lecture')),
                 key="word_category"
             )
-            st.markdown(render_mui_icon(NOTE_CATEGORIES[note_category]['icon'], 16), unsafe_allow_html=True)
         with prop_col3:
             note_importance = st.selectbox(
                 "Importance:",
@@ -9372,7 +9248,6 @@ elif page == "Study Notes":
                 index=list(IMPORTANCE_LEVELS.keys()).index(st.session_state.get('current_note_importance', 'normal')),
                 key="word_importance"
             )
-            st.markdown(render_mui_icon(IMPORTANCE_LEVELS[note_importance]['icon'], 16), unsafe_allow_html=True)
         with prop_col4:
             template_choice = st.selectbox(
                 "Template:",
@@ -9380,7 +9255,6 @@ elif page == "Study Notes":
                 key="word_template"
             )
             if template_choice != "(None)":
-                # Extract template key from choice
                 for k, v in NOTE_TEMPLATES.items():
                     if v['name'] == template_choice:
                         template_key = k
@@ -9391,40 +9265,66 @@ elif page == "Study Notes":
                                 st.rerun()
                         break
         
+        st.markdown("---")
+        
         if view_mode == "Edit":
-            note_content = st.text_area(
-                "Content:",
-                value=st.session_state.get('current_note_content', ''),
-                height=350,
-                key="word_content",
-                placeholder="Start writing your notes here...\n\nUse Markdown for formatting:\n- **bold** for bold\n- *italic* for italic\n- ## for headings\n- - for bullet points",
-                label_visibility="collapsed"
+            from streamlit_quill import st_quill
+            current_content = st.session_state.get('current_note_content', '')
+            
+            # Quill Rich Text Editor
+            quill_content = st_quill(
+                value=current_content,
+                html=True,
+                toolbar=[
+                    [{'header': [1, 2, 3, 4, 5, 6, False]}],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{'list': 'ordered'}, {'list': 'bullet'}],
+                    [{'indent': '-1'}, {'indent': '+1'}],
+                    [{'color': []}, {'background': []}],
+                    [{'align': []}],
+                    ['link', 'image'],
+                    ['blockquote', 'code-block'],
+                    ['clean']
+                ],
+                key="quill_editor"
             )
-            st.session_state.current_note_content = note_content
+            
+            if quill_content:
+                st.session_state.current_note_content = quill_content
         
         elif view_mode == "Preview":
             st.markdown("**Preview:**")
             content = st.session_state.get('current_note_content', '')
             if content:
-                st.markdown(content)
+                # Render HTML content from Quill
+                st.markdown(content, unsafe_allow_html=True)
             else:
                 st.info("Nothing to preview. Start writing in Edit mode.")
         
-        else:
+        else:  # Split view
+            from streamlit_quill import st_quill
             edit_col, preview_col = st.columns(2)
             with edit_col:
-                note_content = st.text_area(
-                    "Edit:",
-                    value=st.session_state.get('current_note_content', ''),
-                    height=300,
-                    key="word_content_split",
-                    label_visibility="collapsed"
+                current_content = st.session_state.get('current_note_content', '')
+                quill_content_split = st_quill(
+                    value=current_content,
+                    html=True,
+                    toolbar=[
+                        [{'header': [1, 2, 3, False]}],
+                        ['bold', 'italic', 'underline'],
+                        [{'list': 'ordered'}, {'list': 'bullet'}],
+                        ['link'],
+                        ['clean']
+                    ],
+                    key="quill_editor_split"
                 )
-                st.session_state.current_note_content = note_content
+                if quill_content_split:
+                    st.session_state.current_note_content = quill_content_split
             with preview_col:
                 st.markdown("**Preview:**")
-                if note_content:
-                    st.markdown(note_content)
+                content = st.session_state.get('current_note_content', '')
+                if content:
+                    st.markdown(content, unsafe_allow_html=True)
                 else:
                     st.caption("Preview appears here...")
         

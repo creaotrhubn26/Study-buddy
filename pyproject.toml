@@ -10,4 +10,5 @@ dependencies = [
     "scipy>=1.16.3",
     "streamlit>=1.52.2",
     "pyspellchecker>=0.8.0",
+    "streamlit-quill>=0.1.0",
 ]
