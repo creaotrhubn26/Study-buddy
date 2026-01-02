@@ -33,6 +33,12 @@ A comprehensive student study app for the Data Analyst 2 (PDAN) vocational progr
 - **Case Studies**: Retail inventory, healthcare readmission, marketing optimization (with before/after metrics)
 - **KPI Selection & Tracking**: SMART KPIs, KPIs by function, dashboard design, RAG status, target setting
 
+### Semester Project 1 (FI1BBP175)
+- **Project Planning & Execution**: Scope definition, project timeline (phase percentages), deliverables management, solo/team work practices
+- **Data Ethics & GDPR**: Ethical principles, GDPR fundamentals (7 principles, legal bases, rights), anonymization techniques
+- **Documentation & Presentation**: Analysis report structure, visualization best practices, presentation building, reflection reports
+- **Soft Skills for Data Analysts**: Communicating with non-technical stakeholders, active listening, working with different roles, handling feedback
+
 ### Tool Training Environments (Simulated)
 - **Excel & Google Sheets**: Formulas (VLOOKUP, SUMIF, etc.), pivot tables, data cleaning, automation with macros
 - **Python Programming**: pandas DataFrames, data manipulation, cleaning scripts, analysis automation
