@@ -3277,6 +3277,8 @@ elif page == "Playground":
             "Basic Functions": ["SUM", "AVERAGE", "COUNT", "MAX", "MIN"],
             "Conditional Functions": ["SUMIF", "COUNTIF", "AVERAGEIF"],
             "Lookup Functions": ["VLOOKUP", "INDEX/MATCH", "XLOOKUP"],
+            "Formatting & Tables": ["Conditional Formatting", "Pivot Table"],
+            "Comparison": ["Excel vs Google Sheets"],
             "Other": ["IF Statement", "Custom Calculation"]
         }
         
@@ -3507,6 +3509,286 @@ elif page == "Playground":
                         st.code(f"Excel: =IF(A2{operator}B2, \"Yes\", \"No\")")
                     except Exception as e:
                         st.error(f"Error: {str(e)}")
+        
+        # Conditional Formatting
+        elif formula_type == "Conditional Formatting":
+            st.markdown("**Conditional Formatting** applies visual styles based on cell values.")
+            st.markdown("Common uses: highlight high/low values, show trends, identify outliers")
+            
+            numeric_cols = edited_data.select_dtypes(include=['number']).columns.tolist()
+            
+            if numeric_cols:
+                format_col = st.selectbox("Column to format:", numeric_cols)
+                
+                format_type = st.selectbox(
+                    "Formatting rule:",
+                    ["Highlight cells > value", "Highlight cells < value", "Color Scale (low to high)", 
+                     "Data Bars", "Top/Bottom N values", "Highlight duplicates"]
+                )
+                
+                if format_type == "Highlight cells > value":
+                    threshold = st.number_input("Highlight values greater than:", value=float(edited_data[format_col].mean()))
+                    highlight_color = st.color_picker("Highlight color:", "#90EE90")
+                    
+                    if st.button("Apply Formatting", type="primary"):
+                        result_df = edited_data.copy()
+                        
+                        def highlight_above(row):
+                            return [f'background-color: {highlight_color}' if col == format_col and pd.notna(row[col]) and row[col] > threshold else '' for col in row.index]
+                        
+                        styled = result_df.style.apply(highlight_above, axis=1)
+                        st.markdown("### Result (cells highlighted in green):")
+                        st.dataframe(styled, use_container_width=True)
+                        
+                        matches = (result_df[format_col] > threshold).sum()
+                        st.success(f"Highlighted {matches} cells where {format_col} > {threshold}")
+                        st.code(f"Excel: Home > Conditional Formatting > Highlight Cells Rules > Greater Than > {threshold}")
+                
+                elif format_type == "Highlight cells < value":
+                    threshold = st.number_input("Highlight values less than:", value=float(edited_data[format_col].mean()))
+                    highlight_color = st.color_picker("Highlight color:", "#FFB6C1")
+                    
+                    if st.button("Apply Formatting", type="primary"):
+                        result_df = edited_data.copy()
+                        
+                        def highlight_below(row):
+                            return [f'background-color: {highlight_color}' if col == format_col and pd.notna(row[col]) and row[col] < threshold else '' for col in row.index]
+                        
+                        styled = result_df.style.apply(highlight_below, axis=1)
+                        st.markdown("### Result (cells highlighted):")
+                        st.dataframe(styled, use_container_width=True)
+                        
+                        matches = (result_df[format_col] < threshold).sum()
+                        st.success(f"Highlighted {matches} cells where {format_col} < {threshold}")
+                        st.code(f"Excel: Home > Conditional Formatting > Highlight Cells Rules > Less Than > {threshold}")
+                
+                elif format_type == "Color Scale (low to high)":
+                    st.markdown("Color scales show values on a gradient from low (red) to high (green).")
+                    
+                    if st.button("Apply Color Scale", type="primary"):
+                        result_df = edited_data.copy()
+                        
+                        styled = result_df.style.background_gradient(
+                            subset=[format_col],
+                            cmap='RdYlGn'
+                        )
+                        
+                        st.markdown("### Result (color gradient applied):")
+                        st.dataframe(styled, use_container_width=True)
+                        
+                        st.success(f"Applied color scale: Red (low) → Yellow (mid) → Green (high)")
+                        st.code("Excel: Home > Conditional Formatting > Color Scales > Green-Yellow-Red")
+                
+                elif format_type == "Data Bars":
+                    st.markdown("Data bars show relative values as bars within cells.")
+                    
+                    if st.button("Apply Data Bars", type="primary"):
+                        result_df = edited_data.copy()
+                        
+                        styled = result_df.style.bar(
+                            subset=[format_col],
+                            color='#5fba7d',
+                            vmin=0
+                        )
+                        
+                        st.markdown("### Result (data bars in cells):")
+                        st.dataframe(styled, use_container_width=True)
+                        
+                        st.success("Applied data bars showing relative values")
+                        st.code("Excel: Home > Conditional Formatting > Data Bars > Solid Fill")
+                
+                elif format_type == "Top/Bottom N values":
+                    n_values = st.slider("Number of values:", 1, min(10, len(edited_data)), 3)
+                    top_or_bottom = st.radio("Highlight:", ["Top N", "Bottom N"], horizontal=True)
+                    
+                    if st.button("Apply Formatting", type="primary"):
+                        result_df = edited_data.copy()
+                        
+                        if top_or_bottom == "Top N":
+                            threshold = result_df[format_col].nlargest(n_values).min()
+                            mask = result_df[format_col] >= threshold
+                            color = '#90EE90'
+                        else:
+                            threshold = result_df[format_col].nsmallest(n_values).max()
+                            mask = result_df[format_col] <= threshold
+                            color = '#FFB6C1'
+                        
+                        def highlight_topbottom(row):
+                            if mask[row.name]:
+                                return [f'background-color: {color}' if col == format_col else '' for col in row.index]
+                            return ['' for _ in row.index]
+                        
+                        styled = result_df.style.apply(highlight_topbottom, axis=1)
+                        st.markdown(f"### Result ({top_or_bottom} {n_values} highlighted):")
+                        st.dataframe(styled, use_container_width=True)
+                        
+                        st.success(f"Highlighted {mask.sum()} cells ({top_or_bottom} {n_values})")
+                        st.code(f"Excel: Home > Conditional Formatting > Top/Bottom Rules > Top {n_values} Items")
+                
+                elif format_type == "Highlight duplicates":
+                    dup_col = st.selectbox("Check for duplicates in:", edited_data.columns.tolist())
+                    
+                    if st.button("Find Duplicates", type="primary"):
+                        result_df = edited_data.copy()
+                        mask = result_df.duplicated(subset=[dup_col], keep=False)
+                        
+                        def highlight_dups(row):
+                            if mask[row.name]:
+                                return ['background-color: #FFFF99' if col == dup_col else '' for col in row.index]
+                            return ['' for _ in row.index]
+                        
+                        styled = result_df.style.apply(highlight_dups, axis=1)
+                        st.markdown("### Result (duplicates highlighted in yellow):")
+                        st.dataframe(styled, use_container_width=True)
+                        
+                        dup_count = mask.sum()
+                        if dup_count > 0:
+                            st.warning(f"Found {dup_count} duplicate values in '{dup_col}'")
+                        else:
+                            st.success("No duplicates found!")
+                        
+                        st.code("Excel: Home > Conditional Formatting > Highlight Cells Rules > Duplicate Values")
+            else:
+                st.warning("Need numeric columns for conditional formatting.")
+        
+        # Pivot Table
+        elif formula_type == "Pivot Table":
+            st.markdown("**Pivot Tables** summarize and analyze data by grouping and aggregating.")
+            st.markdown("Drag-and-drop style: choose rows, columns, and values to create summaries.")
+            
+            all_cols = edited_data.columns.tolist()
+            numeric_cols = edited_data.select_dtypes(include=['number']).columns.tolist()
+            categorical_cols = [c for c in all_cols if c not in numeric_cols]
+            
+            if categorical_cols and numeric_cols:
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    st.markdown("**Rows (Group By):**")
+                    row_field = st.selectbox("Row field:", categorical_cols + ["None"])
+                    
+                    st.markdown("**Columns (Optional):**")
+                    col_field = st.selectbox("Column field:", ["None"] + [c for c in categorical_cols if c != row_field])
+                
+                with col2:
+                    st.markdown("**Values:**")
+                    value_field = st.selectbox("Value field:", numeric_cols)
+                    
+                    st.markdown("**Aggregation:**")
+                    agg_func = st.selectbox("Function:", ["Sum", "Average", "Count", "Min", "Max"])
+                
+                if st.button("Create Pivot Table", type="primary"):
+                    try:
+                        agg_map = {"Sum": "sum", "Average": "mean", "Count": "count", "Min": "min", "Max": "max"}
+                        
+                        if row_field == "None":
+                            st.warning("Please select at least a Row field.")
+                        else:
+                            if col_field != "None":
+                                pivot = pd.pivot_table(
+                                    edited_data,
+                                    values=value_field,
+                                    index=row_field,
+                                    columns=col_field,
+                                    aggfunc=agg_map[agg_func],
+                                    fill_value=0
+                                )
+                            else:
+                                pivot = edited_data.groupby(row_field)[value_field].agg(agg_map[agg_func]).reset_index()
+                                pivot.columns = [row_field, f"{agg_func} of {value_field}"]
+                            
+                            st.markdown("### Pivot Table Result:")
+                            st.dataframe(pivot, use_container_width=True)
+                            
+                            # Add grand totals
+                            if col_field != "None":
+                                st.markdown(f"**Grand Total ({agg_func}):** {pivot.values.sum():,.2f}")
+                            
+                            st.code("Excel: Insert > PivotTable > Select data range")
+                            st.markdown("**Steps in Excel:**")
+                            st.markdown(f"1. Drag '{row_field}' to Rows area")
+                            if col_field != "None":
+                                st.markdown(f"2. Drag '{col_field}' to Columns area")
+                            st.markdown(f"3. Drag '{value_field}' to Values area")
+                            st.markdown(f"4. Change aggregation to '{agg_func}'")
+                    except Exception as e:
+                        st.error(f"Error creating pivot table: {str(e)}")
+            else:
+                st.warning("Need at least one categorical column and one numeric column for pivot tables.")
+                st.info("Try adding a text column (like 'Department' or 'Region') to your data.")
+        
+        # Excel vs Google Sheets Comparison
+        elif formula_type == "Excel vs Google Sheets":
+            st.markdown("## Excel vs Google Sheets Comparison")
+            st.markdown("Both are powerful spreadsheet tools. Here's when to use each:")
+            
+            st.markdown("### Feature Comparison")
+            
+            comparison_data = pd.DataFrame({
+                'Feature': [
+                    'Best For', 'Collaboration', 'Offline Access', 'Data Size', 
+                    'Advanced Features', 'Cost', 'Learning Curve', 'Integration',
+                    'Macros/Automation', 'Mobile App'
+                ],
+                'Microsoft Excel': [
+                    'Complex analysis, large datasets', 'SharePoint/OneDrive (paid)', 
+                    'Full offline support', 'Millions of rows', 'Power Query, Power Pivot, VBA',
+                    'Paid (Office 365)', 'Steeper', 'Microsoft ecosystem',
+                    'VBA macros (powerful)', 'Good'
+                ],
+                'Google Sheets': [
+                    'Collaboration, simple tasks', 'Real-time built-in (free)',
+                    'Limited (Chrome extension)', '10 million cells max',
+                    'Apps Script, Explore feature', 'Free', 'Easier', 'Google Workspace',
+                    'Apps Script (web-based)', 'Excellent'
+                ]
+            })
+            
+            st.dataframe(comparison_data, use_container_width=True, hide_index=True)
+            
+            st.markdown("### Formula Differences")
+            
+            formula_diff = pd.DataFrame({
+                'Function': ['VLOOKUP', 'Array Formulas', 'Unique Values', 'Filter Data', 'Import Data'],
+                'Excel': ['=VLOOKUP()', 'Ctrl+Shift+Enter (legacy)', '=UNIQUE()', '=FILTER()', '=WEBSERVICE()'],
+                'Google Sheets': ['=VLOOKUP()', 'Native (no special entry)', '=UNIQUE()', '=FILTER()', '=IMPORTDATA()']
+            })
+            
+            st.dataframe(formula_diff, use_container_width=True, hide_index=True)
+            
+            st.markdown("### When to Use Each")
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown("#### Use Excel When:")
+                st.markdown("- Working with very large datasets (100k+ rows)")
+                st.markdown("- Need Power Query for data transformation")
+                st.markdown("- Require VBA macros for complex automation")
+                st.markdown("- Working offline frequently")
+                st.markdown("- Need Power Pivot for data modeling")
+                st.markdown("- Using advanced statistical tools")
+            
+            with col2:
+                st.markdown("#### Use Google Sheets When:")
+                st.markdown("- Real-time collaboration is essential")
+                st.markdown("- Team needs free access")
+                st.markdown("- Data needs to be always accessible online")
+                st.markdown("- Integrating with other Google tools")
+                st.markdown("- Simple to medium complexity tasks")
+                st.markdown("- Quick sharing without file attachments")
+            
+            st.markdown("### Key Shortcuts Comparison")
+            
+            shortcuts = pd.DataFrame({
+                'Action': ['Copy', 'Paste', 'Fill Down', 'Select All', 'Find', 'Insert Row', 'Format Cells'],
+                'Excel (Windows)': ['Ctrl+C', 'Ctrl+V', 'Ctrl+D', 'Ctrl+A', 'Ctrl+F', 'Ctrl+Shift++', 'Ctrl+1'],
+                'Google Sheets': ['Ctrl+C', 'Ctrl+V', 'Ctrl+D', 'Ctrl+A', 'Ctrl+F', 'Ctrl+Shift++', 'Ctrl+\\']
+            })
+            
+            st.dataframe(shortcuts, use_container_width=True, hide_index=True)
+            
+            st.info("**Tip:** Most basic formulas work the same in both! Learn one, and you'll know 80% of the other.")
         
         # Custom Calculation
         elif formula_type == "Custom Calculation":
