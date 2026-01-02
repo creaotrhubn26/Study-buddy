@@ -1,0 +1,28 @@
+About the Course
+This course establishes the core concepts of decision-making techniques applied to relevant data models. Candidates will be provided with real world before-after scenarios and use case studies to engage their developing analytical mindsets. Candidates will further solidify their theoretical understanding of applied techniques as well as refining their decision-making skills to understand which analytical method to apply to maximize results. Candidates will learn the data analysis lifecycle, techniques for data analysis (specifically Descriptive, Predictive, Prescriptive, and Diagnostic), and engage in discussions between qualitative and quantitative.
+
+This course teaches the core techniques to creating a successful data lifecycle from start to finish. Candidates are taught the concept of data models and the use of data subsets to isolate problem domains for further analysis. It is in this course where key performance indicators are introduced, which are essential heuristics used in industry to track data behaviour.
+
+Course Learning Outcomes
+Knowledge
+The candidate:
+
+has knowledge of data structures models and where to apply applicable data sets to the correct scenario
+has knowledge of concepts and processes used for data cleaning using proxy real world data
+has knowledge of real-world use case stories and how it has impacted companies outside the data analysis field
+has knowledge of key performance indicators (KPI), data types (qualitative vs quantitative) and the data analysis lifecycle
+has knowledge of the four data analysis philosophies: descriptive, diagnostic, predictive, prescriptive; as well as surface error detection, elimination, and correction
+Skills
+The candidate:
+
+can apply knowledge to practical problems, such as market price prediction, using data driven decision making techniques
+can apply knowledge to strategically select appropriate data models to solve problem scenarios
+can apply knowledge of the data lifecycle to proposed scenarios to create an iterative solution and analyse key performance indicators
+can identify incorrect erroneous data and use insights on how to eliminate and correct them
+masters relevant theoretical models to proxy real world data
+General Competence
+The candidate:
+
+understands the fidelity of data within a project and its owners
+can develop work methods using KPIs as a guide the decision-making process
+can deliver insights to entire data sets to gauge if the model is accurate for the intended use
