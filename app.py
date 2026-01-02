@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from openai import OpenAI
 import os
+import json
 
 st.set_page_config(
     page_title="Data Analyst Study App",
@@ -13,6 +14,525 @@ client = OpenAI(
     api_key=os.environ.get("AI_INTEGRATIONS_OPENAI_API_KEY"),
     base_url=os.environ.get("AI_INTEGRATIONS_OPENAI_BASE_URL")
 )
+
+# Training modules with structured lessons
+training_modules = {
+    "Introduction to business intelligence and big data": {
+        "course": "Data Analysis Fundamentals",
+        "description": "Learn what Business Intelligence (BI) and Big Data mean, and how they help companies make better decisions.",
+        "lessons": [
+            {
+                "title": "What is Business Intelligence?",
+                "content": """
+**Business Intelligence (BI)** is the process of collecting, analyzing, and presenting business data to help companies make better decisions.
+
+**Key Components of BI:**
+- **Data Collection**: Gathering data from various sources (sales, customers, operations)
+- **Data Storage**: Storing data in databases or data warehouses
+- **Data Analysis**: Using tools to find patterns and insights
+- **Reporting**: Creating dashboards and reports to share findings
+
+**Real-World Example:**
+A retail store uses BI to analyze which products sell best during different seasons. They discover that winter jackets sell 300% more in November than in July, so they stock up accordingly.
+                """,
+                "key_points": ["BI helps companies make data-driven decisions", "It involves collecting, analyzing, and presenting data", "Dashboards and reports are key outputs"]
+            },
+            {
+                "title": "What is Big Data?",
+                "content": """
+**Big Data** refers to extremely large datasets that are too complex for traditional data processing tools.
+
+**The 3 V's of Big Data:**
+- **Volume**: Massive amounts of data (terabytes, petabytes)
+- **Velocity**: Data is generated very quickly (real-time)
+- **Variety**: Different types of data (text, images, videos, sensors)
+
+**Examples of Big Data Sources:**
+- Social media posts (millions per minute)
+- IoT sensors (temperature, location, movement)
+- Online transactions
+- Website clickstreams
+
+**Real-World Example:**
+Netflix analyzes viewing habits of 200+ million users to recommend shows. This involves processing billions of data points daily.
+                """,
+                "key_points": ["Big Data = Volume + Velocity + Variety", "Traditional tools cannot handle Big Data", "Companies like Netflix and Amazon rely on Big Data"]
+            },
+            {
+                "title": "BI vs Big Data: Key Differences",
+                "content": """
+**Business Intelligence** and **Big Data** work together but serve different purposes:
+
+| Aspect | Business Intelligence | Big Data |
+|--------|----------------------|----------|
+| **Focus** | Analyzing structured data | Processing all data types |
+| **Data Size** | Gigabytes to Terabytes | Terabytes to Petabytes |
+| **Questions** | "What happened?" | "What might happen?" |
+| **Tools** | Tableau, Power BI, Excel | Hadoop, Spark, Python |
+| **Users** | Business analysts | Data scientists |
+
+**How They Work Together:**
+1. Big Data systems collect and process massive datasets
+2. BI tools visualize and report on the processed data
+3. Decision-makers use BI dashboards to take action
+                """,
+                "key_points": ["BI focuses on structured data and reporting", "Big Data handles massive, varied datasets", "They complement each other in modern analytics"]
+            }
+        ],
+        "exercises": [
+            {
+                "title": "Identify BI Use Cases",
+                "type": "scenario",
+                "question": "A coffee shop chain wants to know which menu items are most popular at each location. They have sales data from 50 stores over 2 years. Is this a BI or Big Data problem?",
+                "answer": "This is a Business Intelligence problem. The data is structured (sales records), moderate in size (2 years × 50 stores), and the goal is to analyze 'what happened' to make business decisions. BI tools like Excel or Tableau would be appropriate.",
+                "hint": "Think about the 3 V's - is this data extremely large, fast, or varied?"
+            },
+            {
+                "title": "Big Data Scenario",
+                "type": "scenario",
+                "question": "A social media company needs to analyze 500 million posts per day, including text, images, and videos, to detect trending topics in real-time. Is this BI or Big Data?",
+                "answer": "This is a Big Data problem. It involves massive Volume (500M posts/day), high Velocity (real-time), and Variety (text, images, videos). Big Data tools like Hadoop or Spark would be needed.",
+                "hint": "Check all 3 V's: Volume, Velocity, and Variety"
+            },
+            {
+                "title": "Calculate Data Volume",
+                "type": "practical",
+                "question": "A company stores 1,000 customer transactions per day. Each transaction record is 2 KB. How much data do they generate in one year?",
+                "answer": "1,000 transactions × 2 KB × 365 days = 730,000 KB = 730 MB per year. This is manageable with traditional BI tools.",
+                "hint": "Multiply daily transactions × size × days in a year"
+            }
+        ],
+        "quiz": [
+            {
+                "question": "What does BI stand for?",
+                "options": ["Big Information", "Business Intelligence", "Binary Integration", "Basic Insights"],
+                "correct": 1,
+                "explanation": "BI stands for Business Intelligence - the process of analyzing business data to make better decisions."
+            },
+            {
+                "question": "Which is NOT one of the 3 V's of Big Data?",
+                "options": ["Volume", "Velocity", "Value", "Variety"],
+                "correct": 2,
+                "explanation": "The 3 V's are Volume, Velocity, and Variety. Value is sometimes added as a 4th V, but it's not part of the original definition."
+            },
+            {
+                "question": "Which tool is typically used for Business Intelligence?",
+                "options": ["Hadoop", "Tableau", "Spark", "TensorFlow"],
+                "correct": 1,
+                "explanation": "Tableau is a BI visualization tool. Hadoop and Spark are Big Data processing tools, and TensorFlow is for machine learning."
+            },
+            {
+                "question": "A dataset of 10 million social media posts updated every second is an example of:",
+                "options": ["Business Intelligence", "Big Data", "Traditional database", "Spreadsheet data"],
+                "correct": 1,
+                "explanation": "This exhibits Big Data characteristics: high Volume (10M posts), high Velocity (every second), and likely Variety (text, images, etc.)."
+            }
+        ]
+    },
+    "Statistical methodologies to extract KPIs": {
+        "course": "Statistical Tools",
+        "description": "Learn how to use statistics to calculate and analyze Key Performance Indicators (KPIs).",
+        "lessons": [
+            {
+                "title": "What are KPIs?",
+                "content": """
+**Key Performance Indicators (KPIs)** are measurable values that show how effectively a company is achieving its objectives.
+
+**Characteristics of Good KPIs:**
+- **Specific**: Clearly defined
+- **Measurable**: Can be quantified
+- **Achievable**: Realistic targets
+- **Relevant**: Aligned with business goals
+- **Time-bound**: Has a deadline
+
+**Common Business KPIs:**
+- Revenue growth rate
+- Customer acquisition cost
+- Employee turnover rate
+- Net Promoter Score (NPS)
+- Conversion rate
+                """,
+                "key_points": ["KPIs measure business performance", "Good KPIs are SMART", "Different industries have different KPIs"]
+            },
+            {
+                "title": "Statistical Measures for KPIs",
+                "content": """
+**Basic Statistical Measures:**
+
+**Mean (Average):**
+Sum of all values ÷ Number of values
+Example: Sales of 100, 150, 200 → Mean = 150
+
+**Median:**
+The middle value when sorted
+Example: 100, 150, 200 → Median = 150
+
+**Standard Deviation:**
+Measures how spread out values are
+Low SD = values close to mean
+High SD = values spread out
+
+**Percentage Change:**
+((New - Old) / Old) × 100
+Example: Sales went from 1000 to 1200
+Change = ((1200-1000)/1000) × 100 = 20%
+                """,
+                "key_points": ["Mean shows the average", "Median is better when there are outliers", "Standard deviation shows variability"]
+            },
+            {
+                "title": "Calculating KPIs in Practice",
+                "content": """
+**Example: Customer Retention Rate**
+
+Formula: ((Customers at End - New Customers) / Customers at Start) × 100
+
+**Scenario:**
+- Start of month: 1000 customers
+- New customers acquired: 200
+- End of month: 1050 customers
+
+Calculation:
+((1050 - 200) / 1000) × 100 = 85%
+
+**Interpretation:**
+85% retention rate means 15% of customers left (churned).
+
+**Example: Average Order Value (AOV)**
+
+Formula: Total Revenue / Number of Orders
+
+**Scenario:**
+- Monthly revenue: $50,000
+- Total orders: 1,000
+
+AOV = $50,000 / 1,000 = $50
+
+This means customers spend $50 on average per order.
+                """,
+                "key_points": ["KPIs use simple formulas", "Always compare KPIs over time", "Context matters for interpretation"]
+            }
+        ],
+        "exercises": [
+            {
+                "title": "Calculate Mean Sales",
+                "type": "practical",
+                "question": "A store had daily sales of: $500, $750, $600, $800, $650. Calculate the mean (average) daily sales.",
+                "answer": "Mean = (500 + 750 + 600 + 800 + 650) / 5 = 3300 / 5 = $660. The average daily sales is $660.",
+                "hint": "Add all values and divide by the count"
+            },
+            {
+                "title": "Calculate Percentage Change",
+                "type": "practical",
+                "question": "Website traffic was 10,000 visitors last month and 12,500 this month. What is the percentage change?",
+                "answer": "Percentage Change = ((12,500 - 10,000) / 10,000) × 100 = (2,500 / 10,000) × 100 = 25%. Traffic increased by 25%.",
+                "hint": "Use the formula: ((New - Old) / Old) × 100"
+            },
+            {
+                "title": "Calculate Customer Retention",
+                "type": "practical",
+                "question": "A company started with 500 customers, gained 100 new customers, and ended with 480 customers. What is the retention rate?",
+                "answer": "Retention Rate = ((480 - 100) / 500) × 100 = (380 / 500) × 100 = 76%. The company retained 76% of its original customers.",
+                "hint": "Subtract new customers from ending total, then divide by starting customers"
+            }
+        ],
+        "quiz": [
+            {
+                "question": "What does KPI stand for?",
+                "options": ["Key Performance Index", "Key Performance Indicator", "Knowledge Process Integration", "Key Process Information"],
+                "correct": 1,
+                "explanation": "KPI stands for Key Performance Indicator - a measurable value that shows business performance."
+            },
+            {
+                "question": "If sales were 100, 200, 300, 400, 500, what is the median?",
+                "options": ["300", "280", "350", "250"],
+                "correct": 0,
+                "explanation": "The median is the middle value when sorted. In 100, 200, 300, 400, 500, the middle value is 300."
+            },
+            {
+                "question": "Revenue went from $80,000 to $100,000. What is the percentage increase?",
+                "options": ["20%", "25%", "15%", "30%"],
+                "correct": 1,
+                "explanation": "((100,000 - 80,000) / 80,000) × 100 = (20,000 / 80,000) × 100 = 25%"
+            }
+        ]
+    },
+    "Correlation, regression, ANOVA, histogram and covariance analysis": {
+        "course": "Statistical Tools",
+        "description": "Learn essential statistical analysis techniques used in data analysis.",
+        "lessons": [
+            {
+                "title": "Understanding Correlation",
+                "content": """
+**Correlation** measures the relationship between two variables.
+
+**Correlation Coefficient (r):**
+- Ranges from -1 to +1
+- **+1**: Perfect positive correlation (as X increases, Y increases)
+- **0**: No correlation
+- **-1**: Perfect negative correlation (as X increases, Y decreases)
+
+**Interpreting Correlation:**
+- 0.7 to 1.0: Strong positive
+- 0.4 to 0.7: Moderate positive
+- 0.0 to 0.4: Weak or no correlation
+
+**Example:**
+Ice cream sales and temperature have a positive correlation (r ≈ 0.8).
+When temperature rises, ice cream sales rise too.
+
+**Important:** Correlation ≠ Causation!
+Just because two things correlate doesn't mean one causes the other.
+                """,
+                "key_points": ["Correlation ranges from -1 to +1", "Positive correlation = both increase together", "Correlation does not prove causation"]
+            },
+            {
+                "title": "Introduction to Regression",
+                "content": """
+**Regression** predicts one variable based on another.
+
+**Simple Linear Regression:**
+y = mx + b
+- y = predicted value
+- m = slope (how much y changes for each unit of x)
+- x = input value
+- b = y-intercept (value of y when x = 0)
+
+**Example:**
+Predicting sales based on advertising spend:
+Sales = 2.5 × Ad_Spend + 1000
+
+If you spend $500 on ads:
+Sales = 2.5 × 500 + 1000 = $2,250
+
+**R-squared (R²):**
+- Measures how well the regression fits the data
+- Ranges from 0 to 1
+- R² = 0.85 means 85% of variation is explained by the model
+                """,
+                "key_points": ["Regression predicts outcomes", "y = mx + b is the basic formula", "R² shows how good the prediction is"]
+            },
+            {
+                "title": "Histograms and Data Distribution",
+                "content": """
+**Histogram** is a chart showing how data is distributed across ranges (bins).
+
+**How to Read a Histogram:**
+- X-axis: Value ranges (bins)
+- Y-axis: Frequency (count)
+- Tall bars = many values in that range
+
+**Common Distribution Shapes:**
+- **Normal (Bell Curve)**: Most values in the middle
+- **Skewed Right**: Tail extends to the right
+- **Skewed Left**: Tail extends to the left
+- **Bimodal**: Two peaks
+
+**Example:**
+Employee salary histogram might show:
+- Most employees earn $40,000-$60,000
+- Few earn above $100,000
+- This is right-skewed (long tail toward high salaries)
+                """,
+                "key_points": ["Histograms show data distribution", "Normal distribution is bell-shaped", "Skewness shows data is not symmetric"]
+            },
+            {
+                "title": "ANOVA and Covariance Basics",
+                "content": """
+**ANOVA (Analysis of Variance)**
+Compares means across multiple groups to see if differences are significant.
+
+**When to Use ANOVA:**
+- Comparing sales across 3+ regions
+- Comparing test scores across different teaching methods
+- Comparing customer satisfaction across product lines
+
+**Example:**
+Testing if coffee brand affects taste ratings:
+- Brand A: average rating 4.2
+- Brand B: average rating 3.8
+- Brand C: average rating 4.5
+ANOVA tells you if these differences are statistically significant.
+
+**Covariance**
+Measures how two variables change together.
+- Positive covariance: both increase/decrease together
+- Negative covariance: one increases as other decreases
+- Similar to correlation but not standardized
+                """,
+                "key_points": ["ANOVA compares means across groups", "Use ANOVA for 3+ groups", "Covariance shows joint variability"]
+            }
+        ],
+        "exercises": [
+            {
+                "title": "Interpret Correlation",
+                "type": "scenario",
+                "question": "A study finds correlation of r = 0.85 between study hours and exam scores. What does this mean?",
+                "answer": "This is a strong positive correlation. Students who study more hours tend to score higher on exams. However, this doesn't prove that studying causes higher scores - there could be other factors.",
+                "hint": "0.85 is close to 1, indicating a strong positive relationship"
+            },
+            {
+                "title": "Use Regression Formula",
+                "type": "practical",
+                "question": "A regression model shows: Revenue = 3 × Marketing_Spend + 5000. If you spend $2000 on marketing, what is the predicted revenue?",
+                "answer": "Revenue = 3 × 2000 + 5000 = 6000 + 5000 = $11,000. The predicted revenue is $11,000.",
+                "hint": "Substitute the marketing spend value into the formula"
+            },
+            {
+                "title": "Choose the Right Test",
+                "type": "scenario",
+                "question": "You want to compare customer satisfaction scores across 4 different store locations. Which statistical test should you use?",
+                "answer": "Use ANOVA (Analysis of Variance). ANOVA is designed to compare means across 3 or more groups, making it perfect for comparing satisfaction across 4 store locations.",
+                "hint": "You're comparing means across multiple groups"
+            }
+        ],
+        "quiz": [
+            {
+                "question": "A correlation of r = -0.9 means:",
+                "options": ["Strong positive relationship", "No relationship", "Strong negative relationship", "Weak relationship"],
+                "correct": 2,
+                "explanation": "-0.9 is close to -1, indicating a strong negative relationship. As one variable increases, the other decreases."
+            },
+            {
+                "question": "In y = mx + b, what does 'm' represent?",
+                "options": ["Y-intercept", "Slope", "Correlation", "Mean"],
+                "correct": 1,
+                "explanation": "In the linear equation, m is the slope - it shows how much y changes for each unit increase in x."
+            },
+            {
+                "question": "When should you use ANOVA?",
+                "options": ["Comparing 2 groups", "Comparing 3+ groups", "Finding correlation", "Creating histograms"],
+                "correct": 1,
+                "explanation": "ANOVA is used to compare means across 3 or more groups. For 2 groups, you would use a t-test."
+            }
+        ]
+    },
+    "Z-scores and z-testing for outlier reduction": {
+        "course": "Statistical Tools",
+        "description": "Learn how to identify and handle outliers using z-scores.",
+        "lessons": [
+            {
+                "title": "What is a Z-Score?",
+                "content": """
+**Z-Score** measures how many standard deviations a value is from the mean.
+
+**Formula:**
+Z = (Value - Mean) / Standard Deviation
+
+**Example:**
+- Mean height = 170 cm
+- Standard Deviation = 10 cm
+- Your height = 190 cm
+
+Z = (190 - 170) / 10 = 2
+
+This means you are 2 standard deviations above the mean.
+
+**Interpreting Z-Scores:**
+- Z = 0: Value equals the mean
+- Z = 1: Value is 1 SD above mean
+- Z = -1: Value is 1 SD below mean
+- Z > 3 or Z < -3: Likely an outlier
+                """,
+                "key_points": ["Z-score shows distance from mean in SDs", "Z = 0 means value equals the mean", "High absolute Z-scores indicate outliers"]
+            },
+            {
+                "title": "Identifying Outliers with Z-Scores",
+                "content": """
+**Outliers** are data points that are significantly different from other values.
+
+**Common Rule:**
+- |Z| > 3 = Outlier (99.7% of data falls within ±3 SD)
+- |Z| > 2 = Potential outlier (95% of data falls within ±2 SD)
+
+**Example Dataset:** Sales: 100, 120, 110, 115, 105, 500
+- Mean = 175
+- SD = 150
+
+Z-score for 500:
+Z = (500 - 175) / 150 = 2.17
+
+This is a potential outlier!
+
+**Why Remove Outliers?**
+- Outliers can skew averages
+- They may indicate errors in data
+- They can affect statistical models
+                """,
+                "key_points": ["Z > 3 or Z < -3 typically indicates outliers", "Outliers can distort analysis", "Always investigate why outliers exist"]
+            },
+            {
+                "title": "Practical Outlier Handling",
+                "content": """
+**Steps to Handle Outliers:**
+
+1. **Calculate Z-scores** for all data points
+2. **Identify outliers** (|Z| > 3 or your chosen threshold)
+3. **Investigate** why they exist:
+   - Data entry error?
+   - Measurement error?
+   - Genuine unusual value?
+4. **Decide action:**
+   - Remove if error
+   - Keep if genuine (but note it)
+   - Transform data (e.g., use median instead of mean)
+
+**Example in Excel/Sheets:**
+```
+=STANDARDIZE(A2, AVERAGE(A:A), STDEV(A:A))
+```
+This calculates the Z-score for cell A2.
+
+**Best Practice:**
+Always document which outliers were removed and why!
+                """,
+                "key_points": ["Calculate Z-scores for all values", "Investigate before removing", "Document your decisions"]
+            }
+        ],
+        "exercises": [
+            {
+                "title": "Calculate Z-Score",
+                "type": "practical",
+                "question": "Mean = 50, Standard Deviation = 10. Calculate the Z-score for a value of 75.",
+                "answer": "Z = (75 - 50) / 10 = 25 / 10 = 2.5. The value is 2.5 standard deviations above the mean.",
+                "hint": "Use the formula: Z = (Value - Mean) / SD"
+            },
+            {
+                "title": "Identify the Outlier",
+                "type": "practical",
+                "question": "Dataset: 20, 22, 21, 19, 23, 20, 85. Mean = 30, SD = 23. Which value is likely an outlier? Calculate its Z-score.",
+                "answer": "The value 85 is the outlier. Z = (85 - 30) / 23 = 55 / 23 = 2.39. While not above 3, it's clearly different from the other values which all cluster around 20-23.",
+                "hint": "The value that's very different from the others"
+            },
+            {
+                "title": "Decision Making",
+                "type": "scenario",
+                "question": "Your sales data shows one transaction of $50,000 when average is $500 with SD of $200. Z-score is 247.5. Should you remove this value?",
+                "answer": "You should investigate first! This extreme Z-score (247.5) suggests either: 1) Data entry error ($500 became $50,000), 2) A legitimate large order. Check the original records before removing.",
+                "hint": "Don't automatically remove - investigate the cause"
+            }
+        ],
+        "quiz": [
+            {
+                "question": "What does a Z-score of 0 mean?",
+                "options": ["Value is missing", "Value equals the mean", "Value is an outlier", "Value is negative"],
+                "correct": 1,
+                "explanation": "A Z-score of 0 means the value is exactly at the mean (0 standard deviations away)."
+            },
+            {
+                "question": "A value with Z-score of -2.5 is:",
+                "options": ["2.5 SDs above the mean", "2.5 SDs below the mean", "Exactly at the mean", "Not calculable"],
+                "correct": 1,
+                "explanation": "A negative Z-score means the value is below the mean. -2.5 means 2.5 standard deviations below."
+            },
+            {
+                "question": "Which Z-score most likely indicates an outlier?",
+                "options": ["Z = 0.5", "Z = 1.2", "Z = 2.0", "Z = 3.5"],
+                "correct": 3,
+                "explanation": "Z = 3.5 is beyond the ±3 threshold commonly used to identify outliers. Only 0.3% of data falls beyond ±3 SDs."
+            }
+        ]
+    }
+}
 
 courses_data = [
     {
@@ -580,6 +1100,7 @@ competence_outcomes = [
     "Develop products of relevance to data analysis and optimize own work methods"
 ]
 
+# Initialize session state
 if 'completed_courses' not in st.session_state:
     st.session_state.completed_courses = []
 if 'knowledge_progress' not in st.session_state:
@@ -588,14 +1109,16 @@ if 'skills_progress' not in st.session_state:
     st.session_state.skills_progress = [False] * len(skills_outcomes)
 if 'competence_progress' not in st.session_state:
     st.session_state.competence_progress = [False] * len(competence_outcomes)
-if 'current_question' not in st.session_state:
-    st.session_state.current_question = None
-if 'show_answer' not in st.session_state:
-    st.session_state.show_answer = False
-if 'user_answer' not in st.session_state:
-    st.session_state.user_answer = ""
-if 'feedback' not in st.session_state:
-    st.session_state.feedback = None
+if 'training_progress' not in st.session_state:
+    st.session_state.training_progress = {}
+if 'quiz_scores' not in st.session_state:
+    st.session_state.quiz_scores = {}
+if 'current_lesson' not in st.session_state:
+    st.session_state.current_lesson = 0
+if 'quiz_answers' not in st.session_state:
+    st.session_state.quiz_answers = {}
+if 'show_exercise_answer' not in st.session_state:
+    st.session_state.show_exercise_answer = {}
 
 def generate_practice_question(course, question_type="general"):
     course_info = f"Course: {course['name']}\nDescription: {course['description']}\nKnowledge topics: {', '.join(course['knowledge'][:3])}\nSkills: {', '.join(course['skills'][:3])}"
@@ -634,24 +1157,10 @@ def evaluate_answer(question, correct_answer, user_answer):
     except Exception as e:
         return f"Error evaluating answer: {str(e)}"
 
-def explain_topic(topic, course_name):
-    try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": "You are an educational assistant explaining topics for a Data Analyst program. Be clear, practical, and give examples."},
-                {"role": "user", "content": f"Explain this topic from the course '{course_name}' in simple terms with a practical example: '{topic}'. Keep it to 4-5 sentences."}
-            ],
-            max_tokens=250
-        )
-        return response.choices[0].message.content
-    except Exception as e:
-        return f"Error: {str(e)}"
-
 st.sidebar.title("📊 Navigation")
 page = st.sidebar.radio(
     "Select page:",
-    ["Overview", "Course Plan", "Learn & Practice", "Progress", "Learning Outcomes", "About"]
+    ["Overview", "Course Plan", "Training Center", "Learn & Practice", "Progress", "Learning Outcomes", "About"]
 )
 
 if page == "Overview":
@@ -692,8 +1201,171 @@ if page == "Overview":
                 st.markdown(f"{status} {course['name']}")
     
     st.markdown("---")
-    st.subheader("🔗 Useful Links")
-    st.markdown("[📖 Study Catalog](https://studiekatalog.edutorium.no/voc/en/programme/PDAN/2025-autumn)")
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.subheader("🎯 Training Progress")
+        if st.session_state.training_progress:
+            for topic, data in st.session_state.training_progress.items():
+                short_topic = topic[:40] + "..." if len(topic) > 40 else topic
+                lessons_done = data.get('lessons_completed', 0)
+                total_lessons = len(training_modules.get(topic, {}).get('lessons', []))
+                st.progress(lessons_done / total_lessons if total_lessons > 0 else 0)
+                st.caption(f"{short_topic}: {lessons_done}/{total_lessons} lessons")
+        else:
+            st.info("Start training in the Training Center!")
+    
+    with col2:
+        st.subheader("🔗 Useful Links")
+        st.markdown("[📖 Study Catalog](https://studiekatalog.edutorium.no/voc/en/programme/PDAN/2025-autumn)")
+
+elif page == "Training Center":
+    st.title("🎓 Training Center")
+    st.markdown("*Hands-on learning with step-by-step lessons, exercises, and quizzes*")
+    st.markdown("---")
+    
+    # Topic selection
+    available_topics = list(training_modules.keys())
+    selected_topic = st.selectbox(
+        "Choose a topic to learn:",
+        options=available_topics,
+        index=0
+    )
+    
+    module = training_modules[selected_topic]
+    
+    st.markdown(f"**Course:** {module['course']}")
+    st.markdown(f"*{module['description']}*")
+    
+    # Initialize progress for this topic
+    if selected_topic not in st.session_state.training_progress:
+        st.session_state.training_progress[selected_topic] = {
+            'lessons_completed': 0,
+            'exercises_completed': [],
+            'quiz_score': None
+        }
+    
+    progress = st.session_state.training_progress[selected_topic]
+    
+    # Progress bar
+    total_items = len(module['lessons']) + len(module['exercises']) + 1  # +1 for quiz
+    completed_items = progress['lessons_completed'] + len(progress['exercises_completed']) + (1 if progress['quiz_score'] is not None else 0)
+    st.progress(completed_items / total_items)
+    st.caption(f"Progress: {completed_items}/{total_items} items completed")
+    
+    st.markdown("---")
+    
+    tab1, tab2, tab3 = st.tabs(["📖 Lessons", "✏️ Exercises", "📝 Quiz"])
+    
+    with tab1:
+        st.subheader("Step-by-Step Lessons")
+        
+        for i, lesson in enumerate(module['lessons']):
+            with st.expander(f"Lesson {i+1}: {lesson['title']}", expanded=(i == 0)):
+                st.markdown(lesson['content'])
+                
+                st.markdown("---")
+                st.markdown("**Key Takeaways:**")
+                for point in lesson['key_points']:
+                    st.markdown(f"✓ {point}")
+                
+                if st.button(f"Mark Lesson {i+1} Complete", key=f"lesson_{selected_topic}_{i}"):
+                    if progress['lessons_completed'] <= i:
+                        st.session_state.training_progress[selected_topic]['lessons_completed'] = i + 1
+                        st.success(f"Lesson {i+1} completed!")
+                        st.rerun()
+                
+                if progress['lessons_completed'] > i:
+                    st.success("✅ Completed")
+    
+    with tab2:
+        st.subheader("Hands-On Exercises")
+        
+        for i, exercise in enumerate(module['exercises']):
+            with st.expander(f"Exercise {i+1}: {exercise['title']}", expanded=False):
+                st.markdown(f"**Type:** {exercise['type'].title()}")
+                st.markdown("---")
+                st.markdown(f"**{exercise['question']}**")
+                
+                # Hint button
+                if st.button(f"Show Hint", key=f"hint_{selected_topic}_{i}"):
+                    st.info(f"💡 Hint: {exercise['hint']}")
+                
+                # User answer input
+                user_answer = st.text_area(
+                    "Your answer:",
+                    key=f"exercise_answer_{selected_topic}_{i}",
+                    placeholder="Type your answer here..."
+                )
+                
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    if st.button("Check Answer", key=f"check_{selected_topic}_{i}"):
+                        if user_answer.strip():
+                            with st.spinner("Evaluating..."):
+                                feedback = evaluate_answer(exercise['question'], exercise['answer'], user_answer)
+                                st.success(feedback)
+                                if i not in progress['exercises_completed']:
+                                    st.session_state.training_progress[selected_topic]['exercises_completed'].append(i)
+                        else:
+                            st.warning("Please enter an answer first.")
+                
+                with col2:
+                    show_key = f"show_{selected_topic}_{i}"
+                    if st.button("Show Answer", key=f"reveal_{selected_topic}_{i}"):
+                        st.session_state.show_exercise_answer[show_key] = True
+                
+                if st.session_state.show_exercise_answer.get(f"show_{selected_topic}_{i}", False):
+                    st.info(f"**Answer:** {exercise['answer']}")
+                
+                if i in progress['exercises_completed']:
+                    st.success("✅ Attempted")
+    
+    with tab3:
+        st.subheader("Knowledge Quiz")
+        st.markdown("Test your understanding with this quiz!")
+        
+        quiz = module['quiz']
+        
+        if progress['quiz_score'] is not None:
+            st.success(f"Quiz completed! Score: {progress['quiz_score']}/{len(quiz)}")
+            if st.button("Retake Quiz"):
+                st.session_state.training_progress[selected_topic]['quiz_score'] = None
+                st.session_state.quiz_answers = {}
+                st.rerun()
+        else:
+            for i, q in enumerate(quiz):
+                st.markdown(f"**Q{i+1}: {q['question']}**")
+                answer = st.radio(
+                    "Select your answer:",
+                    options=q['options'],
+                    key=f"quiz_{selected_topic}_{i}",
+                    index=None
+                )
+                st.session_state.quiz_answers[f"{selected_topic}_{i}"] = q['options'].index(answer) if answer else None
+                st.markdown("---")
+            
+            if st.button("Submit Quiz", type="primary"):
+                score = 0
+                for i, q in enumerate(quiz):
+                    user_ans = st.session_state.quiz_answers.get(f"{selected_topic}_{i}")
+                    if user_ans == q['correct']:
+                        score += 1
+                
+                st.session_state.training_progress[selected_topic]['quiz_score'] = score
+                st.success(f"Quiz completed! Score: {score}/{len(quiz)}")
+                
+                # Show explanations
+                st.markdown("### Results:")
+                for i, q in enumerate(quiz):
+                    user_ans = st.session_state.quiz_answers.get(f"{selected_topic}_{i}")
+                    correct = user_ans == q['correct']
+                    icon = "✅" if correct else "❌"
+                    st.markdown(f"{icon} **Q{i+1}:** {q['question']}")
+                    if not correct:
+                        st.markdown(f"   Correct answer: {q['options'][q['correct']]}")
+                    st.markdown(f"   *{q['explanation']}*")
 
 elif page == "Course Plan":
     st.title("📚 Course Plan")
@@ -754,7 +1426,16 @@ elif page == "Learn & Practice":
     
     st.markdown("---")
     
-    tab1, tab2, tab3 = st.tabs(["Course Content", "Practice Questions", "Topic Explorer"])
+    # Check if this course has training modules
+    course_topics_with_training = []
+    for topic in training_modules.keys():
+        if training_modules[topic]['course'] == course['name']:
+            course_topics_with_training.append(topic)
+    
+    if course_topics_with_training:
+        st.info(f"💡 This course has {len(course_topics_with_training)} topic(s) with hands-on training available in the Training Center!")
+    
+    tab1, tab2 = st.tabs(["Course Content", "Practice Questions"])
     
     with tab1:
         st.subheader(f"📚 {course['name']}")
@@ -769,7 +1450,10 @@ elif page == "Learn & Practice":
             st.markdown("### 📖 Knowledge")
             st.markdown("*After this course, you will have knowledge of:*")
             for item in course['knowledge']:
-                st.markdown(f"- {item}")
+                # Check if topic has training
+                has_training = item in training_modules
+                training_badge = " 🎓" if has_training else ""
+                st.markdown(f"- {item}{training_badge}")
         
         with col2:
             st.markdown("### 🛠️ Skills")
@@ -793,6 +1477,15 @@ elif page == "Learn & Practice":
         )
         
         type_map = {"General": "general", "Knowledge-based": "knowledge", "Skills-based": "skills", "Case Study": "case_study"}
+        
+        if 'current_question' not in st.session_state:
+            st.session_state.current_question = None
+        if 'show_answer' not in st.session_state:
+            st.session_state.show_answer = False
+        if 'user_answer' not in st.session_state:
+            st.session_state.user_answer = ""
+        if 'feedback' not in st.session_state:
+            st.session_state.feedback = None
         
         if st.button("Generate New Question", type="primary"):
             with st.spinner("Generating question..."):
@@ -844,19 +1537,6 @@ elif page == "Learn & Practice":
             if st.session_state.show_answer:
                 st.markdown("### Correct Answer:")
                 st.info(answer_text)
-    
-    with tab3:
-        st.subheader("🔍 Topic Explorer")
-        st.markdown("Click on any topic to get a detailed explanation.")
-        
-        all_topics = course['knowledge'] + course['skills'] + course['competence']
-        
-        selected_topic = st.selectbox("Select a topic to explore:", options=all_topics)
-        
-        if st.button("Explain This Topic"):
-            with st.spinner("Generating explanation..."):
-                explanation = explain_topic(selected_topic, course['name'])
-                st.info(explanation)
 
 elif page == "Progress":
     st.title("📈 My Progress")
