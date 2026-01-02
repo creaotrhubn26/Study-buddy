@@ -9175,50 +9175,105 @@ elif page == "Study Notes":
                 st.rerun()
     
     with main_col:
-        st.markdown("##### ✏️ Editor Toolbar")
-        tool_cols = st.columns(12)
+        st.markdown("""
+        <div style="background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%); 
+                    border: 1px solid #dee2e6; border-radius: 8px; padding: 12px; margin-bottom: 16px;">
+            <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: center;">
+                <span style="font-weight: 600; color: #495057; font-size: 14px;">Format</span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        toolbar_tab1, toolbar_tab2, toolbar_tab3 = st.tabs(["📝 Text Format", "📋 Lists & Tables", "🔗 Insert"])
         
         insert_text = ""
-        with tool_cols[0]:
-            if st.button("H1", key="tb_h1", help="Heading 1"):
-                insert_text = "## "
-        with tool_cols[1]:
-            if st.button("H2", key="tb_h2", help="Heading 2"):
-                insert_text = "### "
-        with tool_cols[2]:
-            if st.button("B", key="tb_bold", help="Bold"):
-                insert_text = "**bold**"
-        with tool_cols[3]:
-            if st.button("I", key="tb_italic", help="Italic"):
-                insert_text = "*italic*"
-        with tool_cols[4]:
-            if st.button("•", key="tb_bullet", help="Bullet list"):
-                insert_text = "- "
-        with tool_cols[5]:
-            if st.button("1.", key="tb_num", help="Numbered list"):
-                insert_text = "1. "
-        with tool_cols[6]:
-            if st.button("☐", key="tb_check", help="Checklist"):
-                insert_text = "- [ ] "
-        with tool_cols[7]:
-            if st.button("⊞", key="tb_table", help="Table"):
-                insert_text = "\n| Col1 | Col2 | Col3 |\n|------|------|------|\n| | | |\n"
-        with tool_cols[8]:
-            if st.button("❝", key="tb_quote", help="Quote"):
-                insert_text = "> "
-        with tool_cols[9]:
-            if st.button("</>", key="tb_code", help="Code block"):
-                insert_text = "```\ncode\n```"
-        with tool_cols[10]:
-            if st.button("—", key="tb_div", help="Divider"):
-                insert_text = "\n---\n"
-        with tool_cols[11]:
-            if st.button("🔗", key="tb_link", help="Link"):
-                insert_text = "[text](url)"
+        
+        with toolbar_tab1:
+            fmt_cols = st.columns(8)
+            with fmt_cols[0]:
+                if st.button("📌 H1", key="tb_h1", help="Main Heading", use_container_width=True):
+                    insert_text = "\n## "
+            with fmt_cols[1]:
+                if st.button("📎 H2", key="tb_h2", help="Sub Heading", use_container_width=True):
+                    insert_text = "\n### "
+            with fmt_cols[2]:
+                if st.button("📍 H3", key="tb_h3", help="Section", use_container_width=True):
+                    insert_text = "\n#### "
+            with fmt_cols[3]:
+                if st.button("**B**", key="tb_bold", help="Bold text", use_container_width=True):
+                    insert_text = "**bold text**"
+            with fmt_cols[4]:
+                if st.button("*I*", key="tb_italic", help="Italic text", use_container_width=True):
+                    insert_text = "*italic text*"
+            with fmt_cols[5]:
+                if st.button("~~S~~", key="tb_strike", help="Strikethrough", use_container_width=True):
+                    insert_text = "~~strikethrough~~"
+            with fmt_cols[6]:
+                if st.button("`Code`", key="tb_inline", help="Inline code", use_container_width=True):
+                    insert_text = "`code`"
+            with fmt_cols[7]:
+                if st.button("🔤 Text", key="tb_normal", help="Normal paragraph", use_container_width=True):
+                    insert_text = "\n\n"
+        
+        with toolbar_tab2:
+            list_cols = st.columns(8)
+            with list_cols[0]:
+                if st.button("• Bullet", key="tb_bullet", help="Bullet list", use_container_width=True):
+                    insert_text = "\n- Item 1\n- Item 2\n- Item 3\n"
+            with list_cols[1]:
+                if st.button("1. Number", key="tb_num", help="Numbered list", use_container_width=True):
+                    insert_text = "\n1. First\n2. Second\n3. Third\n"
+            with list_cols[2]:
+                if st.button("☑️ Tasks", key="tb_check", help="Checklist", use_container_width=True):
+                    insert_text = "\n- [ ] Task 1\n- [ ] Task 2\n- [ ] Task 3\n"
+            with list_cols[3]:
+                if st.button("📊 Table", key="tb_table", help="Insert table", use_container_width=True):
+                    insert_text = "\n| Column 1 | Column 2 | Column 3 |\n|----------|----------|----------|\n| Data | Data | Data |\n| Data | Data | Data |\n"
+            with list_cols[4]:
+                if st.button("❝ Quote", key="tb_quote", help="Block quote", use_container_width=True):
+                    insert_text = "\n> Quote text here\n"
+            with list_cols[5]:
+                if st.button("📦 Code", key="tb_code", help="Code block", use_container_width=True):
+                    insert_text = "\n```python\n# Your code here\n```\n"
+            with list_cols[6]:
+                if st.button("➖ Line", key="tb_div", help="Horizontal line", use_container_width=True):
+                    insert_text = "\n\n---\n\n"
+            with list_cols[7]:
+                if st.button("📑 Note", key="tb_callout", help="Callout box", use_container_width=True):
+                    insert_text = "\n> **Note:** Important information here\n"
+        
+        with toolbar_tab3:
+            ins_cols = st.columns(8)
+            with ins_cols[0]:
+                if st.button("🔗 Link", key="tb_link", help="Insert link", use_container_width=True):
+                    insert_text = "[Link text](https://url.com)"
+            with ins_cols[1]:
+                if st.button("🖼️ Image", key="tb_img", help="Image link", use_container_width=True):
+                    insert_text = "![Alt text](image_url)"
+            with ins_cols[2]:
+                if st.button("📅 Date", key="tb_date", help="Insert today's date", use_container_width=True):
+                    insert_text = f"\n**Date:** {datetime.now().strftime('%Y-%m-%d')}\n"
+            with ins_cols[3]:
+                if st.button("⏰ Time", key="tb_time", help="Insert current time", use_container_width=True):
+                    insert_text = f" ({datetime.now().strftime('%H:%M')}) "
+            with ins_cols[4]:
+                if st.button("✅ Done", key="tb_done", help="Mark as done", use_container_width=True):
+                    insert_text = " ✅ "
+            with ins_cols[5]:
+                if st.button("⚠️ Warn", key="tb_warn", help="Warning marker", use_container_width=True):
+                    insert_text = "\n> ⚠️ **Warning:** \n"
+            with ins_cols[6]:
+                if st.button("💡 Tip", key="tb_tip", help="Tip marker", use_container_width=True):
+                    insert_text = "\n> 💡 **Tip:** \n"
+            with ins_cols[7]:
+                if st.button("📌 Key", key="tb_key", help="Key point marker", use_container_width=True):
+                    insert_text = "\n> 📌 **Key Point:** \n"
         
         if insert_text:
             st.session_state.current_note_content = st.session_state.get('current_note_content', '') + insert_text
             st.rerun()
+        
+        st.markdown("---")
         
         prop_col1, prop_col2, prop_col3, prop_col4 = st.columns(4)
         with prop_col1:
