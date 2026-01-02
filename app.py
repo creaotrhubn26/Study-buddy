@@ -3227,15 +3227,17 @@ elif page == "Playground":
     
     elif playground_tab == "Excel Formula Simulator":
         st.subheader("📊 Excel Formula Simulator")
-        st.markdown("Enter data and apply formulas to see the results - just like in Excel!")
+        st.markdown("Practice Excel formulas including VLOOKUP and INDEX/MATCH!")
         
-        st.markdown("### Sample Data")
+        # Main data table
+        st.markdown("### Main Data Table")
+        st.caption("Click cells to edit. Use + to add rows.")
         
-        # Editable sample data
         if 'excel_data' not in st.session_state:
             st.session_state.excel_data = pd.DataFrame({
+                'EmployeeID': ['E001', 'E002', 'E003', 'E004', 'E005'],
                 'Name': ['Alice', 'Bob', 'Charlie', 'Diana', 'Eve'],
-                'Region': ['North', 'South', 'North', 'East', 'West'],
+                'Department': ['Sales', 'IT', 'Sales', 'HR', 'Marketing'],
                 'Sales': [15000, 22000, 18000, 12000, 25000],
                 'Target': [14000, 20000, 17000, 15000, 22000]
             })
@@ -3248,85 +3250,290 @@ elif page == "Playground":
         )
         st.session_state.excel_data = edited_data
         
+        # Lookup reference table for VLOOKUP/INDEX-MATCH
+        st.markdown("### Lookup Reference Table")
+        st.caption("This table is used for VLOOKUP and INDEX/MATCH lookups.")
+        
+        if 'excel_lookup' not in st.session_state:
+            st.session_state.excel_lookup = pd.DataFrame({
+                'Department': ['Sales', 'IT', 'HR', 'Marketing', 'Finance'],
+                'Manager': ['John Smith', 'Sarah Lee', 'Mike Brown', 'Lisa Chen', 'Tom Wilson'],
+                'Budget': [50000, 75000, 40000, 60000, 80000],
+                'Bonus_Rate': [0.10, 0.08, 0.05, 0.12, 0.07]
+            })
+        
+        lookup_data = st.data_editor(
+            st.session_state.excel_lookup,
+            num_rows="dynamic",
+            use_container_width=True,
+            key="excel_lookup_editor"
+        )
+        st.session_state.excel_lookup = lookup_data
+        
         st.markdown("### Apply Formulas")
         
+        formula_categories = {
+            "Basic Functions": ["SUM", "AVERAGE", "COUNT", "MAX", "MIN"],
+            "Conditional Functions": ["SUMIF", "COUNTIF", "AVERAGEIF"],
+            "Lookup Functions": ["VLOOKUP", "INDEX/MATCH", "XLOOKUP"],
+            "Other": ["IF Statement", "Custom Calculation"]
+        }
+        
         col1, col2 = st.columns(2)
-        
         with col1:
-            formula_type = st.selectbox(
-                "Choose a formula:",
-                ["SUM", "AVERAGE", "COUNT", "MAX", "MIN", "SUMIF", "Custom Calculation"]
-            )
-        
+            category = st.selectbox("Category:", list(formula_categories.keys()))
         with col2:
-            if formula_type in ["SUM", "AVERAGE", "COUNT", "MAX", "MIN"]:
-                column = st.selectbox("Select column:", edited_data.select_dtypes(include=['number']).columns.tolist())
-            elif formula_type == "SUMIF":
-                column = st.selectbox("Sum column:", edited_data.select_dtypes(include=['number']).columns.tolist())
+            formula_type = st.selectbox("Formula:", formula_categories[category])
         
-        if formula_type == "SUMIF":
+        st.markdown("---")
+        
+        # Basic Functions
+        if formula_type in ["SUM", "AVERAGE", "COUNT", "MAX", "MIN"]:
+            numeric_cols = edited_data.select_dtypes(include=['number']).columns.tolist()
+            if numeric_cols:
+                column = st.selectbox("Select column:", numeric_cols)
+                
+                if st.button("Calculate", type="primary"):
+                    try:
+                        if formula_type == "SUM":
+                            result = edited_data[column].sum()
+                        elif formula_type == "AVERAGE":
+                            result = edited_data[column].mean()
+                        elif formula_type == "COUNT":
+                            result = edited_data[column].count()
+                        elif formula_type == "MAX":
+                            result = edited_data[column].max()
+                        elif formula_type == "MIN":
+                            result = edited_data[column].min()
+                        
+                        st.success(f"={formula_type}({column}) = **{result:,.2f}**")
+                        st.code(f"Excel: ={formula_type}(B2:B{len(edited_data)+1})")
+                    except Exception as e:
+                        st.error(f"Error: {str(e)}")
+            else:
+                st.warning("No numeric columns available.")
+        
+        # Conditional Functions
+        elif formula_type in ["SUMIF", "COUNTIF", "AVERAGEIF"]:
             crit_col = st.selectbox("Criteria column:", edited_data.columns.tolist())
-            criteria = st.text_input("Criteria (e.g., 'North'):", "North")
-        
-        if st.button("Calculate", type="primary"):
-            st.markdown("### Result:")
+            criteria = st.text_input("Criteria value:", edited_data[crit_col].iloc[0] if len(edited_data) > 0 else "")
             
-            try:
-                if formula_type == "SUM":
-                    result = edited_data[column].sum()
-                    st.success(f"=SUM({column}) = **{result:,.2f}**")
-                    st.code(f"Excel: =SUM({column}2:{column}{len(edited_data)+1})")
+            if formula_type != "COUNTIF":
+                numeric_cols = edited_data.select_dtypes(include=['number']).columns.tolist()
+                if numeric_cols:
+                    sum_col = st.selectbox("Value column:", numeric_cols)
+            
+            if st.button("Calculate", type="primary"):
+                try:
+                    mask = edited_data[crit_col].astype(str).str.lower() == str(criteria).lower()
                     
-                elif formula_type == "AVERAGE":
-                    result = edited_data[column].mean()
-                    st.success(f"=AVERAGE({column}) = **{result:,.2f}**")
-                    st.code(f"Excel: =AVERAGE({column}2:{column}{len(edited_data)+1})")
-                    
-                elif formula_type == "COUNT":
-                    result = edited_data[column].count()
-                    st.success(f"=COUNT({column}) = **{result}**")
-                    st.code(f"Excel: =COUNT({column}2:{column}{len(edited_data)+1})")
-                    
-                elif formula_type == "MAX":
-                    result = edited_data[column].max()
-                    st.success(f"=MAX({column}) = **{result:,.2f}**")
-                    st.code(f"Excel: =MAX({column}2:{column}{len(edited_data)+1})")
-                    
-                elif formula_type == "MIN":
-                    result = edited_data[column].min()
-                    st.success(f"=MIN({column}) = **{result:,.2f}**")
-                    st.code(f"Excel: =MIN({column}2:{column}{len(edited_data)+1})")
-                    
-                elif formula_type == "SUMIF":
-                    mask = edited_data[crit_col].astype(str).str.contains(criteria, case=False, na=False)
-                    result = edited_data.loc[mask, column].sum()
-                    st.success(f"=SUMIF({crit_col}, \"{criteria}\", {column}) = **{result:,.2f}**")
-                    st.code(f"Excel: =SUMIF({crit_col}:{crit_col}, \"{criteria}\", {column}:{column})")
-                    
-                elif formula_type == "Custom Calculation":
-                    st.info("Add a new calculated column below:")
-                    
-            except Exception as e:
-                st.error(f"Error: {str(e)}")
+                    if formula_type == "SUMIF":
+                        result = edited_data.loc[mask, sum_col].sum()
+                        st.success(f"=SUMIF({crit_col}, \"{criteria}\", {sum_col}) = **{result:,.2f}**")
+                        st.code(f"Excel: =SUMIF(A:A, \"{criteria}\", B:B)")
+                    elif formula_type == "COUNTIF":
+                        result = mask.sum()
+                        st.success(f"=COUNTIF({crit_col}, \"{criteria}\") = **{result}**")
+                        st.code(f"Excel: =COUNTIF(A:A, \"{criteria}\")")
+                    elif formula_type == "AVERAGEIF":
+                        result = edited_data.loc[mask, sum_col].mean()
+                        st.success(f"=AVERAGEIF({crit_col}, \"{criteria}\", {sum_col}) = **{result:,.2f}**")
+                        st.code(f"Excel: =AVERAGEIF(A:A, \"{criteria}\", B:B)")
+                        
+                    st.info(f"Found {mask.sum()} matching row(s)")
+                except Exception as e:
+                    st.error(f"Error: {str(e)}")
         
-        if formula_type == "Custom Calculation":
+        # VLOOKUP
+        elif formula_type == "VLOOKUP":
+            st.markdown("**VLOOKUP** finds a value in the first column of the lookup table and returns a value from another column.")
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                lookup_value = st.selectbox("Lookup value from main table:", edited_data.columns.tolist())
+                row_to_lookup = st.selectbox("Which row to lookup:", list(range(len(edited_data))))
+                actual_lookup = edited_data.iloc[row_to_lookup][lookup_value]
+                st.info(f"Looking up: **{actual_lookup}**")
+            
+            with col2:
+                return_col = st.selectbox("Return column from lookup table:", lookup_data.columns.tolist()[1:])
+            
+            if st.button("Run VLOOKUP", type="primary"):
+                try:
+                    lookup_key_col = lookup_data.columns[0]
+                    match = lookup_data[lookup_data[lookup_key_col].astype(str).str.lower() == str(actual_lookup).lower()]
+                    
+                    if len(match) > 0:
+                        result = match.iloc[0][return_col]
+                        st.success(f"=VLOOKUP(\"{actual_lookup}\", LookupTable, {list(lookup_data.columns).index(return_col)+1}, FALSE)")
+                        st.success(f"Result: **{result}**")
+                        st.code(f"Excel: =VLOOKUP(A2, LookupTable!A:D, {list(lookup_data.columns).index(return_col)+1}, FALSE)")
+                        
+                        st.markdown("**How it works:**")
+                        st.markdown(f"1. Search for '{actual_lookup}' in first column of lookup table")
+                        st.markdown(f"2. Find matching row")
+                        st.markdown(f"3. Return value from '{return_col}' column: **{result}**")
+                    else:
+                        st.warning(f"No match found for '{actual_lookup}' in lookup table.")
+                        st.info("This would return #N/A in Excel")
+                except Exception as e:
+                    st.error(f"Error: {str(e)}")
+        
+        # INDEX/MATCH
+        elif formula_type == "INDEX/MATCH":
+            st.markdown("**INDEX/MATCH** is more flexible than VLOOKUP - it can look up values in any column!")
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                st.markdown("**MATCH: Find the row**")
+                match_value = st.selectbox("Value to find:", edited_data.columns.tolist())
+                row_idx = st.selectbox("From row:", list(range(len(edited_data))))
+                actual_match = edited_data.iloc[row_idx][match_value]
+                st.info(f"Finding: **{actual_match}**")
+                
+                match_in_col = st.selectbox("Search in column:", lookup_data.columns.tolist())
+            
+            with col2:
+                st.markdown("**INDEX: Return the value**")
+                return_col = st.selectbox("Return from column:", lookup_data.columns.tolist())
+            
+            if st.button("Run INDEX/MATCH", type="primary"):
+                try:
+                    match_result = lookup_data[lookup_data[match_in_col].astype(str).str.lower() == str(actual_match).lower()]
+                    
+                    if len(match_result) > 0:
+                        row_num = match_result.index[0]
+                        result = lookup_data.loc[row_num, return_col]
+                        
+                        st.success(f"=INDEX({return_col}, MATCH(\"{actual_match}\", {match_in_col}, 0))")
+                        st.success(f"Result: **{result}**")
+                        st.code(f"Excel: =INDEX(LookupTable!{return_col}:{return_col}, MATCH(A2, LookupTable!{match_in_col}:{match_in_col}, 0))")
+                        
+                        st.markdown("**How it works:**")
+                        st.markdown(f"1. MATCH finds '{actual_match}' in '{match_in_col}' column")
+                        st.markdown(f"2. Returns row position: **{list(lookup_data.index).index(row_num) + 1}**")
+                        st.markdown(f"3. INDEX uses that position to get value from '{return_col}': **{result}**")
+                        
+                        st.info("INDEX/MATCH advantage: Can lookup left (VLOOKUP can only look right)")
+                    else:
+                        st.warning(f"No match found for '{actual_match}'")
+                except Exception as e:
+                    st.error(f"Error: {str(e)}")
+        
+        # XLOOKUP (modern alternative)
+        elif formula_type == "XLOOKUP":
+            st.markdown("**XLOOKUP** is the modern replacement for VLOOKUP (Excel 365/2021+)")
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                lookup_col = st.selectbox("Lookup value column:", edited_data.columns.tolist())
+                row_idx = st.selectbox("From row:", list(range(len(edited_data))))
+                lookup_val = edited_data.iloc[row_idx][lookup_col]
+                st.info(f"Looking up: **{lookup_val}**")
+            
+            with col2:
+                search_col = st.selectbox("Search in:", lookup_data.columns.tolist())
+                return_col = st.selectbox("Return from:", lookup_data.columns.tolist())
+            
+            if st.button("Run XLOOKUP", type="primary"):
+                try:
+                    match = lookup_data[lookup_data[search_col].astype(str).str.lower() == str(lookup_val).lower()]
+                    
+                    if len(match) > 0:
+                        result = match.iloc[0][return_col]
+                        st.success(f"=XLOOKUP(\"{lookup_val}\", {search_col}, {return_col})")
+                        st.success(f"Result: **{result}**")
+                        st.code(f"Excel: =XLOOKUP(A2, LookupTable!{search_col}:{search_col}, LookupTable!{return_col}:{return_col})")
+                        
+                        st.markdown("**XLOOKUP advantages over VLOOKUP:**")
+                        st.markdown("- Can search in any direction (left or right)")
+                        st.markdown("- Simpler syntax (no column numbers)")
+                        st.markdown("- Built-in error handling")
+                    else:
+                        st.warning(f"No match found for '{lookup_val}'")
+                except Exception as e:
+                    st.error(f"Error: {str(e)}")
+        
+        # IF Statement
+        elif formula_type == "IF Statement":
+            st.markdown("**IF** returns different values based on a condition.")
+            
+            numeric_cols = edited_data.select_dtypes(include=['number']).columns.tolist()
+            if len(numeric_cols) >= 2:
+                col1, col2 = st.columns(2)
+                with col1:
+                    check_col = st.selectbox("Check column:", numeric_cols)
+                    operator = st.selectbox("Operator:", [">", "<", ">=", "<=", "="])
+                with col2:
+                    compare_to = st.selectbox("Compare to:", ["Value", "Another Column"])
+                    if compare_to == "Value":
+                        compare_val = st.number_input("Value:", value=0)
+                    else:
+                        compare_col = st.selectbox("Column:", [c for c in numeric_cols if c != check_col])
+                
+                if st.button("Apply IF Formula", type="primary"):
+                    try:
+                        if compare_to == "Value":
+                            if operator == ">":
+                                result = edited_data[check_col] > compare_val
+                            elif operator == "<":
+                                result = edited_data[check_col] < compare_val
+                            elif operator == ">=":
+                                result = edited_data[check_col] >= compare_val
+                            elif operator == "<=":
+                                result = edited_data[check_col] <= compare_val
+                            else:
+                                result = edited_data[check_col] == compare_val
+                            formula_str = f"=IF({check_col}{operator}{compare_val}, \"Yes\", \"No\")"
+                        else:
+                            if operator == ">":
+                                result = edited_data[check_col] > edited_data[compare_col]
+                            elif operator == "<":
+                                result = edited_data[check_col] < edited_data[compare_col]
+                            elif operator == ">=":
+                                result = edited_data[check_col] >= edited_data[compare_col]
+                            elif operator == "<=":
+                                result = edited_data[check_col] <= edited_data[compare_col]
+                            else:
+                                result = edited_data[check_col] == edited_data[compare_col]
+                            formula_str = f"=IF({check_col}{operator}{compare_col}, \"Yes\", \"No\")"
+                        
+                        result_df = edited_data.copy()
+                        result_df['IF_Result'] = result.map({True: 'Yes', False: 'No'})
+                        
+                        st.success(formula_str)
+                        st.dataframe(result_df, use_container_width=True)
+                        st.code(f"Excel: =IF(A2{operator}B2, \"Yes\", \"No\")")
+                    except Exception as e:
+                        st.error(f"Error: {str(e)}")
+        
+        # Custom Calculation
+        elif formula_type == "Custom Calculation":
             st.markdown("### Add Calculated Column")
             new_col_name = st.text_input("New column name:", "Performance")
             
-            calc_options = ["Sales - Target (Variance)", "Sales / Target (% of Target)", "Sales * 0.1 (Commission)"]
-            calc_type = st.selectbox("Calculation:", calc_options)
-            
-            if st.button("Add Column"):
-                if calc_type == "Sales - Target (Variance)":
-                    edited_data[new_col_name] = edited_data['Sales'] - edited_data['Target']
-                elif calc_type == "Sales / Target (% of Target)":
-                    edited_data[new_col_name] = (edited_data['Sales'] / edited_data['Target'] * 100).round(1)
-                elif calc_type == "Sales * 0.1 (Commission)":
-                    edited_data[new_col_name] = edited_data['Sales'] * 0.1
+            numeric_cols = edited_data.select_dtypes(include=['number']).columns.tolist()
+            if len(numeric_cols) >= 2:
+                col_a = st.selectbox("First column:", numeric_cols)
+                operation = st.selectbox("Operation:", ["+", "-", "*", "/"])
+                col_b = st.selectbox("Second column:", [c for c in numeric_cols if c != col_a])
                 
-                st.session_state.excel_data = edited_data
-                st.success(f"Added column: {new_col_name}")
-                st.rerun()
+                if st.button("Add Column"):
+                    try:
+                        if operation == "+":
+                            edited_data[new_col_name] = edited_data[col_a] + edited_data[col_b]
+                        elif operation == "-":
+                            edited_data[new_col_name] = edited_data[col_a] - edited_data[col_b]
+                        elif operation == "*":
+                            edited_data[new_col_name] = edited_data[col_a] * edited_data[col_b]
+                        elif operation == "/":
+                            edited_data[new_col_name] = (edited_data[col_a] / edited_data[col_b]).round(2)
+                        
+                        st.session_state.excel_data = edited_data
+                        st.success(f"Added column: {new_col_name} = {col_a} {operation} {col_b}")
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"Error: {str(e)}")
     
     elif playground_tab == "SQL Query Tester":
         st.subheader("🗄️ SQL Query Tester")
