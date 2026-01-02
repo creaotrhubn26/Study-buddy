@@ -64,6 +64,15 @@ A comprehensive student study app for the Data Analyst 2 (PDAN) vocational progr
 - **Report Tools & Distribution**: Word/LaTeX/Markdown, PDF vs interactive, versioning, stakeholder review
 - **Ethical Reporting**: Data limitations, uncertainty, avoiding misleading conclusions, reproducibility
 
+### Exam Project 1 (FI1BBP275)
+- **Understanding the Exam Project**: Project options (individual, group, internship), scope requirements, industry standards, success factors
+- **Project Planning & Scoping**: Problem statements, in-scope/out-of-scope definition, timeline planning, milestone setting, risk planning
+- **Working with Real-World Data**: Internship projects, public data sources (SSB, Kaggle, EU Open Data), ethical sourcing, data quality assessment
+- **Executing Your Analysis**: Applying Semester 1-2 skills (spreadsheets, statistics, Python, SQL, visualization), analysis workflow, common pitfalls
+- **Professional Documentation**: Project/technical/analysis documentation, report structure, version control
+- **Presentation & Defense**: Presentation structure, visual design, delivery tips, handling questions, professional terminology
+- **Quality & Self-Assessment**: Quality checklists, self-reflection, getting feedback, lessons learned
+
 ### Tool Training Environments (Simulated)
 - **Excel & Google Sheets**: Formulas (VLOOKUP, SUMIF, etc.), pivot tables, data cleaning, automation with macros
 - **Python Programming**: pandas DataFrames, data manipulation, cleaning scripts, analysis automation
@@ -85,6 +94,7 @@ Hands-on practice tools with editable data:
 - **Error Detection Workshop**: Identify 7 types of data errors, learn impacts/solutions, practice stakeholder communication with templates
 - **Confidence Level Planner**: Domain-specific work methods (Medical, Financial, Marketing, Operations, Research), interactive CI calculator, work method document generator
 - **Report Writing Workshop**: Executive summary builder, clarity rewriter, report structure planner, caption writer
+- **Exam Project Toolkit**: Problem statement builder, project scope planner, quality self-assessment, presentation planner
 
 ## Data Source
 Course content is sourced from the official Noroff study catalog:

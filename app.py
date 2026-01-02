@@ -7204,6 +7204,497 @@ Would you be comfortable if your methodology and decisions were reviewed by a ne
                 "explanation": "11pt is the recommended minimum for body text to ensure readability. Tables can go to 10pt, but anything smaller becomes difficult to read."
             }
         ]
+    },
+    "Exam Project 1 - Professional Data Analysis": {
+        "course": "Exam Project 1",
+        "description": "Develop skills to execute a comprehensive data analysis project from start to finish with professional standards, including project planning, execution, documentation, and presentation.",
+        "lessons": [
+            {
+                "title": "Understanding the Exam Project",
+                "content": """
+**What is Exam Project 1?**
+
+This is a major project that demonstrates all the competencies you've acquired during your first academic year. It reflects your ability to independently execute a complete data analysis project.
+
+**Project Options:**
+- **Individual Project**: Work independently on a self-chosen or assigned problem
+- **Group Project**: Collaborate in a team (2-4 members)
+- **Internship Project**: Work with a real company on an actual business problem (encouraged!)
+
+**Project Scope:**
+Your project must include:
+1. **Problem Definition**: Clear statement of what you're solving
+2. **Data Collection**: Ethically sourced, relevant data
+3. **Analysis**: Using tools and techniques from Semester 1-2
+4. **Visualization**: Clear, accessible charts and reports
+5. **Recommendations**: Actionable insights for stakeholders
+
+**Industry Standards:**
+- Professional documentation
+- Deadline compliance
+- Efficient workflows
+- Clear communication
+- Quality deliverables
+
+**Key Success Factors:**
+- Plan thoroughly before starting
+- Manage time effectively
+- Document all decisions
+- Communicate regularly with supervisors
+- Focus on quality over quantity
+                """,
+                "key_points": ["Major project demonstrating all first-year skills", "Can be individual, group, or internship-based", "Must follow professional standards", "Documentation and communication are critical"]
+            },
+            {
+                "title": "Project Planning & Scoping",
+                "content": """
+**Effective Project Planning**
+
+Good planning is the foundation of successful project execution.
+
+**1. Defining Your Problem**
+
+Ask these questions:
+- What business question am I answering?
+- Who will use my findings?
+- What decisions will this support?
+- What does success look like?
+
+**Problem Statement Template:**
+"[Organization] needs to understand [topic] in order to [action]. This analysis will examine [data] to provide [deliverable] by [deadline]."
+
+**Example:**
+"TechCorp needs to understand customer churn patterns in order to improve retention strategies. This analysis will examine 2 years of customer data to provide a retention recommendation report by March 15."
+
+**2. Scoping Your Project**
+
+**In Scope vs. Out of Scope:**
+
+| In Scope | Out of Scope |
+|----------|--------------|
+| Questions you WILL answer | Questions for future work |
+| Data sources you WILL use | Data you won't access |
+| Tools you WILL apply | Tools beyond your skills |
+| Time period covered | Historical extensions |
+
+**3. Timeline Planning**
+
+Recommended time allocation:
+- **Planning & Research**: 15-20%
+- **Data Collection & Cleaning**: 20-25%
+- **Analysis & Exploration**: 25-30%
+- **Reporting & Visualization**: 20-25%
+- **Review & Finalization**: 10-15%
+
+**4. Milestone Setting**
+
+Create checkpoints:
+- Week 2: Problem defined, data sources identified
+- Week 4: Data collected and cleaned
+- Week 6: Initial analysis complete
+- Week 8: Draft report ready
+- Week 10: Final submission
+
+**Risk Planning:**
+- What could go wrong?
+- What's your backup plan?
+- Who can help if you're stuck?
+                """,
+                "key_points": ["Define clear problem statements", "Explicitly scope what's in and out", "Allocate time realistically", "Set milestones and prepare for risks"]
+            },
+            {
+                "title": "Working with Real-World Data",
+                "content": """
+**Finding and Using Real Data**
+
+For your exam project, you'll work with real-world data—either from an internship partner or publicly available sources.
+
+**Internship Projects (Recommended)**
+
+Benefits:
+- Real business problems
+- Mentorship from professionals
+- Industry experience for your CV
+- Networking opportunities
+
+Finding internship projects:
+- Approach local businesses
+- Use school connections
+- Check company internship programs
+- Reach out to alumni
+
+**Public Data Sources**
+
+If not doing an internship:
+- **Statistics Norway (SSB)**: Norwegian economic/demographic data
+- **Kaggle**: Curated datasets for analysis
+- **EU Open Data Portal**: European datasets
+- **World Bank**: Global development data
+- **Government Open Data**: Many countries publish data
+
+**Ethical Data Sourcing**
+
+Remember your GDPR and ethics training:
+- ✓ Ensure you have permission to use the data
+- ✓ Anonymize personal information
+- ✓ Document data sources properly
+- ✓ Check licensing requirements
+- ✗ Don't scrape data without permission
+- ✗ Don't use data for unintended purposes
+
+**Data Quality Assessment**
+
+Before starting analysis:
+1. How complete is the data?
+2. What's the time period covered?
+3. Are there obvious errors or outliers?
+4. Is the sample representative?
+5. What transformations are needed?
+
+**Documenting Your Data**
+
+Create a data dictionary:
+| Field | Type | Description | Source | Notes |
+|-------|------|-------------|--------|-------|
+| customer_id | Integer | Unique identifier | CRM | Primary key |
+| revenue | Decimal | Monthly revenue | Finance DB | In NOK |
+                """,
+                "key_points": ["Internship projects provide valuable real-world experience", "Many public data sources are available", "Always source data ethically and legally", "Document data thoroughly"]
+            },
+            {
+                "title": "Executing Your Analysis",
+                "content": """
+**Applying Your Skills**
+
+Your exam project is where you demonstrate mastery of all first-year skills.
+
+**Tools & Techniques to Apply:**
+
+**From Spreadsheet Fundamentals:**
+- Data cleaning in Excel/Sheets
+- Pivot tables for summarization
+- Formulas for calculations
+- Charts for visualization
+
+**From Statistical Tools:**
+- Descriptive statistics
+- Correlation analysis
+- Z-scores for outlier detection
+- Hypothesis testing (if applicable)
+
+**From Programming Fundamentals:**
+- Python for data manipulation
+- pandas for DataFrames
+- Automated data cleaning
+- Reproducible analysis scripts
+
+**From Databases:**
+- SQL queries for data extraction
+- Joining multiple data sources
+- Aggregations and groupings
+
+**From Data Visualization:**
+- Choosing appropriate chart types
+- Following design principles
+- Creating accessible visualizations
+- Building dashboards
+
+**Analysis Workflow:**
+
+1. **Explore**: Understand your data
+   - Summary statistics
+   - Initial visualizations
+   - Pattern identification
+
+2. **Clean**: Prepare for analysis
+   - Handle missing values
+   - Fix errors
+   - Standardize formats
+
+3. **Analyze**: Answer your questions
+   - Apply appropriate methods
+   - Document your approach
+   - Validate findings
+
+4. **Interpret**: Extract meaning
+   - What do the results mean?
+   - What's actionable?
+   - What are the limitations?
+
+**Common Pitfalls:**
+- Starting analysis before understanding the data
+- Skipping data cleaning
+- Not documenting your process
+- Overcomplicating the analysis
+- Ignoring limitations
+                """,
+                "key_points": ["Apply all tools learned in Semester 1-2", "Follow a systematic analysis workflow", "Document your process thoroughly", "Avoid common analysis pitfalls"]
+            },
+            {
+                "title": "Professional Documentation",
+                "content": """
+**Documentation Standards**
+
+Professional documentation distinguishes student work from industry-ready deliverables.
+
+**What to Document:**
+
+**1. Project Documentation**
+- Project plan and timeline
+- Scope and objectives
+- Stakeholder requirements
+- Risk assessment
+
+**2. Technical Documentation**
+- Data dictionary
+- Methodology description
+- Code comments
+- Version history
+
+**3. Analysis Documentation**
+- Decisions made and why
+- Assumptions stated
+- Limitations acknowledged
+- Findings validated
+
+**Report Structure (from Analysis Reporting course):**
+
+1. **Executive Summary**: Key findings for decision-makers
+2. **Introduction**: Problem context and objectives
+3. **Methodology**: How you approached the analysis
+4. **Data Description**: Sources, preparation, limitations
+5. **Findings**: Results with visualizations
+6. **Recommendations**: Actionable next steps
+7. **Appendix**: Technical details, additional charts
+
+**Professional Writing Tips:**
+
+- Write for your audience (technical vs. non-technical)
+- Use clear, concise language
+- Support claims with evidence
+- Include visualizations effectively
+- Proofread carefully
+
+**Version Control:**
+
+Even for solo projects:
+- Use meaningful file names
+- Track major changes
+- Keep backups
+- Document what changed
+
+**Example naming:**
+`project_report_v1.0_2025-03-10.docx`
+`analysis_script_v2_cleaned_data.py`
+                """,
+                "key_points": ["Document project, technical, and analysis aspects", "Follow professional report structure", "Write clearly for your audience", "Maintain version control"]
+            },
+            {
+                "title": "Presentation & Defense",
+                "content": """
+**Presenting Your Project**
+
+Your exam includes presenting your work to evaluators. This is your chance to demonstrate both technical competence and communication skills.
+
+**Presentation Structure:**
+
+**1. Opening (2 minutes)**
+- Introduce yourself and project
+- State the problem you solved
+- Hook the audience with a key finding
+
+**2. Context (3 minutes)**
+- Business background
+- Why this matters
+- Your objectives
+
+**3. Methodology (3 minutes)**
+- Data sources used
+- Tools and techniques applied
+- Key decisions made
+
+**4. Findings (5 minutes)**
+- Main results with visuals
+- Insights discovered
+- Patterns identified
+
+**5. Recommendations (3 minutes)**
+- Actionable suggestions
+- Expected impact
+- Next steps
+
+**6. Conclusion (2 minutes)**
+- Summary of key points
+- Lessons learned
+- Questions invitation
+
+**Presentation Tips:**
+
+**Visual Design:**
+- One key message per slide
+- Minimal text, maximum visuals
+- Consistent formatting
+- Readable fonts (18pt minimum)
+
+**Delivery:**
+- Practice out loud multiple times
+- Time yourself
+- Prepare for questions
+- Speak to the audience, not slides
+
+**Handling Questions:**
+
+Common question types:
+- "Why did you choose this approach?"
+- "What were the limitations?"
+- "What would you do differently?"
+- "How confident are you in these findings?"
+
+Answering strategies:
+- Pause before answering
+- Be honest about limitations
+- Refer to your documentation
+- Say "I don't know" if needed, then explain how you'd find out
+
+**Professional Terminology:**
+
+Use appropriate industry language:
+- "The analysis revealed..." (not "I found...")
+- "The data suggests..." (not "It's obvious that...")
+- "I recommend..." (not "You should...")
+- "Within the scope of this project..." (acknowledging limits)
+                """,
+                "key_points": ["Structure presentation logically", "Practice delivery multiple times", "Prepare for tough questions", "Use professional terminology"]
+            },
+            {
+                "title": "Quality & Self-Assessment",
+                "content": """
+**Ensuring Quality**
+
+Before submission, critically assess your own work against professional standards.
+
+**Quality Checklist:**
+
+**Project Execution:**
+- ☐ Problem clearly defined and scoped
+- ☐ Data sourced ethically
+- ☐ Methodology appropriate for the problem
+- ☐ Analysis thorough and documented
+- ☐ Findings validated
+
+**Technical Quality:**
+- ☐ Data cleaned properly
+- ☐ Calculations verified
+- ☐ Code/formulas documented
+- ☐ No obvious errors
+- ☐ Reproducible process
+
+**Report Quality:**
+- ☐ Clear executive summary
+- ☐ Logical structure
+- ☐ Visualizations accessible
+- ☐ Recommendations actionable
+- ☐ Proofread for errors
+
+**Presentation Quality:**
+- ☐ Within time limit
+- ☐ Key points clear
+- ☐ Visuals readable
+- ☐ Prepared for questions
+
+**Self-Reflection Questions:**
+
+Ask yourself:
+1. Did I answer the original question?
+2. Would a stakeholder find this useful?
+3. Are my conclusions supported by evidence?
+4. Did I acknowledge limitations honestly?
+5. What would I do differently next time?
+
+**Common Issues to Check:**
+
+| Issue | How to Check |
+|-------|--------------|
+| Missing data handling | Document all decisions |
+| Overclaiming | Review language for hedging |
+| Unclear visuals | Show to someone unfamiliar |
+| Weak recommendations | Are they specific and actionable? |
+| Poor time management | Compare to original plan |
+
+**Getting Feedback:**
+
+Before submission:
+- Have a peer review your work
+- Ask your supervisor for input
+- Read your report from the audience's perspective
+- Practice your presentation with feedback
+
+**After Submission:**
+
+Document lessons learned:
+- What went well?
+- What was challenging?
+- What skills do you need to develop?
+- How will you apply this experience?
+                """,
+                "key_points": ["Use quality checklists before submission", "Self-assess honestly against standards", "Get feedback from peers and supervisors", "Document lessons learned for future projects"]
+            }
+        ],
+        "exercises": [
+            {
+                "title": "Write a Problem Statement",
+                "type": "practical",
+                "question": "A local restaurant chain (5 locations) has noticed declining customer visits over the past 6 months. They have data on daily sales, customer reviews, and competitor activity. Write a clear problem statement for a data analysis project.",
+                "answer": "Strong problem statement: 'Restaurant Group Oslo needs to understand the drivers of declining customer visits over the past 6 months in order to develop strategies to reverse the trend. This analysis will examine daily sales data, customer review sentiment, and competitor activity across all 5 locations to identify patterns and provide actionable recommendations by [deadline]. The project will focus on identifying which locations are most affected, what time periods show the greatest decline, and whether customer feedback reveals specific issues.' This statement includes: who needs the analysis, what question needs answering, what data will be used, what the deliverable is, and the scope boundaries.",
+                "hint": "Include: who, what problem, what data, what deliverable, and any scope boundaries"
+            },
+            {
+                "title": "Create a Project Timeline",
+                "type": "scenario",
+                "question": "You have 8 weeks to complete your exam project analyzing e-commerce sales data. Create a timeline with phases and milestones, allocating appropriate percentages of time.",
+                "answer": "8-Week Project Timeline: WEEK 1-2 (25%): Planning & Data Collection - Week 1: Define problem, identify stakeholders, scope project, create project plan. Week 2: Obtain data access, initial data exploration, create data dictionary. Milestone: Project plan approved, data ready. WEEK 3-4 (25%): Data Cleaning & Preparation - Week 3: Clean data, handle missing values, fix errors. Week 4: Transform data for analysis, validate quality. Milestone: Clean dataset documented. WEEK 5-6 (25%): Analysis & Visualization - Week 5: Exploratory analysis, identify patterns. Week 6: Deep analysis, create visualizations. Milestone: Key findings identified. WEEK 7 (12.5%): Reporting - Draft report, integrate visualizations, write recommendations. Milestone: Draft report for review. WEEK 8 (12.5%): Review & Finalize - Peer review, revisions, finalize presentation, submit. Milestone: Final submission. Buffer: Built into each phase for unexpected issues.",
+                "hint": "Consider the recommended percentages: Planning 15-20%, Data prep 20-25%, Analysis 25-30%, Reporting 20-25%, Review 10-15%"
+            },
+            {
+                "title": "Prepare for Tough Questions",
+                "type": "scenario",
+                "question": "During your project presentation, an evaluator asks: 'Your sample size is only 500 customers out of 10,000. How confident can we be in your findings?' How would you respond professionally?",
+                "answer": "Professional response: 'That's an important consideration. Our sample of 500 customers represents 5% of the total customer base, which provides a statistically meaningful sample with approximately a 4% margin of error at 95% confidence. The sample was selected randomly to ensure representativeness. I verified the sample demographics matched the overall customer base in terms of age distribution, location, and purchase history. While a larger sample would increase precision, the patterns we identified—particularly the 25% difference in satisfaction between segments—are well above the margin of error, giving us confidence in the directional findings. In the recommendations section, I've noted that implementing changes with a pilot group would allow validation before full rollout.' Key elements: 1) Acknowledge the valid concern, 2) Explain your methodology, 3) Quantify the confidence level, 4) Note limitations, 5) Suggest mitigation.",
+                "hint": "Acknowledge the concern, explain your reasoning, quantify confidence, note limitations, suggest mitigation"
+            }
+        ],
+        "quiz": [
+            {
+                "question": "What percentage of project time should typically be allocated to planning and research?",
+                "options": ["5-10%", "15-20%", "40-50%", "60-70%"],
+                "correct": 1,
+                "explanation": "15-20% is the recommended allocation for planning and research. Rushing into analysis without proper planning often leads to wasted effort later."
+            },
+            {
+                "question": "What type of project is encouraged for Exam Project 1?",
+                "options": ["Theoretical research", "Internship with a real company", "Simulation exercise", "Literature review"],
+                "correct": 1,
+                "explanation": "Internship projects are encouraged as they provide real-world experience, professional mentorship, and practical skills that enhance your employability."
+            },
+            {
+                "question": "When presenting findings, you should:",
+                "options": ["Use as much technical jargon as possible", "Lead with the most important finding", "Save conclusions for the very end", "Avoid mentioning limitations"],
+                "correct": 1,
+                "explanation": "Lead with the most important finding to immediately engage your audience. Technical jargon should be minimized, conclusions should be clear throughout, and limitations should be acknowledged honestly."
+            },
+            {
+                "question": "A good problem statement should include:",
+                "options": ["Only the data sources available", "The organization, question, and deliverable", "Just the deadline", "Technical methodology details"],
+                "correct": 1,
+                "explanation": "A good problem statement includes who needs the analysis (organization), what question needs answering, and what the deliverable will be. Methodology comes later in planning."
+            },
+            {
+                "question": "Before submitting your project, you should:",
+                "options": ["Skip peer review to save time", "Only check for spelling errors", "Use a quality checklist and get feedback", "Assume everything is correct"],
+                "correct": 2,
+                "explanation": "Using a quality checklist and getting feedback from peers helps catch errors and improve your work. Never skip the review phase—fresh eyes often spot issues you've missed."
+            }
+        ]
     }
 }
 
@@ -8461,6 +8952,9 @@ elif page == "Playground":
             ],
             "FI1BBAR05 - Analysis Reporting": [
                 "Report Writing Workshop"
+            ],
+            "FI1BBP275 - Exam Project 1": [
+                "Exam Project Toolkit"
             ]
         },
         "Semester 3 - Competence Skills": {
@@ -11755,6 +12249,316 @@ Target Length: {structure['page_range']}
 """)
                 else:
                     st.warning("Please enter at least a title for your visual.")
+    
+    elif playground_tab == "Exam Project Toolkit":
+        st.subheader("🎓 Exam Project Toolkit")
+        st.markdown("*Practice planning and executing your comprehensive data analysis project*")
+        st.markdown("---")
+        
+        toolkit_mode = st.radio(
+            "Choose practice mode:",
+            ["Problem Statement Builder", "Project Scope Planner", "Quality Self-Assessment", "Presentation Planner"],
+            horizontal=True
+        )
+        
+        if toolkit_mode == "Problem Statement Builder":
+            st.markdown("### Problem Statement Builder")
+            st.markdown("*Craft a clear, professional problem statement for your project*")
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                organization = st.text_input(
+                    "Organization/Client:",
+                    placeholder="e.g., Oslo Retail Group, Local Healthcare Clinic"
+                )
+                topic = st.text_input(
+                    "What needs to be understood?",
+                    placeholder="e.g., customer churn patterns, inventory inefficiencies"
+                )
+            
+            with col2:
+                action = st.text_input(
+                    "Purpose (in order to...):",
+                    placeholder="e.g., improve retention strategies, reduce waste"
+                )
+                data_sources = st.text_input(
+                    "Data to be examined:",
+                    placeholder="e.g., 2 years of customer data, daily sales records"
+                )
+            
+            deliverable = st.text_input(
+                "Deliverable:",
+                placeholder="e.g., recommendation report, dashboard, presentation"
+            )
+            deadline = st.text_input(
+                "Deadline:",
+                placeholder="e.g., March 15, 2026"
+            )
+            
+            if st.button("📝 Generate Problem Statement", type="primary"):
+                if organization and topic and action:
+                    st.markdown("---")
+                    st.markdown("### Your Problem Statement")
+                    
+                    problem_statement = f"""**{organization}** needs to understand **{topic}** in order to **{action}**. 
+
+This analysis will examine **{data_sources if data_sources else '[specify data sources]'}** to provide **{deliverable if deliverable else '[specify deliverable]'}** by **{deadline if deadline else '[specify deadline]'}**."""
+                    
+                    st.success(problem_statement)
+                    
+                    st.markdown("### Quality Check:")
+                    checks = [
+                        ("Organization/stakeholder identified", bool(organization)),
+                        ("Clear question to answer", bool(topic)),
+                        ("Business purpose stated", bool(action)),
+                        ("Data sources specified", bool(data_sources)),
+                        ("Deliverable defined", bool(deliverable)),
+                        ("Deadline included", bool(deadline))
+                    ]
+                    
+                    for check, passed in checks:
+                        if passed:
+                            st.markdown(f"✅ {check}")
+                        else:
+                            st.markdown(f"⚠️ {check} - *add this for completeness*")
+                    
+                    st.download_button(
+                        "📥 Download Problem Statement",
+                        data=problem_statement,
+                        file_name="problem_statement.md",
+                        mime="text/markdown"
+                    )
+                else:
+                    st.warning("Please fill in organization, topic, and purpose at minimum.")
+        
+        elif toolkit_mode == "Project Scope Planner":
+            st.markdown("### Project Scope Planner")
+            st.markdown("*Define clear boundaries for your project*")
+            
+            st.markdown("**Project Duration:**")
+            project_weeks = st.slider("Total project time (weeks):", 4, 16, 10, key="scope_project_weeks")
+            
+            st.markdown("---")
+            st.markdown("### In Scope vs Out of Scope")
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                st.markdown("**✅ In Scope** (what you WILL do)")
+                in_scope_1 = st.text_input("Question 1:", placeholder="e.g., Analyze sales trends for 2024-2025", key="scope_in_1")
+                in_scope_2 = st.text_input("Question 2:", placeholder="e.g., Identify top-performing products", key="scope_in_2")
+                in_scope_3 = st.text_input("Question 3:", placeholder="e.g., Create visualization dashboard", key="scope_in_3")
+            
+            with col2:
+                st.markdown("**❌ Out of Scope** (explicitly excluded)")
+                out_scope_1 = st.text_input("Excluded 1:", placeholder="e.g., Competitor analysis", key="scope_out_1")
+                out_scope_2 = st.text_input("Excluded 2:", placeholder="e.g., Predictive modeling", key="scope_out_2")
+                out_scope_3 = st.text_input("Excluded 3:", placeholder="e.g., Real-time data integration", key="scope_out_3")
+            
+            st.markdown("---")
+            st.markdown("### Time Allocation")
+            
+            phases = {
+                "Planning & Research": st.slider("Planning & Research %:", 10, 30, 20, key="scope_phase_1"),
+                "Data Collection & Cleaning": st.slider("Data Collection & Cleaning %:", 15, 35, 25, key="scope_phase_2"),
+                "Analysis & Exploration": st.slider("Analysis & Exploration %:", 20, 40, 25, key="scope_phase_3"),
+                "Reporting & Visualization": st.slider("Reporting & Visualization %:", 15, 30, 20, key="scope_phase_4"),
+                "Review & Finalization": st.slider("Review & Finalization %:", 5, 20, 10, key="scope_phase_5")
+            }
+            
+            total_pct = sum(phases.values())
+            if total_pct != 100:
+                st.warning(f"Total allocation is {total_pct}%. Adjust to equal 100%.")
+            else:
+                st.success("✅ Time allocation totals 100%")
+            
+            if st.button("📊 Generate Project Scope Document", type="primary"):
+                st.markdown("---")
+                st.markdown("### Project Scope Document")
+                
+                scope_doc = f"""# Project Scope Document
+
+## Duration
+**{project_weeks} weeks**
+
+## In Scope
+"""
+                for item in [in_scope_1, in_scope_2, in_scope_3]:
+                    if item:
+                        scope_doc += f"- {item}\n"
+                
+                scope_doc += """
+## Out of Scope
+"""
+                for item in [out_scope_1, out_scope_2, out_scope_3]:
+                    if item:
+                        scope_doc += f"- {item}\n"
+                
+                scope_doc += """
+## Timeline
+"""
+                current_week = 1
+                for phase, pct in phases.items():
+                    weeks = (pct / 100) * project_weeks
+                    end_week = current_week + weeks - 1
+                    scope_doc += f"- **{phase}**: Weeks {current_week:.0f}-{end_week:.0f} ({pct}%)\n"
+                    current_week = end_week + 1
+                
+                st.text_area("Scope Document:", value=scope_doc, height=400)
+                st.download_button(
+                    "Download Scope Document",
+                    data=scope_doc,
+                    file_name="project_scope.md",
+                    mime="text/markdown"
+                )
+        
+        elif toolkit_mode == "Quality Self-Assessment":
+            st.markdown("### Quality Self-Assessment")
+            st.markdown("*Evaluate your project against professional standards before submission*")
+            
+            st.markdown("Rate each area honestly (1-5):")
+            st.caption("1=Not done, 2=Partial, 3=Adequate, 4=Good, 5=Excellent")
+            
+            categories = {
+                "Project Execution": [
+                    "Problem clearly defined and scoped",
+                    "Data sourced ethically with documentation",
+                    "Methodology appropriate and documented",
+                    "Analysis thorough and validated"
+                ],
+                "Technical Quality": [
+                    "Data cleaned properly with decisions documented",
+                    "Calculations verified and accurate",
+                    "Code/formulas organized and commented",
+                    "Process is reproducible"
+                ],
+                "Report Quality": [
+                    "Executive summary is clear and actionable",
+                    "Report has logical structure",
+                    "Visualizations are accessible and labeled",
+                    "Recommendations are specific and supported"
+                ],
+                "Presentation Quality": [
+                    "Within time limit",
+                    "Key points are clear",
+                    "Visuals are readable from distance",
+                    "Prepared for likely questions"
+                ]
+            }
+            
+            scores = {}
+            for category, items in categories.items():
+                st.markdown(f"**{category}**")
+                for i, item in enumerate(items):
+                    scores[item] = st.slider(item, 1, 5, 3, key=f"qa_{category}_{i}")
+            
+            if st.button("📋 Generate Assessment Report", type="primary"):
+                st.markdown("---")
+                st.markdown("### Your Assessment Results")
+                
+                total_score = sum(scores.values())
+                max_score = len(scores) * 5
+                percentage = (total_score / max_score) * 100
+                
+                if percentage >= 80:
+                    st.success(f"Overall Score: {total_score}/{max_score} ({percentage:.0f}%) - **Ready to submit!**")
+                elif percentage >= 60:
+                    st.warning(f"Overall Score: {total_score}/{max_score} ({percentage:.0f}%) - **Good progress, address weak areas**")
+                else:
+                    st.error(f"Overall Score: {total_score}/{max_score} ({percentage:.0f}%) - **Needs more work**")
+                
+                st.markdown("### Areas to Improve:")
+                weak_areas = [item for item, score in scores.items() if score < 3]
+                if weak_areas:
+                    for area in weak_areas:
+                        st.markdown(f"- ⚠️ {area}")
+                else:
+                    st.markdown("No critical areas identified - great work!")
+                
+                st.markdown("### Strengths:")
+                strong_areas = [item for item, score in scores.items() if score >= 4]
+                if strong_areas:
+                    for area in strong_areas:
+                        st.markdown(f"- ✅ {area}")
+        
+        elif toolkit_mode == "Presentation Planner":
+            st.markdown("### Presentation Planner")
+            st.markdown("*Plan your project presentation structure*")
+            
+            total_time = st.slider("Total presentation time (minutes):", 10, 30, 18, key="exam_pres_total_time")
+            
+            sections = {
+                "Opening": {"default": 2, "tip": "Introduce yourself, project, hook with key finding"},
+                "Context": {"default": 3, "tip": "Business background, why it matters, objectives"},
+                "Methodology": {"default": 3, "tip": "Data sources, tools used, key decisions"},
+                "Findings": {"default": 5, "tip": "Main results with visuals, patterns identified"},
+                "Recommendations": {"default": 3, "tip": "Actionable suggestions, expected impact"},
+                "Conclusion": {"default": 2, "tip": "Summary, lessons learned, Q&A invitation"}
+            }
+            
+            st.markdown("### Time Allocation per Section")
+            allocations = {}
+            for section, info in sections.items():
+                col1, col2 = st.columns([1, 2])
+                with col1:
+                    allocations[section] = st.number_input(
+                        f"{section} (min):",
+                        min_value=1,
+                        max_value=15,
+                        value=info["default"],
+                        key=f"pres_{section}"
+                    )
+                with col2:
+                    st.caption(info["tip"])
+            
+            allocated = sum(allocations.values())
+            if allocated != total_time:
+                st.warning(f"Allocated {allocated} minutes, but total is {total_time} minutes. Adjust to match.")
+            else:
+                st.success(f"✅ Time allocation matches {total_time} minutes")
+            
+            st.markdown("---")
+            st.markdown("### Key Points per Section")
+            
+            key_points = {}
+            for section in sections.keys():
+                key_points[section] = st.text_area(
+                    f"{section} - Main points:",
+                    placeholder=f"What will you cover in the {section.lower()} section?",
+                    height=60,
+                    key=f"kp_{section}"
+                )
+            
+            if st.button("📊 Generate Presentation Outline", type="primary"):
+                st.markdown("---")
+                st.markdown("### Your Presentation Outline")
+                
+                outline = f"""# Project Presentation Outline
+Total Time: {total_time} minutes
+
+"""
+                for section, minutes in allocations.items():
+                    outline += f"## {section} ({minutes} min)\n"
+                    outline += f"**Tip:** {sections[section]['tip']}\n"
+                    if key_points[section]:
+                        outline += f"**Your notes:** {key_points[section]}\n"
+                    outline += "\n"
+                
+                outline += """---
+## Presentation Tips
+- Practice out loud at least 3 times
+- Time yourself to ensure you fit the limit
+- Have backup slides for anticipated questions
+- Speak to the audience, not the slides
+- Pause after key findings to let them sink in
+"""
+                
+                st.text_area("Presentation Outline:", value=outline, height=500)
+                st.download_button(
+                    "Download Outline",
+                    data=outline,
+                    file_name="presentation_outline.md",
+                    mime="text/markdown"
+                )
 
 elif page == "About":
     st.title("ℹ️ About the Data Analyst Program")
