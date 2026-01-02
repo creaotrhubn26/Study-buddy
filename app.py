@@ -4,7 +4,13 @@ from openai import OpenAI
 import os
 import json
 import time
+import re
 from datetime import datetime, timedelta
+try:
+    from spellchecker import SpellChecker
+    SPELLCHECK_AVAILABLE = True
+except ImportError:
+    SPELLCHECK_AVAILABLE = False
 
 st.set_page_config(
     page_title="Data Analyst Study App",
@@ -8855,9 +8861,54 @@ elif page == "Learn & Practice":
                 st.info(answer_text)
 
 elif page == "Study Notes":
-    st.title("📝 Study Notes")
-    st.markdown("*Organize, categorize, and enhance your study notes with AI assistance*")
-    st.markdown("---")
+    st.markdown("""
+    <style>
+    .word-toolbar {
+        background: linear-gradient(180deg, #f3f3f3 0%, #e8e8e8 100%);
+        border: 1px solid #d0d0d0;
+        border-radius: 4px;
+        padding: 8px 12px;
+        margin-bottom: 10px;
+    }
+    .toolbar-group {
+        display: inline-flex;
+        gap: 4px;
+        padding: 0 8px;
+        border-right: 1px solid #ccc;
+    }
+    .doc-container {
+        background: white;
+        border: 1px solid #d0d0d0;
+        border-radius: 4px;
+        padding: 20px;
+        min-height: 400px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .note-card {
+        background: #fafafa;
+        border-left: 4px solid #4A90D9;
+        padding: 12px;
+        margin: 8px 0;
+        border-radius: 0 4px 4px 0;
+    }
+    .note-card.important { border-left-color: #FFD700; }
+    .note-card.critical { border-left-color: #FF6B6B; }
+    .sidebar-item {
+        padding: 8px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 2px 0;
+    }
+    .sidebar-item:hover { background: #e8f4fd; }
+    .status-bar {
+        background: #f0f0f0;
+        padding: 4px 12px;
+        font-size: 12px;
+        color: #666;
+        border-top: 1px solid #d0d0d0;
+    }
+    </style>
+    """, unsafe_allow_html=True)
     
     NOTE_CATEGORIES = {
         "lecture": {"icon": "📚", "label": "Lecture Notes", "color": "#4A90D9"},
@@ -8867,9 +8918,31 @@ elif page == "Study Notes":
         "summary": {"icon": "📄", "label": "Summary", "color": "#9B59B6"}
     }
     
+    IMPORTANCE_LEVELS = {
+        "normal": {"icon": "○", "label": "Normal", "color": "#888"},
+        "important": {"icon": "⭐", "label": "Important", "color": "#FFD700"},
+        "critical": {"icon": "🔥", "label": "Exam Critical", "color": "#FF6B6B"}
+    }
+    
+    QUICK_INSERTS = {
+        "heading": "## ",
+        "subheading": "### ",
+        "bullet": "- ",
+        "numbered": "1. ",
+        "bold": "**text**",
+        "italic": "*text*",
+        "table": "| Col1 | Col2 | Col3 |\n|------|------|------|\n| | | |",
+        "checklist": "- [ ] Task item",
+        "quote": "> Quote text",
+        "code": "```\ncode here\n```",
+        "divider": "\n---\n",
+        "link": "[text](url)"
+    }
+    
     NOTE_TEMPLATES = {
-        "blank": {"name": "Blank Note", "content": ""},
-        "concept": {"name": "Concept Summary", "content": """## Concept Name
+        "blank": {"name": "📄 Blank Document", "icon": "📄", "content": ""},
+        "concept": {"name": "💡 Concept Summary", "icon": "💡", "content": """## Concept Name
+
 **Definition:**
 [Write the definition here]
 
@@ -8889,7 +8962,7 @@ elif page == "Study Notes":
 - Related concept 1
 - Related concept 2
 """},
-        "case_study": {"name": "Case Study", "content": """## Case Study: [Title]
+        "case_study": {"name": "📊 Case Study", "icon": "📊", "content": """## Case Study: [Title]
 
 ### Background
 [Describe the business context]
@@ -8917,7 +8990,7 @@ elif page == "Study Notes":
 - Lesson 1
 - Lesson 2
 """},
-        "formula": {"name": "Formula Sheet", "content": """## Formula Reference: [Topic]
+        "formula": {"name": "🔢 Formula Sheet", "icon": "🔢", "content": """## Formula Reference: [Topic]
 
 ### Basic Formulas
 | Formula | Description | When to Use |
@@ -8931,6 +9004,7 @@ elif page == "Study Notes":
 
 ### Worked Example
 **Problem:** [Describe the problem]
+
 **Solution:**
 1. Step 1
 2. Step 2
@@ -8940,7 +9014,7 @@ elif page == "Study Notes":
 - Remember: [Key tip]
 - Common error: [What to avoid]
 """},
-        "comparison": {"name": "Comparison Chart", "content": """## Comparison: [Topic A] vs [Topic B]
+        "comparison": {"name": "⚖️ Comparison Chart", "icon": "⚖️", "content": """## Comparison: [Topic A] vs [Topic B]
 
 | Aspect | Topic A | Topic B |
 |--------|---------|---------|
@@ -8960,18 +9034,450 @@ elif page == "Study Notes":
 
 ### Key Takeaway
 [Main insight from comparison]
+"""},
+        "meeting": {"name": "📝 Meeting Notes", "icon": "📝", "content": """## Meeting Notes: [Date]
+
+**Attendees:** [Names]
+**Topic:** [Meeting topic]
+
+### Key Discussion Points
+1. Point 1
+2. Point 2
+3. Point 3
+
+### Decisions Made
+- Decision 1
+- Decision 2
+
+### Action Items
+- [ ] Task 1 - Owner: [Name] - Due: [Date]
+- [ ] Task 2 - Owner: [Name] - Due: [Date]
+
+### Next Steps
+[What happens next]
+"""},
+        "exam_prep": {"name": "📋 Exam Prep", "icon": "📋", "content": """## Exam Preparation: [Subject]
+
+### Key Topics to Review
+- [ ] Topic 1
+- [ ] Topic 2
+- [ ] Topic 3
+
+### Important Definitions
+| Term | Definition |
+|------|------------|
+| Term 1 | Definition |
+| Term 2 | Definition |
+
+### Practice Questions
+1. Question 1?
+   - Answer: 
+
+2. Question 2?
+   - Answer: 
+
+### Quick Memory Aids
+> Mnemonic or memory trick here
+
+### Common Exam Mistakes
+- Mistake to avoid 1
+- Mistake to avoid 2
 """}
-    }
-    
-    IMPORTANCE_LEVELS = {
-        "normal": {"icon": "", "label": "Normal"},
-        "important": {"icon": "⭐", "label": "Important"},
-        "critical": {"icon": "🔥", "label": "Critical for Exam"}
     }
     
     course_options = {f"{c['code']} - {c['name']}": c['code'] for c in courses_data}
     
-    notes_tab, ai_tab, templates_tab, stats_tab = st.tabs(["📝 My Notes", "🤖 AI Assistant", "📋 Templates", "📊 Statistics"])
+    if 'current_note_content' not in st.session_state:
+        st.session_state.current_note_content = ""
+    if 'word_view_mode' not in st.session_state:
+        st.session_state.word_view_mode = "edit"
+    
+    header_col1, header_col2 = st.columns([3, 1])
+    with header_col1:
+        st.markdown("## 📝 Study Notes")
+    with header_col2:
+        view_mode = st.radio("View:", ["Edit", "Preview", "Split"], horizontal=True, key="word_view", label_visibility="collapsed")
+    
+    menu_col1, menu_col2, menu_col3, menu_col4, menu_col5 = st.columns([1, 1, 1, 1, 1])
+    with menu_col1:
+        if st.button("📄 New", key="word_new", use_container_width=True):
+            st.session_state.current_note_content = ""
+            st.session_state.pop('editing_note_idx', None)
+            st.session_state.pop('current_note_title', None)
+    with menu_col2:
+        if st.button("💾 Save", key="word_save_top", use_container_width=True):
+            st.session_state.trigger_save = True
+    with menu_col3:
+        if st.button("📥 Export", key="word_export", use_container_width=True):
+            st.session_state.show_export = True
+    with menu_col4:
+        if st.button("🤖 AI Help", key="word_ai", use_container_width=True):
+            st.session_state.show_ai_panel = not st.session_state.get('show_ai_panel', False)
+    with menu_col5:
+        if st.button("📊 Stats", key="word_stats", use_container_width=True):
+            st.session_state.show_stats = not st.session_state.get('show_stats', False)
+    
+    st.markdown("---")
+    
+    sidebar_col, main_col = st.columns([1, 3])
+    
+    with sidebar_col:
+        st.markdown("##### 📁 Documents")
+        
+        selected_course_label = st.selectbox(
+            "Course:",
+            options=list(course_options.keys()),
+            key="word_course_select",
+            label_visibility="collapsed"
+        )
+        selected_course_code = course_options[selected_course_label]
+        
+        if selected_course_code not in st.session_state.study_notes:
+            st.session_state.study_notes[selected_course_code] = []
+        
+        course_notes = st.session_state.study_notes[selected_course_code]
+        
+        cat_filter = st.selectbox(
+            "Filter:",
+            ["All"] + [f"{v['icon']} {v['label']}" for v in NOTE_CATEGORIES.values()],
+            key="word_cat_filter",
+            label_visibility="collapsed"
+        )
+        
+        search_term = st.text_input("🔍", placeholder="Search...", key="word_search", label_visibility="collapsed")
+        
+        filtered_notes = course_notes.copy()
+        if cat_filter != "All":
+            cat_key = [k for k, v in NOTE_CATEGORIES.items() if f"{v['icon']} {v['label']}" == cat_filter]
+            if cat_key:
+                filtered_notes = [n for n in filtered_notes if n.get('category') == cat_key[0]]
+        if search_term:
+            filtered_notes = [n for n in filtered_notes if search_term.lower() in n.get('title', '').lower() or search_term.lower() in n.get('content', '').lower()]
+        
+        st.markdown(f"**{len(filtered_notes)} notes**")
+        
+        for idx, note in enumerate(filtered_notes):
+            orig_idx = course_notes.index(note) if note in course_notes else idx
+            cat = note.get('category', 'lecture')
+            cat_info = NOTE_CATEGORIES.get(cat, NOTE_CATEGORIES['lecture'])
+            imp = note.get('importance', 'normal')
+            imp_icon = IMPORTANCE_LEVELS.get(imp, {}).get('icon', '')
+            
+            btn_label = f"{cat_info['icon']} {imp_icon} {note.get('title', 'Untitled')[:20]}"
+            if st.button(btn_label, key=f"open_{selected_course_code}_{orig_idx}", use_container_width=True):
+                st.session_state.current_note_content = note.get('content', '')
+                st.session_state.current_note_title = note.get('title', '')
+                st.session_state.current_note_category = note.get('category', 'lecture')
+                st.session_state.current_note_importance = note.get('importance', 'normal')
+                st.session_state.current_note_tags = ', '.join(note.get('tags', []))
+                st.session_state.current_note_outcome = note.get('learning_outcome', '')
+                st.session_state.editing_note_idx = orig_idx
+                st.rerun()
+    
+    with main_col:
+        st.markdown("##### ✏️ Editor Toolbar")
+        tool_cols = st.columns(12)
+        
+        insert_text = ""
+        with tool_cols[0]:
+            if st.button("H1", key="tb_h1", help="Heading 1"):
+                insert_text = "## "
+        with tool_cols[1]:
+            if st.button("H2", key="tb_h2", help="Heading 2"):
+                insert_text = "### "
+        with tool_cols[2]:
+            if st.button("B", key="tb_bold", help="Bold"):
+                insert_text = "**bold**"
+        with tool_cols[3]:
+            if st.button("I", key="tb_italic", help="Italic"):
+                insert_text = "*italic*"
+        with tool_cols[4]:
+            if st.button("•", key="tb_bullet", help="Bullet list"):
+                insert_text = "- "
+        with tool_cols[5]:
+            if st.button("1.", key="tb_num", help="Numbered list"):
+                insert_text = "1. "
+        with tool_cols[6]:
+            if st.button("☐", key="tb_check", help="Checklist"):
+                insert_text = "- [ ] "
+        with tool_cols[7]:
+            if st.button("⊞", key="tb_table", help="Table"):
+                insert_text = "\n| Col1 | Col2 | Col3 |\n|------|------|------|\n| | | |\n"
+        with tool_cols[8]:
+            if st.button("❝", key="tb_quote", help="Quote"):
+                insert_text = "> "
+        with tool_cols[9]:
+            if st.button("</>", key="tb_code", help="Code block"):
+                insert_text = "```\ncode\n```"
+        with tool_cols[10]:
+            if st.button("—", key="tb_div", help="Divider"):
+                insert_text = "\n---\n"
+        with tool_cols[11]:
+            if st.button("🔗", key="tb_link", help="Link"):
+                insert_text = "[text](url)"
+        
+        if insert_text:
+            st.session_state.current_note_content = st.session_state.get('current_note_content', '') + insert_text
+            st.rerun()
+        
+        prop_col1, prop_col2, prop_col3, prop_col4 = st.columns(4)
+        with prop_col1:
+            note_title = st.text_input("Title:", value=st.session_state.get('current_note_title', ''), key="word_title", placeholder="Document title...")
+        with prop_col2:
+            note_category = st.selectbox(
+                "Category:",
+                options=list(NOTE_CATEGORIES.keys()),
+                format_func=lambda x: f"{NOTE_CATEGORIES[x]['icon']} {NOTE_CATEGORIES[x]['label']}",
+                index=list(NOTE_CATEGORIES.keys()).index(st.session_state.get('current_note_category', 'lecture')),
+                key="word_category"
+            )
+        with prop_col3:
+            note_importance = st.selectbox(
+                "Importance:",
+                options=list(IMPORTANCE_LEVELS.keys()),
+                format_func=lambda x: f"{IMPORTANCE_LEVELS[x]['icon']} {IMPORTANCE_LEVELS[x]['label']}",
+                index=list(IMPORTANCE_LEVELS.keys()).index(st.session_state.get('current_note_importance', 'normal')),
+                key="word_importance"
+            )
+        with prop_col4:
+            template_choice = st.selectbox(
+                "Template:",
+                options=["(None)"] + [t['name'] for t in NOTE_TEMPLATES.values()],
+                key="word_template"
+            )
+            if template_choice != "(None)":
+                template_key = [k for k, v in NOTE_TEMPLATES.items() if v['name'] == template_choice]
+                if template_key and not st.session_state.get('editing_note_idx'):
+                    if st.session_state.get('last_applied_template') != template_choice:
+                        st.session_state.current_note_content = NOTE_TEMPLATES[template_key[0]]['content']
+                        st.session_state.last_applied_template = template_choice
+                        st.rerun()
+        
+        if view_mode == "Edit":
+            note_content = st.text_area(
+                "Content:",
+                value=st.session_state.get('current_note_content', ''),
+                height=350,
+                key="word_content",
+                placeholder="Start writing your notes here...\n\nUse Markdown for formatting:\n- **bold** for bold\n- *italic* for italic\n- ## for headings\n- - for bullet points",
+                label_visibility="collapsed"
+            )
+            st.session_state.current_note_content = note_content
+        
+        elif view_mode == "Preview":
+            st.markdown("**Preview:**")
+            content = st.session_state.get('current_note_content', '')
+            if content:
+                st.markdown(content)
+            else:
+                st.info("Nothing to preview. Start writing in Edit mode.")
+        
+        else:
+            edit_col, preview_col = st.columns(2)
+            with edit_col:
+                note_content = st.text_area(
+                    "Edit:",
+                    value=st.session_state.get('current_note_content', ''),
+                    height=300,
+                    key="word_content_split",
+                    label_visibility="collapsed"
+                )
+                st.session_state.current_note_content = note_content
+            with preview_col:
+                st.markdown("**Preview:**")
+                if note_content:
+                    st.markdown(note_content)
+                else:
+                    st.caption("Preview appears here...")
+        
+        tags_col, outcome_col = st.columns(2)
+        with tags_col:
+            note_tags = st.text_input("Tags (comma-separated):", value=st.session_state.get('current_note_tags', ''), key="word_tags")
+        with outcome_col:
+            selected_course_data = next((c for c in courses_data if c['code'] == selected_course_code), None)
+            outcomes_list = []
+            if selected_course_data:
+                for lo in selected_course_data.get('learning_outcomes', []):
+                    outcomes_list.extend(lo.get('items', []))
+            default_outcome = st.session_state.get('current_note_outcome', '')
+            note_outcome = st.selectbox(
+                "Learning Outcome:",
+                options=["(None)"] + outcomes_list[:10],
+                index=(outcomes_list.index(default_outcome) + 1) if default_outcome in outcomes_list else 0,
+                key="word_outcome"
+            )
+        
+        save_col1, save_col2, save_col3 = st.columns([1, 1, 2])
+        with save_col1:
+            if st.button("💾 Save Note", type="primary", key="word_save_main", use_container_width=True) or st.session_state.get('trigger_save'):
+                st.session_state.pop('trigger_save', None)
+                if note_title and st.session_state.get('current_note_content', ''):
+                    tags_list = [t.strip() for t in note_tags.split(',') if t.strip()] if note_tags else []
+                    
+                    note_data = {
+                        'title': note_title,
+                        'content': st.session_state.current_note_content,
+                        'date': datetime.now().strftime("%Y-%m-%d %H:%M"),
+                        'tags': tags_list,
+                        'category': note_category,
+                        'importance': note_importance,
+                        'learning_outcome': note_outcome if note_outcome != "(None)" else "",
+                        'version_history': []
+                    }
+                    
+                    editing_idx = st.session_state.get('editing_note_idx')
+                    if editing_idx is not None and editing_idx < len(course_notes):
+                        old_note = course_notes[editing_idx]
+                        history = old_note.get('version_history', [])
+                        if old_note.get('content') != note_data['content']:
+                            history.append({
+                                'date': datetime.now().strftime("%Y-%m-%d %H:%M"),
+                                'summary': f"Edited: {old_note.get('title', '')[:30]}"
+                            })
+                        note_data['version_history'] = history[-10:]
+                        st.session_state.study_notes[selected_course_code][editing_idx] = note_data
+                    else:
+                        st.session_state.study_notes[selected_course_code].append(note_data)
+                    
+                    st.success("✅ Saved!")
+                    st.rerun()
+                else:
+                    st.warning("Please add a title and content.")
+        
+        with save_col2:
+            if st.session_state.get('editing_note_idx') is not None:
+                if st.button("🗑️ Delete", key="word_delete", use_container_width=True):
+                    idx = st.session_state.editing_note_idx
+                    if idx < len(course_notes):
+                        st.session_state.study_notes[selected_course_code].pop(idx)
+                        st.session_state.current_note_content = ""
+                        st.session_state.pop('editing_note_idx', None)
+                        st.session_state.pop('current_note_title', None)
+                        st.success("Deleted!")
+                        st.rerun()
+    
+    if st.session_state.get('show_ai_panel'):
+        st.markdown("---")
+        st.markdown("### 🤖 AI Assistant")
+        
+        ai_col1, ai_col2 = st.columns([1, 2])
+        with ai_col1:
+            ai_action = st.radio(
+                "AI Action:",
+                ["Summarize", "Expand", "Simplify", "Generate Questions", "Fix Grammar", "Add Examples"],
+                key="word_ai_action"
+            )
+        
+        with ai_col2:
+            if st.button("🚀 Apply AI", type="primary", key="word_ai_apply"):
+                content = st.session_state.get('current_note_content', '')
+                if content:
+                    with st.spinner("Processing..."):
+                        prompts = {
+                            "Summarize": f"Summarize this content concisely:\n\n{content}",
+                            "Expand": f"Expand on this content with more details and examples:\n\n{content}",
+                            "Simplify": f"Rewrite this content in simpler terms for easy understanding:\n\n{content}",
+                            "Generate Questions": f"Generate 5 study questions based on this content:\n\n{content}",
+                            "Fix Grammar": f"Fix any grammar and spelling errors in this text, return the corrected version:\n\n{content}",
+                            "Add Examples": f"Add practical examples to illustrate the concepts in this content:\n\n{content}"
+                        }
+                        try:
+                            response = client.chat.completions.create(
+                                model="gpt-4o-mini",
+                                messages=[
+                                    {"role": "system", "content": "You are a helpful study assistant. Provide clear, educational content."},
+                                    {"role": "user", "content": prompts[ai_action]}
+                                ],
+                                max_tokens=1000
+                            )
+                            result = response.choices[0].message.content
+                            st.markdown("**AI Result:**")
+                            st.markdown(result)
+                            if st.button("📋 Replace Content", key="ai_replace"):
+                                st.session_state.current_note_content = result
+                                st.rerun()
+                            if st.button("➕ Append to Content", key="ai_append"):
+                                st.session_state.current_note_content += f"\n\n---\n\n{result}"
+                                st.rerun()
+                        except Exception as e:
+                            st.error(f"Error: {str(e)}")
+                else:
+                    st.warning("Write some content first.")
+    
+    if st.session_state.get('show_stats'):
+        st.markdown("---")
+        st.markdown("### 📊 Statistics")
+        
+        total_notes = sum(len(notes) for notes in st.session_state.study_notes.values())
+        
+        stat_cols = st.columns(4)
+        with stat_cols[0]:
+            st.metric("Total Notes", total_notes)
+        with stat_cols[1]:
+            critical_count = sum(1 for notes in st.session_state.study_notes.values() for n in notes if n.get('importance') == 'critical')
+            st.metric("Critical", critical_count)
+        with stat_cols[2]:
+            important_count = sum(1 for notes in st.session_state.study_notes.values() for n in notes if n.get('importance') == 'important')
+            st.metric("Important", important_count)
+        with stat_cols[3]:
+            courses_with_notes = sum(1 for notes in st.session_state.study_notes.values() if notes)
+            st.metric("Courses", courses_with_notes)
+        
+        if total_notes > 0:
+            cat_col, course_col = st.columns(2)
+            with cat_col:
+                st.markdown("**By Category:**")
+                cat_counts = {}
+                for notes in st.session_state.study_notes.values():
+                    for note in notes:
+                        cat = note.get('category', 'lecture')
+                        cat_counts[cat] = cat_counts.get(cat, 0) + 1
+                for cat, count in sorted(cat_counts.items(), key=lambda x: x[1], reverse=True):
+                    cat_info = NOTE_CATEGORIES.get(cat, NOTE_CATEGORIES['lecture'])
+                    st.write(f"{cat_info['icon']} {cat_info['label']}: {count}")
+            
+            with course_col:
+                st.markdown("**By Course:**")
+                course_counts = {code: len(notes) for code, notes in st.session_state.study_notes.items() if notes}
+                for code, count in sorted(course_counts.items(), key=lambda x: x[1], reverse=True)[:5]:
+                    st.write(f"{code}: {count}")
+    
+    if st.session_state.get('show_export'):
+        st.markdown("---")
+        st.markdown("### 📥 Export Notes")
+        
+        if course_notes:
+            export_format = st.radio("Format:", ["JSON", "Markdown"], horizontal=True, key="export_format")
+            
+            if export_format == "JSON":
+                export_data = {selected_course_code: course_notes}
+                export_json = json.dumps(export_data, indent=2, ensure_ascii=False)
+                st.download_button(
+                    "⬇️ Download JSON",
+                    data=export_json,
+                    file_name=f"notes_{selected_course_code}_{datetime.now().strftime('%Y%m%d')}.json",
+                    mime="application/json"
+                )
+            else:
+                md_content = f"# Study Notes - {selected_course_code}\n\n"
+                for note in course_notes:
+                    md_content += f"## {note.get('title', 'Untitled')}\n"
+                    md_content += f"*{note.get('date', '')}* | {NOTE_CATEGORIES.get(note.get('category', 'lecture'), {}).get('label', '')}\n\n"
+                    md_content += note.get('content', '') + "\n\n---\n\n"
+                st.download_button(
+                    "⬇️ Download Markdown",
+                    data=md_content,
+                    file_name=f"notes_{selected_course_code}_{datetime.now().strftime('%Y%m%d')}.md",
+                    mime="text/markdown"
+                )
+        else:
+            st.info("No notes to export.")
+        
+        st.session_state.show_export = False
+    
+    word_count = len(st.session_state.get('current_note_content', '').split())
+    char_count = len(st.session_state.get('current_note_content', ''))
+    st.caption(f"📝 {word_count} words | {char_count} characters | Course: {selected_course_code}")
     
     with notes_tab:
         col_filter, col_course = st.columns([1, 2])
@@ -9173,17 +9679,718 @@ elif page == "Study Notes":
             else:
                 note_outcome = "(None)"
             
-            note_content = st.text_area(
-                "Content (Markdown supported):",
-                value=default_content,
-                height=250,
-                key=f"note_content_{selected_course_code}"
-            )
+            # Word-like Editor Interface
+            st.markdown("---")
+            
+            # Word-style Ribbon/Toolbar
+            ribbon_css = """
+            <style>
+            .word-ribbon {
+                background: linear-gradient(to bottom, #f8f9fa 0%, #e9ecef 100%);
+                border: 1px solid #dee2e6;
+                border-radius: 4px 4px 0 0;
+                padding: 8px;
+                margin-bottom: 0;
+            }
+            .word-editor-container {
+                border: 2px solid #0078d4;
+                border-radius: 0 0 4px 4px;
+                background: white;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            }
+            .word-status-bar {
+                background: #f8f9fa;
+                border-top: 1px solid #dee2e6;
+                padding: 4px 8px;
+                font-size: 12px;
+                color: #6c757d;
+            }
+            </style>
+            """
+            st.markdown(ribbon_css, unsafe_allow_html=True)
+            
+            # Editor Settings Bar (like Word's status bar)
+            settings_bar_col1, settings_bar_col2, settings_bar_col3, settings_bar_col4 = st.columns([2, 2, 2, 1])
+            with settings_bar_col1:
+                editor_mode = st.radio("View Mode", ["📝 Edit", "👁️ Preview", "📄 Both"], 
+                                      horizontal=True, key=f"editor_mode_{selected_course_code}", index=2)
+            with settings_bar_col2:
+                paper_type = st.selectbox("Paper", ["A4", "Letter", "A3", "Custom"], 
+                                         index=0, key=f"paper_type_{selected_course_code}")
+                # A4 dimensions: 210mm x 297mm (8.27" x 11.69")
+                # At 96 DPI: 794px x 1123px
+                # For editor, we'll use a scaled version that fits the screen
+                paper_map = {
+                    "A4": {"width": 794, "height": 1123, "ratio": 1.414},
+                    "Letter": {"width": 816, "height": 1056, "ratio": 1.294},
+                    "A3": {"width": 1123, "height": 1587, "ratio": 1.414},
+                    "Custom": {"width": 794, "height": 1123, "ratio": 1.414}
+                }
+                paper_dims = paper_map[paper_type]
+                # Scale to fit screen (max width ~1200px, maintain aspect ratio)
+                scale_factor = min(1.0, 1200 / paper_dims["width"])
+                editor_width_px = int(paper_dims["width"] * scale_factor)
+                editor_height_px = int(paper_dims["height"] * scale_factor)
+            with settings_bar_col3:
+                zoom_level = st.slider("Zoom", 50, 200, 100, 10, key=f"zoom_{selected_course_code}")
+                # Apply zoom
+                editor_width_px = int(editor_width_px * zoom_level / 100)
+                editor_height_px = int(editor_height_px * zoom_level / 100)
+            with settings_bar_col4:
+                show_ruler = st.checkbox("📏 Ruler", value=True, key=f"ruler_{selected_course_code}")
+                show_lines = st.checkbox("📝 Lines", value=True, key=f"show_lines_{selected_course_code}")
+            
+            # Word-like Ribbon Interface
+            st.markdown('<div class="word-ribbon">', unsafe_allow_html=True)
+            
+            # Home Tab (like Word's ribbon)
+            ribbon_tabs = st.tabs(["🏠 Home", "✏️ Insert", "📊 Layout", "🎨 Design", "📝 Review"])
+            
+            with ribbon_tabs[0]:  # Home Tab
+                st.markdown("**Clipboard & Font**")
+                home_row1 = st.columns(12)
+                with home_row1[0]:
+                    if st.button("📋", key=f"paste_{selected_course_code}", help="Paste", use_container_width=True):
+                        st.info("💡 Use Ctrl+V to paste")
+                with home_row1[1]:
+                    if st.button("✂️", key=f"cut_{selected_course_code}", help="Cut", use_container_width=True):
+                        st.info("💡 Use Ctrl+X to cut")
+                with home_row1[2]:
+                    if st.button("📄", key=f"copy_{selected_course_code}", help="Copy", use_container_width=True):
+                        st.info("💡 Use Ctrl+C to copy")
+                
+                st.markdown("**Font Formatting**")
+                home_row2 = st.columns(12)
+                with home_row2[0]:
+                    font_family = st.selectbox("Font", ["Arial", "Times New Roman", "Courier New", "Calibri", "Georgia", "Verdana"], 
+                                              index=3, key=f"font_family_{selected_course_code}", label_visibility="collapsed")
+                with home_row2[1]:
+                    font_size_val = st.selectbox("Size", ["8", "9", "10", "11", "12", "14", "16", "18", "20", "24", "28", "36"], 
+                                               index=4, key=f"font_size_val_{selected_course_code}", label_visibility="collapsed")
+                with home_row2[2]:
+                    if st.button("**B**", key=f"ribbon_bold_{selected_course_code}", help="Bold", use_container_width=True):
+                        current = st.session_state.get(f"note_content_{selected_course_code}", "")
+                        st.session_state[f"note_content_{selected_course_code}"] = current + "**bold**"
+                        st.rerun()
+                with home_row2[3]:
+                    if st.button("*I*", key=f"ribbon_italic_{selected_course_code}", help="Italic", use_container_width=True):
+                        current = st.session_state.get(f"note_content_{selected_course_code}", "")
+                        st.session_state[f"note_content_{selected_course_code}"] = current + "*italic*"
+                        st.rerun()
+                with home_row2[4]:
+                    if st.button("U̲", key=f"ribbon_underline_{selected_course_code}", help="Underline", use_container_width=True):
+                        current = st.session_state.get(f"note_content_{selected_course_code}", "")
+                        st.session_state[f"note_content_{selected_course_code}"] = current + "<u>underline</u>"
+                        st.rerun()
+                with home_row2[5]:
+                    if st.button("~~S~~", key=f"ribbon_strike_{selected_course_code}", help="Strikethrough", use_container_width=True):
+                        current = st.session_state.get(f"note_content_{selected_course_code}", "")
+                        st.session_state[f"note_content_{selected_course_code}"] = current + "~~strike~~"
+                        st.rerun()
+                with home_row2[6]:
+                    if st.button("🎨", key=f"highlight_{selected_course_code}", help="Highlight", use_container_width=True):
+                        current = st.session_state.get(f"note_content_{selected_course_code}", "")
+                        st.session_state[f"note_content_{selected_course_code}"] = current + "<mark>highlighted</mark>"
+                        st.rerun()
+                with home_row2[7]:
+                    text_color = st.color_picker("", "#000000", key=f"text_color_{selected_course_code}", label_visibility="collapsed")
+                with home_row2[8]:
+                    bg_color = st.color_picker("", "#FFFFFF", key=f"bg_color_{selected_course_code}", label_visibility="collapsed")
+                
+                st.markdown("**Paragraph**")
+                home_row3 = st.columns(8)
+                with home_row3[0]:
+                    if st.button("•", key=f"bullet_{selected_course_code}", help="Bullets", use_container_width=True):
+                        current = st.session_state.get(f"note_content_{selected_course_code}", "")
+                        st.session_state[f"note_content_{selected_course_code}"] = current + "\n- Item\n"
+                        st.rerun()
+                with home_row3[1]:
+                    if st.button("1.", key=f"number_{selected_course_code}", help="Numbering", use_container_width=True):
+                        current = st.session_state.get(f"note_content_{selected_course_code}", "")
+                        st.session_state[f"note_content_{selected_course_code}"] = current + "\n1. Item\n"
+                        st.rerun()
+                with home_row3[2]:
+                    align = st.selectbox("Align", ["Left", "Center", "Right", "Justify"], 
+                                        key=f"align_{selected_course_code}", label_visibility="collapsed")
+                with home_row3[3]:
+                    if st.button("📉", key=f"decrease_indent_{selected_course_code}", help="Decrease Indent", use_container_width=True):
+                        st.info("💡 Use markdown indentation")
+                with home_row3[4]:
+                    if st.button("📈", key=f"increase_indent_{selected_course_code}", help="Increase Indent", use_container_width=True):
+                        st.info("💡 Use markdown indentation")
+                with home_row3[5]:
+                    if st.button("🔍", key=f"find_{selected_course_code}", help="Find", use_container_width=True):
+                        st.info("💡 Use browser Ctrl+F")
+                with home_row3[6]:
+                    if st.button("🔄", key=f"replace_{selected_course_code}", help="Replace", use_container_width=True):
+                        st.info("💡 Use browser Ctrl+H")
+            
+            with ribbon_tabs[1]:  # Insert Tab
+                st.markdown("**Insert Elements**")
+                insert_row1 = st.columns(8)
+                with insert_row1[0]:
+                    if st.button("📊 Table", key=f"insert_table_{selected_course_code}", use_container_width=True):
+                        st.session_state[f"show_table_builder_{selected_course_code}"] = True
+                        st.rerun()
+                with insert_row1[1]:
+                    if st.button("📷 Image", key=f"insert_image_{selected_course_code}", use_container_width=True):
+                        current = st.session_state.get(f"note_content_{selected_course_code}", "")
+                        st.session_state[f"note_content_{selected_course_code}"] = current + "\n![Image description](image_url)\n"
+                        st.rerun()
+                with insert_row1[2]:
+                    if st.button("🔗 Link", key=f"insert_link_{selected_course_code}", use_container_width=True):
+                        current = st.session_state.get(f"note_content_{selected_course_code}", "")
+                        st.session_state[f"note_content_{selected_course_code}"] = current + "[Link text](https://example.com)"
+                        st.rerun()
+                with insert_row1[3]:
+                    if st.button("📋 Code", key=f"insert_code_{selected_course_code}", use_container_width=True):
+                        current = st.session_state.get(f"note_content_{selected_course_code}", "")
+                        st.session_state[f"note_content_{selected_course_code}"] = current + "\n```python\n# Code here\n```\n"
+                        st.rerun()
+                with insert_row1[4]:
+                    if st.button("∑ Formula", key=f"insert_formula_{selected_course_code}", use_container_width=True):
+                        current = st.session_state.get(f"note_content_{selected_course_code}", "")
+                        st.session_state[f"note_content_{selected_course_code}"] = current + "\n$$\nformula = \\frac{a}{b}\n$$\n"
+                        st.rerun()
+                with insert_row1[5]:
+                    if st.button("📝 Quote", key=f"insert_quote_{selected_course_code}", use_container_width=True):
+                        current = st.session_state.get(f"note_content_{selected_course_code}", "")
+                        st.session_state[f"note_content_{selected_course_code}"] = current + "\n> Quote text\n"
+                        st.rerun()
+                with insert_row1[6]:
+                    if st.button("---", key=f"insert_hr_{selected_course_code}", use_container_width=True):
+                        current = st.session_state.get(f"note_content_{selected_course_code}", "")
+                        st.session_state[f"note_content_{selected_course_code}"] = current + "\n---\n"
+                        st.rerun()
+                with insert_row1[7]:
+                    if st.button("😊 Emoji", key=f"insert_emoji_{selected_course_code}", use_container_width=True):
+                        st.session_state[f"show_emoji_picker_{selected_course_code}"] = True
+                        st.rerun()
+            
+            with ribbon_tabs[2]:  # Layout Tab
+                st.markdown("**Page Setup & Layout**")
+                layout_row1 = st.columns(6)
+                with layout_row1[0]:
+                    margins = st.selectbox("Margins", ["Normal", "Narrow", "Moderate", "Wide", "Custom"], key=f"margins_{selected_course_code}")
+                    # Apply margin presets
+                    margin_presets = {
+                        "Normal": {"top": 25, "bottom": 25, "left": 25, "right": 25},
+                        "Narrow": {"top": 13, "bottom": 13, "left": 13, "right": 13},
+                        "Moderate": {"top": 38, "bottom": 38, "left": 38, "right": 38},
+                        "Wide": {"top": 50, "bottom": 50, "left": 50, "right": 50},
+                        "Custom": {"top": 25, "bottom": 25, "left": 25, "right": 25}
+                    }
+                    if margins != "Custom":
+                        preset = margin_presets[margins]
+                        st.session_state[f"margin_top_{selected_course_code}"] = preset["top"]
+                        st.session_state[f"margin_bottom_{selected_course_code}"] = preset["bottom"]
+                        st.session_state[f"margin_left_{selected_course_code}"] = preset["left"]
+                        st.session_state[f"margin_right_{selected_course_code}"] = preset["right"]
+                with layout_row1[1]:
+                    orientation = st.radio("Orientation", ["Portrait", "Landscape"], horizontal=True, key=f"orientation_{selected_course_code}")
+                with layout_row1[2]:
+                    page_size = st.selectbox("Size", ["A4", "Letter", "Legal", "A3"], key=f"page_size_{selected_course_code}")
+                st.markdown("**Custom Margins (if Custom selected)**")
+                layout_row2 = st.columns(4)
+                with layout_row2[0]:
+                    margin_top = st.number_input("Top (px)", 0, 100, st.session_state.get(f"margin_top_{selected_course_code}", 25), 5, key=f"margin_top_{selected_course_code}")
+                with layout_row2[1]:
+                    margin_bottom = st.number_input("Bottom (px)", 0, 100, st.session_state.get(f"margin_bottom_{selected_course_code}", 25), 5, key=f"margin_bottom_{selected_course_code}")
+                with layout_row2[2]:
+                    margin_left = st.number_input("Left (px)", 0, 100, st.session_state.get(f"margin_left_{selected_course_code}", 25), 5, key=f"margin_left_{selected_course_code}")
+                with layout_row2[3]:
+                    margin_right = st.number_input("Right (px)", 0, 100, st.session_state.get(f"margin_right_{selected_course_code}", 25), 5, key=f"margin_right_{selected_course_code}")
+                st.markdown("**Paragraph Spacing**")
+                layout_row3 = st.columns(4)
+                with layout_row3[0]:
+                    line_spacing = st.selectbox("Line Spacing", ["Single", "1.5", "Double", "Custom"], key=f"line_spacing_{selected_course_code}")
+                with layout_row3[1]:
+                    space_before = st.number_input("Space Before", 0, 48, 0, 6, key=f"space_before_{selected_course_code}")
+                with layout_row3[2]:
+                    space_after = st.number_input("Space After", 0, 48, 0, 6, key=f"space_after_{selected_course_code}")
+            
+            with ribbon_tabs[3]:  # Design Tab
+                st.markdown("**Document Formatting**")
+                design_row1 = st.columns(4)
+                with design_row1[0]:
+                    theme = st.selectbox("Theme", ["Default", "Modern", "Classic", "Minimal", "Colorful"], key=f"theme_{selected_course_code}")
+                with design_row1[1]:
+                    color_scheme = st.selectbox("Colors", ["Office", "Grayscale", "Blue", "Green", "Red"], key=f"colors_{selected_course_code}")
+                with design_row1[2]:
+                    fonts_theme = st.selectbox("Fonts", ["Office", "Modern", "Classic"], key=f"fonts_{selected_course_code}")
+                st.markdown("**Page Background**")
+                design_row2 = st.columns(3)
+                with design_row2[0]:
+                    page_color = st.color_picker("Page Color", "#FFFFFF", key=f"page_color_{selected_course_code}")
+                with design_row2[1]:
+                    watermark = st.text_input("Watermark", "", key=f"watermark_{selected_course_code}", placeholder="Optional watermark text")
+            
+            with ribbon_tabs[4]:  # Review Tab
+                st.markdown("**Proofing & Language**")
+                review_row1 = st.columns(4)
+                with review_row1[0]:
+                    if SPELLCHECK_AVAILABLE:
+                        if st.button("🔍 Spelling", key=f"review_spell_{selected_course_code}", use_container_width=True):
+                            st.session_state[f"run_spellcheck_{selected_course_code}"] = True
+                            st.rerun()
+                    else:
+                        st.info("Spell check not available")
+                with review_row1[1]:
+                    if st.button("📊 Word Count", key=f"review_wordcount_{selected_course_code}", use_container_width=True):
+                        st.session_state[f"show_wordcount_{selected_course_code}"] = True
+                        st.rerun()
+                with review_row1[2]:
+                    language = st.selectbox("Language", ["English", "Norwegian", "Auto"], key=f"language_{selected_course_code}")
+                st.markdown("**Comments & Tracking**")
+                review_row2 = st.columns(3)
+                with review_row2[0]:
+                    if st.button("💬 Comment", key=f"comment_{selected_course_code}", use_container_width=True):
+                        st.info("💡 Add comments in your notes using <!-- comment -->")
+                with review_row2[1]:
+                    track_changes = st.checkbox("Track Changes", key=f"track_changes_{selected_course_code}")
+            
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+            # Word-like Editor Container
+            st.markdown('<div class="word-editor-container">', unsafe_allow_html=True)
+            
+            # Emoji picker (if triggered from ribbon)
+            if st.session_state.get(f"show_emoji_picker_{selected_course_code}", False):
+                st.markdown("**Emoji Picker:**")
+                emoji_categories = {
+                    "Common": ["😊", "👍", "❤️", "🎉", "✅", "❌", "⚠️", "💡", "📝", "🔍", "⭐", "🔥", "💯", "🎯", "📚"],
+                    "Study": ["📖", "✏️", "📋", "📊", "📈", "📉", "🔬", "🧪", "💻", "📱", "🎓", "🏆", "📌", "🔖", "📑"],
+                    "Math": ["∑", "∫", "√", "∞", "π", "α", "β", "γ", "Δ", "θ", "λ", "μ", "σ", "Σ", "≈"],
+                    "Arrows": ["→", "←", "↑", "↓", "⇒", "⇐", "⇑", "⇓", "↔", "↕", "⟹", "⟸", "⟶", "⟵", "⇔"]
+                }
+                for category, emojis in emoji_categories.items():
+                    st.markdown(f"**{category}:**")
+                    emoji_cols = st.columns(len(emojis))
+                    for idx, emoji in enumerate(emojis):
+                        with emoji_cols[idx]:
+                            if st.button(emoji, key=f"emoji_{emoji}_{selected_course_code}", use_container_width=True):
+                                current = st.session_state.get(f"note_content_{selected_course_code}", "")
+                                st.session_state[f"note_content_{selected_course_code}"] = current + emoji
+                                st.session_state[f"show_emoji_picker_{selected_course_code}"] = False
+                                st.rerun()
+            
+            # Table builder
+            if st.session_state.get(f"show_table_builder_{selected_course_code}", False):
+                st.markdown("**Table Builder:**")
+                table_cols = st.number_input("Number of Columns", min_value=2, max_value=10, value=3, key=f"table_cols_{selected_course_code}")
+                table_rows = st.number_input("Number of Rows", min_value=1, max_value=20, value=3, key=f"table_rows_{selected_course_code}")
+                if st.button("Generate Table", key=f"gen_table_{selected_course_code}"):
+                    current = st.session_state.get(f"note_content_{selected_course_code}", "")
+                    # Generate header
+                    header = "| " + " | ".join([f"Column {i+1}" for i in range(table_cols)]) + " |\n"
+                    separator = "| " + " | ".join(["---" for _ in range(table_cols)]) + " |\n"
+                    # Generate rows
+                    rows = "\n".join(["| " + " | ".join([f"Cell {i+1},{j+1}" for i in range(table_cols)]) + " |" for j in range(table_rows)])
+                    table_md = "\n" + header + separator + rows + "\n"
+                    st.session_state[f"note_content_{selected_course_code}"] = current + table_md
+                    st.session_state[f"show_table_builder_{selected_course_code}"] = False
+                    st.rerun()
+                if st.button("Cancel", key=f"cancel_table_{selected_course_code}"):
+                    st.session_state[f"show_table_builder_{selected_course_code}"] = False
+                    st.rerun()
+            
+            # Build autocomplete dictionary
+            autocomplete_dict = set()
+            # Add course terms
+            for course in courses_data:
+                autocomplete_dict.add(course['code'])
+                autocomplete_dict.add(course['name'])
+                for term in course.get('knowledge', []):
+                    autocomplete_dict.add(term)
+                for term in course.get('skills', []):
+                    autocomplete_dict.add(term)
+            # Add common data analysis terms
+            common_terms = [
+                "KPI", "ETL", "BI", "Big Data", "Data Warehouse", "Data Lake",
+                "Correlation", "Regression", "ANOVA", "Hypothesis Testing",
+                "Mean", "Median", "Mode", "Standard Deviation", "Variance",
+                "Pandas", "DataFrame", "SQL", "Python", "Excel", "Tableau", "Power BI",
+                "GDPR", "Data Ethics", "Machine Learning", "Statistical Significance"
+            ]
+            autocomplete_dict.update(common_terms)
+            
+            # A4 Paper-like Editor Area
+            if editor_mode == "📝 Edit" or editor_mode == "📄 Both":
+                # Get current settings for styling
+                current_font = st.session_state.get(f"font_family_{selected_course_code}", "Calibri")
+                current_font_size = st.session_state.get(f"font_size_val_{selected_course_code}", "12")
+                current_line_spacing = st.session_state.get(f"line_spacing_{selected_course_code}", "Single")
+                current_page_color = st.session_state.get(f"page_color_{selected_course_code}", "#FFFFFF")
+                current_text_color = st.session_state.get(f"text_color_{selected_course_code}", "#000000")
+                
+                # Get margin settings
+                margin_top = st.session_state.get(f"margin_top_{selected_course_code}", 25)
+                margin_bottom = st.session_state.get(f"margin_bottom_{selected_course_code}", 25)
+                margin_left = st.session_state.get(f"margin_left_{selected_course_code}", 25)
+                margin_right = st.session_state.get(f"margin_right_{selected_course_code}", 25)
+                
+                # Get show_lines setting
+                show_lines = st.session_state.get(f"show_lines_{selected_course_code}", True)
+                
+                # Word-like editor styling with A4 paper appearance
+                line_height_val = 1.5 if current_line_spacing == '1.5' else 2.0 if current_line_spacing == 'Double' else 1.0
+                
+                # Create ruled paper effect if enabled
+                lines_bg = ""
+                if show_lines:
+                    line_color = "#e0e0e0"
+                    line_spacing_px = int(float(current_font_size) * line_height_val * 1.2)
+                    lines_bg = f"""
+                    background-image: repeating-linear-gradient(
+                        {line_color} 0px,
+                        {line_color} 1px,
+                        transparent 1px,
+                        transparent {line_spacing_px}px
+                    );
+                    background-position: 0 {margin_top}px;
+                    """
+                
+                word_editor_css = f"""
+                <style>
+                .a4-paper-container {{
+                    width: {editor_width_px}px !important;
+                    min-height: {editor_height_px}px !important;
+                    margin: 20px auto !important;
+                    background: #f5f5f5 !important;
+                    padding: 20px !important;
+                    box-shadow: 0 0 20px rgba(0,0,0,0.1) !important;
+                }}
+                .a4-paper {{
+                    width: {editor_width_px}px !important;
+                    min-height: {editor_height_px}px !important;
+                    background: {current_page_color} !important;
+                    margin: 0 auto !important;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.15) !important;
+                    position: relative !important;
+                    {lines_bg}
+                }}
+                .a4-paper::before {{
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: {margin_left}px;
+                    right: {margin_right}px;
+                    bottom: 0;
+                    border-left: 1px dashed #d0d0d0;
+                    border-right: 1px dashed #d0d0d0;
+                    pointer-events: none;
+                }}
+                .word-editor-textarea {{
+                    font-family: '{current_font}', 'Times New Roman', serif !important;
+                    font-size: {current_font_size}pt !important;
+                    line-height: {line_height_val} !important;
+                    padding: {margin_top}px {margin_right}px {margin_bottom}px {margin_left}px !important;
+                    border: none !important;
+                    background: transparent !important;
+                    color: {current_text_color} !important;
+                    min-height: {editor_height_px}px !important;
+                    width: {editor_width_px}px !important;
+                    max-width: {editor_width_px}px !important;
+                    resize: none !important;
+                    box-sizing: border-box !important;
+                }}
+                .word-editor-textarea:focus {{
+                    outline: none !important;
+                }}
+                .word-preview-area {{
+                    font-family: '{current_font}', 'Times New Roman', serif !important;
+                    font-size: {current_font_size}pt !important;
+                    line-height: {line_height_val} !important;
+                    padding: {margin_top}px {margin_right}px {margin_bottom}px {margin_left}px !important;
+                    background: {current_page_color} !important;
+                    border: 1px solid #dee2e6 !important;
+                    min-height: {editor_height_px}px !important;
+                    max-height: {editor_height_px}px !important;
+                    width: {editor_width_px}px !important;
+                    max-width: {editor_width_px}px !important;
+                    overflow-y: auto !important;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.15) !important;
+                    {lines_bg}
+                }}
+                </style>
+                """
+                st.markdown(word_editor_css, unsafe_allow_html=True)
+                
+                if editor_mode == "📄 Both":
+                    editor_col, preview_col = st.columns([1, 1])
+                else:
+                    editor_col = st.container()
+                    preview_col = None
+                
+                with editor_col:
+                    # A4 Paper Container
+                    st.markdown('<div class="a4-paper-container">', unsafe_allow_html=True)
+                    st.markdown('<div class="a4-paper">', unsafe_allow_html=True)
+                    
+                    if show_ruler:
+                        ruler_width = editor_width_px - margin_left - margin_right
+                        ruler_html = f"""
+                        <div style="background: #f8f9fa; border-bottom: 1px solid #dee2e6; padding: 2px {margin_right}px 2px {margin_left}px; font-size: 10px; color: #6c757d; width: {editor_width_px}px; box-sizing: border-box;">
+                            {'&nbsp;'.join([str(i) for i in range(0, int(ruler_width/10), 50)])}
+                        </div>
+                        """
+                        st.markdown(ruler_html, unsafe_allow_html=True)
+                    
+                    st.markdown(f"**📝 Editor** ({paper_type} - {current_font}, {current_font_size}pt)")
+                    
+                    note_content = st.text_area(
+                        "Start typing your note here...",
+                        value=default_content,
+                        height=editor_height_px,
+                        key=f"note_content_{selected_course_code}",
+                        help="💡 A4 paper-like editor: Use the ribbon above for formatting, or type markdown directly",
+                        label_visibility="collapsed"
+                    )
+                    
+                    st.markdown('</div>', unsafe_allow_html=True)  # Close a4-paper
+                    st.markdown('</div>', unsafe_allow_html=True)  # Close a4-paper-container
+                    
+                    # Enhanced Autocomplete with interactive suggestions
+                    current_text = st.session_state.get(f"note_content_{selected_course_code}", "")
+                    if current_text:
+                        # Get last word or phrase
+                        words = current_text.split()
+                        if words:
+                            last_word = words[-1].strip('.,!?;:')
+                            if len(last_word) > 2:
+                                suggestions = [term for term in autocomplete_dict if last_word.lower() in term.lower()][:8]
+                                if suggestions:
+                                    st.markdown("**💡 Autocomplete Suggestions:**")
+                                    suggestion_cols = st.columns(min(4, len(suggestions)))
+                                    for idx, suggestion in enumerate(suggestions[:4]):
+                                        with suggestion_cols[idx]:
+                                            if st.button(suggestion, key=f"sugg_{suggestion}_{selected_course_code}", use_container_width=True):
+                                                # Replace last word with suggestion
+                                                new_text = ' '.join(words[:-1]) + ' ' + suggestion + ' '
+                                                st.session_state[f"note_content_{selected_course_code}"] = new_text
+                                                st.rerun()
+                    
+                    # Enhanced Statistics Dashboard
+                    st.markdown("---")
+                    word_count = len(current_text.split()) if current_text else 0
+                    char_count = len(current_text) if current_text else 0
+                    char_no_spaces = len(current_text.replace(' ', '')) if current_text else 0
+                    line_count = len(current_text.split('\n')) if current_text else 0
+                    paragraph_count = len([p for p in current_text.split('\n\n') if p.strip()]) if current_text else 0
+                    
+                    # Calculate reading time (average 200 words per minute)
+                    reading_time = max(1, round(word_count / 200)) if word_count > 0 else 0
+                    
+                    stats_col1, stats_col2, stats_col3, stats_col4 = st.columns(4)
+                    with stats_col1:
+                        st.metric("📝 Words", word_count)
+                        st.caption(f"~{reading_time} min read")
+                    with stats_col2:
+                        st.metric("📄 Characters", f"{char_count:,}")
+                        st.caption(f"{char_no_spaces:,} no spaces")
+                    with stats_col3:
+                        st.metric("📋 Lines", line_count)
+                        st.caption(f"{paragraph_count} paragraphs")
+                    with stats_col4:
+                        # Calculate markdown elements
+                        headings = len(re.findall(r'^#+\s', current_text, re.MULTILINE)) if current_text else 0
+                        links = len(re.findall(r'\[.*?\]\(.*?\)', current_text)) if current_text else 0
+                        code_blocks = len(re.findall(r'```', current_text)) // 2 if current_text else 0
+                        st.metric("📊 Elements", f"{headings}H, {links}L, {code_blocks}C")
+                    
+                    # Enhanced Spell Check
+                    spellcheck_col1, spellcheck_col2 = st.columns([1, 1])
+                    with spellcheck_col1:
+                        if SPELLCHECK_AVAILABLE:
+                            if st.button("🔍 Check Spelling", key=f"spellcheck_{selected_course_code}", use_container_width=True):
+                                spell = SpellChecker()
+                                words_list = re.findall(r'\b[a-zA-Z]+\b', current_text)
+                                misspelled = spell.unknown(words_list)
+                                if misspelled:
+                                    misspelled_list = list(misspelled)[:15]
+                                    st.warning(f"⚠️ **{len(misspelled)} potential errors found:**")
+                                    for word in misspelled_list:
+                                        corrections = spell.correction(word)
+                                        st.text(f"• {word} → {corrections}")
+                                else:
+                                    st.success("✅ **No spelling errors found!**")
+                        else:
+                            st.info("💡 Install pyspellchecker for spell checking")
+                    
+                    with spellcheck_col2:
+                        if st.button("📊 Text Analysis", key=f"text_analysis_{selected_course_code}", use_container_width=True):
+                            st.session_state[f"show_text_analysis_{selected_course_code}"] = True
+                            st.rerun()
+                    
+                    # Text Analysis
+                    if st.session_state.get(f"show_text_analysis_{selected_course_code}", False):
+                        st.markdown("**📊 Text Analysis:**")
+                        if current_text:
+                            # Word frequency
+                            words_list = re.findall(r'\b[a-zA-Z]+\b', current_text.lower())
+                            word_freq = {}
+                            for word in words_list:
+                                if len(word) > 3:  # Ignore short words
+                                    word_freq[word] = word_freq.get(word, 0) + 1
+                            
+                            top_words = sorted(word_freq.items(), key=lambda x: x[1], reverse=True)[:10]
+                            if top_words:
+                                st.markdown("**Most used words:**")
+                                for word, count in top_words:
+                                    st.progress(count / top_words[0][1], text=f"{word}: {count}")
+                        
+                        if st.button("Close Analysis", key=f"close_analysis_{selected_course_code}"):
+                            st.session_state[f"show_text_analysis_{selected_course_code}"] = False
+                            st.rerun()
+                
+                    if preview_col:
+                        with preview_col:
+                            st.markdown(f"**👁️ Preview** ({paper_type} - {current_font}, {current_font_size}pt)")
+                            preview_content = st.session_state.get(f"note_content_{selected_course_code}", "")
+                            
+                            st.markdown('<div class="a4-paper-container">', unsafe_allow_html=True)
+                            if preview_content:
+                                st.markdown(f'<div class="word-preview-area">', unsafe_allow_html=True)
+                                st.markdown(preview_content)
+                                st.markdown('</div>', unsafe_allow_html=True)
+                            else:
+                                st.info("💡 Start typing to see preview...")
+                            st.markdown('</div>', unsafe_allow_html=True)
+            
+            elif editor_mode == "👁️ Preview":
+                preview_content = st.session_state.get(f"note_content_{selected_course_code}", default_content)
+                current_font = st.session_state.get(f"font_family_{selected_course_code}", "Calibri")
+                current_font_size = st.session_state.get(f"font_size_val_{selected_course_code}", "12")
+                current_line_spacing = st.session_state.get(f"line_spacing_{selected_course_code}", "Single")
+                current_page_color = st.session_state.get(f"page_color_{selected_course_code}", "#FFFFFF")
+                margin_top = st.session_state.get(f"margin_top_{selected_course_code}", 25)
+                margin_bottom = st.session_state.get(f"margin_bottom_{selected_course_code}", 25)
+                margin_left = st.session_state.get(f"margin_left_{selected_course_code}", 25)
+                margin_right = st.session_state.get(f"margin_right_{selected_course_code}", 25)
+                line_height_val = 1.5 if current_line_spacing == '1.5' else 2.0 if current_line_spacing == 'Double' else 1.0
+                
+                lines_bg = ""
+                if show_lines:
+                    line_color = "#e0e0e0"
+                    line_spacing_px = int(float(current_font_size) * line_height_val * 1.2)
+                    lines_bg = f"""
+                    background-image: repeating-linear-gradient(
+                        {line_color} 0px,
+                        {line_color} 1px,
+                        transparent 1px,
+                        transparent {line_spacing_px}px
+                    );
+                    background-position: 0 {margin_top}px;
+                    """
+                
+                preview_css = f"""
+                <style>
+                .word-preview-area {{
+                    font-family: '{current_font}', 'Times New Roman', serif !important;
+                    font-size: {current_font_size}pt !important;
+                    line-height: {line_height_val} !important;
+                    padding: {margin_top}px {margin_right}px {margin_bottom}px {margin_left}px !important;
+                    background: {current_page_color} !important;
+                    border: 1px solid #dee2e6 !important;
+                    min-height: {editor_height_px}px !important;
+                    max-height: {editor_height_px}px !important;
+                    width: {editor_width_px}px !important;
+                    max-width: {editor_width_px}px !important;
+                    overflow-y: auto !important;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.15) !important;
+                    {lines_bg}
+                }}
+                </style>
+                """
+                st.markdown(preview_css, unsafe_allow_html=True)
+                st.markdown('<div class="a4-paper-container">', unsafe_allow_html=True)
+                st.markdown(f'<div class="word-preview-area">', unsafe_allow_html=True)
+                st.markdown(preview_content)
+                st.markdown('</div>', unsafe_allow_html=True)
+                st.markdown('</div>', unsafe_allow_html=True)
+            
+            # Word-like Status Bar
+            st.markdown('</div>', unsafe_allow_html=True)
+            st.markdown('<div class="word-status-bar">', unsafe_allow_html=True)
+            
+            current_text = st.session_state.get(f"note_content_{selected_course_code}", default_content)
+            word_count = len(current_text.split()) if current_text else 0
+            char_count = len(current_text) if current_text else 0
+            char_no_spaces = len(current_text.replace(' ', '')) if current_text else 0
+            page_count = max(1, word_count // 250)  # Approximate pages (250 words per page)
+            
+            # Get current settings for status bar
+            status_font = st.session_state.get(f"font_family_{selected_course_code}", "Calibri")
+            status_font_size = st.session_state.get(f"font_size_val_{selected_course_code}", "12")
+            status_zoom = st.session_state.get(f"zoom_{selected_course_code}", 100)
+            
+            status_col1, status_col2, status_col3, status_col4, status_col5 = st.columns(5)
+            with status_col1:
+                st.caption(f"📝 Words: {word_count:,}")
+            with status_col2:
+                st.caption(f"📄 Characters: {char_count:,} ({char_no_spaces:,} no spaces)")
+            with status_col3:
+                st.caption(f"📋 Pages: {page_count}")
+            with status_col4:
+                st.caption(f"🔍 Zoom: {status_zoom}%")
+            with status_col5:
+                st.caption(f"📏 {status_font} {status_font_size}pt")
+            
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+            # Enhanced Keyboard Shortcuts Help
+            with st.expander("⌨️ Keyboard Shortcuts & Tips", expanded=False):
+                shortcuts_col1, shortcuts_col2 = st.columns(2)
+                
+                with shortcuts_col1:
+                    st.markdown("""
+                    **⌨️ Keyboard Shortcuts:**
+                    - `Ctrl+B` / `Cmd+B`: Bold text
+                    - `Ctrl+I` / `Cmd+I`: Italic text
+                    - `Ctrl+K` / `Cmd+K`: Insert link
+                    - `Ctrl+Shift+C`: Code block
+                    - `Ctrl+/`: Toggle preview
+                    
+                    **📝 Quick Markdown:**
+                    - `**text**` → **bold**
+                    - `*text*` → *italic*
+                    - `~~text~~` → ~~strikethrough~~
+                    - `` `code` `` → `inline code`
+                    - `## Heading` → Heading
+                    - `- item` → Bullet list
+                    - `1. item` → Numbered list
+                    - `> quote` → Blockquote
+                    - `[text](url)` → Link
+                    - `![alt](url)` → Image
+                    """)
+                
+                with shortcuts_col2:
+                    st.markdown("""
+                    **🔤 Special Shortcuts:**
+                    - Type `$` → LaTeX formula mode
+                    - Type `@` → Code suggestions
+                    - Type `:` → Emoji picker
+                    
+                    **📊 Advanced:**
+                    - ` ```language` → Code block with syntax
+                    - `| col1 | col2 |` → Table
+                    - `---` → Horizontal rule
+                    - `$$ formula $$` → Block formula
+                    
+                    **💡 Pro Tips:**
+                    - Use toolbar buttons for quick formatting
+                    - Click autocomplete suggestions to insert
+                    - Check spelling before saving
+                    - Use templates for common structures
+                    """)
+            
             note_tags = st.text_input("Tags (comma-separated):", value=default_tags, key=f"note_tags_{selected_course_code}")
             
             save_col1, save_col2 = st.columns(2)
             with save_col1:
                 if st.button("💾 Save Note", type="primary", key=f"save_note_{selected_course_code}"):
+                    # Get note_content from session state
+                    note_content = st.session_state.get(f"note_content_{selected_course_code}", default_content)
                     if note_title and note_content:
                         tags_list = [tag.strip() for tag in note_tags.split(',') if tag.strip()] if note_tags else []
                         
