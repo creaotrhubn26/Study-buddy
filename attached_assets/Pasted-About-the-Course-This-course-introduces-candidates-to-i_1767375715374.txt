@@ -1,0 +1,28 @@
+About the Course
+This course introduces candidates to important visualization and graphing techniques which will enable their work to be represented using graphical illustrations. Data visualization is an important step to ensuring colleagues can interpret results at a glance without prior analytical knowledge. Candidates will be challenged to create intuitive graphs to represent their findings in a professional setting using relevant graphical generation and editing software. Additionally, candidates will make use of presentation software such as Microsoft PowerPoint to orally deliver their analysis to both a technical and non-technical business audience.
+
+This course will provide candidates with the practical knowledge and skills to interpret and present the results of data analysis of any given datasets in visual contexts. Candidates will learn the universal design paradigm, thus providing them with the insights too create visually appealing, but also accessible graphics to ensure their findings are presentable to both technical and non-technical audiences.
+
+Course Learning Outcomes
+Knowledge
+The candidate:
+
+has knowledge of concepts, processes and tools that are used for creating data visualizations
+can update their own knowledge about data visualizations and apply the correct visualization to the corresponding problem domain at hand
+understands the importance of designs principles related to creating effective data visualizations
+has insights into user experience techniques to create accessible visualizations
+Skills
+The candidate:
+
+can apply knowledge of data visualization to select a subset of data for visualization
+can apply knowledge of communication techniques to allow a non-technical audience to understand the information being conveyed
+masters relevant tools and techniques to visualize data subsets
+masters slideshow software to create supporting presentation material
+can identify problem areas from a particular model and provide insights into appropriate solutions
+General Competence
+The candidate:
+
+understands the ethical requirement for data visualizations on a data set
+has developed an ethical attitude in communicating data visualizations verbal presentations and publications
+can apply data visualization techniques based on the audience of the project
+can develop work methods to create visualization graphics for clients of data analysis projects

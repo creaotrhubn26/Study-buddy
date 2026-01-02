@@ -6371,6 +6371,362 @@ CHANGELOG ENTRY
                 "explanation": "ELT loads raw data to the data warehouse first, then uses the warehouse's computing power to transform it. ETL transforms before loading."
             }
         ]
+    },
+    "Data Visualization Fundamentals": {
+        "course": "Data Visualisation",
+        "description": "Learn visualization techniques to present data findings effectively to both technical and non-technical audiences.",
+        "lessons": [
+            {
+                "title": "Introduction to Data Visualization",
+                "content": """
+**Why Data Visualization Matters**
+
+Data visualization transforms complex data into visual representations that are easy to understand at a glance.
+
+**Key Benefits:**
+- **Clarity**: Complex patterns become visible
+- **Speed**: Faster comprehension than reading tables
+- **Engagement**: Visual stories capture attention
+- **Accessibility**: Non-technical audiences can understand
+
+**The Visualization Process:**
+
+```
+1. UNDERSTAND the data and audience
+2. SELECT the right chart type
+3. DESIGN with clarity in mind
+4. REFINE based on feedback
+5. PRESENT with context
+```
+
+**Real-World Example:**
+A hospital reduced patient wait times by 30% after visualizing patient flow patterns on a dashboard. Staff could instantly see bottlenecks that were invisible in spreadsheets.
+
+**Types of Visualizations:**
+
+| Type | Purpose | Example |
+|------|---------|---------|
+| **Bar Chart** | Compare categories | Sales by product |
+| **Line Chart** | Show trends over time | Revenue growth |
+| **Pie Chart** | Show proportions | Market share |
+| **Scatter Plot** | Show relationships | Price vs. demand |
+| **Heatmap** | Show patterns in matrices | Website clicks |
+                """,
+                "key_points": ["Visualization makes data accessible", "Choose charts based on purpose", "Design for your audience", "Visual stories are more engaging"]
+            },
+            {
+                "title": "Choosing the Right Chart Type",
+                "content": """
+**Chart Selection Guide**
+
+The most common mistake in visualization is choosing the wrong chart type for your data and message.
+
+**Decision Framework:**
+
+**What are you trying to show?**
+
+| Goal | Best Charts |
+|------|-------------|
+| **Compare values** | Bar chart, Column chart |
+| **Show change over time** | Line chart, Area chart |
+| **Show parts of a whole** | Pie chart, Stacked bar |
+| **Show relationships** | Scatter plot, Bubble chart |
+| **Show distribution** | Histogram, Box plot |
+| **Show geographic data** | Map, Choropleth |
+
+**Common Mistakes:**
+
+❌ **Pie charts with too many slices** (max 5-7)
+❌ **3D charts** (distort perception)
+❌ **Dual y-axes** (confusing)
+❌ **Truncated axes** (misleading)
+❌ **Too many colors** (distracting)
+
+**Chart Selection Examples:**
+
+**Scenario 1:** "Compare Q1 revenue across 5 regions"
+→ Use: Horizontal bar chart (easy to read labels)
+
+**Scenario 2:** "Show website traffic trend over 12 months"
+→ Use: Line chart (shows continuous change)
+
+**Scenario 3:** "Show how budget is divided across departments"
+→ Use: Pie chart (if ≤5 categories) or stacked bar
+
+**Scenario 4:** "Explore relationship between ad spend and conversions"
+→ Use: Scatter plot (shows correlation)
+                """,
+                "key_points": ["Match chart type to your goal", "Avoid 3D and excessive decoration", "Limit pie charts to 5-7 slices", "Consider your audience's familiarity"]
+            },
+            {
+                "title": "Design Principles for Effective Visualizations",
+                "content": """
+**Universal Design Principles**
+
+Good visualization design follows principles that make information clear and accessible.
+
+**1. Simplicity (Data-Ink Ratio)**
+Maximize the data shown, minimize unnecessary decoration.
+
+| Good | Bad |
+|------|-----|
+| Clean gridlines | Heavy borders |
+| Direct labels | Legends requiring lookup |
+| White space | Crowded elements |
+| Essential data only | Decorative graphics |
+
+**2. Color Usage**
+
+**Do:**
+- Use color purposefully (highlight key data)
+- Maintain contrast for readability
+- Use colorblind-friendly palettes
+- Keep consistent meaning (red = bad, green = good)
+
+**Don't:**
+- Use more than 5-7 colors
+- Rely only on color to convey meaning
+- Use red/green as only differentiator
+
+**Colorblind-Safe Palettes:**
+- Blue and Orange
+- Blue and Yellow
+- Purple and Green
+
+**3. Typography**
+- Use readable fonts (sans-serif for screens)
+- Size hierarchy: Title > Subtitle > Labels > Annotations
+- Left-align text for readability
+
+**4. Layout and Hierarchy**
+- Place the most important information prominently
+- Use consistent alignment
+- Group related elements
+- Leave white space for breathing room
+
+**5. Accessibility Checklist:**
+- ✓ Sufficient color contrast
+- ✓ Text alternatives for complex charts
+- ✓ Clear titles and labels
+- ✓ Logical reading order
+                """,
+                "key_points": ["Simplicity beats decoration", "Use color purposefully and accessibly", "Maintain consistent design language", "Design for accessibility from the start"]
+            },
+            {
+                "title": "Telling Stories with Data",
+                "content": """
+**Data Storytelling**
+
+The best visualizations tell a story that leads to action.
+
+**Story Structure:**
+
+```
+SETUP      →  INSIGHT    →  ACTION
+What is?      What matters?  What now?
+```
+
+**Components of a Data Story:**
+
+1. **Context**: Why should the audience care?
+2. **Conflict/Tension**: What's the problem or opportunity?
+3. **Resolution**: What does the data reveal?
+4. **Call to Action**: What should happen next?
+
+**Example Data Story:**
+
+**Context:** "Our customer satisfaction scores have been declining."
+
+**Conflict:** "We analyzed 10,000 support tickets and found 60% mention 'wait time.'"
+
+**Resolution:** [Show chart] "Wait times over 5 minutes correlate with 3x more negative reviews."
+
+**Action:** "Investing in chat support could reduce wait times by 70% and recover our satisfaction scores."
+
+**Presentation Tips:**
+
+| Do | Don't |
+|-----|--------|
+| Start with the headline | Start with methodology |
+| Build to the insight | Show all data at once |
+| Use animation purposefully | Animate everything |
+| Pause for questions | Rush through slides |
+| Provide takeaway summary | End abruptly |
+
+**Slideshow Best Practices:**
+- One message per slide
+- Maximum 6 data points per chart
+- Include source citations
+- Number slides for reference
+- Provide handout with details
+                """,
+                "key_points": ["Lead with the insight, not the methodology", "Structure as setup → insight → action", "One message per visualization", "Always end with clear recommendations"]
+            },
+            {
+                "title": "Visualization Tools and Software",
+                "content": """
+**Common Visualization Tools**
+
+Different tools serve different purposes and skill levels.
+
+**Tool Comparison:**
+
+| Tool | Best For | Skill Level |
+|------|----------|-------------|
+| **Excel/Sheets** | Quick charts, basic dashboards | Beginner |
+| **Tableau** | Interactive dashboards, exploration | Intermediate |
+| **Power BI** | Microsoft integration, business dashboards | Intermediate |
+| **Python (matplotlib, seaborn)** | Custom visualizations, automation | Advanced |
+| **R (ggplot2)** | Statistical visualizations | Advanced |
+| **D3.js** | Web-based custom visualizations | Expert |
+
+**Excel/Google Sheets:**
+- Quick and accessible
+- Good for simple charts
+- Limited interactivity
+- Best for: Internal reports, quick analysis
+
+**Tableau:**
+- Drag-and-drop interface
+- Excellent for exploration
+- Interactive dashboards
+- Best for: Business analytics, presentations
+
+**Power BI:**
+- Strong Microsoft 365 integration
+- AI-powered insights
+- Good for enterprise
+- Best for: Corporate reporting, KPI dashboards
+
+**Python Libraries:**
+- matplotlib: Basic plotting
+- seaborn: Statistical visualizations
+- plotly: Interactive charts
+- Best for: Reproducible analysis, automation
+
+**Choosing Your Tool:**
+
+Ask yourself:
+1. What's my skill level?
+2. What's my audience expecting?
+3. Does it need to be interactive?
+4. Will I need to update it regularly?
+5. What tools does my organization use?
+                """,
+                "key_points": ["Match tool to skill level and need", "Excel works for quick, simple charts", "Tableau/Power BI for interactive dashboards", "Python for automation and reproducibility"]
+            },
+            {
+                "title": "Ethics in Data Visualization",
+                "content": """
+**Ethical Visualization Practices**
+
+Visualizations can mislead as easily as they inform. Ethical practice is essential.
+
+**Common Manipulation Techniques (To Avoid):**
+
+**1. Truncated Axes**
+Starting a y-axis at a non-zero value exaggerates differences.
+
+Example:
+- Misleading: Bar chart showing 98% vs 100% with y-axis starting at 95%
+- Honest: Same data with y-axis starting at 0%
+
+**2. Cherry-Picking Time Frames**
+Selecting dates that support your narrative.
+
+Example:
+- Misleading: "Sales doubled!" (comparing best month to worst)
+- Honest: Show full year with context
+
+**3. Missing Context**
+Omitting comparison data or baselines.
+
+Example:
+- Misleading: "Crime up 50%!" (without population growth context)
+- Honest: Show per-capita rates
+
+**4. Aspect Ratio Manipulation**
+Stretching charts to exaggerate or minimize trends.
+
+**Ethical Guidelines:**
+
+✓ Always start quantitative axes at zero (for bar charts)
+✓ Include data sources
+✓ Show uncertainty when relevant
+✓ Provide appropriate time context
+✓ Use consistent scales when comparing
+✓ Acknowledge limitations
+✓ Consider colorblind accessibility
+
+**Questions to Ask Before Publishing:**
+
+1. Does this accurately represent the data?
+2. Could someone reasonably misinterpret this?
+3. Am I being fair to all perspectives?
+4. Would I be comfortable if this were fact-checked?
+5. Does this serve the audience or my agenda?
+
+**Your Responsibility:**
+As a data analyst, you have power to influence decisions. Use visualization ethically to inform, not manipulate.
+                """,
+                "key_points": ["Avoid truncated axes and cherry-picked data", "Always provide context and sources", "Design for accurate interpretation", "Consider how visualizations might be misused"]
+            }
+        ],
+        "exercises": [
+            {
+                "title": "Choose the Right Chart",
+                "type": "scenario",
+                "question": "You need to show how your company's market share has changed compared to 3 competitors over the past 5 years. What chart type would you use and why?",
+                "answer": "Best choice: Stacked area chart or multiple line chart. The stacked area shows how the whole market (100%) is divided among competitors over time, making it easy to see both individual changes and relative positions. Alternatively, a multi-line chart works if you want to emphasize individual company trajectories. Avoid: Pie charts (only show one point in time), bar charts (harder to see trends), 3D charts (distort perception).",
+                "hint": "Think about what you're showing: parts of a whole AND change over time"
+            },
+            {
+                "title": "Identify Visualization Problems",
+                "type": "practical",
+                "question": "A chart shows monthly revenue with a y-axis starting at $950,000 instead of $0. The bars show $950K, $975K, and $1M for three months. What's wrong with this visualization?",
+                "answer": "The truncated y-axis is misleading. By starting at $950K, the visual difference between bars is exaggerated. The $975K bar appears 50% taller than the $950K bar, when the actual difference is only 2.6% ($25K/$950K). The viewer's eye perceives much larger differences than exist in the data. Fix: Start the y-axis at $0, or use a different chart type (like a table with percentage change) if the small differences are truly significant.",
+                "hint": "Calculate the actual percentage difference vs. how different the bars appear"
+            },
+            {
+                "title": "Design for Accessibility",
+                "type": "practical",
+                "question": "Your dashboard uses red and green colors to show negative and positive values. A colleague mentions they're colorblind. How would you redesign this?",
+                "answer": "Redesign solutions: 1) Use colorblind-friendly palette: Blue for negative, Orange for positive (distinguishable by most colorblind people). 2) Add icons/symbols: ▼ for negative, ▲ for positive (not relying on color alone). 3) Use patterns: Solid fill for positive, hatched/striped for negative. 4) Add text labels: Include actual values and +/- signs. 5) Use saturation: Keep same hue but vary brightness. Best practice: Combine color WITH another indicator (shape, pattern, or label) so information isn't conveyed by color alone.",
+                "hint": "Don't rely solely on color to convey meaning - add redundant cues"
+            }
+        ],
+        "quiz": [
+            {
+                "question": "Which chart is best for showing how a budget is divided among 5 departments?",
+                "options": ["Line chart", "Scatter plot", "Pie chart", "Histogram"],
+                "correct": 2,
+                "explanation": "A pie chart shows parts of a whole, perfect for showing how a budget is divided. With only 5 categories, it remains readable. For more categories, consider a bar chart."
+            },
+            {
+                "question": "What is wrong with starting a bar chart's y-axis at a non-zero value?",
+                "options": ["It saves space", "It exaggerates visual differences", "It's standard practice", "It helps with small values"],
+                "correct": 1,
+                "explanation": "Starting at non-zero exaggerates differences, making small changes look dramatic. This can mislead viewers about the magnitude of differences."
+            },
+            {
+                "question": "When presenting to executives, you should:",
+                "options": ["Show all your data and methodology first", "Lead with the key insight and recommendation", "Use as many charts as possible", "Avoid simplifying complex data"],
+                "correct": 1,
+                "explanation": "Executives want the bottom line first. Lead with the insight and recommendation, then provide supporting data if asked. Don't make them wait for the conclusion."
+            },
+            {
+                "question": "A colorblind-friendly visualization should:",
+                "options": ["Only use shades of gray", "Rely solely on red and green", "Use color AND another indicator like shapes", "Avoid all color"],
+                "correct": 2,
+                "explanation": "Best practice is to use color AND another indicator (shapes, patterns, labels) so meaning isn't conveyed by color alone. This helps everyone, not just colorblind users."
+            },
+            {
+                "question": "The 'data-ink ratio' principle suggests:",
+                "options": ["Use more ink for important data", "Maximize decoration to engage viewers", "Remove unnecessary visual elements", "Add borders around all elements"],
+                "correct": 2,
+                "explanation": "Data-ink ratio (from Edward Tufte) means maximizing the data shown while minimizing non-essential 'ink' (decorations, heavy gridlines, unnecessary borders)."
+            }
+        ]
     }
 }
 
@@ -7616,7 +7972,8 @@ elif page == "Playground":
                 "SQL Query Tester"
             ],
             "FI1BBDV15 - Data Visualisation": [
-                "Chart Builder"
+                "Chart Builder",
+                "Data Visualization Studio"
             ],
             "FI1BBDD75 - Data Driven Decision-Making": [
                 "KPI Dashboard Builder",
@@ -8609,6 +8966,283 @@ elif page == "Playground":
         st.markdown("- **Line charts**: Best for showing trends over time")
         st.markdown("- **Area charts**: Good for showing volume/cumulative data")
         st.markdown("- **Scatter plots**: Best for showing relationships between two variables")
+    
+    elif playground_tab == "Data Visualization Studio":
+        st.subheader("🎨 Data Visualization Studio")
+        st.markdown("*Practice choosing charts, designing for accessibility, and identifying visualization problems*")
+        st.markdown("---")
+        
+        viz_mode = st.radio(
+            "Choose practice mode:",
+            ["Chart Selection Advisor", "Accessibility Checker", "Visualization Critique", "Story Builder"],
+            horizontal=True
+        )
+        
+        if viz_mode == "Chart Selection Advisor":
+            st.markdown("### Chart Selection Advisor")
+            st.markdown("*Answer questions about your data to get chart recommendations*")
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                data_goal = st.selectbox(
+                    "What do you want to show?",
+                    ["Compare categories", "Show trend over time", "Show parts of a whole", 
+                     "Show relationship between variables", "Show distribution", "Show geographic patterns"]
+                )
+                num_categories = st.slider("How many categories/data points?", 2, 50, 6)
+            
+            with col2:
+                audience = st.selectbox(
+                    "Who is your audience?",
+                    ["Executives (quick glance)", "Technical team (detailed analysis)", 
+                     "General public", "Mixed audience"]
+                )
+                interactive = st.checkbox("Does it need to be interactive?")
+            
+            if st.button("🎯 Get Recommendations", type="primary"):
+                st.markdown("---")
+                st.markdown("### Recommended Charts")
+                
+                recommendations = []
+                warnings = []
+                
+                if data_goal == "Compare categories":
+                    if num_categories <= 7:
+                        recommendations.append(("Bar Chart (horizontal)", "Best for comparing values across categories", "⭐ Top Pick"))
+                        recommendations.append(("Column Chart (vertical)", "Good when categories have short labels", ""))
+                    else:
+                        recommendations.append(("Horizontal Bar Chart", "Essential when you have many categories", "⭐ Top Pick"))
+                        warnings.append("With 7+ categories, avoid pie charts - they become unreadable")
+                
+                elif data_goal == "Show trend over time":
+                    recommendations.append(("Line Chart", "Perfect for continuous time series", "⭐ Top Pick"))
+                    recommendations.append(("Area Chart", "Good for showing volume/magnitude over time", ""))
+                    if num_categories <= 4:
+                        recommendations.append(("Multiple Line Chart", "Compare trends across 2-4 series", ""))
+                
+                elif data_goal == "Show parts of a whole":
+                    if num_categories <= 5:
+                        recommendations.append(("Pie Chart", "Works well with few categories", "⭐ Top Pick"))
+                        recommendations.append(("Donut Chart", "Modern alternative to pie", ""))
+                    else:
+                        recommendations.append(("Stacked Bar Chart", "Better than pie for many categories", "⭐ Top Pick"))
+                        recommendations.append(("Treemap", "Good for hierarchical data", ""))
+                        warnings.append("Avoid pie charts with more than 5 slices")
+                
+                elif data_goal == "Show relationship between variables":
+                    recommendations.append(("Scatter Plot", "Shows correlation between variables", "⭐ Top Pick"))
+                    recommendations.append(("Bubble Chart", "Adds a third dimension (size)", ""))
+                
+                elif data_goal == "Show distribution":
+                    recommendations.append(("Histogram", "Shows frequency distribution", "⭐ Top Pick"))
+                    recommendations.append(("Box Plot", "Shows median, quartiles, outliers", ""))
+                
+                elif data_goal == "Show geographic patterns":
+                    recommendations.append(("Choropleth Map", "Color-coded regions", "⭐ Top Pick"))
+                    recommendations.append(("Bubble Map", "Points with size encoding", ""))
+                
+                if audience == "Executives (quick glance)":
+                    recommendations.append(("Single Number + Sparkline", "Maximum simplicity for busy executives", "💼"))
+                    warnings.append("Keep it simple - one key insight per visual")
+                
+                for chart, desc, badge in recommendations:
+                    col1, col2 = st.columns([3, 1])
+                    with col1:
+                        st.markdown(f"**{chart}**")
+                        st.caption(desc)
+                    with col2:
+                        if badge:
+                            st.markdown(badge)
+                
+                if warnings:
+                    st.markdown("### ⚠️ Watch Out For:")
+                    for w in warnings:
+                        st.warning(w)
+        
+        elif viz_mode == "Accessibility Checker":
+            st.markdown("### Accessibility Checker")
+            st.markdown("*Evaluate your visualization design for accessibility*")
+            
+            st.markdown("**Rate your visualization on these criteria:**")
+            
+            checks = {
+                "Color contrast": st.select_slider(
+                    "Text and data have sufficient contrast against background",
+                    options=["No", "Partially", "Yes"],
+                    value="Partially"
+                ),
+                "Color independence": st.select_slider(
+                    "Information is conveyed by more than just color (shapes, patterns, labels)",
+                    options=["No", "Partially", "Yes"],
+                    value="Partially"
+                ),
+                "Clear labels": st.select_slider(
+                    "All axes, legends, and data points are clearly labeled",
+                    options=["No", "Partially", "Yes"],
+                    value="Partially"
+                ),
+                "Font readability": st.select_slider(
+                    "Font size is large enough and font is sans-serif",
+                    options=["No", "Partially", "Yes"],
+                    value="Partially"
+                ),
+                "Title and context": st.select_slider(
+                    "Chart has a descriptive title and necessary context",
+                    options=["No", "Partially", "Yes"],
+                    value="Partially"
+                ),
+                "Data source": st.select_slider(
+                    "Data source is cited",
+                    options=["No", "Partially", "Yes"],
+                    value="Partially"
+                )
+            }
+            
+            if st.button("📋 Generate Accessibility Report", type="primary"):
+                st.markdown("---")
+                st.markdown("### Accessibility Report")
+                
+                score = 0
+                max_score = len(checks) * 2
+                
+                for check, value in checks.items():
+                    if value == "Yes":
+                        st.success(f"✅ **{check}**: Good")
+                        score += 2
+                    elif value == "Partially":
+                        st.warning(f"⚠️ **{check}**: Needs improvement")
+                        score += 1
+                    else:
+                        st.error(f"❌ **{check}**: Missing")
+                
+                st.markdown("---")
+                pct = (score / max_score) * 100
+                st.metric("Accessibility Score", f"{pct:.0f}%")
+                
+                if pct >= 80:
+                    st.success("Your visualization meets basic accessibility standards!")
+                elif pct >= 50:
+                    st.warning("Your visualization needs some improvements for full accessibility.")
+                else:
+                    st.error("Significant accessibility improvements needed.")
+                
+                st.markdown("**Tips for improvement:**")
+                if checks["Color independence"] != "Yes":
+                    st.markdown("- Add patterns, shapes, or direct labels so color isn't the only differentiator")
+                if checks["Color contrast"] != "Yes":
+                    st.markdown("- Use a contrast checker tool (aim for 4.5:1 ratio)")
+                if checks["Clear labels"] != "Yes":
+                    st.markdown("- Add axis labels, legend, and data labels where helpful")
+        
+        elif viz_mode == "Visualization Critique":
+            st.markdown("### Visualization Critique")
+            st.markdown("*Identify problems in common visualization mistakes*")
+            
+            critique_scenarios = {
+                "Truncated Y-Axis": {
+                    "description": "A bar chart shows company revenue: Year 1 = $98M, Year 2 = $100M, Year 3 = $102M. The y-axis starts at $95M.",
+                    "problems": ["Y-axis starting at $95M makes 2% differences look like 50%+ differences", "Viewer perceives dramatic growth that doesn't exist"],
+                    "fixes": ["Start y-axis at $0 for bar charts", "If small differences matter, use a line chart or table with % change"]
+                },
+                "Pie Chart Overload": {
+                    "description": "A pie chart shows market share with 15 different slices, many smaller than 3%.",
+                    "problems": ["Too many slices to compare", "Small slices are indistinguishable", "Colors become repetitive"],
+                    "fixes": ["Group small categories into 'Other'", "Use horizontal bar chart instead", "Limit pie charts to 5-7 slices"]
+                },
+                "3D Chart Distortion": {
+                    "description": "A 3D pie chart is used to show budget allocation. The slice at the front appears larger than equal slices at the back.",
+                    "problems": ["3D perspective distorts slice sizes", "Front slices appear larger due to perspective", "Harder to compare values accurately"],
+                    "fixes": ["Use 2D charts - they're more accurate", "If you must use 3D, provide data labels", "Consider a bar chart instead"]
+                },
+                "Cherry-Picked Timeframe": {
+                    "description": "A chart shows 'Record Growth!' by comparing March (lowest month) to December (highest month), ignoring the full year context.",
+                    "problems": ["Misleading comparison (worst to best)", "Hides overall trend", "Reader can't see seasonal patterns"],
+                    "fixes": ["Show complete time period", "Compare same periods (year-over-year)", "Include context about seasonality"]
+                }
+            }
+            
+            selected_scenario = st.selectbox("Choose a scenario to analyze:", list(critique_scenarios.keys()))
+            scenario = critique_scenarios[selected_scenario]
+            
+            st.markdown(f"**Scenario:** {scenario['description']}")
+            
+            user_problems = st.text_area(
+                "What problems do you see? (List them)",
+                placeholder="Enter the issues you identify...",
+                height=100
+            )
+            
+            if st.button("🔍 Show Expert Analysis", type="primary"):
+                st.markdown("---")
+                st.markdown("### Problems Identified:")
+                for p in scenario["problems"]:
+                    st.error(f"❌ {p}")
+                
+                st.markdown("### Recommended Fixes:")
+                for f in scenario["fixes"]:
+                    st.success(f"✅ {f}")
+        
+        elif viz_mode == "Story Builder":
+            st.markdown("### Data Story Builder")
+            st.markdown("*Practice structuring a data presentation*")
+            
+            st.markdown("**Fill in your data story framework:**")
+            
+            context = st.text_area(
+                "1. CONTEXT: Why should the audience care?",
+                placeholder="e.g., 'Customer churn has increased 15% this quarter, threatening our revenue targets...'",
+                height=80
+            )
+            
+            insight = st.text_area(
+                "2. INSIGHT: What does the data reveal?",
+                placeholder="e.g., 'Analysis of 5,000 churned customers shows 70% cited 'slow support response' as their top complaint...'",
+                height=80
+            )
+            
+            visualization = st.text_input(
+                "3. VISUALIZATION: What chart will you show?",
+                placeholder="e.g., 'Bar chart comparing churn reasons, with response time highlighted'"
+            )
+            
+            action = st.text_area(
+                "4. ACTION: What should happen next?",
+                placeholder="e.g., 'Recommend investing $50K in chat support to reduce response time from 4 hours to 30 minutes...'",
+                height=80
+            )
+            
+            if st.button("📊 Generate Story Summary", type="primary"):
+                if context and insight and action:
+                    st.markdown("---")
+                    st.markdown("### Your Data Story")
+                    
+                    story = f"""## Data Story: Executive Summary
+
+### Context
+{context}
+
+### Key Insight
+{insight}
+
+### Visualization
+*{visualization if visualization else '[Add your chart description]'}*
+
+### Recommended Action
+{action}
+
+---
+*Story Structure: Setup → Insight → Action*
+"""
+                    st.markdown(story)
+                    
+                    st.download_button(
+                        "📥 Download Story Framework",
+                        data=story,
+                        file_name="data_story.md",
+                        mime="text/markdown"
+                    )
+                else:
+                    st.warning("Please fill in all sections to generate your story.")
     
     elif playground_tab == "Statistical Analysis":
         st.subheader("📊 Statistical Analysis Tool")
