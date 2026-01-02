@@ -3330,31 +3330,48 @@ elif page == "Playground":
     
     elif playground_tab == "SQL Query Tester":
         st.subheader("🗄️ SQL Query Tester")
-        st.markdown("Write SQL queries against sample data and see the results!")
+        st.markdown("Write SQL queries against your data - edit the tables below to add your own!")
         
-        # Create sample tables
-        customers = pd.DataFrame({
-            'id': [1, 2, 3, 4, 5],
-            'name': ['Alice Smith', 'Bob Johnson', 'Charlie Brown', 'Diana Ross', 'Eve Wilson'],
-            'city': ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix'],
-            'joined_date': ['2023-01-15', '2023-03-22', '2023-02-10', '2023-04-05', '2023-01-30']
-        })
+        # Initialize editable tables in session state
+        if 'sql_customers' not in st.session_state:
+            st.session_state.sql_customers = pd.DataFrame({
+                'id': [1, 2, 3, 4, 5],
+                'name': ['Alice Smith', 'Bob Johnson', 'Charlie Brown', 'Diana Ross', 'Eve Wilson'],
+                'city': ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix'],
+                'joined_date': ['2023-01-15', '2023-03-22', '2023-02-10', '2023-04-05', '2023-01-30']
+            })
         
-        orders = pd.DataFrame({
-            'order_id': [101, 102, 103, 104, 105, 106, 107, 108],
-            'customer_id': [1, 2, 1, 3, 4, 2, 5, 1],
-            'product': ['Laptop', 'Phone', 'Tablet', 'Laptop', 'Phone', 'Watch', 'Headphones', 'Phone'],
-            'amount': [999, 699, 449, 999, 699, 299, 149, 699],
-            'order_date': ['2024-01-10', '2024-01-12', '2024-01-15', '2024-02-01', '2024-02-05', '2024-02-10', '2024-02-15', '2024-03-01']
-        })
+        if 'sql_orders' not in st.session_state:
+            st.session_state.sql_orders = pd.DataFrame({
+                'order_id': [101, 102, 103, 104, 105, 106, 107, 108],
+                'customer_id': [1, 2, 1, 3, 4, 2, 5, 1],
+                'product': ['Laptop', 'Phone', 'Tablet', 'Laptop', 'Phone', 'Watch', 'Headphones', 'Phone'],
+                'amount': [999, 699, 449, 999, 699, 299, 149, 699],
+                'order_date': ['2024-01-10', '2024-01-12', '2024-01-15', '2024-02-01', '2024-02-05', '2024-02-10', '2024-02-15', '2024-03-01']
+            })
         
-        st.markdown("### Available Tables")
+        st.markdown("### Your Tables (Edit to add your own data!)")
         
         tab1, tab2 = st.tabs(["customers", "orders"])
         with tab1:
-            st.dataframe(customers, use_container_width=True)
+            st.caption("Click cells to edit. Use + to add rows.")
+            st.session_state.sql_customers = st.data_editor(
+                st.session_state.sql_customers,
+                num_rows="dynamic",
+                use_container_width=True,
+                key="sql_customers_editor"
+            )
         with tab2:
-            st.dataframe(orders, use_container_width=True)
+            st.caption("Click cells to edit. Use + to add rows.")
+            st.session_state.sql_orders = st.data_editor(
+                st.session_state.sql_orders,
+                num_rows="dynamic",
+                use_container_width=True,
+                key="sql_orders_editor"
+            )
+        
+        customers = st.session_state.sql_customers
+        orders = st.session_state.sql_orders
         
         st.markdown("### Write Your Query")
         
@@ -3405,40 +3422,34 @@ elif page == "Playground":
     
     elif playground_tab == "Chart Builder":
         st.subheader("📈 Chart Builder")
-        st.markdown("Create visualizations from your data!")
+        st.markdown("Create visualizations from your own data! Edit the table below.")
         
-        # Sample data options
-        data_source = st.radio("Choose data:", ["Sample Sales Data", "Enter Custom Data"], horizontal=True)
-        
-        if data_source == "Sample Sales Data":
-            chart_data = pd.DataFrame({
-                'Month': ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                'Revenue': [45000, 52000, 48000, 61000, 55000, 67000],
-                'Expenses': [32000, 35000, 33000, 38000, 36000, 40000],
-                'Customers': [120, 145, 138, 162, 155, 178]
+        # Initialize editable chart data in session state
+        if 'chart_data' not in st.session_state:
+            st.session_state.chart_data = pd.DataFrame({
+                'Category': ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                'Value1': [45000, 52000, 48000, 61000, 55000, 67000],
+                'Value2': [32000, 35000, 33000, 38000, 36000, 40000]
             })
-        else:
-            st.markdown("Enter your data (comma-separated):")
-            labels = st.text_input("Labels:", "Product A, Product B, Product C, Product D")
-            values = st.text_input("Values:", "25, 40, 30, 35")
-            
-            try:
-                label_list = [l.strip() for l in labels.split(',')]
-                value_list = [float(v.strip()) for v in values.split(',')]
-                chart_data = pd.DataFrame({
-                    'Category': label_list,
-                    'Value': value_list
-                })
-            except:
-                st.warning("Please enter valid data")
-                chart_data = pd.DataFrame({'Category': ['A', 'B', 'C'], 'Value': [10, 20, 30]})
         
-        st.markdown("### Your Data")
-        st.dataframe(chart_data, use_container_width=True)
+        st.markdown("### Your Data (Edit to add your own!)")
+        st.caption("Click cells to edit values. Use + to add rows.")
+        st.session_state.chart_data = st.data_editor(
+            st.session_state.chart_data,
+            num_rows="dynamic",
+            use_container_width=True,
+            key="chart_data_editor"
+        )
+        
+        chart_data = st.session_state.chart_data
         
         st.markdown("### Choose Chart Type")
         
         col1, col2 = st.columns(2)
+        
+        # Get numeric columns for Y-axis options
+        numeric_cols = chart_data.select_dtypes(include=['number']).columns.tolist()
+        all_cols = chart_data.columns.tolist()
         
         with col1:
             chart_type = st.selectbox(
@@ -3447,32 +3458,33 @@ elif page == "Playground":
             )
         
         with col2:
-            if data_source == "Sample Sales Data":
-                y_column = st.selectbox("Y-axis value:", ["Revenue", "Expenses", "Customers"])
-                x_column = "Month"
-            else:
-                y_column = "Value"
-                x_column = "Category"
+            x_column = st.selectbox("X-axis (categories):", all_cols, index=0)
+            y_column = st.selectbox("Y-axis (values):", numeric_cols if numeric_cols else all_cols)
         
         st.markdown("### Your Chart")
         
-        if chart_type == "Bar Chart":
-            st.bar_chart(chart_data.set_index(x_column)[y_column])
-        elif chart_type == "Line Chart":
-            st.line_chart(chart_data.set_index(x_column)[y_column])
-        elif chart_type == "Area Chart":
-            st.area_chart(chart_data.set_index(x_column)[y_column])
-        elif chart_type == "Scatter Plot":
-            if data_source == "Sample Sales Data":
-                import altair as alt
-                scatter = alt.Chart(chart_data).mark_circle(size=100).encode(
-                    x='Revenue',
-                    y='Expenses',
-                    tooltip=['Month', 'Revenue', 'Expenses']
-                ).properties(width=600, height=400)
-                st.altair_chart(scatter, use_container_width=True)
-            else:
+        try:
+            if chart_type == "Bar Chart":
                 st.bar_chart(chart_data.set_index(x_column)[y_column])
+            elif chart_type == "Line Chart":
+                st.line_chart(chart_data.set_index(x_column)[y_column])
+            elif chart_type == "Area Chart":
+                st.area_chart(chart_data.set_index(x_column)[y_column])
+            elif chart_type == "Scatter Plot":
+                if len(numeric_cols) >= 2:
+                    import altair as alt
+                    x_scatter = st.selectbox("Scatter X:", numeric_cols, key="scatter_x")
+                    y_scatter = st.selectbox("Scatter Y:", [c for c in numeric_cols if c != x_scatter], key="scatter_y")
+                    scatter = alt.Chart(chart_data).mark_circle(size=100).encode(
+                        x=x_scatter,
+                        y=y_scatter,
+                        tooltip=all_cols
+                    ).properties(width=600, height=400)
+                    st.altair_chart(scatter, use_container_width=True)
+                else:
+                    st.info("Scatter plots need at least 2 numeric columns. Add more data!")
+        except Exception as e:
+            st.warning(f"Could not create chart: {str(e)}")
         
         st.markdown("---")
         st.markdown("**Chart Best Practices:**")
