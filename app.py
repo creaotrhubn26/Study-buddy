@@ -8983,148 +8983,147 @@ elif page == "Study Notes":
     
     NOTE_TEMPLATES = {
         "blank": {"name": "Blank Document", "icon": "description", "content": ""},
-        "concept": {"name": "Concept Summary", "icon": "lightbulb", "content": """## Concept Name
-
-**Definition:**
-[Write the definition here]
-
-**Key Points:**
-- Point 1
-- Point 2
-- Point 3
-
-**Examples:**
-1. Example 1
-2. Example 2
-
-**Common Mistakes:**
-- Mistake to avoid
-
-**Related Concepts:**
-- Related concept 1
-- Related concept 2
-"""},
-        "case_study": {"name": "Case Study", "icon": "bar_chart", "content": """## Case Study: [Title]
-
-### Background
-[Describe the business context]
-
-### Problem Statement
-[What problem needs to be solved?]
-
-### Data Available
-- Data source 1
-- Data source 2
-
-### Analysis Approach
-1. Step 1
-2. Step 2
-3. Step 3
-
-### Findings
-[Key insights from the analysis]
-
-### Recommendations
-1. Recommendation 1
-2. Recommendation 2
-
-### Lessons Learned
-- Lesson 1
-- Lesson 2
-"""},
-        "formula": {"name": "Formula Sheet", "icon": "functions", "content": """## Formula Reference: [Topic]
-
-### Basic Formulas
-| Formula | Description | When to Use |
-|---------|-------------|-------------|
-| Formula 1 | Description | Use case |
-| Formula 2 | Description | Use case |
-
-### Key Variables
-- **Variable 1**: Definition
-- **Variable 2**: Definition
-
-### Worked Example
-**Problem:** [Describe the problem]
-
-**Solution:**
-1. Step 1
-2. Step 2
-3. Result
-
-### Quick Reference
-- Remember: [Key tip]
-- Common error: [What to avoid]
-"""},
-        "comparison": {"name": "Comparison Chart", "icon": "compare_arrows", "content": """## Comparison: [Topic A] vs [Topic B]
-
-| Aspect | Topic A | Topic B |
-|--------|---------|---------|
-| Definition | | |
-| Use Case | | |
-| Advantages | | |
-| Disadvantages | | |
-| Example | | |
-
-### When to Choose Topic A
-- Situation 1
-- Situation 2
-
-### When to Choose Topic B
-- Situation 1
-- Situation 2
-
-### Key Takeaway
-[Main insight from comparison]
-"""},
-        "meeting": {"name": "Meeting Notes", "icon": "event_note", "content": """## Meeting Notes: [Date]
-
-**Attendees:** [Names]
-**Topic:** [Meeting topic]
-
-### Key Discussion Points
-1. Point 1
-2. Point 2
-3. Point 3
-
-### Decisions Made
-- Decision 1
-- Decision 2
-
-### Action Items
-- [ ] Task 1 - Owner: [Name] - Due: [Date]
-- [ ] Task 2 - Owner: [Name] - Due: [Date]
-
-### Next Steps
-[What happens next]
-"""},
-        "exam_prep": {"name": "Exam Prep", "icon": "quiz", "content": """## Exam Preparation: [Subject]
-
-### Key Topics to Review
-- [ ] Topic 1
-- [ ] Topic 2
-- [ ] Topic 3
-
-### Important Definitions
-| Term | Definition |
-|------|------------|
-| Term 1 | Definition |
-| Term 2 | Definition |
-
-### Practice Questions
-1. Question 1?
-   - Answer: 
-
-2. Question 2?
-   - Answer: 
-
-### Quick Memory Aids
-> Mnemonic or memory trick here
-
-### Common Exam Mistakes
-- Mistake to avoid 1
-- Mistake to avoid 2
-"""}
+        "concept": {"name": "Concept Summary", "icon": "lightbulb", "content": """<h2>Concept Name</h2>
+<p><strong>Definition:</strong></p>
+<p>[Write the definition here]</p>
+<p><strong>Key Points:</strong></p>
+<ul>
+<li>Point 1</li>
+<li>Point 2</li>
+<li>Point 3</li>
+</ul>
+<p><strong>Examples:</strong></p>
+<ol>
+<li>Example 1</li>
+<li>Example 2</li>
+</ol>
+<p><strong>Common Mistakes:</strong></p>
+<ul><li>Mistake to avoid</li></ul>
+<p><strong>Related Concepts:</strong></p>
+<ul>
+<li>Related concept 1</li>
+<li>Related concept 2</li>
+</ul>"""},
+        "case_study": {"name": "Case Study", "icon": "bar_chart", "content": """<h2>Case Study: [Title]</h2>
+<h3>Background</h3>
+<p>[Describe the business context]</p>
+<h3>Problem Statement</h3>
+<p>[What problem needs to be solved?]</p>
+<h3>Data Available</h3>
+<ul>
+<li>Data source 1</li>
+<li>Data source 2</li>
+</ul>
+<h3>Analysis Approach</h3>
+<ol>
+<li>Step 1</li>
+<li>Step 2</li>
+<li>Step 3</li>
+</ol>
+<h3>Findings</h3>
+<p>[Key insights from the analysis]</p>
+<h3>Recommendations</h3>
+<ol>
+<li>Recommendation 1</li>
+<li>Recommendation 2</li>
+</ol>
+<h3>Lessons Learned</h3>
+<ul>
+<li>Lesson 1</li>
+<li>Lesson 2</li>
+</ul>"""},
+        "formula": {"name": "Formula Sheet", "icon": "functions", "content": """<h2>Formula Reference: [Topic]</h2>
+<h3>Basic Formulas</h3>
+<p><strong>Formula 1:</strong> Description - Use case</p>
+<p><strong>Formula 2:</strong> Description - Use case</p>
+<h3>Key Variables</h3>
+<ul>
+<li><strong>Variable 1:</strong> Definition</li>
+<li><strong>Variable 2:</strong> Definition</li>
+</ul>
+<h3>Worked Example</h3>
+<p><strong>Problem:</strong> [Describe the problem]</p>
+<p><strong>Solution:</strong></p>
+<ol>
+<li>Step 1</li>
+<li>Step 2</li>
+<li>Result</li>
+</ol>
+<h3>Quick Reference</h3>
+<ul>
+<li>Remember: [Key tip]</li>
+<li>Common error: [What to avoid]</li>
+</ul>"""},
+        "comparison": {"name": "Comparison Chart", "icon": "compare_arrows", "content": """<h2>Comparison: [Topic A] vs [Topic B]</h2>
+<h3>Topic A</h3>
+<ul>
+<li><strong>Definition:</strong> </li>
+<li><strong>Use Case:</strong> </li>
+<li><strong>Advantages:</strong> </li>
+<li><strong>Disadvantages:</strong> </li>
+</ul>
+<h3>Topic B</h3>
+<ul>
+<li><strong>Definition:</strong> </li>
+<li><strong>Use Case:</strong> </li>
+<li><strong>Advantages:</strong> </li>
+<li><strong>Disadvantages:</strong> </li>
+</ul>
+<h3>When to Choose Topic A</h3>
+<ul>
+<li>Situation 1</li>
+<li>Situation 2</li>
+</ul>
+<h3>When to Choose Topic B</h3>
+<ul>
+<li>Situation 1</li>
+<li>Situation 2</li>
+</ul>
+<h3>Key Takeaway</h3>
+<p>[Main insight from comparison]</p>"""},
+        "meeting": {"name": "Meeting Notes", "icon": "event_note", "content": """<h2>Meeting Notes: [Date]</h2>
+<p><strong>Attendees:</strong> [Names]</p>
+<p><strong>Topic:</strong> [Meeting topic]</p>
+<h3>Key Discussion Points</h3>
+<ol>
+<li>Point 1</li>
+<li>Point 2</li>
+<li>Point 3</li>
+</ol>
+<h3>Decisions Made</h3>
+<ul>
+<li>Decision 1</li>
+<li>Decision 2</li>
+</ul>
+<h3>Action Items</h3>
+<ul>
+<li>☐ Task 1 - Owner: [Name] - Due: [Date]</li>
+<li>☐ Task 2 - Owner: [Name] - Due: [Date]</li>
+</ul>
+<h3>Next Steps</h3>
+<p>[What happens next]</p>"""},
+        "exam_prep": {"name": "Exam Prep", "icon": "quiz", "content": """<h2>Exam Preparation: [Subject]</h2>
+<h3>Key Topics to Review</h3>
+<ul>
+<li>☐ Topic 1</li>
+<li>☐ Topic 2</li>
+<li>☐ Topic 3</li>
+</ul>
+<h3>Important Definitions</h3>
+<p><strong>Term 1:</strong> Definition</p>
+<p><strong>Term 2:</strong> Definition</p>
+<h3>Practice Questions</h3>
+<ol>
+<li>Question 1?<br><em>Answer:</em> </li>
+<li>Question 2?<br><em>Answer:</em> </li>
+</ol>
+<h3>Quick Memory Aids</h3>
+<blockquote>Mnemonic or memory trick here</blockquote>
+<h3>Common Exam Mistakes</h3>
+<ul>
+<li>Mistake to avoid 1</li>
+<li>Mistake to avoid 2</li>
+</ul>"""}
     }
     
     course_options = {f"{c['code']} - {c['name']}": c['code'] for c in courses_data}
