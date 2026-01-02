@@ -1,0 +1,33 @@
+About the Course
+This course provides the knowledge of reviewing the outcomes achieved from using statistical tools and model choices. Candidates will learn technical skills to review, assess, and appraise the results of successful analytical models. Additionally, candidates will also learn how to identify faulty results and apply problem solving techniques to express feedback and construct an understanding for iterative error elimination. This course relies on the candidate passing the previous semester’s required grade to ensure a foundation level understanding of data is achieved before key analytical skills are taught.
+
+The main goal of this course it to teach candidates how to evaluate the outcomes of a given data model. This is a fundamental skill candidates must learn through practice; thus, this course is quintessential to ensure candidates learn the advanced skills and techniques required to do so. This course also aims to introduce candidates to broader technical concepts that are used in industry to evaluate complex problems with multiple possible outcomes.
+
+Course Learning Outcomes
+Knowledge
+The candidate:
+
+has knowledge of Key Performance Indicators (KPI) and their use as heuristics in decision making
+has knowledge of analysing result tables using statistical inferences, specifically sampled sets, linear regression, measurement of variance, five-point summaries, and z-testing
+has knowledge of confidence levels and to ascertain multiple probability outcomes for a particular model
+has knowledge of process and tools related to iterative error elimination
+has knowledge of the industry statistical techniques used for ensambling data
+understands the importance of version control and keeping track of changes in data within a collaborative framework
+can update their knowledge of using quantitative and qualitative methods to analyse data at an industry level
+has insights into ETL systems and how they are integrated at key points within the data analysis lifecycle design
+Skills
+The candidate:
+
+can apply knowledge of statistical inferences to identify and solve problems with a given data set
+can apply knowledge of iterative error elimination techniques to significantly improve results
+can apply knowledge of confidence levels to create multiple outcome scenarios
+masters relevant tools and techniques used to critically assess and analyse data models
+can study data sets to identify and improve reliability using ensambling and related techniques
+can find information and material related to the evaluation of outcomes to solve data driven problems template
+General Competence
+The candidate:
+
+understands the ethical principles to independently assess and critique analysis approaches and suggest alternatives
+has developed an ethical approach to solving data problems using statistical inferences
+can deliver insights into erroneous data among project members and facilitate solution discussions
+can develop work methods related to data confidence levels given a particular problem domain template

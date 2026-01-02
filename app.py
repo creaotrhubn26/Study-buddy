@@ -3037,6 +3037,1078 @@ Every KPI review should end with:
                 "explanation": "Strategic KPIs are typically reviewed weekly or monthly. Daily is for operational metrics, and annual-only reviews don't allow time to course-correct."
             }
         ]
+    },
+    "Project Planning & Execution": {
+        "course": "Semester Project 1",
+        "description": "Learn to plan, scope, and execute data analysis projects from start to finish with professional standards.",
+        "lessons": [
+            {
+                "title": "Defining Project Scope",
+                "content": """
+**Starting Your Data Analysis Project**
+
+Every successful project begins with clear scope definition. Without it, projects fail or never end.
+
+**Key Questions to Answer:**
+
+| Question | Purpose |
+|----------|---------|
+| What problem are we solving? | Focus and direction |
+| Who are the stakeholders? | Know your audience |
+| What data do we need? | Resource planning |
+| What are the deliverables? | Clear expectations |
+| What's out of scope? | Prevent scope creep |
+| When is it due? | Timeline planning |
+
+**Project Scope Template:**
+```
+PROJECT: [Name]
+PROBLEM STATEMENT: [1-2 sentences describing what you're solving]
+
+OBJECTIVES:
+1. [Specific goal 1]
+2. [Specific goal 2]
+
+IN SCOPE:
+- [What's included]
+- [Data sources to use]
+- [Analysis methods]
+
+OUT OF SCOPE:
+- [What's NOT included]
+- [Future phases]
+
+DELIVERABLES:
+- [ ] Data analysis report
+- [ ] Cleaned dataset
+- [ ] Visualization dashboard
+- [ ] Presentation
+
+TIMELINE: [Start] to [End]
+STAKEHOLDERS: [Who needs to see results]
+```
+
+**Common Scope Mistakes:**
+- ❌ "Analyze all the data" - Too vague
+- ❌ No defined deliverables
+- ❌ Unrealistic timeline
+- ❌ Scope changes without documentation
+- ✅ Specific, measurable objectives
+- ✅ Clear list of what's IN and OUT
+                """,
+                "key_points": ["Define scope before starting work", "Use a scope template", "Document what's OUT of scope", "Get stakeholder agreement upfront"]
+            },
+            {
+                "title": "Creating a Project Timeline",
+                "content": """
+**Building Your Project Schedule**
+
+A timeline keeps you on track and helps manage stakeholder expectations.
+
+**Data Analysis Project Phases:**
+
+| Phase | % of Time | Activities |
+|-------|-----------|------------|
+| 1. Planning | 10% | Scope, data needs, approach |
+| 2. Data Collection | 15% | Gather, access, import data |
+| 3. Data Cleaning | 30-40% | Quality checks, standardization |
+| 4. Analysis | 20% | Statistics, modeling, findings |
+| 5. Documentation | 10% | Report writing, visualizations |
+| 6. Presentation | 5% | Final delivery, Q&A |
+
+**Sample 4-Week Project Timeline:**
+
+```
+WEEK 1: Foundation
+├── Day 1-2: Define scope, identify data sources
+├── Day 3-4: Collect and import data
+└── Day 5: Initial data exploration
+
+WEEK 2: Data Preparation
+├── Day 1-2: Data cleaning and validation
+├── Day 3-4: Continue cleaning, handle missing values
+└── Day 5: Document data quality issues
+
+WEEK 3: Analysis
+├── Day 1-2: Perform main analysis
+├── Day 3: Validate findings
+├── Day 4-5: Create visualizations
+└── Buffer day for unexpected issues
+
+WEEK 4: Delivery
+├── Day 1-2: Write report/documentation
+├── Day 3: Create presentation
+├── Day 4: Review and refine
+└── Day 5: Final presentation
+```
+
+**Milestone Checkpoints:**
+- ✅ Week 1: Data collected and accessible
+- ✅ Week 2: Clean dataset ready for analysis
+- ✅ Week 3: Key findings identified
+- ✅ Week 4: Deliverables complete
+
+**Buffer Time:**
+Always add 20% buffer for unexpected issues:
+- Data quality worse than expected
+- New questions from stakeholders
+- Technical problems
+- Illness or other interruptions
+                """,
+                "key_points": ["Data cleaning takes most time (30-40%)", "Break project into weekly milestones", "Add 20% buffer for unexpected issues", "Track progress against timeline"]
+            },
+            {
+                "title": "Managing Deliverables",
+                "content": """
+**Project Deliverables for Data Analysis**
+
+Deliverables are the tangible outputs that prove your work is complete.
+
+**Common Data Project Deliverables:**
+
+| Deliverable | Purpose | Format |
+|-------------|---------|--------|
+| **Analysis Report** | Main findings and recommendations | PDF, Word doc |
+| **Clean Dataset** | Prepared data for future use | CSV, Excel |
+| **Dashboard** | Interactive visualization | Power BI, Tableau |
+| **Presentation** | Summary for stakeholders | PowerPoint, Slides |
+| **Code/Scripts** | Reproducible analysis | Python, SQL files |
+| **Data Dictionary** | Explain data fields | Excel, PDF |
+
+**Quality Checklist for Each Deliverable:**
+
+**📊 Analysis Report:**
+- [ ] Executive summary (1 page)
+- [ ] Clear problem statement
+- [ ] Methodology explained
+- [ ] Key findings with evidence
+- [ ] Visualizations to support points
+- [ ] Recommendations with rationale
+- [ ] Limitations and next steps
+- [ ] Proofread for errors
+
+**📁 Clean Dataset:**
+- [ ] All values validated
+- [ ] Consistent formatting
+- [ ] Missing values handled
+- [ ] Outliers addressed
+- [ ] Column names clear
+- [ ] Data dictionary included
+
+**📈 Dashboard/Visualizations:**
+- [ ] Clear titles and labels
+- [ ] Appropriate chart types
+- [ ] Consistent colors and fonts
+- [ ] Interactive filters work
+- [ ] Data source documented
+
+**🎤 Presentation:**
+- [ ] 10-15 slides maximum
+- [ ] One key message per slide
+- [ ] Visual-heavy, text-light
+- [ ] Practiced timing (aim for 15-20 min)
+- [ ] Prepared for Q&A
+                """,
+                "key_points": ["Define deliverables at project start", "Use checklists for quality", "Each deliverable serves a purpose", "Document everything for reproducibility"]
+            },
+            {
+                "title": "Working Independently and in Teams",
+                "content": """
+**Project Execution: Solo and Team Work**
+
+Data projects can be individual or collaborative - each requires different skills.
+
+**Individual Project Best Practices:**
+
+| Practice | Why It Matters |
+|----------|---------------|
+| **Daily progress log** | Track what you did, decisions made |
+| **Version control** | Save versions (v1, v2, v3 or use Git) |
+| **Regular breaks** | Avoid burnout, fresh eyes catch errors |
+| **Self-review** | Check your own work before submission |
+| **Ask for feedback** | Don't wait until the end |
+
+**Sample Daily Log Entry:**
+```
+Date: 2025-02-15
+Hours worked: 4
+
+COMPLETED:
+- Cleaned customer dataset (removed 145 duplicates)
+- Created pivot table for sales by region
+- Identified outlier in March data
+
+BLOCKED:
+- Need access to inventory data (emailed IT)
+
+NEXT:
+- Follow up on data access
+- Start correlation analysis
+
+DECISIONS MADE:
+- Used median imputation for 23 missing ages
+- Excluded records before 2023 (incomplete)
+```
+
+**Team Project Best Practices:**
+
+| Practice | How to Do It |
+|----------|-------------|
+| **Clear role division** | Who does what (data, analysis, report) |
+| **Regular check-ins** | Daily standup or weekly sync |
+| **Shared workspace** | Cloud storage, shared drives |
+| **Communication channel** | Slack, Teams, email thread |
+| **Integration points** | When to merge work together |
+
+**Team Role Examples:**
+- **Data Lead**: Collection, cleaning, validation
+- **Analysis Lead**: Statistics, modeling, insights
+- **Visualization Lead**: Charts, dashboards
+- **Documentation Lead**: Report, presentation
+
+**Conflict Resolution:**
+1. Discuss disagreements early, not at deadline
+2. Focus on the project goal, not personal preferences
+3. Use data to settle debates when possible
+4. Escalate to mentor/supervisor if stuck
+                """,
+                "key_points": ["Keep a daily progress log", "Use version control for all files", "In teams: define clear roles", "Communicate early about problems"]
+            }
+        ],
+        "exercises": [
+            {
+                "title": "Write a Scope Statement",
+                "type": "practical",
+                "question": "Your manager asks you to 'look into why sales are down.' Write a proper scope statement with objectives, in-scope, out-of-scope, and deliverables.",
+                "answer": "PROJECT: Q1 2025 Sales Decline Analysis. PROBLEM: Identify root causes for 15% sales decline in Q1 2025 vs Q1 2024. OBJECTIVES: 1) Quantify decline by product category and region, 2) Identify top 3 contributing factors, 3) Recommend corrective actions. IN SCOPE: Sales data 2024-2025, customer feedback Q1 2025, competitor pricing data. OUT OF SCOPE: Marketing campaign effectiveness (separate project), international markets, product development recommendations. DELIVERABLES: Analysis report with findings and recommendations, executive presentation (10 slides), cleaned sales dataset. TIMELINE: 3 weeks. STAKEHOLDERS: Sales VP, Regional Managers.",
+                "hint": "Transform the vague request into specific, measurable objectives with clear boundaries"
+            },
+            {
+                "title": "Create a Project Timeline",
+                "type": "practical",
+                "question": "You have 2 weeks to analyze customer churn data and present findings. Create a day-by-day timeline with milestones.",
+                "answer": "WEEK 1 - Data & Cleaning: Day 1: Define scope, success metrics, stakeholder alignment. Day 2: Collect customer data, subscription history, support tickets. Day 3-4: Data cleaning (expect 2 days - data quality usually worse than expected). Day 5: Exploratory analysis, initial patterns. MILESTONE: Clean dataset ready, initial insights documented. WEEK 2 - Analysis & Delivery: Day 1-2: Deep analysis (churn predictors, segment analysis, correlation). Day 3: Create visualizations, validate findings. Day 4: Write report, build presentation. Day 5: Review, practice presentation, buffer for refinements. MILESTONE: Final deliverables complete. BUFFER: Day 5 of each week reserved for overruns.",
+                "hint": "Remember: cleaning takes 30-40% of time, always add buffer"
+            },
+            {
+                "title": "Deliverable Checklist",
+                "type": "scenario",
+                "question": "You've finished your analysis and are about to submit. Your report shows that Product A has declining sales. What 5 things should you verify before submitting?",
+                "answer": "Before submitting, verify: 1) DATA ACCURACY: Double-check the numbers - did you filter correctly? Are calculations right? Run the analysis again to confirm. 2) EVIDENCE: Does your visualization clearly show the decline? Are axes labeled correctly? Is the time period clear? 3) CONTEXT: Did you compare to benchmarks or previous periods? Is the decline significant or normal variation? 4) RECOMMENDATIONS: Are your suggestions actionable and tied to findings? 5) PROOFREADING: Check for typos, formatting issues, missing sections. Have someone else review if possible. BONUS: Check that your data source is documented so findings can be reproduced.",
+                "hint": "Think about what would embarrass you if it were wrong in front of stakeholders"
+            }
+        ],
+        "quiz": [
+            {
+                "question": "What percentage of a data project is typically spent on data cleaning?",
+                "options": ["5-10%", "15-20%", "30-40%", "60-70%"],
+                "correct": 2,
+                "explanation": "Data cleaning typically takes 30-40% of project time. Real-world data is messy, and underestimating cleaning time is a common mistake."
+            },
+            {
+                "question": "What is 'scope creep'?",
+                "options": ["When the project finishes early", "When requirements keep expanding beyond original plan", "When team members leave", "When data is insufficient"],
+                "correct": 1,
+                "explanation": "Scope creep occurs when project requirements continuously expand beyond the original plan, often causing delays and budget overruns."
+            },
+            {
+                "question": "Which deliverable provides explanations of data fields and their meanings?",
+                "options": ["Executive Summary", "Data Dictionary", "Dashboard", "Analysis Report"],
+                "correct": 1,
+                "explanation": "A Data Dictionary documents what each field means, its data type, allowed values, and any transformations applied."
+            },
+            {
+                "question": "When should you document decisions made during data cleaning?",
+                "options": ["At the end of the project", "During the cleaning process", "Only if asked", "Never - it's not important"],
+                "correct": 1,
+                "explanation": "Document decisions as you make them. This ensures reproducibility, helps explain your methodology, and protects you if questions arise later."
+            }
+        ]
+    },
+    "Data Ethics & GDPR": {
+        "course": "Semester Project 1",
+        "description": "Understand ethical principles for data collection, storage, and use, including GDPR compliance.",
+        "lessons": [
+            {
+                "title": "Why Data Ethics Matters",
+                "content": """
+**The Importance of Ethical Data Practice**
+
+As a data analyst, you have access to sensitive information. With this access comes responsibility.
+
+**Real-World Consequences of Poor Data Ethics:**
+
+| Incident | What Happened | Consequence |
+|----------|--------------|-------------|
+| Cambridge Analytica | Used Facebook data without consent for political targeting | $5 billion fine, company dissolved |
+| Equifax Breach | Poor security exposed 147 million people's data | $700 million settlement, reputation destroyed |
+| Target Pregnancy | Predicted pregnancy from purchase data, exposed to family | Public backlash, privacy concerns |
+
+**Core Ethical Principles:**
+
+1. **Transparency**: Be honest about what data you collect and why
+2. **Consent**: Get permission before collecting personal data
+3. **Purpose Limitation**: Only use data for stated purposes
+4. **Data Minimization**: Collect only what you need
+5. **Accuracy**: Keep data correct and up-to-date
+6. **Security**: Protect data from unauthorized access
+7. **Accountability**: Take responsibility for data handling
+
+**Questions to Ask Yourself:**
+- Would I be comfortable if my data was used this way?
+- Would this be acceptable if it became public?
+- Am I respecting people's privacy and autonomy?
+- Could this analysis harm individuals or groups?
+- Is this use of data legal and compliant?
+
+**The "Front Page Test":**
+Before doing something with data, ask: "Would I be comfortable if this appeared on the front page of a newspaper?"
+                """,
+                "key_points": ["Data access comes with responsibility", "Poor ethics has real consequences", "Always consider the human impact", "Use the 'front page test'"]
+            },
+            {
+                "title": "GDPR Fundamentals",
+                "content": """
+**Understanding GDPR (General Data Protection Regulation)**
+
+GDPR is EU law that protects personal data. It applies to ANY organization handling EU residents' data.
+
+**Key GDPR Principles:**
+
+| Principle | Meaning | Your Action |
+|-----------|---------|-------------|
+| **Lawfulness** | Must have legal basis to process data | Document your legal basis |
+| **Purpose Limitation** | Only use for specified purposes | State purpose before collecting |
+| **Data Minimization** | Collect only what's necessary | Remove unnecessary fields |
+| **Accuracy** | Data must be correct | Validate and update regularly |
+| **Storage Limitation** | Don't keep longer than needed | Define retention periods |
+| **Security** | Protect against unauthorized access | Encrypt, secure access |
+| **Accountability** | Must prove compliance | Document everything |
+
+**What is Personal Data?**
+Any information relating to an identified or identifiable person:
+- ✅ Name, email, phone number
+- ✅ ID numbers (SSN, passport)
+- ✅ Location data
+- ✅ IP address
+- ✅ Photos, videos
+- ✅ Health, financial, genetic data (SPECIAL category - extra protection)
+
+**Legal Bases for Processing:**
+1. **Consent**: Person explicitly agrees
+2. **Contract**: Necessary to fulfill a contract
+3. **Legal Obligation**: Required by law
+4. **Vital Interests**: To protect someone's life
+5. **Public Task**: Official authority function
+6. **Legitimate Interest**: Balanced business need (most complex)
+
+**Individual Rights Under GDPR:**
+- Right to be informed (what data, why, how long)
+- Right of access (get copy of their data)
+- Right to rectification (correct errors)
+- Right to erasure ("right to be forgotten")
+- Right to restrict processing
+- Right to data portability
+- Right to object
+                """,
+                "key_points": ["GDPR applies to EU resident data globally", "Need legal basis to process personal data", "Individuals have strong rights over their data", "Document your compliance"]
+            },
+            {
+                "title": "Ethical Data Collection",
+                "content": """
+**Collecting Data the Right Way**
+
+Before collecting any data, follow these guidelines:
+
+**Before Collection Checklist:**
+- [ ] Do I have a clear, specific purpose?
+- [ ] Am I collecting only what I need? (minimization)
+- [ ] Do I have legal basis/consent?
+- [ ] Have I informed people about the collection?
+- [ ] Is my collection method secure?
+- [ ] Have I documented my approach?
+
+**Sources and Their Ethical Considerations:**
+
+| Source | Ethical Concerns | Best Practice |
+|--------|-----------------|---------------|
+| **Company databases** | Access rights, purpose limitation | Only access what you need for the task |
+| **Surveys** | Informed consent, voluntary participation | Clear purpose statement, opt-out option |
+| **Web scraping** | Terms of service, robots.txt | Check legality, respect restrictions |
+| **Social media** | Public vs private, context collapse | Consider user expectations |
+| **Third-party data** | Original consent, data quality | Verify source legitimacy and consent |
+| **Public datasets** | Anonymization, re-identification risk | Check license and privacy safeguards |
+
+**Informed Consent Essentials:**
+When collecting directly from people:
+1. Who you are (organization)
+2. What data you're collecting
+3. Why you need it (purpose)
+4. How long you'll keep it
+5. Who you'll share it with
+6. Their rights (access, delete, etc.)
+7. How to withdraw consent
+
+**Red Flags - When to Stop and Ask:**
+🚩 You don't have explicit permission
+🚩 Data seems too personal for the purpose
+🚩 You're not sure about the legal basis
+🚩 The collection method feels sneaky
+🚩 You can't explain why you need it
+                """,
+                "key_points": ["Always have a clear purpose before collecting", "Collect minimum necessary data", "Informed consent is essential", "When in doubt, stop and ask"]
+            },
+            {
+                "title": "Handling Sensitive Data",
+                "content": """
+**Working with Sensitive Information**
+
+Some data requires extra care due to potential for discrimination or harm.
+
+**Special Category Data (GDPR):**
+Requires explicit consent or special legal basis:
+- Racial or ethnic origin
+- Political opinions
+- Religious beliefs
+- Trade union membership
+- Genetic data
+- Biometric data
+- Health data
+- Sexual orientation
+
+**Sensitive Data Best Practices:**
+
+| Practice | How to Implement |
+|----------|-----------------|
+| **Anonymization** | Remove all identifying information |
+| **Pseudonymization** | Replace IDs with codes (can be reversed with key) |
+| **Encryption** | Encrypt data at rest and in transit |
+| **Access Control** | Limit who can see sensitive fields |
+| **Audit Logging** | Track who accessed what and when |
+| **Secure Deletion** | Properly destroy when no longer needed |
+
+**Anonymization Techniques:**
+- **Data masking**: Replace with fake but realistic values
+- **Generalization**: Use ranges instead of exact values (Age: 30-35)
+- **Suppression**: Remove fields entirely
+- **Noise addition**: Add random variation to values
+- **Aggregation**: Only report group-level statistics
+
+**Re-identification Risk:**
+Even "anonymized" data can sometimes identify individuals:
+- Netflix dataset + IMDB = identified users
+- Zip code + birth date + gender = 87% of US uniquely identified
+
+**Questions to Ask:**
+- Can this data identify anyone if combined with other sources?
+- Would individuals be surprised by this use of their data?
+- Could this analysis enable discrimination?
+- Is the minimum necessary data being used?
+                """,
+                "key_points": ["Special category data needs extra protection", "Anonymization is not always enough", "Consider re-identification risk", "Use encryption and access controls"]
+            }
+        ],
+        "exercises": [
+            {
+                "title": "Identify Ethical Issues",
+                "type": "scenario",
+                "question": "Your company wants to analyze employee emails to predict which employees might quit. What ethical concerns should you raise?",
+                "answer": "Ethical concerns: 1) PRIVACY: Employees may not know their emails are monitored for this purpose - lack of transparency. 2) CONSENT: Did employees consent to this specific use? Agreeing to email monitoring for security is different from predictive analysis. 3) DISCRIMINATION: Model might unfairly flag people based on protected characteristics (parental status, health discussions). 4) TRUST: Even if legal, this erodes employee trust and workplace culture. 5) PURPOSE LIMITATION: Email data collected for communication, not retention prediction. RECOMMENDATION: If proceeding, use voluntary surveys with clear consent, aggregate data only, and involve HR/legal. Consider the 'front page test' - how would this look publicly?",
+                "hint": "Consider privacy, consent, potential for harm, and how employees would feel if they knew"
+            },
+            {
+                "title": "GDPR Compliance Check",
+                "type": "practical",
+                "question": "You're building a customer survey for a European company. List 5 things you must include to comply with GDPR.",
+                "answer": "GDPR compliance for survey: 1) IDENTITY: State who is collecting the data (company name and contact). 2) PURPOSE: Clearly explain why you're collecting responses and how they'll be used. 3) LEGAL BASIS: State your legal basis (likely consent for a survey). 4) RETENTION: Specify how long responses will be kept. 5) RIGHTS: Inform respondents of their rights (access, deletion, withdrawal). 6) CONSENT MECHANISM: Clear opt-in (no pre-ticked boxes), separate consent for different uses. 7) CONTACT: Provide way to contact data protection officer or make requests. 8) THIRD PARTIES: Disclose if data will be shared (analytics tools, etc.).",
+                "hint": "Think about what individuals need to know to make an informed choice about participating"
+            },
+            {
+                "title": "Anonymization Decision",
+                "type": "scenario",
+                "question": "You have customer data with: Name, Email, Age, City, Purchase History. You need to share analysis with a partner company. How would you anonymize it?",
+                "answer": "Anonymization approach: 1) REMOVE: Name and Email (direct identifiers) - delete entirely. 2) GENERALIZE: Age → Age bands (18-25, 26-35, etc.) to prevent exact matching. City → Region level if small city populations. 3) AGGREGATE: Purchase history → Categories and totals, not individual transactions. 4) ASSESS: Can someone re-identify with remaining data? If city is small and age range narrow, might need to generalize further. 5) TEST: Try to identify yourself in the anonymized data - if you can, others might too. 6) DOCUMENT: Record what was removed/changed and why. Consider if pseudonymization (using a code that maps back) is sufficient instead, with the mapping kept secure.",
+                "hint": "Consider both direct identifiers and combinations of fields that could identify someone"
+            }
+        ],
+        "quiz": [
+            {
+                "question": "Which is NOT a GDPR principle?",
+                "options": ["Data minimization", "Purpose limitation", "Maximum data collection", "Storage limitation"],
+                "correct": 2,
+                "explanation": "GDPR requires data MINIMIZATION - collecting only what's necessary. Maximum data collection is the opposite of what GDPR requires."
+            },
+            {
+                "question": "Under GDPR, health data is classified as:",
+                "options": ["Standard personal data", "Special category data requiring extra protection", "Public data", "Not regulated"],
+                "correct": 1,
+                "explanation": "Health data is 'special category data' under GDPR, requiring explicit consent and additional protections due to its sensitive nature."
+            },
+            {
+                "question": "The 'right to be forgotten' means:",
+                "options": ["Forgetting user passwords", "Individuals can request deletion of their data", "Companies can forget compliance", "Data expires automatically"],
+                "correct": 1,
+                "explanation": "Under GDPR, individuals have the right to request erasure of their personal data ('right to be forgotten') when certain conditions apply."
+            },
+            {
+                "question": "Which technique replaces identifiers with codes that can be reversed with a key?",
+                "options": ["Anonymization", "Pseudonymization", "Encryption", "Aggregation"],
+                "correct": 1,
+                "explanation": "Pseudonymization replaces identifiers with artificial identifiers (codes). Unlike anonymization, the link can be restored with the key, so it's still personal data under GDPR."
+            }
+        ]
+    },
+    "Documentation & Presentation": {
+        "course": "Semester Project 1",
+        "description": "Master professional documentation and presentation skills for data analysis projects.",
+        "lessons": [
+            {
+                "title": "Writing the Analysis Report",
+                "content": """
+**Structure of a Professional Data Analysis Report**
+
+Your report tells the story of your analysis and provides a record for future reference.
+
+**Standard Report Structure:**
+
+```
+1. EXECUTIVE SUMMARY (1 page max)
+   - Key findings in bullet points
+   - Main recommendations
+   - Bottom line impact
+
+2. INTRODUCTION
+   - Problem statement
+   - Objectives
+   - Scope and limitations
+
+3. METHODOLOGY
+   - Data sources
+   - Cleaning steps taken
+   - Analysis techniques used
+
+4. FINDINGS
+   - Results with visualizations
+   - Key insights
+   - Statistical evidence
+
+5. RECOMMENDATIONS
+   - Actions to take
+   - Expected outcomes
+   - Implementation considerations
+
+6. APPENDIX
+   - Technical details
+   - Additional charts
+   - Data dictionary
+```
+
+**Writing Tips:**
+
+| Do | Don't |
+|----|-------|
+| Lead with the conclusion | Bury insights at the end |
+| Use bullet points for lists | Write long paragraphs |
+| Support claims with data | Make unsupported assertions |
+| Explain technical terms | Assume reader expertise |
+| Include visualizations | Use only text and tables |
+| Acknowledge limitations | Overstate certainty |
+
+**Executive Summary Formula:**
+1. **Situation**: What was the problem/question?
+2. **Findings**: What did we discover? (2-3 key points)
+3. **Implications**: Why does it matter?
+4. **Recommendations**: What should we do?
+
+**Example Executive Summary:**
+"This analysis investigated the 15% sales decline in Q1 2025. **Key findings:** (1) 80% of decline concentrated in the North region, (2) main driver was lost accounts to new competitor, (3) remaining customers are spending more per order. **Recommendation:** Launch targeted retention campaign in North region with estimated $200K recovery potential."
+                """,
+                "key_points": ["Lead with conclusions, not process", "Executive summary is most-read section", "Support every claim with evidence", "Keep it concise - respect reader's time"]
+            },
+            {
+                "title": "Creating Effective Visualizations",
+                "content": """
+**Visualization Best Practices for Reports**
+
+Charts should clarify, not confuse. Choose the right type for your message.
+
+**Chart Selection Guide:**
+
+| Message | Best Chart Type |
+|---------|-----------------|
+| Comparison across categories | Bar chart (horizontal for many categories) |
+| Trend over time | Line chart |
+| Part of whole | Pie chart (max 5-6 segments) or stacked bar |
+| Relationship between variables | Scatter plot |
+| Distribution | Histogram |
+| Geographic data | Map |
+| Multiple dimensions | Combo chart, small multiples |
+
+**Visual Design Rules:**
+
+**1. Declutter:**
+- Remove gridlines or make very light
+- Eliminate unnecessary borders
+- Don't use 3D effects (ever!)
+- Remove chart junk and decorations
+
+**2. Focus Attention:**
+- Highlight the key data point
+- Use color purposefully (gray for context, color for focus)
+- Add clear titles that state the insight
+
+**3. Make It Readable:**
+- Label axes clearly with units
+- Font size minimum 10pt for print, 18pt for presentations
+- Legend close to data (or label directly)
+- Sort bars by value (usually largest to smallest)
+
+**Title Examples:**
+
+❌ **Bad**: "Sales by Region"
+✅ **Good**: "North Region Sales Declined 20% While Others Grew"
+
+❌ **Bad**: "Customer Satisfaction Survey Results"
+✅ **Good**: "85% of Customers Rate Service 'Good' or 'Excellent'"
+
+**Color Guidelines:**
+- Use color consistently (same meaning throughout)
+- Avoid red/green only (colorblind accessibility)
+- Gray for context, 1-2 accent colors for key data
+- Match company brand colors when appropriate
+                """,
+                "key_points": ["Choose chart type based on message", "Declutter ruthlessly", "Title should state the insight", "Use color with purpose"]
+            },
+            {
+                "title": "Building Your Presentation",
+                "content": """
+**Presenting Data Findings to Stakeholders**
+
+Your presentation is often the only thing stakeholders see. Make it count.
+
+**Presentation Structure (15-20 minutes):**
+
+```
+1. OPENING (2 min)
+   - The question we answered
+   - Why it matters
+   
+2. KEY FINDINGS (8-10 min)
+   - Finding 1 + supporting visual
+   - Finding 2 + supporting visual
+   - Finding 3 + supporting visual
+   
+3. RECOMMENDATIONS (3-4 min)
+   - What should we do?
+   - Expected impact
+   
+4. NEXT STEPS (2 min)
+   - Immediate actions
+   - Open questions for discussion
+```
+
+**Slide Design Rules:**
+
+| Rule | Why |
+|------|-----|
+| One idea per slide | Prevents overwhelm |
+| Maximum 5 bullet points | Easy to scan |
+| Maximum 5 words per bullet | Prevents reading slides |
+| Large font (24pt minimum) | Readability from back of room |
+| High contrast | Visibility on projectors |
+| Image/chart > text | Visual memory is stronger |
+
+**Handling Data in Presentations:**
+
+**❌ Don't:**
+- Show complex tables with many rows
+- Include all the data
+- Use tiny fonts to fit everything
+- Read numbers aloud from slides
+
+**✅ Do:**
+- Highlight key numbers in large font
+- Round numbers (say "about 85%" not "84.7%")
+- Use visuals to show patterns
+- Provide detailed tables in appendix/handout
+
+**Preparing for Q&A:**
+1. Anticipate questions (especially "why?" and "how confident?")
+2. Prepare backup slides with details
+3. Know your data source and methodology
+4. It's OK to say "I'll follow up on that"
+5. Listen fully before answering
+                """,
+                "key_points": ["Structure: Opening, Findings, Recommendations, Next Steps", "One idea per slide", "Round numbers for speaking", "Prepare for likely questions"]
+            },
+            {
+                "title": "The Reflection Report",
+                "content": """
+**Writing Your Individual Reflection**
+
+A reflection report documents your learning journey and personal growth during the project.
+
+**Purpose of Reflection:**
+- Consolidate what you learned
+- Identify areas for improvement
+- Demonstrate critical thinking
+- Build portfolio of experiences
+
+**Reflection Structure:**
+
+```
+1. PROJECT OVERVIEW
+   - Brief description of what you did
+   - Your role and responsibilities
+
+2. WHAT WENT WELL
+   - Successful approaches
+   - Skills you applied effectively
+   - Challenges you overcame
+
+3. WHAT COULD BE IMPROVED
+   - Difficulties encountered
+   - Mistakes made and lessons learned
+   - What you would do differently
+
+4. SKILLS DEVELOPED
+   - Technical skills gained
+   - Soft skills practiced
+   - Knowledge areas expanded
+
+5. FUTURE APPLICATION
+   - How you'll apply learnings
+   - Goals for continued development
+```
+
+**Reflection Prompts:**
+
+| Area | Questions to Consider |
+|------|----------------------|
+| Process | What worked? What didn't? Why? |
+| Technical | What new tools/techniques did you learn? |
+| Collaboration | How did you work with others? |
+| Time Management | Did you meet deadlines? Why/why not? |
+| Problem-Solving | What unexpected issues arose? How did you handle them? |
+| Growth | How have you improved from the start? |
+
+**Writing Tips:**
+- Be honest about challenges (this shows maturity)
+- Give specific examples, not vague statements
+- Connect learning to future goals
+- Show self-awareness and critical thinking
+
+**Example Excerpt:**
+"I initially underestimated data cleaning time, allocating only 2 days when it ultimately took 5. This compressed my analysis phase and forced me to simplify my approach. In future projects, I'll add 50% buffer to cleaning estimates and do a quick data quality assessment before planning the timeline."
+                """,
+                "key_points": ["Reflection shows learning and maturity", "Be honest about challenges", "Give specific examples", "Connect to future improvement"]
+            }
+        ],
+        "exercises": [
+            {
+                "title": "Write an Executive Summary",
+                "type": "practical",
+                "question": "Your analysis found: 1) Customer churn increased from 5% to 8% this quarter, 2) Main cause is price increase, 3) Competitor is offering 15% lower prices, 4) Loyal customers (2+ years) churned less. Write a 4-sentence executive summary.",
+                "answer": "This analysis investigated the 60% increase in customer churn (5% to 8%) this quarter. Key findings: (1) Price-sensitive customers are leaving for a competitor offering 15% lower rates, while (2) long-term customers (2+ years) remain loyal with only 3% churn. The estimated revenue impact is $120K annually if trends continue. Recommendation: Implement tiered pricing with loyalty discounts for customers approaching the 2-year mark, and consider a targeted win-back campaign for recently churned price-sensitive segments.",
+                "hint": "Follow: Situation → Findings → Implication → Recommendation"
+            },
+            {
+                "title": "Fix the Slide",
+                "type": "scenario",
+                "question": "A slide has: Title 'Q1 Results', 12 bullet points of text in 10pt font, a complex table with 15 rows and 8 columns, and no visualization. What's wrong and how would you fix it?",
+                "answer": "Problems: 1) Vague title that doesn't state insight, 2) Too many bullets (max 5), 3) Font too small (need 24pt+), 4) Complex table unreadable in presentation, 5) No visualization to tell the story. Fixes: 1) Retitle to the main finding: 'Q1 Revenue Up 12%, Driven by New Product Line', 2) Keep only 3-4 key bullet points, 3) Increase font to minimum 24pt, 4) Replace table with a bar or line chart showing the key comparison, 5) Move detailed table to appendix or handout, 6) Add one clear visualization that supports the title claim.",
+                "hint": "Think about what someone can actually read and absorb during a presentation"
+            },
+            {
+                "title": "Reflect on a Challenge",
+                "type": "practical",
+                "question": "Write a reflection paragraph about a time you struggled with messy data. Include: what happened, how you felt, what you did, and what you learned.",
+                "answer": "Sample reflection: During my sales analysis project, I received customer data with over 40% missing values in key fields. Initially, I felt frustrated and considered asking for better data, which would have delayed the project by weeks. Instead, I researched imputation techniques and decided to use median imputation for numeric fields and 'Unknown' categories for text fields, documenting each decision. I learned that perfect data rarely exists in the real world, and developing strategies to work with imperfect data is a core analyst skill. I also learned to do a data quality assessment at the project start so I can plan appropriately. Going forward, I'll always request a sample of data before committing to timelines.",
+                "hint": "Be specific about the situation, your response, and the concrete lesson learned"
+            }
+        ],
+        "quiz": [
+            {
+                "question": "What should the first page of an analysis report typically be?",
+                "options": ["Methodology", "Data sources", "Executive summary", "Table of contents"],
+                "correct": 2,
+                "explanation": "The executive summary should be first - it's the most-read section and gives busy stakeholders the key takeaways immediately."
+            },
+            {
+                "question": "A good chart title should:",
+                "options": ["Describe the chart type", "State the key insight", "List the data source", "Be as short as possible"],
+                "correct": 1,
+                "explanation": "A good chart title states the insight ('Sales Grew 20% in Q4') rather than just describing what the chart shows ('Quarterly Sales')."
+            },
+            {
+                "question": "What is the maximum recommended number of bullet points per slide?",
+                "options": ["3", "5", "8", "10"],
+                "correct": 1,
+                "explanation": "Maximum 5 bullet points per slide keeps content scannable. More than that overwhelms the audience."
+            },
+            {
+                "question": "In a reflection report, you should:",
+                "options": ["Only discuss successes", "Be honest about challenges and mistakes", "Blame external factors for problems", "Keep it as short as possible"],
+                "correct": 1,
+                "explanation": "Being honest about challenges and mistakes shows maturity and self-awareness. The goal is to demonstrate learning, not perfection."
+            }
+        ]
+    },
+    "Soft Skills for Data Analysts": {
+        "course": "Semester Project 1",
+        "description": "Develop essential soft skills for working effectively with stakeholders and team members.",
+        "lessons": [
+            {
+                "title": "Communicating with Non-Technical Stakeholders",
+                "content": """
+**Translating Data Into Business Language**
+
+Your analysis is only valuable if stakeholders understand and act on it.
+
+**Common Communication Gaps:**
+
+| Analyst Says | Stakeholder Hears |
+|-------------|-------------------|
+| "R-squared is 0.85" | "...what?" |
+| "Statistically significant" | "Must be important" (not always true) |
+| "Correlation of 0.7" | "Something about numbers" |
+| "We need more data" | "They're stalling" |
+
+**Translation Guide:**
+
+| Technical Term | Plain Language |
+|---------------|----------------|
+| Correlation | "These things tend to move together" |
+| Statistical significance | "This pattern is unlikely to be random chance" |
+| Regression | "A formula to predict one thing from another" |
+| Outlier | "An unusual value that doesn't fit the pattern" |
+| Confidence interval | "We're 95% sure the true number is in this range" |
+| P-value < 0.05 | "Less than 5% chance this is random luck" |
+
+**The "So What?" Test:**
+After every finding, ask yourself: "So what? Why should they care?"
+
+❌ "Average order value increased by $12"
+✅ "Average order value increased by $12, which means $2M additional annual revenue"
+
+**Storytelling Framework:**
+1. **Hook**: Start with the business problem
+2. **Context**: What did we look at?
+3. **Findings**: What did we discover?
+4. **Impact**: What does it mean for the business?
+5. **Action**: What should we do?
+
+**Tips for Non-Technical Audiences:**
+- Lead with the business impact, not the methodology
+- Use analogies they understand
+- Show, don't tell (visualizations > statistics)
+- Avoid acronyms and jargon
+- Check for understanding ("Does that make sense?")
+                """,
+                "key_points": ["Translate technical terms to plain language", "Always answer 'So what?' ", "Lead with business impact", "Use the storytelling framework"]
+            },
+            {
+                "title": "Active Listening & Asking Questions",
+                "content": """
+**Understanding What Stakeholders Really Need**
+
+Often what stakeholders ask for isn't what they actually need. Listening helps you find the real problem.
+
+**Levels of Listening:**
+
+| Level | Description | You're Doing This When... |
+|-------|-------------|--------------------------|
+| 1. Not listening | Waiting for your turn to speak | Formulating response while they talk |
+| 2. Selective | Hearing only what you expect | Missing context and nuance |
+| 3. Active | Fully focused, seeking to understand | Asking clarifying questions |
+| 4. Empathic | Understanding feelings and perspective | Recognizing underlying concerns |
+
+**Active Listening Techniques:**
+
+1. **Paraphrase**: "So what I'm hearing is..."
+2. **Clarify**: "When you say X, do you mean...?"
+3. **Summarize**: "Let me make sure I understand..."
+4. **Probe**: "Can you tell me more about...?"
+5. **Reflect**: "It sounds like you're concerned about..."
+
+**Powerful Questions to Ask:**
+
+| Situation | Question |
+|-----------|----------|
+| Vague request | "What decision will this analysis support?" |
+| Understanding goals | "What does success look like for this project?" |
+| Finding constraints | "Are there any limitations I should know about?" |
+| Clarifying priority | "If you could only know one thing, what would it be?" |
+| Understanding context | "What have you already tried?" |
+| Timeline | "When do you need this, and why that date?" |
+
+**The "5 Whys" for Requirements:**
+When someone asks for something, dig deeper:
+- "I need sales data" → Why?
+- "To see performance" → Why performance?
+- "We're missing targets" → Why do you think?
+- "Certain products are down" → Which ones? Why those?
+- "New competitor in that segment" → So you need competitive analysis?
+
+**Discovered Real Need**: Compare your products to competitor in that segment, not just "sales data"
+                """,
+                "key_points": ["Active listening finds the real problem", "Paraphrase to confirm understanding", "Ask 'why' to get to root needs", "What they ask for ≠ what they need"]
+            },
+            {
+                "title": "Working with Different Roles",
+                "content": """
+**Collaborating Across Data and Business Teams**
+
+Data analysts work with many different roles. Understanding their perspectives helps collaboration.
+
+**Common Collaborators:**
+
+| Role | Their Priority | What They Need From You |
+|------|---------------|------------------------|
+| **Executives** | Strategic decisions, ROI | High-level insights, recommendations |
+| **Marketing** | Customer behavior, campaign performance | Segmentation, conversion metrics |
+| **Sales** | Revenue, targets, forecasts | Pipeline analysis, trends |
+| **Operations** | Efficiency, cost reduction | Process metrics, bottlenecks |
+| **Product** | User experience, feature usage | Usage data, feedback analysis |
+| **Finance** | Profitability, budgets | Cost analysis, forecasting |
+| **IT/Engineering** | Data infrastructure, security | Data requirements, quality issues |
+
+**Adapting Your Communication:**
+
+**To Executives:**
+- Bottom line first
+- Focus on decisions, not details
+- Quantify business impact
+- 1-page max, with backup available
+
+**To Technical Teams:**
+- Can go deeper on methodology
+- Discuss data quality openly
+- Collaborate on implementation
+- Share code/queries if helpful
+
+**To Business Teams:**
+- Focus on actionability
+- Use their terminology
+- Show how data supports their goals
+- Be available for questions
+
+**Building Relationships:**
+
+1. **Understand their world**: Ask about their challenges and goals
+2. **Speak their language**: Learn their terminology and metrics
+3. **Be reliable**: Deliver on time, follow up promptly
+4. **Educate gently**: Help them understand data without condescension
+5. **Celebrate together**: Share wins as team achievements
+6. **Accept feedback**: Be open to their domain expertise
+                """,
+                "key_points": ["Different roles have different priorities", "Adapt communication to audience", "Build relationships proactively", "Learn their terminology and goals"]
+            },
+            {
+                "title": "Handling Feedback and Conflict",
+                "content": """
+**Receiving Feedback Professionally**
+
+Feedback helps you grow. How you receive it matters as much as the feedback itself.
+
+**Receiving Critical Feedback:**
+
+| Step | Action |
+|------|--------|
+| 1. Listen | Let them finish without interrupting |
+| 2. Clarify | Ask questions to understand fully |
+| 3. Acknowledge | Thank them for the feedback |
+| 4. Reflect | Consider it honestly before reacting |
+| 5. Act | Make changes or explain your reasoning |
+
+**What NOT to Do:**
+- ❌ Get defensive ("But I...")
+- ❌ Make excuses ("I didn't have time")
+- ❌ Dismiss it ("They don't understand")
+- ❌ Take it personally
+- ❌ Argue immediately
+
+**What TO Do:**
+- ✅ "Thank you for pointing that out"
+- ✅ "I hadn't considered that perspective"
+- ✅ "Can you help me understand what you expected?"
+- ✅ "I'll revisit that section and update it"
+
+**Handling Disagreements:**
+
+When someone disagrees with your analysis:
+
+1. **Stay calm**: Take a breath, don't react emotionally
+2. **Seek to understand**: "Can you tell me more about your concern?"
+3. **Find common ground**: "We both want the best decision..."
+4. **Use data**: Offer to investigate their hypothesis
+5. **Know when to yield**: You might be wrong!
+6. **Escalate thoughtfully**: If stuck, involve a neutral third party
+
+**Common Conflict Scenarios:**
+
+| Situation | Response |
+|-----------|----------|
+| "Your numbers are wrong" | "Let me verify the source and methodology" |
+| "This isn't what I asked for" | "Help me understand what you were expecting" |
+| "I don't believe this finding" | "What would convince you? Let me investigate" |
+| "This analysis is useless" | "What would make it useful? Let's discuss" |
+
+**Growth Mindset:**
+Every piece of feedback is an opportunity to improve. Even harsh feedback usually contains some truth worth considering.
+                """,
+                "key_points": ["Listen fully before responding", "Thank people for feedback, even negative", "Stay calm in disagreements", "Use data to resolve conflicts"]
+            }
+        ],
+        "exercises": [
+            {
+                "title": "Translate Technical to Plain Language",
+                "type": "practical",
+                "question": "Translate this to non-technical language: 'The regression analysis shows a statistically significant positive correlation (r=0.72, p<0.01) between marketing spend and customer acquisition.'",
+                "answer": "Plain language: 'When we spend more on marketing, we get more customers - and this pattern is very consistent. For every $1 extra we spend on marketing, we typically gain [X] new customers. We're confident this is a real relationship, not just coincidence.' Note: Would be even better to add the actual business impact, e.g., 'Based on this, if we increased marketing budget by $50K, we'd expect to gain approximately 500 new customers.'",
+                "hint": "Avoid statistical terms, focus on what it means for the business, and quantify the impact"
+            },
+            {
+                "title": "Uncover the Real Need",
+                "type": "scenario",
+                "question": "A sales manager says: 'I need a report of all our customers sorted by revenue.' What questions would you ask to understand what they really need?",
+                "answer": "Questions to ask: 1) 'What decision will this report help you make?' (Might reveal: identify at-risk accounts, find upsell opportunities, allocate account manager time). 2) 'What will you do with the top customers on this list?' (Reveals intended action). 3) 'Are you looking at a specific time period or trend?' (They might actually need trend data). 4) 'Should I include any other information like last contact date or satisfaction score?' (Might need a more complete view). 5) 'Is this a one-time analysis or something you'd need regularly?' (Informs automation). The real need might be: 'Help me identify my top 20 accounts at risk of churning so I can prioritize retention calls this week.'",
+                "hint": "Focus on the decision they're trying to make and what action they'll take with the information"
+            },
+            {
+                "title": "Handle Negative Feedback",
+                "type": "scenario",
+                "question": "Your stakeholder says: 'This analysis doesn't make sense. The conclusions don't match what we see on the ground.' How do you respond?",
+                "answer": "Response approach: 1) STAY CALM - Don't get defensive. 2) ACKNOWLEDGE: 'I appreciate you sharing that concern. It's important that the analysis reflects reality.' 3) SEEK TO UNDERSTAND: 'Can you help me understand what you're seeing on the ground that doesn't match?' 4) COLLABORATE: 'Let's look at the data together - you might spot something I missed, or there might be context I need to understand.' 5) INVESTIGATE: 'Would it help if I checked [specific aspect they mention] to see if something was filtered incorrectly?' 6) COMMIT: 'I'll review the analysis with your feedback in mind and get back to you by [date].' Never say: 'You don't understand the data' or 'The numbers are correct, so you must be wrong.'",
+                "hint": "Their ground-level experience is valuable data too - don't dismiss it"
+            }
+        ],
+        "quiz": [
+            {
+                "question": "When a stakeholder asks for 'sales data,' you should:",
+                "options": ["Send them the raw sales database", "Ask what decision they're trying to make", "Create every possible sales report", "Tell them to be more specific"],
+                "correct": 1,
+                "explanation": "Asking what decision they're trying to make helps uncover the real need. 'Sales data' could mean many things - understanding the purpose ensures you deliver what's actually useful."
+            },
+            {
+                "question": "When translating 'statistically significant' for non-technical audiences, say:",
+                "options": ["The p-value is below 0.05", "This is very important", "This pattern is unlikely to be random chance", "The correlation is strong"],
+                "correct": 2,
+                "explanation": "'Unlikely to be random chance' captures the meaning without jargon. 'Very important' is a common misunderstanding - statistical significance doesn't mean practical importance."
+            },
+            {
+                "question": "When someone disagrees with your analysis, the first thing to do is:",
+                "options": ["Defend your methodology", "Seek to understand their perspective", "Escalate to management", "Redo the entire analysis"],
+                "correct": 1,
+                "explanation": "First seek to understand their perspective - they may have valid information you don't have, or there may be a miscommunication you can resolve."
+            },
+            {
+                "question": "Active listening involves:",
+                "options": ["Waiting for your turn to speak", "Formulating your response while they talk", "Paraphrasing and asking clarifying questions", "Taking detailed notes"],
+                "correct": 2,
+                "explanation": "Active listening means fully focusing on understanding, demonstrated through paraphrasing ('So you're saying...') and asking clarifying questions."
+            }
+        ]
     }
 }
 
