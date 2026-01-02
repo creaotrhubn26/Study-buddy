@@ -47,6 +47,14 @@ A comprehensive student study app for the Data Analyst 2 (PDAN) vocational progr
 - **Data Ensembling & Reliability**: Bagging, boosting, stacking ensemble methods, improving model reliability, data quality ensembling
 - **ETL & Version Control**: ETL pipeline design, Git fundamentals, branching strategies, collaborative workflows
 
+### Data Visualisation (FI1BBDV15)
+- **Introduction to Data Visualization**: Why visualization matters, the visualization process, types of visualizations
+- **Choosing the Right Chart Type**: Decision framework, common mistakes to avoid, chart selection examples
+- **Design Principles**: Data-ink ratio, color usage, typography, layout, accessibility checklist
+- **Data Storytelling**: Story structure (setup → insight → action), presentation tips, slideshow best practices
+- **Visualization Tools**: Excel/Sheets, Tableau, Power BI, Python libraries comparison
+- **Ethics in Visualization**: Truncated axes, cherry-picking, missing context, ethical guidelines
+
 ### Tool Training Environments (Simulated)
 - **Excel & Google Sheets**: Formulas (VLOOKUP, SUMIF, etc.), pivot tables, data cleaning, automation with macros
 - **Python Programming**: pandas DataFrames, data manipulation, cleaning scripts, analysis automation
@@ -60,6 +68,7 @@ Hands-on practice tools with editable data:
 - **Excel Formula Simulator**: SUM, AVERAGE, SUMIF, COUNTIF, VLOOKUP, INDEX/MATCH, XLOOKUP, IF statements
 - **SQL Query Tester**: In-memory SQLite database with customers/orders tables
 - **Chart Builder**: Create bar, line, area, and scatter charts from custom data
+- **Data Visualization Studio**: Chart selection advisor, accessibility checker, visualization critique, data story builder
 - **Statistical Analysis**: Correlation, regression, ANOVA, histogram, covariance, descriptive statistics (using scipy)
 - **Power Query Simulator**: Data transformation steps (deduplication, fill missing, trim, case standardization, calculated columns)
 - **Z-Score & Outlier Tool**: Calculate z-scores, detect outliers, apply handling methods (remove, cap, replace)
