@@ -7064,17 +7064,115 @@ elif page == "Training Center":
     st.markdown("*Hands-on learning with step-by-step lessons, exercises, and quizzes*")
     st.markdown("---")
     
-    # Topic selection
-    available_topics = list(training_modules.keys())
-    selected_topic = st.selectbox(
-        "Choose a topic to learn:",
-        options=available_topics,
-        index=0
+    # Organize topics by semester and course
+    course_to_semester = {
+        "Data Analysis Fundamentals": ("Semester 1", "FI1BBAF15"),
+        "Statistical Tools": ("Semester 1", "FI1BBST20"),
+        "Spreadsheet Fundamentals": ("Semester 1", "FI1BBSF15"),
+        "Programming Fundamentals": ("Semester 1", "FI1BBPF20"),
+        "Databases and Cloud Services": ("Semester 2", "FI1BBDC20"),
+        "Data Visualisation": ("Semester 2", "FI1BBDV15"),
+        "Data Driven Decision-Making": ("Semester 2", "FI1BBDD75"),
+        "Semester Project 1": ("Semester 2", "FI1BBP175"),
+        "Evaluation of Outcomes": ("Semester 3", "FI1BBEO10")
+    }
+    
+    # Group topics by semester and course
+    organized_topics = {}
+    for topic, module_data in training_modules.items():
+        course = module_data['course']
+        if course in course_to_semester:
+            semester, code = course_to_semester[course]
+        else:
+            semester, code = "Other", ""
+        
+        if semester not in organized_topics:
+            organized_topics[semester] = {}
+        if course not in organized_topics[semester]:
+            organized_topics[semester][course] = {"code": code, "topics": []}
+        organized_topics[semester][course]["topics"].append(topic)
+    
+    # Create formatted options with grouping
+    st.markdown("### Choose a Topic to Learn")
+    
+    col1, col2 = st.columns([1, 2])
+    
+    with col1:
+        # Semester filter
+        available_semesters = sorted(organized_topics.keys())
+        selected_semester = st.selectbox(
+            "📅 Semester:",
+            options=["All Semesters"] + available_semesters
+        )
+    
+    with col2:
+        # Course filter based on semester
+        if selected_semester == "All Semesters":
+            all_courses = []
+            for sem in available_semesters:
+                for course in organized_topics[sem].keys():
+                    if course not in all_courses:
+                        all_courses.append(course)
+            available_courses = all_courses
+        else:
+            available_courses = list(organized_topics[selected_semester].keys())
+        
+        selected_course = st.selectbox(
+            "📚 Course:",
+            options=["All Courses"] + available_courses
+        )
+    
+    # Get filtered topics
+    filtered_topics = []
+    for semester, courses in organized_topics.items():
+        if selected_semester != "All Semesters" and semester != selected_semester:
+            continue
+        for course, data in courses.items():
+            if selected_course != "All Courses" and course != selected_course:
+                continue
+            for topic in data["topics"]:
+                # Format: "Topic Name (Course - Semester)"
+                display_name = f"{topic}"
+                filtered_topics.append((display_name, topic, course, semester))
+    
+    # Sort by semester, then course, then topic
+    semester_order = {"Semester 1": 1, "Semester 2": 2, "Semester 3": 3, "Semester 4": 4, "Other": 5}
+    filtered_topics.sort(key=lambda x: (semester_order.get(x[3], 99), x[2], x[0]))
+    
+    if not filtered_topics:
+        st.warning("No topics found for the selected filters.")
+        st.stop()
+    
+    # Create display options with context
+    topic_options = []
+    for display, topic, course, semester in filtered_topics:
+        topic_options.append(f"{topic}")
+    
+    # Show topic count
+    st.caption(f"📖 {len(filtered_topics)} topics available")
+    
+    selected_display = st.selectbox(
+        "🎯 Select Topic:",
+        options=topic_options,
+        format_func=lambda x: x
     )
+    
+    # Find the actual topic
+    selected_topic = selected_display
+    
+    # Find course and semester for display
+    topic_course = None
+    topic_semester = None
+    for display, topic, course, semester in filtered_topics:
+        if topic == selected_topic:
+            topic_course = course
+            topic_semester = semester
+            break
     
     module = training_modules[selected_topic]
     
-    st.markdown(f"**Course:** {module['course']}")
+    # Show context
+    st.markdown(f"**📅 {topic_semester}** | **📚 {topic_course}**")
     st.markdown(f"*{module['description']}*")
     
     # Initialize progress for this topic
