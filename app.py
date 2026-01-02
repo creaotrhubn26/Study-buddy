@@ -6727,6 +6727,483 @@ As a data analyst, you have power to influence decisions. Use visualization ethi
                 "explanation": "Data-ink ratio (from Edward Tufte) means maximizing the data shown while minimizing non-essential 'ink' (decorations, heavy gridlines, unnecessary borders)."
             }
         ]
+    },
+    "Analysis Reporting Fundamentals": {
+        "course": "Analysis Reporting",
+        "description": "Learn report writing skills to present analytical work in professional documents for technical and non-technical audiences.",
+        "lessons": [
+            {
+                "title": "Introduction to Analysis Reporting",
+                "content": """
+**Why Analysis Reports Matter**
+
+A brilliant analysis is worthless if it can't be communicated effectively. Reports transform your findings into actionable documents.
+
+**Key Purpose of Reports:**
+- **Document findings**: Create permanent record of analysis
+- **Enable decisions**: Provide information for stakeholders to act
+- **Share knowledge**: Transfer insights across teams/organizations
+- **Build credibility**: Establish you as a trusted analyst
+
+**Report vs. Presentation:**
+
+| Report | Presentation |
+|--------|--------------|
+| Comprehensive | Highlights only |
+| Self-contained | Requires speaker |
+| Reference document | One-time event |
+| Detailed methodology | High-level overview |
+| Read at reader's pace | Controlled timing |
+
+**Types of Analysis Reports:**
+
+| Type | Purpose | Audience | Length |
+|------|---------|----------|--------|
+| **Executive Summary** | Quick overview | Executives | 1-2 pages |
+| **Technical Report** | Full methodology | Analysts | 10-30 pages |
+| **Client Report** | Findings + recommendations | Clients | 5-15 pages |
+| **Dashboard Report** | Ongoing metrics | Operations | 1-3 pages |
+| **Ad-hoc Analysis** | Specific question | Requestor | 2-5 pages |
+
+**The Report Writing Process:**
+
+```
+1. UNDERSTAND the audience and purpose
+2. STRUCTURE the document logically
+3. WRITE clearly and concisely
+4. VISUALIZE data effectively
+5. REVIEW and refine
+6. DELIVER in appropriate format
+```
+                """,
+                "key_points": ["Reports document and communicate findings", "Different report types serve different audiences", "Reports must be self-contained and actionable", "Writing process follows clear stages"]
+            },
+            {
+                "title": "Report Structure and Organization",
+                "content": """
+**Standard Report Structure**
+
+A well-organized report guides readers through your analysis logically.
+
+**Essential Sections:**
+
+**1. Executive Summary** (Write Last)
+- Key findings in 1-2 paragraphs
+- Main recommendations
+- Critical numbers/metrics
+- *Tip: Busy readers may only read this*
+
+**2. Introduction/Background**
+- Business context and problem statement
+- Scope of analysis
+- Data sources used
+- Time period covered
+
+**3. Methodology**
+- How data was collected/cleaned
+- Analysis techniques used
+- Assumptions and limitations
+- *Adjust detail level for audience*
+
+**4. Findings**
+- Present results clearly
+- Use visualizations
+- Organize by theme or priority
+- Include supporting data
+
+**5. Conclusions & Recommendations**
+- What the findings mean
+- Specific actions to take
+- Expected impact of recommendations
+- Next steps
+
+**6. Appendix** (Optional)
+- Detailed data tables
+- Technical methodology
+- Supplementary charts
+- Glossary of terms
+
+**Organization Tips:**
+
+| Do | Don't |
+|-----|--------|
+| Use numbered sections | Use vague headings |
+| Include table of contents (>5 pages) | Bury key findings |
+| Put most important info first | Make readers hunt for answers |
+| Use consistent formatting | Change styles mid-document |
+                """,
+                "key_points": ["Follow standard report structure", "Write executive summary last", "Adjust detail level for audience", "Put most important information first"]
+            },
+            {
+                "title": "Academic Writing for Reports",
+                "content": """
+**Professional Writing Style**
+
+Analysis reports require clear, professional language that builds credibility.
+
+**Key Principles:**
+
+**1. Clarity Over Complexity**
+- Use simple words when possible
+- Short sentences (15-20 words average)
+- One idea per paragraph
+- Active voice preferred
+
+**Bad:** "The utilization of advanced analytical methodologies facilitated the identification of correlational patterns."
+**Good:** "Our analysis found a strong link between marketing spend and sales."
+
+**2. Be Precise and Specific**
+
+| Vague | Precise |
+|-------|---------|
+| "Sales increased significantly" | "Sales increased 23% ($1.2M)" |
+| "Most customers prefer..." | "67% of customers prefer..." |
+| "Recently" | "In Q3 2025" |
+| "Some improvement" | "15% improvement" |
+
+**3. Objective Tone**
+- State facts, not opinions
+- Support claims with data
+- Acknowledge limitations
+- Avoid emotional language
+
+**Bad:** "Clearly, the amazing results prove our strategy works perfectly."
+**Good:** "Results show a 23% increase, suggesting the strategy is effective. Further testing is recommended."
+
+**4. Consistent Terminology**
+- Define terms on first use
+- Use same word for same concept
+- Create glossary if needed
+- Avoid jargon with non-technical audiences
+
+**5. Hedging Appropriately**
+When certainty is limited, use appropriate hedging:
+- "The data suggests..." (not "proves")
+- "This may indicate..."
+- "Based on available data..."
+- "Further analysis would be needed to confirm..."
+
+**Common Phrases for Reports:**
+
+| Purpose | Phrases |
+|---------|---------|
+| Introducing findings | "The analysis reveals...", "Data indicates..." |
+| Comparing | "In contrast...", "Similarly...", "However..." |
+| Recommending | "We recommend...", "Consider...", "The next step is..." |
+| Concluding | "In summary...", "The key takeaway is..." |
+                """,
+                "key_points": ["Clarity and precision over complexity", "Use specific numbers, not vague terms", "Maintain objective, professional tone", "Define terms and be consistent"]
+            },
+            {
+                "title": "Integrating Visualizations in Reports",
+                "content": """
+**Using Graphics Effectively in Reports**
+
+Static visualizations in reports differ from interactive dashboards - they must stand alone on paper.
+
+**Principles for Report Graphics:**
+
+**1. Every Chart Needs Context**
+- Descriptive title (not just "Figure 1")
+- Axis labels and units
+- Source citation
+- Brief caption explaining the insight
+
+**Example:**
+✅ "Figure 3: Monthly Revenue Growth (2024-2025). Revenue increased 45% year-over-year, with Q4 showing the strongest growth."
+
+❌ "Figure 3: Revenue"
+
+**2. Design for Print**
+- High resolution (300 DPI minimum)
+- Readable when printed in grayscale
+- Sufficient font size (10pt minimum)
+- No interactive elements (obviously!)
+
+**3. Placement Guidelines**
+
+| Rule | Reason |
+|------|--------|
+| Place near related text | Easy reference |
+| Don't split across pages | Visual integrity |
+| Consistent sizing | Professional appearance |
+| White space around graphics | Readability |
+
+**4. Reference Charts in Text**
+Always mention figures in your narrative:
+- "As shown in Figure 2, sales peaked in December..."
+- "The correlation (see Figure 4) suggests..."
+
+**5. Chart Selection for Static Reports**
+
+| Works Well in Reports | Avoid in Reports |
+|----------------------|------------------|
+| Bar charts | Complex interactive charts |
+| Line charts | Animations |
+| Pie charts (limited) | Overly detailed maps |
+| Tables | Charts requiring zoom |
+| Simple scatter plots | 3D charts |
+
+**Caption Writing:**
+
+A good caption includes:
+1. Figure number
+2. Descriptive title
+3. Key insight or takeaway
+4. Data source (if not stated elsewhere)
+
+**Example:**
+"Figure 5: Customer Satisfaction Scores by Region (Q4 2025). The North region scored 15% higher than the company average, while the South region needs attention. Source: Customer Survey, n=2,500."
+                """,
+                "key_points": ["Every visualization needs context and caption", "Design for print (high resolution, grayscale-friendly)", "Reference all figures in the text", "Place visuals near related content"]
+            },
+            {
+                "title": "Universal Design and Accessibility",
+                "content": """
+**Creating Accessible Reports**
+
+Reports should be usable by everyone, including people with disabilities.
+
+**Universal Design Principles:**
+
+**1. Visual Accessibility**
+
+**Color:**
+- Don't rely solely on color to convey meaning
+- Ensure sufficient contrast (4.5:1 ratio)
+- Use colorblind-friendly palettes
+- Provide text alternatives
+
+**Fonts:**
+- Sans-serif fonts for screens (Arial, Calibri)
+- Minimum 11pt body text, 10pt for tables
+- Avoid all-caps for long text
+- Adequate line spacing (1.15-1.5)
+
+**2. Document Structure**
+- Use heading styles (not just bold text)
+- Logical heading hierarchy (H1 → H2 → H3)
+- Include table of contents for long documents
+- Number sections consistently
+
+**3. Table Accessibility**
+
+| Accessible | Not Accessible |
+|-----------|----------------|
+| Header row identified | No headers |
+| Simple structure | Merged cells |
+| Reading order clear | Complex nesting |
+| Alt text for table | No description |
+
+**4. Alternative Text for Images**
+- Describe what the image shows
+- Include key data points
+- Explain the insight
+- Keep under 125 characters
+
+**Good Alt Text:**
+"Bar chart showing Q4 sales by region: North $2.3M, South $1.8M, East $2.1M, West $1.5M. North leads by 28%."
+
+**5. Document Format**
+- Use accessible PDF settings
+- Include bookmarks for navigation
+- Tag document structure
+- Test with screen reader
+
+**Accessibility Checklist:**
+- ✓ Color contrast meets standards
+- ✓ All images have alt text
+- ✓ Tables have headers identified
+- ✓ Document uses heading styles
+- ✓ Links have descriptive text
+- ✓ Font size is readable
+- ✓ Content order is logical
+                """,
+                "key_points": ["Design for all users, including those with disabilities", "Use proper heading structure and document tags", "Provide alt text for all visuals", "Test accessibility before distribution"]
+            },
+            {
+                "title": "Report Tools and Distribution",
+                "content": """
+**Tools for Creating Reports**
+
+Different tools suit different needs and organizational contexts.
+
+**Common Report Tools:**
+
+| Tool | Best For | Pros | Cons |
+|------|----------|------|------|
+| **Microsoft Word** | Traditional reports | Universal, familiar | Manual formatting |
+| **Google Docs** | Collaborative work | Real-time collaboration | Limited offline |
+| **LaTeX** | Technical/academic | Professional typography | Steep learning curve |
+| **Jupyter/RMarkdown** | Reproducible reports | Code + narrative | Technical audience |
+| **Power BI/Tableau** | Dashboard reports | Interactive | Export limitations |
+
+**Word/Google Docs Tips:**
+- Use styles for consistency
+- Set up templates for repeated reports
+- Use section breaks for different headers/footers
+- Enable track changes for review
+
+**Distribution Formats:**
+
+| Format | When to Use |
+|--------|-------------|
+| **PDF** | Final distribution, archival |
+| **Word/Doc** | Collaborative editing |
+| **HTML** | Web publishing |
+| **Print** | Formal presentations |
+
+**Version Control:**
+- Include version number in filename
+- Date all versions: "Report_v2_2025-01-02.pdf"
+- Keep track of what changed
+- Archive final versions
+
+**Review Process:**
+
+Before distributing:
+1. **Self-review**: Read aloud, check for errors
+2. **Peer review**: Fresh eyes catch mistakes
+3. **Stakeholder preview**: Ensure alignment
+4. **Final proofread**: Spelling, formatting, links
+
+**Quality Checklist:**
+- ✓ Spelling and grammar checked
+- ✓ All figures numbered and referenced
+- ✓ Page numbers included
+- ✓ Headers/footers consistent
+- ✓ Links working
+- ✓ Data is current
+- ✓ Recommendations are clear
+- ✓ Executive summary matches content
+                """,
+                "key_points": ["Choose tools based on audience and collaboration needs", "Use templates for consistency", "Follow clear version control practices", "Always review before distribution"]
+            },
+            {
+                "title": "Ethical Report Writing",
+                "content": """
+**Ethics in Analysis Reporting**
+
+As a report writer, you have responsibility for how information is presented and interpreted.
+
+**Core Ethical Principles:**
+
+**1. Accuracy**
+- Report data truthfully
+- Don't cherry-pick favorable results
+- Acknowledge limitations and uncertainties
+- Correct errors promptly
+
+**2. Transparency**
+- Disclose methodology
+- Note data sources
+- Explain assumptions
+- Reveal conflicts of interest
+
+**3. Fairness**
+- Present balanced findings
+- Include context that might change interpretation
+- Consider multiple stakeholder perspectives
+- Don't misrepresent others' views
+
+**Common Ethical Pitfalls:**
+
+| Pitfall | Example | How to Avoid |
+|---------|---------|--------------|
+| Cherry-picking | Only showing favorable quarters | Show full time period |
+| Misleading visuals | Truncated axes | Follow visualization ethics |
+| Omitting context | "Sales up 50%!" (from very low base) | Provide absolute numbers too |
+| Overstating certainty | "This proves..." | Use appropriate hedging |
+| Burying bad news | Hiding problems in appendix | Address issues directly |
+
+**Client vs. Truth:**
+
+What if findings are unfavorable to the client?
+
+**Ethical approach:**
+1. Present findings accurately
+2. Provide context and explanation
+3. Suggest constructive next steps
+4. Never falsify or hide data
+
+**Handling Pressure:**
+- "Can you make these numbers look better?"
+- "Can we leave out this part?"
+- "The client won't like this finding"
+
+**Response:**
+- Explain why accuracy matters
+- Offer alternative framing (not falsification)
+- Escalate if pressured to be unethical
+- Document requests in writing
+
+**Attribution and Sources:**
+- Cite data sources properly
+- Credit others' work
+- Respect data privacy
+- Follow licensing requirements
+
+**The Golden Rule:**
+Would you be comfortable if your methodology and decisions were reviewed by a neutral third party? If not, reconsider your approach.
+                """,
+                "key_points": ["Report data accurately, even unfavorable findings", "Be transparent about methodology and limitations", "Don't mislead through omission or framing", "Maintain professional integrity under pressure"]
+            }
+        ],
+        "exercises": [
+            {
+                "title": "Rewrite for Clarity",
+                "type": "practical",
+                "question": "Rewrite this sentence for a non-technical audience: 'The multivariate regression analysis yielded a statistically significant coefficient (β=0.43, p<0.01) for the marketing expenditure variable, indicating a positive relationship with sales outcomes.'",
+                "answer": "Clear version: 'Our analysis found that marketing spending has a strong positive effect on sales. For every additional $1,000 spent on marketing, sales increased by approximately $430. This relationship is statistically reliable.' Key improvements: 1) Removed jargon (multivariate regression, coefficient, β, p-value). 2) Explained what the numbers mean practically. 3) Used plain language. 4) Kept the essential insight while making it accessible.",
+                "hint": "Replace technical terms with plain language, and explain what the finding means for the business"
+            },
+            {
+                "title": "Structure an Executive Summary",
+                "type": "scenario",
+                "question": "You've completed an analysis showing that customer churn increased 25% last quarter, mainly due to slow support response times (average 4 hours vs. competitor's 30 minutes). You recommend investing $50K in a chat support system. Write bullet points for the executive summary.",
+                "answer": "Executive Summary bullet points: KEY FINDING: Customer churn increased 25% last quarter, costing an estimated $200K in lost annual revenue. ROOT CAUSE: Support response time (4 hours) is 8x slower than industry average (30 minutes). Analysis of 500 exit surveys found 'slow support' cited as primary reason by 67% of churned customers. RECOMMENDATION: Implement chat support system ($50K investment). Expected outcomes: Reduce response time to under 30 minutes, reduce churn by 15-20%, ROI within 4 months based on reduced customer loss. NEXT STEPS: Vendor selection and pilot program in Q2. Note: This structure gives busy executives: the problem, the cause, the solution, and expected results in under 100 words.",
+                "hint": "Include: the problem, the cause, the recommended solution, and expected outcomes"
+            },
+            {
+                "title": "Write Alt Text for a Chart",
+                "type": "practical",
+                "question": "Write appropriate alt text for a bar chart showing quarterly revenue: Q1 $1.2M, Q2 $1.4M, Q3 $1.8M, Q4 $2.1M. The chart highlights that Q4 was the highest.",
+                "answer": "Good alt text options: Option 1 (brief): 'Bar chart showing quarterly revenue growth: Q1 $1.2M, Q2 $1.4M, Q3 $1.8M, Q4 $2.1M. Q4 represents 75% growth from Q1.' Option 2 (detailed): 'Vertical bar chart displaying 2025 quarterly revenue. Revenue grew each quarter: Q1 at $1.2M, Q2 at $1.4M (17% increase), Q3 at $1.8M (29% increase), and Q4 reaching $2.1M (17% increase). Q4 is highlighted as the highest quarter, representing total annual growth of 75% from Q1 to Q4.' Key elements: Describes chart type, provides all data values, explains the key insight, quantifies the main finding.",
+                "hint": "Include the chart type, the data values, and the key insight someone should take away"
+            }
+        ],
+        "quiz": [
+            {
+                "question": "Which section should you write LAST in a report?",
+                "options": ["Introduction", "Methodology", "Executive Summary", "Appendix"],
+                "correct": 2,
+                "explanation": "The Executive Summary should be written last because it summarizes the entire report. You can't summarize what you haven't written yet."
+            },
+            {
+                "question": "When writing for non-technical audiences, you should:",
+                "options": ["Use technical terms to show expertise", "Replace jargon with plain language", "Include all statistical details", "Avoid numbers entirely"],
+                "correct": 1,
+                "explanation": "Replace jargon with plain language. Technical terms create barriers. You can still include important numbers, but explain what they mean practically."
+            },
+            {
+                "question": "Alt text for images in reports should:",
+                "options": ["Just say 'Figure 1'", "Describe the visual and key insight", "Only be used for decorative images", "Repeat the caption exactly"],
+                "correct": 1,
+                "explanation": "Alt text should describe what the image shows and convey the key insight, making the content accessible to screen reader users and providing value if images don't load."
+            },
+            {
+                "question": "If your analysis findings are unfavorable to the client, you should:",
+                "options": ["Hide them in the appendix", "Present them accurately with context", "Change the numbers to be more positive", "Leave them out entirely"],
+                "correct": 1,
+                "explanation": "Present findings accurately with appropriate context. Hiding or falsifying results is unethical. You can frame findings constructively and suggest solutions."
+            },
+            {
+                "question": "The minimum font size recommended for body text in reports is:",
+                "options": ["8pt", "11pt", "14pt", "18pt"],
+                "correct": 1,
+                "explanation": "11pt is the recommended minimum for body text to ensure readability. Tables can go to 10pt, but anything smaller becomes difficult to read."
+            }
+        ]
     }
 }
 
@@ -7981,6 +8458,9 @@ elif page == "Playground":
             ],
             "FI1BBP175 - Semester Project 1": [
                 "Project Planning Workshop"
+            ],
+            "FI1BBAR05 - Analysis Reporting": [
+                "Report Writing Workshop"
             ]
         },
         "Semester 3 - Competence Skills": {
@@ -10977,6 +11457,304 @@ DELIVERABLES:
                 file_name=f"project_plan_{project_name.lower().replace(' ', '_')}.txt",
                 mime="text/plain"
             )
+    
+    elif playground_tab == "Report Writing Workshop":
+        st.subheader("📝 Report Writing Workshop")
+        st.markdown("*Practice writing professional analysis reports with proper structure and clarity*")
+        st.markdown("---")
+        
+        report_mode = st.radio(
+            "Choose practice mode:",
+            ["Executive Summary Builder", "Clarity Rewriter", "Report Structure Planner", "Caption Writer"],
+            horizontal=True
+        )
+        
+        if report_mode == "Executive Summary Builder":
+            st.markdown("### Executive Summary Builder")
+            st.markdown("*Create a concise executive summary from your analysis findings*")
+            
+            st.markdown("**Enter your analysis details:**")
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                main_finding = st.text_area(
+                    "Main Finding:",
+                    placeholder="e.g., Customer churn increased 25% last quarter",
+                    height=80
+                )
+                root_cause = st.text_area(
+                    "Root Cause/Key Insight:",
+                    placeholder="e.g., Analysis of 500 surveys found 67% cited slow support response",
+                    height=80
+                )
+            
+            with col2:
+                business_impact = st.text_input(
+                    "Business Impact:",
+                    placeholder="e.g., Estimated $200K in lost annual revenue"
+                )
+                recommendation = st.text_area(
+                    "Recommendation:",
+                    placeholder="e.g., Implement chat support system ($50K investment)",
+                    height=80
+                )
+            
+            audience = st.selectbox(
+                "Target Audience:",
+                ["C-Suite Executives", "Department Managers", "Technical Team", "External Clients"]
+            )
+            
+            if st.button("📋 Generate Executive Summary", type="primary"):
+                if main_finding and recommendation:
+                    st.markdown("---")
+                    st.markdown("### Your Executive Summary")
+                    
+                    if audience == "C-Suite Executives":
+                        tone = "Focus on business impact and ROI"
+                        length = "Ultra-brief (3-5 sentences)"
+                    elif audience == "Department Managers":
+                        tone = "Balance of impact and actionable details"
+                        length = "Brief (5-7 sentences)"
+                    elif audience == "Technical Team":
+                        tone = "Include methodology context"
+                        length = "Moderate detail (7-10 sentences)"
+                    else:
+                        tone = "Professional, accessible language"
+                        length = "Clear and complete (5-8 sentences)"
+                    
+                    summary = f"""## Executive Summary
+
+**Key Finding:** {main_finding}
+
+**Impact:** {business_impact if business_impact else '[Add business impact]'}
+
+**Analysis Insight:** {root_cause if root_cause else '[Add key insight from analysis]'}
+
+**Recommendation:** {recommendation}
+
+---
+*Note: This summary is tailored for {audience}. Tone: {tone}. Recommended length: {length}.*
+"""
+                    st.markdown(summary)
+                    
+                    st.download_button(
+                        "📥 Download Executive Summary",
+                        data=summary,
+                        file_name="executive_summary.md",
+                        mime="text/markdown"
+                    )
+                    
+                    st.markdown("### Writing Tips for Your Audience:")
+                    if audience == "C-Suite Executives":
+                        st.info("- Lead with the bottom line\n- Quantify everything\n- Keep to 1 page maximum\n- Focus on decisions, not details")
+                    elif audience == "Department Managers":
+                        st.info("- Include actionable next steps\n- Show department-level impact\n- Provide timeline expectations\n- Mention resource requirements")
+                    elif audience == "Technical Team":
+                        st.info("- Can include methodology references\n- Technical terms are acceptable\n- Include data quality notes\n- Reference appendix for details")
+                    else:
+                        st.info("- Avoid internal jargon\n- Explain technical concepts\n- Focus on value delivered\n- Include clear next steps")
+                else:
+                    st.warning("Please fill in at least the main finding and recommendation.")
+        
+        elif report_mode == "Clarity Rewriter":
+            st.markdown("### Clarity Rewriter")
+            st.markdown("*Practice rewriting complex technical text for non-technical audiences*")
+            
+            sample_texts = {
+                "Statistical finding": "The multivariate regression analysis yielded a statistically significant coefficient (β=0.43, p<0.01) for the marketing expenditure variable, indicating a positive relationship with sales outcomes.",
+                "Data quality issue": "The dataset exhibited substantial missing value prevalence (23.7% null rate) concentrated primarily in temporal fields, necessitating imputation via mean substitution methodology.",
+                "Correlation analysis": "Pearson correlation coefficient analysis revealed a strong positive correlation (r=0.82) between customer satisfaction metrics and repeat purchase behavior, suggesting potential causative linkages.",
+                "Forecasting result": "The ARIMA(2,1,1) model generated forecasts with a MAPE of 8.3%, outperforming the baseline exponential smoothing approach by 2.1 percentage points.",
+                "Custom text": ""
+            }
+            
+            selected_text = st.selectbox("Choose a text to rewrite:", list(sample_texts.keys()))
+            
+            if selected_text == "Custom text":
+                original_text = st.text_area(
+                    "Enter your technical text:",
+                    placeholder="Paste your complex technical text here...",
+                    height=100
+                )
+            else:
+                original_text = sample_texts[selected_text]
+                st.markdown(f"**Original text:** {original_text}")
+            
+            user_rewrite = st.text_area(
+                "Your simplified version:",
+                placeholder="Rewrite the text in plain language...",
+                height=100
+            )
+            
+            if st.button("📖 Show Expert Rewrite", type="primary") and original_text:
+                st.markdown("---")
+                
+                expert_rewrites = {
+                    "Statistical finding": "Our analysis found that marketing spending has a strong positive effect on sales. For every additional $1,000 spent on marketing, sales increased by approximately $430. This relationship is statistically reliable.",
+                    "Data quality issue": "About 24% of the data was missing, mainly in date-related fields. We filled in these gaps using average values to ensure complete analysis.",
+                    "Correlation analysis": "We found a strong link between customer satisfaction and repeat purchases. Customers who are more satisfied are significantly more likely to buy again.",
+                    "Forecasting result": "Our forecast model predicted sales with 92% accuracy, performing 2% better than our previous method. This gives us reliable predictions for planning.",
+                    "Custom text": "Consider: 1) Replace jargon with plain words, 2) Explain what numbers mean practically, 3) Focus on the 'so what?' for the business."
+                }
+                
+                st.markdown("### Expert Rewrite:")
+                st.success(expert_rewrites.get(selected_text, expert_rewrites["Custom text"]))
+                
+                st.markdown("### Rewriting Principles:")
+                st.markdown("""
+| Technical Term | Plain Language |
+|---------------|----------------|
+| Statistically significant | Reliable/consistent pattern |
+| Correlation | Relationship/link |
+| Coefficient | Effect size/impact |
+| Null values | Missing data |
+| Imputation | Filling in gaps |
+| MAPE/RMSE | Accuracy percentage |
+""")
+        
+        elif report_mode == "Report Structure Planner":
+            st.markdown("### Report Structure Planner")
+            st.markdown("*Plan the sections and content of your analysis report*")
+            
+            report_type = st.selectbox(
+                "What type of report are you writing?",
+                ["Client Report", "Executive Summary", "Technical Report", "Ad-hoc Analysis", "Dashboard Report"]
+            )
+            
+            report_structures = {
+                "Client Report": {
+                    "sections": ["Executive Summary", "Background & Objectives", "Methodology Overview", "Key Findings", "Recommendations", "Next Steps", "Appendix"],
+                    "page_range": "5-15 pages",
+                    "tips": "Focus on actionable insights. Minimize technical jargon. Include clear recommendations with expected outcomes."
+                },
+                "Executive Summary": {
+                    "sections": ["Key Finding", "Business Impact", "Recommendation", "Next Steps"],
+                    "page_range": "1-2 pages",
+                    "tips": "Lead with the conclusion. Quantify everything. Maximum 1-2 pages. Support details in appendix only."
+                },
+                "Technical Report": {
+                    "sections": ["Abstract", "Introduction", "Data Sources", "Methodology", "Results", "Discussion", "Limitations", "Conclusions", "References", "Appendix"],
+                    "page_range": "10-30 pages",
+                    "tips": "Full methodology documentation. Include code/query references. Reproducibility is key."
+                },
+                "Ad-hoc Analysis": {
+                    "sections": ["Question/Request", "Approach", "Findings", "Answer/Recommendation"],
+                    "page_range": "2-5 pages",
+                    "tips": "Direct answer to the question asked. Quick turnaround expected. Keep focused."
+                },
+                "Dashboard Report": {
+                    "sections": ["KPI Summary", "Trends", "Alerts/Exceptions", "Actions Needed"],
+                    "page_range": "1-3 pages",
+                    "tips": "Visual-heavy. Consistent format for regular updates. Clear RAG status indicators."
+                }
+            }
+            
+            structure = report_structures[report_type]
+            
+            st.markdown(f"### {report_type} Structure")
+            st.caption(f"Typical length: {structure['page_range']}")
+            
+            st.markdown("**Recommended Sections:**")
+            for i, section in enumerate(structure["sections"], 1):
+                st.markdown(f"{i}. {section}")
+            
+            st.info(f"**Tips:** {structure['tips']}")
+            
+            st.markdown("---")
+            st.markdown("### Plan Your Content")
+            
+            content_plan = {}
+            for section in structure["sections"]:
+                content_plan[section] = st.text_input(
+                    f"{section}:",
+                    placeholder=f"Brief notes for {section}...",
+                    key=f"plan_{section}"
+                )
+            
+            if st.button("📥 Generate Report Outline", type="primary"):
+                outline = f"""# {report_type} Outline
+
+Type: {report_type}
+Target Length: {structure['page_range']}
+
+## Sections
+
+"""
+                for section, notes in content_plan.items():
+                    outline += f"### {section}\n"
+                    outline += f"{notes if notes else '[Add content notes]'}\n\n"
+                
+                outline += f"""---
+## Writing Tips
+{structure['tips']}
+"""
+                
+                st.text_area("Your Report Outline:", value=outline, height=400)
+                st.download_button(
+                    "Download Outline",
+                    data=outline,
+                    file_name=f"{report_type.lower().replace(' ', '_')}_outline.md",
+                    mime="text/markdown"
+                )
+        
+        elif report_mode == "Caption Writer":
+            st.markdown("### Caption Writer")
+            st.markdown("*Practice writing professional captions for figures and tables*")
+            
+            visual_type = st.selectbox(
+                "What type of visual are you captioning?",
+                ["Bar Chart", "Line Chart", "Pie Chart", "Table", "Scatter Plot", "Dashboard Screenshot"]
+            )
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                figure_number = st.number_input("Figure/Table Number:", min_value=1, value=1)
+                title = st.text_input("Visual Title:", placeholder="e.g., Quarterly Revenue by Region")
+            
+            with col2:
+                key_insight = st.text_input("Key Insight:", placeholder="e.g., North region leads by 15%")
+                data_source = st.text_input("Data Source:", placeholder="e.g., Sales Database, Q4 2025")
+            
+            if st.button("✍️ Generate Caption", type="primary"):
+                if title:
+                    st.markdown("---")
+                    st.markdown("### Generated Captions")
+                    
+                    prefix = "Figure" if visual_type != "Table" else "Table"
+                    
+                    brief_caption = f"{prefix} {figure_number}: {title}."
+                    
+                    standard_caption = f"{prefix} {figure_number}: {title}. {key_insight if key_insight else ''}"
+                    if data_source:
+                        standard_caption += f" Source: {data_source}."
+                    
+                    detailed_caption = f"{prefix} {figure_number}: {title}. "
+                    if key_insight:
+                        detailed_caption += f"Key insight: {key_insight}. "
+                    detailed_caption += f"This {visual_type.lower()} illustrates [add interpretation]. "
+                    if data_source:
+                        detailed_caption += f"Data source: {data_source}."
+                    
+                    st.markdown("**Brief Caption:**")
+                    st.code(brief_caption)
+                    
+                    st.markdown("**Standard Caption (Recommended):**")
+                    st.code(standard_caption)
+                    
+                    st.markdown("**Detailed Caption:**")
+                    st.code(detailed_caption)
+                    
+                    st.markdown("### Caption Best Practices:")
+                    st.markdown("""
+- ✓ Always include figure/table number
+- ✓ Use descriptive title (not just "Revenue")
+- ✓ State the key insight readers should take away
+- ✓ Include data source for credibility
+- ✓ Keep captions concise but complete
+- ✓ Place below figures, above tables
+""")
+                else:
+                    st.warning("Please enter at least a title for your visual.")
 
 elif page == "About":
     st.title("ℹ️ About the Data Analyst Program")
