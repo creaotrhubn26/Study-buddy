@@ -7064,11 +7064,11 @@ elif page == "Training Center":
     st.markdown("*Hands-on learning with step-by-step lessons, exercises, and quizzes*")
     st.markdown("---")
     
-    # Organize topics by semester and course
+    # Organize topics by semester and course (with official course codes)
     course_to_semester = {
-        "Data Analysis Fundamentals": ("Semester 1", "FI1BBAF15"),
-        "Statistical Tools": ("Semester 1", "FI1BBST20"),
-        "Spreadsheet Fundamentals": ("Semester 1", "FI1BBSF15"),
+        "Data Analysis Fundamentals": ("Semester 1", "FI1BBDF05"),
+        "Spreadsheet Fundamentals": ("Semester 1", "FI1BBSF05"),
+        "Statistical Tools": ("Semester 1", "FI1BBST05"),
         "Programming Fundamentals": ("Semester 1", "FI1BBPF20"),
         "Databases and Cloud Services": ("Semester 2", "FI1BBDC20"),
         "Data Visualisation": ("Semester 2", "FI1BBDV15"),
@@ -7106,7 +7106,7 @@ elif page == "Training Center":
         )
     
     with col2:
-        # Course filter based on semester
+        # Course filter based on semester (with course codes)
         if selected_semester == "All Semesters":
             all_courses = []
             for sem in available_semesters:
@@ -7117,10 +7117,27 @@ elif page == "Training Center":
         else:
             available_courses = list(organized_topics[selected_semester].keys())
         
-        selected_course = st.selectbox(
+        # Create display names with course codes
+        course_display_map = {}
+        for course in available_courses:
+            if course in course_to_semester:
+                code = course_to_semester[course][1]
+                display = f"{code} - {course}"
+            else:
+                display = course
+            course_display_map[display] = course
+        
+        course_options = ["All Courses"] + list(course_display_map.keys())
+        selected_course_display = st.selectbox(
             "📚 Course:",
-            options=["All Courses"] + available_courses
+            options=course_options
         )
+        
+        # Map back to actual course name
+        if selected_course_display == "All Courses":
+            selected_course = "All Courses"
+        else:
+            selected_course = course_display_map[selected_course_display]
     
     # Get filtered topics
     filtered_topics = []
@@ -7171,8 +7188,13 @@ elif page == "Training Center":
     
     module = training_modules[selected_topic]
     
-    # Show context
-    st.markdown(f"**📅 {topic_semester}** | **📚 {topic_course}**")
+    # Get course code for display
+    topic_code = ""
+    if topic_course and topic_course in course_to_semester:
+        topic_code = course_to_semester[topic_course][1]
+    
+    # Show context with course code
+    st.markdown(f"**📅 {topic_semester}** | **📚 {topic_code} - {topic_course}**")
     st.markdown(f"*{module['description']}*")
     
     # Initialize progress for this topic
