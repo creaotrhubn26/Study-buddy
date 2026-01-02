@@ -3,6 +3,8 @@ import pandas as pd
 from openai import OpenAI
 import os
 import json
+import time
+from datetime import datetime, timedelta
 
 st.set_page_config(
     page_title="Data Analyst Study App",
@@ -8284,6 +8286,34 @@ if 'quiz_answers' not in st.session_state:
 if 'show_exercise_answer' not in st.session_state:
     st.session_state.show_exercise_answer = {}
 
+# Initialize new features session state
+if 'study_notes' not in st.session_state:
+    st.session_state.study_notes = {}
+if 'flashcards' not in st.session_state:
+    st.session_state.flashcards = {}
+if 'flashcard_stats' not in st.session_state:
+    st.session_state.flashcard_stats = {"total_cards": 0, "cards_reviewed": 0, "cards_mastered": 0}
+if 'exam_mode' not in st.session_state:
+    st.session_state.exam_mode = False
+if 'exam_questions' not in st.session_state:
+    st.session_state.exam_questions = []
+if 'exam_answers' not in st.session_state:
+    st.session_state.exam_answers = {}
+if 'exam_start_time' not in st.session_state:
+    st.session_state.exam_start_time = None
+if 'code_snippets' not in st.session_state:
+    st.session_state.code_snippets = {}
+if 'study_timer_active' not in st.session_state:
+    st.session_state.study_timer_active = False
+if 'study_timer_start' not in st.session_state:
+    st.session_state.study_timer_start = None
+if 'study_timer_duration' not in st.session_state:
+    st.session_state.study_timer_duration = 0
+if 'study_sessions' not in st.session_state:
+    st.session_state.study_sessions = []
+if 'study_time_by_course' not in st.session_state:
+    st.session_state.study_time_by_course = {}
+
 def generate_practice_question(course, question_type="general"):
     course_info = f"Course: {course['name']}\nDescription: {course['description']}\nKnowledge topics: {', '.join(course['knowledge'][:3])}\nSkills: {', '.join(course['skills'][:3])}"
     
@@ -8324,7 +8354,9 @@ def evaluate_answer(question, correct_answer, user_answer):
 st.sidebar.title("📊 Navigation")
 page = st.sidebar.radio(
     "Select page:",
-    ["Overview", "Course Plan", "Training Center", "Playground", "Learn & Practice", "Progress", "Learning Outcomes", "About"]
+    ["Overview", "Course Plan", "Training Center", "Playground", "Learn & Practice", 
+     "Study Notes", "Flashcards", "Exam Simulator", "Code Library", "Formula Reference", 
+     "Study Timer", "Progress", "Learning Outcomes", "About"]
 )
 
 if page == "Overview":
@@ -8821,6 +8853,1212 @@ elif page == "Learn & Practice":
             if st.session_state.show_answer:
                 st.markdown("### Correct Answer:")
                 st.info(answer_text)
+
+elif page == "Study Notes":
+    st.title("📝 Study Notes")
+    st.markdown("*Organize and manage your study notes by course*")
+    st.markdown("---")
+    
+    # Course selection
+    course_options = {f"{c['code']} - {c['name']}": c['code'] for c in courses_data}
+    selected_course_label = st.selectbox(
+        "Select Course:",
+        options=["Create New Note..."] + list(course_options.keys())
+    )
+    
+    if selected_course_label != "Create New Note...":
+        selected_course_code = course_options[selected_course_label]
+        
+        # Initialize course notes if not exists
+        if selected_course_code not in st.session_state.study_notes:
+            st.session_state.study_notes[selected_course_code] = []
+        
+        course_notes = st.session_state.study_notes[selected_course_code]
+        
+        col1, col2 = st.columns([2, 1])
+        
+        with col1:
+            st.subheader("📄 Your Notes")
+            
+            # Search functionality
+            search_query = st.text_input("🔍 Search notes:", placeholder="Search by title or content...")
+            
+            # Filter notes based on search
+            filtered_notes = course_notes
+            if search_query:
+                filtered_notes = [
+                    note for note in course_notes
+                    if search_query.lower() in note.get('title', '').lower() or 
+                       search_query.lower() in note.get('content', '').lower() or
+                       any(search_query.lower() in tag.lower() for tag in note.get('tags', []))
+                ]
+            
+            if filtered_notes:
+                for idx, note in enumerate(filtered_notes):
+                    with st.expander(f"📌 {note.get('title', 'Untitled')} - {note.get('date', 'No date')}"):
+                        st.markdown(note.get('content', ''))
+                        if note.get('tags'):
+                            st.caption(f"Tags: {', '.join(note.get('tags', []))}")
+                        
+                        col_a, col_b = st.columns(2)
+                        with col_a:
+                            if st.button(f"✏️ Edit", key=f"edit_{selected_course_code}_{idx}"):
+                                st.session_state[f"editing_note_{selected_course_code}"] = idx
+                        with col_b:
+                            if st.button(f"🗑️ Delete", key=f"delete_{selected_course_code}_{idx}"):
+                                st.session_state.study_notes[selected_course_code].pop(idx)
+                                st.rerun()
+            else:
+                st.info("No notes yet. Create your first note below!")
+        
+        with col2:
+            st.subheader("➕ Create New Note")
+            
+            # Check if editing existing note
+            editing_idx = st.session_state.get(f"editing_note_{selected_course_code}", None)
+            is_editing = editing_idx is not None
+            
+            if is_editing:
+                existing_note = course_notes[editing_idx]
+                default_title = existing_note.get('title', '')
+                default_content = existing_note.get('content', '')
+                default_tags = ', '.join(existing_note.get('tags', []))
+            else:
+                default_title = ""
+                default_content = ""
+                default_tags = ""
+            
+            note_title = st.text_input("Title:", value=default_title, key=f"note_title_{selected_course_code}")
+            note_content = st.text_area(
+                "Content (Markdown supported):",
+                value=default_content,
+                height=300,
+                key=f"note_content_{selected_course_code}"
+            )
+            note_tags = st.text_input("Tags (comma-separated):", value=default_tags, key=f"note_tags_{selected_course_code}")
+            
+            if st.button("💾 Save Note", type="primary", key=f"save_note_{selected_course_code}"):
+                if note_title and note_content:
+                    tags_list = [tag.strip() for tag in note_tags.split(',') if tag.strip()] if note_tags else []
+                    note_data = {
+                        'title': note_title,
+                        'content': note_content,
+                        'date': datetime.now().strftime("%Y-%m-%d %H:%M"),
+                        'tags': tags_list
+                    }
+                    
+                    if is_editing:
+                        st.session_state.study_notes[selected_course_code][editing_idx] = note_data
+                        del st.session_state[f"editing_note_{selected_course_code}"]
+                    else:
+                        st.session_state.study_notes[selected_course_code].append(note_data)
+                    
+                    st.success("Note saved!")
+                    st.rerun()
+                else:
+                    st.warning("Please fill in title and content.")
+            
+            if is_editing and st.button("❌ Cancel Edit", key=f"cancel_edit_{selected_course_code}"):
+                del st.session_state[f"editing_note_{selected_course_code}"]
+                st.rerun()
+        
+        # Export/Import functionality
+        st.markdown("---")
+        col_exp1, col_exp2 = st.columns(2)
+        
+        with col_exp1:
+            st.subheader("📥 Export Notes")
+            if st.button("Download Notes as JSON"):
+                export_data = {selected_course_code: course_notes}
+                export_json = json.dumps(export_data, indent=2)
+                st.download_button(
+                    "⬇️ Download",
+                    data=export_json,
+                    file_name=f"study_notes_{selected_course_code}_{datetime.now().strftime('%Y%m%d')}.json",
+                    mime="application/json"
+                )
+        
+        with col_exp2:
+            st.subheader("📤 Import Notes")
+            uploaded_file = st.file_uploader("Upload JSON file", type=['json'])
+            if uploaded_file:
+                try:
+                    imported_data = json.load(uploaded_file)
+                    if selected_course_code in imported_data:
+                        st.session_state.study_notes[selected_course_code] = imported_data[selected_course_code]
+                        st.success("Notes imported successfully!")
+                        st.rerun()
+                    else:
+                        st.warning("No notes found for this course in the file.")
+                except Exception as e:
+                    st.error(f"Error importing notes: {str(e)}")
+
+elif page == "Flashcards":
+    st.title("🎴 Flashcards")
+    st.markdown("*Learn with spaced repetition*")
+    st.markdown("---")
+    
+    # Initialize flashcard counter if not exists
+    if 'flashcard_counter' not in st.session_state:
+        st.session_state.flashcard_counter = 0
+    
+    tab1, tab2, tab3 = st.tabs(["📚 Study", "➕ Create Cards", "📊 Statistics"])
+    
+    with tab1:
+        st.subheader("Study Mode")
+        
+        # Get cards that need review
+        now = datetime.now()
+        cards_to_review = []
+        for card_id, card in st.session_state.flashcards.items():
+            next_review = card.get('next_review')
+            if next_review:
+                try:
+                    next_review_dt = datetime.fromisoformat(next_review)
+                    if next_review_dt <= now:
+                        cards_to_review.append((card_id, card))
+                except:
+                    cards_to_review.append((card_id, card))
+            else:
+                cards_to_review.append((card_id, card))
+        
+        if not cards_to_review:
+            st.info("🎉 No cards need review right now! Create some cards or check back later.")
+        else:
+            # Filter by course
+            course_filter = st.selectbox(
+                "Filter by course:",
+                ["All Courses"] + [c['code'] for c in courses_data]
+            )
+            
+            if course_filter != "All Courses":
+                cards_to_review = [(cid, c) for cid, c in cards_to_review if c.get('course') == course_filter]
+            
+            if cards_to_review:
+                # Get current card
+                if 'current_card_idx' not in st.session_state:
+                    st.session_state.current_card_idx = 0
+                
+                current_idx = st.session_state.current_card_idx % len(cards_to_review)
+                card_id, current_card = cards_to_review[current_idx]
+                
+                st.markdown(f"**Card {current_idx + 1} of {len(cards_to_review)}**")
+                st.progress((current_idx + 1) / len(cards_to_review))
+                
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.markdown("### Front")
+                    st.info(current_card.get('front', 'No front text'))
+                
+                show_answer = st.session_state.get(f"show_answer_{card_id}", False)
+                
+                if show_answer:
+                    with col2:
+                        st.markdown("### Back")
+                        st.success(current_card.get('back', 'No back text'))
+                    
+                    st.markdown("---")
+                    st.markdown("### How well did you know this?")
+                    
+                    col_a, col_b, col_c, col_d = st.columns(4)
+                    
+                    def update_card_difficulty(difficulty):
+                        # SM-2 algorithm parameters
+                        card = st.session_state.flashcards[card_id]
+                        ease_factor = card.get('ease_factor', 2.5)
+                        interval = card.get('interval', 1)
+                        repetitions = card.get('repetitions', 0)
+                        
+                        if difficulty == "Again":
+                            interval = 1
+                            repetitions = 0
+                            ease_factor = max(1.3, ease_factor - 0.2)
+                        elif difficulty == "Hard":
+                            interval = max(1, interval * 1.2)
+                            ease_factor = max(1.3, ease_factor - 0.15)
+                        elif difficulty == "Good":
+                            if repetitions == 0:
+                                interval = 1
+                            elif repetitions == 1:
+                                interval = 6
+                            else:
+                                interval = int(interval * ease_factor)
+                            repetitions += 1
+                            ease_factor = ease_factor
+                        elif difficulty == "Easy":
+                            interval = int(interval * ease_factor * 1.3)
+                            repetitions += 1
+                            ease_factor = ease_factor + 0.15
+                        
+                        # Update card
+                        next_review = datetime.now() + timedelta(days=interval)
+                        st.session_state.flashcards[card_id].update({
+                            'interval': interval,
+                            'repetitions': repetitions,
+                            'ease_factor': ease_factor,
+                            'next_review': next_review.isoformat(),
+                            'last_reviewed': datetime.now().isoformat()
+                        })
+                        
+                        # Update stats
+                        st.session_state.flashcard_stats['cards_reviewed'] = st.session_state.flashcard_stats.get('cards_reviewed', 0) + 1
+                        if difficulty in ["Good", "Easy"]:
+                            st.session_state.flashcard_stats['cards_mastered'] = st.session_state.flashcard_stats.get('cards_mastered', 0) + 1
+                        
+                        # Move to next card
+                        st.session_state.current_card_idx += 1
+                        del st.session_state[f"show_answer_{card_id}"]
+                        st.rerun()
+                    
+                    with col_a:
+                        st.button("❌ Again", on_click=lambda: update_card_difficulty("Again"), use_container_width=True)
+                    with col_b:
+                        st.button("😓 Hard", on_click=lambda: update_card_difficulty("Hard"), use_container_width=True)
+                    with col_c:
+                        st.button("✅ Good", on_click=lambda: update_card_difficulty("Good"), use_container_width=True, type="primary")
+                    with col_d:
+                        st.button("😊 Easy", on_click=lambda: update_card_difficulty("Easy"), use_container_width=True)
+                else:
+                    if st.button("👁️ Show Answer", type="primary", use_container_width=True):
+                        st.session_state[f"show_answer_{card_id}"] = True
+                        st.rerun()
+            else:
+                st.info("No cards to review for this course.")
+    
+    with tab2:
+        st.subheader("Create New Flashcard")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            card_course = st.selectbox(
+                "Course:",
+                [c['code'] for c in courses_data]
+            )
+            card_front = st.text_area("Front:", height=150, placeholder="Question or term...")
+        
+        with col2:
+            card_back = st.text_area("Back:", height=150, placeholder="Answer or definition...")
+            card_tags = st.text_input("Tags (optional):", placeholder="comma-separated")
+        
+        if st.button("➕ Create Card", type="primary"):
+            if card_front and card_back:
+                card_id = f"card_{st.session_state.flashcard_counter}"
+                st.session_state.flashcard_counter += 1
+                
+                st.session_state.flashcards[card_id] = {
+                    'front': card_front,
+                    'back': card_back,
+                    'course': card_course,
+                    'tags': [t.strip() for t in card_tags.split(',') if t.strip()] if card_tags else [],
+                    'interval': 1,
+                    'repetitions': 0,
+                    'ease_factor': 2.5,
+                    'next_review': datetime.now().isoformat(),
+                    'created': datetime.now().isoformat()
+                }
+                
+                st.session_state.flashcard_stats['total_cards'] = len(st.session_state.flashcards)
+                st.success("Card created!")
+                st.rerun()
+            else:
+                st.warning("Please fill in both front and back.")
+        
+        # Show existing cards
+        st.markdown("---")
+        st.subheader("Your Cards")
+        
+        if st.session_state.flashcards:
+            course_filter_create = st.selectbox(
+                "Filter by course:",
+                ["All Courses"] + [c['code'] for c in courses_data],
+                key="filter_create"
+            )
+            
+            filtered_cards = st.session_state.flashcards
+            if course_filter_create != "All Courses":
+                filtered_cards = {k: v for k, v in filtered_cards.items() if v.get('course') == course_filter_create}
+            
+            for card_id, card in filtered_cards.items():
+                with st.expander(f"📴 {card.get('front', 'No front')[:50]}..."):
+                    col_a, col_b = st.columns(2)
+                    with col_a:
+                        st.markdown(f"**Front:** {card.get('front')}")
+                    with col_b:
+                        st.markdown(f"**Back:** {card.get('back')}")
+                    st.caption(f"Course: {card.get('course')} | Next review: {card.get('next_review', 'Not set')}")
+                    if st.button(f"🗑️ Delete", key=f"delete_card_{card_id}"):
+                        del st.session_state.flashcards[card_id]
+                        st.session_state.flashcard_stats['total_cards'] = len(st.session_state.flashcards)
+                        st.rerun()
+        else:
+            st.info("No cards created yet.")
+    
+    with tab3:
+        st.subheader("Statistics")
+        
+        stats = st.session_state.flashcard_stats
+        total = stats.get('total_cards', 0)
+        reviewed = stats.get('cards_reviewed', 0)
+        mastered = stats.get('cards_mastered', 0)
+        
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("Total Cards", total)
+        with col2:
+            st.metric("Cards Reviewed", reviewed)
+        with col3:
+            st.metric("Cards Mastered", mastered)
+        
+        if total > 0:
+            st.markdown("---")
+            st.markdown(f"**Mastery Rate:** {mastered / reviewed * 100:.1f}%" if reviewed > 0 else "**Mastery Rate:** N/A")
+            
+            # Cards by course
+            course_counts = {}
+            for card in st.session_state.flashcards.values():
+                course = card.get('course', 'Unknown')
+                course_counts[course] = course_counts.get(course, 0) + 1
+            
+            if course_counts:
+                st.markdown("---")
+                st.markdown("### Cards by Course")
+                for course, count in course_counts.items():
+                    st.markdown(f"- **{course}:** {count} cards")
+
+elif page == "Exam Simulator":
+    st.title("📋 Exam Simulator")
+    st.markdown("*Practice for your exams with timed simulations*")
+    st.markdown("---")
+    
+    if not st.session_state.exam_mode:
+        st.subheader("Configure Your Exam")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            exam_course = st.selectbox(
+                "Select Course:",
+                [c['code'] for c in courses_data]
+            )
+            num_questions = st.number_input("Number of Questions:", min_value=5, max_value=50, value=10, step=5)
+        
+        with col2:
+            exam_duration = st.number_input("Duration (minutes):", min_value=10, max_value=180, value=60, step=10)
+            question_types = st.multiselect(
+                "Question Types:",
+                ["General", "Knowledge-based", "Skills-based", "Case Study"],
+                default=["General", "Knowledge-based"]
+            )
+        
+        if st.button("🚀 Start Exam", type="primary"):
+            # Generate exam questions
+            selected_course = next(c for c in courses_data if c['code'] == exam_course)
+            exam_questions_list = []
+            
+            type_map = {
+                "General": "general",
+                "Knowledge-based": "knowledge",
+                "Skills-based": "skills",
+                "Case Study": "case_study"
+            }
+            
+            with st.spinner("Generating exam questions..."):
+                for i in range(num_questions):
+                    q_type = type_map.get(question_types[i % len(question_types)], "general")
+                    question = generate_practice_question(selected_course, q_type)
+                    if question and "Error" not in question:
+                        exam_questions_list.append({
+                            'id': i,
+                            'question': question,
+                            'type': q_type,
+                            'user_answer': ''
+                        })
+            
+            if exam_questions_list:
+                st.session_state.exam_questions = exam_questions_list
+                st.session_state.exam_answers = {}
+                st.session_state.exam_start_time = time.time()
+                st.session_state.exam_duration = exam_duration * 60  # Convert to seconds
+                st.session_state.exam_mode = True
+                st.session_state.exam_course = exam_course
+                st.rerun()
+            else:
+                st.error("Failed to generate exam questions. Please try again.")
+    
+    else:
+        # Exam in progress
+        elapsed_time = time.time() - st.session_state.exam_start_time
+        remaining_time = max(0, st.session_state.exam_duration - elapsed_time)
+        remaining_minutes = int(remaining_time // 60)
+        remaining_seconds = int(remaining_time % 60)
+        
+        # Timer display
+        if remaining_time > 0:
+            st.warning(f"⏱️ Time Remaining: {remaining_minutes:02d}:{remaining_seconds:02d}")
+            progress = elapsed_time / st.session_state.exam_duration
+            st.progress(progress)
+        else:
+            st.error("⏰ Time's up! Your exam will be submitted automatically.")
+            if 'exam_submitted' not in st.session_state:
+                st.session_state.exam_submitted = True
+                st.rerun()
+        
+        st.markdown(f"**Course:** {st.session_state.exam_course}")
+        st.markdown(f"**Questions:** {len(st.session_state.exam_questions)}")
+        
+        # Display questions
+        st.markdown("---")
+        
+        view_mode = st.radio("View Mode:", ["One at a time", "All questions"], horizontal=True)
+        
+        if view_mode == "One at a time":
+            if 'current_question_idx' not in st.session_state:
+                st.session_state.current_question_idx = 0
+            
+            current_idx = st.session_state.current_question_idx
+            current_q = st.session_state.exam_questions[current_idx]
+            
+            st.markdown(f"### Question {current_idx + 1} of {len(st.session_state.exam_questions)}")
+            
+            # Parse question
+            if "ANSWER:" in current_q['question']:
+                parts = current_q['question'].split("ANSWER:")
+                question_text = parts[0].strip()
+            else:
+                question_text = current_q['question']
+            
+            st.markdown(f"**{question_text}**")
+            
+            # Answer input
+            answer_key = f"exam_answer_{current_idx}"
+            if answer_key not in st.session_state.exam_answers:
+                st.session_state.exam_answers[answer_key] = ""
+            
+            user_answer = st.text_area(
+                "Your Answer:",
+                value=st.session_state.exam_answers[answer_key],
+                height=150,
+                key=f"answer_input_{current_idx}"
+            )
+            st.session_state.exam_answers[answer_key] = user_answer
+            
+            # Navigation
+            col_nav1, col_nav2, col_nav3 = st.columns(3)
+            with col_nav1:
+                if st.button("⬅️ Previous", disabled=current_idx == 0):
+                    st.session_state.current_question_idx = max(0, current_idx - 1)
+                    st.rerun()
+            with col_nav2:
+                st.markdown(f"**{current_idx + 1}/{len(st.session_state.exam_questions)}**")
+            with col_nav3:
+                if st.button("➡️ Next", disabled=current_idx == len(st.session_state.exam_questions) - 1):
+                    st.session_state.current_question_idx = min(len(st.session_state.exam_questions) - 1, current_idx + 1)
+                    st.rerun()
+        
+        else:
+            # All questions view
+            for idx, q in enumerate(st.session_state.exam_questions):
+                with st.expander(f"Question {idx + 1}"):
+                    if "ANSWER:" in q['question']:
+                        parts = q['question'].split("ANSWER:")
+                        question_text = parts[0].strip()
+                    else:
+                        question_text = q['question']
+                    
+                    st.markdown(f"**{question_text}**")
+                    
+                    answer_key = f"exam_answer_{idx}"
+                    if answer_key not in st.session_state.exam_answers:
+                        st.session_state.exam_answers[answer_key] = ""
+                    
+                    user_answer = st.text_area(
+                        "Your Answer:",
+                        value=st.session_state.exam_answers[answer_key],
+                        height=100,
+                        key=f"answer_all_{idx}"
+                    )
+                    st.session_state.exam_answers[answer_key] = user_answer
+        
+        st.markdown("---")
+        
+        # Submit exam
+        col_sub1, col_sub2 = st.columns([1, 1])
+        with col_sub1:
+            if st.button("📤 Submit Exam", type="primary"):
+                st.session_state.exam_submitted = True
+                st.rerun()
+        with col_sub2:
+            if st.button("❌ Cancel Exam"):
+                if st.checkbox("Are you sure? This will discard your progress."):
+                    st.session_state.exam_mode = False
+                    st.session_state.exam_questions = []
+                    st.session_state.exam_answers = {}
+                    st.session_state.exam_start_time = None
+                    st.rerun()
+        
+        # Auto-submit if time is up
+        if remaining_time <= 0 and 'exam_submitted' not in st.session_state:
+            st.session_state.exam_submitted = True
+            st.rerun()
+    
+    # Show results if exam submitted
+    if st.session_state.get('exam_submitted', False) and st.session_state.exam_mode:
+        st.markdown("---")
+        st.title("📊 Exam Results")
+        
+        # Evaluate answers
+        results = []
+        total_score = 0
+        
+        for idx, q in enumerate(st.session_state.exam_questions):
+            answer_key = f"exam_answer_{idx}"
+            user_answer = st.session_state.exam_answers.get(answer_key, "")
+            
+            # Parse question for correct answer
+            if "ANSWER:" in q['question']:
+                parts = q['question'].split("ANSWER:")
+                question_text = parts[0].strip()
+                correct_answer = parts[1].strip() if len(parts) > 1 else ""
+            else:
+                question_text = q['question']
+                correct_answer = "Answer not available"
+            
+            # Evaluate using AI
+            if user_answer.strip():
+                feedback = evaluate_answer(question_text, correct_answer, user_answer)
+                # Simple scoring: if feedback is positive, give points
+                score = 1 if "correct" in feedback.lower() or "good" in feedback.lower() else 0.5
+            else:
+                feedback = "No answer provided"
+                score = 0
+            
+            total_score += score
+            results.append({
+                'question': question_text,
+                'user_answer': user_answer,
+                'correct_answer': correct_answer,
+                'feedback': feedback,
+                'score': score
+            })
+        
+        # Display results
+        percentage = (total_score / len(st.session_state.exam_questions)) * 100
+        
+        st.metric("Your Score", f"{total_score:.1f}/{len(st.session_state.exam_questions)} ({percentage:.1f}%)")
+        
+        if percentage >= 80:
+            st.success("🎉 Excellent work!")
+        elif percentage >= 60:
+            st.info("👍 Good job!")
+        else:
+            st.warning("📚 Keep studying!")
+        
+        st.markdown("---")
+        st.subheader("Detailed Feedback")
+        
+        for idx, result in enumerate(results):
+            with st.expander(f"Question {idx + 1} - Score: {result['score']}/1"):
+                st.markdown(f"**Question:** {result['question']}")
+                st.markdown(f"**Your Answer:** {result['user_answer'] if result['user_answer'] else 'No answer'}")
+                st.markdown(f"**Correct Answer:** {result['correct_answer']}")
+                st.markdown(f"**Feedback:** {result['feedback']}")
+        
+        if st.button("🔄 Take Another Exam"):
+            st.session_state.exam_mode = False
+            st.session_state.exam_submitted = False
+            st.session_state.exam_questions = []
+            st.session_state.exam_answers = {}
+            st.session_state.exam_start_time = None
+            st.rerun()
+
+elif page == "Code Library":
+    st.title("💻 Code Library")
+    st.markdown("*Useful code snippets and examples*")
+    st.markdown("---")
+    
+    # Initialize default snippets if empty
+    if not st.session_state.code_snippets:
+        default_snippets = {
+            "pandas_basic": {
+                "title": "Pandas DataFrame Basics",
+                "code": """import pandas as pd
+
+# Create DataFrame
+df = pd.DataFrame({
+    'name': ['Alice', 'Bob', 'Charlie'],
+    'age': [25, 30, 35],
+    'salary': [50000, 60000, 70000]
+})
+
+# Basic operations
+print(df.head())
+print(df.describe())
+print(df.info())""",
+                "language": "python",
+                "category": "Pandas",
+                "description": "Basic DataFrame creation and operations"
+            },
+            "pandas_filter": {
+                "title": "Filtering DataFrames",
+                "code": """# Filter rows
+filtered = df[df['age'] > 25]
+
+# Multiple conditions
+filtered = df[(df['age'] > 25) & (df['salary'] > 55000)]
+
+# Filter by string contains
+filtered = df[df['name'].str.contains('A')]
+
+# Filter by isin
+filtered = df[df['name'].isin(['Alice', 'Bob'])]""",
+                "language": "python",
+                "category": "Pandas",
+                "description": "Common filtering operations"
+            },
+            "pandas_groupby": {
+                "title": "GroupBy Operations",
+                "code": """# Group by column
+grouped = df.groupby('department')
+
+# Aggregations
+summary = df.groupby('department').agg({
+    'salary': ['mean', 'sum', 'count'],
+    'age': 'mean'
+})
+
+# Multiple groupby columns
+grouped = df.groupby(['department', 'role']).sum()""",
+                "language": "python",
+                "category": "Pandas",
+                "description": "GroupBy and aggregation examples"
+            },
+            "sql_select": {
+                "title": "SQL SELECT Basics",
+                "code": """-- Basic SELECT
+SELECT * FROM customers;
+
+-- SELECT with WHERE
+SELECT name, email 
+FROM customers 
+WHERE age > 25;
+
+-- SELECT with JOIN
+SELECT c.name, o.order_date, o.amount
+FROM customers c
+JOIN orders o ON c.id = o.customer_id;""",
+                "language": "sql",
+                "category": "SQL",
+                "description": "Basic SQL SELECT queries"
+            },
+            "sql_aggregate": {
+                "title": "SQL Aggregations",
+                "code": """-- COUNT, SUM, AVG
+SELECT 
+    COUNT(*) as total_orders,
+    SUM(amount) as total_revenue,
+    AVG(amount) as avg_order_value
+FROM orders;
+
+-- GROUP BY
+SELECT 
+    customer_id,
+    COUNT(*) as order_count,
+    SUM(amount) as total_spent
+FROM orders
+GROUP BY customer_id
+HAVING COUNT(*) > 5;""",
+                "language": "sql",
+                "category": "SQL",
+                "description": "SQL aggregation functions"
+            },
+            "excel_sumif": {
+                "title": "Excel SUMIF Function",
+                "code": """=SUMIF(range, criteria, sum_range)
+
+-- Examples:
+=SUMIF(A2:A10, ">100", B2:B10)
+=SUMIF(C2:C10, "North", D2:D10)
+=SUMIF(E2:E10, ">=2024-01-01", F2:F10)""",
+                "language": "excel",
+                "category": "Excel",
+                "description": "SUMIF function examples"
+            },
+            "excel_vlookup": {
+                "title": "Excel VLOOKUP",
+                "code": """=VLOOKUP(lookup_value, table_array, col_index_num, [range_lookup])
+
+-- Examples:
+=VLOOKUP(A2, Sheet2!A:B, 2, FALSE)
+=VLOOKUP("Product1", Products!A:D, 4, FALSE)""",
+                "language": "excel",
+                "category": "Excel",
+                "description": "VLOOKUP function examples"
+            },
+            "python_stats": {
+                "title": "Python Statistical Functions",
+                "code": """import numpy as np
+from scipy import stats
+
+# Descriptive statistics
+data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+mean = np.mean(data)
+median = np.median(data)
+std = np.std(data)
+
+# Correlation
+correlation = np.corrcoef(x, y)[0, 1]
+
+# T-test
+t_stat, p_value = stats.ttest_ind(group1, group2)""",
+                "language": "python",
+                "category": "Statistics",
+                "description": "Statistical calculations in Python"
+            }
+        }
+        st.session_state.code_snippets = default_snippets
+    
+    # Search and filter
+    col_search, col_filter = st.columns([2, 1])
+    with col_search:
+        search_query = st.text_input("🔍 Search snippets:", placeholder="Search by title, description, or code...")
+    with col_filter:
+        category_filter = st.selectbox(
+            "Category:",
+            ["All"] + list(set(s.get('category', 'Other') for s in st.session_state.code_snippets.values()))
+        )
+    
+    # Filter snippets
+    filtered_snippets = st.session_state.code_snippets
+    if search_query:
+        filtered_snippets = {
+            k: v for k, v in filtered_snippets.items()
+            if search_query.lower() in v.get('title', '').lower() or
+               search_query.lower() in v.get('description', '').lower() or
+               search_query.lower() in v.get('code', '').lower()
+        }
+    if category_filter != "All":
+        filtered_snippets = {
+            k: v for k, v in filtered_snippets.items()
+            if v.get('category') == category_filter
+        }
+    
+    # Display snippets
+    if filtered_snippets:
+        for snippet_id, snippet in filtered_snippets.items():
+            with st.expander(f"📄 {snippet.get('title', 'Untitled')} - {snippet.get('category', 'Other')}"):
+                st.markdown(f"**Description:** {snippet.get('description', 'No description')}")
+                st.code(snippet.get('code', ''), language=snippet.get('language', 'python'))
+                
+                # Copy button (using download button as workaround)
+                code_text = snippet.get('code', '')
+                st.download_button(
+                    "📋 Copy Code",
+                    data=code_text,
+                    file_name=f"{snippet.get('title', 'code')}.txt",
+                    mime="text/plain"
+                )
+                
+                if st.button(f"🗑️ Delete", key=f"delete_snippet_{snippet_id}"):
+                    del st.session_state.code_snippets[snippet_id]
+                    st.rerun()
+    else:
+        st.info("No snippets found. Create one below!")
+    
+    st.markdown("---")
+    st.subheader("➕ Add Custom Snippet")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        new_title = st.text_input("Title:")
+        new_category = st.selectbox(
+            "Category:",
+            ["Pandas", "SQL", "Excel", "Statistics", "Python", "Other"]
+        )
+        new_language = st.selectbox(
+            "Language:",
+            ["python", "sql", "excel", "javascript", "other"]
+        )
+    
+    with col2:
+        new_description = st.text_area("Description:", height=80)
+    
+    new_code = st.text_area("Code:", height=200, placeholder="Paste your code here...")
+    
+    if st.button("➕ Add Snippet", type="primary"):
+        if new_title and new_code:
+            snippet_id = f"custom_{int(time.time())}"
+            st.session_state.code_snippets[snippet_id] = {
+                'title': new_title,
+                'code': new_code,
+                'language': new_language,
+                'category': new_category,
+                'description': new_description
+            }
+            st.success("Snippet added!")
+            st.rerun()
+        else:
+            st.warning("Please fill in title and code.")
+
+elif page == "Formula Reference":
+    st.title("🔢 Formula Reference")
+    st.markdown("*Quick reference for statistical formulas*")
+    st.markdown("---")
+    
+    # Category selection
+    category = st.selectbox(
+        "Select Category:",
+        ["Descriptive Statistics", "Inferential Statistics", "Regression", "Correlation", "Probability", "All"]
+    )
+    
+    # Search
+    search_query = st.text_input("🔍 Search formulas:", placeholder="Search by name or description...")
+    
+    # Formula database
+    formulas = {
+        "Descriptive Statistics": [
+            {
+                "name": "Mean (Average)",
+                "formula": r"\bar{x} = \frac{1}{n}\sum_{i=1}^{n} x_i",
+                "description": "The average of all values in a dataset",
+                "example": "For [1, 2, 3, 4, 5]: mean = (1+2+3+4+5)/5 = 3"
+            },
+            {
+                "name": "Median",
+                "formula": r"\text{Median} = \begin{cases} x_{\frac{n+1}{2}} & \text{if } n \text{ is odd} \\ \frac{x_{\frac{n}{2}} + x_{\frac{n}{2}+1}}{2} & \text{if } n \text{ is even} \end{cases}",
+                "description": "The middle value when data is sorted",
+                "example": "For [1, 2, 3, 4, 5]: median = 3\nFor [1, 2, 3, 4]: median = (2+3)/2 = 2.5"
+            },
+            {
+                "name": "Standard Deviation",
+                "formula": r"s = \sqrt{\frac{1}{n-1}\sum_{i=1}^{n}(x_i - \bar{x})^2}",
+                "description": "Measures the spread of data around the mean",
+                "example": "For [1, 2, 3, 4, 5] with mean=3:\ns = √[((1-3)²+(2-3)²+(3-3)²+(4-3)²+(5-3)²)/4] = √2.5 ≈ 1.58"
+            },
+            {
+                "name": "Variance",
+                "formula": r"s^2 = \frac{1}{n-1}\sum_{i=1}^{n}(x_i - \bar{x})^2",
+                "description": "The square of standard deviation",
+                "example": "Variance = (Standard Deviation)²"
+            },
+            {
+                "name": "Range",
+                "formula": r"\text{Range} = \max(x_i) - \min(x_i)",
+                "description": "Difference between maximum and minimum values",
+                "example": "For [1, 2, 3, 4, 5]: range = 5 - 1 = 4"
+            }
+        ],
+        "Inferential Statistics": [
+            {
+                "name": "Z-Score",
+                "formula": r"z = \frac{x - \mu}{\sigma}",
+                "description": "Number of standard deviations a value is from the mean",
+                "example": "If x=110, μ=100, σ=10: z = (110-100)/10 = 1.0"
+            },
+            {
+                "name": "T-Test (One Sample)",
+                "formula": r"t = \frac{\bar{x} - \mu_0}{s/\sqrt{n}}",
+                "description": "Tests if sample mean differs from population mean",
+                "example": "Compare sample mean to hypothesized population mean"
+            },
+            {
+                "name": "Confidence Interval (Mean)",
+                "formula": r"\bar{x} \pm z_{\alpha/2} \frac{\sigma}{\sqrt{n}}",
+                "description": "Range likely to contain population mean",
+                "example": "95% CI: x̄ ± 1.96 × (σ/√n)"
+            },
+            {
+                "name": "Sample Size",
+                "formula": r"n = \left(\frac{z_{\alpha/2} \cdot \sigma}{E}\right)^2",
+                "description": "Required sample size for desired margin of error",
+                "example": "For E=2, σ=10, 95% confidence: n = (1.96×10/2)² ≈ 96"
+            }
+        ],
+        "Regression": [
+            {
+                "name": "Simple Linear Regression",
+                "formula": r"y = \beta_0 + \beta_1 x + \epsilon",
+                "description": "Predicts y from x using a linear relationship",
+                "example": "y = 2 + 3x means for each unit increase in x, y increases by 3"
+            },
+            {
+                "name": "Slope (β₁)",
+                "formula": r"\beta_1 = \frac{\sum(x_i - \bar{x})(y_i - \bar{y})}{\sum(x_i - \bar{x})^2}",
+                "description": "Rate of change in y per unit change in x",
+                "example": "Positive slope = positive correlation"
+            },
+            {
+                "name": "Intercept (β₀)",
+                "formula": r"\beta_0 = \bar{y} - \beta_1 \bar{x}",
+                "description": "Value of y when x = 0",
+                "example": "Starting point of the regression line"
+            },
+            {
+                "name": "R² (Coefficient of Determination)",
+                "formula": r"R^2 = 1 - \frac{SS_{res}}{SS_{tot}}",
+                "description": "Proportion of variance explained by the model",
+                "example": "R² = 0.85 means 85% of variance is explained"
+            }
+        ],
+        "Correlation": [
+            {
+                "name": "Pearson Correlation",
+                "formula": r"r = \frac{\sum(x_i - \bar{x})(y_i - \bar{y})}{\sqrt{\sum(x_i - \bar{x})^2 \sum(y_i - \bar{y})^2}}",
+                "description": "Measures linear relationship between two variables",
+                "example": "r ranges from -1 (perfect negative) to +1 (perfect positive)"
+            },
+            {
+                "name": "Covariance",
+                "formula": r"\text{Cov}(X,Y) = \frac{1}{n-1}\sum(x_i - \bar{x})(y_i - \bar{y})",
+                "description": "Measures how two variables vary together",
+                "example": "Positive = variables increase together"
+            }
+        ],
+        "Probability": [
+            {
+                "name": "Probability",
+                "formula": r"P(A) = \frac{\text{Number of favorable outcomes}}{\text{Total outcomes}}",
+                "description": "Likelihood of an event occurring",
+                "example": "P(rolling 6 on die) = 1/6 ≈ 0.167"
+            },
+            {
+                "name": "Conditional Probability",
+                "formula": r"P(A|B) = \frac{P(A \cap B)}{P(B)}",
+                "description": "Probability of A given B has occurred",
+                "example": "P(rain|cloudy) = probability of rain when it's cloudy"
+            },
+            {
+                "name": "Bayes' Theorem",
+                "formula": r"P(A|B) = \frac{P(B|A) \cdot P(A)}{P(B)}",
+                "description": "Updates probability based on new evidence",
+                "example": "Used in medical diagnosis and machine learning"
+            }
+        ]
+    }
+    
+    # Filter formulas
+    display_formulas = {}
+    if category == "All":
+        display_formulas = formulas
+    else:
+        if category in formulas:
+            display_formulas[category] = formulas[category]
+    
+    # Apply search filter
+    if search_query:
+        filtered_formulas = {}
+        for cat, form_list in display_formulas.items():
+            filtered = [
+                f for f in form_list
+                if search_query.lower() in f['name'].lower() or
+                   search_query.lower() in f['description'].lower()
+            ]
+            if filtered:
+                filtered_formulas[cat] = filtered
+        display_formulas = filtered_formulas
+    
+    # Display formulas
+    if display_formulas:
+        for cat, form_list in display_formulas.items():
+            st.markdown(f"### {cat}")
+            for formula in form_list:
+                with st.expander(f"**{formula['name']}**"):
+                    st.markdown(f"**Description:** {formula['description']}")
+                    st.latex(formula['formula'])
+                    st.markdown(f"**Example:** {formula['example']}")
+            st.markdown("---")
+    else:
+        st.info("No formulas found. Try a different search or category.")
+
+elif page == "Study Timer":
+    st.title("⏱️ Study Timer")
+    st.markdown("*Track your study time with Pomodoro technique*")
+    st.markdown("---")
+    
+    # Initialize timer state
+    if 'timer_paused' not in st.session_state:
+        st.session_state.timer_paused = False
+    if 'pomodoro_count' not in st.session_state:
+        st.session_state.pomodoro_count = 0
+    if 'current_timer_course' not in st.session_state:
+        st.session_state.current_timer_course = None
+    
+    col1, col2 = st.columns([2, 1])
+    
+    with col1:
+        # Timer display
+        if st.session_state.study_timer_active:
+            elapsed = time.time() - st.session_state.study_timer_start
+            remaining = max(0, st.session_state.study_timer_duration - elapsed)
+            
+            # Convert to minutes and seconds
+            minutes = int(remaining // 60)
+            seconds = int(remaining % 60)
+            
+            # Large timer display
+            st.markdown(f"<h1 style='text-align: center; font-size: 72px;'>{minutes:02d}:{seconds:02d}</h1>", unsafe_allow_html=True)
+            
+            # Progress bar
+            progress = 1 - (remaining / st.session_state.study_timer_duration) if st.session_state.study_timer_duration > 0 else 0
+            st.progress(progress)
+            
+            # Course being studied
+            if st.session_state.current_timer_course:
+                course_name = next((c['name'] for c in courses_data if c['code'] == st.session_state.current_timer_course), "Unknown")
+                st.markdown(f"**Studying:** {st.session_state.current_timer_course} - {course_name}")
+            
+            # Control buttons
+            col_btn1, col_btn2, col_btn3 = st.columns(3)
+            
+            with col_btn1:
+                if st.button("⏸️ Pause", use_container_width=True):
+                    if not st.session_state.timer_paused:
+                        st.session_state.timer_paused = True
+                        st.session_state.timer_pause_time = time.time()
+                        st.session_state.timer_elapsed_before_pause = elapsed
+                    else:
+                        st.session_state.timer_paused = False
+                        st.session_state.study_timer_start = time.time() - st.session_state.timer_elapsed_before_pause
+                    st.rerun()
+            
+            with col_btn2:
+                if st.button("⏹️ Stop", use_container_width=True, type="primary"):
+                    # Save session
+                    if st.session_state.current_timer_course:
+                        course_code = st.session_state.current_timer_course
+                        elapsed_total = elapsed if not st.session_state.timer_paused else st.session_state.timer_elapsed_before_pause
+                        
+                        session_data = {
+                            'course': course_code,
+                            'duration': int(elapsed_total),
+                            'date': datetime.now().isoformat(),
+                            'pomodoro': st.session_state.pomodoro_count > 0
+                        }
+                        st.session_state.study_sessions.append(session_data)
+                        
+                        # Update course time
+                        if course_code not in st.session_state.study_time_by_course:
+                            st.session_state.study_time_by_course[course_code] = 0
+                        st.session_state.study_time_by_course[course_code] += int(elapsed_total)
+                    
+                    # Reset timer
+                    st.session_state.study_timer_active = False
+                    st.session_state.study_timer_start = None
+                    st.session_state.timer_paused = False
+                    st.session_state.pomodoro_count = 0
+                    st.rerun()
+            
+            with col_btn3:
+                if st.button("🔄 Reset", use_container_width=True):
+                    st.session_state.study_timer_start = time.time()
+                    st.session_state.timer_paused = False
+                    st.rerun()
+            
+            # Auto-stop when timer reaches 0
+            if remaining <= 0:
+                st.balloons()
+                st.success("🎉 Time's up! Great work!")
+                
+                # Save session
+                if st.session_state.current_timer_course:
+                    course_code = st.session_state.current_timer_course
+                    session_data = {
+                        'course': course_code,
+                        'duration': st.session_state.study_timer_duration,
+                        'date': datetime.now().isoformat(),
+                        'pomodoro': True
+                    }
+                    st.session_state.study_sessions.append(session_data)
+                    
+                    if course_code not in st.session_state.study_time_by_course:
+                        st.session_state.study_time_by_course[course_code] = 0
+                    st.session_state.study_time_by_course[course_code] += st.session_state.study_timer_duration
+                
+                st.session_state.study_timer_active = False
+                st.session_state.pomodoro_count += 1
+                st.rerun()
+            
+            # Auto-refresh for timer updates (Streamlit will rerun on interaction)
+            # Use a placeholder to trigger updates
+            placeholder = st.empty()
+            placeholder.markdown("")  # Empty placeholder to allow reruns
+        
+        else:
+            # Timer setup
+            st.subheader("Configure Timer")
+            
+            timer_mode = st.radio(
+                "Timer Mode:",
+                ["Pomodoro (25 min)", "Short Break (5 min)", "Long Break (15 min)", "Custom"]
+            )
+            
+            if timer_mode == "Pomodoro (25 min)":
+                duration_minutes = 25
+            elif timer_mode == "Short Break (5 min)":
+                duration_minutes = 5
+            elif timer_mode == "Long Break (15 min)":
+                duration_minutes = 15
+            else:
+                duration_minutes = st.number_input("Custom Duration (minutes):", min_value=1, max_value=180, value=25)
+            
+            selected_course = st.selectbox(
+                "Select Course (optional):",
+                ["None"] + [f"{c['code']} - {c['name']}" for c in courses_data]
+            )
+            
+            if st.button("▶️ Start Timer", type="primary", use_container_width=True):
+                st.session_state.study_timer_active = True
+                st.session_state.study_timer_start = time.time()
+                st.session_state.study_timer_duration = duration_minutes * 60
+                st.session_state.timer_paused = False
+                
+                if selected_course != "None":
+                    course_code = selected_course.split(" - ")[0]
+                    st.session_state.current_timer_course = course_code
+                else:
+                    st.session_state.current_timer_course = None
+                
+                st.rerun()
+    
+    with col2:
+        st.subheader("📊 Statistics")
+        
+        # Total study time
+        total_seconds = sum(s.get('duration', 0) for s in st.session_state.study_sessions)
+        total_hours = total_seconds // 3600
+        total_minutes = (total_seconds % 3600) // 60
+        
+        st.metric("Total Study Time", f"{total_hours}h {total_minutes}m")
+        st.metric("Total Sessions", len(st.session_state.study_sessions))
+        st.metric("Pomodoros Completed", st.session_state.pomodoro_count)
+        
+        # Study time by course
+        if st.session_state.study_time_by_course:
+            st.markdown("---")
+            st.markdown("### Time by Course")
+            for course_code, seconds in sorted(st.session_state.study_time_by_course.items(), key=lambda x: x[1], reverse=True):
+                course_name = next((c['name'] for c in courses_data if c['code'] == course_code), course_code)
+                hours = seconds // 3600
+                minutes = (seconds % 3600) // 60
+                st.markdown(f"**{course_code}**\n- {hours}h {minutes}m")
+        
+        # Recent sessions
+        if st.session_state.study_sessions:
+            st.markdown("---")
+            st.markdown("### Recent Sessions")
+            recent = st.session_state.study_sessions[-5:]
+            for session in reversed(recent):
+                course_code = session.get('course', 'Unknown')
+                duration_min = session.get('duration', 0) // 60
+                date_str = session.get('date', '')[:10]
+                st.caption(f"{date_str}: {duration_min} min - {course_code}")
+        
+        # Clear data button
+        if st.button("🗑️ Clear All Data"):
+            if st.checkbox("Are you sure? This cannot be undone."):
+                st.session_state.study_sessions = []
+                st.session_state.study_time_by_course = {}
+                st.session_state.pomodoro_count = 0
+                st.success("Data cleared!")
+                st.rerun()
 
 elif page == "Progress":
     st.title("📈 My Progress")
