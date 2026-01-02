@@ -34,6 +34,16 @@ A comprehensive student study app for the Data Analyst 2 (PDAN) vocational progr
 - **Tableau & Power BI**: Dashboard design principles, chart selection, building visualizations
 - **Statistical Analysis**: Descriptive statistics, hypothesis testing, choosing the right test, confidence intervals
 
+## Interactive Playground
+Hands-on practice tools with editable data:
+- **Python Code Runner**: Guided pandas exercises with sample datasets
+- **Excel Formula Simulator**: SUM, AVERAGE, SUMIF, COUNTIF, VLOOKUP, INDEX/MATCH, XLOOKUP, IF statements
+- **SQL Query Tester**: In-memory SQLite database with customers/orders tables
+- **Chart Builder**: Create bar, line, area, and scatter charts from custom data
+- **Statistical Analysis**: Correlation, regression, ANOVA, histogram, covariance, descriptive statistics (using scipy)
+- **Power Query Simulator**: Data transformation steps (deduplication, fill missing, trim, case standardization, calculated columns)
+- **Z-Score & Outlier Tool**: Calculate z-scores, detect outliers, apply handling methods (remove, cap, replace)
+
 ## Data Source
 Course content is sourced from the official Noroff study catalog:
 https://studiekatalog.edutorium.no/voc/en/programme/PDAN/2025-autumn
