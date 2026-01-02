@@ -16,6 +16,14 @@ A comprehensive student study app for the Data Analyst 2 (PDAN) vocational progr
   - AI-powered practice questions (general, knowledge-based, skills-based, case studies)
   - Answer checking with feedback
 - **Progress**: Track completed courses with checkboxes
+- **Study Notes (Enhanced)**: 
+  - Categories (lecture, exercise, exam, tips, summary) with filtering
+  - Note templates (concept summary, case study, formula sheet, comparison chart)
+  - Importance markers (normal, important, critical for exam)
+  - Link notes to specific learning outcomes
+  - Version history tracking (last 10 edits)
+  - AI assistant for generating course summaries, key concepts, exam prep
+  - Statistics dashboard (notes by category, course, importance)
 - **Learning Outcomes**: Track program-level knowledge, skills, and competence goals (based on NQF)
 - **About**: Program information, career opportunities, and study details
 

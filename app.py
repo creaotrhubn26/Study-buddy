@@ -8856,142 +8856,584 @@ elif page == "Learn & Practice":
 
 elif page == "Study Notes":
     st.title("📝 Study Notes")
-    st.markdown("*Organize and manage your study notes by course*")
+    st.markdown("*Organize, categorize, and enhance your study notes with AI assistance*")
     st.markdown("---")
     
-    # Course selection
-    course_options = {f"{c['code']} - {c['name']}": c['code'] for c in courses_data}
-    selected_course_label = st.selectbox(
-        "Select Course:",
-        options=["Create New Note..."] + list(course_options.keys())
-    )
+    NOTE_CATEGORIES = {
+        "lecture": {"icon": "📚", "label": "Lecture Notes", "color": "#4A90D9"},
+        "exercise": {"icon": "✏️", "label": "Exercise Notes", "color": "#50C878"},
+        "exam": {"icon": "📋", "label": "Exam Prep", "color": "#FF6B6B"},
+        "tips": {"icon": "💡", "label": "Tips & Tricks", "color": "#FFD700"},
+        "summary": {"icon": "📄", "label": "Summary", "color": "#9B59B6"}
+    }
     
-    if selected_course_label != "Create New Note...":
+    NOTE_TEMPLATES = {
+        "blank": {"name": "Blank Note", "content": ""},
+        "concept": {"name": "Concept Summary", "content": """## Concept Name
+**Definition:**
+[Write the definition here]
+
+**Key Points:**
+- Point 1
+- Point 2
+- Point 3
+
+**Examples:**
+1. Example 1
+2. Example 2
+
+**Common Mistakes:**
+- Mistake to avoid
+
+**Related Concepts:**
+- Related concept 1
+- Related concept 2
+"""},
+        "case_study": {"name": "Case Study", "content": """## Case Study: [Title]
+
+### Background
+[Describe the business context]
+
+### Problem Statement
+[What problem needs to be solved?]
+
+### Data Available
+- Data source 1
+- Data source 2
+
+### Analysis Approach
+1. Step 1
+2. Step 2
+3. Step 3
+
+### Findings
+[Key insights from the analysis]
+
+### Recommendations
+1. Recommendation 1
+2. Recommendation 2
+
+### Lessons Learned
+- Lesson 1
+- Lesson 2
+"""},
+        "formula": {"name": "Formula Sheet", "content": """## Formula Reference: [Topic]
+
+### Basic Formulas
+| Formula | Description | When to Use |
+|---------|-------------|-------------|
+| Formula 1 | Description | Use case |
+| Formula 2 | Description | Use case |
+
+### Key Variables
+- **Variable 1**: Definition
+- **Variable 2**: Definition
+
+### Worked Example
+**Problem:** [Describe the problem]
+**Solution:**
+1. Step 1
+2. Step 2
+3. Result
+
+### Quick Reference
+- Remember: [Key tip]
+- Common error: [What to avoid]
+"""},
+        "comparison": {"name": "Comparison Chart", "content": """## Comparison: [Topic A] vs [Topic B]
+
+| Aspect | Topic A | Topic B |
+|--------|---------|---------|
+| Definition | | |
+| Use Case | | |
+| Advantages | | |
+| Disadvantages | | |
+| Example | | |
+
+### When to Choose Topic A
+- Situation 1
+- Situation 2
+
+### When to Choose Topic B
+- Situation 1
+- Situation 2
+
+### Key Takeaway
+[Main insight from comparison]
+"""}
+    }
+    
+    IMPORTANCE_LEVELS = {
+        "normal": {"icon": "", "label": "Normal"},
+        "important": {"icon": "⭐", "label": "Important"},
+        "critical": {"icon": "🔥", "label": "Critical for Exam"}
+    }
+    
+    course_options = {f"{c['code']} - {c['name']}": c['code'] for c in courses_data}
+    
+    notes_tab, ai_tab, templates_tab, stats_tab = st.tabs(["📝 My Notes", "🤖 AI Assistant", "📋 Templates", "📊 Statistics"])
+    
+    with notes_tab:
+        col_filter, col_course = st.columns([1, 2])
+        with col_course:
+            selected_course_label = st.selectbox(
+                "Select Course:",
+                options=list(course_options.keys()),
+                key="notes_course_select"
+            )
         selected_course_code = course_options[selected_course_label]
         
-        # Initialize course notes if not exists
+        with col_filter:
+            category_filter = st.selectbox(
+                "Filter by Category:",
+                options=["All Categories"] + [f"{v['icon']} {v['label']}" for v in NOTE_CATEGORIES.values()],
+                key="notes_category_filter"
+            )
+        
         if selected_course_code not in st.session_state.study_notes:
             st.session_state.study_notes[selected_course_code] = []
         
         course_notes = st.session_state.study_notes[selected_course_code]
         
-        col1, col2 = st.columns([2, 1])
+        filter_col1, filter_col2, filter_col3 = st.columns([2, 1, 1])
+        with filter_col1:
+            search_query = st.text_input("🔍 Search notes:", placeholder="Search by title, content, or tags...", key="notes_search")
+        with filter_col2:
+            importance_filter = st.selectbox(
+                "Importance:",
+                options=["All"] + [f"{v['icon']} {v['label']}" if v['icon'] else v['label'] for v in IMPORTANCE_LEVELS.values()],
+                key="notes_importance_filter"
+            )
+        with filter_col3:
+            sort_option = st.selectbox("Sort by:", ["Newest First", "Oldest First", "Importance", "Category"], key="notes_sort")
         
-        with col1:
-            st.subheader("📄 Your Notes")
-            
-            # Search functionality
-            search_query = st.text_input("🔍 Search notes:", placeholder="Search by title or content...")
-            
-            # Filter notes based on search
-            filtered_notes = course_notes
-            if search_query:
-                filtered_notes = [
-                    note for note in course_notes
-                    if search_query.lower() in note.get('title', '').lower() or 
-                       search_query.lower() in note.get('content', '').lower() or
-                       any(search_query.lower() in tag.lower() for tag in note.get('tags', []))
-                ]
+        filtered_notes = course_notes.copy()
+        
+        if category_filter != "All Categories":
+            cat_key = [k for k, v in NOTE_CATEGORIES.items() if f"{v['icon']} {v['label']}" == category_filter]
+            if cat_key:
+                filtered_notes = [n for n in filtered_notes if n.get('category') == cat_key[0]]
+        
+        if importance_filter != "All":
+            imp_key = [k for k, v in IMPORTANCE_LEVELS.items() if (f"{v['icon']} {v['label']}" if v['icon'] else v['label']) == importance_filter]
+            if imp_key:
+                filtered_notes = [n for n in filtered_notes if n.get('importance') == imp_key[0]]
+        
+        if search_query:
+            filtered_notes = [
+                note for note in filtered_notes
+                if search_query.lower() in note.get('title', '').lower() or 
+                   search_query.lower() in note.get('content', '').lower() or
+                   any(search_query.lower() in tag.lower() for tag in note.get('tags', []))
+            ]
+        
+        if sort_option == "Newest First":
+            filtered_notes.sort(key=lambda x: x.get('date', ''), reverse=True)
+        elif sort_option == "Oldest First":
+            filtered_notes.sort(key=lambda x: x.get('date', ''))
+        elif sort_option == "Importance":
+            imp_order = {"critical": 0, "important": 1, "normal": 2}
+            filtered_notes.sort(key=lambda x: imp_order.get(x.get('importance', 'normal'), 2))
+        elif sort_option == "Category":
+            filtered_notes.sort(key=lambda x: x.get('category', 'lecture'))
+        
+        col_notes, col_editor = st.columns([3, 2])
+        
+        with col_notes:
+            st.subheader(f"📄 Notes ({len(filtered_notes)})")
             
             if filtered_notes:
                 for idx, note in enumerate(filtered_notes):
-                    with st.expander(f"📌 {note.get('title', 'Untitled')} - {note.get('date', 'No date')}"):
-                        st.markdown(note.get('content', ''))
-                        if note.get('tags'):
-                            st.caption(f"Tags: {', '.join(note.get('tags', []))}")
+                    orig_idx = course_notes.index(note) if note in course_notes else idx
+                    cat = note.get('category', 'lecture')
+                    cat_info = NOTE_CATEGORIES.get(cat, NOTE_CATEGORIES['lecture'])
+                    imp = note.get('importance', 'normal')
+                    imp_info = IMPORTANCE_LEVELS.get(imp, IMPORTANCE_LEVELS['normal'])
+                    
+                    header_prefix = f"{cat_info['icon']} {imp_info['icon']} " if imp_info['icon'] else f"{cat_info['icon']} "
+                    
+                    with st.expander(f"{header_prefix}{note.get('title', 'Untitled')} - {note.get('date', 'No date')[:10]}"):
+                        if note.get('learning_outcome'):
+                            st.caption(f"🎯 Learning Outcome: {note.get('learning_outcome')}")
                         
-                        col_a, col_b = st.columns(2)
-                        with col_a:
-                            if st.button(f"✏️ Edit", key=f"edit_{selected_course_code}_{idx}"):
-                                st.session_state[f"editing_note_{selected_course_code}"] = idx
-                        with col_b:
-                            if st.button(f"🗑️ Delete", key=f"delete_{selected_course_code}_{idx}"):
-                                st.session_state.study_notes[selected_course_code].pop(idx)
+                        st.markdown(note.get('content', ''))
+                        
+                        meta_cols = st.columns(3)
+                        with meta_cols[0]:
+                            st.caption(f"Category: {cat_info['label']}")
+                        with meta_cols[1]:
+                            if note.get('tags'):
+                                st.caption(f"Tags: {', '.join(note.get('tags', []))}")
+                        with meta_cols[2]:
+                            st.caption(f"Importance: {imp_info['label']}")
+                        
+                        if note.get('version_history'):
+                            with st.expander("📜 Version History"):
+                                for v_idx, version in enumerate(note.get('version_history', [])[-5:]):
+                                    st.caption(f"v{v_idx+1} - {version.get('date', 'Unknown')}: {version.get('summary', 'No summary')}")
+                        
+                        btn_cols = st.columns(4)
+                        with btn_cols[0]:
+                            if st.button("✏️ Edit", key=f"edit_{selected_course_code}_{orig_idx}"):
+                                st.session_state[f"editing_note_{selected_course_code}"] = orig_idx
+                                st.rerun()
+                        with btn_cols[1]:
+                            if st.button("📋 Duplicate", key=f"dup_{selected_course_code}_{orig_idx}"):
+                                new_note = note.copy()
+                                new_note['title'] = f"{note.get('title', 'Untitled')} (Copy)"
+                                new_note['date'] = datetime.now().strftime("%Y-%m-%d %H:%M")
+                                new_note['version_history'] = []
+                                st.session_state.study_notes[selected_course_code].append(new_note)
+                                st.success("Note duplicated!")
+                                st.rerun()
+                        with btn_cols[2]:
+                            next_imp = {"normal": "important", "important": "critical", "critical": "normal"}
+                            if st.button(f"{'⭐' if imp == 'normal' else '🔥' if imp == 'important' else '◯'}", key=f"imp_{selected_course_code}_{orig_idx}"):
+                                st.session_state.study_notes[selected_course_code][orig_idx]['importance'] = next_imp[imp]
+                                st.rerun()
+                        with btn_cols[3]:
+                            if st.button("🗑️ Delete", key=f"delete_{selected_course_code}_{orig_idx}"):
+                                st.session_state.study_notes[selected_course_code].pop(orig_idx)
                                 st.rerun()
             else:
-                st.info("No notes yet. Create your first note below!")
+                st.info("No notes found. Create your first note in the editor!")
         
-        with col2:
-            st.subheader("➕ Create New Note")
-            
-            # Check if editing existing note
+        with col_editor:
             editing_idx = st.session_state.get(f"editing_note_{selected_course_code}", None)
             is_editing = editing_idx is not None
             
-            if is_editing:
+            st.subheader("✏️ Edit Note" if is_editing else "➕ Create New Note")
+            
+            if is_editing and editing_idx < len(course_notes):
                 existing_note = course_notes[editing_idx]
                 default_title = existing_note.get('title', '')
                 default_content = existing_note.get('content', '')
                 default_tags = ', '.join(existing_note.get('tags', []))
+                default_category = existing_note.get('category', 'lecture')
+                default_importance = existing_note.get('importance', 'normal')
+                default_outcome = existing_note.get('learning_outcome', '')
             else:
                 default_title = ""
                 default_content = ""
                 default_tags = ""
+                default_category = "lecture"
+                default_importance = "normal"
+                default_outcome = ""
+            
+            template_choice = st.selectbox(
+                "Start from template:",
+                options=["(Keep current)" if is_editing else "(Select template)"] + [t['name'] for t in NOTE_TEMPLATES.values()],
+                key="note_template_choice"
+            )
+            
+            if template_choice not in ["(Keep current)", "(Select template)"]:
+                template_key = [k for k, v in NOTE_TEMPLATES.items() if v['name'] == template_choice]
+                if template_key and not is_editing:
+                    template_content = NOTE_TEMPLATES[template_key[0]]['content']
+                    content_key = f"note_content_{selected_course_code}"
+                    if st.session_state.get(content_key, "") != template_content and st.session_state.get('last_template') != template_choice:
+                        st.session_state[content_key] = template_content
+                        st.session_state['last_template'] = template_choice
+                        st.rerun()
             
             note_title = st.text_input("Title:", value=default_title, key=f"note_title_{selected_course_code}")
+            
+            ed_col1, ed_col2 = st.columns(2)
+            with ed_col1:
+                note_category = st.selectbox(
+                    "Category:",
+                    options=list(NOTE_CATEGORIES.keys()),
+                    format_func=lambda x: f"{NOTE_CATEGORIES[x]['icon']} {NOTE_CATEGORIES[x]['label']}",
+                    index=list(NOTE_CATEGORIES.keys()).index(default_category) if default_category in NOTE_CATEGORIES else 0,
+                    key=f"note_category_{selected_course_code}"
+                )
+            with ed_col2:
+                note_importance = st.selectbox(
+                    "Importance:",
+                    options=list(IMPORTANCE_LEVELS.keys()),
+                    format_func=lambda x: f"{IMPORTANCE_LEVELS[x]['icon']} {IMPORTANCE_LEVELS[x]['label']}" if IMPORTANCE_LEVELS[x]['icon'] else IMPORTANCE_LEVELS[x]['label'],
+                    index=list(IMPORTANCE_LEVELS.keys()).index(default_importance) if default_importance in IMPORTANCE_LEVELS else 0,
+                    key=f"note_importance_{selected_course_code}"
+                )
+            
+            selected_course_data = next((c for c in courses_data if c['code'] == selected_course_code), None)
+            if selected_course_data:
+                outcomes_list = []
+                for lo in selected_course_data.get('learning_outcomes', []):
+                    outcomes_list.extend(lo.get('items', []))
+                if outcomes_list:
+                    note_outcome = st.selectbox(
+                        "Link to Learning Outcome:",
+                        options=["(None)"] + outcomes_list[:10],
+                        index=outcomes_list.index(default_outcome) + 1 if default_outcome in outcomes_list else 0,
+                        key=f"note_outcome_{selected_course_code}"
+                    )
+                else:
+                    note_outcome = "(None)"
+            else:
+                note_outcome = "(None)"
+            
             note_content = st.text_area(
                 "Content (Markdown supported):",
                 value=default_content,
-                height=300,
+                height=250,
                 key=f"note_content_{selected_course_code}"
             )
             note_tags = st.text_input("Tags (comma-separated):", value=default_tags, key=f"note_tags_{selected_course_code}")
             
-            if st.button("💾 Save Note", type="primary", key=f"save_note_{selected_course_code}"):
-                if note_title and note_content:
-                    tags_list = [tag.strip() for tag in note_tags.split(',') if tag.strip()] if note_tags else []
-                    note_data = {
-                        'title': note_title,
-                        'content': note_content,
-                        'date': datetime.now().strftime("%Y-%m-%d %H:%M"),
-                        'tags': tags_list
-                    }
-                    
-                    if is_editing:
-                        st.session_state.study_notes[selected_course_code][editing_idx] = note_data
-                        del st.session_state[f"editing_note_{selected_course_code}"]
+            save_col1, save_col2 = st.columns(2)
+            with save_col1:
+                if st.button("💾 Save Note", type="primary", key=f"save_note_{selected_course_code}"):
+                    if note_title and note_content:
+                        tags_list = [tag.strip() for tag in note_tags.split(',') if tag.strip()] if note_tags else []
+                        
+                        version_entry = None
+                        if is_editing and editing_idx < len(course_notes):
+                            old_note = course_notes[editing_idx]
+                            if old_note.get('content') != note_content:
+                                version_entry = {
+                                    'date': datetime.now().strftime("%Y-%m-%d %H:%M"),
+                                    'summary': f"Updated from: {old_note.get('title', 'Untitled')[:30]}..."
+                                }
+                        
+                        note_data = {
+                            'title': note_title,
+                            'content': note_content,
+                            'date': datetime.now().strftime("%Y-%m-%d %H:%M"),
+                            'tags': tags_list,
+                            'category': note_category,
+                            'importance': note_importance,
+                            'learning_outcome': note_outcome if note_outcome != "(None)" else "",
+                            'version_history': []
+                        }
+                        
+                        if is_editing and editing_idx < len(course_notes):
+                            existing_history = course_notes[editing_idx].get('version_history', [])
+                            if version_entry:
+                                existing_history.append(version_entry)
+                            note_data['version_history'] = existing_history[-10:]
+                            st.session_state.study_notes[selected_course_code][editing_idx] = note_data
+                            del st.session_state[f"editing_note_{selected_course_code}"]
+                        else:
+                            st.session_state.study_notes[selected_course_code].append(note_data)
+                        
+                        st.success("Note saved!")
+                        st.rerun()
                     else:
-                        st.session_state.study_notes[selected_course_code].append(note_data)
-                    
-                    st.success("Note saved!")
-                    st.rerun()
-                else:
-                    st.warning("Please fill in title and content.")
+                        st.warning("Please fill in title and content.")
             
-            if is_editing and st.button("❌ Cancel Edit", key=f"cancel_edit_{selected_course_code}"):
-                del st.session_state[f"editing_note_{selected_course_code}"]
-                st.rerun()
+            with save_col2:
+                if is_editing and st.button("❌ Cancel", key=f"cancel_edit_{selected_course_code}"):
+                    del st.session_state[f"editing_note_{selected_course_code}"]
+                    st.rerun()
         
-        # Export/Import functionality
         st.markdown("---")
-        col_exp1, col_exp2 = st.columns(2)
-        
-        with col_exp1:
-            st.subheader("📥 Export Notes")
-            if st.button("Download Notes as JSON"):
+        exp_col1, exp_col2 = st.columns(2)
+        with exp_col1:
+            if course_notes:
                 export_data = {selected_course_code: course_notes}
-                export_json = json.dumps(export_data, indent=2)
+                export_json = json.dumps(export_data, indent=2, ensure_ascii=False)
                 st.download_button(
-                    "⬇️ Download",
+                    "📥 Export Notes (JSON)",
                     data=export_json,
                     file_name=f"study_notes_{selected_course_code}_{datetime.now().strftime('%Y%m%d')}.json",
                     mime="application/json"
                 )
-        
-        with col_exp2:
-            st.subheader("📤 Import Notes")
-            uploaded_file = st.file_uploader("Upload JSON file", type=['json'])
+        with exp_col2:
+            uploaded_file = st.file_uploader("📤 Import Notes (JSON)", type=['json'], key="notes_import")
             if uploaded_file:
                 try:
                     imported_data = json.load(uploaded_file)
                     if selected_course_code in imported_data:
-                        st.session_state.study_notes[selected_course_code] = imported_data[selected_course_code]
-                        st.success("Notes imported successfully!")
+                        st.session_state.study_notes[selected_course_code].extend(imported_data[selected_course_code])
+                        st.success(f"Imported {len(imported_data[selected_course_code])} notes!")
                         st.rerun()
-                    else:
-                        st.warning("No notes found for this course in the file.")
                 except Exception as e:
-                    st.error(f"Error importing notes: {str(e)}")
+                    st.error(f"Import error: {str(e)}")
+    
+    with ai_tab:
+        st.subheader("🤖 AI Study Assistant")
+        st.markdown("*Generate summaries and study materials from course content*")
+        
+        ai_course_label = st.selectbox(
+            "Select Course:",
+            options=list(course_options.keys()),
+            key="ai_course_select"
+        )
+        ai_course_code = course_options[ai_course_label]
+        ai_course_data = next((c for c in courses_data if c['code'] == ai_course_code), None)
+        
+        ai_mode = st.radio(
+            "What would you like to generate?",
+            ["Course Summary", "Key Concepts", "Exam Prep Notes", "Learning Outcome Breakdown"],
+            horizontal=True,
+            key="ai_mode"
+        )
+        
+        if st.button("🚀 Generate with AI", type="primary", key="ai_generate"):
+            if ai_course_data:
+                with st.spinner("Generating content..."):
+                    course_info = f"Course: {ai_course_data['name']} ({ai_course_data['code']})\n"
+                    course_info += f"Credits: {ai_course_data.get('credits', 'N/A')}\n"
+                    
+                    outcomes_text = ""
+                    for lo in ai_course_data.get('learning_outcomes', []):
+                        outcomes_text += f"\n{lo.get('type', 'General')}:\n"
+                        for item in lo.get('items', []):
+                            outcomes_text += f"- {item}\n"
+                    
+                    if ai_mode == "Course Summary":
+                        prompt = f"""Create a comprehensive study summary for this course:
+{course_info}
+
+Learning Outcomes:
+{outcomes_text}
+
+Format the summary with:
+1. Course Overview (2-3 sentences)
+2. Key Topics to Master (bullet points)
+3. Important Skills to Develop
+4. How This Connects to Other Courses
+5. Study Tips for This Course
+
+Keep it concise but informative for a student."""
+                    
+                    elif ai_mode == "Key Concepts":
+                        prompt = f"""Extract and explain the key concepts from this course:
+{course_info}
+
+Learning Outcomes:
+{outcomes_text}
+
+For each key concept, provide:
+- Concept name
+- Brief definition (1-2 sentences)
+- Why it matters
+- Example or application
+
+List 5-8 key concepts."""
+                    
+                    elif ai_mode == "Exam Prep Notes":
+                        prompt = f"""Create exam preparation notes for this course:
+{course_info}
+
+Learning Outcomes:
+{outcomes_text}
+
+Include:
+1. Most likely exam topics
+2. Key definitions to memorize
+3. Common question types to expect
+4. Important formulas or frameworks
+5. Quick revision checklist
+
+Format for easy memorization."""
+                    
+                    else:
+                        prompt = f"""Break down each learning outcome for this course:
+{course_info}
+
+Learning Outcomes:
+{outcomes_text}
+
+For each outcome:
+- Explain what it means in practical terms
+- Give an example of how to demonstrate it
+- Suggest how to practice it
+
+Be specific and actionable."""
+                    
+                    try:
+                        response = client.chat.completions.create(
+                            model="gpt-4o-mini",
+                            messages=[
+                                {"role": "system", "content": "You are a helpful study assistant for data analytics students. Create clear, well-structured study materials."},
+                                {"role": "user", "content": prompt}
+                            ],
+                            max_tokens=1500
+                        )
+                        generated_content = response.choices[0].message.content
+                        
+                        st.markdown("### Generated Content")
+                        st.markdown(generated_content)
+                        
+                        if st.button("💾 Save as Note", key="save_ai_note"):
+                            if ai_course_code not in st.session_state.study_notes:
+                                st.session_state.study_notes[ai_course_code] = []
+                            
+                            ai_note = {
+                                'title': f"AI Generated: {ai_mode} - {ai_course_code}",
+                                'content': generated_content,
+                                'date': datetime.now().strftime("%Y-%m-%d %H:%M"),
+                                'tags': ['ai-generated', ai_mode.lower().replace(' ', '-')],
+                                'category': 'summary',
+                                'importance': 'important',
+                                'learning_outcome': '',
+                                'version_history': []
+                            }
+                            st.session_state.study_notes[ai_course_code].append(ai_note)
+                            st.success("Saved to your notes!")
+                            st.rerun()
+                    
+                    except Exception as e:
+                        st.error(f"Error generating content: {str(e)}")
+            else:
+                st.warning("Course data not found.")
+    
+    with templates_tab:
+        st.subheader("📋 Note Templates")
+        st.markdown("*Quick-start templates for different types of notes*")
+        
+        for key, template in NOTE_TEMPLATES.items():
+            if key != "blank":
+                with st.expander(f"📄 {template['name']}"):
+                    st.code(template['content'], language="markdown")
+                    if st.button(f"Use This Template", key=f"use_template_{key}"):
+                        st.session_state['template_to_use'] = key
+                        st.info("Go to 'My Notes' tab and the template will be applied to a new note.")
+    
+    with stats_tab:
+        st.subheader("📊 Notes Statistics")
+        
+        total_notes = sum(len(notes) for notes in st.session_state.study_notes.values())
+        st.metric("Total Notes", total_notes)
+        
+        if total_notes > 0:
+            col_s1, col_s2 = st.columns(2)
+            
+            with col_s1:
+                st.markdown("**Notes by Category**")
+                cat_counts = {}
+                for notes in st.session_state.study_notes.values():
+                    for note in notes:
+                        cat = note.get('category', 'lecture')
+                        cat_counts[cat] = cat_counts.get(cat, 0) + 1
+                
+                for cat, count in sorted(cat_counts.items(), key=lambda x: x[1], reverse=True):
+                    cat_info = NOTE_CATEGORIES.get(cat, NOTE_CATEGORIES['lecture'])
+                    st.write(f"{cat_info['icon']} {cat_info['label']}: {count}")
+            
+            with col_s2:
+                st.markdown("**Notes by Course**")
+                course_counts = {code: len(notes) for code, notes in st.session_state.study_notes.items() if notes}
+                for code, count in sorted(course_counts.items(), key=lambda x: x[1], reverse=True)[:5]:
+                    st.write(f"{code}: {count} notes")
+            
+            st.markdown("---")
+            st.markdown("**Important Notes**")
+            important_notes = []
+            for code, notes in st.session_state.study_notes.items():
+                for note in notes:
+                    if note.get('importance') in ['important', 'critical']:
+                        important_notes.append((code, note))
+            
+            if important_notes:
+                for code, note in important_notes[:10]:
+                    imp = note.get('importance', 'normal')
+                    icon = "🔥" if imp == "critical" else "⭐"
+                    st.write(f"{icon} [{code}] {note.get('title', 'Untitled')}")
+            else:
+                st.info("No important notes marked yet.")
 
 elif page == "Flashcards":
     st.title("🎴 Flashcards")
