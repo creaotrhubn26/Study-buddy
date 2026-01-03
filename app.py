@@ -9939,54 +9939,205 @@ elif page == "Study Notes":
     
     if st.session_state.get('show_ai_panel'):
         st.markdown("---")
-        st.markdown(f"### {render_mui_icon('smart_toy', 24)} AI Assistant", unsafe_allow_html=True)
+        st.markdown(f"### {render_mui_icon('smart_toy', 24)} AI Study Assistant", unsafe_allow_html=True)
         
-        ai_col1, ai_col2 = st.columns([1, 2])
-        with ai_col1:
-            ai_action = st.radio(
-                "AI Action:",
-                ["Summarize", "Expand", "Simplify", "Generate Questions", "Fix Grammar", "Add Examples"],
-                key="word_ai_action"
-            )
+        # Get comprehensive course context
+        course_info = next((c for c in courses_data if c['code'] == selected_course_code), None)
+        content = st.session_state.get('current_note_content', '')
         
-        with ai_col2:
-            st.markdown(render_mui_icon('auto_awesome', 18), unsafe_allow_html=True)
-            if st.button("Apply AI", type="primary", key="word_ai_apply"):
-                content = st.session_state.get('current_note_content', '')
-                if content:
-                    with st.spinner("Processing..."):
-                        prompts = {
-                            "Summarize": f"Summarize this content concisely:\n\n{content}",
-                            "Expand": f"Expand on this content with more details and examples:\n\n{content}",
-                            "Simplify": f"Rewrite this content in simpler terms for easy understanding:\n\n{content}",
-                            "Generate Questions": f"Generate 5 study questions based on this content:\n\n{content}",
-                            "Fix Grammar": f"Fix any grammar and spelling errors in this text, return the corrected version:\n\n{content}",
-                            "Add Examples": f"Add practical examples to illustrate the concepts in this content:\n\n{content}"
-                        }
+        # Build rich context
+        course_context_parts = []
+        if course_info:
+            course_context_parts.append(f"Course: {course_info['name']} ({course_info['code']})")
+            course_context_parts.append(f"Description: {course_info.get('description', '')}")
+            if course_info.get('knowledge'):
+                course_context_parts.append(f"Knowledge Topics: {', '.join(course_info['knowledge'][:5])}")
+            if course_info.get('skills'):
+                course_context_parts.append(f"Skills: {', '.join(course_info['skills'][:5])}")
+            if course_info.get('learning_outcomes'):
+                outcomes_text = []
+                for lo in course_info['learning_outcomes'][:3]:
+                    outcomes_text.extend(lo.get('items', [])[:3])
+                if outcomes_text:
+                    course_context_parts.append(f"Learning Outcomes: {', '.join(outcomes_text[:5])}")
+        
+        course_context = "\n".join(course_context_parts)
+        
+        # Get related notes for context
+        related_notes_context = ""
+        if selected_course_code in st.session_state.study_notes:
+            course_notes = st.session_state.study_notes[selected_course_code]
+            if course_notes:
+                related_titles = [n.get('title', '') for n in course_notes[:5]]
+                if related_titles:
+                    related_notes_context = f"\nRelated notes in this course: {', '.join(related_titles)}"
+        
+        full_context = course_context + related_notes_context
+        
+        ai_tabs = st.tabs(["Quick Actions", "Generate Content", "Analyze & Improve", "Custom Prompt"])
+        
+        with ai_tabs[0]:
+            st.markdown("**Transform your notes:**")
+            action_col1, action_col2, action_col3 = st.columns(3)
+            
+            content = st.session_state.get('current_note_content', '')
+            
+            with action_col1:
+                if st.button("📝 Summarize", key="ai_summarize", use_container_width=True):
+                    st.session_state.ai_pending_action = "summarize"
+                if st.button("📚 Expand", key="ai_expand", use_container_width=True):
+                    st.session_state.ai_pending_action = "expand"
+                if st.button("✏️ Fix Grammar", key="ai_grammar", use_container_width=True):
+                    st.session_state.ai_pending_action = "grammar"
+            
+            with action_col2:
+                if st.button("💡 Simplify", key="ai_simplify", use_container_width=True):
+                    st.session_state.ai_pending_action = "simplify"
+                if st.button("🎯 Add Examples", key="ai_examples", use_container_width=True):
+                    st.session_state.ai_pending_action = "examples"
+                if st.button("📊 Create Outline", key="ai_outline", use_container_width=True):
+                    st.session_state.ai_pending_action = "outline"
+            
+            with action_col3:
+                if st.button("❓ Study Questions", key="ai_questions", use_container_width=True):
+                    st.session_state.ai_pending_action = "questions"
+                if st.button("🃏 Flashcards", key="ai_flashcards", use_container_width=True):
+                    st.session_state.ai_pending_action = "flashcards"
+                if st.button("🔍 Explain Concept", key="ai_explain", use_container_width=True):
+                    st.session_state.ai_pending_action = "explain"
+            
+            # Process pending action
+            if st.session_state.get('ai_pending_action') and content:
+                action = st.session_state.ai_pending_action
+                prompts = {
+                    "summarize": f"Summarize this content concisely in bullet points. {course_context}\n\nContent:\n{content}",
+                    "expand": f"Expand on this content with more details, context, and practical applications. {course_context}\n\nContent:\n{content}",
+                    "grammar": f"Fix any grammar, spelling, and clarity issues. Return only the corrected text:\n\n{content}",
+                    "simplify": f"Rewrite this content in simpler terms that a beginner could understand. Use analogies where helpful. {course_context}\n\nContent:\n{content}",
+                    "examples": f"Add 3-5 practical, real-world examples to illustrate the concepts. {course_context}\n\nContent:\n{content}",
+                    "outline": f"Create a structured outline/table of contents from this content with main topics and subtopics:\n\n{content}",
+                    "questions": f"Generate 5-7 study questions (mix of multiple choice, short answer, and critical thinking) based on this content. Include answers. {course_context}\n\nContent:\n{content}",
+                    "flashcards": f"Create 5-8 flashcards (Term | Definition format) from the key concepts in this content. {course_context}\n\nContent:\n{content}",
+                    "explain": f"Explain the main concept(s) in this content as if teaching to someone new to the field. Include why it matters and how it connects to real-world applications. {course_context}\n\nContent:\n{content}"
+                }
+                
+                with st.spinner(f"AI is processing..."):
+                    try:
+                        response = client.chat.completions.create(
+                            model="gpt-4o-mini",
+                            messages=[
+                                {"role": "system", "content": "You are an expert study assistant for a Data Analyst vocational program. Provide clear, educational content formatted in HTML (use <h3>, <p>, <ul>, <li>, <strong>, <em> tags). Focus on practical, actionable learning."},
+                                {"role": "user", "content": prompts[action]}
+                            ],
+                            max_tokens=1500
+                        )
+                        st.session_state.ai_result = response.choices[0].message.content
+                        st.session_state.pop('ai_pending_action', None)
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"Error: {str(e)}")
+                        st.session_state.pop('ai_pending_action', None)
+            elif st.session_state.get('ai_pending_action') and not content:
+                st.warning("Write some content first.")
+                st.session_state.pop('ai_pending_action', None)
+        
+        with ai_tabs[1]:
+            st.markdown("**Generate new content for your notes:**")
+            
+            gen_topic = st.text_input("Topic or concept:", placeholder="e.g., VLOOKUP function, regression analysis, data cleaning...", key="ai_gen_topic")
+            gen_type = st.selectbox("Content type:", [
+                "Concept Explanation",
+                "Step-by-Step Guide", 
+                "Key Points Summary",
+                "Comparison Table",
+                "Common Mistakes & Tips",
+                "Practice Exercises",
+                "Exam Review Notes"
+            ], key="ai_gen_type")
+            
+            if st.button("Generate", type="primary", key="ai_generate", use_container_width=True):
+                if gen_topic:
+                    type_prompts = {
+                        "Concept Explanation": f"Explain the concept of '{gen_topic}' for a data analyst student. Include definition, importance, and practical applications.",
+                        "Step-by-Step Guide": f"Create a step-by-step guide for '{gen_topic}'. Number each step and include tips.",
+                        "Key Points Summary": f"Summarize the key points about '{gen_topic}' in bullet points. Focus on what a student needs to know for exams.",
+                        "Comparison Table": f"Create a comparison for '{gen_topic}' showing pros/cons, use cases, or comparing with similar concepts. Use HTML table format.",
+                        "Common Mistakes & Tips": f"List common mistakes students make with '{gen_topic}' and how to avoid them. Include pro tips.",
+                        "Practice Exercises": f"Create 3 practice exercises about '{gen_topic}' with solutions. Range from basic to intermediate difficulty.",
+                        "Exam Review Notes": f"Create exam-focused review notes for '{gen_topic}'. Include key definitions, formulas, and things to remember."
+                    }
+                    
+                    with st.spinner("Generating content..."):
                         try:
                             response = client.chat.completions.create(
                                 model="gpt-4o-mini",
                                 messages=[
-                                    {"role": "system", "content": "You are a helpful study assistant. Provide clear, educational content."},
-                                    {"role": "user", "content": prompts[ai_action]}
+                                    {"role": "system", "content": f"You are an expert study assistant for a Data Analyst vocational program. {course_context}. Format your response in clean HTML (use <h3>, <h4>, <p>, <ul>, <ol>, <li>, <table>, <tr>, <td>, <th>, <strong>, <em> tags). Be practical and focused on real-world data analysis."},
+                                    {"role": "user", "content": type_prompts[gen_type]}
                                 ],
-                                max_tokens=1000
+                                max_tokens=1500
                             )
-                            result = response.choices[0].message.content
-                            st.markdown("**AI Result:**")
-                            st.markdown(result)
-                            st.markdown(render_mui_icon('content_copy', 18), unsafe_allow_html=True)
-                            if st.button("Replace Content", key="ai_replace"):
-                                st.session_state.current_note_content = result
-                                st.rerun()
-                            st.markdown(render_mui_icon('add', 18), unsafe_allow_html=True)
-                            if st.button("Append to Content", key="ai_append"):
-                                st.session_state.current_note_content += f"\n\n---\n\n{result}"
-                                st.rerun()
+                            st.session_state.ai_result = response.choices[0].message.content
+                            st.rerun()
                         except Exception as e:
                             st.error(f"Error: {str(e)}")
                 else:
-                    st.warning("Write some content first.")
+                    st.warning("Enter a topic first.")
+        
+        with ai_tabs[2]:
+            st.markdown("**Ask anything or give custom instructions:**")
+            custom_prompt = st.text_area("Your prompt:", placeholder="e.g., 'Translate to Norwegian', 'Make this more formal', 'Add more statistics examples'...", key="ai_custom_prompt", height=100)
+            
+            include_content = st.checkbox("Include current note content", value=True, key="ai_include_content")
+            
+            if st.button("Send to AI", type="primary", key="ai_custom_send", use_container_width=True):
+                if custom_prompt:
+                    full_prompt = custom_prompt
+                    if include_content and content:
+                        full_prompt = f"{custom_prompt}\n\n{course_context}\n\nContent:\n{content}"
+                    
+                    with st.spinner("Processing..."):
+                        try:
+                            response = client.chat.completions.create(
+                                model="gpt-4o-mini",
+                                messages=[
+                                    {"role": "system", "content": "You are a helpful study assistant for a Data Analyst program. Format responses in HTML when appropriate. Be helpful and educational."},
+                                    {"role": "user", "content": full_prompt}
+                                ],
+                                max_tokens=1500
+                            )
+                            st.session_state.ai_result = response.choices[0].message.content
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"Error: {str(e)}")
+                else:
+                    st.warning("Enter a prompt first.")
+        
+        # Display AI result
+        if st.session_state.get('ai_result'):
+            st.markdown("---")
+            st.markdown("**AI Result:**")
+            with st.container():
+                st.markdown(st.session_state.ai_result, unsafe_allow_html=True)
+            
+            result_col1, result_col2, result_col3 = st.columns(3)
+            with result_col1:
+                if st.button("📥 Replace Content", key="ai_replace", use_container_width=True):
+                    st.session_state.current_note_content = st.session_state.ai_result
+                    st.session_state.quill_key_counter = st.session_state.get('quill_key_counter', 0) + 1
+                    st.session_state.pop('ai_result', None)
+                    st.rerun()
+            with result_col2:
+                if st.button("➕ Append to Note", key="ai_append", use_container_width=True):
+                    current = st.session_state.get('current_note_content', '')
+                    st.session_state.current_note_content = current + f"<hr><h3>AI Generated</h3>{st.session_state.ai_result}"
+                    st.session_state.quill_key_counter = st.session_state.get('quill_key_counter', 0) + 1
+                    st.session_state.pop('ai_result', None)
+                    st.rerun()
+            with result_col3:
+                if st.button("❌ Dismiss", key="ai_dismiss", use_container_width=True):
+                    st.session_state.pop('ai_result', None)
+                    st.rerun()
     
     if st.session_state.get('show_stats'):
         st.markdown("---")
