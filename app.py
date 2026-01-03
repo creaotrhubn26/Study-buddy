@@ -9978,58 +9978,101 @@ elif page == "Study Notes":
         
         with ai_tabs[0]:
             st.markdown("**Transform your notes:**")
-            action_col1, action_col2, action_col3 = st.columns(3)
-            
-            content = st.session_state.get('current_note_content', '')
+            action_col1, action_col2, action_col3, action_col4 = st.columns(4)
             
             with action_col1:
-                if st.button("📝 Summarize", key="ai_summarize", use_container_width=True):
+                st.markdown("**📝 Content**")
+                if st.button("Summarize", key="ai_summarize", use_container_width=True):
                     st.session_state.ai_pending_action = "summarize"
-                if st.button("📚 Expand", key="ai_expand", use_container_width=True):
+                if st.button("Expand", key="ai_expand", use_container_width=True):
                     st.session_state.ai_pending_action = "expand"
-                if st.button("✏️ Fix Grammar", key="ai_grammar", use_container_width=True):
+                if st.button("Simplify", key="ai_simplify", use_container_width=True):
+                    st.session_state.ai_pending_action = "simplify"
+                if st.button("Fix Grammar", key="ai_grammar", use_container_width=True):
                     st.session_state.ai_pending_action = "grammar"
             
             with action_col2:
-                if st.button("💡 Simplify", key="ai_simplify", use_container_width=True):
-                    st.session_state.ai_pending_action = "simplify"
-                if st.button("🎯 Add Examples", key="ai_examples", use_container_width=True):
+                st.markdown("**🎯 Enhance**")
+                if st.button("Add Examples", key="ai_examples", use_container_width=True):
                     st.session_state.ai_pending_action = "examples"
-                if st.button("📊 Create Outline", key="ai_outline", use_container_width=True):
+                if st.button("Create Outline", key="ai_outline", use_container_width=True):
                     st.session_state.ai_pending_action = "outline"
+                if st.button("Explain Concept", key="ai_explain", use_container_width=True):
+                    st.session_state.ai_pending_action = "explain"
+                if st.button("Add Context", key="ai_context", use_container_width=True):
+                    st.session_state.ai_pending_action = "context"
             
             with action_col3:
-                if st.button("❓ Study Questions", key="ai_questions", use_container_width=True):
+                st.markdown("**📚 Study Tools**")
+                if st.button("Study Questions", key="ai_questions", use_container_width=True):
                     st.session_state.ai_pending_action = "questions"
-                if st.button("🃏 Flashcards", key="ai_flashcards", use_container_width=True):
+                if st.button("Flashcards", key="ai_flashcards", use_container_width=True):
                     st.session_state.ai_pending_action = "flashcards"
-                if st.button("🔍 Explain Concept", key="ai_explain", use_container_width=True):
-                    st.session_state.ai_pending_action = "explain"
+                if st.button("Key Points", key="ai_keypoints", use_container_width=True):
+                    st.session_state.ai_pending_action = "keypoints"
+                if st.button("Exam Prep", key="ai_examprep", use_container_width=True):
+                    st.session_state.ai_pending_action = "examprep"
+            
+            with action_col4:
+                st.markdown("**🌐 Language**")
+                if st.button("Translate to NO", key="ai_translate_no", use_container_width=True):
+                    st.session_state.ai_pending_action = "translate_no"
+                if st.button("Translate to EN", key="ai_translate_en", use_container_width=True):
+                    st.session_state.ai_pending_action = "translate_en"
+                if st.button("Improve Style", key="ai_style", use_container_width=True):
+                    st.session_state.ai_pending_action = "style"
+                if st.button("Format Text", key="ai_format", use_container_width=True):
+                    st.session_state.ai_pending_action = "format"
             
             # Process pending action
             if st.session_state.get('ai_pending_action') and content:
                 action = st.session_state.ai_pending_action
                 prompts = {
-                    "summarize": f"Summarize this content concisely in bullet points. {course_context}\n\nContent:\n{content}",
-                    "expand": f"Expand on this content with more details, context, and practical applications. {course_context}\n\nContent:\n{content}",
-                    "grammar": f"Fix any grammar, spelling, and clarity issues. Return only the corrected text:\n\n{content}",
-                    "simplify": f"Rewrite this content in simpler terms that a beginner could understand. Use analogies where helpful. {course_context}\n\nContent:\n{content}",
-                    "examples": f"Add 3-5 practical, real-world examples to illustrate the concepts. {course_context}\n\nContent:\n{content}",
-                    "outline": f"Create a structured outline/table of contents from this content with main topics and subtopics:\n\n{content}",
-                    "questions": f"Generate 5-7 study questions (mix of multiple choice, short answer, and critical thinking) based on this content. Include answers. {course_context}\n\nContent:\n{content}",
-                    "flashcards": f"Create 5-8 flashcards (Term | Definition format) from the key concepts in this content. {course_context}\n\nContent:\n{content}",
-                    "explain": f"Explain the main concept(s) in this content as if teaching to someone new to the field. Include why it matters and how it connects to real-world applications. {course_context}\n\nContent:\n{content}"
+                    "summarize": f"Summarize this study note content concisely in bullet points. Focus on key concepts and main takeaways. {full_context}\n\nContent:\n{content}",
+                    "expand": f"Expand on this content with more details, context, and practical applications relevant to data analysis. {full_context}\n\nContent:\n{content}",
+                    "grammar": f"Fix any grammar, spelling, and clarity issues in this text. Return only the corrected text in the same format:\n\n{content}",
+                    "simplify": f"Rewrite this content in simpler terms that a beginner could understand. Use analogies and real-world examples where helpful. {full_context}\n\nContent:\n{content}",
+                    "examples": f"Add 3-5 practical, real-world data analysis examples to illustrate the concepts in this content. Make examples relevant to the course context. {full_context}\n\nContent:\n{content}",
+                    "outline": f"Create a structured outline/table of contents from this content with main topics and subtopics. Format as HTML with proper headings:\n\n{content}",
+                    "questions": f"Generate 5-7 study questions (mix of multiple choice, short answer, and critical thinking) based on this content. Include detailed answers. {full_context}\n\nContent:\n{content}",
+                    "flashcards": f"Create 5-8 flashcards in the format 'Term | Definition' from the key concepts in this content. Make them suitable for memorization. {full_context}\n\nContent:\n{content}",
+                    "explain": f"Explain the main concept(s) in this content as if teaching to someone new to data analysis. Include why it matters, how it connects to real-world applications, and relate it to the course context. {full_context}\n\nContent:\n{content}",
+                    "context": f"Add relevant context, background information, and connections to course material. Link concepts to the course learning outcomes and knowledge/skills. {full_context}\n\nContent:\n{content}",
+                    "keypoints": f"Extract and list the key points, main concepts, and important takeaways from this content. Format as a clear bullet list. {full_context}\n\nContent:\n{content}",
+                    "examprep": f"Transform this content into exam preparation material. Include key definitions, important formulas, common exam questions, and things to remember. {full_context}\n\nContent:\n{content}",
+                    "translate_no": f"Translate this content to Norwegian (bokmål). Maintain the same structure and formatting. Keep technical terms in English if commonly used in Norwegian data analysis context:\n\n{content}",
+                    "translate_en": f"Translate this content to English. Maintain the same structure and formatting:\n\n{content}",
+                    "style": f"Improve the writing style, clarity, and flow of this content. Make it more engaging and easier to read while keeping all the information. {full_context}\n\nContent:\n{content}",
+                    "format": f"Format this content properly with clear headings, bullet points, and structure. Improve readability while keeping all information. Return in HTML format:\n\n{content}"
                 }
                 
                 with st.spinner(f"AI is processing..."):
                     try:
+                        system_prompt = f"""You are an expert study assistant for a Data Analyst vocational program at Noroff. 
+You help students learn data analysis concepts, tools, and techniques.
+
+Context about the program:
+- This is a vocational program focused on practical data analysis skills
+- Students learn about business intelligence, statistics, data visualization, and decision-making
+- The program emphasizes real-world applications and industry-relevant tools
+- Students need clear, practical explanations with examples
+
+Guidelines:
+- Format responses in clean HTML (use <h2>, <h3>, <h4>, <p>, <ul>, <ol>, <li>, <strong>, <em>, <blockquote>, <code> tags)
+- Use Norwegian (bokmål) when appropriate, but keep technical terms in English if standard
+- Focus on practical, actionable learning
+- Connect concepts to real-world data analysis scenarios
+- Be clear, concise, and educational
+- When relevant, reference course learning outcomes and skills"""
+                        
                         response = client.chat.completions.create(
                             model="gpt-4o-mini",
                             messages=[
-                                {"role": "system", "content": "You are an expert study assistant for a Data Analyst vocational program. Provide clear, educational content formatted in HTML (use <h3>, <p>, <ul>, <li>, <strong>, <em> tags). Focus on practical, actionable learning."},
+                                {"role": "system", "content": system_prompt},
                                 {"role": "user", "content": prompts[action]}
                             ],
-                            max_tokens=1500
+                            max_tokens=2000,
+                            temperature=0.7
                         )
                         st.session_state.ai_result = response.choices[0].message.content
                         st.session_state.pop('ai_pending_action', None)
@@ -10044,7 +10087,7 @@ elif page == "Study Notes":
         with ai_tabs[1]:
             st.markdown("**Generate new content for your notes:**")
             
-            gen_topic = st.text_input("Topic or concept:", placeholder="e.g., VLOOKUP function, regression analysis, data cleaning...", key="ai_gen_topic")
+            gen_topic = st.text_input("Topic or concept:", placeholder="e.g., VLOOKUP function, regression analysis, data cleaning, KPIs...", key="ai_gen_topic")
             gen_type = st.selectbox("Content type:", [
                 "Concept Explanation",
                 "Step-by-Step Guide", 
@@ -10052,30 +10095,45 @@ elif page == "Study Notes":
                 "Comparison Table",
                 "Common Mistakes & Tips",
                 "Practice Exercises",
-                "Exam Review Notes"
+                "Exam Review Notes",
+                "Case Study Template",
+                "Formula Reference",
+                "Quick Reference Guide"
             ], key="ai_gen_type")
+            
+            include_course_context = st.checkbox("Include course context in generation", value=True, key="ai_include_course")
             
             if st.button("Generate", type="primary", key="ai_generate", use_container_width=True):
                 if gen_topic:
+                    context_to_use = full_context if include_course_context else ""
+                    
                     type_prompts = {
-                        "Concept Explanation": f"Explain the concept of '{gen_topic}' for a data analyst student. Include definition, importance, and practical applications.",
-                        "Step-by-Step Guide": f"Create a step-by-step guide for '{gen_topic}'. Number each step and include tips.",
-                        "Key Points Summary": f"Summarize the key points about '{gen_topic}' in bullet points. Focus on what a student needs to know for exams.",
-                        "Comparison Table": f"Create a comparison for '{gen_topic}' showing pros/cons, use cases, or comparing with similar concepts. Use HTML table format.",
-                        "Common Mistakes & Tips": f"List common mistakes students make with '{gen_topic}' and how to avoid them. Include pro tips.",
-                        "Practice Exercises": f"Create 3 practice exercises about '{gen_topic}' with solutions. Range from basic to intermediate difficulty.",
-                        "Exam Review Notes": f"Create exam-focused review notes for '{gen_topic}'. Include key definitions, formulas, and things to remember."
+                        "Concept Explanation": f"Explain the concept of '{gen_topic}' for a data analyst student. Include definition, importance, practical applications, and real-world examples. {context_to_use}",
+                        "Step-by-Step Guide": f"Create a detailed step-by-step guide for '{gen_topic}'. Number each step clearly, include tips, warnings, and expected outcomes. {context_to_use}",
+                        "Key Points Summary": f"Summarize the key points about '{gen_topic}' in bullet points. Focus on what a student needs to know for exams and practical work. {context_to_use}",
+                        "Comparison Table": f"Create a comparison for '{gen_topic}' showing pros/cons, use cases, or comparing with similar concepts. Use HTML table format with clear headers. {context_to_use}",
+                        "Common Mistakes & Tips": f"List common mistakes students make with '{gen_topic}' and how to avoid them. Include pro tips and best practices. {context_to_use}",
+                        "Practice Exercises": f"Create 3 practice exercises about '{gen_topic}' with detailed solutions. Range from basic to intermediate difficulty. Include explanations. {context_to_use}",
+                        "Exam Review Notes": f"Create exam-focused review notes for '{gen_topic}'. Include key definitions, formulas, important concepts, and things to remember. {context_to_use}",
+                        "Case Study Template": f"Create a case study template for '{gen_topic}'. Include sections for background, problem, data, analysis, findings, and recommendations. {context_to_use}",
+                        "Formula Reference": f"Create a formula reference sheet for '{gen_topic}'. Include formulas, variable definitions, use cases, and worked examples. {context_to_use}",
+                        "Quick Reference Guide": f"Create a quick reference guide for '{gen_topic}'. Include essential information, shortcuts, key concepts, and common use cases in a concise format. {context_to_use}"
                     }
                     
                     with st.spinner("Generating content..."):
                         try:
+                            system_prompt = f"""You are an expert study assistant for a Data Analyst vocational program at Noroff. 
+Format your response in clean HTML (use <h2>, <h3>, <h4>, <p>, <ul>, <ol>, <li>, <table>, <tr>, <td>, <th>, <strong>, <em>, <blockquote>, <code> tags). 
+Be practical and focused on real-world data analysis. {full_context if include_course_context else ''}"""
+                            
                             response = client.chat.completions.create(
                                 model="gpt-4o-mini",
                                 messages=[
-                                    {"role": "system", "content": f"You are an expert study assistant for a Data Analyst vocational program. {course_context}. Format your response in clean HTML (use <h3>, <h4>, <p>, <ul>, <ol>, <li>, <table>, <tr>, <td>, <th>, <strong>, <em> tags). Be practical and focused on real-world data analysis."},
+                                    {"role": "system", "content": system_prompt},
                                     {"role": "user", "content": type_prompts[gen_type]}
                                 ],
-                                max_tokens=1500
+                                max_tokens=2000,
+                                temperature=0.7
                             )
                             st.session_state.ai_result = response.choices[0].message.content
                             st.rerun()
@@ -10085,26 +10143,81 @@ elif page == "Study Notes":
                     st.warning("Enter a topic first.")
         
         with ai_tabs[2]:
+            st.markdown("**Analyze and improve your notes:**")
+            
+            analyze_type = st.selectbox("Analysis type:", [
+                "Check Completeness",
+                "Identify Gaps",
+                "Suggest Improvements",
+                "Compare with Course Material",
+                "Extract Key Concepts",
+                "Find Related Topics",
+                "Assess Exam Readiness"
+            ], key="ai_analyze_type")
+            
+            if st.button("Analyze", type="primary", key="ai_analyze", use_container_width=True):
+                if content:
+                    analyze_prompts = {
+                        "Check Completeness": f"Analyze this study note and check if it's complete. Identify what might be missing (definitions, examples, applications, etc.). {full_context}\n\nContent:\n{content}",
+                        "Identify Gaps": f"Identify knowledge gaps in this study note. What important concepts, details, or connections are missing? {full_context}\n\nContent:\n{content}",
+                        "Suggest Improvements": f"Review this study note and suggest specific improvements for clarity, completeness, and learning effectiveness. {full_context}\n\nContent:\n{content}",
+                        "Compare with Course Material": f"Compare this study note with the course material and learning outcomes. Does it cover the required topics? What should be added? {full_context}\n\nContent:\n{content}",
+                        "Extract Key Concepts": f"Extract and list all key concepts, terms, and important information from this study note. Organize them clearly. {full_context}\n\nContent:\n{content}",
+                        "Find Related Topics": f"Identify related topics, concepts, and connections that should be linked or referenced in this study note. {full_context}\n\nContent:\n{content}",
+                        "Assess Exam Readiness": f"Assess if this study note is ready for exam preparation. What's missing? What should be emphasized? Provide specific recommendations. {full_context}\n\nContent:\n{content}"
+                    }
+                    
+                    with st.spinner("Analyzing..."):
+                        try:
+                            system_prompt = f"""You are an expert study assistant for a Data Analyst vocational program. 
+Provide detailed, constructive analysis. Format responses in clean HTML with clear sections. 
+Be specific and actionable in your recommendations. {full_context}"""
+                            
+                            response = client.chat.completions.create(
+                                model="gpt-4o-mini",
+                                messages=[
+                                    {"role": "system", "content": system_prompt},
+                                    {"role": "user", "content": analyze_prompts[analyze_type]}
+                                ],
+                                max_tokens=2000,
+                                temperature=0.7
+                            )
+                            st.session_state.ai_result = response.choices[0].message.content
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"Error: {str(e)}")
+                else:
+                    st.warning("Write some content first to analyze.")
+        
+        with ai_tabs[3]:
             st.markdown("**Ask anything or give custom instructions:**")
-            custom_prompt = st.text_area("Your prompt:", placeholder="e.g., 'Translate to Norwegian', 'Make this more formal', 'Add more statistics examples'...", key="ai_custom_prompt", height=100)
+            custom_prompt = st.text_area("Your prompt:", placeholder="e.g., 'Translate to Norwegian', 'Make this more formal', 'Add more statistics examples', 'Create a mind map structure'...", key="ai_custom_prompt", height=120)
             
             include_content = st.checkbox("Include current note content", value=True, key="ai_include_content")
+            include_course_info = st.checkbox("Include course context", value=True, key="ai_include_course_info")
             
             if st.button("Send to AI", type="primary", key="ai_custom_send", use_container_width=True):
                 if custom_prompt:
                     full_prompt = custom_prompt
                     if include_content and content:
-                        full_prompt = f"{custom_prompt}\n\n{course_context}\n\nContent:\n{content}"
+                        full_prompt = f"{custom_prompt}\n\nContent:\n{content}"
+                    if include_course_info:
+                        full_prompt = f"{full_prompt}\n\n{course_context}"
                     
                     with st.spinner("Processing..."):
                         try:
+                            system_prompt = f"""You are a helpful study assistant for a Data Analyst program at Noroff. 
+Format responses in HTML when appropriate. Be helpful, educational, and practical. 
+Focus on data analysis concepts, tools, and real-world applications."""
+                            
                             response = client.chat.completions.create(
                                 model="gpt-4o-mini",
                                 messages=[
-                                    {"role": "system", "content": "You are a helpful study assistant for a Data Analyst program. Format responses in HTML when appropriate. Be helpful and educational."},
+                                    {"role": "system", "content": system_prompt},
                                     {"role": "user", "content": full_prompt}
                                 ],
-                                max_tokens=1500
+                                max_tokens=2000,
+                                temperature=0.7
                             )
                             st.session_state.ai_result = response.choices[0].message.content
                             st.rerun()
@@ -10116,25 +10229,42 @@ elif page == "Study Notes":
         # Display AI result
         if st.session_state.get('ai_result'):
             st.markdown("---")
-            st.markdown("**AI Result:**")
-            with st.container():
-                st.markdown(st.session_state.ai_result, unsafe_allow_html=True)
+            st.markdown(f"### {render_mui_icon('auto_awesome', 24)} AI Result", unsafe_allow_html=True)
             
-            result_col1, result_col2, result_col3 = st.columns(3)
+            with st.container():
+                st.markdown(
+                    f"""
+                    <div style="background: #f8f9fa; border-left: 4px solid #4A90D9; padding: 20px; border-radius: 4px; margin: 15px 0;">
+                    {st.session_state.ai_result}
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+            
+            st.markdown("**Actions:**")
+            result_col1, result_col2, result_col3, result_col4 = st.columns(4)
             with result_col1:
-                if st.button("📥 Replace Content", key="ai_replace", use_container_width=True):
+                if st.button("📥 Replace Content", key="ai_replace", use_container_width=True, type="primary"):
                     st.session_state.current_note_content = st.session_state.ai_result
                     st.session_state.quill_key_counter = st.session_state.get('quill_key_counter', 0) + 1
                     st.session_state.pop('ai_result', None)
+                    st.success("Content replaced!")
                     st.rerun()
             with result_col2:
                 if st.button("➕ Append to Note", key="ai_append", use_container_width=True):
                     current = st.session_state.get('current_note_content', '')
-                    st.session_state.current_note_content = current + f"<hr><h3>AI Generated</h3>{st.session_state.ai_result}"
+                    separator = "<hr>" if current else ""
+                    st.session_state.current_note_content = current + f"{separator}<h3>AI Generated Content</h3>{st.session_state.ai_result}"
                     st.session_state.quill_key_counter = st.session_state.get('quill_key_counter', 0) + 1
                     st.session_state.pop('ai_result', None)
+                    st.success("Content appended!")
                     st.rerun()
             with result_col3:
+                if st.button("📋 Copy to Clipboard", key="ai_copy", use_container_width=True):
+                    # Note: Streamlit doesn't have native clipboard, but we can show the text
+                    st.code(st.session_state.ai_result, language='html')
+                    st.info("Right-click the code above and select 'Copy' to copy the content.")
+            with result_col4:
                 if st.button("❌ Dismiss", key="ai_dismiss", use_container_width=True):
                     st.session_state.pop('ai_result', None)
                     st.rerun()
