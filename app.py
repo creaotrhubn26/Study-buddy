@@ -10059,7 +10059,7 @@ Context about the program:
 
 Guidelines:
 - Format responses in clean HTML (use <h2>, <h3>, <h4>, <p>, <ul>, <ol>, <li>, <strong>, <em>, <blockquote>, <code> tags)
-- Use Norwegian (bokmål) when appropriate, but keep technical terms in English if standard
+- Always respond in English
 - Focus on practical, actionable learning
 - Connect concepts to real-world data analysis scenarios
 - Be clear, concise, and educational
@@ -10124,6 +10124,7 @@ Guidelines:
                         try:
                             system_prompt = f"""You are an expert study assistant for a Data Analyst vocational program at Noroff. 
 Format your response in clean HTML (use <h2>, <h3>, <h4>, <p>, <ul>, <ol>, <li>, <table>, <tr>, <td>, <th>, <strong>, <em>, <blockquote>, <code> tags). 
+Always respond in English.
 Be practical and focused on real-world data analysis. {full_context if include_course_context else ''}"""
                             
                             response = client.chat.completions.create(
@@ -10171,6 +10172,7 @@ Be practical and focused on real-world data analysis. {full_context if include_c
                         try:
                             system_prompt = f"""You are an expert study assistant for a Data Analyst vocational program. 
 Provide detailed, constructive analysis. Format responses in clean HTML with clear sections. 
+Always respond in English.
 Be specific and actionable in your recommendations. {full_context}"""
                             
                             response = client.chat.completions.create(
@@ -10207,7 +10209,8 @@ Be specific and actionable in your recommendations. {full_context}"""
                     with st.spinner("Processing..."):
                         try:
                             system_prompt = f"""You are a helpful study assistant for a Data Analyst program at Noroff. 
-Format responses in HTML when appropriate. Be helpful, educational, and practical. 
+Format responses in HTML when appropriate. Always respond in English.
+Be helpful, educational, and practical. 
 Focus on data analysis concepts, tools, and real-world applications."""
                             
                             response = client.chat.completions.create(
@@ -10225,64 +10228,55 @@ Focus on data analysis concepts, tools, and real-world applications."""
                             st.error(f"Error: {str(e)}")
                 else:
                     st.warning("Enter a prompt first.")
+    
+    # Display AI result - outside of AI panel so it's always visible
+    if st.session_state.get('ai_result'):
+        st.markdown("---")
+        st.markdown(f"### {render_mui_icon('auto_awesome', 24)} AI Generated Result", unsafe_allow_html=True)
         
-        # Display AI result
-        if st.session_state.get('ai_result'):
+        # Get the result content
+        ai_result_content = st.session_state.ai_result
+        
+        # Display the result with proper HTML rendering
+        st.markdown(ai_result_content, unsafe_allow_html=True)
+        
+        st.markdown("---")
+        st.markdown("**Actions:**")
+        result_col1, result_col2, result_col3, result_col4 = st.columns(4)
+        
+        with result_col1:
+            if st.button("📥 Replace Content", key="ai_replace", use_container_width=True, type="primary"):
+                st.session_state.current_note_content = ai_result_content
+                st.session_state.quill_key_counter = st.session_state.get('quill_key_counter', 0) + 1
+                st.session_state.pop('ai_result', None)
+                st.rerun()
+        
+        with result_col2:
+            if st.button("➕ Append to Note", key="ai_append", use_container_width=True):
+                current = st.session_state.get('current_note_content', '')
+                separator = "<hr>" if current else ""
+                st.session_state.current_note_content = current + f"{separator}<h3>AI Generated Content</h3>{ai_result_content}"
+                st.session_state.quill_key_counter = st.session_state.get('quill_key_counter', 0) + 1
+                st.session_state.pop('ai_result', None)
+                st.rerun()
+        
+        with result_col3:
+            if st.button("📋 View HTML", key="ai_view_html", use_container_width=True):
+                st.session_state.show_raw_html = not st.session_state.get('show_raw_html', False)
+                st.rerun()
+        
+        with result_col4:
+            if st.button("❌ Dismiss", key="ai_dismiss", use_container_width=True):
+                st.session_state.pop('ai_result', None)
+                st.session_state.pop('show_raw_html', None)
+                st.rerun()
+        
+        # Show raw HTML if requested
+        if st.session_state.get('show_raw_html'):
             st.markdown("---")
-            st.markdown(f"### {render_mui_icon('auto_awesome', 24)} AI Result", unsafe_allow_html=True)
-            
-            # Get the result content
-            ai_result_content = st.session_state.ai_result
-            
-            # Display the result - use both methods for compatibility
-            try:
-                # Try direct HTML rendering first
-                st.markdown(ai_result_content, unsafe_allow_html=True)
-            except:
-                # Fallback to text display
-                st.text_area("AI Generated Content", value=ai_result_content, height=300, key="ai_result_display")
-            
-            st.markdown("---")
-            st.markdown("**Actions:**")
-            result_col1, result_col2, result_col3, result_col4 = st.columns(4)
-            
-            with result_col1:
-                replace_btn = st.button("📥 Replace Content", key="ai_replace", use_container_width=True, type="primary")
-                if replace_btn:
-                    st.session_state.current_note_content = ai_result_content
-                    st.session_state.quill_key_counter = st.session_state.get('quill_key_counter', 0) + 1
-                    st.session_state.pop('ai_result', None)
-                    st.rerun()
-            
-            with result_col2:
-                append_btn = st.button("➕ Append to Note", key="ai_append", use_container_width=True)
-                if append_btn:
-                    current = st.session_state.get('current_note_content', '')
-                    separator = "<hr>" if current else ""
-                    st.session_state.current_note_content = current + f"{separator}<h3>AI Generated Content</h3>{ai_result_content}"
-                    st.session_state.quill_key_counter = st.session_state.get('quill_key_counter', 0) + 1
-                    st.session_state.pop('ai_result', None)
-                    st.rerun()
-            
-            with result_col3:
-                view_html_btn = st.button("📋 View HTML", key="ai_view_html", use_container_width=True)
-                if view_html_btn:
-                    st.session_state.show_raw_html = not st.session_state.get('show_raw_html', False)
-                    st.rerun()
-            
-            with result_col4:
-                dismiss_btn = st.button("❌ Dismiss", key="ai_dismiss", use_container_width=True)
-                if dismiss_btn:
-                    st.session_state.pop('ai_result', None)
-                    st.session_state.pop('show_raw_html', None)
-                    st.rerun()
-            
-            # Show raw HTML if requested
-            if st.session_state.get('show_raw_html'):
-                st.markdown("---")
-                st.markdown("**Raw HTML Code:**")
-                st.code(ai_result_content, language='html')
-                st.info("💡 Copy this HTML code and paste it into your note editor if needed.")
+            st.markdown("**Raw HTML Code:**")
+            st.code(ai_result_content, language='html')
+            st.info("💡 Copy this HTML code and paste it into your note editor if needed.")
     
     if st.session_state.get('show_stats'):
         st.markdown("---")
