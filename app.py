@@ -10231,43 +10231,58 @@ Focus on data analysis concepts, tools, and real-world applications."""
             st.markdown("---")
             st.markdown(f"### {render_mui_icon('auto_awesome', 24)} AI Result", unsafe_allow_html=True)
             
-            with st.container():
-                st.markdown(
-                    f"""
-                    <div style="background: #f8f9fa; border-left: 4px solid #4A90D9; padding: 20px; border-radius: 4px; margin: 15px 0;">
-                    {st.session_state.ai_result}
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
+            # Get the result content
+            ai_result_content = st.session_state.ai_result
             
+            # Display the result - use both methods for compatibility
+            try:
+                # Try direct HTML rendering first
+                st.markdown(ai_result_content, unsafe_allow_html=True)
+            except:
+                # Fallback to text display
+                st.text_area("AI Generated Content", value=ai_result_content, height=300, key="ai_result_display")
+            
+            st.markdown("---")
             st.markdown("**Actions:**")
             result_col1, result_col2, result_col3, result_col4 = st.columns(4)
+            
             with result_col1:
-                if st.button("📥 Replace Content", key="ai_replace", use_container_width=True, type="primary"):
-                    st.session_state.current_note_content = st.session_state.ai_result
+                replace_btn = st.button("📥 Replace Content", key="ai_replace", use_container_width=True, type="primary")
+                if replace_btn:
+                    st.session_state.current_note_content = ai_result_content
                     st.session_state.quill_key_counter = st.session_state.get('quill_key_counter', 0) + 1
                     st.session_state.pop('ai_result', None)
-                    st.success("Content replaced!")
                     st.rerun()
+            
             with result_col2:
-                if st.button("➕ Append to Note", key="ai_append", use_container_width=True):
+                append_btn = st.button("➕ Append to Note", key="ai_append", use_container_width=True)
+                if append_btn:
                     current = st.session_state.get('current_note_content', '')
                     separator = "<hr>" if current else ""
-                    st.session_state.current_note_content = current + f"{separator}<h3>AI Generated Content</h3>{st.session_state.ai_result}"
+                    st.session_state.current_note_content = current + f"{separator}<h3>AI Generated Content</h3>{ai_result_content}"
                     st.session_state.quill_key_counter = st.session_state.get('quill_key_counter', 0) + 1
                     st.session_state.pop('ai_result', None)
-                    st.success("Content appended!")
                     st.rerun()
+            
             with result_col3:
-                if st.button("📋 Copy to Clipboard", key="ai_copy", use_container_width=True):
-                    # Note: Streamlit doesn't have native clipboard, but we can show the text
-                    st.code(st.session_state.ai_result, language='html')
-                    st.info("Right-click the code above and select 'Copy' to copy the content.")
-            with result_col4:
-                if st.button("❌ Dismiss", key="ai_dismiss", use_container_width=True):
-                    st.session_state.pop('ai_result', None)
+                view_html_btn = st.button("📋 View HTML", key="ai_view_html", use_container_width=True)
+                if view_html_btn:
+                    st.session_state.show_raw_html = not st.session_state.get('show_raw_html', False)
                     st.rerun()
+            
+            with result_col4:
+                dismiss_btn = st.button("❌ Dismiss", key="ai_dismiss", use_container_width=True)
+                if dismiss_btn:
+                    st.session_state.pop('ai_result', None)
+                    st.session_state.pop('show_raw_html', None)
+                    st.rerun()
+            
+            # Show raw HTML if requested
+            if st.session_state.get('show_raw_html'):
+                st.markdown("---")
+                st.markdown("**Raw HTML Code:**")
+                st.code(ai_result_content, language='html')
+                st.info("💡 Copy this HTML code and paste it into your note editor if needed.")
     
     if st.session_state.get('show_stats'):
         st.markdown("---")
