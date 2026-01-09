@@ -5,7 +5,7 @@ import os
 import json
 import time
 import re
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 try:
     from spellchecker import SpellChecker
     SPELLCHECK_AVAILABLE = True
@@ -8347,6 +8347,8 @@ if 'exam_start_time' not in st.session_state:
     st.session_state.exam_start_time = None
 if 'code_snippets' not in st.session_state:
     st.session_state.code_snippets = {}
+if 'code_snippet_favorites' not in st.session_state:
+    st.session_state.code_snippet_favorites = []
 if 'study_timer_active' not in st.session_state:
     st.session_state.study_timer_active = False
 if 'study_timer_start' not in st.session_state:
@@ -8357,6 +8359,8 @@ if 'study_sessions' not in st.session_state:
     st.session_state.study_sessions = []
 if 'study_time_by_course' not in st.session_state:
     st.session_state.study_time_by_course = {}
+if 'important_dates' not in st.session_state:
+    st.session_state.important_dates = []
 
 def generate_practice_question(course, question_type="general"):
     course_info = f"Course: {course['name']}\nDescription: {course['description']}\nKnowledge topics: {', '.join(course['knowledge'][:3])}\nSkills: {', '.join(course['skills'][:3])}"
@@ -8458,6 +8462,153 @@ if page == "Overview":
     with col2:
         st.subheader("🔗 Useful Links")
         st.markdown("[📖 Study Catalog](https://studiekatalog.edutorium.no/voc/en/programme/PDAN/2025-autumn)")
+    
+    st.markdown("---")
+    
+    # Define render_mui_icon function for Overview page
+    def render_mui_icon(icon_name, size=20):
+        """Render Material Icon as HTML"""
+        return f'<span class="material-icons md-{size}" style="vertical-align: middle; font-size: {size}px;">{icon_name}</span>'
+    
+    st.markdown(f"### {render_mui_icon('event', 28)} Important Dates", unsafe_allow_html=True)
+    
+    # Add new date form
+    with st.expander("➕ Add Important Date", expanded=False):
+        st.markdown(f"{render_mui_icon('add_circle', 20)} **Add a new important date**", unsafe_allow_html=True)
+        date_col1, date_col2 = st.columns(2)
+        with date_col1:
+            new_date = st.date_input("Date:", key="new_important_date")
+            new_date_type = st.selectbox(
+                "Type:",
+                ["Exam", "Assignment Deadline", "Project Deadline", "Course Start", "Course End", "Other"],
+                key="new_date_type"
+            )
+        with date_col2:
+            new_date_title = st.text_input("Title/Description:", placeholder="e.g., Final Exam - Data Analysis", key="new_date_title")
+            new_date_course = st.selectbox(
+                "Related Course (optional):",
+                ["(None)"] + [f"{c['code']} - {c['name']}" for c in courses_data],
+                key="new_date_course"
+            )
+        
+        if st.button("Add Date", type="primary", key="add_important_date"):
+            if new_date_title:
+                date_entry = {
+                    "date": new_date.isoformat(),
+                    "type": new_date_type,
+                    "title": new_date_title,
+                    "course": new_date_course if new_date_course != "(None)" else None
+                }
+                st.session_state.important_dates.append(date_entry)
+                st.success(f"Added: {new_date_type} - {new_date_title}")
+                st.rerun()
+            else:
+                st.warning("Please enter a title/description.")
+    
+    # Display important dates
+    if st.session_state.important_dates:
+        # Sort dates
+        sorted_dates = sorted(st.session_state.important_dates, key=lambda x: x["date"])
+        
+        # Get today's date for comparison
+        today = date.today()
+        
+        # Separate upcoming and past dates
+        upcoming_dates = []
+        past_dates = []
+        
+        for date_entry in sorted_dates:
+            event_date = date.fromisoformat(date_entry["date"])
+            if event_date >= today:
+                upcoming_dates.append(date_entry)
+            else:
+                past_dates.append(date_entry)
+        
+        # Display upcoming dates
+        if upcoming_dates:
+            st.markdown(f"**{render_mui_icon('schedule', 18)} Upcoming Dates:**", unsafe_allow_html=True)
+            for idx, date_entry in enumerate(upcoming_dates):
+                event_date = date.fromisoformat(date_entry["date"])
+                days_until = (event_date - today).days
+                
+                # Icon and color coding based on urgency
+                if days_until <= 7:
+                    urgency_icon = render_mui_icon('error', 20)
+                    urgency_color = "#dc3545"
+                elif days_until <= 30:
+                    urgency_icon = render_mui_icon('warning', 20)
+                    urgency_color = "#ffc107"
+                else:
+                    urgency_icon = render_mui_icon('check_circle', 20)
+                    urgency_color = "#28a745"
+                
+                # Type icon mapping
+                type_icons = {
+                    "Exam": "quiz",
+                    "Assignment Deadline": "assignment",
+                    "Project Deadline": "folder",
+                    "Course Start": "play_arrow",
+                    "Course End": "stop",
+                    "Other": "event"
+                }
+                type_icon = render_mui_icon(type_icons.get(date_entry['type'], 'event'), 18)
+                
+                date_col1, date_col2, date_col3 = st.columns([3, 2, 1])
+                with date_col1:
+                    course_info = f" ({date_entry['course']})" if date_entry.get('course') else ""
+                    st.markdown(f"{urgency_icon} {type_icon} **{date_entry['type']}:** {date_entry['title']}{course_info}", unsafe_allow_html=True)
+                with date_col2:
+                    st.markdown(f"{render_mui_icon('calendar_today', 16)} {event_date.strftime('%B %d, %Y')}", unsafe_allow_html=True)
+                with date_col3:
+                    if days_until == 0:
+                        st.markdown(f"**{render_mui_icon('today', 16)} Today!**", unsafe_allow_html=True)
+                    elif days_until == 1:
+                        st.markdown(f"**{render_mui_icon('schedule', 16)} Tomorrow**", unsafe_allow_html=True)
+                    else:
+                        st.markdown(f"{render_mui_icon('schedule', 16)} {days_until} days", unsafe_allow_html=True)
+                    
+                    # Delete button
+                    delete_btn = st.button("🗑️", key=f"delete_date_{idx}", help="Delete this date")
+                    if delete_btn:
+                        st.session_state.important_dates.remove(date_entry)
+                        st.rerun()
+        
+        # Display past dates (collapsed)
+        if past_dates:
+            with st.expander(f"📜 Past Dates ({len(past_dates)})", expanded=False):
+                st.markdown(f"{render_mui_icon('history', 18)} **Completed dates**", unsafe_allow_html=True)
+                for idx, date_entry in enumerate(past_dates):
+                    event_date = date.fromisoformat(date_entry["date"])
+                    days_ago = (today - event_date).days
+                    
+                    # Type icon mapping
+                    type_icons = {
+                        "Exam": "quiz",
+                        "Assignment Deadline": "assignment",
+                        "Project Deadline": "folder",
+                        "Course Start": "play_arrow",
+                        "Course End": "stop",
+                        "Other": "event"
+                    }
+                    type_icon = render_mui_icon(type_icons.get(date_entry['type'], 'event'), 18)
+                    
+                    past_col1, past_col2, past_col3 = st.columns([3, 2, 1])
+                    with past_col1:
+                        course_info = f" ({date_entry['course']})" if date_entry.get('course') else ""
+                        st.markdown(f"{render_mui_icon('check_circle', 16)} {type_icon} **{date_entry['type']}:** {date_entry['title']}{course_info}", unsafe_allow_html=True)
+                    with past_col2:
+                        st.markdown(f"{render_mui_icon('calendar_today', 16)} {event_date.strftime('%B %d, %Y')}", unsafe_allow_html=True)
+                    with past_col3:
+                        st.markdown(f"{render_mui_icon('schedule', 16)} {days_ago} days ago", unsafe_allow_html=True)
+                        
+                        # Delete button
+                        delete_btn = st.button("🗑️", key=f"delete_past_date_{idx}", help="Delete this date")
+                        if delete_btn:
+                            st.session_state.important_dates.remove(date_entry)
+                            st.rerun()
+    else:
+        st.markdown(f"{render_mui_icon('info', 18)} **No important dates added yet.** Use the form above to add dates like exams, deadlines, etc.", unsafe_allow_html=True)
+        st.info("💡 Tip: Add important dates like exam dates, assignment deadlines, and project milestones to keep track of your schedule.")
 
 elif page == "Training Center":
     st.title("🎓 Training Center")
@@ -10973,19 +11124,195 @@ t_stat, p_value = stats.ttest_ind(group1, group2)""",
                 "language": "python",
                 "category": "Statistics",
                 "description": "Statistical calculations in Python"
+            },
+            "pandas_time_series": {
+                "title": "Time Series Resampling & Rolling",
+                "code": """import pandas as pd
+
+# Ensure datetime index
+df['date'] = pd.to_datetime(df['date'])
+df = df.set_index('date')
+
+# Resample to monthly totals
+monthly = df['sales'].resample('M').sum()
+
+# Rolling 7-day average
+df['sales_7d_avg'] = df['sales'].rolling(window=7, min_periods=1).mean()
+
+# Year-over-year growth
+df['yoy_growth'] = df['sales'].pct_change(periods=365)""",
+                "language": "python",
+                "category": "Time Series",
+                "description": "Common pandas patterns for date indexed data"
+            },
+            "python_visualization": {
+                "title": "Quick Matplotlib/Seaborn Plots",
+                "code": """import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+df = pd.read_csv('sales.csv')
+
+# Line plot with trend
+plt.figure(figsize=(8, 4))
+sns.lineplot(data=df, x='date', y='revenue')
+plt.title('Revenue over time')
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.show()
+
+# Bar chart by category
+plt.figure(figsize=(6, 4))
+sns.barplot(data=df, x='category', y='revenue', estimator=sum)
+plt.title('Revenue by category')
+plt.xticks(rotation=20)
+plt.tight_layout()
+plt.show()""",
+                "language": "python",
+                "category": "Visualization",
+                "description": "Two fast plotting patterns with seaborn/matplotlib"
+            },
+            "sql_window_functions": {
+                "title": "SQL Window Functions",
+                "code": """-- Running totals by date
+SELECT
+    order_date,
+    amount,
+    SUM(amount) OVER (ORDER BY order_date) AS running_revenue
+FROM orders;
+
+-- Ranking within groups
+SELECT
+    customer_id,
+    order_date,
+    amount,
+    ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY amount DESC) AS order_rank
+FROM orders;
+
+-- Previous value comparison
+SELECT
+    order_date,
+    amount,
+    LAG(amount) OVER (ORDER BY order_date) AS prev_amount,
+    amount - LAG(amount) OVER (ORDER BY order_date) AS delta_amount
+FROM orders;""",
+                "language": "sql",
+                "category": "SQL",
+                "description": "Running totals, ranking, and lag/lead examples"
+            },
+            "python_api_requests": {
+                "title": "API Requests with Error Handling",
+                "code": """import requests
+
+BASE_URL = \"https://api.example.com/data\"
+
+def fetch_data(resource_id: str) -> dict:
+    try:
+        response = requests.get(
+            f\"{BASE_URL}/{resource_id}\",
+            timeout=10
+        )
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.Timeout:
+        return {\"error\": \"Request timed out\"}
+    except requests.exceptions.HTTPError as exc:
+        return {\"error\": f\"HTTP error: {exc.response.status_code}\"}
+    except Exception as exc:
+        return {\"error\": f\"Unexpected error: {exc}\"}
+
+payload = fetch_data(\"customers\")
+print(payload)""",
+                "language": "python",
+                "category": "Python",
+                "description": "Requests pattern with timeouts and basic error handling"
+            },
+            "excel_index_match": {
+                "title": "Excel INDEX/MATCH",
+                "code": """=INDEX(return_range, MATCH(lookup_value, lookup_range, 0))
+
+-- Examples:
+=INDEX(D:D, MATCH(A2, A:A, 0))                 -- Get value from column D by ID in A2
+=INDEX(B2:B100, MATCH(\"ProductA\", A2:A100, 0)) -- Lookup product name in column A""",
+                "language": "excel",
+                "category": "Excel",
+                "description": "Flexible lookup pattern that can look left or right"
+            },
+            "python_data_quality": {
+                "title": "Data Quality Checks",
+                "code": """import pandas as pd
+
+def validate_orders(df: pd.DataFrame) -> pd.DataFrame:
+    issues = []
+    
+    if not df['order_id'].is_unique:
+        issues.append('Duplicate order_id values detected')
+    if (df['amount'] < 0).any():
+        issues.append('Negative amounts present')
+    if not df['customer_id'].notna().all():
+        issues.append('Missing customer_id values')
+    if (df['order_date'] > pd.Timestamp.today()).any():
+        issues.append('Orders dated in the future')
+    
+    return pd.DataFrame({'issue': issues})
+
+orders = pd.read_csv('orders.csv')
+print(validate_orders(orders))""",
+                "language": "python",
+                "category": "Data Quality",
+                "description": "Small checklist for catching common data issues"
+            },
+            "stats_ab_test": {
+                "title": "A/B Test Significance (Two Proportions)",
+                "code": """import numpy as np
+from scipy.stats import norm
+
+def ab_z_test(success_a, total_a, success_b, total_b):
+    p_a = success_a / total_a
+    p_b = success_b / total_b
+    p_pool = (success_a + success_b) / (total_a + total_b)
+    
+    se = np.sqrt(p_pool * (1 - p_pool) * (1/total_a + 1/total_b))
+    z = (p_a - p_b) / se
+    p_value = 2 * (1 - norm.cdf(abs(z)))
+    return z, p_value
+
+z_score, p_val = ab_z_test(520, 10000, 570, 10050)
+print(f\"z={z_score:.2f}, p-value={p_val:.4f}\")""",
+                "language": "python",
+                "category": "Statistics",
+                "description": "Lightweight two-proportion z-test without extra deps"
             }
         }
         st.session_state.code_snippets = default_snippets
     
     # Search and filter
-    col_search, col_filter = st.columns([2, 1])
+    categories_available = sorted(
+        set(s.get('category', 'Other') for s in st.session_state.code_snippets.values()),
+        key=str.lower
+    )
+    languages_available = sorted(
+        set(s.get('language', 'python') for s in st.session_state.code_snippets.values())
+    )
+    col_search, col_filter, col_lang = st.columns([2, 1, 1])
     with col_search:
         search_query = st.text_input("🔍 Search snippets:", placeholder="Search by title, description, or code...")
     with col_filter:
         category_filter = st.selectbox(
             "Category:",
-            ["All"] + list(set(s.get('category', 'Other') for s in st.session_state.code_snippets.values()))
+            ["All"] + categories_available
         )
+    with col_lang:
+        language_filter = st.selectbox(
+            "Language:",
+            ["All"] + languages_available
+        )
+    
+    col_meta1, col_meta2 = st.columns([1, 1])
+    with col_meta1:
+        favorites_only = st.checkbox("⭐ Favorites only", value=False)
+    with col_meta2:
+        sort_by = st.selectbox("Sort by:", ["Title", "Category"])
     
     # Filter snippets
     filtered_snippets = st.session_state.code_snippets
@@ -11001,12 +11328,24 @@ t_stat, p_value = stats.ttest_ind(group1, group2)""",
             k: v for k, v in filtered_snippets.items()
             if v.get('category') == category_filter
         }
+    if language_filter != "All":
+        filtered_snippets = {
+            k: v for k, v in filtered_snippets.items()
+            if v.get('language') == language_filter
+        }
+    if favorites_only:
+        filtered_snippets = {
+            k: v for k, v in filtered_snippets.items()
+            if k in st.session_state.code_snippet_favorites
+        }
     
     # Display snippets
     if filtered_snippets:
-        for snippet_id, snippet in filtered_snippets.items():
+        sort_key = (lambda item: item[1].get('category', '').lower()) if sort_by == "Category" else (lambda item: item[1].get('title', '').lower())
+        for snippet_id, snippet in sorted(filtered_snippets.items(), key=sort_key):
             with st.expander(f"📄 {snippet.get('title', 'Untitled')} - {snippet.get('category', 'Other')}"):
                 st.markdown(f"**Description:** {snippet.get('description', 'No description')}")
+                st.caption(f"Language: {snippet.get('language', 'python')} • Category: {snippet.get('category', 'Other')}")
                 st.code(snippet.get('code', ''), language=snippet.get('language', 'python'))
                 
                 # Copy button (using download button as workaround)
@@ -11018,11 +11357,45 @@ t_stat, p_value = stats.ttest_ind(group1, group2)""",
                     mime="text/plain"
                 )
                 
+                # Favorite toggle
+                favorites = set(st.session_state.code_snippet_favorites)
+                fav_toggle = st.checkbox("⭐ Favorite", value=snippet_id in favorites, key=f"favorite_{snippet_id}")
+                if fav_toggle:
+                    favorites.add(snippet_id)
+                else:
+                    favorites.discard(snippet_id)
+                st.session_state.code_snippet_favorites = list(favorites)
+                
                 if st.button(f"🗑️ Delete", key=f"delete_snippet_{snippet_id}"):
                     del st.session_state.code_snippets[snippet_id]
                     st.rerun()
     else:
         st.info("No snippets found. Create one below!")
+    
+    st.markdown("---")
+    st.subheader("📁 Import / Export")
+    export_payload = json.dumps(st.session_state.code_snippets, indent=2)
+    col_export, col_import = st.columns(2)
+    with col_export:
+        st.download_button(
+            "⬇️ Download library (.json)",
+            data=export_payload,
+            file_name="code_snippets.json",
+            mime="application/json"
+        )
+    with col_import:
+        uploaded = st.file_uploader("Upload snippets JSON", type=["json"])
+        if uploaded:
+            try:
+                uploaded_snippets = json.loads(uploaded.read().decode("utf-8"))
+                if isinstance(uploaded_snippets, dict):
+                    st.session_state.code_snippets.update(uploaded_snippets)
+                    st.success(f"Imported {len(uploaded_snippets)} snippets")
+                    st.rerun()
+                else:
+                    st.error("Uploaded file must be a JSON object keyed by snippet id.")
+            except Exception as exc:
+                st.error(f"Could not import snippets: {exc}")
     
     st.markdown("---")
     st.subheader("➕ Add Custom Snippet")
@@ -11032,11 +11405,11 @@ t_stat, p_value = stats.ttest_ind(group1, group2)""",
         new_title = st.text_input("Title:")
         new_category = st.selectbox(
             "Category:",
-            ["Pandas", "SQL", "Excel", "Statistics", "Python", "Other"]
+            ["Pandas", "SQL", "Excel", "Statistics", "Python", "Visualization", "Time Series", "Data Quality", "Other"]
         )
         new_language = st.selectbox(
             "Language:",
-            ["python", "sql", "excel", "javascript", "other"]
+            ["python", "sql", "excel", "javascript", "bash", "r", "other"]
         )
     
     with col2:
