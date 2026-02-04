@@ -12202,6 +12202,568 @@ flowchart TD
 
 ---
 
+### 🔄 The Data Life Cycle
+
+Every piece of data goes through a series of stages called the **data lifecycle**, starting with its initial generation or capture and ending with its eventual archival and retirement. Understanding this lifecycle can help organisations manage their data effectively and get the most value out of it.
+
+<div class="mermaid">
+graph LR
+    A[1. Creation/<br/>Collection<br/>📥] --> B[2. Pre-processing<br/>🧹]
+    B --> C[3. Storage<br/>💾]
+    C --> D[4. Processing<br/>⚙️]
+    D --> E[5. Analysis<br/>📊]
+    E --> F[6. Visualisation<br/>& Reporting<br/>📈]
+    F --> G[7. Action<br/>💡]
+    G --> H[8. Archiving<br/>& Destruction<br/>🗄️]
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style B fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style C fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style D fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style E fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style F fill:#4ECDC4,stroke:#2C7873,stroke-width:2px,color:#fff
+    style G fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style H fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff
+</div>
+
+#### The 8 Stages of the Data Life Cycle
+
+---
+
+##### 1. Creation or Collection 📥
+
+**Data generation or gathering** occurs during the lifecycle's initial phase. This might entail collecting raw data from various sources.
+
+**Common Data Sources**:
+- IoT devices and sensors
+- User-generated content (social media, reviews)
+- Transactional systems (sales, purchases)
+- Data feeds and APIs
+- Web scraping and crawling
+- Manual data entry
+- Third-party data providers
+
+**Examples**:
+- E-commerce: Customer clicks, purchases, cart additions
+- Healthcare: Patient records, vital signs, lab results
+- Manufacturing: Sensor readings, production metrics
+- Social Media: Posts, likes, comments, shares
+
+<div class="mermaid">
+graph TB
+    A[Data Collection] --> B[IoT Devices<br/>📱<br/>Sensors, Wearables]
+    A --> C[User Content<br/>👥<br/>Social Media, Reviews]
+    A --> D[Transactions<br/>💳<br/>Sales, Purchases]
+    A --> E[Data Feeds<br/>🌐<br/>APIs, Web Scraping]
+
+    B --> F[Raw Data<br/>Storage]
+    C --> F
+    D --> F
+    E --> F
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style D fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style E fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style F fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff
+</div>
+
+---
+
+##### 2. Pre-processing 🧹
+
+To prepare the data for analysis, this stage frequently involves **cleaning and transforming** the data.
+
+**Common Pre-processing Tasks**:
+- **Data Cleaning**: Removing errors, inconsistencies, and noise
+- **Handling Missing Data**: Imputation or removal of missing values
+- **Removing Duplicates**: Identifying and eliminating duplicate records
+- **Data Type Conversion**: Converting data to appropriate types
+- **Normalization**: Scaling values to a standard range
+- **Standardization**: Ensuring consistent formats (dates, addresses)
+- **Outlier Detection**: Identifying and handling anomalous values
+
+**Examples**:
+- Standardizing date formats: "06/20/2023" → "2023-06-20"
+- Removing duplicate customer records
+- Filling missing email addresses
+- Converting text to lowercase for consistency
+- Removing special characters from phone numbers
+
+<div class="mermaid">
+flowchart LR
+    A[Raw Data<br/>❌ Messy] --> B[Data Cleaning<br/>🧹]
+    B --> C[Handle Missing<br/>Values]
+    C --> D[Remove<br/>Duplicates]
+    D --> E[Convert<br/>Data Types]
+    E --> F[Normalize/<br/>Standardize]
+    F --> G[Clean Data<br/>✅ Ready]
+
+    style A fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff
+    style B fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style C fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style D fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style E fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style F fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style G fill:#50C878,stroke:#2E7D32,stroke-width:3px,color:#fff
+</div>
+
+---
+
+##### 3. Storage 💾
+
+Once the data is prepared, it is **stored in a way that enables easy access and retrieval**. Depending on the size and structure of the data, different storage solutions may be used.
+
+**Storage Options**:
+- **Relational Databases**: MySQL, PostgreSQL (structured data)
+- **NoSQL Databases**: MongoDB, Cassandra (unstructured/semi-structured)
+- **Data Lakes**: Store raw data in native format (all types)
+- **Data Warehouses**: Optimized for analytics and reporting
+- **Cloud Storage**: AWS S3, Azure Blob, Google Cloud Storage
+- **File Systems**: CSV, JSON, Parquet files
+
+**Considerations**:
+- Data volume and growth rate
+- Access patterns and query requirements
+- Cost and scalability
+- Security and compliance
+- Backup and disaster recovery
+
+<div class="mermaid">
+graph TB
+    A[Clean Data] --> B{Data Type &<br/>Volume?}
+
+    B -->|Structured,<br/>Relational| C[Relational DB<br/>🗄️<br/>MySQL, PostgreSQL]
+    B -->|Unstructured,<br/>Large Scale| D[NoSQL DB<br/>🌐<br/>MongoDB, Cassandra]
+    B -->|All Types,<br/>Raw Format| E[Data Lake<br/>🏞️<br/>Store Everything]
+    B -->|Analytics,<br/>Reporting| F[Data Warehouse<br/>📊<br/>Optimized Queries]
+
+    C --> G[Ready for<br/>Processing]
+    D --> G
+    E --> G
+    F --> G
+
+    style A fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style B fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style C fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style D fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style E fill:#4ECDC4,stroke:#2C7873,stroke-width:2px,color:#fff
+    style F fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style G fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#fff
+</div>
+
+---
+
+##### 4. Processing ⚙️
+
+The stored data is **prepared for analysis** at this stage. This could entail aggregating data, creating derived variables, or combining data from various sources.
+
+**Common Processing Tasks**:
+- **Data Aggregation**: Summarizing data (totals, averages, counts)
+- **Feature Engineering**: Creating new variables from existing ones
+- **Data Integration**: Combining data from multiple sources
+- **Data Transformation**: Reshaping data for analysis
+- **Filtering**: Selecting relevant subsets of data
+- **Joining**: Merging related datasets
+
+**Examples**:
+- Calculating total sales per customer
+- Creating age groups from birth dates
+- Combining customer data with transaction data
+- Calculating moving averages
+- Creating customer segments based on behavior
+
+<div class="mermaid">
+flowchart TB
+    A[Stored Data] --> B[Aggregation<br/>📊<br/>Sum, Avg, Count]
+    A --> C[Feature Engineering<br/>🔧<br/>New Variables]
+    A --> D[Data Integration<br/>🔗<br/>Combine Sources]
+
+    B --> E[Processed Data<br/>Ready for Analysis]
+    C --> E
+    D --> E
+
+    E --> F[Example:<br/>Customer 360° View]
+
+    style A fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style B fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style C fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style D fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style E fill:#50C878,stroke:#2E7D32,stroke-width:3px,color:#fff
+    style F fill:#4ECDC4,stroke:#2C7873,stroke-width:2px,color:#fff
+</div>
+
+---
+
+##### 5. Analysis 📊
+
+**Insights are gleaned** from the processed data through analysis. This is where the real value of data emerges.
+
+**Analysis Techniques**:
+- **Exploratory Data Analysis (EDA)**: Understanding data patterns and distributions
+- **Statistical Analysis**: Hypothesis testing, correlation, regression
+- **Machine Learning**: Predictive modeling, classification, clustering
+- **Time Series Analysis**: Trend analysis, forecasting
+- **A/B Testing**: Comparing different approaches
+- **Cohort Analysis**: Analyzing groups over time
+
+**Examples**:
+- Identifying customer churn patterns
+- Predicting future sales
+- Segmenting customers by behavior
+- Detecting fraud or anomalies
+- Recommending products
+
+<div class="mermaid">
+graph TB
+    A[Processed Data] --> B{Analysis Type?}
+
+    B --> C[Exploratory<br/>📈<br/>Understand Patterns]
+    B --> D[Statistical<br/>📊<br/>Test Hypotheses]
+    B --> E[Machine Learning<br/>🤖<br/>Predict & Classify]
+    B --> F[Time Series<br/>⏱️<br/>Trends & Forecasts]
+
+    C --> G[Insights &<br/>Discoveries<br/>💡]
+    D --> G
+    E --> G
+    F --> G
+
+    style A fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style B fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style C fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style D fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style E fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style F fill:#4ECDC4,stroke:#2C7873,stroke-width:2px,color:#fff
+    style G fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+</div>
+
+---
+
+##### 6. Visualisation and Reporting 📈
+
+The results of analyses are frequently **visualised and presented in reports** to aid comprehension and decision-making.
+
+**Visualisation Types**:
+- **Charts**: Bar charts, line charts, pie charts, scatter plots
+- **Dashboards**: Interactive displays of key metrics
+- **Reports**: Detailed documents with findings and recommendations
+- **Infographics**: Visual representations of complex information
+- **Maps**: Geographic data visualization
+- **Heatmaps**: Showing patterns and correlations
+
+**Tools**:
+- Tableau, Power BI, Looker (BI tools)
+- Matplotlib, Seaborn, Plotly (Python libraries)
+- D3.js (JavaScript visualization)
+- Excel, Google Sheets (spreadsheets)
+
+**Examples**:
+- Sales dashboard showing KPIs
+- Customer segmentation visualization
+- Trend analysis charts
+- Geographic sales maps
+- Executive summary reports
+
+<div class="mermaid">
+flowchart LR
+    A[Insights] --> B[Visualisation<br/>Tools]
+
+    B --> C[Charts<br/>📊<br/>Bar, Line, Pie]
+    B --> D[Dashboards<br/>📈<br/>Interactive KPIs]
+    B --> E[Reports<br/>📄<br/>Detailed Findings]
+
+    C --> F[Decision Makers<br/>👥]
+    D --> F
+    E --> F
+
+    F --> G[Understanding<br/>& Clarity<br/>💡]
+
+    style A fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style B fill:#4ECDC4,stroke:#2C7873,stroke-width:2px,color:#fff
+    style C fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style D fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style E fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style F fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style G fill:#50C878,stroke:#2E7D32,stroke-width:3px,color:#fff
+</div>
+
+---
+
+##### 7. Action 💡
+
+**Business decisions and actions** are guided by the revelations gained from data analysis.
+
+**Types of Actions**:
+- **Strategic Decisions**: Long-term planning and direction
+- **Operational Improvements**: Process optimization and efficiency
+- **Product Development**: New features or products
+- **Marketing Campaigns**: Targeted promotions and messaging
+- **Customer Experience**: Personalization and service improvements
+- **Risk Management**: Identifying and mitigating risks
+- **Resource Allocation**: Optimizing budgets and staffing
+
+**Examples**:
+- Launching a targeted marketing campaign
+- Redesigning a website based on user behavior
+- Adjusting pricing strategy
+- Improving supply chain efficiency
+- Personalizing product recommendations
+- Implementing fraud prevention measures
+
+<div class="mermaid">
+graph TB
+    A[Data-Driven<br/>Insights] --> B{Action Type?}
+
+    B --> C[Strategic<br/>🎯<br/>Long-term Planning]
+    B --> D[Operational<br/>⚙️<br/>Process Optimization]
+    B --> E[Marketing<br/>📢<br/>Campaigns & Targeting]
+    B --> F[Product<br/>🛍️<br/>Development & Features]
+
+    C --> G[Business<br/>Impact<br/>📈]
+    D --> G
+    E --> G
+    F --> G
+
+    G --> H[Competitive<br/>Advantage<br/>🏆]
+
+    style A fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style B fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style C fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style D fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style E fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style F fill:#4ECDC4,stroke:#2C7873,stroke-width:2px,color:#fff
+    style G fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style H fill:#E74C3C,stroke:#C0392B,stroke-width:3px,color:#fff
+</div>
+
+---
+
+##### 8. Archiving and Destruction 🗄️
+
+Data is frequently **archived** after it has served its purpose in case it is needed in the future or for legal reasons. When a certain amount of time has passed, and the data is no longer required, it may be **deleted** in accordance with data retention policies and laws.
+
+**Archiving**:
+- Long-term storage of inactive data
+- Compliance with legal requirements
+- Historical reference and auditing
+- Reduced storage costs (cold storage)
+- Disaster recovery and backup
+
+**Destruction**:
+- Secure deletion of obsolete data
+- Compliance with data retention policies
+- Privacy regulations (GDPR, CCPA)
+- Reducing security risks
+- Freeing up storage space
+
+**Considerations**:
+- Legal and regulatory requirements
+- Data retention policies
+- Privacy and security
+- Cost optimization
+- Audit trails
+
+<div class="mermaid">
+flowchart TD
+    A[Data Lifecycle<br/>Complete] --> B{Still Needed?}
+
+    B -->|Yes, for<br/>compliance| C[Archive<br/>🗄️<br/>Long-term Storage]
+    B -->|No, obsolete| D[Destroy<br/>🗑️<br/>Secure Deletion]
+
+    C --> E[Cold Storage<br/>Low Cost]
+    C --> F[Compliance<br/>Legal Requirements]
+
+    D --> G[Privacy<br/>GDPR, CCPA]
+    D --> H[Security<br/>Reduce Risk]
+
+    E --> I[Future Reference<br/>if Needed]
+    F --> I
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B fill:#FFD700,stroke:#B8860B,stroke-width:3px
+    style C fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style D fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff
+    style E fill:#C8E6C9,stroke:#4CAF50,stroke-width:2px
+    style F fill:#C8E6C9,stroke:#4CAF50,stroke-width:2px
+    style G fill:#FFCDD2,stroke:#E57373,stroke-width:2px
+    style H fill:#FFCDD2,stroke:#E57373,stroke-width:2px
+    style I fill:#4ECDC4,stroke:#2C7873,stroke-width:2px,color:#fff
+</div>
+
+---
+
+#### 🔑 Key Considerations at Each Stage
+
+<div class="important-info">
+Each stage in this lifecycle has its own **data quality, governance, privacy, and security considerations**:
+
+**Data Quality**:
+- Accuracy, completeness, consistency, timeliness
+- Validation and verification at each stage
+- Error detection and correction
+
+**Data Governance**:
+- Policies and procedures for data management
+- Roles and responsibilities
+- Standards and best practices
+- Compliance and auditing
+
+**Privacy**:
+- Personal data protection (GDPR, CCPA)
+- Consent and transparency
+- Data minimization
+- Right to be forgotten
+
+**Security**:
+- Access controls and authentication
+- Encryption (at rest and in transit)
+- Backup and disaster recovery
+- Threat detection and prevention
+</div>
+
+---
+
+### 📚 Real-World Example: RetailCo's Data Life Cycle
+
+Let's consider the example of a retail organisation that relies heavily on customer data to drive its strategic decisions. For simplicity's sake, we'll call this organisation **'RetailCo'**. Here's how data moves through the data lifecycle at RetailCo:
+
+<div class="mermaid">
+graph TB
+    subgraph "RetailCo Data Life Cycle"
+        A[1. Collection<br/>📥<br/>E-commerce, POS,<br/>Loyalty Cards] --> B[2. Pre-processing<br/>🧹<br/>Clean, Standardize,<br/>Remove Duplicates]
+        B --> C[3. Storage<br/>💾<br/>Relational DB + NoSQL<br/>+ Data Lake]
+        C --> D[4. Processing<br/>⚙️<br/>Combine Transaction<br/>+ Feedback Data]
+        D --> E[5. Analysis<br/>📊<br/>ML Forecasting,<br/>Behavior Trends]
+        E --> F[6. Visualisation<br/>📈<br/>KPI Dashboards,<br/>Reports]
+        F --> G[7. Action<br/>💡<br/>Marketing Campaigns,<br/>Website Redesign]
+        G --> H[8. Archive/Destroy<br/>🗄️<br/>Compliance,<br/>Data Retention]
+    end
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style C fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style D fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style E fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style F fill:#4ECDC4,stroke:#2C7873,stroke-width:2px,color:#fff
+    style G fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style H fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff
+</div>
+
+#### Detailed RetailCo Example by Stage
+
+##### 1. Creation or Collection 📥
+
+RetailCo gathers information from various sources. For instance, **transactional data** may come from their e-commerce platform or point-of-sale systems in their physical stores. They might also gather information from **customer surveys** or **loyalty cards**. All of this unprocessed data is initially collected and stored for later processing.
+
+**RetailCo's Data Sources**:
+- E-commerce platform (online purchases, browsing behavior)
+- Point-of-Sale (POS) systems (in-store transactions)
+- Loyalty card programs (customer IDs, purchase history)
+- Customer surveys (satisfaction ratings, feedback)
+- Website analytics (clicks, page views, time on site)
+- Mobile app usage data
+
+##### 2. Pre-processing 🧹
+
+The next step is to clean and transform this raw data. For RetailCo, this might entail **removing duplicate customer records**, **standardising data formats**, checking for **missing or incorrect data** (such as a customer's address or email), and ensuring that data is **consistent across all sources**.
+
+**RetailCo's Pre-processing Tasks**:
+- Remove duplicate customer records (same person, multiple entries)
+- Standardize date formats across all systems
+- Validate email addresses and phone numbers
+- Fill missing customer addresses using postal code lookup
+- Standardize product names and categories
+- Convert currency values to consistent format
+- Remove test transactions and invalid data
+
+##### 3. Storage 💾
+
+After cleaning, the data is easily accessible and stored for later analysis. For more unstructured data, such as transactional data, RetailCo may use a combination of **relational databases** and **NoSQL databases** or **data lakes** (like customer feedback).
+
+**RetailCo's Storage Strategy**:
+- **Relational Database (PostgreSQL)**: Customer profiles, product catalog, transactions
+- **NoSQL Database (MongoDB)**: Customer reviews, feedback, social media mentions
+- **Data Lake (AWS S3)**: Raw logs, clickstream data, images
+- **Data Warehouse (Snowflake)**: Aggregated data for analytics and reporting
+
+##### 4. Processing ⚙️
+
+The data is now prepared for processing and analysis. To obtain a comprehensive understanding of the customer, RetailCo may **combine data from various sources**. For instance, they might combine **transaction data with customer feedback** to better understand the relationship between customer satisfaction and spending.
+
+**RetailCo's Processing Activities**:
+- Join customer profiles with transaction history
+- Combine online and offline purchase data
+- Merge customer feedback with product purchases
+- Calculate customer lifetime value (CLV)
+- Create customer segments based on behavior
+- Aggregate sales by product, category, region, time period
+- Calculate key metrics: average order value, purchase frequency
+
+##### 5. Analysis 📊
+
+After processing the data, insights are gleaned through analysis. RetailCo may employ **machine learning algorithms** to forecast future spending patterns or **statistical analysis** to comprehend trends in consumer behaviour.
+
+**RetailCo's Analysis Techniques**:
+- **Customer Segmentation**: Clustering customers by behavior (RFM analysis)
+- **Churn Prediction**: ML models to identify at-risk customers
+- **Sales Forecasting**: Time series analysis for demand prediction
+- **Market Basket Analysis**: Identifying product associations
+- **Sentiment Analysis**: NLP on customer reviews and feedback
+- **A/B Testing**: Comparing different marketing approaches
+- **Cohort Analysis**: Tracking customer groups over time
+
+##### 6. Visualisation and Reporting 📈
+
+The analysis's findings are presented in a straightforward manner for decision-makers to comprehend. RetailCo may design **dashboards** that show key performance indicators (KPIs) or in-depth **reports** that analyse consumer behaviour in great detail.
+
+**RetailCo's Visualizations**:
+- **Executive Dashboard**: Sales, revenue, customer acquisition, churn rate
+- **Product Performance**: Best sellers, slow movers, inventory levels
+- **Customer Analytics**: Segmentation, lifetime value, satisfaction scores
+- **Geographic Analysis**: Sales by region, store performance maps
+- **Trend Reports**: Year-over-year comparisons, seasonal patterns
+- **Campaign Performance**: Marketing ROI, conversion rates
+
+##### 7. Action 💡
+
+RetailCo can then make strategic decisions based on these revelations. For instance, they might **redesign a portion of their e-commerce website** to enhance the user experience or **target a specific customer segment** with a marketing campaign.
+
+**RetailCo's Data-Driven Actions**:
+- **Targeted Marketing**: Email campaign to high-value customers at risk of churning
+- **Website Redesign**: Improve checkout process based on abandonment analysis
+- **Personalization**: Product recommendations based on purchase history
+- **Inventory Optimization**: Stock levels adjusted based on demand forecasts
+- **Pricing Strategy**: Dynamic pricing for slow-moving products
+- **Customer Service**: Proactive outreach to dissatisfied customers
+- **Store Layout**: Optimize product placement based on market basket analysis
+
+##### 8. Archiving and Destruction 🗄️
+
+Some of the gathered information will lose significance over time. This information will be **archived** by RetailCo, keeping it secure but out of the way. Old data that is no longer useful or that they are no longer required to keep for compliance reasons may also be **destroyed**.
+
+**RetailCo's Data Retention**:
+- **Active Data** (0-2 years): Readily accessible in production databases
+- **Archived Data** (2-7 years): Moved to cold storage for compliance
+- **Destroyed Data** (7+ years): Securely deleted after retention period
+- **Compliance**: GDPR right to be forgotten, PCI DSS requirements
+- **Audit Trails**: Maintain logs of data access and deletion
+
+<div class="important-info">
+**RetailCo's Compliance and Ethics**:
+
+Throughout this lifecycle, RetailCo must comply with **data protection laws** and **ethical standards**, especially when handling sensitive customer data. To guarantee that data is dealt with properly at every stage of its lifecycle, they must also have strong **data governance structures** in place.
+
+**Key Requirements**:
+- **GDPR Compliance**: Customer consent, data minimization, right to access/deletion
+- **PCI DSS**: Secure handling of payment card information
+- **Data Governance**: Clear policies, roles, and responsibilities
+- **Security**: Encryption, access controls, regular audits
+- **Ethics**: Transparency, fairness, customer trust
+</div>
+
+---
+
 ### ⚖️ Relational vs Big Data Databases
 
 Based on the kind and volume of data they're intended to handle, **traditional relational databases** and **big data databases** (also frequently referred to as **NoSQL databases**) serve different purposes, and each has its strengths. The structure, data consistency, scale, and query language of these two types of data storage can be contrasted.
@@ -12553,7 +13115,22 @@ graph TB
                 "TimeSpan/Duration represents time intervals used for calculating durations and time differences",
                 "Choosing the right data type affects storage efficiency, performance, accuracy, and validation",
                 "Common pitfalls: storing phone numbers as integers, using float for currency, storing dates as strings",
-                "Data type selection should consider: storage space, performance needs, accuracy requirements, and compatibility"
+                "Data type selection should consider: storage space, performance needs, accuracy requirements, and compatibility",
+                "The data lifecycle consists of 8 stages: Collection, Pre-processing, Storage, Processing, Analysis, Visualisation, Action, Archiving/Destruction",
+                "Data collection involves gathering raw data from IoT devices, user content, transactions, APIs, and other sources",
+                "Pre-processing includes data cleaning, handling missing values, removing duplicates, type conversion, and normalization",
+                "Storage options include relational databases, NoSQL databases, data lakes, and data warehouses based on data characteristics",
+                "Processing stage involves aggregation, feature engineering, data integration, and transformation for analysis",
+                "Analysis techniques include exploratory data analysis, statistical analysis, machine learning, and time series forecasting",
+                "Visualisation presents insights through charts, dashboards, reports, and infographics for decision-makers",
+                "Action stage translates insights into strategic decisions, operational improvements, marketing campaigns, and product development",
+                "Archiving preserves data for compliance and future reference; destruction securely deletes obsolete data per retention policies",
+                "Each lifecycle stage has considerations for data quality, governance, privacy (GDPR, CCPA), and security",
+                "Data quality involves accuracy, completeness, consistency, and timeliness with validation at each stage",
+                "Data governance requires policies, roles, standards, and compliance frameworks throughout the lifecycle",
+                "RetailCo example demonstrates lifecycle: collecting e-commerce/POS data, cleaning duplicates, storing in hybrid databases",
+                "RetailCo combines transaction and feedback data, uses ML for forecasting, creates KPI dashboards, and takes targeted actions",
+                "Organizations must comply with data protection laws (GDPR, PCI DSS) and maintain strong governance structures throughout the lifecycle"
             ],
             "visual_elements": {
                 "diagrams": True,
