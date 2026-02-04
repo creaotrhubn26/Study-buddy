@@ -11719,6 +11719,489 @@ graph TB
 
 ---
 
+### 🔢 Data Types
+
+Tabular data structures can store a variety of **basic data types**. Although their naming differs across platforms, most storage systems share the same fundamental data types, such as **numeric**, **string-based**, **Boolean**, and **date/time**.
+
+<div class="mermaid">
+graph TB
+    A[Fundamental Data Types] --> B[Numeric<br/>🔢<br/>Numbers & Calculations]
+    A --> C[String/Character<br/>📝<br/>Text Data]
+    A --> D[Boolean<br/>✓/✗<br/>True/False]
+    A --> E[Date/Time<br/>📅<br/>Temporal Data]
+
+    B --> B1[Integer]
+    B --> B2[Float]
+    B --> B3[Complex]
+
+    C --> C1[Character]
+    C --> C2[String]
+
+    D --> D1[True 1]
+    D --> D2[False 0]
+
+    E --> E1[Date]
+    E --> E2[Time]
+    E --> E3[DateTime]
+    E --> E4[TimeSpan]
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style D fill:#FF6B6B,stroke:#C92A2A,stroke-width:2px,color:#fff
+    style E fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style B1 fill:#C8E6C9,stroke:#4CAF50,stroke-width:2px
+    style B2 fill:#C8E6C9,stroke:#4CAF50,stroke-width:2px
+    style B3 fill:#C8E6C9,stroke:#4CAF50,stroke-width:2px
+    style C1 fill:#FFF9C4,stroke:#FBC02D,stroke-width:2px
+    style C2 fill:#FFF9C4,stroke:#FBC02D,stroke-width:2px
+    style D1 fill:#FFCDD2,stroke:#E57373,stroke-width:2px
+    style D2 fill:#FFCDD2,stroke:#E57373,stroke-width:2px
+    style E1 fill:#E1BEE7,stroke:#9C27B0,stroke-width:2px
+    style E2 fill:#E1BEE7,stroke:#9C27B0,stroke-width:2px
+    style E3 fill:#E1BEE7,stroke:#9C27B0,stroke-width:2px
+    style E4 fill:#E1BEE7,stroke:#9C27B0,stroke-width:2px
+</div>
+
+---
+
+#### 1. Numeric Data Types 🔢
+
+**Numeric data** is used to store values on which **mathematical operations are to be carried out** and is the first type of data.
+
+##### Integer (int) 🔢
+
+This represents **positive and negative whole numbers**, such as -1, 0, 1, 2, etc.
+
+**Characteristics**:
+- Whole numbers only (no decimals)
+- Can be positive, negative, or zero
+- Used for counting, indexing, IDs
+- Fixed size in memory (e.g., 32-bit, 64-bit)
+
+**Examples**:
+- Age: 25, 30, 45
+- Count: 0, 1, 100, 1000
+- Temperature: -10, 0, 25 (in Celsius)
+- ID numbers: 12345, 67890
+
+**Use Cases**:
+- Counting items (inventory, users, transactions)
+- Indexing arrays and databases
+- Representing discrete quantities
+- Loop counters and iterations
+
+##### Float (Floating-Point) 🎯
+
+This represents **real numbers** (i.e., decimal numbers), such as -1.23, 0.0, 3.14, etc.
+
+**Characteristics**:
+- Can represent decimal values
+- Approximate representation (not always exact)
+- Used for measurements and calculations
+- Variable precision (float32, float64/double)
+
+**Examples**:
+- Price: 19.99, 99.95, 1234.56
+- Weight: 65.5 kg, 150.2 lbs
+- Temperature: 36.6°C, 98.6°F
+- Pi: 3.14159...
+
+**Use Cases**:
+- Financial calculations (prices, amounts)
+- Scientific measurements
+- Statistical analysis
+- Coordinates (latitude, longitude)
+
+##### Complex Numbers 🌀
+
+This represents **complex numbers**, also called composite numbers, which include both **real and imaginary components**, such as 3 + 2j. Complex numbers are frequently represented by two float values in computing systems.
+
+**Characteristics**:
+- Combination of real and imaginary parts
+- Format: a + bj (where j = √-1)
+- Used in advanced mathematics and engineering
+- Stored as two float values
+
+**Examples**:
+- 3 + 2j
+- -1 + 4j
+- 5.5 + 0j (real number as complex)
+- 0 + 3j (purely imaginary)
+
+**Use Cases**:
+- Signal processing
+- Electrical engineering
+- Quantum mechanics
+- Advanced mathematical computations
+
+<div class="mermaid">
+graph TB
+    subgraph "Numeric Data Types"
+        A[Numeric Types] --> B[Integer<br/>Whole Numbers]
+        A --> C[Float<br/>Decimal Numbers]
+        A --> D[Complex<br/>Real + Imaginary]
+
+        B --> B1[Examples:<br/>-1, 0, 1, 100]
+        B --> B2[Use: Counting,<br/>IDs, Indexing]
+
+        C --> C1[Examples:<br/>3.14, -1.23, 99.99]
+        C --> C2[Use: Prices,<br/>Measurements]
+
+        D --> D1[Examples:<br/>3+2j, -1+4j]
+        D --> D2[Use: Engineering,<br/>Signal Processing]
+    end
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style D fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style B1 fill:#C8E6C9,stroke:#4CAF50,stroke-width:2px
+    style B2 fill:#C8E6C9,stroke:#4CAF50,stroke-width:2px
+    style C1 fill:#FFF9C4,stroke:#FBC02D,stroke-width:2px
+    style C2 fill:#FFF9C4,stroke:#FBC02D,stroke-width:2px
+    style D1 fill:#E1BEE7,stroke:#9C27B0,stroke-width:2px
+    style D2 fill:#E1BEE7,stroke:#9C27B0,stroke-width:2px
+</div>
+
+---
+
+#### 2. String/Character Data Types 📝
+
+Data can also be saved as **strings or characters**. This is commonly referred to as **text storage** in many systems. A **single entity**, like the letter 'a', is referred to as a **character**, while a **group of characters**, like 'abc', is referred to as a **string**.
+
+<div class="key-concept">
+**Important**: This type of data includes **any character** included in the encoding/representation format used on the local device in addition to alphabetic characters. This includes:
+- Alphabetic characters (A-Z, a-z)
+- Punctuation (., !, ?, etc.)
+- Special characters (@, #, $, %, etc.)
+- Numbers that aren't used in calculations (like a phone number: "555-1234")
+- Whitespace (spaces, tabs, newlines)
+- Unicode characters (emojis, international characters)
+</div>
+
+##### Character (char) 🔤
+
+A **single character** or symbol.
+
+**Characteristics**:
+- Single letter, digit, or symbol
+- Enclosed in single quotes: 'a', '1', '@'
+- Fixed size (typically 1 byte for ASCII, more for Unicode)
+
+**Examples**:
+- 'a', 'Z', '5', '@', '!', ' '
+
+##### String (str) 📄
+
+A **sequence of characters** forming text.
+
+**Characteristics**:
+- Multiple characters grouped together
+- Enclosed in quotes: "hello", 'world'
+- Variable length
+- Immutable in some languages, mutable in others
+
+**Examples**:
+- "Hello, World!"
+- "John Doe"
+- "555-1234" (phone number as text)
+- "user@example.com"
+- "2023-06-20" (date as text)
+
+**Use Cases**:
+- Names and addresses
+- Email addresses and URLs
+- Phone numbers (not for calculations)
+- Descriptions and comments
+- Identifiers (product codes, SKUs)
+
+<div class="mermaid">
+flowchart LR
+    A[Text Data] --> B[Character<br/>Single Entity]
+    A --> C[String<br/>Multiple Characters]
+
+    B --> B1['a', 'Z', '5', '@']
+
+    C --> C1["Names:<br/>'John Doe'"]
+    C --> C2["Emails:<br/>'user@example.com'"]
+    C --> C3["Phone:<br/>'555-1234'"]
+    C --> C4["Text:<br/>'Hello, World!'"]
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style B fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style C fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style B1 fill:#FFF9C4,stroke:#FBC02D,stroke-width:2px
+    style C1 fill:#C8E6C9,stroke:#4CAF50,stroke-width:2px
+    style C2 fill:#C8E6C9,stroke:#4CAF50,stroke-width:2px
+    style C3 fill:#C8E6C9,stroke:#4CAF50,stroke-width:2px
+    style C4 fill:#C8E6C9,stroke:#4CAF50,stroke-width:2px
+</div>
+
+---
+
+#### 3. Boolean Data Type ✓/✗
+
+**Boolean formats** can also be used to represent data. This data type is used when only **True or False** values need to be stored. When storing Boolean (or Bool) data, only **one binary bit** is typically used, with **0 denoting false** and **1 denoting true**.
+
+**Characteristics**:
+- Only two possible values: True or False
+- Minimal storage (1 bit)
+- Used for logical operations and conditions
+- Named after mathematician George Boole
+
+**Representations**:
+- True: 1, true, True, yes, on
+- False: 0, false, False, no, off
+
+**Examples**:
+- is_active: True
+- has_discount: False
+- is_verified: True
+- email_confirmed: False
+
+**Use Cases**:
+- Flags and switches (is_active, is_deleted)
+- Conditional logic (if statements)
+- User preferences (notifications_enabled)
+- Status indicators (is_paid, is_shipped)
+- Validation results (is_valid, has_error)
+
+<div class="mermaid">
+graph TB
+    A[Boolean Data Type] --> B[True<br/>✓<br/>1]
+    A --> C[False<br/>✗<br/>0]
+
+    B --> B1[Examples:<br/>is_active = True<br/>has_discount = True<br/>is_verified = True]
+
+    C --> C1[Examples:<br/>is_deleted = False<br/>has_error = False<br/>is_paid = False]
+
+    B --> B2[Use Cases:<br/>Flags, Switches<br/>Conditions, Status]
+    C --> B2
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff
+    style B1 fill:#C8E6C9,stroke:#4CAF50,stroke-width:2px
+    style C1 fill:#FFCDD2,stroke:#E57373,stroke-width:2px
+    style B2 fill:#E3F2FD,stroke:#2196F3,stroke-width:2px
+</div>
+
+---
+
+#### 4. Date/Time Data Types 📅
+
+The final data type that might be frequently used is **date/time**. They can take a variety of shapes, including **dates** (like 2023-06-20), **times** (like 13:45:30), **datetimes** (a mashup of dates and times), and **time spans**.
+
+##### Date 📅
+
+Represents a **calendar date** without time information.
+
+**Characteristics**:
+- Year, month, and day
+- No time component
+- Various formats (ISO, US, European)
+
+**Common Formats**:
+- ISO 8601: 2023-06-20 (YYYY-MM-DD)
+- US Format: 06/20/2023 (MM/DD/YYYY)
+- European: 20/06/2023 (DD/MM/YYYY)
+- Long Format: June 20, 2023
+
+**Examples**:
+- Birth date: 1990-05-15
+- Order date: 2023-12-25
+- Expiry date: 2024-12-31
+
+**Use Cases**:
+- Birth dates and anniversaries
+- Order and delivery dates
+- Expiration dates
+- Event scheduling
+
+##### Time ⏰
+
+Represents a **time of day** without date information.
+
+**Characteristics**:
+- Hours, minutes, seconds (and sometimes milliseconds)
+- No date component
+- 24-hour or 12-hour format
+
+**Common Formats**:
+- 24-hour: 13:45:30 (HH:MM:SS)
+- 12-hour: 01:45:30 PM
+- With milliseconds: 13:45:30.123
+
+**Examples**:
+- Meeting time: 14:30:00
+- Store opening: 09:00:00
+- Alarm time: 07:30:00
+
+**Use Cases**:
+- Appointment times
+- Business hours
+- Alarm settings
+- Time tracking
+
+##### DateTime 📅⏰
+
+Represents a **combination of date and time**.
+
+**Characteristics**:
+- Complete timestamp
+- Includes both date and time
+- Often includes timezone information
+
+**Common Formats**:
+- ISO 8601: 2023-06-20T13:45:30
+- With timezone: 2023-06-20T13:45:30+00:00
+- Unix timestamp: 1687267530 (seconds since 1970-01-01)
+
+**Examples**:
+- Order timestamp: 2023-12-25T10:30:00
+- Login time: 2023-06-20T13:45:30Z
+- Event start: 2024-01-01T00:00:00
+
+**Use Cases**:
+- Transaction timestamps
+- Log entries
+- Event scheduling with specific times
+- Audit trails
+
+##### TimeSpan/Duration ⏱️
+
+Represents a **duration or interval of time**.
+
+**Characteristics**:
+- Difference between two times
+- Can be positive or negative
+- Measured in days, hours, minutes, seconds
+
+**Common Formats**:
+- Days.Hours:Minutes:Seconds
+- Total seconds or milliseconds
+- Human-readable: "2 days, 3 hours, 15 minutes"
+
+**Examples**:
+- Duration: 2 days, 5 hours
+- Elapsed time: 00:45:30 (45 minutes, 30 seconds)
+- Time difference: -01:30:00 (1.5 hours ago)
+
+**Use Cases**:
+- Calculating age or duration
+- Time differences between events
+- Session duration
+- Project timelines
+
+<div class="mermaid">
+graph TB
+    subgraph "Date/Time Data Types"
+        A[Temporal Data] --> B[Date<br/>📅<br/>Calendar Day]
+        A --> C[Time<br/>⏰<br/>Time of Day]
+        A --> D[DateTime<br/>📅⏰<br/>Date + Time]
+        A --> E[TimeSpan<br/>⏱️<br/>Duration]
+
+        B --> B1[2023-06-20<br/>06/20/2023<br/>June 20, 2023]
+        B --> B2[Use: Birth dates,<br/>Order dates,<br/>Expiry dates]
+
+        C --> C1[13:45:30<br/>01:45:30 PM<br/>14:30:00]
+        C --> C2[Use: Appointments,<br/>Business hours,<br/>Alarms]
+
+        D --> D1[2023-06-20T13:45:30<br/>Unix: 1687267530]
+        D --> D2[Use: Timestamps,<br/>Logs, Events,<br/>Audit trails]
+
+        E --> E1[2 days, 5 hours<br/>00:45:30<br/>-01:30:00]
+        E --> E2[Use: Duration,<br/>Time differences,<br/>Session length]
+    end
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style B fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style C fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style D fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style E fill:#FF6B6B,stroke:#C92A2A,stroke-width:2px,color:#fff
+    style B1 fill:#E1BEE7,stroke:#9C27B0,stroke-width:2px
+    style B2 fill:#E1BEE7,stroke:#9C27B0,stroke-width:2px
+    style C1 fill:#C8E6C9,stroke:#4CAF50,stroke-width:2px
+    style C2 fill:#C8E6C9,stroke:#4CAF50,stroke-width:2px
+    style D1 fill:#FFF9C4,stroke:#FBC02D,stroke-width:2px
+    style D2 fill:#FFF9C4,stroke:#FBC02D,stroke-width:2px
+    style E1 fill:#FFCDD2,stroke:#E57373,stroke-width:2px
+    style E2 fill:#FFCDD2,stroke:#E57373,stroke-width:2px
+</div>
+
+#### 📋 Data Types Summary Table
+
+| Category | Type | Description | Examples | Common Uses |
+|----------|------|-------------|----------|-------------|
+| **Numeric** | Integer | Whole numbers (positive/negative) | -1, 0, 1, 100 | Counting, IDs, indexing |
+| **Numeric** | Float | Decimal numbers | 3.14, -1.23, 99.99 | Prices, measurements, calculations |
+| **Numeric** | Complex | Real + imaginary numbers | 3+2j, -1+4j | Engineering, signal processing |
+| **Text** | Character | Single character | 'a', 'Z', '@' | Individual symbols |
+| **Text** | String | Sequence of characters | "Hello", "user@email.com" | Names, emails, descriptions |
+| **Logical** | Boolean | True or False | True, False, 1, 0 | Flags, conditions, status |
+| **Temporal** | Date | Calendar date | 2023-06-20 | Birth dates, order dates |
+| **Temporal** | Time | Time of day | 13:45:30 | Appointments, schedules |
+| **Temporal** | DateTime | Date + Time | 2023-06-20T13:45:30 | Timestamps, logs, events |
+| **Temporal** | TimeSpan | Duration/interval | 2 days, 5 hours | Duration, time differences |
+
+#### 🎯 Choosing the Right Data Type
+
+<div class="mermaid">
+flowchart TD
+    Start{What kind of<br/>data?} --> Numbers{Numbers?}
+    Start --> Text{Text?}
+    Start --> Logic{True/False?}
+    Start --> Temporal{Date/Time?}
+
+    Numbers -->|Whole numbers| Integer[Integer<br/>-1, 0, 1, 100]
+    Numbers -->|Decimals| Float[Float<br/>3.14, 99.99]
+    Numbers -->|Complex math| Complex[Complex<br/>3+2j]
+
+    Text -->|Single char| Char[Character<br/>'a', '@']
+    Text -->|Multiple chars| String[String<br/>"Hello World"]
+
+    Logic --> Boolean[Boolean<br/>True/False]
+
+    Temporal -->|Just date| Date[Date<br/>2023-06-20]
+    Temporal -->|Just time| Time[Time<br/>13:45:30]
+    Temporal -->|Both| DateTime[DateTime<br/>2023-06-20T13:45:30]
+    Temporal -->|Duration| TimeSpan[TimeSpan<br/>2 days, 5 hours]
+
+    style Start fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style Integer fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style Float fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style Complex fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style Char fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style String fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style Boolean fill:#FF6B6B,stroke:#C92A2A,stroke-width:2px,color:#fff
+    style Date fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style Time fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style DateTime fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style TimeSpan fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+</div>
+
+#### 💡 Important Considerations
+
+<div class="important-info">
+**Data Type Selection Matters**:
+
+1. **Storage Efficiency**: Choosing the right data type affects storage space and memory usage
+2. **Performance**: Operations on appropriate data types are faster and more efficient
+3. **Accuracy**: Using float for currency can cause rounding errors; use decimal types instead
+4. **Validation**: Data types enforce constraints (e.g., Boolean can only be True/False)
+5. **Compatibility**: Different systems may have different data type names but similar concepts
+6. **Conversion**: Be aware of type conversion (casting) and potential data loss
+
+**Common Pitfalls**:
+- Storing phone numbers as integers (loses leading zeros and formatting)
+- Using float for financial calculations (precision issues)
+- Storing dates as strings (difficult to sort and calculate)
+- Not considering timezone for DateTime values
+</div>
+
+---
+
 ### ⚖️ Relational vs Big Data Databases
 
 Based on the kind and volume of data they're intended to handle, **traditional relational databases** and **big data databases** (also frequently referred to as **NoSQL databases**) serve different purposes, and each has its strengths. The structure, data consistency, scale, and query language of these two types of data storage can be contrasted.
@@ -12057,7 +12540,20 @@ graph TB
                 "Choose big data databases for: unstructured data, horizontal scaling, massive volumes, eventual consistency, flexible schema",
                 "Modern data architecture often uses hybrid approach: relational for transactions, NoSQL for analytics, data lakes for raw storage",
                 "Relational databases best for: banking, ERP, CRM, e-commerce transactions with structured data",
-                "Big data databases best for: social media analytics, IoT data, real-time recommendations, log analysis with unstructured data"
+                "Big data databases best for: social media analytics, IoT data, real-time recommendations, log analysis with unstructured data",
+                "Fundamental data types include: Numeric (Integer, Float, Complex), String/Character, Boolean, and Date/Time",
+                "Integer data type represents whole numbers (positive/negative) used for counting, IDs, and indexing",
+                "Float data type represents decimal numbers used for prices, measurements, and scientific calculations",
+                "Complex numbers combine real and imaginary components (a+bj) used in engineering and signal processing",
+                "Character represents a single symbol while String represents a sequence of characters (text)",
+                "String data includes any character in the encoding format: letters, punctuation, special characters, and non-calculation numbers",
+                "Boolean data type has only two values (True/False, 1/0) used for flags, conditions, and status indicators",
+                "Date represents calendar dates (2023-06-20), Time represents time of day (13:45:30)",
+                "DateTime combines date and time (2023-06-20T13:45:30) used for timestamps and logs",
+                "TimeSpan/Duration represents time intervals used for calculating durations and time differences",
+                "Choosing the right data type affects storage efficiency, performance, accuracy, and validation",
+                "Common pitfalls: storing phone numbers as integers, using float for currency, storing dates as strings",
+                "Data type selection should consider: storage space, performance needs, accuracy requirements, and compatibility"
             ],
             "visual_elements": {
                 "diagrams": True,
