@@ -11716,6 +11716,313 @@ graph TB
     style M3 fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
     style Result fill:#FFD700,stroke:#B8860B,stroke-width:3px
 </div>
+
+---
+
+### ⚖️ Relational vs Big Data Databases
+
+Based on the kind and volume of data they're intended to handle, **traditional relational databases** and **big data databases** (also frequently referred to as **NoSQL databases**) serve different purposes, and each has its strengths. The structure, data consistency, scale, and query language of these two types of data storage can be contrasted.
+
+<div class="mermaid">
+graph TB
+    A[Database Types] --> B[Relational Databases<br/>🗄️<br/>Traditional SQL]
+    A --> C[Big Data Databases<br/>🌐<br/>NoSQL]
+
+    B --> B1[MySQL<br/>PostgreSQL<br/>Oracle]
+    C --> C1[MongoDB<br/>Cassandra<br/>Hadoop]
+
+    B --> B2[Structured Data<br/>ACID Properties]
+    C --> C2[Unstructured/Semi-structured<br/>BASE Properties]
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style B1 fill:#C8E6C9,stroke:#4CAF50,stroke-width:2px
+    style C1 fill:#FFE0B2,stroke:#E65100,stroke-width:2px
+    style B2 fill:#C8E6C9,stroke:#4CAF50,stroke-width:2px
+    style C2 fill:#FFE0B2,stroke:#E65100,stroke-width:2px
+</div>
+
+#### 📊 Detailed Comparison
+
+##### 1. Structure 🏗️
+
+**Relational Databases**
+- The **relational model**, which arranges data into **tables with rows and columns**, is the foundation
+- Examples: MySQL, Oracle, PostgreSQL
+- **Keys are used to define relationships** between tables
+- Rigid schema that must be defined upfront
+- Data normalization to reduce redundancy
+
+**Big Data (NoSQL) Databases**
+- Made to **store, process, and analyse data** that is too large or complex for conventional databases
+- Examples: MongoDB, Cassandra, Hadoop
+- Can effectively manage **unstructured or partially structured data**
+- Flexible schema that can evolve over time
+- Various data models: document, key-value, column-family, graph
+
+<div class="mermaid">
+graph LR
+    subgraph "Relational Database Structure"
+        A1[Tables] --> A2[Rows & Columns]
+        A2 --> A3[Primary Keys]
+        A2 --> A4[Foreign Keys]
+        A3 --> A5[Relationships]
+        A4 --> A5
+    end
+
+    subgraph "Big Data Database Structure"
+        B1[Flexible Schema] --> B2[Documents/Collections]
+        B1 --> B3[Key-Value Pairs]
+        B1 --> B4[Column Families]
+        B1 --> B5[Graph Nodes]
+    end
+
+    style A1 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style A5 fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style B1 fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style B2 fill:#FFE0B2,stroke:#E65100,stroke-width:2px
+    style B3 fill:#FFE0B2,stroke:#E65100,stroke-width:2px
+    style B4 fill:#FFE0B2,stroke:#E65100,stroke-width:2px
+    style B5 fill:#FFE0B2,stroke:#E65100,stroke-width:2px
+</div>
+
+##### 2. Data Consistency 🔒
+
+**Relational Databases - ACID Properties**
+
+Based on the **ACID** (Atomicity, Consistency, Isolation, Durability) properties, they offer **robust consistency guarantees**.
+
+- **Atomicity**: Transactions are all-or-nothing
+- **Consistency**: Data remains in a valid state
+- **Isolation**: Concurrent transactions don't interfere
+- **Durability**: Committed data is permanently saved
+
+**Big Data Databases - BASE Properties**
+
+Instead of using the ACID model, they are typically based on the **BASE** (Basically Available, Soft state, Eventually consistent) model, allowing for **better performance and scalability** at the expense of consistency.
+
+- **Basically Available**: System guarantees availability
+- **Soft state**: State may change over time, even without input
+- **Eventually consistent**: System will become consistent over time
+
+<div class="mermaid">
+graph TB
+    subgraph "ACID - Relational Databases"
+        A1[Atomicity<br/>All or Nothing] --> A5[Strong Consistency<br/>✓]
+        A2[Consistency<br/>Valid State] --> A5
+        A3[Isolation<br/>No Interference] --> A5
+        A4[Durability<br/>Permanent Storage] --> A5
+    end
+
+    subgraph "BASE - Big Data Databases"
+        B1[Basically Available<br/>Always Accessible] --> B4[Eventual Consistency<br/>⏱️]
+        B2[Soft State<br/>May Change] --> B4
+        B3[Eventually Consistent<br/>Over Time] --> B4
+    end
+
+    A5 --> Trade[Trade-offs]
+    B4 --> Trade
+
+    Trade --> T1[ACID: Consistency<br/>vs Performance]
+    Trade --> T2[BASE: Performance<br/>vs Consistency]
+
+    style A5 fill:#50C878,stroke:#2E7D32,stroke-width:3px,color:#fff
+    style B4 fill:#FF9800,stroke:#E65100,stroke-width:3px,color:#fff
+    style Trade fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style T1 fill:#C8E6C9,stroke:#4CAF50,stroke-width:2px
+    style T2 fill:#FFE0B2,stroke:#E65100,stroke-width:2px
+</div>
+
+##### 3. Scale 📈
+
+**Relational Databases**
+- Frequently employed in **business applications and transactions** where the volume of data is not excessive
+- Great at handling **structured data**
+- May find it difficult to **scale horizontally** (across many servers) when the amount of data is considerable
+- Typically scale **vertically** (more powerful single server)
+
+**Big Data Databases**
+- Made to **scale across numerous servers horizontally**
+- Can **process and analyse data on a much larger scale** than traditional databases
+- Designed to handle **large volumes of data** (terabytes to petabytes)
+- Distributed architecture for parallel processing
+
+<div class="mermaid">
+flowchart TD
+    subgraph "Relational Database Scaling"
+        R1[Single Server] --> R2[Vertical Scaling<br/>⬆️<br/>More CPU/RAM/Storage]
+        R2 --> R3[Limited by<br/>Hardware Capacity]
+    end
+
+    subgraph "Big Data Database Scaling"
+        B1[Multiple Servers] --> B2[Horizontal Scaling<br/>➡️<br/>Add More Servers]
+        B2 --> B3[Distributed Processing]
+        B3 --> B4[Virtually Unlimited<br/>Scalability]
+    end
+
+    R3 -.Limitation.-> L1[Scaling Challenges]
+    B4 -.Advantage.-> L2[Massive Scale]
+
+    style R1 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style R2 fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style R3 fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff
+    style B1 fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style B2 fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B3 fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style B4 fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#fff
+</div>
+
+##### 4. Query Language 💬
+
+**Relational Databases - SQL**
+- Define and manipulate the data using **Structured Query Language (SQL)**
+- SQL is **effective but complicated** for more complex queries
+- Standardized language across different databases
+- Powerful for joins, aggregations, and complex queries
+- Declarative approach (specify what, not how)
+
+**Big Data Databases - Varied Approaches**
+- **Hive for Hadoop** is an example of a NoSQL database that uses a form of SQL
+- Other NoSQL databases use their **own query languages or APIs**
+- Can be **easier to use** and provide **more flexibility** when working with unstructured data
+- Examples: MongoDB Query Language (MQL), Cassandra Query Language (CQL)
+
+<div class="mermaid">
+graph TB
+    subgraph "Relational - SQL"
+        S1[SQL Language] --> S2[SELECT, INSERT<br/>UPDATE, DELETE]
+        S2 --> S3[JOIN Operations]
+        S2 --> S4[Complex Queries]
+        S3 --> S5[Standardized<br/>Across Databases]
+        S4 --> S5
+    end
+
+    subgraph "Big Data - Multiple Languages"
+        N1[Query Options] --> N2[SQL-like<br/>Hive, CQL]
+        N1 --> N3[Native APIs<br/>MongoDB MQL]
+        N1 --> N4[MapReduce<br/>Hadoop]
+        N1 --> N5[Graph Queries<br/>Cypher, Gremlin]
+    end
+
+    S5 --> Result[Query Execution]
+    N2 --> Result
+    N3 --> Result
+    N4 --> Result
+    N5 --> Result
+
+    style S1 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style S5 fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style N1 fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style Result fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+</div>
+
+#### 📋 Comprehensive Comparison Table
+
+| Aspect | Relational Databases | Big Data (NoSQL) Databases |
+|--------|---------------------|---------------------------|
+| **Structure** | Relational model with tables, rows, and columns. Keys define relationships between tables. | Flexible schema designed for large/complex data. Can handle unstructured or semi-structured data. |
+| **Examples** | MySQL, Oracle, PostgreSQL, SQL Server | MongoDB, Cassandra, Hadoop, Redis, Neo4j |
+| **Data Consistency** | ACID properties (Atomicity, Consistency, Isolation, Durability) - robust consistency guarantees | BASE model (Basically Available, Soft state, Eventually consistent) - better performance and scalability |
+| **Scale** | Vertical scaling (more powerful server). Great for structured data but difficult to scale horizontally. | Horizontal scaling (add more servers). Designed to handle massive volumes across distributed systems. |
+| **Query Language** | SQL (Structured Query Language) - standardized, powerful but complex for advanced queries | Varied: SQL-like (Hive, CQL), native APIs (MQL), MapReduce, or graph queries. More flexible for unstructured data. |
+| **Best For** | Business applications, transactions, structured data, complex relationships | Big data analytics, unstructured data, high scalability, real-time processing |
+| **Data Volume** | Small to medium datasets | Large to massive datasets (terabytes to petabytes) |
+| **Schema** | Rigid, predefined schema | Flexible, evolving schema |
+| **Performance** | Optimized for complex queries and transactions | Optimized for high throughput and availability |
+| **Use Cases** | Banking, ERP, CRM, e-commerce transactions | Social media analytics, IoT data, real-time recommendations, log analysis |
+
+#### 🎯 When to Use Which?
+
+<div class="mermaid">
+flowchart TD
+    Start{What type of<br/>data do you have?} --> Structured{Structured &<br/>Relational?}
+    Start --> Volume{Large Volume<br/>& Variety?}
+
+    Structured -->|Yes| Consistency{Need Strong<br/>Consistency?}
+    Structured -->|No| Volume
+
+    Consistency -->|Yes| Relational[Use Relational<br/>Database<br/>🗄️<br/>MySQL, PostgreSQL]
+    Consistency -->|No| Volume
+
+    Volume -->|Yes| Scale{Need Horizontal<br/>Scaling?}
+    Volume -->|No| Relational
+
+    Scale -->|Yes| BigData[Use Big Data<br/>Database<br/>🌐<br/>MongoDB, Cassandra]
+    Scale -->|No| Relational
+
+    Start --> Unstructured{Unstructured<br/>Data?}
+    Unstructured -->|Yes| BigData
+    Unstructured -->|No| Structured
+
+    style Start fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style Relational fill:#50C878,stroke:#2E7D32,stroke-width:3px,color:#fff
+    style BigData fill:#FF9800,stroke:#E65100,stroke-width:3px,color:#fff
+    style Structured fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style Volume fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style Consistency fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style Scale fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style Unstructured fill:#FFD700,stroke:#B8860B,stroke-width:2px
+</div>
+
+#### 💡 Key Decision Factors
+
+<div class="key-concept">
+**Choose Relational Databases when:**
+- You have structured, relational data
+- You need ACID compliance and strong consistency
+- Your data volume is manageable (not massive scale)
+- You require complex joins and transactions
+- Schema is well-defined and stable
+
+**Choose Big Data (NoSQL) Databases when:**
+- You have unstructured or semi-structured data
+- You need to scale horizontally across many servers
+- You're dealing with massive data volumes (big data)
+- You can accept eventual consistency
+- Schema needs to be flexible and evolve
+- You need high availability and performance
+</div>
+
+#### 🔄 Hybrid Approaches
+
+<div class="important-info">
+**Modern Data Architecture**: Many organizations use a **hybrid approach**, combining both relational and big data databases:
+
+- **Relational databases** for transactional data, user accounts, financial records
+- **Big data databases** for analytics, logs, user behavior, real-time data
+- **Data lakes** to store raw data from both sources
+- **ETL pipelines** to move data between systems as needed
+
+This approach leverages the strengths of each technology to build robust, scalable data systems.
+</div>
+
+<div class="mermaid">
+graph TB
+    subgraph "Hybrid Data Architecture"
+        A[Data Sources] --> B[Relational DB<br/>Transactions]
+        A --> C[NoSQL DB<br/>Analytics]
+        A --> D[Data Lake<br/>Raw Storage]
+
+        B --> E[ETL Pipeline]
+        C --> E
+        D --> E
+
+        E --> F[Data Warehouse]
+        F --> G[Business Intelligence<br/>& Analytics]
+
+        G --> H[Decision Making<br/>💡]
+    end
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style D fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style E fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style F fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff
+    style G fill:#4ECDC4,stroke:#2C7873,stroke-width:2px,color:#fff
+    style H fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+</div>
             """,
             "key_points": [
                 "Data can be stored in structured (tabular) or unstructured (free-form) formats",
@@ -11737,7 +12044,20 @@ graph TB
                 "Unstructured data advantages: rich information, captures real-world complexity, enables advanced AI/ML applications",
                 "Key structured technologies: SQL databases, spreadsheets, data frames (pandas, R)",
                 "Key unstructured technologies: NLP tools (NLTK, spaCy), computer vision (OpenCV), NoSQL databases, big data platforms",
-                "The ultimate objective of data analysis is to derive valuable and practical insights to inform decision-making, regardless of data type"
+                "The ultimate objective of data analysis is to derive valuable and practical insights to inform decision-making, regardless of data type",
+                "Relational databases use the relational model with tables, rows, columns, and keys to define relationships between tables",
+                "Relational databases provide ACID properties (Atomicity, Consistency, Isolation, Durability) for robust consistency guarantees",
+                "Relational databases scale vertically (more powerful server) and are great for structured data but difficult to scale horizontally",
+                "Relational databases use SQL (Structured Query Language) - standardized and powerful but complex for advanced queries",
+                "Big data (NoSQL) databases are designed to store, process, and analyze data too large or complex for conventional databases",
+                "Big data databases use BASE model (Basically Available, Soft state, Eventually consistent) for better performance and scalability",
+                "Big data databases scale horizontally (add more servers) and can handle massive volumes (terabytes to petabytes)",
+                "Big data databases use varied query approaches: SQL-like (Hive, CQL), native APIs (MQL), MapReduce, or graph queries",
+                "Choose relational databases for: structured data, ACID compliance, complex joins, transactions, stable schema",
+                "Choose big data databases for: unstructured data, horizontal scaling, massive volumes, eventual consistency, flexible schema",
+                "Modern data architecture often uses hybrid approach: relational for transactions, NoSQL for analytics, data lakes for raw storage",
+                "Relational databases best for: banking, ERP, CRM, e-commerce transactions with structured data",
+                "Big data databases best for: social media analytics, IoT data, real-time recommendations, log analysis with unstructured data"
             ],
             "visual_elements": {
                 "diagrams": True,
