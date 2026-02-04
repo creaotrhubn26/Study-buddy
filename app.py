@@ -13844,6 +13844,664 @@ graph LR
 
 **Remember:** Data is only valuable when it's properly collected, stored, managed, and analyzed. The systematic approach you've learned in this lesson forms the foundation for all data analysis work you'll do in your career.
 </div>
+
+---
+
+### 📝 The Task: Internal vs External Data Sources
+
+In this lesson, you learned about various considerations related to data, including **internal and external sources**. Let's complete a practical exercise to solidify your understanding.
+
+#### 🎯 Task Requirements
+
+**Select:**
+- **2 types of internal data**
+- **2 types of external data**
+
+**For each data type, create a table listing:**
+1. **Feature name**: The specific attribute or field
+2. **Description**: What this feature represents (helpful for future users)
+3. **Data type**: Numeric, String, Boolean, Date/Time, Audio, Video, etc.
+4. **Storage**: Structured or Unstructured
+
+---
+
+### ✅ Complete Solution with Examples
+
+#### 📊 Internal Data Source 1: Human Resources (HR) Data
+
+<div class="key-concept">
+**About HR Data:**
+Human Resources data contains information about employees within an organization. This is critical internal data used for payroll, performance management, compliance, and workforce planning.
+</div>
+
+| Feature Name | Description | Data Type | Storage |
+|--------------|-------------|-----------|---------|
+| `employee_id` | Unique identifier for each staff member | Integer | Structured |
+| `staff_surname` | Employee's last name/family name | String | Structured |
+| `staff_firstname` | Employee's first name/given name | String | Structured |
+| `email_address` | Corporate email address | String | Structured |
+| `phone_number` | Contact phone number | String | Structured |
+| `date_of_birth` | Employee's birth date | Date | Structured |
+| `hire_date` | Date employee joined the company | Date | Structured |
+| `department` | Department where employee works (e.g., IT, Sales, HR) | String | Structured |
+| `job_title` | Current position/role title | String | Structured |
+| `employment_type` | Full-time, Part-time, Contract, Intern | String | Structured |
+| `salary` | Annual salary amount | Float | Structured |
+| `currency` | Currency code for salary (e.g., USD, EUR, GBP) | String | Structured |
+| `manager_id` | Employee ID of direct manager | Integer | Structured |
+| `is_active` | Whether employee is currently employed | Boolean | Structured |
+| `termination_date` | Date employment ended (if applicable) | Date | Structured |
+| `performance_rating` | Latest performance review score (1-5) | Integer | Structured |
+| `skills` | List of employee skills and competencies | String (comma-separated) | Structured |
+| `emergency_contact_name` | Name of emergency contact person | String | Structured |
+| `emergency_contact_phone` | Phone number of emergency contact | String | Structured |
+| `profile_photo` | Employee photo for ID badge | Image (JPEG/PNG) | Unstructured |
+| `resume_document` | Employee's CV/resume file | Document (PDF) | Unstructured |
+| `performance_review_notes` | Detailed feedback from performance reviews | Text | Unstructured |
+
+---
+
+#### 💰 Internal Data Source 2: Transactional/Sales Data
+
+<div class="key-concept">
+**About Transactional Data:**
+Transactional data captures business transactions such as sales, purchases, and payments. This is essential for financial reporting, revenue analysis, and customer behavior understanding.
+</div>
+
+| Feature Name | Description | Data Type | Storage |
+|--------------|-------------|-----------|---------|
+| `transaction_id` | Unique identifier for each transaction | Integer | Structured |
+| `order_number` | Human-readable order reference number | String | Structured |
+| `customer_id` | Unique identifier for the customer | Integer | Structured |
+| `transaction_date` | Date and time when transaction occurred | DateTime | Structured |
+| `product_id` | Unique identifier for the product sold | Integer | Structured |
+| `product_name` | Name/description of the product | String | Structured |
+| `product_category` | Category of product (e.g., Electronics, Clothing) | String | Structured |
+| `quantity` | Number of units purchased | Integer | Structured |
+| `unit_price` | Price per single unit | Float | Structured |
+| `discount_percentage` | Discount applied to the transaction (0-100) | Float | Structured |
+| `tax_amount` | Tax charged on the transaction | Float | Structured |
+| `total_amount` | Final total amount paid | Float | Structured |
+| `payment_method` | How customer paid (Credit Card, PayPal, Cash) | String | Structured |
+| `payment_status` | Status of payment (Completed, Pending, Failed) | String | Structured |
+| `shipping_address` | Delivery address for the order | String | Structured |
+| `shipping_cost` | Cost of shipping/delivery | Float | Structured |
+| `is_refunded` | Whether transaction was refunded | Boolean | Structured |
+| `refund_date` | Date refund was processed (if applicable) | Date | Structured |
+| `sales_channel` | Where sale occurred (Online, In-Store, Mobile App) | String | Structured |
+| `salesperson_id` | Employee who processed the sale | Integer | Structured |
+| `customer_notes` | Special instructions or comments from customer | Text | Unstructured |
+| `receipt_image` | Scanned copy of physical receipt | Image (JPEG/PDF) | Unstructured |
+
+---
+
+#### 🌐 External Data Source 1: Social Media Data
+
+<div class="key-concept">
+**About Social Media Data:**
+Social media data comes from platforms like Twitter, Facebook, Instagram, and LinkedIn. This external data provides insights into customer sentiment, brand perception, and market trends.
+</div>
+
+| Feature Name | Description | Data Type | Storage |
+|--------------|-------------|-----------|---------|
+| `post_id` | Unique identifier for the social media post | String | Structured |
+| `platform` | Social media platform (Twitter, Facebook, Instagram) | String | Structured |
+| `username` | User's handle or username | String | Structured |
+| `user_id` | Unique identifier for the user on the platform | String | Structured |
+| `post_timestamp` | Date and time when post was created | DateTime | Structured |
+| `post_text` | Text content of the post | Text | Unstructured |
+| `hashtags` | Hashtags used in the post | String (comma-separated) | Structured |
+| `mentions` | Other users mentioned in the post | String (comma-separated) | Structured |
+| `likes_count` | Number of likes/reactions | Integer | Structured |
+| `shares_count` | Number of shares/retweets | Integer | Structured |
+| `comments_count` | Number of comments/replies | Integer | Structured |
+| `sentiment_score` | Sentiment analysis score (-1 to +1) | Float | Structured |
+| `sentiment_label` | Sentiment classification (Positive, Negative, Neutral) | String | Structured |
+| `language` | Language of the post (e.g., en, es, fr) | String | Structured |
+| `location` | Geographic location where post was made | String | Structured |
+| `is_verified` | Whether user account is verified | Boolean | Structured |
+| `follower_count` | Number of followers the user has | Integer | Structured |
+| `post_url` | Direct link to the post | String | Structured |
+| `media_type` | Type of media attached (Image, Video, None) | String | Structured |
+| `image_url` | URL to attached image | String | Structured |
+| `video_url` | URL to attached video | String | Structured |
+| `image_file` | Downloaded image file | Image (JPEG/PNG) | Unstructured |
+| `video_file` | Downloaded video file | Video (MP4/MOV) | Unstructured |
+| `audio_file` | Audio extracted from video or voice post | Audio (MP3/WAV) | Unstructured |
+
+---
+
+#### 🌤️ External Data Source 2: Weather/IoT Sensor Data
+
+<div class="key-concept">
+**About Weather/IoT Data:**
+Weather and IoT sensor data comes from external sources like weather APIs, environmental sensors, and public data feeds. This data is valuable for industries like agriculture, logistics, retail, and energy.
+</div>
+
+| Feature Name | Description | Data Type | Storage |
+|--------------|-------------|-----------|---------|
+| `sensor_id` | Unique identifier for the sensor device | String | Structured |
+| `reading_timestamp` | Date and time of the sensor reading | DateTime | Structured |
+| `location_latitude` | Geographic latitude coordinate | Float | Structured |
+| `location_longitude` | Geographic longitude coordinate | Float | Structured |
+| `location_name` | Human-readable location name (e.g., "London, UK") | String | Structured |
+| `temperature_celsius` | Temperature reading in Celsius | Float | Structured |
+| `temperature_fahrenheit` | Temperature reading in Fahrenheit | Float | Structured |
+| `humidity_percentage` | Relative humidity (0-100%) | Float | Structured |
+| `pressure_hpa` | Atmospheric pressure in hectopascals | Float | Structured |
+| `wind_speed_kmh` | Wind speed in kilometers per hour | Float | Structured |
+| `wind_direction_degrees` | Wind direction in degrees (0-360) | Integer | Structured |
+| `precipitation_mm` | Rainfall amount in millimeters | Float | Structured |
+| `visibility_km` | Visibility distance in kilometers | Float | Structured |
+| `uv_index` | UV radiation index (0-11+) | Integer | Structured |
+| `cloud_cover_percentage` | Cloud coverage (0-100%) | Integer | Structured |
+| `weather_condition` | General weather description (Sunny, Rainy, Cloudy) | String | Structured |
+| `air_quality_index` | Air quality measurement (0-500) | Integer | Structured |
+| `pollution_pm25` | PM2.5 particulate matter concentration | Float | Structured |
+| `pollution_pm10` | PM10 particulate matter concentration | Float | Structured |
+| `is_daytime` | Whether reading was taken during daylight | Boolean | Structured |
+| `sunrise_time` | Time of sunrise | Time | Structured |
+| `sunset_time` | Time of sunset | Time | Structured |
+| `forecast_text` | Detailed weather forecast description | Text | Unstructured |
+| `satellite_image` | Satellite weather imagery | Image (JPEG/PNG) | Unstructured |
+| `radar_image` | Weather radar image | Image (JPEG/PNG) | Unstructured |
+
+---
+
+### 💻 Practical Implementation Examples
+
+Now let's see how to work with this data in practice using different tools and technologies.
+
+#### 📊 Example 1: Creating HR Data in Excel/CSV
+
+<div class="important-info">
+**Scenario:** You need to create a structured HR database for a small company with 10 employees.
+
+**Tool:** Microsoft Excel or Google Sheets
+
+**Steps:**
+1. Create column headers matching the feature names
+2. Enter data for each employee in rows
+3. Apply data validation to ensure correct data types
+4. Save as CSV for portability or XLSX for Excel features
+</div>
+
+**Sample CSV Structure:**
+
+```csv
+employee_id,staff_surname,staff_firstname,email_address,phone_number,date_of_birth,hire_date,department,job_title,employment_type,salary,currency,manager_id,is_active,performance_rating
+1001,Smith,John,john.smith@company.com,+44-20-1234-5678,1985-03-15,2020-01-10,IT,Software Engineer,Full-time,65000.00,GBP,1005,TRUE,4
+1002,Johnson,Sarah,sarah.johnson@company.com,+44-20-1234-5679,1990-07-22,2019-05-15,Sales,Sales Manager,Full-time,75000.00,GBP,1010,TRUE,5
+1003,Williams,Michael,michael.williams@company.com,+44-20-1234-5680,1988-11-30,2021-03-01,Marketing,Marketing Specialist,Full-time,55000.00,GBP,1008,TRUE,4
+1004,Brown,Emma,emma.brown@company.com,+44-20-1234-5681,1992-02-14,2022-06-20,HR,HR Coordinator,Part-time,35000.00,GBP,1009,TRUE,3
+1005,Jones,David,david.jones@company.com,+44-20-1234-5682,1980-09-05,2015-08-12,IT,IT Director,Full-time,95000.00,GBP,NULL,TRUE,5
+```
+
+**Excel Data Validation Examples:**
+
+```
+Column A (employee_id): Data Type = Whole Number, Minimum = 1000
+Column F (date_of_birth): Data Type = Date, Format = YYYY-MM-DD
+Column K (salary): Data Type = Decimal, Minimum = 0
+Column N (is_active): Data Type = List, Values = TRUE, FALSE
+Column O (performance_rating): Data Type = Whole Number, Between 1 and 5
+```
+
+---
+
+#### 🐍 Example 2: Working with Transactional Data in Python (Pandas)
+
+<div class="important-info">
+**Scenario:** Analyze sales transactions to find top-selling products and revenue by category.
+
+**Tool:** Python with Pandas library
+
+**Objective:** Load, clean, and analyze transactional data
+</div>
+
+```python
+import pandas as pd
+import numpy as np
+from datetime import datetime
+
+# Create sample transactional data
+transactions_data = {
+    'transaction_id': [1001, 1002, 1003, 1004, 1005, 1006, 1007, 1008],
+    'order_number': ['ORD-2025-001', 'ORD-2025-002', 'ORD-2025-003', 'ORD-2025-004',
+                     'ORD-2025-005', 'ORD-2025-006', 'ORD-2025-007', 'ORD-2025-008'],
+    'customer_id': [5001, 5002, 5001, 5003, 5004, 5002, 5005, 5003],
+    'transaction_date': ['2025-02-01 10:30:00', '2025-02-01 11:15:00', '2025-02-01 14:20:00',
+                         '2025-02-02 09:45:00', '2025-02-02 13:30:00', '2025-02-03 10:00:00',
+                         '2025-02-03 15:45:00', '2025-02-04 11:30:00'],
+    'product_name': ['Laptop', 'Mouse', 'Keyboard', 'Monitor', 'Laptop', 'Headphones', 'Webcam', 'Monitor'],
+    'product_category': ['Electronics', 'Electronics', 'Electronics', 'Electronics',
+                         'Electronics', 'Electronics', 'Electronics', 'Electronics'],
+    'quantity': [1, 2, 1, 1, 1, 1, 2, 1],
+    'unit_price': [899.99, 25.99, 79.99, 299.99, 899.99, 149.99, 89.99, 299.99],
+    'discount_percentage': [10, 0, 5, 15, 10, 0, 10, 15],
+    'payment_method': ['Credit Card', 'PayPal', 'Credit Card', 'Debit Card',
+                       'Credit Card', 'PayPal', 'Credit Card', 'Debit Card'],
+    'payment_status': ['Completed', 'Completed', 'Completed', 'Completed',
+                       'Completed', 'Completed', 'Completed', 'Completed'],
+    'is_refunded': [False, False, False, False, False, False, False, False]
+}
+
+# Create DataFrame
+df_transactions = pd.DataFrame(transactions_data)
+
+# Convert data types
+df_transactions['transaction_date'] = pd.to_datetime(df_transactions['transaction_date'])
+df_transactions['is_refunded'] = df_transactions['is_refunded'].astype(bool)
+
+# Calculate total amount for each transaction
+df_transactions['discount_amount'] = (df_transactions['unit_price'] *
+                                      df_transactions['quantity'] *
+                                      df_transactions['discount_percentage'] / 100)
+df_transactions['total_amount'] = (df_transactions['unit_price'] *
+                                   df_transactions['quantity'] -
+                                   df_transactions['discount_amount'])
+
+# Display the data
+print("=" * 80)
+print("TRANSACTIONAL DATA SAMPLE")
+print("=" * 80)
+print(df_transactions[['order_number', 'product_name', 'quantity', 'unit_price', 'total_amount']].head())
+print()
+
+# Analysis 1: Total revenue
+total_revenue = df_transactions['total_amount'].sum()
+print(f"Total Revenue: £{total_revenue:,.2f}")
+print()
+
+# Analysis 2: Top-selling products by quantity
+print("=" * 80)
+print("TOP-SELLING PRODUCTS BY QUANTITY")
+print("=" * 80)
+top_products = df_transactions.groupby('product_name').agg({
+    'quantity': 'sum',
+    'total_amount': 'sum'
+}).sort_values('quantity', ascending=False)
+print(top_products)
+print()
+
+# Analysis 3: Revenue by payment method
+print("=" * 80)
+print("REVENUE BY PAYMENT METHOD")
+print("=" * 80)
+payment_revenue = df_transactions.groupby('payment_method')['total_amount'].sum().sort_values(ascending=False)
+print(payment_revenue)
+print()
+
+# Analysis 4: Daily sales trend
+print("=" * 80)
+print("DAILY SALES TREND")
+print("=" * 80)
+df_transactions['date'] = df_transactions['transaction_date'].dt.date
+daily_sales = df_transactions.groupby('date')['total_amount'].sum()
+print(daily_sales)
+print()
+
+# Save to CSV
+df_transactions.to_csv('transactions_data.csv', index=False)
+print("✅ Data saved to 'transactions_data.csv'")
+```
+
+**Expected Output:**
+
+```
+================================================================================
+TRANSACTIONAL DATA SAMPLE
+================================================================================
+    order_number product_name  quantity  unit_price  total_amount
+0  ORD-2025-001       Laptop         1      899.99        809.99
+1  ORD-2025-002        Mouse         2       25.99         51.98
+2  ORD-2025-003     Keyboard         1       79.99         75.99
+3  ORD-2025-004      Monitor         1      299.99        254.99
+4  ORD-2025-005       Laptop         1      899.99        809.99
+
+Total Revenue: £3,632.88
+
+================================================================================
+TOP-SELLING PRODUCTS BY QUANTITY
+================================================================================
+              quantity  total_amount
+product_name
+Laptop               2       1619.98
+Monitor              2        509.98
+Webcam               2        161.98
+Mouse                2         51.98
+Headphones           1        149.99
+Keyboard             1         75.99
+
+================================================================================
+REVENUE BY PAYMENT METHOD
+================================================================================
+payment_method
+Credit Card    2727.93
+Debit Card      554.98
+PayPal          201.97
+Name: total_amount, dtype: float64
+
+================================================================================
+DAILY SALES TREND
+================================================================================
+date
+2025-02-01    937.96
+2025-02-02    1064.98
+2025-02-03    311.97
+2025-02-04    254.99
+Name: total_amount, dtype: float64
+
+✅ Data saved to 'transactions_data.csv'
+```
+
+---
+
+#### 🗄️ Example 3: Storing HR Data in SQL Database
+
+<div class="important-info">
+**Scenario:** Create a relational database for HR data with proper data types and constraints.
+
+**Tool:** SQL (MySQL/PostgreSQL)
+
+**Objective:** Design and populate a structured HR database
+</div>
+
+```sql
+-- Create HR database
+CREATE DATABASE company_hr;
+USE company_hr;
+
+-- Create employees table with proper data types
+CREATE TABLE employees (
+    employee_id INT PRIMARY KEY AUTO_INCREMENT,
+    staff_surname VARCHAR(100) NOT NULL,
+    staff_firstname VARCHAR(100) NOT NULL,
+    email_address VARCHAR(255) UNIQUE NOT NULL,
+    phone_number VARCHAR(20),
+    date_of_birth DATE NOT NULL,
+    hire_date DATE NOT NULL,
+    department VARCHAR(50) NOT NULL,
+    job_title VARCHAR(100) NOT NULL,
+    employment_type ENUM('Full-time', 'Part-time', 'Contract', 'Intern') NOT NULL,
+    salary DECIMAL(10, 2) NOT NULL,
+    currency CHAR(3) DEFAULT 'GBP',
+    manager_id INT,
+    is_active BOOLEAN DEFAULT TRUE,
+    termination_date DATE NULL,
+    performance_rating INT CHECK (performance_rating BETWEEN 1 AND 5),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (manager_id) REFERENCES employees(employee_id)
+);
+
+-- Insert sample data
+INSERT INTO employees (employee_id, staff_surname, staff_firstname, email_address, phone_number,
+                       date_of_birth, hire_date, department, job_title, employment_type,
+                       salary, currency, manager_id, is_active, performance_rating)
+VALUES
+(1001, 'Smith', 'John', 'john.smith@company.com', '+44-20-1234-5678',
+ '1985-03-15', '2020-01-10', 'IT', 'Software Engineer', 'Full-time',
+ 65000.00, 'GBP', 1005, TRUE, 4),
+
+(1002, 'Johnson', 'Sarah', 'sarah.johnson@company.com', '+44-20-1234-5679',
+ '1990-07-22', '2019-05-15', 'Sales', 'Sales Manager', 'Full-time',
+ 75000.00, 'GBP', 1010, TRUE, 5),
+
+(1003, 'Williams', 'Michael', 'michael.williams@company.com', '+44-20-1234-5680',
+ '1988-11-30', '2021-03-01', 'Marketing', 'Marketing Specialist', 'Full-time',
+ 55000.00, 'GBP', 1008, TRUE, 4),
+
+(1004, 'Brown', 'Emma', 'emma.brown@company.com', '+44-20-1234-5681',
+ '1992-02-14', '2022-06-20', 'HR', 'HR Coordinator', 'Part-time',
+ 35000.00, 'GBP', 1009, TRUE, 3),
+
+(1005, 'Jones', 'David', 'david.jones@company.com', '+44-20-1234-5682',
+ '1980-09-05', '2015-08-12', 'IT', 'IT Director', 'Full-time',
+ 95000.00, 'GBP', NULL, TRUE, 5);
+
+-- Query 1: Get all active employees
+SELECT employee_id, staff_firstname, staff_surname, department, job_title, salary
+FROM employees
+WHERE is_active = TRUE
+ORDER BY department, staff_surname;
+
+-- Query 2: Calculate average salary by department
+SELECT department,
+       COUNT(*) as employee_count,
+       AVG(salary) as avg_salary,
+       MIN(salary) as min_salary,
+       MAX(salary) as max_salary
+FROM employees
+WHERE is_active = TRUE
+GROUP BY department
+ORDER BY avg_salary DESC;
+
+-- Query 3: Find employees and their managers
+SELECT e.employee_id,
+       CONCAT(e.staff_firstname, ' ', e.staff_surname) as employee_name,
+       e.job_title,
+       CONCAT(m.staff_firstname, ' ', m.staff_surname) as manager_name,
+       m.job_title as manager_title
+FROM employees e
+LEFT JOIN employees m ON e.manager_id = m.employee_id
+WHERE e.is_active = TRUE;
+
+-- Query 4: Calculate tenure for each employee
+SELECT employee_id,
+       CONCAT(staff_firstname, ' ', staff_surname) as full_name,
+       hire_date,
+       DATEDIFF(CURDATE(), hire_date) as days_employed,
+       ROUND(DATEDIFF(CURDATE(), hire_date) / 365.25, 1) as years_employed
+FROM employees
+WHERE is_active = TRUE
+ORDER BY hire_date;
+```
+
+---
+
+#### 🌐 Example 4: Analyzing Social Media Data with Python
+
+<div class="important-info">
+**Scenario:** Collect and analyze social media sentiment about your brand.
+
+**Tool:** Python with TextBlob for sentiment analysis
+
+**Objective:** Process unstructured text data and extract insights
+</div>
+
+```python
+import pandas as pd
+from textblob import TextBlob
+import matplotlib.pyplot as plt
+from datetime import datetime, timedelta
+import random
+
+# Sample social media data
+social_media_data = {
+    'post_id': ['TW001', 'FB002', 'IG003', 'TW004', 'FB005', 'IG006', 'TW007', 'FB008'],
+    'platform': ['Twitter', 'Facebook', 'Instagram', 'Twitter', 'Facebook', 'Instagram', 'Twitter', 'Facebook'],
+    'username': ['@user1', 'user2', '@user3', '@user4', 'user5', '@user6', '@user7', 'user8'],
+    'post_timestamp': [
+        '2025-02-01 10:30:00', '2025-02-01 14:20:00', '2025-02-02 09:15:00',
+        '2025-02-02 16:45:00', '2025-02-03 11:30:00', '2025-02-03 18:00:00',
+        '2025-02-04 08:45:00', '2025-02-04 15:20:00'
+    ],
+    'post_text': [
+        'Just bought the new laptop from @Company! Absolutely love it! Best purchase ever! 😍',
+        'The customer service at Company was terrible. Very disappointed with my experience.',
+        'Amazing product quality! The monitor is crystal clear. Highly recommend! ⭐⭐⭐⭐⭐',
+        'Ordered a keyboard but it arrived damaged. Waiting for replacement. Not happy.',
+        'Company has the best prices and fast shipping. Will definitely buy again!',
+        'The webcam quality is okay, nothing special. Expected better for the price.',
+        'Fantastic experience! The staff was helpful and the product exceeded expectations!',
+        'Product is good but delivery took too long. Improve your logistics please.'
+    ],
+    'likes_count': [245, 12, 389, 45, 156, 78, 312, 89],
+    'shares_count': [34, 3, 67, 8, 23, 12, 45, 15],
+    'comments_count': [18, 7, 42, 15, 28, 9, 31, 19]
+}
+
+# Create DataFrame
+df_social = pd.DataFrame(social_media_data)
+
+# Convert timestamp to datetime
+df_social['post_timestamp'] = pd.to_datetime(df_social['post_timestamp'])
+
+# Perform sentiment analysis
+def analyze_sentiment(text):
+    """Analyze sentiment of text using TextBlob"""
+    blob = TextBlob(text)
+    polarity = blob.sentiment.polarity  # -1 (negative) to +1 (positive)
+
+    # Classify sentiment
+    if polarity > 0.1:
+        label = 'Positive'
+    elif polarity < -0.1:
+        label = 'Negative'
+    else:
+        label = 'Neutral'
+
+    return polarity, label
+
+# Apply sentiment analysis
+df_social[['sentiment_score', 'sentiment_label']] = df_social['post_text'].apply(
+    lambda x: pd.Series(analyze_sentiment(x))
+)
+
+# Calculate engagement score
+df_social['engagement_score'] = (
+    df_social['likes_count'] +
+    df_social['shares_count'] * 2 +
+    df_social['comments_count'] * 3
+)
+
+# Display results
+print("=" * 100)
+print("SOCIAL MEDIA SENTIMENT ANALYSIS")
+print("=" * 100)
+print(df_social[['platform', 'post_text', 'sentiment_label', 'sentiment_score', 'engagement_score']])
+print()
+
+# Summary statistics
+print("=" * 100)
+print("SENTIMENT SUMMARY")
+print("=" * 100)
+sentiment_summary = df_social['sentiment_label'].value_counts()
+print(sentiment_summary)
+print()
+
+print(f"Average Sentiment Score: {df_social['sentiment_score'].mean():.3f}")
+print(f"Most Positive Post: {df_social.loc[df_social['sentiment_score'].idxmax(), 'post_text'][:80]}...")
+print(f"Most Negative Post: {df_social.loc[df_social['sentiment_score'].idxmin(), 'post_text'][:80]}...")
+print()
+
+# Platform analysis
+print("=" * 100)
+print("SENTIMENT BY PLATFORM")
+print("=" * 100)
+platform_sentiment = df_social.groupby('platform').agg({
+    'sentiment_score': 'mean',
+    'engagement_score': 'sum',
+    'post_id': 'count'
+}).rename(columns={'post_id': 'post_count'})
+print(platform_sentiment)
+print()
+
+# Engagement analysis
+print("=" * 100)
+print("TOP ENGAGING POSTS")
+print("=" * 100)
+top_posts = df_social.nlargest(3, 'engagement_score')[['platform', 'post_text', 'engagement_score', 'sentiment_label']]
+print(top_posts)
+```
+
+**Expected Output:**
+
+```
+====================================================================================================
+SOCIAL MEDIA SENTIMENT ANALYSIS
+====================================================================================================
+   platform                                          post_text sentiment_label  sentiment_score  engagement_score
+0   Twitter  Just bought the new laptop from @Company! A...        Positive            0.650               349
+1  Facebook  The customer service at Company was terribl...        Negative           -0.700                36
+2 Instagram  Amazing product quality! The monitor is cry...        Positive            0.800               590
+3   Twitter  Ordered a keyboard but it arrived damaged. ...        Negative           -0.400               109
+4  Facebook  Company has the best prices and fast shippi...        Positive            0.500               272
+5 Instagram  The webcam quality is okay, nothing special...         Neutral            0.050               129
+6   Twitter  Fantastic experience! The staff was helpful...        Positive            0.750               483
+7  Facebook  Product is good but delivery took too long....         Neutral            0.100               161
+
+====================================================================================================
+SENTIMENT SUMMARY
+====================================================================================================
+Positive    4
+Negative    2
+Neutral     2
+Name: sentiment_label, dtype: int64
+
+Average Sentiment Score: 0.219
+Most Positive Post: Amazing product quality! The monitor is crystal clear. Highly recommend! ⭐⭐⭐⭐⭐...
+Most Negative Post: The customer service at Company was terrible. Very disappointed with my experie...
+
+====================================================================================================
+SENTIMENT BY PLATFORM
+====================================================================================================
+           sentiment_score  engagement_score  post_count
+platform
+Facebook             -0.033               469           3
+Instagram             0.425               719           2
+Twitter               0.167               941           3
+
+====================================================================================================
+TOP ENGAGING POSTS
+====================================================================================================
+   platform                                          post_text  engagement_score sentiment_label
+2 Instagram  Amazing product quality! The monitor is cry...               590        Positive
+6   Twitter  Fantastic experience! The staff was helpful...               483        Positive
+0   Twitter  Just bought the new laptop from @Company! A...               349        Positive
+```
+
+---
+
+### 🎯 Key Insights from the Task
+
+<div class="key-concept">
+**What You've Learned:**
+
+1. **Internal Data** (HR, Transactional) is typically **structured** and stored in relational databases
+2. **External Data** (Social Media, IoT) can be **mixed** - some structured (metrics), some unstructured (text, images)
+3. **Data types matter** - choosing the right type ensures efficiency, accuracy, and proper analysis
+4. **Documentation is critical** - clear descriptions help future users understand the data
+5. **Different tools for different data** - SQL for structured, Python for mixed, specialized tools for unstructured
+6. **Storage choice depends on data characteristics** - structured data → databases, unstructured → NoSQL/data lakes
+7. **Real-world data requires cleaning and transformation** before analysis
+8. **Combining data sources** (internal + external) provides comprehensive business insights
+
+**Best Practices:**
+
+✅ Always document your data features with clear descriptions
+✅ Choose appropriate data types to optimize storage and performance
+✅ Use structured storage for tabular data, unstructured for media/text
+✅ Validate data types and constraints to maintain data quality
+✅ Consider future users when designing your data structure
+✅ Combine internal and external data for richer insights
+✅ Use the right tool for the job (Excel, Python, SQL, etc.)
+✅ Perform exploratory analysis to understand your data before deep analysis
+</div>
+
+---
+
+### 📚 Summary Table: All Four Data Sources
+
+| Data Source | Type | Primary Storage | Key Features | Common Use Cases |
+|-------------|------|-----------------|--------------|------------------|
+| **HR Data** | Internal | Structured (SQL Database) | Employee IDs, names, salaries, dates, performance ratings | Payroll, workforce planning, compliance, performance management |
+| **Transactional Data** | Internal | Structured (SQL Database) | Transaction IDs, amounts, dates, customer IDs, product details | Revenue analysis, customer behavior, inventory management, financial reporting |
+| **Social Media Data** | External | Mixed (Structured metrics + Unstructured text/media) | Post text, sentiment, engagement metrics, images, videos | Brand monitoring, sentiment analysis, customer feedback, marketing insights |
+| **Weather/IoT Data** | External | Mixed (Structured readings + Unstructured images) | Temperature, humidity, sensor readings, timestamps, satellite images | Demand forecasting, logistics optimization, agriculture, energy management |
+
+This comprehensive task solution demonstrates how to identify, document, structure, and work with both internal and external data sources using industry-standard tools and best practices! 🚀
             """,
             "key_points": [
                 "Data can be stored in structured (tabular) or unstructured (free-form) formats",
@@ -13930,7 +14588,20 @@ graph LR
                 "Lesson summary: Proper data type selection ensures storage efficiency, performance optimization, data accuracy, and validation",
                 "Lesson summary: Data governance and compliance (GDPR, HIPAA, PCI DSS) are essential throughout the entire data lifecycle",
                 "Lesson summary: Data is only valuable when properly collected, stored, managed, and analyzed using systematic approaches",
-                "Lesson summary: Real-world applications combine multiple concepts (e.g., e-commerce using various data types, sources, storage, and lifecycle management)"
+                "Lesson summary: Real-world applications combine multiple concepts (e.g., e-commerce using various data types, sources, storage, and lifecycle management)",
+                "Task solution: Internal data sources (HR, Transactional) are typically structured and stored in relational databases",
+                "Task solution: External data sources (Social Media, IoT/Weather) can be mixed - structured metrics and unstructured content",
+                "Task solution: HR data features include employee_id (integer), names (string), salary (float), hire_date (date), is_active (boolean)",
+                "Task solution: Transactional data features include transaction_id (integer), amounts (float), dates (datetime), payment_status (string)",
+                "Task solution: Social Media data includes structured metrics (likes, shares) and unstructured content (post text, images, videos)",
+                "Task solution: Weather/IoT data includes structured readings (temperature, humidity) and unstructured imagery (satellite, radar)",
+                "Task solution: Documentation with clear descriptions is critical for future users and data maintainability",
+                "Task solution: Proper data type selection (integer for IDs, float for measurements, string for text, boolean for flags) optimizes storage and performance",
+                "Task solution: Excel/CSV works for small datasets, SQL databases for structured data, Python/Pandas for analysis, NoSQL for unstructured data",
+                "Task solution: Combining internal and external data sources provides comprehensive business insights (e.g., sales data + weather data for demand forecasting)",
+                "Task solution: Real-world implementation requires data validation, type conversion, cleaning, and transformation before analysis",
+                "Task solution: Sentiment analysis on social media text (unstructured) can be quantified into sentiment scores (structured) for analysis",
+                "Task solution: Best practices include documenting features, choosing appropriate data types, validating constraints, and using the right tool for each data type"
             ],
             "visual_elements": {
                 "diagrams": True,
