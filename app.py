@@ -11070,9 +11070,685 @@ flowchart TD
                 "tables": True,
                 "highlighted_sections": True
             }
+        },
+        {
+            "lesson_number": "1.2",
+            "title": "It's All About Data",
+            "content": """
+### Data Representation
+
+Data can be stored in various ways, some offering multiple ways of representing the data. In the broadest sense, data may be stored in an **unstructured manner** or represented in a **structured, tabular format**.
+
+#### 🎯 Core Concept: Structured vs Unstructured Data
+
+<div class="mermaid">
+flowchart LR
+    A[Data Representation] --> B[Structured Data<br/>📊<br/>Organized & Tabular]
+    A --> C[Unstructured Data<br/>📁<br/>Free-form & Flexible]
+
+    B --> B1[Relational Databases]
+    B --> B2[CSV/Excel Files]
+    B --> B3[Data Frames]
+
+    C --> C1[Text Documents]
+    C --> C2[Images/Videos]
+    C --> C3[Audio Files]
+    C --> C4[NoSQL Databases]
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style B1 fill:#C8E6C9,stroke:#4CAF50,stroke-width:2px
+    style B2 fill:#C8E6C9,stroke:#4CAF50,stroke-width:2px
+    style B3 fill:#C8E6C9,stroke:#4CAF50,stroke-width:2px
+    style C1 fill:#FFE0B2,stroke:#E65100,stroke-width:2px
+    style C2 fill:#FFE0B2,stroke:#E65100,stroke-width:2px
+    style C3 fill:#FFE0B2,stroke:#E65100,stroke-width:2px
+    style C4 fill:#FFE0B2,stroke:#E65100,stroke-width:2px
+</div>
+
+---
+
+### 📊 Structured Data (Tabular Format)
+
+Data is typically kept in a **tabular format**. In this format, data is displayed as tables, similar to those found in spreadsheets, where each **row** corresponds to a **record or entity** and each **column** to one of its **attributes**.
+
+#### 🎨 Tabular Data Structure
+
+<div class="mermaid">
+graph TB
+    subgraph "Tabular Data Structure"
+        A[Table] --> B[Rows = Records/Entities]
+        A --> C[Columns = Attributes]
+        B --> D[Example: Customer 1<br/>Customer 2<br/>Customer 3]
+        C --> E[Example: Name<br/>Age<br/>Email<br/>Purchase Amount]
+    end
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style D fill:#C8E6C9,stroke:#4CAF50,stroke-width:2px
+    style E fill:#FFF9C4,stroke:#FBC02D,stroke-width:2px
+</div>
+
+Several instances of structured data representation include the following:
+
+#### 1. Relational Databases 🗄️
+
+Relational databases frequently employ this type of representation (like **MySQL**, **PostgreSQL**, etc.). Data is stored in various tables here, and the **relationships between them are established using keys** (primary and foreign keys). This enables strong **SQL querying capabilities** (Structured Query Language).
+
+**Characteristics**:
+- Data stored in multiple related tables
+- Primary keys uniquely identify records
+- Foreign keys establish relationships between tables
+- Powerful SQL querying capabilities
+- ACID compliance (Atomicity, Consistency, Isolation, Durability)
+
+**Examples**: MySQL, PostgreSQL, Oracle, SQL Server, SQLite
+
+<div class="mermaid">
+graph LR
+    subgraph "Relational Database Structure"
+        A[Customers Table] -->|Foreign Key| B[Orders Table]
+        B -->|Foreign Key| C[Order Items Table]
+        C -->|Foreign Key| D[Products Table]
+    end
+
+    A --> A1[customer_id PK<br/>name<br/>email<br/>phone]
+    B --> B1[order_id PK<br/>customer_id FK<br/>order_date<br/>total]
+    C --> C1[item_id PK<br/>order_id FK<br/>product_id FK<br/>quantity]
+    D --> D1[product_id PK<br/>name<br/>price<br/>category]
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style D fill:#FF6B6B,stroke:#C92A2A,stroke-width:2px,color:#fff
+    style A1 fill:#E3F2FD,stroke:#2196F3,stroke-width:2px
+    style B1 fill:#C8E6C9,stroke:#4CAF50,stroke-width:2px
+    style C1 fill:#FFF9C4,stroke:#FBC02D,stroke-width:2px
+    style D1 fill:#FFCDD2,stroke:#E57373,stroke-width:2px
+</div>
+
+#### 2. CSV/Excel Files 📑
+
+Another popular method is using **CSV** or **Excel** files to represent tabular data. These are **readable by humans** and **simple to interpret**, but they lack the speed and scalability of databases.
+
+**Characteristics**:
+- Human-readable format
+- Easy to create and edit
+- Portable across different systems
+- Limited scalability for large datasets
+- No built-in data validation or relationships
+- Simple to share and collaborate
+
+**Use Cases**:
+- Small to medium datasets
+- Data exchange between systems
+- Quick data exploration
+- Reporting and exports
+
+<div class="mermaid">
+flowchart TD
+    A[CSV/Excel Files] --> B[Advantages]
+    A --> C[Disadvantages]
+
+    B --> B1[✓ Human-readable]
+    B --> B2[✓ Easy to use]
+    B --> B3[✓ Portable]
+    B --> B4[✓ Universal support]
+
+    C --> C1[✗ Limited scalability]
+    C --> C2[✗ No data validation]
+    C --> C3[✗ No relationships]
+    C --> C4[✗ Performance issues<br/>with large data]
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff
+    style B1 fill:#C8E6C9,stroke:#4CAF50,stroke-width:2px
+    style B2 fill:#C8E6C9,stroke:#4CAF50,stroke-width:2px
+    style B3 fill:#C8E6C9,stroke:#4CAF50,stroke-width:2px
+    style B4 fill:#C8E6C9,stroke:#4CAF50,stroke-width:2px
+    style C1 fill:#FFCDD2,stroke:#E57373,stroke-width:2px
+    style C2 fill:#FFCDD2,stroke:#E57373,stroke-width:2px
+    style C3 fill:#FFCDD2,stroke:#E57373,stroke-width:2px
+    style C4 fill:#FFCDD2,stroke:#E57373,stroke-width:2px
+</div>
+
+#### 3. Data Frames 🐼
+
+Similar tabular structures are used in data analysis programming languages like **Python** (pandas library) and **R** under the name **Data Frames**. These are **mutable two-dimensional structures** that can hold various data types, including Python objects, strings, integers, and floating-point numbers (columns can be inserted and deleted).
+
+**Characteristics**:
+- Two-dimensional labeled data structure
+- Columns can contain different data types
+- Mutable (can be modified)
+- Powerful indexing and selection capabilities
+- Built-in data manipulation methods
+- Integration with visualization libraries
+
+**Examples**:
+- **Python**: pandas DataFrame
+- **R**: data.frame, tibble
+- **Julia**: DataFrame
+
+<div class="mermaid">
+graph TB
+    subgraph "Data Frame Structure"
+        A[DataFrame] --> B[Index<br/>Row Labels]
+        A --> C[Columns<br/>Column Names]
+        A --> D[Data<br/>Values]
+
+        B --> B1[0, 1, 2, 3...]
+        C --> C1[Name, Age, City...]
+        D --> D1[Mixed Types:<br/>int, float, str, object]
+    end
+
+    E[Operations] --> F[Selection]
+    E --> G[Filtering]
+    E --> H[Grouping]
+    E --> I[Aggregation]
+    E --> J[Merging]
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style D fill:#FF6B6B,stroke:#C92A2A,stroke-width:2px,color:#fff
+    style E fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+</div>
+
+#### 📋 Structured Data Comparison Table
+
+| Type | Best For | Scalability | Query Capability | Ease of Use | Examples |
+|------|----------|-------------|------------------|-------------|----------|
+| **Relational DB** | Large datasets, complex relationships | High | Very High (SQL) | Medium | MySQL, PostgreSQL |
+| **CSV/Excel** | Small datasets, data exchange | Low | Low | Very High | Excel, CSV files |
+| **Data Frames** | Data analysis, manipulation | Medium | High (programmatic) | High | pandas, R data.frame |
+
+---
+
+### 📁 Unstructured Data
+
+Not all data in today's constantly connected, modern world still follows a tabular structure. Think about all the **text**, **audio**, **video**, and **sensor data** produced by social media platforms and the Internet of Things. Although more challenging to analyse, this kind of unstructured data is **rich in information**.
+
+<div class="mermaid">
+graph TB
+    A[Unstructured Data Sources] --> B[Social Media<br/>📱]
+    A --> C[IoT Devices<br/>🌐]
+    A --> D[Multimedia<br/>🎬]
+    A --> E[Documents<br/>📄]
+
+    B --> B1[Posts, Comments<br/>Tweets, Reviews]
+    C --> C1[Sensor Data<br/>Telemetry, Logs]
+    D --> D1[Images, Videos<br/>Audio Files]
+    E --> E1[Emails, PDFs<br/>Reports, Articles]
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style B fill:#FF6B6B,stroke:#C92A2A,stroke-width:2px,color:#fff
+    style C fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style D fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style E fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+</div>
+
+Here are some illustrations of unstructured data representation:
+
+#### 1. Text 📝
+
+Text information may come from various places, including **emails**, **social media**, **news articles**, etc. Methods like **Natural Language Processing (NLP)** are employed to organise and analyse text data.
+
+**Sources**:
+- Social media posts (Twitter, Facebook, LinkedIn)
+- Customer reviews and feedback
+- News articles and blogs
+- Emails and chat messages
+- Documents and reports
+
+**Analysis Techniques**:
+- Sentiment analysis
+- Topic modeling
+- Named entity recognition
+- Text classification
+- Language translation
+
+<div class="mermaid">
+flowchart LR
+    A[Text Data] --> B[NLP Processing]
+    B --> C[Tokenization]
+    B --> D[Cleaning]
+    B --> E[Feature Extraction]
+
+    C --> F[Analysis Tasks]
+    D --> F
+    E --> F
+
+    F --> G[Sentiment Analysis<br/>😊 😐 😞]
+    F --> H[Topic Modeling<br/>📚]
+    F --> I[Entity Recognition<br/>👤 📍 🏢]
+    F --> J[Classification<br/>🏷️]
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style F fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style G fill:#C8E6C9,stroke:#4CAF50,stroke-width:2px
+    style H fill:#C8E6C9,stroke:#4CAF50,stroke-width:2px
+    style I fill:#C8E6C9,stroke:#4CAF50,stroke-width:2px
+    style J fill:#C8E6C9,stroke:#4CAF50,stroke-width:2px
+</div>
+
+#### 2. Images/Videos 🎬
+
+Multi-dimensional arrays are typically used to represent image and video data:
+- **Images**: height × width × colour channels (RGB: 3 channels)
+- **Videos**: frames × height × width × colour channels
+
+**Representation**:
+- Images stored as pixel matrices
+- Each pixel contains color information (RGB values)
+- Videos are sequences of image frames
+- Metadata includes resolution, format, compression
+
+**Analysis Techniques**:
+- Computer vision
+- Object detection and recognition
+- Image classification
+- Facial recognition
+- Video analytics
+
+<div class="mermaid">
+graph TB
+    subgraph "Image Representation"
+        A[Image] --> B[Height: 1920 pixels]
+        A --> C[Width: 1080 pixels]
+        A --> D[Channels: 3 RGB]
+
+        D --> D1[Red Channel]
+        D --> D2[Green Channel]
+        D --> D3[Blue Channel]
+    end
+
+    subgraph "Video Representation"
+        E[Video] --> F[Frames: 30 fps]
+        E --> G[Duration: 60 seconds]
+        E --> H[Total: 1800 frames]
+
+        H --> I[Each frame is<br/>an image]
+    end
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style E fill:#FF6B6B,stroke:#C92A2A,stroke-width:2px,color:#fff
+    style D fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style H fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+</div>
+
+#### 3. Audio 🎵
+
+Using methods like the **Fourier transformation**, audio data is frequently represented as a **time series** or in the **frequency domain**.
+
+**Representation**:
+- Time series: amplitude over time
+- Frequency domain: spectral analysis
+- Waveform data
+- Sampling rate (e.g., 44.1 kHz)
+
+**Analysis Techniques**:
+- Speech recognition
+- Music analysis
+- Sound classification
+- Audio fingerprinting
+- Noise reduction
+
+<div class="mermaid">
+flowchart TD
+    A[Audio Data] --> B[Time Domain<br/>Waveform]
+    A --> C[Frequency Domain<br/>Spectrum]
+
+    B --> D[Fourier Transform]
+    D --> C
+
+    B --> E[Applications]
+    C --> E
+
+    E --> F[Speech Recognition<br/>🎤]
+    E --> G[Music Analysis<br/>🎵]
+    E --> H[Sound Classification<br/>🔊]
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style D fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style E fill:#FF6B6B,stroke:#C92A2A,stroke-width:2px,color:#fff
+</div>
+
+#### 4. NoSQL Databases 🗃️
+
+Unstructured data is frequently stored in **NoSQL databases** (such as **MongoDB**, **Cassandra**, etc.). Because they are **flexible and scalable**, they can store and retrieve unstructured data such as **documents** (JSON, XML), **key-value pairs**, **wide-column stores**, or **graph formats**.
+
+**Types of NoSQL Databases**:
+
+**Document Stores** 📄
+- Store data as documents (JSON, BSON, XML)
+- Flexible schema
+- Examples: MongoDB, CouchDB
+
+**Key-Value Stores** 🔑
+- Simple key-value pairs
+- Fast retrieval
+- Examples: Redis, DynamoDB
+
+**Wide-Column Stores** 📊
+- Column-family storage
+- Scalable for big data
+- Examples: Cassandra, HBase
+
+**Graph Databases** 🕸️
+- Store relationships between entities
+- Network analysis
+- Examples: Neo4j, ArangoDB
+
+<div class="mermaid">
+graph TB
+    A[NoSQL Databases] --> B[Document Stores<br/>📄]
+    A --> C[Key-Value Stores<br/>🔑]
+    A --> D[Wide-Column Stores<br/>📊]
+    A --> E[Graph Databases<br/>🕸️]
+
+    B --> B1[MongoDB<br/>CouchDB<br/>JSON/BSON]
+    C --> C1[Redis<br/>DynamoDB<br/>Fast retrieval]
+    D --> D1[Cassandra<br/>HBase<br/>Big data]
+    E --> E1[Neo4j<br/>ArangoDB<br/>Relationships]
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style D fill:#FF6B6B,stroke:#C92A2A,stroke-width:2px,color:#fff
+    style E fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style B1 fill:#C8E6C9,stroke:#4CAF50,stroke-width:2px
+    style C1 fill:#FFF9C4,stroke:#FBC02D,stroke-width:2px
+    style D1 fill:#FFCDD2,stroke:#E57373,stroke-width:2px
+    style E1 fill:#E1BEE7,stroke:#9C27B0,stroke-width:2px
+</div>
+
+#### 5. Big Data Technologies 🌐
+
+At scale, unstructured data is processed and analysed using tools like **Hadoop** or **Spark**.
+
+**Characteristics**:
+- Distributed processing
+- Handle massive datasets (petabytes)
+- Parallel computation
+- Fault tolerance
+- Scalability
+
+**Key Technologies**:
+- **Hadoop**: Distributed storage and processing (HDFS, MapReduce)
+- **Spark**: Fast in-memory processing
+- **Kafka**: Real-time data streaming
+- **Flink**: Stream processing
+
+<div class="mermaid">
+flowchart LR
+    A[Big Data Sources<br/>Terabytes/Petabytes] --> B[Hadoop/Spark<br/>Distributed Processing]
+
+    B --> C[Storage<br/>HDFS]
+    B --> D[Processing<br/>MapReduce/Spark]
+    B --> E[Streaming<br/>Kafka/Flink]
+
+    C --> F[Analysis Results]
+    D --> F
+    E --> F
+
+    F --> G[Insights &<br/>Decision Making<br/>💡]
+
+    style A fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff
+    style B fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style C fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style D fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style E fill:#FF6B6B,stroke:#C92A2A,stroke-width:2px,color:#fff
+    style F fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style G fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+</div>
+
+#### 📋 Unstructured Data Comparison Table
+
+| Type | Representation | Analysis Tools | Use Cases | Examples |
+|------|----------------|----------------|-----------|----------|
+| **Text** | Documents, strings | NLP, text mining | Sentiment analysis, topic modeling | Emails, social media, articles |
+| **Images/Videos** | Multi-dimensional arrays | Computer vision, deep learning | Object detection, facial recognition | Photos, surveillance, media |
+| **Audio** | Time series, frequency domain | Signal processing, ML | Speech recognition, music analysis | Voice recordings, podcasts |
+| **NoSQL** | Documents, key-value, graphs | Database queries, aggregations | Flexible data storage | MongoDB, Redis, Neo4j |
+| **Big Data** | Distributed files | Hadoop, Spark | Large-scale analytics | Web logs, sensor data, clickstreams |
+
+---
+
+### 🔄 Combining Structured and Unstructured Data
+
+To gain more thorough insights into user behaviour, you might, for instance, **combine structured data** about user demographics from a relational database with **unstructured text data** from user reviews.
+
+<div class="mermaid">
+flowchart TD
+    A[Data Integration] --> B[Structured Data<br/>📊]
+    A --> C[Unstructured Data<br/>📁]
+
+    B --> B1[Customer Demographics<br/>Age, Location, Income]
+    B --> B2[Purchase History<br/>Transactions, Amounts]
+
+    C --> C1[Customer Reviews<br/>Text, Ratings]
+    C --> C2[Social Media<br/>Posts, Comments]
+
+    B1 --> D[Combined Analysis]
+    B2 --> D
+    C1 --> D
+    C2 --> D
+
+    D --> E[Comprehensive Insights<br/>💡]
+
+    E --> F[Better Understanding<br/>of Customer Behavior]
+    E --> G[Improved Decision<br/>Making]
+    E --> H[Personalized<br/>Recommendations]
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style D fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style E fill:#FFD700,stroke:#B8860B,stroke-width:3px
+    style F fill:#C8E6C9,stroke:#4CAF50,stroke-width:2px
+    style G fill:#C8E6C9,stroke:#4CAF50,stroke-width:2px
+    style H fill:#C8E6C9,stroke:#4CAF50,stroke-width:2px
+</div>
+
+#### 💡 Important Insights
+
+<div class="important-info">
+**The complexity of handling unstructured data** has led to an explosion of new strategies and tools. For instance, **Natural Language Processing (NLP)** has emerged as a crucial tool for analysing textual data, assisting computers in subtly comprehending human language.
+
+Furthermore, **machine learning** is becoming increasingly crucial in handling unstructured data, whether text, image, audio, or video. In addition to many other tasks, algorithms can be trained to:
+- Classify images
+- Convert speech to text
+- Determine the tone of customer reviews
+- And much more
+
+This demonstrates the **enormous potential** that unstructured data possesses and the growing significance of being able to manage and analyse it well.
+</div>
+
+#### 🎯 The Ultimate Goal
+
+<div class="key-concept">
+**Remember**: Data is only as valuable as the conclusions drawn from it. Whether the data is **structured** or **unstructured**, the ultimate objective is to derive **valuable and practical insights** to inform **decision-making**. And that's where **data analysis** really adds value.
+</div>
+
+<div class="mermaid">
+flowchart TD
+    A[Raw Data<br/>Structured + Unstructured] --> B[Data Processing<br/>& Analysis]
+
+    B --> C[Extract Patterns]
+    B --> D[Identify Trends]
+    B --> E[Generate Insights]
+
+    C --> F[Actionable Intelligence<br/>💡]
+    D --> F
+    E --> F
+
+    F --> G[Informed Decision<br/>Making]
+
+    G --> H[Business Value<br/>✅]
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style F fill:#9B59B6,stroke:#6C3483,stroke-width:3px,color:#fff
+    style G fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style H fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+</div>
+
+---
+
+### 📊 Data Analysis Workflow: From Data to Value
+
+<div class="mermaid">
+flowchart LR
+    subgraph "Data Collection"
+        A1[Structured Sources<br/>Databases, CSV]
+        A2[Unstructured Sources<br/>Text, Images, Audio]
+    end
+
+    subgraph "Data Storage"
+        B1[Relational DB]
+        B2[NoSQL DB]
+        B3[Data Lake]
+    end
+
+    subgraph "Data Processing"
+        C1[SQL Queries]
+        C2[NLP/ML]
+        C3[Big Data Tools]
+    end
+
+    subgraph "Analysis & Insights"
+        D1[Statistical Analysis]
+        D2[Pattern Recognition]
+        D3[Predictive Models]
+    end
+
+    subgraph "Decision Making"
+        E1[Business Decisions<br/>💼]
+        E2[Strategic Planning<br/>📈]
+        E3[Operational Improvements<br/>⚙️]
+    end
+
+    A1 --> B1
+    A1 --> B3
+    A2 --> B2
+    A2 --> B3
+
+    B1 --> C1
+    B2 --> C2
+    B3 --> C3
+
+    C1 --> D1
+    C2 --> D2
+    C3 --> D3
+
+    D1 --> E1
+    D2 --> E2
+    D3 --> E3
+
+    style A1 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style A2 fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style B1 fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B2 fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B3 fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style C1 fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style C2 fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style C3 fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style D1 fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style D2 fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style D3 fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style E1 fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style E2 fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style E3 fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#fff
+</div>
+
+---
+
+### 🔑 Key Technologies Summary
+
+<div class="mermaid">
+graph TB
+    subgraph "Structured Data Technologies"
+        S1[SQL Databases<br/>MySQL, PostgreSQL]
+        S2[Spreadsheets<br/>Excel, CSV]
+        S3[Data Frames<br/>pandas, R]
+    end
+
+    subgraph "Unstructured Data Technologies"
+        U1[NLP Tools<br/>NLTK, spaCy]
+        U2[Computer Vision<br/>OpenCV, TensorFlow]
+        U3[NoSQL Databases<br/>MongoDB, Redis]
+        U4[Big Data<br/>Hadoop, Spark]
+    end
+
+    subgraph "Analysis & ML"
+        M1[Machine Learning<br/>scikit-learn, PyTorch]
+        M2[Deep Learning<br/>Neural Networks]
+        M3[Statistical Analysis<br/>R, SciPy]
+    end
+
+    S1 --> M1
+    S2 --> M1
+    S3 --> M1
+    U1 --> M2
+    U2 --> M2
+    U3 --> M1
+    U4 --> M1
+
+    M1 --> Result[Insights &<br/>Predictions<br/>💡]
+    M2 --> Result
+    M3 --> Result
+
+    style S1 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style S2 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style S3 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style U1 fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style U2 fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style U3 fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style U4 fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style M1 fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style M2 fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style M3 fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style Result fill:#FFD700,stroke:#B8860B,stroke-width:3px
+</div>
+            """,
+            "key_points": [
+                "Data can be stored in structured (tabular) or unstructured (free-form) formats",
+                "Structured data is organized in tables with rows (records/entities) and columns (attributes)",
+                "Relational databases (MySQL, PostgreSQL) store data in related tables using primary and foreign keys, enabling powerful SQL querying",
+                "CSV/Excel files are human-readable and portable but lack scalability and performance for large datasets",
+                "Data frames (pandas, R) are mutable two-dimensional structures that can hold mixed data types with powerful manipulation capabilities",
+                "Unstructured data includes text, images, videos, audio, and sensor data - rich in information but more challenging to analyze",
+                "Text data is analyzed using Natural Language Processing (NLP) techniques like sentiment analysis, topic modeling, and entity recognition",
+                "Images are represented as multi-dimensional arrays (height × width × color channels), videos add a frames dimension",
+                "Audio data is represented as time series or frequency domain using Fourier transformation",
+                "NoSQL databases (MongoDB, Cassandra) are flexible and scalable, storing documents (JSON/XML), key-value pairs, wide-columns, or graphs",
+                "Big data technologies (Hadoop, Spark) enable distributed processing and analysis of massive datasets at scale",
+                "Combining structured and unstructured data provides comprehensive insights (e.g., demographics + customer reviews)",
+                "Natural Language Processing (NLP) has emerged as crucial for analyzing textual data and understanding human language",
+                "Machine learning is increasingly important for handling unstructured data: image classification, speech-to-text, sentiment analysis",
+                "Data is only as valuable as the conclusions drawn from it - the goal is actionable insights for decision-making",
+                "Structured data advantages: organized, queryable, consistent schema, good for transactions and reporting",
+                "Unstructured data advantages: rich information, captures real-world complexity, enables advanced AI/ML applications",
+                "Key structured technologies: SQL databases, spreadsheets, data frames (pandas, R)",
+                "Key unstructured technologies: NLP tools (NLTK, spaCy), computer vision (OpenCV), NoSQL databases, big data platforms",
+                "The ultimate objective of data analysis is to derive valuable and practical insights to inform decision-making, regardless of data type"
+            ],
+            "visual_elements": {
+                "diagrams": True,
+                "tables": True,
+                "highlighted_sections": True
+            }
         }
     ]
 }
+
+
 
 courses_data = [
     {
