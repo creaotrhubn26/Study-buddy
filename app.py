@@ -6,6 +6,7 @@ import json
 import time
 import re
 from datetime import datetime, timedelta, date
+from streamlit.components.v1 import html
 try:
     from spellchecker import SpellChecker
     SPELLCHECK_AVAILABLE = True
@@ -7744,6 +7745,3335 @@ Document lessons learned:
     }
 }
 
+# Course lessons for Learn & Practice section
+course_lessons = {
+    "FI1BBDF05": [
+        {
+            "lesson_number": "1.1",
+            "title": "Introduction to Data Analysis",
+            "content": """
+### What is Data Analysis?
+
+Understanding and using data is becoming increasingly important in the quickly changing digital environment. The discipline of **data analysis** is focused on drawing insightful conclusions from data. It involves methods and tools for gathering unprocessed data and then turning it into information that can help with decision-making. Typically, specialised hardware and software are used to accomplish this.
+
+#### 🎯 Core Concept
+
+<div class="mermaid">
+flowchart LR
+    A[Raw Data<br/>📊<br/>Unprocessed Information] -->|Processing| B[Clean & Transform<br/>🔄]
+    B -->|Analysis| C[Extract Patterns<br/>🔍]
+    C -->|Insights| D[Decision-Making<br/>💡]
+    
+    style A fill:#e3f2fd,stroke:#2196F3,stroke-width:2px
+    style B fill:#fff3cd,stroke:#ffc107,stroke-width:2px
+    style C fill:#c8e6c9,stroke:#4CAF50,stroke-width:2px
+    style D fill:#f3e5f5,stroke:#9C27B0,stroke-width:2px
+</div>
+
+#### 📊 Types of Data Analysis
+
+Based on the unique requirements of a task or project, different methods and techniques are used in the broad field of data analysis. Here are the most popular types:
+
+| Type | Purpose | Example |
+|------|---------|---------|
+| **Text Analysis** | Extract insights from text data | Analyzing customer reviews |
+| **Statistical Analysis** | Use statistical methods to understand data | Calculating averages, correlations |
+| **Diagnostic Analysis** | Understand why something happened | Root cause analysis |
+| **Predictive Analysis** | Forecast future trends | Sales forecasting |
+| **Data Mining** | Discover patterns in large datasets | Market basket analysis |
+
+#### 🔗 Related Fields
+
+Data analysis is closely related to several other fields that enhance its capabilities:
+
+**1. Programming** 💻
+- Create scripts to pre-process, transform, and analyse data
+- Languages: Python, R, SQL
+- Enables: Large datasets, intricate calculations, task automation
+
+**2. Machine Learning** 🤖
+- Subset of artificial intelligence
+- Systems learn from experience without explicit programming
+- Build predictive models from historical data
+- Helps with trend forecasting and data-driven decision-making
+
+**3. Statistics** 📈
+- Foundation of data analysis
+- Methods for understanding and interpreting data
+- From basic (mean, median, mode) to advanced (hypothesis testing, regression)
+
+**4. Data Visualisation** 📊
+- Communicate complex findings using graphs and charts
+- Tools: Tableau, PowerBI, Matplotlib, Seaborn
+- Makes data accessible to non-technical audiences
+
+**5. Business Intelligence** 🏢
+- Technology-driven process for data analysis and information presentation
+- Helps executives and managers make informed business decisions
+- Data analysts work within BI boundaries to help organizations use data effectively
+
+**6. Big Data** 🌐
+- Focuses on handling massive datasets that traditional software can't address
+- Techniques: MapReduce, Hadoop frameworks
+- Essential for data analysts working with extremely large datasets
+
+#### 🎨 Visual Overview: Data Analysis Ecosystem
+
+<div class="mermaid">
+graph TD
+    A[Data Analysis Fundamentals] --> B[Statistics]
+    A --> C[Machine Learning]
+    A --> D[Business Intelligence]
+    
+    B --> E[Programming & Tools]
+    C --> E
+    D --> E
+    
+    E --> F[Python]
+    E --> G[R]
+    E --> H[SQL]
+    E --> I[Tableau]
+    
+    E --> J[Big Data]
+    J --> K[Hadoop]
+    J --> L[Spark]
+    
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style B fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style C fill:#FF6B6B,stroke:#C92A2A,stroke-width:2px
+    style D fill:#4ECDC4,stroke:#2C7873,stroke-width:2px
+    style E fill:#95E1D3,stroke:#4ECDC4,stroke-width:2px
+    style J fill:#FFA07A,stroke:#FF6347,stroke-width:2px
+</div>
+
+#### 🔄 Data Analysis Workflow
+
+<div class="mermaid">
+flowchart TD
+    Start([Start Analysis]) --> Collect[Collect Data]
+    Collect --> Clean[Clean Data]
+    Clean --> Explore[Explore Data]
+    Explore --> Analyze[Analyze Data]
+    Analyze --> Visualize[Visualize Results]
+    Visualize --> Interpret[Interpret Findings]
+    Interpret --> Decision{Make Decision}
+    Decision -->|Action Needed| Act[Take Action]
+    Decision -->|More Analysis| Analyze
+    Act --> End([End])
+    
+    style Start fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style Collect fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style Clean fill:#FF6B6B,stroke:#C92A2A,stroke-width:2px
+    style Explore fill:#4ECDC4,stroke:#2C7873,stroke-width:2px
+    style Analyze fill:#95E1D3,stroke:#4ECDC4,stroke-width:2px
+    style Visualize fill:#FFA07A,stroke:#FF6347,stroke-width:2px
+    style Interpret fill:#C7CEEA,stroke:#8B9DC3,stroke-width:2px
+    style Decision fill:#F8B500,stroke:#E6A200,stroke-width:3px
+    style Act fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style End fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+</div>
+
+#### 👥 Roles and Responsibilities
+
+The discipline of data analysis encompasses a variety of roles and responsibilities. In data-driven businesses, these various roles frequently overlap, but each has a specific function in handling, comprehending, and presenting data. The following are descriptions of the general roles and responsibilities within the field of data analysis:
+
+**1. Data Analyst** 📊
+- Gathers, organises, and analyses data statistically
+- Interprets data using statistical methods
+- Delivers ongoing reports and identifies patterns and trends
+- Maintains databases and data systems
+- Designs and implements data collection methods
+- Enhances statistical effectiveness and data quality
+
+**2. Data Scientist** 🔬
+- Uses algorithms and predictive models to create new data modelling processes
+- Creates Artificial Intelligence (AI) systems using machine learning
+- Applies ML algorithms to data, text, images, video, audio, and other data types
+- Tasks include: enhancing marketing efficiency, forecasting election outcomes, diagnosing diseases
+
+**3. Data Engineer** ⚙️
+- Sets up the 'big data' infrastructure for data scientists
+- Designs, builds, and integrates data from various sources
+- Manages software systems for big data
+- Ensures data is easily accessible and performance-optimised
+- Writes complex queries
+
+**4. Business Intelligence Analyst** 💼
+- Analyses data to create a clearer picture of the company's position
+- Identifies business and market trends
+- Gathers data from various sources
+- Develops thorough reports and dashboards
+- Presents findings to business decision-makers
+
+**5. Data Architect** 🏗️
+- Focuses on design and management of high-level structures in data ecosystem
+- Creates frameworks for data engineers to implement
+- Big-picture aspects of data management
+- Closely related to data engineer role (design vs implementation)
+
+**6. Statistician** 📈
+- Uses statistical methods to gather and analyse data
+- Assists in resolving practical issues in business, engineering, healthcare, and other fields
+- Chooses what information is needed and how to gather it
+- Plans surveys and experiments
+- Examines data to identify patterns and make inferences
+- Presents findings
+
+**7. Machine Learning Engineer** 🤖
+- Creates and maintains platforms for machine learning projects
+- Expert programmers who develop machines and systems
+- Systems that can learn and apply knowledge independently
+- Develops algorithms and programs for autonomous device behavior
+
+**8. Data Visualisation Specialist** 🎨
+- Turns complex findings into understandable visual presentations
+- Produces dashboards, charts, and graphs
+- Uses tools like Tableau, PowerBI, Python and R libraries
+- Supports business decision-making through visual communication
+
+#### 🎯 Roles Relationship Diagram
+
+<div class="mermaid">
+graph TB
+    subgraph "Data Collection & Infrastructure"
+        DE[Data Engineer<br/>⚙️<br/>Big Data Infrastructure]
+        DA[Data Architect<br/>🏗️<br/>System Design]
+    end
+    
+    subgraph "Data Processing & Analysis"
+        DA2[Data Analyst<br/>📊<br/>Statistical Analysis]
+        DS[Data Scientist<br/>🔬<br/>ML & AI Models]
+        ST[Statistician<br/>📈<br/>Statistical Methods]
+    end
+    
+    subgraph "Visualization & Reporting"
+        BI[BI Analyst<br/>💼<br/>Business Insights]
+        DV[Data Visualization<br/>Specialist<br/>🎨<br/>Charts & Dashboards]
+    end
+    
+    subgraph "Advanced Implementation"
+        MLE[ML Engineer<br/>🤖<br/>ML Platforms]
+    end
+    
+    DA --> DE
+    DE --> DA2
+    DE --> DS
+    DA2 --> ST
+    DS --> MLE
+    DA2 --> BI
+    DS --> BI
+    ST --> BI
+    BI --> DV
+    DS --> DV
+    
+    style DE fill:#FF6B6B,stroke:#C92A2A,stroke-width:2px,color:#fff
+    style DA fill:#4ECDC4,stroke:#2C7873,stroke-width:2px,color:#fff
+    style DA2 fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style DS fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style ST fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style BI fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style DV fill:#FFA07A,stroke:#FF6347,stroke-width:2px
+    style MLE fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff
+</div>
+
+#### 🔄 Data Analysis Team Workflow
+
+<div class="mermaid">
+flowchart LR
+    A[Data Architect<br/>Designs System] --> B[Data Engineer<br/>Builds Infrastructure]
+    B --> C[Data Sources]
+    C --> D[Data Analyst<br/>Statistical Analysis]
+    C --> E[Data Scientist<br/>ML Models]
+    C --> F[Statistician<br/>Experiments]
+    D --> G[BI Analyst<br/>Business Insights]
+    E --> H[ML Engineer<br/>Deploy Models]
+    F --> G
+    G --> I[Data Visualization<br/>Specialist]
+    H --> I
+    I --> J[Decision Makers<br/>💡]
+    
+    style A fill:#4ECDC4,stroke:#2C7873,stroke-width:2px,color:#fff
+    style B fill:#FF6B6B,stroke:#C92A2A,stroke-width:2px,color:#fff
+    style C fill:#95E1D3,stroke:#4ECDC4,stroke-width:2px
+    style D fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style E fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style F fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style G fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style H fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff
+    style I fill:#FFA07A,stroke:#FF6347,stroke-width:2px
+    style J fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+</div>
+
+#### 📋 Roles Comparison Table
+
+| Role | Primary Focus | Key Skills | Typical Output |
+|------|---------------|------------|---------------|
+| **Data Analyst** | Statistical analysis & reporting | Statistics, SQL, Excel | Reports, insights |
+| **Data Scientist** | ML models & AI systems | Python, ML, algorithms | Predictive models, AI systems |
+| **Data Engineer** | Infrastructure & pipelines | Big data tools, databases | Data pipelines, infrastructure |
+| **BI Analyst** | Business insights | Business acumen, dashboards | Business reports, dashboards |
+| **Data Architect** | System design | System design, architecture | Data architecture frameworks |
+| **Statistician** | Statistical methods | Advanced statistics, R | Statistical analysis, experiments |
+| **ML Engineer** | ML platforms | Programming, ML ops | ML platforms, deployed models |
+| **Data Visualization Specialist** | Visual communication | Tableau, PowerBI, design | Charts, dashboards, visualizations |
+
+#### 💡 Important Notes
+
+<div class="key-concept">
+**Role Overlap**: In smaller organisations, one person might oversee several of these positions. Organisations may have their own internal definition of roles and may use role names specific to their organisation.
+</div>
+
+#### 🎯 Skills Requirements
+
+The two types of skills significant in the workplace are **hard skills** and **soft skills**, which frequently complement one another. Technical or specialised skills are considered hard skills because they are simple to define and quantify. Formal education, training courses, certification programmes, or on-the-job training are frequently used to acquire them. Hard skills are often unique to a given job or task.
+
+##### 💻 Hard Skills
+
+**1. Mathematical and Statistical Skills** 📊
+- Basic understanding of statistics and maths when interpreting data
+- Understanding the data, performing calculations, and reaching reliable conclusions
+- Essential for producing accurate reports
+
+**2. Programming Skills** 💻
+- Languages: Python, R, SQL
+- Not all data analyst roles require it, but it's a tremendous asset
+- Enables automation of procedures
+- Clean up and process massive amounts of data
+- Carry out more complex analyses
+
+**3. Database Management/SQL** 🗄️
+- Fundamental skill for a data analyst
+- Ability to write SQL queries and comprehend database systems
+- Extract, modify, manage, and store data
+- Comfortable working with database systems
+
+**4. Data Visualisation Skills** 📈
+- One of the most important aspects of a data analyst's job
+- Present data in an understandable visual format
+- Tools: Tableau, PowerBI, Python libraries (Matplotlib, Seaborn)
+- Create graphs, charts, and other visualisations
+
+**5. Knowledge of Data Cleaning/Wrangling** 🧹
+- Rarely is data pure and prepared for analysis
+- Handle missing or inconsistent data
+- Prepare data for analysis through cleaning and pre-processing
+- Essential for data quality
+
+##### 🤝 Soft Skills
+
+Soft skills often correlate with a person's personality traits, social graces, communication skills, and personal attributes. Soft skills are less concrete and more difficult to measure. They have to do with how you conduct yourself at work and with others.
+
+**1. Analytical Skills** 🔍
+- Examine statistics, patterns, and other information
+- Draw conclusions from the results
+- Pose the proper inquiries
+- Interpret the findings
+- Offer perceptions that can aid decision-making
+
+**2. Problem-Solving Skills** 🧩
+- Troubleshoot and find solutions
+- Handle problems with data or analysis
+- Troubleshoot data collection procedures
+- Determine how to deal with incomplete or inconsistent data
+
+**3. Communication Skills** 💬
+- Strong written and verbal communication skills
+- Convey findings to audiences that may not share technical expertise
+- Communicate complex ideas in a way that others can comprehend
+- Present findings clearly and effectively
+
+**4. Understanding of the Business/Industry** 🏢
+- Business or industry knowledge is significantly beneficial
+- Comprehend the context of the data being used
+- Produce pertinent and beneficial analyses for the enterprise
+- Connect data insights to business objectives
+
+#### 📊 Skills Overview Diagram
+
+<div class="mermaid">
+graph TB
+    subgraph "Hard Skills 💻"
+        HS1[Mathematical &<br/>Statistical Skills<br/>📊]
+        HS2[Programming Skills<br/>Python, R, SQL<br/>💻]
+        HS3[Database Management<br/>SQL Queries<br/>🗄️]
+        HS4[Data Visualization<br/>Tableau, PowerBI<br/>📈]
+        HS5[Data Cleaning<br/>Wrangling<br/>🧹]
+    end
+    
+    subgraph "Soft Skills 🤝"
+        SS1[Analytical Skills<br/>Critical Thinking<br/>🔍]
+        SS2[Problem-Solving<br/>Troubleshooting<br/>🧩]
+        SS3[Communication<br/>Written & Verbal<br/>💬]
+        SS4[Business Understanding<br/>Industry Knowledge<br/>🏢]
+    end
+    
+    HS1 --> Success[Successful<br/>Data Analyst<br/>✅]
+    HS2 --> Success
+    HS3 --> Success
+    HS4 --> Success
+    HS5 --> Success
+    SS1 --> Success
+    SS2 --> Success
+    SS3 --> Success
+    SS4 --> Success
+    
+    style HS1 fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style HS2 fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style HS3 fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style HS4 fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style HS5 fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style SS1 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style SS2 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style SS3 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style SS4 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style Success fill:#FFD700,stroke:#B8860B,stroke-width:3px
+</div>
+
+#### 🔄 Skills Development Path
+
+<div class="mermaid">
+flowchart TD
+    Start([Begin Learning]) --> Foundation[Foundation Skills]
+    
+    Foundation --> Hard[Hard Skills Development]
+    Foundation --> Soft[Soft Skills Development]
+    
+    Hard --> H1[Math & Statistics]
+    Hard --> H2[Programming]
+    Hard --> H3[Database/SQL]
+    Hard --> H4[Visualization]
+    Hard --> H5[Data Cleaning]
+    
+    Soft --> S1[Analytical Thinking]
+    Soft --> S2[Problem Solving]
+    Soft --> S3[Communication]
+    Soft --> S4[Business Acumen]
+    
+    H1 --> Practice[Practice & Apply]
+    H2 --> Practice
+    H3 --> Practice
+    H4 --> Practice
+    H5 --> Practice
+    S1 --> Practice
+    S2 --> Practice
+    S3 --> Practice
+    S4 --> Practice
+    
+    Practice --> Experience[Gain Experience]
+    Experience --> Expert[Expert Data Analyst]
+    
+    style Start fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style Foundation fill:#95E1D3,stroke:#4ECDC4,stroke-width:2px
+    style Hard fill:#FF6B6B,stroke:#C92A2A,stroke-width:2px,color:#fff
+    style Soft fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style Practice fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style Experience fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style Expert fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+</div>
+
+#### 📋 Skills Comparison Table
+
+| Skill Type | Characteristics | How Acquired | Examples |
+|------------|----------------|--------------|----------|
+| **Hard Skills** | Technical, quantifiable, job-specific | Formal education, training, certifications | SQL, Python, Statistics, Tableau |
+| **Soft Skills** | Personality-based, interpersonal | Experience, practice, self-development | Communication, Problem-solving, Analytical thinking |
+| **Complementary** | Both essential for success | Continuous learning and development | Technical expertise + Communication = Effective analyst |
+
+#### 💡 Key Insights
+
+<div class="important-info">
+**Why Both Skills Matter**: In the workplace, it's crucial to have both hard and soft skills. Technical expertise is frequently built on a foundation of hard skills. Still, soft skills are essential for effectively putting those technical skills to use, working with teammates, and fostering a positive work environment. Employers frequently place a high value on soft skills because they can be more challenging to teach than hard skills and because they are crucial to a person's capacity for collaborative work.
+</div>
+
+#### 📅 A Day in the Life of a Data Analyst
+
+There are never any two alike days at this job. There are always fresh data sets to examine, new issues to resolve, and fresh revelations to make. People who enjoy puzzles, have a keen eye for detail, and are curious to find the stories hidden in data are well suited for this role.
+
+Let's discuss a typical day for a data analyst working in a mid-sized tech company. A data analyst's day can vary greatly depending on the industry, company size, and specific role.
+
+#### ⏰ Daily Timeline
+
+<div class="mermaid">
+gantt
+    title A Day in the Life of a Data Analyst
+    dateFormat HH:mm
+    axisFormat %H:%M
+    
+    section Morning
+    Coffee & Email Check           :08:00, 30m
+    Daily Stand-up Meeting         :08:30, 30m
+    Draft Sales Report             :09:00, 90m
+    Data Validation & Cleaning     :09:00, 90m
+    
+    section Analysis
+    Data Analysis (Python)         :10:30, 90m
+    Lunch Break                    :12:00, 60m
+    
+    section Afternoon
+    Create Visualizations          :13:00, 60m
+    Complete & Send Report         :14:00, 30m
+    Prepare New Dataset            :14:30, 60m
+    ML Team Meeting                :15:30, 30m
+    Wrap Up & Planning             :16:00, 30m
+</div>
+
+#### 📋 Detailed Daily Activities
+
+**08:00 - Morning Routine** ☕
+- Start the day with coffee
+- Check email for updates from team and departments
+- Respond to critical messages
+- Scan for urgent data requests requiring immediate attention
+
+**08:30 - Team Collaboration** 👥
+- Attend daily stand-up meeting
+- Discuss daily tasks and project updates
+- Share problems and upcoming deadlines
+- Communicate current work: cleaning new dataset for predictive model and quarterly sales report
+
+**09:00 - Data Preparation** 📊
+- Begin drafting sales report for current quarter
+- Use SQL queries to retrieve data from company database
+- Verify data accuracy
+- Look for outliers and inconsistencies
+- Check for gaps in data
+
+**10:30 - Data Analysis** 🔍
+- Begin analysis after validating and organizing data
+- Examine sales patterns
+- Identify top-performing products
+- Understand consumer behavior
+- Compare current quarter with previous quarters
+- Use Python with Pandas and NumPy for data manipulation and calculations
+
+**12:00 - Break** 🍽️
+- Lunch break
+- Catch up with co-workers
+
+**13:00 - Data Visualization** 📈
+- Visualize interesting insights from sales data
+- Use Tableau to create dynamic dashboards
+- Display data on:
+  - Customer behavior
+  - Product performance
+  - Sales trends
+
+**14:00 - Report Delivery** 📤
+- Complete the sales report
+- Send report with summary of findings to sales team
+- Make yourself available for additional analysis or questions
+
+**14:30 - New Project Preparation** 🆕
+- Prepare fresh dataset for predictive model
+- Handle large dataset with many missing values
+- Perform extensive pre-processing and cleaning
+
+**15:30 - Cross-Team Collaboration** 🤝
+- Meeting with machine learning team
+- Review cleaned data together
+- Explain what each variable means
+- Discuss problems encountered during cleaning
+- Hand off data for model construction
+
+**16:00 - End of Day** ✅
+- Finish up for the day
+- Set to-do items for tomorrow:
+  - Finish data cleaning
+  - Begin exploratory data analysis on new dataset
+  - Respond to sales team comments on quarterly report
+
+#### 🔄 Daily Workflow Diagram
+
+<div class="mermaid">
+flowchart TD
+    Start([Start of Day<br/>08:00]) --> Email[Check Email<br/>& Updates<br/>☕]
+    Email --> Standup[Daily Stand-up<br/>Team Meeting<br/>👥]
+    Standup --> SQL[SQL Queries<br/>Retrieve Data<br/>🗄️]
+    SQL --> Validate[Validate Data<br/>Check Quality<br/>✓]
+    Validate --> Analyze[Analyze Data<br/>Python/Pandas<br/>🔍]
+    Analyze --> Lunch[Lunch Break<br/>🍽️]
+    Lunch --> Visualize[Create Visualizations<br/>Tableau<br/>📈]
+    Visualize --> Report[Complete Report<br/>Send to Team<br/>📤]
+    Report --> Clean[Clean New Dataset<br/>Pre-processing<br/>🧹]
+    Clean --> Meeting[ML Team Meeting<br/>Review Data<br/>🤝]
+    Meeting --> Plan[Plan Tomorrow<br/>Set To-Dos<br/>✅]
+    Plan --> End([End of Day<br/>16:00])
+    
+    style Start fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style Email fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style Standup fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style SQL fill:#FF6B6B,stroke:#C92A2A,stroke-width:2px,color:#fff
+    style Validate fill:#4ECDC4,stroke:#2C7873,stroke-width:2px,color:#fff
+    style Analyze fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style Lunch fill:#FFA07A,stroke:#FF6347,stroke-width:2px
+    style Visualize fill:#95E1D3,stroke:#4ECDC4,stroke-width:2px
+    style Report fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style Clean fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff
+    style Meeting fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style Plan fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style End fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+</div>
+
+#### 🎯 Key Activities Breakdown
+
+<div class="mermaid">
+pie title Daily Time Distribution
+    "Data Analysis" : 90
+    "Data Preparation" : 90
+    "Visualization" : 60
+    "Meetings" : 60
+    "Report Writing" : 30
+    "Email & Planning" : 60
+    "Lunch" : 60
+</div>
+
+#### 💡 Key Insights from a Typical Day
+
+<div class="key-concept">
+**Variety is Key**: No two days are the same. Data analysts work on multiple projects simultaneously, handle various data sources, and collaborate with different teams. This variety keeps the role interesting and challenging.
+
+**Technical Skills in Action**: The day demonstrates the practical application of:
+- SQL for data retrieval
+- Python (Pandas, NumPy) for analysis
+- Tableau for visualization
+- Data cleaning and validation techniques
+
+**Collaboration is Essential**: The role involves constant communication with:
+- Team members (stand-ups)
+- Other departments (sales team)
+- Cross-functional teams (ML team)
+
+**Problem-Solving Focus**: Much of the day involves identifying and solving data quality issues, finding patterns, and making data-driven recommendations.
+</div>
+
+#### 📊 Levels of Data Analysis
+
+Four levels or types of data analysis can be distinguished, each offering more profound insights and increasing complexity. These are the four levels in this hierarchy: **descriptive**, **diagnostic**, **predictive**, and **prescriptive analytics**.
+
+##### 1. Descriptive Analytics 📈
+
+The most fundamental type of data analytics is **descriptive analytics**. The raw data must be comprehended and summarised to find patterns and trends. The main goal of descriptive analytics is to summarise or describe data in a way humans can understand.
+
+**Key Questions**: "What happened?"
+
+**Examples**:
+- Statistical data on website traffic
+- Social media post metrics
+- Monthly revenue reports
+- Sales summaries
+- Customer demographics
+
+**Characteristics**:
+- Most basic level
+- Summarizes historical data
+- Identifies patterns and trends
+- Provides context for what occurred
+
+##### 2. Diagnostic Analytics 🔍
+
+Deeper data analysis is used in **diagnostic analytics** to identify the factors that led to a particular result. It looks at information or content to address concerns about the reasons behind events. More varied data inputs and statistical techniques are used to analyse the data and look for patterns or correlations.
+
+**Key Questions**: "Why did it happen?"
+
+**Examples**:
+- Investigating decline in quarterly sales
+- Root cause analysis
+- Identifying factors affecting performance
+- Understanding correlations between variables
+
+**Characteristics**:
+- Deeper than descriptive
+- Investigates causes
+- Uses statistical techniques
+- Looks for patterns and correlations
+- Explains past events
+
+##### 3. Predictive Analytics 🔮
+
+Forecasting future outcomes based on historical data is the goal of **predictive analytics**. Regression analysis, time series analysis, and other sophisticated statistical techniques are utilised.
+
+**Key Questions**: "What is likely to occur in the future?" and "What trends can we anticipate?"
+
+**Examples**:
+- Predicting sales for upcoming quarter
+- Forecasting customer churn
+- Weather predictions
+- Stock market forecasts
+- Demand forecasting
+
+**Characteristics**:
+- Looks to the future
+- Uses historical data patterns
+- Employs advanced statistical techniques
+- Regression analysis, time series analysis
+- Machine learning models
+
+##### 4. Prescriptive Analytics 💡
+
+The highest level of data analytics is **prescriptive analytics**. In addition to making future predictions, it makes recommendations for different actions. It can give advice and provide solutions to problems.
+
+**Key Questions**: "What should we do to achieve our goals?"
+
+**Examples**:
+- Optimizing delivery routes to save time and fuel
+- Recommending marketing strategies
+- Resource allocation optimization
+- Risk management recommendations
+- Pricing optimization
+
+**Characteristics**:
+- Highest complexity level
+- Provides recommendations
+- Uses complex event processing
+- Decision trees, simulation, optimization methods
+- Actionable insights
+
+#### 🎯 Analytics Hierarchy Diagram
+
+<div class="mermaid">
+graph TD
+    A[Prescriptive Analytics<br/>💡<br/>What should we do?<br/>Highest Complexity] --> B[Predictive Analytics<br/>🔮<br/>What will happen?<br/>Future Forecasting]
+    B --> C[Diagnostic Analytics<br/>🔍<br/>Why did it happen?<br/>Root Cause Analysis]
+    C --> D[Descriptive Analytics<br/>📈<br/>What happened?<br/>Most Basic]
+    
+    style A fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+    style B fill:#2196F3,stroke:#1565C0,stroke-width:2px,color:#fff
+    style C fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style D fill:#9E9E9E,stroke:#424242,stroke-width:2px,color:#fff
+</div>
+
+#### 🔄 Analytics Progression Flow
+
+<div class="mermaid">
+flowchart LR
+    Past[Past Events<br/>Historical Data] --> Desc[Descriptive<br/>What Happened?<br/>📈]
+    Desc --> Diag[Diagnostic<br/>Why Did It Happen?<br/>🔍]
+    Diag --> Pred[Predictive<br/>What Will Happen?<br/>🔮]
+    Pred --> Presc[Prescriptive<br/>What Should We Do?<br/>💡]
+    Presc --> Future[Future Actions<br/>Optimized Decisions]
+    
+    style Past fill:#E0E0E0,stroke:#757575,stroke-width:2px
+    style Desc fill:#9E9E9E,stroke:#424242,stroke-width:2px,color:#fff
+    style Diag fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style Pred fill:#2196F3,stroke:#1565C0,stroke-width:2px,color:#fff
+    style Presc fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style Future fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+</div>
+
+#### 📋 Analytics Levels Comparison
+
+| Level | Question | Focus | Complexity | Techniques | Example |
+|-------|----------|-------|------------|------------|---------|
+| **Descriptive** | What happened? | Past events | Low | Aggregation, summarization | Monthly sales report |
+| **Diagnostic** | Why did it happen? | Root causes | Medium | Statistical analysis, correlation | Investigating sales decline |
+| **Predictive** | What will happen? | Future outcomes | High | Regression, time series, ML | Sales forecast for next quarter |
+| **Prescriptive** | What should we do? | Recommendations | Very High | Optimization, simulation, decision trees | Optimize delivery routes |
+
+#### 🎨 Analytics Value Pyramid
+
+<div class="mermaid">
+graph TB
+    subgraph "Value & Complexity"
+        P1[Prescriptive Analytics<br/>Highest Value<br/>Most Complex<br/>💡]
+        P2[Predictive Analytics<br/>High Value<br/>Complex<br/>🔮]
+        P3[Diagnostic Analytics<br/>Medium Value<br/>Moderate Complexity<br/>🔍]
+        P4[Descriptive Analytics<br/>Foundation Value<br/>Basic Complexity<br/>📈]
+    end
+    
+    P4 --> P3
+    P3 --> P2
+    P2 --> P1
+    
+    style P1 fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+    style P2 fill:#2196F3,stroke:#1565C0,stroke-width:2px,color:#fff
+    style P3 fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style P4 fill:#9E9E9E,stroke:#424242,stroke-width:2px,color:#fff
+</div>
+
+#### 💡 Key Insights
+
+<div class="important-info">
+**Foundation to Advanced**: The four levels form a hierarchy where each level builds upon the previous one. Descriptive analytics provides the foundation, diagnostic explains the past, predictive looks to the future, and prescriptive provides actionable recommendations.
+
+**Increasing Complexity**: As you move from descriptive to prescriptive analytics, both the complexity and the value of insights increase. However, each level serves an important purpose in data-driven decision-making.
+
+**Complementary Use**: Organizations typically use multiple levels simultaneously. Descriptive analytics provides context, diagnostic explains issues, predictive forecasts trends, and prescriptive optimizes actions.
+</div>
+
+#### 🔍 Exploratory Data Analysis (EDA)
+
+EDA is a data analysis method that focuses on visual, intuitive techniques. This method frequently comes before formal statistical modelling and is used to look for patterns and anomalies, test theories, and validate presumptions about the statistical model of choice. The first two levels of data analytics, **descriptive** and **diagnostic analytics**, are where EDA primarily fits in.
+
+##### 📊 EDA Overview
+
+**Purpose**: To get a sense of what the data can tell us by exploring and understanding the data before formal modeling.
+
+**Key Characteristics**:
+- Visual and intuitive techniques
+- Performed before formal statistical modeling
+- Identifies patterns and anomalies
+- Tests theories and validates assumptions
+- Prepares data for advanced analytics
+
+##### 🎯 EDA Techniques
+
+**1. Early Stage EDA - Descriptive Analytics** 📈
+
+Analysts summarise the key characteristics of the data during the early stages of EDA. This includes:
+
+**Measures of Central Tendency**:
+- **Mean**: Average value
+- **Median**: Middle value
+- **Mode**: Most frequent value
+
+**Measures of Dispersion**:
+- **Range**: Difference between max and min
+- **Variance**: Measure of spread
+- **Standard Deviation**: Square root of variance
+
+**Data Distribution Visualisations**:
+- **Histograms**: Show frequency distribution
+- **Box Plots**: Display quartiles and outliers
+- **Bar Charts**: Compare categories
+- **Summary Statistics**: Numerical summaries
+
+**2. Advanced EDA - Diagnostic Analytics** 🔍
+
+As the EDA process progresses, analysts delve deeper into relationships and causes:
+
+**Relationship Analysis**:
+- **Scatter Plots**: Understand relationships between variables
+- **Correlation Analysis**: Measure strength of relationships
+- **Heatmaps**: Visualize correlation matrices
+
+**Pattern Discovery**:
+- **Grouping Data**: Discover patterns through segmentation
+- **Anomaly Detection**: Identify outliers and unusual patterns
+- **Trend Analysis**: Identify trends over time
+
+**Root Cause Investigation**:
+- **Comparative Analysis**: Compare different groups
+- **Drill-down Analysis**: Investigate specific anomalies
+- **Hypothesis Testing**: Test assumptions about data
+
+##### 🔄 EDA Workflow
+
+<div class="mermaid">
+flowchart TD
+    Start([Start EDA]) --> Load[Load Data]
+    Load --> Initial[Initial Exploration]
+    
+    Initial --> Desc[Descriptive Analytics<br/>📈<br/>Summarize Characteristics]
+    Desc --> Central[Central Tendency<br/>Mean, Median, Mode]
+    Desc --> Dispersion[Dispersion<br/>Range, Variance, Std Dev]
+    Desc --> Visual[Distribution Visualizations<br/>Histograms, Box Plots]
+    
+    Visual --> Diag[Diagnostic Analytics<br/>🔍<br/>Investigate Relationships]
+    Diag --> Scatter[Scatter Plots<br/>Relationships]
+    Diag --> Group[Group Data<br/>Pattern Discovery]
+    Diag --> Anomaly[Anomaly Detection<br/>Outliers]
+    
+    Anomaly --> Validate[Validate Assumptions]
+    Validate --> Prepare[Prepare for Advanced Analytics]
+    
+    Prepare --> Predictive[Predictive Analytics<br/>🔮<br/>Feature Engineering]
+    Prepare --> Prescriptive[Prescriptive Analytics<br/>💡<br/>Decision Scenarios]
+    
+    style Start fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style Load fill:#95E1D3,stroke:#4ECDC4,stroke-width:2px
+    style Initial fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style Desc fill:#9E9E9E,stroke:#424242,stroke-width:2px,color:#fff
+    style Central fill:#9E9E9E,stroke:#424242,stroke-width:2px,color:#fff
+    style Dispersion fill:#9E9E9E,stroke:#424242,stroke-width:2px,color:#fff
+    style Visual fill:#9E9E9E,stroke:#424242,stroke-width:2px,color:#fff
+    style Diag fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style Scatter fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style Group fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style Anomaly fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style Validate fill:#4ECDC4,stroke:#2C7873,stroke-width:2px,color:#fff
+    style Prepare fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style Predictive fill:#2196F3,stroke:#1565C0,stroke-width:2px,color:#fff
+    style Prescriptive fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#fff
+</div>
+
+##### 🎨 EDA in Analytics Hierarchy
+
+<div class="mermaid">
+graph TB
+    subgraph "EDA Primary Focus"
+        Desc[Descriptive Analytics<br/>📈<br/>Summarize Data]
+        Diag[Diagnostic Analytics<br/>🔍<br/>Investigate Causes]
+    end
+    
+    subgraph "EDA Prepares For"
+        Pred[Predictive Analytics<br/>🔮<br/>Feature Engineering]
+        Presc[Prescriptive Analytics<br/>💡<br/>Decision Scenarios]
+    end
+    
+    Desc --> Diag
+    Desc --> Pred
+    Diag --> Pred
+    Desc --> Presc
+    Diag --> Presc
+    
+    style Desc fill:#9E9E9E,stroke:#424242,stroke-width:2px,color:#fff
+    style Diag fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style Pred fill:#2196F3,stroke:#1565C0,stroke-width:2px,color:#fff
+    style Presc fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#fff
+</div>
+
+##### 📋 EDA Techniques Summary
+
+| Stage | Analytics Level | Techniques | Purpose |
+|-------|----------------|------------|---------|
+| **Early EDA** | Descriptive | Mean, Median, Mode, Range, Variance, Histograms, Box Plots | Summarize key characteristics |
+| **Advanced EDA** | Diagnostic | Scatter Plots, Correlation, Grouping, Anomaly Detection | Investigate relationships and causes |
+| **Preparation** | Predictive/Prescriptive | Feature Engineering, Pattern Recognition | Prepare for advanced analytics |
+
+##### 🔬 EDA Process Steps
+
+<div class="mermaid">
+flowchart LR
+    A[1. Load Data] --> B[2. Initial Exploration]
+    B --> C[3. Descriptive Statistics]
+    C --> D[4. Visualizations]
+    D --> E[5. Identify Patterns]
+    E --> F[6. Detect Anomalies]
+    F --> G[7. Investigate Relationships]
+    G --> H[8. Validate Assumptions]
+    H --> I[9. Document Findings]
+    I --> J[10. Prepare for Modeling]
+    
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B fill:#95E1D3,stroke:#4ECDC4,stroke-width:2px
+    style C fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style D fill:#FF6B6B,stroke:#C92A2A,stroke-width:2px,color:#fff
+    style E fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style F fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff
+    style G fill:#4ECDC4,stroke:#2C7873,stroke-width:2px,color:#fff
+    style H fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style I fill:#FFA07A,stroke:#FF6347,stroke-width:2px
+    style J fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#fff
+</div>
+
+##### 💡 Key Insights
+
+<div class="key-concept">
+**Primary Focus**: EDA primarily fits into descriptive and diagnostic analytics levels. It helps summarize data characteristics and investigate relationships and causes.
+
+**Foundation for Advanced Analytics**: While EDA's main objective aligns with descriptive and diagnostic analytics, it also prepares for predictive and prescriptive analytics. Understanding data patterns and anomalies through EDA greatly influences feature engineering for predictive analytics and decision-making scenarios for prescriptive analytics.
+
+**Visual and Intuitive**: EDA emphasizes visual techniques that make data exploration intuitive and accessible, helping analysts understand data before formal modeling.
+
+**Iterative Process**: EDA is an iterative process where initial exploration leads to deeper investigation, which then informs further exploration and analysis.
+</div>
+
+#### 📚 What Did I Learn in This Lesson?
+
+This lesson provided comprehensive insights into the field of data analysis. Here's a summary of the key learnings:
+
+##### 🎯 Key Learning Points
+
+**1. Various Aspects of Data Analysis** 🌐
+
+Data analysis is a multifaceted discipline that involves:
+- Transforming raw data into actionable insights
+- Using specialized tools and software
+- Connecting multiple fields: programming, ML, statistics, visualization, BI, and big data
+- Applying different types of analysis: text, statistical, diagnostic, predictive, and data mining
+
+**2. Roles and Responsibilities** 👥
+
+- There are **eight key roles** within the field of data analysis:
+  - Data Analyst, Data Scientist, Data Engineer
+  - Business Intelligence Analyst, Data Architect
+  - Statistician, Machine Learning Engineer
+  - Data Visualization Specialist
+- These roles might be named differently in different organisations
+- A single individual may fulfil more than one of these roles, especially in smaller organizations
+- Each role has specific responsibilities but collaboration is essential
+
+**3. Hard and Soft Skills** 🎓
+
+A data analyst requires various skills:
+
+**Hard Skills** (Technical):
+- Mathematical and statistical skills
+- Programming skills (Python, R, SQL)
+- Database management/SQL
+- Data visualization skills
+- Data cleaning/wrangling knowledge
+
+**Soft Skills** (Interpersonal):
+- Analytical skills
+- Problem-solving skills
+- Communication skills
+- Business/industry understanding
+
+Both skill types are essential and complement each other.
+
+**4. Daily Tasks and Activities** 📅
+
+A data analyst may be required to perform various tasks on any given day:
+- Email management and planning
+- Team meetings and collaboration
+- Data retrieval using SQL
+- Data validation and cleaning
+- Data analysis using Python/Pandas
+- Creating visualizations with Tableau
+- Report writing and delivery
+- Cross-team collaboration
+- Project preparation and planning
+
+**5. Four Primary Levels of Data Analysis** 📊
+
+The four primary levels form a hierarchy:
+1. **Descriptive Analytics** - "What happened?" (Foundation)
+2. **Diagnostic Analytics** - "Why did it happen?" (Root cause)
+3. **Predictive Analytics** - "What will happen?" (Forecasting)
+4. **Prescriptive Analytics** - "What should we do?" (Recommendations)
+
+Complexity and value increase from descriptive to prescriptive analytics.
+
+**6. Exploratory Data Analysis (EDA)** 🔍
+
+Exploratory data analysis allows a data analyst to:
+- Test hypotheses and check assumptions
+- Discover patterns and anomalies
+- Summarize data characteristics (descriptive)
+- Investigate relationships and causes (diagnostic)
+- Prepare data for advanced analytics (predictive/prescriptive)
+
+EDA primarily fits into descriptive and diagnostic analytics but serves as foundation for higher levels.
+
+#### 🎨 Lesson Overview Diagram
+
+<div class="mermaid">
+mindmap
+  root((Data Analysis<br/>Introduction))
+    Aspects
+      Multiple Fields
+      Tools & Software
+      Analysis Types
+      Interdisciplinary
+    Roles
+      Data Analyst
+      Data Scientist
+      Data Engineer
+      BI Analyst
+      Data Architect
+      Statistician
+      ML Engineer
+      Visualization Specialist
+    Skills
+      Hard Skills
+        Math & Statistics
+        Programming
+        Database/SQL
+        Visualization
+        Data Cleaning
+      Soft Skills
+        Analytical
+        Problem-Solving
+        Communication
+        Business Understanding
+    Daily Tasks
+      Email & Planning
+      Meetings
+      Data Retrieval
+      Analysis
+      Visualization
+      Reporting
+      Collaboration
+    Analytics Levels
+      Descriptive
+      Diagnostic
+      Predictive
+      Prescriptive
+    EDA
+      Visual Techniques
+      Pattern Discovery
+      Hypothesis Testing
+      Assumption Validation
+</div>
+
+#### 📋 Lesson Summary Checklist
+
+<div class="mermaid">
+flowchart TD
+    Start([Lesson Complete]) --> L1[✓ Understand Data Analysis Aspects]
+    L1 --> L2[✓ Know Roles & Responsibilities]
+    L2 --> L3[✓ Identify Required Skills]
+    L3 --> L4[✓ Understand Daily Tasks]
+    L4 --> L5[✓ Learn Analytics Levels]
+    L5 --> L6[✓ Master EDA Techniques]
+    L6 --> Ready([Ready for Next Lesson])
+    
+    style Start fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style L1 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style L2 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style L3 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style L4 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style L5 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style L6 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style Ready fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+</div>
+
+#### 💡 Reflection Questions
+
+<div class="important-info">
+**Test Your Understanding**:
+1. Can you explain the difference between descriptive and prescriptive analytics?
+2. What are the key hard and soft skills needed for a data analyst?
+3. How does EDA relate to the four levels of data analysis?
+4. Why might roles overlap in smaller organizations?
+5. How do the four analytics levels build upon each other?
+</div>
+
+#### 📝 The Task
+
+In this lesson, you learnt about the fundamental roles in the field of data analysis, the various hard and soft skills required by data analysts and the different types of analysis which may be performed. For today's lesson task, you need to consider your goals in data analysis.
+
+##### 🎯 Self-Reflection Exercise
+
+This is a bit of self-reflection to help you with your first step on your journey to becoming a data analyst. Take some time to think about and answer the following questions:
+
+**1. Your Motivation** 💭
+- Why are you pursuing this type of career?
+- What interests you about data analysis?
+- What problems do you want to solve with data?
+
+**2. Your Current Skill Set** 📊
+- **Hard Skills**: Where do you currently see your technical skills?
+  - Mathematical and statistical skills
+  - Programming skills (Python, R, SQL)
+  - Database management
+  - Data visualization
+  - Data cleaning/wrangling
+- **Soft Skills**: How would you rate your interpersonal skills?
+  - Analytical thinking
+  - Problem-solving
+  - Communication
+  - Business understanding
+
+**3. Your Role Aspiration** 👥
+- What role do you see yourself fulfilling in data analysis?
+  - Data Analyst
+  - Data Scientist
+  - Data Engineer
+  - Business Intelligence Analyst
+  - Data Architect
+  - Statistician
+  - Machine Learning Engineer
+  - Data Visualization Specialist
+- Why does this role appeal to you?
+
+**4. Your Analytics Interest** 📈
+- What level of analysis sounds the most interesting to you?
+  - Descriptive Analytics (What happened?)
+  - Diagnostic Analytics (Why did it happen?)
+  - Predictive Analytics (What will happen?)
+  - Prescriptive Analytics (What should we do?)
+- Why are you drawn to this level?
+
+##### 🗺️ Your Data Analysis Journey
+
+<div class="mermaid">
+flowchart TD
+    Start([Start Your Journey]) --> Reflect[Self-Reflection<br/>Assess Skills & Goals]
+    Reflect --> Identify[Identify Your Path<br/>Role & Analytics Level]
+    Identify --> Learn[Learn & Practice<br/>Build Skills]
+    Learn --> Apply[Apply Knowledge<br/>Real Projects]
+    Apply --> Grow[Grow & Specialize<br/>Advanced Skills]
+    Grow --> Achieve[Achieve Your Goals<br/>Career Success]
+    
+    style Start fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style Reflect fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style Identify fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style Learn fill:#2196F3,stroke:#1565C0,stroke-width:2px,color:#fff
+    style Apply fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style Grow fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style Achieve fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+</div>
+
+##### 📋 Skills Assessment Template
+
+<div class="key-concept">
+**Rate Your Current Skills (1-5 scale)**:
+
+**Hard Skills:**
+- Mathematical/Statistical Skills: ⭐⭐⭐⭐⭐
+- Programming (Python/R/SQL): ⭐⭐⭐⭐⭐
+- Database Management: ⭐⭐⭐⭐⭐
+- Data Visualization: ⭐⭐⭐⭐⭐
+- Data Cleaning/Wrangling: ⭐⭐⭐⭐⭐
+
+**Soft Skills:**
+- Analytical Thinking: ⭐⭐⭐⭐⭐
+- Problem-Solving: ⭐⭐⭐⭐⭐
+- Communication: ⭐⭐⭐⭐⭐
+- Business Understanding: ⭐⭐⭐⭐⭐
+
+**Areas for Growth:**
+- [ ] Identify 2-3 skills you want to develop
+- [ ] Set specific learning goals
+- [ ] Plan your skill development path
+</div>
+
+##### 🎨 Role Interest Assessment
+
+<div class="mermaid">
+pie title Which Role Interests You Most?
+    "Data Analyst" : 25
+    "Data Scientist" : 20
+    "Data Engineer" : 15
+    "BI Analyst" : 10
+    "Data Architect" : 8
+    "Statistician" : 7
+    "ML Engineer" : 10
+    "Visualization Specialist" : 5
+</div>
+
+##### 📊 Analytics Level Interest
+
+<div class="mermaid">
+graph LR
+    A[Your Interest] --> B{Which Level?}
+    B -->|Foundation| C[Descriptive<br/>📈<br/>Understanding Past]
+    B -->|Investigation| D[Diagnostic<br/>🔍<br/>Finding Causes]
+    B -->|Forecasting| E[Predictive<br/>🔮<br/>Predicting Future]
+    B -->|Optimization| F[Prescriptive<br/>💡<br/>Recommending Actions]
+    
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B fill:#FFD700,stroke:#B8860B,stroke-width:3px
+    style C fill:#9E9E9E,stroke:#424242,stroke-width:2px,color:#fff
+    style D fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style E fill:#2196F3,stroke:#1565C0,stroke-width:2px,color:#fff
+    style F fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#fff
+</div>
+
+##### 💬 Share Your Reflection
+
+<div class="important-info">
+**Remember**: You aren't on this journey alone! 
+
+Feel free to share your reflection in your class group's Teams channel to:
+- Hear what your fellow students have to say
+- Learn from others' perspectives
+- Build connections with classmates
+- Get support and encouragement
+- Exchange ideas and insights
+
+**What to Share:**
+- Your motivation for pursuing data analysis
+- Your current skill assessment
+- Your role and analytics level interests
+- Your learning goals
+- Any questions or concerns you have
+</div>
+
+##### ✍️ Reflection Template
+
+Use this template to structure your reflection:
+
+```
+**My Data Analysis Journey Reflection**
+
+**1. My Motivation:**
+[Why are you pursuing this career?]
+
+**2. My Current Skills:**
+- Hard Skills: [Rate and describe]
+- Soft Skills: [Rate and describe]
+
+**3. My Role Interest:**
+[Which role appeals to you and why?]
+
+**4. My Analytics Interest:**
+[Which level of analysis interests you most?]
+
+**5. My Learning Goals:**
+[What skills do you want to develop?]
+
+**6. My Questions:**
+[What would you like to learn more about?]
+```
+
+#### 📚 Exam Preparation: What's Important for the Exam
+
+Based on this lesson, here are the **critical concepts and information** you need to know for your exam:
+
+##### 🎯 Core Definitions (Must Know)
+
+**Data Analysis**: The discipline focused on drawing insightful conclusions from data. It involves methods and tools for gathering unprocessed data and turning it into information that can help with decision-making.
+
+**Exploratory Data Analysis (EDA)**: A data analysis method that focuses on visual, intuitive techniques used before formal statistical modeling to look for patterns and anomalies, test theories, and validate assumptions.
+
+##### 📊 The Four Levels of Analytics (Critical Distinction)
+
+You **MUST** be able to distinguish between these four levels:
+
+| Level | Question | Focus | Complexity | Key Characteristics | Examples |
+|-------|----------|-------|------------|-------------------|----------|
+| **Descriptive** | "What happened?" | Past events | Low | Summarizes historical data, identifies patterns | Monthly sales report, website traffic statistics, social media metrics, revenue summaries |
+| **Diagnostic** | "Why did it happen?" | Root causes | Medium | Investigates causes, uses statistical techniques | Investigating sales decline, root cause analysis, correlation analysis, identifying factors affecting performance |
+| **Predictive** | "What will happen?" | Future outcomes | High | Forecasts based on historical data, uses ML/regression | Sales forecast for next quarter, customer churn prediction, weather forecasting, demand forecasting |
+| **Prescriptive** | "What should we do?" | Recommendations | Very High | Provides actionable recommendations, uses optimization | Optimize delivery routes, recommend marketing strategies, resource allocation optimization, pricing optimization |
+
+**Exam Tip**: Be able to identify which level is being described in a scenario or example.
+
+##### 🎨 Visual Examples of Each Analytics Level
+
+**1. Descriptive Analytics - "What happened?"**
+
+<div class="mermaid">
+graph LR
+    A[Historical Data<br/>Q1-Q4 Sales] --> B[Calculate Metrics]
+    B --> C[Total Sales: $2.5M<br/>Avg Monthly: $625K<br/>Best Month: December]
+    C --> D[Visualization<br/>Bar Chart]
+    D --> E[Report: What Happened<br/>📊]
+    
+    style A fill:#9E9E9E,stroke:#424242,stroke-width:2px,color:#fff
+    style B fill:#9E9E9E,stroke:#424242,stroke-width:2px,color:#fff
+    style C fill:#9E9E9E,stroke:#424242,stroke-width:2px,color:#fff
+    style D fill:#9E9E9E,stroke:#424242,stroke-width:2px,color:#fff
+    style E fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+</div>
+
+**Example**: A retail store analyzes last year's sales data and creates a report showing:
+- Total annual revenue: $2.5 million
+- Best performing month: December ($350K)
+- Worst performing month: February ($180K)
+- Average monthly sales: $208K
+
+**2. Diagnostic Analytics - "Why did it happen?"**
+
+<div class="mermaid">
+flowchart TD
+    A[Problem: Sales Dropped 30%<br/>in Q3] --> B[Collect Data]
+    B --> C[Compare Variables]
+    C --> D{Investigate Causes}
+    D --> E[Marketing Budget<br/>Reduced 40%]
+    D --> F[Competitor Launched<br/>New Product]
+    D --> G[Seasonal Factors<br/>Summer Slump]
+    E --> H[Root Cause Found:<br/>Marketing Reduction]
+    F --> H
+    G --> H
+    H --> I[Report: Why It Happened<br/>🔍]
+    
+    style A fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style B fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style C fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style D fill:#FFD700,stroke:#B8860B,stroke-width:3px
+    style E fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style F fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style G fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style H fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+    style I fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+</div>
+
+**Example**: After noticing a 30% sales drop in Q3, the analyst investigates and finds:
+- Marketing budget was reduced by 40% in the same period
+- Strong correlation (r=0.85) between marketing spend and sales
+- Competitor launched a similar product in July
+- **Conclusion**: The sales drop was primarily caused by reduced marketing investment
+
+**3. Predictive Analytics - "What will happen?"**
+
+<div class="mermaid">
+graph TD
+    A[Historical Data<br/>2019-2024 Sales] --> B[Build ML Model]
+    B --> C[Train on Past Patterns]
+    C --> D[Time Series Analysis]
+    D --> E[Regression Model]
+    E --> F[Forecast Next Quarter]
+    F --> G[Prediction: Q1 2025<br/>Sales: $650K ± $50K<br/>Confidence: 85%]
+    G --> H[Report: What Will Happen<br/>🔮]
+    
+    style A fill:#2196F3,stroke:#1565C0,stroke-width:2px,color:#fff
+    style B fill:#2196F3,stroke:#1565C0,stroke-width:2px,color:#fff
+    style C fill:#2196F3,stroke:#1565C0,stroke-width:2px,color:#fff
+    style D fill:#2196F3,stroke:#1565C0,stroke-width:2px,color:#fff
+    style E fill:#2196F3,stroke:#1565C0,stroke-width:2px,color:#fff
+    style F fill:#2196F3,stroke:#1565C0,stroke-width:2px,color:#fff
+    style G fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+    style H fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+</div>
+
+**Example**: Using 5 years of sales data, the analyst builds a predictive model that forecasts:
+- **Q1 2025 Sales**: $650,000 (with 85% confidence interval of $600K-$700K)
+- **Trend**: Upward trajectory expected based on seasonal patterns
+- **Risk Factors**: Economic indicators suggest potential 10% variance
+
+**4. Prescriptive Analytics - "What should we do?"**
+
+<div class="mermaid">
+flowchart TD
+    A[Goal: Maximize Profit<br/>Minimize Costs] --> B[Current Situation]
+    B --> C[Multiple Scenarios]
+    C --> D[Scenario 1:<br/>Increase Price 10%<br/>Profit: +$50K<br/>Risk: -15% Sales]
+    C --> E[Scenario 2:<br/>Optimize Routes<br/>Cost: -$30K<br/>Time: -20%]
+    C --> F[Scenario 3:<br/>Bundle Products<br/>Profit: +$40K<br/>Risk: Low]
+    D --> G[Optimization Algorithm]
+    E --> G
+    F --> G
+    G --> H[Recommendation:<br/>Implement Scenario 2 + 3<br/>Expected ROI: 25%]
+    H --> I[Action Plan: What Should We Do<br/>💡]
+    
+    style A fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style B fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#FFD700,stroke:#B8860B,stroke-width:3px
+    style D fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style E fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style F fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style G fill:#9B59B6,stroke:#6C3483,stroke-width:3px,color:#fff
+    style H fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+    style I fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+</div>
+
+**Example**: To maximize profit, the system analyzes multiple options:
+- **Option 1**: Increase prices by 10% → +$50K profit but -15% sales risk
+- **Option 2**: Optimize delivery routes → -$30K costs, -20% delivery time
+- **Option 3**: Bundle products → +$40K profit, low risk
+- **Recommendation**: Implement Option 2 + Option 3 together
+- **Expected Result**: 25% ROI increase with manageable risk
+
+##### 📈 Real-World Scenario Comparison
+
+<div class="mermaid">
+graph TB
+    subgraph "Business Problem: Declining Customer Retention"
+        Problem[Customer Churn Rate<br/>Increased to 25%]
+    end
+    
+    subgraph "Descriptive Analytics 📈"
+        Desc[What Happened?<br/>Report shows:<br/>- Churn rate: 25%<br/>- Most churn in Q3<br/>- 60% are premium users]
+    end
+    
+    subgraph "Diagnostic Analytics 🔍"
+        Diag[Why Did It Happen?<br/>Analysis reveals:<br/>- Price increase caused churn<br/>- Support response time ↑<br/>- Competitor offers better value]
+    end
+    
+    subgraph "Predictive Analytics 🔮"
+        Pred[What Will Happen?<br/>Model predicts:<br/>- Churn will reach 30%<br/>- Revenue loss: $500K<br/>- If no action taken]
+    end
+    
+    subgraph "Prescriptive Analytics 💡"
+        Presc[What Should We Do?<br/>Recommendations:<br/>1. Reduce price for loyal customers<br/>2. Improve support response time<br/>3. Add value-added features<br/>Expected: Churn ↓ to 15%]
+    end
+    
+    Problem --> Desc
+    Desc --> Diag
+    Diag --> Pred
+    Pred --> Presc
+    
+    style Problem fill:#E74C3C,stroke:#C0392B,stroke-width:3px,color:#fff
+    style Desc fill:#9E9E9E,stroke:#424242,stroke-width:2px,color:#fff
+    style Diag fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style Pred fill:#2196F3,stroke:#1565C0,stroke-width:2px,color:#fff
+    style Presc fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+</div>
+
+##### 👥 Key Roles in Data Analysis (Know the Differences)
+
+You should be able to **identify and distinguish** between these roles:
+
+1. **Data Analyst**: Gathers, organizes, analyzes data statistically; interprets data and delivers reports
+2. **Data Scientist**: Uses algorithms and predictive models; creates AI systems with machine learning
+3. **Data Engineer**: Sets up big data infrastructure; designs, builds, integrates data from sources
+4. **Business Intelligence Analyst**: Analyzes data to identify business/market trends; creates reports and dashboards
+5. **Data Architect**: Designs and manages high-level structures in data ecosystem (design focus)
+6. **Statistician**: Uses statistical methods to gather/analyze data; plans surveys and experiments
+7. **Machine Learning Engineer**: Creates and maintains ML platforms; develops autonomous systems
+8. **Data Visualization Specialist**: Turns complex findings into visual presentations; creates dashboards and charts
+
+**Exam Tip**: Questions may ask you to match role descriptions to role names, or identify which role performs specific tasks.
+
+##### 📋 Role Examples and Scenarios
+
+**1. Data Analyst** 📊
+
+**Example Scenario**: A retail company wants to understand their Q4 sales performance.
+
+**Tasks**:
+- Gathers sales data from the database using SQL queries
+- Calculates total revenue: $2.5M (up 15% from Q3)
+- Identifies top-selling products: Electronics (40%), Clothing (35%), Home (25%)
+- Creates a statistical summary: average order value, customer demographics
+- Delivers a report: "Q4 Sales Analysis Report" with findings and recommendations
+
+**Key Output**: Statistical reports, data summaries, trend analysis
+
+**2. Data Scientist** 🔬
+
+**Example Scenario**: An e-commerce company wants to predict which customers are likely to churn.
+
+**Tasks**:
+- Builds a machine learning model using historical customer data
+- Trains a predictive algorithm (Random Forest) on 100,000 customer records
+- Creates an AI system that scores each customer's churn probability (0-100%)
+- Identifies key factors: low purchase frequency, no engagement with emails, negative reviews
+- Deploys model that predicts: "Customer #12345 has 85% churn risk"
+
+**Key Output**: Predictive models, AI systems, ML algorithms
+
+**3. Data Engineer** ⚙️
+
+**Example Scenario**: A company needs to integrate data from 5 different sources into a data warehouse.
+
+**Tasks**:
+- Sets up Hadoop cluster for big data processing
+- Designs ETL pipeline to extract data from: CRM, ERP, website, mobile app, social media
+- Builds data integration system that processes 10TB of data daily
+- Ensures data is accessible and performance-optimized
+- Creates automated data pipeline that runs every hour
+
+**Key Output**: Data pipelines, infrastructure, data warehouses, ETL systems
+
+**4. Business Intelligence Analyst** 💼
+
+**Example Scenario**: A company's executives need to understand market trends and competitive position.
+
+**Tasks**:
+- Analyzes market data to identify trends: "E-commerce growing 25% YoY"
+- Gathers data from industry reports, competitor analysis, internal metrics
+- Creates executive dashboard showing: market share (15%), growth rate, competitor comparison
+- Identifies opportunity: "Untapped market segment in 25-35 age group"
+- Presents findings to C-suite: "Market Position Report Q1 2025"
+
+**Key Output**: Business reports, executive dashboards, market analysis
+
+**5. Data Architect** 🏗️
+
+**Example Scenario**: A company is planning a new data infrastructure to support analytics.
+
+**Tasks**:
+- Designs high-level data architecture: "3-tier architecture with data lake, warehouse, and marts"
+- Creates framework for data governance and security
+- Plans data flow: "Raw data → Staging → Cleansed → Analytics → Reporting"
+- Designs schema for 50+ data sources
+- Creates blueprint for data engineers to implement
+
+**Key Output**: Architecture blueprints, system designs, data frameworks
+
+**6. Statistician** 📈
+
+**Example Scenario**: A pharmaceutical company needs to test if a new drug is effective.
+
+**Tasks**:
+- Designs randomized controlled trial with 1,000 participants
+- Plans survey methodology: control group vs treatment group
+- Uses statistical methods: hypothesis testing, p-values, confidence intervals
+- Analyzes results: "Drug shows 30% improvement (p < 0.01, 95% CI)"
+- Makes statistical inference: "Drug is significantly more effective than placebo"
+
+**Key Output**: Statistical analysis, experimental designs, survey results
+
+**7. Machine Learning Engineer** 🤖
+
+**Example Scenario**: A company wants to deploy a recommendation system for their website.
+
+**Tasks**:
+- Creates ML platform infrastructure using TensorFlow and Kubernetes
+- Develops recommendation algorithm that learns from user behavior
+- Builds system that processes 1M requests/day in real-time
+- Maintains and monitors model performance (accuracy, latency)
+- Implements A/B testing framework for model improvements
+
+**Key Output**: ML platforms, deployed models, autonomous systems
+
+**8. Data Visualization Specialist** 🎨
+
+**Example Scenario**: Complex data analysis results need to be presented to non-technical stakeholders.
+
+**Tasks**:
+- Takes statistical findings from data scientist
+- Creates interactive Tableau dashboard with 10+ visualizations
+- Designs charts: sales trends (line), product distribution (pie), regional performance (map)
+- Makes complex data accessible: "Revenue increased 25% - shown as clear bar chart"
+- Produces presentation-ready visualizations for board meeting
+
+**Key Output**: Dashboards, charts, visual presentations, infographics
+
+##### 🎨 Role Comparison: Same Problem, Different Approaches
+
+<div class="mermaid">
+graph TB
+    subgraph "Business Problem: Improve Customer Retention"
+        Problem[Customer Churn Rate: 30%<br/>Need to Reduce to 15%]
+    end
+    
+    subgraph "Data Analyst 📊"
+        DA[Analyzes historical churn data<br/>Creates report: Who churned?<br/>When? What products?]
+    end
+    
+    subgraph "Data Scientist 🔬"
+        DS[Builds ML model to predict churn<br/>Identifies at-risk customers<br/>Churn probability scores]
+    end
+    
+    subgraph "Data Engineer ⚙️"
+        DE[Sets up data pipeline<br/>Integrates customer data sources<br/>Ensures real-time data access]
+    end
+    
+    subgraph "BI Analyst 💼"
+        BI[Analyzes market trends<br/>Competitor retention strategies<br/>Business recommendations]
+    end
+    
+    subgraph "Data Architect 🏗️"
+        DArch[Designs customer data architecture<br/>Plans data warehouse structure<br/>Creates data framework]
+    end
+    
+    subgraph "Statistician 📈"
+        Stat[Designs A/B test for retention<br/>Statistical significance testing<br/>Confidence intervals]
+    end
+    
+    subgraph "ML Engineer 🤖"
+        MLE[Deploys churn prediction model<br/>Creates ML platform<br/>Monitors model performance]
+    end
+    
+    subgraph "Visualization Specialist 🎨"
+        DV[Creates retention dashboard<br/>Visualizes churn patterns<br/>Executive presentation]
+    end
+    
+    Problem --> DA
+    Problem --> DS
+    Problem --> DE
+    Problem --> BI
+    Problem --> DArch
+    Problem --> Stat
+    Problem --> MLE
+    Problem --> DV
+    
+    style Problem fill:#E74C3C,stroke:#C0392B,stroke-width:3px,color:#fff
+    style DA fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style DS fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style DE fill:#FF6B6B,stroke:#C92A2A,stroke-width:2px,color:#fff
+    style BI fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style DArch fill:#4ECDC4,stroke:#2C7873,stroke-width:2px,color:#fff
+    style Stat fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style MLE fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff
+    style DV fill:#FFA07A,stroke:#FF6347,stroke-width:2px
+</div>
+
+##### 🔄 Role Workflow: How Roles Collaborate
+
+<div class="mermaid">
+flowchart LR
+    A[Data Architect<br/>🏗️<br/>Designs System] --> B[Data Engineer<br/>⚙️<br/>Builds Infrastructure]
+    B --> C[Data Sources<br/>Ready]
+    C --> D[Data Analyst<br/>📊<br/>Analyzes Data]
+    C --> E[Data Scientist<br/>🔬<br/>Builds Models]
+    C --> F[Statistician<br/>📈<br/>Statistical Tests]
+    D --> G[BI Analyst<br/>💼<br/>Business Insights]
+    E --> H[ML Engineer<br/>🤖<br/>Deploys Models]
+    F --> G
+    G --> I[Visualization Specialist<br/>🎨<br/>Creates Dashboards]
+    H --> I
+    I --> J[Decision Makers<br/>💡]
+    
+    style A fill:#4ECDC4,stroke:#2C7873,stroke-width:2px,color:#fff
+    style B fill:#FF6B6B,stroke:#C92A2A,stroke-width:2px,color:#fff
+    style C fill:#95E1D3,stroke:#4ECDC4,stroke-width:2px
+    style D fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style E fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style F fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style G fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style H fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff
+    style I fill:#FFA07A,stroke:#FF6347,stroke-width:2px
+    style J fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+</div>
+
+##### 📊 Role Responsibilities Matrix
+
+<div class="mermaid">
+graph TB
+    subgraph "Data Collection & Infrastructure"
+        DE[Data Engineer<br/>⚙️<br/>Builds pipelines<br/>Sets up infrastructure]
+        DArch[Data Architect<br/>🏗️<br/>Designs architecture<br/>Creates frameworks]
+    end
+    
+    subgraph "Data Analysis & Modeling"
+        DA[Data Analyst<br/>📊<br/>Statistical analysis<br/>Reports]
+        DS[Data Scientist<br/>🔬<br/>ML models<br/>AI systems]
+        Stat[Statistician<br/>📈<br/>Experiments<br/>Hypothesis testing]
+    end
+    
+    subgraph "Business & Visualization"
+        BI[BI Analyst<br/>💼<br/>Business insights<br/>Market trends]
+        DV[Visualization Specialist<br/>🎨<br/>Dashboards<br/>Charts]
+    end
+    
+    subgraph "ML Operations"
+        MLE[ML Engineer<br/>🤖<br/>Deploy models<br/>ML platforms]
+    end
+    
+    DArch --> DE
+    DE --> DA
+    DE --> DS
+    DE --> Stat
+    DA --> BI
+    DS --> MLE
+    Stat --> BI
+    BI --> DV
+    MLE --> DV
+    
+    style DE fill:#FF6B6B,stroke:#C92A2A,stroke-width:2px,color:#fff
+    style DArch fill:#4ECDC4,stroke:#2C7873,stroke-width:2px,color:#fff
+    style DA fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style DS fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style Stat fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style BI fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style DV fill:#FFA07A,stroke:#FF6347,stroke-width:2px
+    style MLE fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff
+</div>
+
+##### 🎓 Hard Skills vs Soft Skills (Critical Distinction)
+
+**Hard Skills** (Technical, quantifiable):
+- Mathematical and statistical skills
+- Programming skills (Python, R, SQL)
+- Database management/SQL
+- Data visualization skills
+- Data cleaning/wrangling knowledge
+
+**Soft Skills** (Interpersonal, personality-based):
+- Analytical skills
+- Problem-solving skills
+- Communication skills
+- Business/industry understanding
+
+**Exam Tip**: Be able to categorize skills as hard or soft, and explain why both are important.
+
+##### 🎨 Visual Comparison: Hard vs Soft Skills
+
+<div class="mermaid">
+graph TB
+    subgraph "Hard Skills 💻<br/>Technical & Quantifiable"
+        HS1[Mathematical &<br/>Statistical Skills<br/>📊<br/>Calculate mean, median<br/>Perform regression analysis]
+        HS2[Programming Skills<br/>Python, R, SQL<br/>💻<br/>Write code, automate tasks<br/>Process large datasets]
+        HS3[Database Management<br/>SQL Queries<br/>🗄️<br/>Extract data, optimize queries<br/>Manage data systems]
+        HS4[Data Visualization<br/>Tableau, PowerBI<br/>📈<br/>Create charts, dashboards<br/>Design visualizations]
+        HS5[Data Cleaning<br/>Wrangling<br/>🧹<br/>Handle missing data<br/>Transform datasets]
+    end
+    
+    subgraph "Soft Skills 🤝<br/>Interpersonal & Personality-based"
+        SS1[Analytical Skills<br/>Critical Thinking<br/>🔍<br/>Examine patterns<br/>Draw conclusions]
+        SS2[Problem-Solving<br/>Troubleshooting<br/>🧩<br/>Identify issues<br/>Find solutions]
+        SS3[Communication<br/>Written & Verbal<br/>💬<br/>Explain findings<br/>Present to stakeholders]
+        SS4[Business Understanding<br/>Industry Knowledge<br/>🏢<br/>Context for data<br/>Business objectives]
+    end
+    
+    HS1 --> Success[Successful<br/>Data Analyst<br/>✅]
+    HS2 --> Success
+    HS3 --> Success
+    HS4 --> Success
+    HS5 --> Success
+    SS1 --> Success
+    SS2 --> Success
+    SS3 --> Success
+    SS4 --> Success
+    
+    style HS1 fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style HS2 fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style HS3 fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style HS4 fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style HS5 fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style SS1 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style SS2 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style SS3 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style SS4 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style Success fill:#FFD700,stroke:#B8860B,stroke-width:3px
+</div>
+
+##### 📋 Real-World Examples
+
+**Hard Skills Examples:**
+
+**1. Mathematical and Statistical Skills** 📊
+
+**Example Scenario**: Analyzing customer purchase patterns
+
+**Hard Skill Application**:
+- Calculates mean order value: $125.50
+- Performs correlation analysis: Purchase frequency vs Customer lifetime value (r = 0.78)
+- Uses regression to predict: Revenue = 50 + (2.5 × Marketing Spend)
+- Applies hypothesis testing: "Is the new pricing strategy effective?" (p < 0.05)
+
+**2. Programming Skills (Python, R, SQL)** 💻
+
+**Example Scenario**: Processing 1 million customer records
+
+**Hard Skill Application**:
+```python
+# Python example
+import pandas as pd
+df = pd.read_csv('customers.csv')
+df.groupby('region')['sales'].sum()
+```
+
+```sql
+-- SQL example
+SELECT region, SUM(sales) as total_sales
+FROM customers
+GROUP BY region
+ORDER BY total_sales DESC;
+```
+
+- Writes SQL query to extract data from database
+- Uses Python to automate data processing
+- Creates script that processes 1M records in 5 minutes
+
+**3. Database Management/SQL** 🗄️
+
+**Example Scenario**: Setting up data warehouse for analytics
+
+**Hard Skill Application**:
+- Designs database schema with 20+ tables
+- Writes optimized SQL queries (execution time: 2 seconds vs 30 seconds)
+- Creates indexes to improve query performance
+- Manages data integrity and relationships
+
+**4. Data Visualization Skills** 📈
+
+**Example Scenario**: Creating executive dashboard
+
+**Hard Skill Application**:
+- Uses Tableau to create interactive dashboard
+- Designs 10+ charts: bar charts, line graphs, heatmaps
+- Implements filters and drill-down capabilities
+- Exports to PowerPoint for presentation
+
+**5. Data Cleaning/Wrangling** 🧹
+
+**Example Scenario**: Preparing messy dataset for analysis
+
+**Hard Skill Application**:
+- Handles 15,000 missing values (30% of dataset)
+- Removes 500 duplicate records
+- Standardizes date formats across 3 different formats
+- Transforms data from wide to long format
+- Validates data quality: checks for outliers, inconsistencies
+
+**Soft Skills Examples:**
+
+**1. Analytical Skills** 🔍
+
+**Example Scenario**: Interpreting complex data patterns
+
+**Soft Skill Application**:
+- Examines sales data and notices: "Sales spike every Friday"
+- Asks critical question: "Why do customers buy more on Fridays?"
+- Identifies pattern: "Email campaigns sent on Thursdays correlate with Friday sales"
+- Draws conclusion: "Email timing affects purchase behavior"
+
+**2. Problem-Solving Skills** 🧩
+
+**Example Scenario**: Data analysis reveals unexpected results
+
+**Soft Skill Application**:
+- **Problem**: Analysis shows negative correlation when positive was expected
+- **Investigation**: Checks data quality, verifies calculations, reviews methodology
+- **Solution**: Discovers data entry error in source system
+- **Resolution**: Corrects data and re-runs analysis with accurate results
+
+**3. Communication Skills** 💬
+
+**Example Scenario**: Presenting technical findings to non-technical executives
+
+**Soft Skill Application**:
+- **Technical finding**: "The model shows a 0.85 correlation coefficient"
+- **Communication**: "Our analysis shows a strong relationship (85%) between marketing spend and sales"
+- **Presentation**: Uses simple language, visual aids, and real-world examples
+- **Result**: Executives understand and can make decisions based on findings
+
+**4. Business/Industry Understanding** 🏢
+
+**Example Scenario**: Analyzing retail sales data
+
+**Soft Skill Application**:
+- **Data shows**: Sales drop in January
+- **Business context**: "January is post-holiday season, expected sales decline"
+- **Industry knowledge**: "Retail industry typically sees 20-30% drop in January"
+- **Insight**: "Our 25% drop is within normal range, not a concern"
+- **Action**: Recommends focusing on February recovery strategies
+
+##### 🔄 How Hard and Soft Skills Work Together
+
+<div class="mermaid">
+flowchart TD
+    A[Business Problem:<br/>Sales Declining] --> B[Hard Skill: SQL Query<br/>Extract Sales Data]
+    B --> C[Hard Skill: Python Analysis<br/>Calculate Trends]
+    C --> D[Soft Skill: Analytical Thinking<br/>Identify Pattern]
+    D --> E[Soft Skill: Problem-Solving<br/>Investigate Cause]
+    E --> F[Hard Skill: Statistical Analysis<br/>Test Hypothesis]
+    F --> G[Soft Skill: Business Understanding<br/>Interpret Results]
+    G --> H[Soft Skill: Communication<br/>Present Findings]
+    H --> I[Hard Skill: Visualization<br/>Create Dashboard]
+    I --> J[Solution Implemented<br/>✅]
+    
+    style A fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff
+    style B fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style C fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style D fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style E fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style F fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style G fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style H fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style I fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style J fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+</div>
+
+##### 📊 Skills in Action: Complete Scenario
+
+<div class="mermaid">
+graph TB
+    subgraph "Scenario: Customer Churn Analysis Project"
+        Start[Project Goal:<br/>Reduce Churn by 20%]
+    end
+    
+    subgraph "Hard Skills Applied 💻"
+        H1[SQL: Extract 100K customer records<br/>from database]
+        H2[Python: Clean data, handle<br/>15K missing values]
+        H3[Statistics: Calculate churn rate<br/>25%, correlation analysis]
+        H4[ML: Build predictive model<br/>85% accuracy]
+        H5[Tableau: Create churn dashboard<br/>with 8 visualizations]
+    end
+    
+    subgraph "Soft Skills Applied 🤝"
+        S1[Analytical: Identify that premium<br/>users churn more]
+        S2[Problem-Solving: Debug model<br/>performance issues]
+        S3[Communication: Present findings<br/>to C-suite executives]
+        S4[Business Understanding: Recommend<br/>retention strategies]
+    end
+    
+    Start --> H1
+    H1 --> H2
+    H2 --> H3
+    H3 --> S1
+    S1 --> H4
+    H4 --> S2
+    S2 --> H5
+    H5 --> S3
+    S3 --> S4
+    S4 --> Success[Result: Churn Reduced<br/>to 18% ✅]
+    
+    style Start fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style H1 fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style H2 fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style H3 fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style H4 fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style H5 fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style S1 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style S2 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style S3 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style S4 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style Success fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+</div>
+
+##### 💡 Why Both Skills Are Important
+
+<div class="mermaid">
+mindmap
+  root((Data Analyst Success))
+    Hard Skills
+      Technical Foundation
+        Can perform analysis
+        Can use tools
+        Can process data
+      Quantifiable
+        Certifications
+        Code quality
+        Performance metrics
+    Soft Skills
+      Effective Application
+        Can explain results
+        Can solve problems
+        Can work in teams
+      Interpersonal
+        Communication
+        Collaboration
+        Business acumen
+    Combined Power
+      Technical Expertise
+        Hard skills enable
+      Effective Delivery
+        Soft skills enable
+      Complete Analyst
+        Both essential
+</div>
+
+##### 🎯 Skills Comparison Table with Examples
+
+| Skill Type | Characteristic | How Measured | Example | Why Important |
+|------------|---------------|--------------|---------|---------------|
+| **Hard Skills** | Technical, quantifiable | Certifications, tests, code reviews | Can write SQL query that extracts data in 2 seconds | Provides technical foundation to perform analysis |
+| **Soft Skills** | Interpersonal, personality-based | Performance reviews, feedback, observations | Can explain complex findings to non-technical audience | Enables effective application and collaboration |
+| **Combined** | Complementary | Project success, stakeholder satisfaction | Uses SQL (hard) to extract data, then communicates findings (soft) to executives | Both essential for successful data analyst career |
+
+##### 🔍 EDA Techniques (Know the Categories)
+
+**Early EDA (Descriptive Analytics)**:
+- Measures of central tendency: Mean, Median, Mode
+- Measures of dispersion: Range, Variance, Standard Deviation
+- Visualizations: Histograms, Box Plots, Bar Charts
+
+**Advanced EDA (Diagnostic Analytics)**:
+- Scatter Plots (relationships)
+- Correlation Analysis
+- Grouping Data (pattern discovery)
+- Anomaly Detection
+
+**Exam Tip**: Questions may ask which EDA technique is appropriate for a given scenario, or which analytics level a technique belongs to.
+
+##### 📊 EDA Techniques Visual Overview
+
+<div class="mermaid">
+graph TB
+    subgraph "Early EDA - Descriptive Analytics 📈"
+        E1[Measures of Central Tendency<br/>Mean, Median, Mode]
+        E2[Measures of Dispersion<br/>Range, Variance, Std Dev]
+        E3[Visualizations<br/>Histograms, Box Plots, Bar Charts]
+    end
+    
+    subgraph "Advanced EDA - Diagnostic Analytics 🔍"
+        A1[Scatter Plots<br/>Relationships]
+        A2[Correlation Analysis<br/>Strength of Relationships]
+        A3[Grouping Data<br/>Pattern Discovery]
+        A4[Anomaly Detection<br/>Outliers]
+    end
+    
+    E1 --> Summary[Summarize Data<br/>What Happened?]
+    E2 --> Summary
+    E3 --> Summary
+    Summary --> A1
+    Summary --> A2
+    Summary --> A3
+    Summary --> A4
+    A1 --> Investigate[Investigate Causes<br/>Why Did It Happen?]
+    A2 --> Investigate
+    A3 --> Investigate
+    A4 --> Investigate
+    
+    style E1 fill:#9E9E9E,stroke:#424242,stroke-width:2px,color:#fff
+    style E2 fill:#9E9E9E,stroke:#424242,stroke-width:2px,color:#fff
+    style E3 fill:#9E9E9E,stroke:#424242,stroke-width:2px,color:#fff
+    style A1 fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style A2 fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style A3 fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style A4 fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style Summary fill:#4ECDC4,stroke:#2C7873,stroke-width:2px,color:#fff
+    style Investigate fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#fff
+</div>
+
+##### 📈 Early EDA Techniques - Examples
+
+**1. Measures of Central Tendency**
+
+**Example Scenario**: Analyzing customer purchase amounts
+
+**Data**: [25, 30, 30, 35, 40, 45, 50, 50, 50, 100]
+
+**Calculations**:
+- **Mean (Average)**: (25+30+30+35+40+45+50+50+50+100) ÷ 10 = **$43.50**
+  - *Use when*: Data is normally distributed, no extreme outliers
+  - *Reveals*: Typical purchase amount
+
+- **Median (Middle value)**: [25, 30, 30, 35, **40**, 45, 50, 50, 50, 100] = **$42.50**
+  - *Use when*: Data has outliers (like the $100 purchase)
+  - *Reveals*: Middle value, less affected by outliers
+
+- **Mode (Most frequent)**: **$50** (appears 3 times)
+  - *Use when*: Finding most common value
+  - *Reveals*: Most popular purchase amount
+
+**Visual Example**:
+```
+Purchase Amounts: $25, $30, $30, $35, $40, $45, $50, $50, $50, $100
+                    ↓
+Mean: $43.50 (affected by $100 outlier)
+Median: $42.50 (middle value, robust to outliers)
+Mode: $50 (most frequent)
+```
+
+**2. Measures of Dispersion**
+
+**Example Scenario**: Comparing sales consistency across two stores
+
+**Store A Sales**: [100, 105, 110, 115, 120] (in thousands)
+**Store B Sales**: [80, 100, 110, 120, 140] (in thousands)
+
+**Calculations**:
+- **Range**: 
+  - Store A: 120 - 100 = **$20K** (consistent)
+  - Store B: 140 - 80 = **$60K** (variable)
+  
+- **Variance**:
+  - Store A: **62.5** (low variance = consistent)
+  - Store B: **400** (high variance = inconsistent)
+  
+- **Standard Deviation**:
+  - Store A: **$7.91K** (predictable sales)
+  - Store B: **$20K** (unpredictable sales)
+
+**Insight**: Store A has more consistent sales (lower dispersion), while Store B has higher variability.
+
+**3. Visualizations - Histograms**
+
+**Example Scenario**: Understanding customer age distribution
+
+**Data**: Customer ages from 18 to 65
+
+**Histogram reveals**:
+- **Peak**: Most customers are 25-35 years old
+- **Distribution**: Bell-shaped (normal distribution)
+- **Outliers**: Few customers over 60
+
+**Use case**: "What age group should we target for marketing?"
+
+**4. Visualizations - Box Plots**
+
+**Example Scenario**: Comparing product prices across categories
+
+**Box Plot shows**:
+- **Median price**: Electronics ($500), Clothing ($50), Home ($200)
+- **Quartiles**: 25th, 50th (median), 75th percentiles
+- **Outliers**: Electronics has high-value outliers ($2000+ items)
+
+**Use case**: "Which product category has the most price variation?"
+
+**5. Visualizations - Bar Charts**
+
+**Example Scenario**: Monthly sales comparison
+
+**Bar Chart shows**:
+- January: $100K
+- February: $120K
+- March: $150K
+- April: $140K
+
+**Use case**: "Which month had the highest sales?"
+
+##### 🔍 Advanced EDA Techniques - Examples
+
+**1. Scatter Plots (Relationships)**
+
+**Example Scenario**: Understanding relationship between marketing spend and sales
+
+**Data Points**:
+- Marketing $10K → Sales $50K
+- Marketing $20K → Sales $80K
+- Marketing $30K → Sales $120K
+- Marketing $40K → Sales $150K
+
+**Scatter Plot reveals**:
+- **Positive relationship**: As marketing increases, sales increase
+- **Linear pattern**: Points form a straight line
+- **Strength**: Strong relationship (points close to line)
+
+**Use case**: "Does increasing marketing budget lead to higher sales?"
+
+**2. Correlation Analysis**
+
+**Example Scenario**: Finding factors that affect customer satisfaction
+
+**Correlation Matrix**:
+| Factor | Satisfaction Score |
+|--------|-------------------|
+| Response Time | **0.85** (strong positive) |
+| Price | **-0.60** (moderate negative) |
+| Product Quality | **0.75** (strong positive) |
+| Website Speed | **0.45** (weak positive) |
+
+**Interpretation**:
+- **Response Time (0.85)**: Strong positive correlation - faster response = higher satisfaction
+- **Price (-0.60)**: Moderate negative - higher price = lower satisfaction
+- **Product Quality (0.75)**: Strong positive - better quality = higher satisfaction
+
+**Use case**: "What factors most strongly influence customer satisfaction?"
+
+**3. Grouping Data (Pattern Discovery)**
+
+**Example Scenario**: Discovering customer segments
+
+**Grouping by Purchase Behavior**:
+- **Group 1 (High Value)**: 20% of customers, 60% of revenue
+  - Characteristics: Frequent purchases, high average order value
+- **Group 2 (Regular)**: 50% of customers, 35% of revenue
+  - Characteristics: Monthly purchases, moderate spending
+- **Group 3 (Occasional)**: 30% of customers, 5% of revenue
+  - Characteristics: Rare purchases, low spending
+
+**Pattern discovered**: Small group (20%) generates most revenue (60%)
+
+**Use case**: "How should we segment customers for targeted marketing?"
+
+**4. Anomaly Detection**
+
+**Example Scenario**: Identifying fraudulent transactions
+
+**Normal Transaction Pattern**:
+- Average: $50-200
+- Frequency: 2-5 per month
+- Location: Customer's home city
+
+**Anomalies Detected**:
+- **Transaction 1**: $5,000 (25x average) → Flagged
+- **Transaction 2**: 50 transactions in 1 day → Flagged
+- **Transaction 3**: Location: Different country → Flagged
+
+**Use case**: "Which transactions are unusual and need investigation?"
+
+##### 🎯 EDA Techniques Workflow Example
+
+<div class="mermaid">
+flowchart TD
+    A[Dataset: 10,000 Customer Records] --> B[Early EDA - Descriptive]
+    
+    B --> C[Calculate Central Tendency<br/>Mean Age: 35<br/>Median Income: $50K<br/>Mode: City A]
+    B --> D[Calculate Dispersion<br/>Age Range: 18-65<br/>Income Std Dev: $15K]
+    B --> E[Create Visualizations<br/>Histogram: Age distribution<br/>Box Plot: Income by city<br/>Bar Chart: City counts]
+    
+    C --> F[Summary: What Happened?<br/>Average customer: 35 years,<br/>$50K income, lives in City A]
+    D --> F
+    E --> F
+    
+    F --> G[Advanced EDA - Diagnostic]
+    
+    G --> H[Scatter Plot<br/>Age vs Income<br/>Shows positive relationship]
+    G --> I[Correlation Analysis<br/>Age & Income: r=0.65<br/>Strong positive correlation]
+    G --> J[Grouping Data<br/>3 customer segments<br/>High/Medium/Low value]
+    G --> K[Anomaly Detection<br/>5 outliers identified<br/>Unusual patterns found]
+    
+    H --> L[Insight: Why Patterns Exist?<br/>Older customers earn more<br/>Segments have different behaviors<br/>Outliers need investigation]
+    I --> L
+    J --> L
+    K --> L
+    
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B fill:#9E9E9E,stroke:#424242,stroke-width:2px,color:#fff
+    style C fill:#9E9E9E,stroke:#424242,stroke-width:2px,color:#fff
+    style D fill:#9E9E9E,stroke:#424242,stroke-width:2px,color:#fff
+    style E fill:#9E9E9E,stroke:#424242,stroke-width:2px,color:#fff
+    style F fill:#4ECDC4,stroke:#2C7873,stroke-width:2px,color:#fff
+    style G fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style H fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style I fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style J fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style K fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style L fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+</div>
+
+##### 📋 When to Use Each EDA Technique
+
+<div class="mermaid">
+graph LR
+    A[EDA Goal] --> B{What Question?}
+    
+    B -->|Summarize Data| C[Early EDA<br/>Descriptive]
+    B -->|Find Relationships| D[Advanced EDA<br/>Diagnostic]
+    
+    C --> E[Central Tendency<br/>Mean/Median/Mode]
+    C --> F[Dispersion<br/>Range/Variance/Std Dev]
+    C --> G[Visualizations<br/>Histogram/Box/Bar]
+    
+    D --> H[Scatter Plot<br/>See relationships]
+    D --> I[Correlation<br/>Measure strength]
+    D --> J[Grouping<br/>Find patterns]
+    D --> K[Anomaly Detection<br/>Find outliers]
+    
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B fill:#FFD700,stroke:#B8860B,stroke-width:3px
+    style C fill:#9E9E9E,stroke:#424242,stroke-width:2px,color:#fff
+    style D fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style E fill:#9E9E9E,stroke:#424242,stroke-width:2px,color:#fff
+    style F fill:#9E9E9E,stroke:#424242,stroke-width:2px,color:#fff
+    style G fill:#9E9E9E,stroke:#424242,stroke-width:2px,color:#fff
+    style H fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style I fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style J fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style K fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+</div>
+
+##### 💡 Real-World EDA Scenario
+
+**Scenario**: E-commerce company wants to understand customer behavior
+
+**Step 1: Early EDA (Descriptive)**
+- **Mean purchase**: $75
+- **Median purchase**: $60 (outliers affect mean)
+- **Range**: $5 - $500
+- **Histogram**: Shows most purchases are $30-$100
+- **Bar Chart**: Electronics (40%), Clothing (35%), Home (25%)
+
+**Step 2: Advanced EDA (Diagnostic)**
+- **Scatter Plot**: Age vs Purchase Amount → Positive relationship
+- **Correlation**: Age & Purchase (r=0.65), Income & Purchase (r=0.80)
+- **Grouping**: 3 segments identified (High/Medium/Low spenders)
+- **Anomaly Detection**: 50 transactions flagged (unusual patterns)
+
+**Result**: 
+- **What happened?** (Descriptive): Average customer spends $75, mostly on electronics
+- **Why?** (Diagnostic): Older, higher-income customers spend more; 3 distinct customer segments exist
+
+##### 🎨 EDA Techniques Summary Table
+
+| Technique | Analytics Level | When to Use | Example Question | Reveals |
+|-----------|----------------|-------------|------------------|---------|
+| **Mean/Median/Mode** | Descriptive | Summarize data | "What's the typical value?" | Central value |
+| **Range/Variance** | Descriptive | Measure spread | "How consistent is the data?" | Data variability |
+| **Histogram** | Descriptive | Distribution shape | "How is data distributed?" | Frequency patterns |
+| **Box Plot** | Descriptive | Compare groups | "Which group varies more?" | Quartiles, outliers |
+| **Bar Chart** | Descriptive | Compare categories | "Which category is largest?" | Category comparison |
+| **Scatter Plot** | Diagnostic | See relationships | "Do two variables relate?" | Relationship pattern |
+| **Correlation** | Diagnostic | Measure relationship strength | "How strong is the relationship?" | Correlation coefficient |
+| **Grouping** | Diagnostic | Find patterns | "What groups exist in data?" | Segments, clusters |
+| **Anomaly Detection** | Diagnostic | Find unusual data | "What data points are unusual?" | Outliers, exceptions |
+
+##### 🔗 Key Relationships (Important Connections)
+
+**EDA and Analytics Levels**:
+- EDA primarily fits into **descriptive** and **diagnostic** analytics
+- EDA results serve as inputs to **predictive** (feature engineering) and **prescriptive** (decision scenarios) analytics
+
+**Analytics Hierarchy**:
+- Each level builds upon the previous one
+- Complexity and value increase from descriptive → prescriptive
+- All levels are important for decision-making
+
+**Roles and Skills**:
+- Different roles require different skill combinations
+- Roles often overlap in smaller organizations
+- Collaboration across roles is essential
+
+##### 📋 Exam Question Types to Expect
+
+<div class="important-info">
+**1. Definition Questions**: "What is [concept]?"
+- Be able to define key terms clearly and concisely
+
+**2. Comparison Questions**: "What is the difference between X and Y?"
+- Descriptive vs Prescriptive analytics
+- Hard skills vs Soft skills
+- Data Analyst vs Data Scientist
+
+**3. Classification Questions**: "Which analytics level does this describe?"
+- Given a scenario, identify the analytics level
+- Given a technique, identify which analytics level it belongs to
+
+**4. Role Identification**: "Which role is responsible for [task]?"
+- Match tasks to roles
+- Understand role responsibilities
+
+**5. EDA Questions**: "Which EDA technique would you use to [purpose]?"
+- Match techniques to purposes
+- Identify which analytics level EDA techniques belong to
+
+**6. Application Questions**: "In this scenario, what would a data analyst do?"
+- Apply concepts to real-world situations
+- Understand the data analysis workflow
+</div>
+
+##### 🎯 Critical Exam Topics Summary
+
+<div class="mermaid">
+mindmap
+  root((Exam Topics))
+    Analytics Levels
+      Descriptive
+        What happened
+        Past events
+        Foundation level
+      Diagnostic
+        Why happened
+        Root causes
+        Statistical techniques
+      Predictive
+        What will happen
+        Forecasting
+        ML models
+      Prescriptive
+        What should do
+        Recommendations
+        Optimization
+    Roles
+      Data Analyst
+      Data Scientist
+      Data Engineer
+      BI Analyst
+      Others
+    Skills
+      Hard Skills
+        Technical
+        Quantifiable
+      Soft Skills
+        Interpersonal
+        Personality-based
+    EDA
+      Descriptive Techniques
+      Diagnostic Techniques
+      Purpose
+      Analytics Levels
+</div>
+
+##### 💡 Study Tips
+
+1. **Create Flashcards** for:
+   - Four analytics levels (questions, focus, complexity)
+   - Eight roles (responsibilities, key differences)
+   - Hard vs Soft skills (examples of each)
+   - EDA techniques (which level they belong to)
+
+2. **Practice Scenarios**: 
+   - Given a business problem, identify which analytics level would be used
+   - Given a task, identify which role would perform it
+   - Given a goal, identify which EDA technique is appropriate
+
+3. **Understand Relationships**:
+   - How EDA relates to analytics levels
+   - How roles work together
+   - How skills complement each other
+
+4. **Key Distinctions**:
+   - Descriptive vs Diagnostic vs Predictive vs Prescriptive
+   - Data Analyst vs Data Scientist vs Data Engineer
+   - Hard Skills vs Soft Skills
+   - Early EDA vs Advanced EDA
+
+##### ⚠️ Common Exam Mistakes to Avoid
+
+1. **Confusing Analytics Levels**: Don't mix up descriptive (what happened) with prescriptive (what should we do)
+2. **Role Confusion**: Data Analyst focuses on statistical analysis; Data Scientist focuses on ML/AI
+3. **Skill Categorization**: Programming is a hard skill; Communication is a soft skill
+4. **EDA Placement**: Remember EDA primarily fits descriptive/diagnostic but prepares for predictive/prescriptive
+
+#### ⭐ Key Takeaways
+
+1. **Data analysis transforms raw data into actionable insights** for decision-making
+2. **Multiple types of analysis** exist (text, statistical, diagnostic, predictive, mining)
+3. **Interdisciplinary field** connecting programming, ML, statistics, visualization, BI, and big data
+4. **Specialized tools and software** are essential for effective data analysis
+5. **Real-world application** requires understanding both technical and business contexts
+6. **Eight key roles** in data analysis, each with specific responsibilities
+7. **Roles often overlap** in smaller organizations
+8. **Team collaboration** is essential for successful data projects
+            """,
+            "key_points": [
+                "Data analysis converts raw data into actionable insights for decision-making",
+                "Multiple analysis types: text, statistical, diagnostic, predictive, and data mining",
+                "Interdisciplinary field combining programming, ML, statistics, visualization, BI, and big data",
+                "Programming (Python/R/SQL) enables automation and complex calculations",
+                "Machine learning builds predictive models from historical data",
+                "Statistics provides the foundation for understanding and interpreting data",
+                "Data visualization makes complex findings accessible through graphs and charts",
+                "Business Intelligence helps organizations make data-driven decisions",
+                "Big Data techniques handle massive datasets beyond traditional software capabilities",
+                "Eight key roles: Data Analyst, Data Scientist, Data Engineer, BI Analyst, Data Architect, Statistician, ML Engineer, and Data Visualization Specialist",
+                "Each role has specific responsibilities but roles often overlap in smaller organizations",
+                "Data Architect designs systems, Data Engineer builds infrastructure, Data Analyst/Scientist analyze data, BI Analyst provides business insights, and Visualization Specialist creates visual presentations",
+                "Team collaboration across roles is essential for successful data projects",
+                "Hard skills (technical, quantifiable) include: Mathematical/Statistical skills, Programming (Python/R/SQL), Database management, Data visualization, and Data cleaning/wrangling",
+                "Soft skills (interpersonal, personality-based) include: Analytical skills, Problem-solving, Communication, and Business/industry understanding",
+                "Both hard and soft skills are essential - hard skills provide technical foundation, soft skills enable effective application and collaboration",
+                "Employers value soft skills highly as they're harder to teach and crucial for collaborative work",
+                "A typical day includes: email/planning, team meetings, data retrieval (SQL), data validation, analysis (Python), visualization (Tableau), report writing, and cross-team collaboration",
+                "No two days are the same - data analysts work on multiple projects, handle various data sources, and collaborate with different teams",
+                "Daily activities demonstrate practical application of technical skills: SQL, Python (Pandas/NumPy), Tableau, and data cleaning techniques",
+                "The role requires balancing technical work (analysis, coding) with communication (meetings, reports, presentations)",
+                "Four levels of data analysis: Descriptive (What happened?), Diagnostic (Why did it happen?), Predictive (What will happen?), and Prescriptive (What should we do?)",
+                "Descriptive analytics is the foundation - summarizes historical data and identifies patterns",
+                "Diagnostic analytics investigates root causes using statistical techniques and correlation analysis",
+                "Predictive analytics forecasts future outcomes using regression, time series, and machine learning",
+                "Prescriptive analytics provides actionable recommendations using optimization, simulation, and decision trees",
+                "Complexity and value increase from descriptive to prescriptive analytics, but all levels are important for decision-making",
+                "Exploratory Data Analysis (EDA) focuses on visual, intuitive techniques performed before formal statistical modeling",
+                "EDA primarily fits into descriptive and diagnostic analytics levels - summarizing data and investigating relationships",
+                "Early EDA uses measures of central tendency (mean, median, mode) and dispersion (range, variance, standard deviation)",
+                "EDA visualizations include histograms, box plots, scatter plots for understanding data distributions and relationships",
+                "Advanced EDA investigates relationships between variables, detects anomalies, and discovers patterns through grouping",
+                "EDA results serve as critical inputs to predictive analytics (feature engineering) and prescriptive analytics (decision scenarios)",
+                "EDA is an iterative process: load data → explore → describe → visualize → investigate → validate → prepare for modeling"
+            ],
+            "visual_elements": {
+                "diagrams": True,
+                "tables": True,
+                "highlighted_sections": True
+            }
+        },
+        {
+            "lesson_number": "1.2",
+            "title": "It's All About Data",
+            "content": """
+### What is Data?
+
+When discussing data analysis, **data** refers to unprocessed, raw facts or statistics gathered for analysis. Data can be collected from various sources for various tasks, such as making decisions, forecasting trends, figuring out how users behave, and more. Data can be broadly divided into **qualitative** and **quantitative** categories.
+
+#### 🎯 Data Overview
+
+<div class="mermaid">
+graph TB
+    A[Data<br/>Raw Facts & Statistics] --> B[Qualitative Data<br/>Non-numerical<br/>Categorical Variables]
+    A --> C[Quantitative Data<br/>Numerical<br/>Measurable]
+    
+    B --> B1[Nominal<br/>No order]
+    B --> B2[Ordinal<br/>Has order]
+    B --> B3[Dichotomous<br/>Only 2 categories]
+    
+    C --> D[Discrete Data<br/>Countable<br/>Whole numbers only]
+    C --> E[Continuous Data<br/>Any value in range<br/>Decimals possible]
+    
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style B1 fill:#8E44AD,stroke:#6C3483,stroke-width:2px,color:#fff
+    style B2 fill:#7D3C98,stroke:#6C3483,stroke-width:2px,color:#fff
+    style B3 fill:#6C3483,stroke:#4A235A,stroke-width:2px,color:#fff
+    style C fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style D fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style E fill:#2196F3,stroke:#1565C0,stroke-width:2px,color:#fff
+</div>
+
+#### 📊 Qualitative vs Quantitative Data
+
+| Type | Description | Examples |
+|------|-------------|----------|
+| **Qualitative** | Non-numerical, descriptive information | Customer feedback, survey responses, interview notes, categories (e.g., "satisfied", "neutral") |
+| **Quantitative** | Numerical, measurable information | Sales figures, temperature, weight, number of visitors, revenue |
+
+#### 📝 Qualitative Data: Categories
+
+Non-numerical, text-based **qualitative data** typically describes qualities or characteristics. They stand for distinct classifications or groups to which an observation may belong. This type of data's individual data points can be considered **categorical variables**, and they are not intended for use in calculations. However, they are necessary when classifying or grouping data. Additional categories for qualitative data include:
+
+##### 1. Nominal Data 🏷️
+
+**Definition**: Although this data can be divided into categories, it **lacks any sense of priority or order**. Categories are labels with no inherent ranking.
+
+**Characteristics**:
+- Categories with no order
+- Cannot rank or compare (apple is not "better" than banana)
+- Used for classification only
+- Often represented as text or codes
+
+**Examples**:
+- Types of fruit (apple, banana, orange)
+- Gender (male, female, other)
+- Country of residence (Norway, Sweden, Denmark)
+- Product category (Electronics, Clothing, Home)
+- Blood type (A, B, AB, O)
+
+<div class="mermaid">
+flowchart LR
+    A[Nominal Data] --> B[No Order]
+    B --> C[Categories Only]
+    C --> D[Examples:<br/>• Fruit types<br/>• Gender<br/>• Country]
+    
+    style A fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style B fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style C fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style D fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+</div>
+
+##### 2. Ordinal Data 📊
+
+**Definition**: This data is divided into different categories and has a **distinct order**. Categories can be ranked, but the distance between categories may not be equal.
+
+**Characteristics**:
+- Categories with meaningful order
+- Can rank (good > average > poor)
+- Distance between levels may not be equal
+- Used for ratings and rankings
+
+**Examples**:
+- Movie ratings (poor, average, good, excellent)
+- Satisfaction level (very dissatisfied, dissatisfied, neutral, satisfied, very satisfied)
+- Education level (high school, bachelor's, master's, PhD)
+- Size (small, medium, large)
+- Likert scale (strongly disagree, disagree, neutral, agree, strongly agree)
+
+<div class="mermaid">
+flowchart LR
+    A[Ordinal Data] --> B[Has Order]
+    B --> C[Rankable]
+    C --> D[Examples:<br/>• Movie ratings<br/>• Satisfaction<br/>• Education level]
+    
+    style A fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style B fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style C fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style D fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+</div>
+
+##### 3. Dichotomous (Binary/Binomial) Data ⚖️
+
+**Definition**: There are **only two categories** for nominal variables. They serve as indicators of an attribute's **presence or absence**.
+
+**Characteristics**:
+- Exactly two categories
+- Yes/No, True/False type
+- Special case of nominal data
+- Often used in logic and filtering
+
+**Examples**:
+- Employment status (employed / unemployed)
+- Gender (male / female) — when only two options
+- Purchase made (yes / no)
+- Pass/Fail
+- Active/Inactive
+- True/False
+
+<div class="mermaid">
+flowchart LR
+    A[Dichotomous Data] --> B[Only 2 Categories]
+    B --> C[Presence/Absence]
+    C --> D[Examples:<br/>• Employed/Unemployed<br/>• Yes/No<br/>• Pass/Fail]
+    
+    style A fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style B fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style C fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style D fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+</div>
+
+#### 🎨 Qualitative Data Types Overview
+
+<div class="mermaid">
+graph TB
+    subgraph "Qualitative Data - Categorical Variables"
+        Q[Qualitative Data<br/>Non-numerical<br/>Descriptive]
+        Q --> N[Nominal<br/>No order<br/>e.g. Fruit: apple, banana, orange]
+        Q --> O[Ordinal<br/>Has order<br/>e.g. Ratings: poor, average, good, excellent]
+        Q --> D[Dichotomous<br/>Only 2 categories<br/>e.g. Employed / Unemployed]
+    end
+    
+    style Q fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style N fill:#8E44AD,stroke:#6C3483,stroke-width:2px,color:#fff
+    style O fill:#7D3C98,stroke:#6C3483,stroke-width:2px,color:#fff
+    style D fill:#6C3483,stroke:#4A235A,stroke-width:2px,color:#fff
+</div>
+
+#### 📋 Qualitative Data Types Comparison
+
+| Type | Order? | Categories | Examples |
+|------|--------|------------|----------|
+| **Nominal** | No | Multiple, no ranking | Fruit types, country, blood type |
+| **Ordinal** | Yes | Multiple, rankable | Movie ratings, satisfaction level, education |
+| **Dichotomous** | No (or N/A) | Exactly 2 | Employed/Unemployed, Yes/No, Pass/Fail |
+
+#### 💡 Why This Matters: Data Types Affect Analysis
+
+Comprehending these types of variables and data in data analysis is **essential** because:
+
+1. **Types of analyses you can run**: Different statistical tests and methods apply to different data types (e.g., chi-square for categorical, t-test for continuous).
+2. **Data pre-processing methods**: How you handle the data depends on its type:
+   - **Missing data**: Different strategies for categorical vs numerical (e.g., mode for nominal, mean for continuous).
+   - **Normalisation/Scaling**: Numerical data may need scaling; categorical data may need encoding (e.g., one-hot encoding for nominal).
+3. **Visualisation choices**: Bar charts for categorical, histograms for continuous, etc.
+4. **Model selection**: Machine learning models require appropriate input types (e.g., decision trees handle categories, regression needs numerical).
+
+<div class="mermaid">
+flowchart TD
+    A[Data Type] --> B[Affects Analysis]
+    A --> C[Affects Pre-processing]
+    
+    B --> B1[Statistical tests<br/>e.g. Chi-square vs t-test]
+    B --> B2[Visualisation<br/>Bar chart vs Histogram]
+    B --> B3[Model selection<br/>Encoding requirements]
+    
+    C --> C1[Missing data handling<br/>Mode vs Mean]
+    C --> C2[Normalise/Scale<br/>When and how]
+    C --> C3[Encoding<br/>One-hot for categorical]
+    
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style C fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style B1 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style B2 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style B3 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C1 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C2 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C3 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+</div>
+
+#### 📈 Quantitative Data: Two Main Categories
+
+**Quantitative information** is measurable or numerical information that can be used in statistical or mathematical calculations. These kinds of discrete data points are sometimes referred to as **numerical variables**.
+
+Additional categories for quantitative data include:
+
+##### 1. Discrete Data 📊
+
+**Definition**: Only particular (countable) values are allowable for this data. Only whole numbers should be used.
+
+**Characteristics**:
+- Countable values
+- Whole numbers only
+- No values between counts
+- Often represents counts or categories
+
+**Examples**:
+- Number of people who visit a website (e.g., 1, 2, 3, 150, 1000)
+- Number of automobiles a person owns (0, 1, 2, 3...)
+- Number of students in a class
+- Number of products sold
+- Number of customer complaints
+
+<div class="mermaid">
+flowchart LR
+    A[Discrete Data] --> B[Whole Numbers Only]
+    B --> C[Countable]
+    C --> D[Examples:<br/>• Website visitors<br/>• Cars owned<br/>• Products sold]
+    
+    style A fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style B fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style C fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style D fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+</div>
+
+##### 2. Continuous Data 📏
+
+**Definition**: This data is not limited to whole numbers and can take any value within a specified range. Can include decimals and fractions.
+
+**Characteristics**:
+- Any value within a range
+- Decimals and fractions possible
+- Measurable (not just countable)
+- Often represents measurements
+
+**Examples**:
+- Temperature of a room (20.5°C, 21.3°C, 22.7°C)
+- A person's weight (70.45 kg, 70.47 kg, 71.2 kg)
+- Height (175.3 cm)
+- Time (2.5 hours, 3.75 minutes)
+- Revenue ($1,234.56)
+
+<div class="mermaid">
+flowchart LR
+    A[Continuous Data] --> B[Any Value in Range]
+    B --> C[Decimals Possible]
+    C --> D[Examples:<br/>• Temperature<br/>• Weight<br/>• Height<br/>• Time]
+    
+    style A fill:#2196F3,stroke:#1565C0,stroke-width:2px,color:#fff
+    style B fill:#2196F3,stroke:#1565C0,stroke-width:2px,color:#fff
+    style C fill:#2196F3,stroke:#1565C0,stroke-width:2px,color:#fff
+    style D fill:#2196F3,stroke:#1565C0,stroke-width:2px,color:#fff
+</div>
+
+#### 🔄 Discrete vs Continuous Comparison
+
+<div class="mermaid">
+graph TB
+    subgraph "Discrete Data"
+        D1[Whole numbers only]
+        D2[Countable: 1, 2, 3...]
+        D3[No values between]
+        D4[Website visitors: 150]
+        D5[Cars owned: 2]
+    end
+    
+    subgraph "Continuous Data"
+        C1[Any value in range]
+        C2[Decimals: 70.45, 70.47...]
+        C3[Infinite possibilities]
+        C4[Weight: 70.45 kg]
+        C5[Temperature: 21.3°C]
+    end
+    
+    style D1 fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style D2 fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style D3 fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style D4 fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style D5 fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style C1 fill:#2196F3,stroke:#1565C0,stroke-width:2px,color:#fff
+    style C2 fill:#2196F3,stroke:#1565C0,stroke-width:2px,color:#fff
+    style C3 fill:#2196F3,stroke:#1565C0,stroke-width:2px,color:#fff
+    style C4 fill:#2196F3,stroke:#1565C0,stroke-width:2px,color:#fff
+    style C5 fill:#2196F3,stroke:#1565C0,stroke-width:2px,color:#fff
+</div>
+
+#### 📋 Quick Reference Table
+
+| Aspect | Discrete Data | Continuous Data |
+|--------|---------------|-----------------|
+| **Values** | Whole numbers only | Any value in range (including decimals) |
+| **Countable?** | Yes | No (measurable) |
+| **Examples** | Visitors, cars, products sold | Temperature, weight, height, time |
+| **Between values?** | No (e.g., can't have 2.5 cars) | Yes (e.g., 70.45 kg) |
+| **Use in** | Counting, categories | Measurement, precision |
+
+#### 📂 Sources of Data
+
+Given the widespread digitisation of information and interactions, modern data analysts can access a vast array of data sources. These sources can generally be divided into **internal** (produced within the organisation) and **external** (data from outside the organisation) sources.
+
+##### 🏢 Internal Data Sources
+
+Internal sources are those produced within an organisation and include the following:
+
+**1. Transactional Data** 💳
+
+This comprises information from sales, deliveries, invoices, and other commercial dealings.
+
+**Examples**:
+- **Financial institution**: Financial transactions, account activity, loan repayments
+- **Retail business**: Purchase histories, order records, payment transactions
+- **E-commerce**: Order IDs, product IDs, quantities, prices, timestamps
+
+**2. Log Data** 📋
+
+When various events occur, systems and applications automatically generate this type of data.
+
+**Examples**:
+- **Web server logs**: Page views, click paths, session duration
+- **Application logs**: User actions, feature usage, errors
+- **Error logs**: System failures, debugging information
+- **Reveals**: User behaviour, system performance, troubleshooting data
+
+**3. Customer Relationship Management (CRM) Data** 👥
+
+Customers' contact details, purchase histories, interactions with customer service representatives, and other data are all readily available from CRM systems.
+
+**Examples**:
+- Contact details (name, email, phone)
+- Purchase histories and order frequency
+- Customer service interactions (tickets, calls, chat logs)
+- Lead status and sales pipeline
+
+**4. Human Resources (HR) Data** 👤
+
+This contains information on employees, such as their job descriptions, achievements, and length of service.
+
+**Examples**:
+- Job descriptions and roles
+- Performance reviews and achievements
+- Length of service (tenure)
+- Salary bands, departments, locations
+
+##### 🌐 External Data Sources
+
+Data that may be gathered outside of an organisation is represented by external data sources. Examples include:
+
+**1. Social Media Data** 📱
+
+Social media platform data can reveal information about customer sentiment, new trends, and more.
+
+**Examples**:
+- Customer sentiment (positive/negative/neutral)
+- Trending topics and hashtags
+- Engagement metrics (likes, shares, comments)
+- Brand mentions and reviews
+
+**2. Public Data Sets** 📊
+
+Governments and other organisations frequently release data sets on various subjects, from health statistics to economic indicators.
+
+**Examples**:
+- Government: Census data, health statistics, economic indicators
+- Open data: Weather data, traffic data, demographic data
+- Research: Academic datasets, scientific publications
+
+**3. Web Scraping** 🕷️
+
+Web scraping tools can be used to collect data from websites. This may include data from news websites, forums, and other online resources.
+
+**Examples**:
+- News websites (articles, headlines)
+- Forums and discussion boards
+- Product listings and prices (competitor analysis)
+- Job postings, real estate listings
+
+**4. Third-Party Data Providers** 🏪
+
+Companies that gather and market data, including credit scores and market research data.
+
+**Examples**:
+- Credit scores and financial data
+- Market research reports
+- Demographic and lifestyle data
+- Industry benchmarks
+
+**5. Internet of Things (IoT) Devices** 📡
+
+IoT devices like connected cars, smart appliances, and wearable technology produce vast amounts of data.
+
+**Examples**:
+- Connected cars: Location, speed, fuel consumption
+- Smart appliances: Usage patterns, energy consumption
+- Wearable technology: Heart rate, steps, sleep patterns
+- Smart home: Temperature, security, energy usage
+
+**6. Satellite and Aerial Imagery** 🛰️
+
+Geospatial and environmental data.
+
+**Examples**:
+- Satellite imagery (land use, agriculture, urban planning)
+- Aerial photography (construction, surveying)
+- Environmental monitoring (climate, deforestation)
+- Mapping and navigation data
+
+**7. Sensor Data** 📟
+
+Sensors are widely used in business operations. Manufacturers may use sensors on assembly lines to collect data, utilities may use smart meters to collect usage information, and logistics firms may use GPS information from delivery vehicles.
+
+**Examples**:
+- **Manufacturing**: Assembly line sensors (temperature, pressure, quality checks)
+- **Utilities**: Smart meters (energy usage, consumption patterns)
+- **Logistics**: GPS from delivery vehicles (location, route, speed)
+- **Retail**: Foot traffic sensors, inventory sensors
+
+#### 🎨 Data Sources Overview
+
+<div class="mermaid">
+graph TB
+    A[Data Sources] --> B[Internal<br/>Within Organisation]
+    A --> C[External<br/>Outside Organisation]
+    
+    B --> B1[Transactional Data<br/>Sales, Invoices, Purchases]
+    B --> B2[Log Data<br/>Web, Application, Error logs]
+    B --> B3[CRM Data<br/>Customers, Interactions]
+    B --> B4[HR Data<br/>Employees, Performance]
+    
+    C --> C1[Social Media<br/>Sentiment, Trends]
+    C --> C2[Public Data Sets<br/>Government, Open data]
+    C --> C3[Web Scraping<br/>Websites, Forums]
+    C --> C4[Third-Party Providers<br/>Credit, Market research]
+    C --> C5[IoT Devices<br/>Connected devices]
+    C --> C6[Satellite/Imagery<br/>Geospatial, Environmental]
+    C --> C7[Sensor Data<br/>Manufacturing, GPS, Smart meters]
+    
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style B1 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style B2 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style B3 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style B4 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C1 fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style C2 fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style C3 fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style C4 fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style C5 fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style C6 fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style C7 fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+</div>
+
+#### 📋 Internal vs External Sources Summary
+
+| Source Type | Description | Examples |
+|-------------|-------------|----------|
+| **Transactional** | Sales, deliveries, invoices, commercial dealings | Purchase histories, financial transactions, order records |
+| **Log Data** | Auto-generated by systems when events occur | Web server logs, application logs, error logs |
+| **CRM Data** | Customer information from CRM systems | Contact details, purchase history, service interactions |
+| **HR Data** | Employee information | Job descriptions, achievements, tenure |
+| **Social Media** | Data from social platforms | Sentiment, trends, engagement |
+| **Public Data** | Released by governments/organisations | Census, health stats, economic indicators |
+| **Web Scraping** | Data collected from websites | News, forums, product listings |
+| **Third-Party** | Data from data providers | Credit scores, market research |
+| **IoT** | Data from connected devices | Smart appliances, wearables, connected cars |
+| **Satellite/Imagery** | Geospatial and environmental | Satellite imagery, aerial photography |
+| **Sensor Data** | Data from sensors in operations | Assembly line sensors, smart meters, GPS |
+
+#### 🗄️ Data Storage
+
+Since there are so many data sources, how the data is stored plays a crucial role in the data analysis process. The chosen storage technique can significantly impact the **speed of access**, the **effectiveness of analyses**, and the **types of analysis** that are practical.
+
+##### 🧭 Storage Options at a Glance
+
+<div class="mermaid">
+flowchart TB
+    A[Data Storage Options] --> B[Files<br/>Spreadsheets & CSV]
+    A --> C[Databases<br/>SQL & NoSQL]
+    A --> D[Analytics Platforms<br/>Warehouse & Lake]
+    A --> E[Cloud Object Storage<br/>S3 / GCS / Azure Blob]
+    A --> F[In-memory Stores<br/>Redis / Ignite]
+
+    C --> C1[SQL (Structured)<br/>MySQL / PostgreSQL / Oracle]
+    C --> C2[NoSQL (Flexible)<br/>MongoDB / Cassandra / Firebase]
+
+    D --> D1[Data Warehouse<br/>Snowflake / Redshift / BigQuery]
+    D --> D2[Data Lake<br/>Raw data in original format]
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B fill:#9E9E9E,stroke:#424242,stroke-width:2px,color:#fff
+    style C fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style D fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style E fill:#2196F3,stroke:#1565C0,stroke-width:2px,color:#fff
+    style F fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style C1 fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style C2 fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style D1 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style D2 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+</div>
+
+##### 1. Spreadsheets and CSV Files 📄
+
+Spreadsheets (like Microsoft Excel) and CSV (Comma-Separated Values) files are popular and straightforward storage formats for **smaller datasets**.
+
+- **Pros**: Easy to use, human-readable, great for quick exploration
+- **Cons**: Limited performance and scalability for large datasets
+
+**Example use**: A marketing team exports a CSV of 5,000 leads to analyse campaign performance.
+
+##### 2. Databases 🗃️ (SQL vs NoSQL)
+
+Databases are usually used for **larger datasets**.
+
+**Structured (SQL) databases** store data in tables with relationships (like interconnected spreadsheets):
+- Examples: MySQL, Oracle, PostgreSQL
+- Best for: structured data, consistent schema, strong querying (SQL)
+
+**Unstructured / semi-structured (NoSQL) databases** are more flexible:
+- Examples: MongoDB, Cassandra, Firebase
+- Best for: variable schemas, documents/JSON, high scale, mixed data types
+
+<div class="mermaid">
+flowchart LR
+    A[Databases] --> B[SQL<br/>Structured tables]
+    A --> C[NoSQL<br/>Flexible schema]
+    B --> B1[Example: Orders table<br/>order_id, customer_id, total]
+    C --> C1[Example: JSON document<br/>{customer:{...}, events:[...] }]
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style C fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style B1 fill:#FFE0B2,stroke:#E65100,stroke-width:2px,color:#000
+    style C1 fill:#FFE0B2,stroke:#E65100,stroke-width:2px,color:#000
+</div>
+
+##### 3. Data Warehouses 🏢
+
+Data warehouses are frequently used for **enormous datasets** and **analytics/reporting**. They collect information from various organisational sources and are designed for fast querying over large amounts of historical data.
+
+- Examples: Snowflake, Amazon Redshift, Google BigQuery
+- Best for: BI dashboards, historical reporting, consistent metrics (KPIs)
+
+**Example use**: Finance runs monthly profitability reports across 5 years of transactions.
+
+##### 4. Data Lakes 🏞️
+
+A data lake stores a very large amount of **raw, unprocessed data** in its original format until it is needed. Data lakes support flexible analysis and can store **structured, semi-structured, and unstructured** data.
+
+- Flat architecture (files/objects) rather than a strict warehouse schema
+- Best for: storing raw data, experimentation, ML feature building
+
+**Example use**: Keeping raw clickstream logs + images + CRM extracts for future modeling.
+
+##### 5. Cloud Storage ☁️
+
+Large datasets are frequently stored on cloud storage platforms like AWS S3, Google Cloud Storage, or Azure Blob Storage.
+
+- **Pros**: scalable, reliable, integrates well with cloud analytics services
+- **Best for**: raw files, backups, data lake storage, sharing datasets across teams
+
+##### 6. In-memory Storage ⚡
+
+In-memory storage can be used for **real-time analytics**. Data is stored in RAM (e.g., Redis, Apache Ignite) enabling rapid access.
+
+- Best for: caching, realtime dashboards, low-latency features
+- Trade-off: more expensive per GB than disk storage
+
+##### 📋 Storage Comparison Table
+
+| Storage Type | Best For | Data Types | Typical Scale | Examples |
+|--------------|----------|-----------|--------------|----------|
+| **Spreadsheets/CSV** | Quick analysis, small datasets | Structured | Small | Excel, CSV |
+| **SQL DB** | Transactions + querying | Structured | Medium–Large | PostgreSQL, MySQL |
+| **NoSQL DB** | Flexible schema, mixed data | Semi/unstructured | Large | MongoDB, Cassandra |
+| **Data Warehouse** | BI & reporting, historical analytics | Structured (modeled) | Very Large | Snowflake, BigQuery |
+| **Data Lake / Object Storage** | Raw data storage, ML | Any | Very Large | S3, GCS, Azure Blob |
+| **In-memory** | Real-time analytics, caching | Key/value, fast access | Medium | Redis, Ignite |
+
+##### 💡 How to Choose (Exam-friendly rule of thumb)
+
+- **Small + human-readable**: Spreadsheet/CSV  
+- **Transactions + strong structure**: SQL database  
+- **Flexible schema + high scale**: NoSQL database  
+- **Fast analytics on historical data**: Data warehouse  
+- **Store everything raw for later**: Data lake / cloud object storage  
+- **Need speed (milliseconds)**: In-memory storage  
+
+#### 🚧 Data Silos
+
+Remember that data may be stored separately in different places or at a specific location in the organisation's overall structure, making it difficult for other employees to access. A situation where data is **compartmentalised or isolated** within a particular department, unit, system, or application and is **not easily accessible** to or shared with other parts of the organisation is called a **'data silo'**.
+
+##### 🎯 What is a Data Silo?
+
+<div class="mermaid">
+graph TB
+    subgraph "Organisation"
+        A[Sales Department<br/>CRM System]
+        B[Marketing Department<br/>Email Platform]
+        C[Finance Department<br/>ERP System]
+        D[HR Department<br/>HRIS System]
+    end
+    
+    A -.No Access.-> B
+    B -.No Access.-> C
+    C -.No Access.-> D
+    D -.No Access.-> A
+    
+    style A fill:#FF6B6B,stroke:#C92A2A,stroke-width:2px,color:#fff
+    style B fill:#FF6B6B,stroke:#C92A2A,stroke-width:2px,color:#fff
+    style C fill:#FF6B6B,stroke:#C92A2A,stroke-width:2px,color:#fff
+    style D fill:#FF6B6B,stroke:#C92A2A,stroke-width:2px,color:#fff
+</div>
+
+**Problem**: Each department has its own data system, but they cannot easily share or access each other's data.
+
+##### 🔍 Causes of Data Silos
+
+There are several causes for this compartmentalisation:
+
+**1. Technical Reasons** 💻
+
+Different systems or applications within the organisation may store data in different formats or use incompatible technology.
+
+**Examples**:
+- Sales uses MySQL database, Marketing uses MongoDB
+- Finance system uses XML format, HR uses JSON
+- Legacy systems that don't integrate with modern platforms
+- Different APIs or data protocols
+
+**2. Organisational Reasons** 🏢
+
+Within the organisation (between departments), various systems or applications might store data in multiple formats or use unrelated technologies.
+
+**Examples**:
+- Each department purchased its own system independently
+- No central IT strategy or data governance
+- Mergers and acquisitions bringing in different systems
+- Lack of standardisation across departments
+
+**3. Cultural Reasons** 👥
+
+Due to unit competition, worries about data privacy, or a lack of knowledge about the advantages of data sharing, there may be resistance to or a lack of incentive for data sharing across the organisation.
+
+**Examples**:
+- Department competition ("We don't want to share our data")
+- Privacy concerns (even when data could be safely shared)
+- Lack of understanding about benefits of data sharing
+- No incentives or culture promoting collaboration
+
+##### 🔄 Data Silo Causes Diagram
+
+<div class="mermaid">
+flowchart TD
+    A[Data Silo] --> B[Technical Reasons<br/>💻]
+    A --> C[Organisational Reasons<br/>🏢]
+    A --> D[Cultural Reasons<br/>👥]
+    
+    B --> B1[Different formats<br/>Incompatible tech]
+    B --> B2[Legacy systems<br/>Different APIs]
+    
+    C --> C1[Independent purchases<br/>No central strategy]
+    C --> C2[Mergers & acquisitions<br/>Lack of standardisation]
+    
+    D --> D1[Department competition<br/>Privacy concerns]
+    D --> D2[No sharing culture<br/>Lack of incentives]
+    
+    style A fill:#E74C3C,stroke:#C0392B,stroke-width:3px,color:#fff
+    style B fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style C fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style D fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style B1 fill:#FFE0B2,stroke:#E65100,stroke-width:2px,color:#000
+    style B2 fill:#FFE0B2,stroke:#E65100,stroke-width:2px,color:#000
+    style C1 fill:#FFE0B2,stroke:#E65100,stroke-width:2px,color:#000
+    style C2 fill:#FFE0B2,stroke:#E65100,stroke-width:2px,color:#000
+    style D1 fill:#FFE0B2,stroke:#E65100,stroke-width:2px,color:#000
+    style D2 fill:#FFE0B2,stroke:#E65100,stroke-width:2px,color:#000
+</div>
+
+##### ✅ Solutions to Data Silos
+
+Organisations frequently use data integration initiatives to consolidate their data into a centralised data warehouse or adopt a unified data architecture to eliminate data silos.
+
+**Technical Solutions** 🔧:
+- **Middleware and integration tools**: Connect different systems
+- **ETL (Extract, Transform, Load)**: Move data from silos to central warehouse
+- **API integration**: Enable systems to communicate
+- **Unified data architecture**: Standardise data formats and storage
+
+**Organisational Solutions** 🏢:
+- **Promote data-sharing culture**: Encourage collaboration
+- **Establish data governance procedures**: Set standards and policies
+- **Central data strategy**: Coordinate IT purchases and systems
+- **Cross-departmental teams**: Break down barriers
+
+<div class="mermaid">
+flowchart LR
+    A[Data Silos<br/>Isolated Systems] --> B[Integration Solutions]
+    B --> C[Centralised<br/>Data Warehouse]
+    B --> D[Unified<br/>Data Architecture]
+    
+    C --> E[All Departments<br/>Can Access Data]
+    D --> E
+    
+    style A fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff
+    style B fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style C fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style D fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style E fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+</div>
+
+#### 🔓 Open vs Closed Data Platforms
+
+Another factor to consider is the platform on which the data will be stored - **open** or **closed**. Open and closed data platforms refer to various methods for using, sharing, and being able to access data.
+
+##### 🌐 Open Data Platforms
+
+A platform that allows for the **open sharing, use, and reuse of data** is known as an **open data platform**. This openness is frequently subject to minimal conditions, usually in the form of a license, such as sharing any modifications or derivatives under the same open terms or attributing the source.
+
+**Characteristics**:
+- Open sharing, use, and reuse
+- Minimal restrictions (usually attribution or share-alike license)
+- Publicly accessible
+- Promotes transparency and collaboration
+
+**Used in**:
+- Governmental settings (transparency, public participation)
+- Academic settings (research collaboration)
+- Public service settings (innovation, public benefit)
+
+**Examples**:
+- **data.gov** (United States) - Government datasets
+- **data.gov.uk** (United Kingdom) - UK government data
+- OpenStreetMap - Open mapping data
+- Kaggle Datasets - Public datasets for research
+
+##### 🔒 Closed Data Platforms
+
+A **closed data platform** places **limitations on who can access and use the data**. Access may be restricted to particular users or groups because the data may be proprietary, confidential, or sensitive in nature.
+
+**Characteristics**:
+- Restricted access (specific users/groups)
+- Requires permissions, contracts, or agreements
+- Data is proprietary, confidential, or sensitive
+- Protects privacy, intellectual property, or compliance
+
+**Used in**:
+- Businesses (protect trade secrets, customer data)
+- Healthcare (patient privacy, HIPAA compliance)
+- Financial institutions (regulatory compliance)
+- Organisations with sensitive data
+
+**Examples**:
+- Company internal databases (employee-only access)
+- Customer data platforms (restricted to authorised staff)
+- Financial systems (compliance requirements)
+- Healthcare records (privacy regulations)
+
+##### 🎨 Open vs Closed Platform Comparison
+
+<div class="mermaid">
+graph TB
+    subgraph "Open Data Platform 🌐"
+        O1[Public Access]
+        O2[Minimal Restrictions]
+        O3[Promotes Innovation]
+        O4[Examples:<br/>data.gov<br/>data.gov.uk]
+    end
+    
+    subgraph "Closed Data Platform 🔒"
+        C1[Restricted Access]
+        C2[Requires Permissions]
+        C3[Protects Privacy/IP]
+        C4[Examples:<br/>Company DB<br/>Healthcare Records]
+    end
+    
+    style O1 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style O2 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style O3 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style O4 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C1 fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff
+    style C2 fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff
+    style C3 fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff
+    style C4 fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff
+</div>
+
+##### 📋 Open vs Closed Comparison Table
+
+| Aspect | Open Data Platform | Closed Data Platform |
+|--------|-------------------|---------------------|
+| **Access** | Public, open to all | Restricted to authorised users |
+| **Restrictions** | Minimal (attribution, share-alike) | Requires permissions/contracts |
+| **Purpose** | Transparency, innovation, collaboration | Privacy, IP protection, compliance |
+| **Use Cases** | Government, academic, public service | Business, healthcare, finance |
+| **Examples** | data.gov, data.gov.uk, OpenStreetMap | Company databases, patient records |
+| **Data Type** | Public interest data | Proprietary, confidential, sensitive |
+
+##### 💡 Hybrid Approach
+
+In reality, depending on the type of data and their requirements, many organisations use a **combination of open and closed data**. For instance, a business might make some of its data publicly accessible to foster innovation and collaboration while keeping other data private to safeguard client privacy or trade secrets.
+
+**Example**: A retail company might:
+- **Open**: Publish anonymised sales trends and market research (promote innovation)
+- **Closed**: Keep customer personal information and pricing strategies private (protect privacy and trade secrets)
+
+<div class="mermaid">
+flowchart TD
+    A[Organisation Data] --> B{Data Type?}
+    B -->|Public Interest| C[Open Platform<br/>🌐<br/>Public Access]
+    B -->|Sensitive/Private| D[Closed Platform<br/>🔒<br/>Restricted Access]
+    
+    C --> E[Examples:<br/>Market trends<br/>Research data<br/>Public statistics]
+    D --> F[Examples:<br/>Customer PII<br/>Trade secrets<br/>Financial records]
+    
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B fill:#FFD700,stroke:#B8860B,stroke-width:3px
+    style C fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style D fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff
+    style E fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style F fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff
+</div>
+
+#### 💡 Key Takeaways
+
+1. **Data** = unprocessed, raw facts or statistics gathered for analysis
+2. **Qualitative data** = non-numerical, categorical variables (not for calculations, but for classifying/grouping)
+3. **Nominal data** = categories with no order (e.g., fruit types, country)
+4. **Ordinal data** = categories with distinct order (e.g., movie ratings: poor, average, good, excellent)
+5. **Dichotomous data** = only two categories, presence/absence (e.g., employed/unemployed)
+6. **Quantitative data** = numerical, measurable (used in statistical/mathematical calculations)
+7. **Discrete data** = countable, whole numbers only (e.g., website visitors, cars owned)
+8. **Continuous data** = any value in range, decimals possible (e.g., temperature, weight)
+9. **Data types affect** the analyses you can run, pre-processing (missing data, normalisation), and model selection
+10. **Internal data sources**: Transactional data, log data, CRM data, HR data (produced within organisation)
+11. **External data sources**: Social media, public data sets, web scraping, third-party providers, IoT, satellite/imagery, sensor data (from outside organisation)
+12. **Data storage choices** affect access speed, scalability, and what analysis is practical
+13. Common storage methods: **Spreadsheets/CSV**, **Databases (SQL/NoSQL)**, **Data Warehouses**, **Data Lakes**, **Cloud Object Storage**, **In-memory stores**
+14. **Data silos** = data compartmentalised/isolated within departments, not easily accessible to other parts of organisation
+15. **Data silo causes**: Technical (incompatible formats/tech), Organisational (independent systems), Cultural (competition, privacy concerns)
+16. **Solutions to silos**: Data integration, centralised warehouse, unified architecture, data-sharing culture, data governance
+17. **Open data platforms** = public access, minimal restrictions (e.g., data.gov, data.gov.uk) - used for transparency and innovation
+18. **Closed data platforms** = restricted access, requires permissions (e.g., company DBs, healthcare records) - protects privacy/IP/compliance
+19. Many organisations use **hybrid approach**: open data for public interest, closed data for sensitive/private information
+            """,
+            "key_points": [
+                "Data refers to unprocessed, raw facts or statistics gathered for analysis",
+                "Data is broadly divided into qualitative (non-numerical, categorical) and quantitative (numerical) categories",
+                "Qualitative data points are categorical variables; not for calculations but necessary for classifying/grouping",
+                "Nominal data: categories with no order (e.g., fruit types: apple, banana, orange)",
+                "Ordinal data: categories with distinct order (e.g., movie ratings: poor, average, good, excellent)",
+                "Dichotomous (binary): only two categories, indicates presence/absence (e.g., employed/unemployed)",
+                "Quantitative data is measurable and used in statistical or mathematical calculations (numerical variables)",
+                "Discrete data: countable, whole numbers only (e.g., website visitors, cars owned)",
+                "Continuous data: any value in range, decimals possible (e.g., temperature, weight)",
+                "Data types affect: types of analyses, pre-processing (missing data, normalisation/scale), and model selection",
+                "Internal data sources: Transactional (sales, invoices), Log (web/application/error logs), CRM (customers), HR (employees)",
+                "External data sources: Social media, public data sets, web scraping, third-party providers, IoT devices, satellite/imagery, sensor data",
+                "Data storage affects speed of access, scalability, and what analyses are practical",
+                "Storage options include: spreadsheets/CSV, SQL/NoSQL databases, data warehouses, data lakes, cloud object storage (e.g., S3), and in-memory stores (e.g., Redis)",
+                "Data silos: data compartmentalised/isolated within departments, making it difficult for other employees to access",
+                "Data silo causes: Technical (different formats/incompatible tech), Organisational (independent systems, no central strategy), Cultural (competition, privacy concerns, lack of sharing culture)",
+                "Solutions to data silos: Data integration initiatives, centralised data warehouse, unified data architecture, middleware/integration tools, ETL, promoting data-sharing culture, data governance",
+                "Open data platforms: allow open sharing/use/reuse with minimal restrictions (e.g., data.gov, data.gov.uk) - used in government, academic, public service settings",
+                "Closed data platforms: restrict access to authorised users, require permissions/contracts - used for proprietary, confidential, or sensitive data (business, healthcare, finance)",
+                "Hybrid approach: organisations often use both open (public interest data) and closed (sensitive/private data) platforms depending on data type and requirements"
+            ],
+            "visual_elements": {
+                "diagrams": True,
+                "tables": True,
+                "highlighted_sections": True
+            }
+        }
+    ]
+}
+
 courses_data = [
     {
         "code": "FI1BBDF05", 
@@ -8926,6 +12256,59 @@ elif page == "Learn & Practice":
     st.title("📖 Learn & Practice")
     st.markdown("---")
     
+    # Add custom CSS for lesson styling and Mermaid.js
+    st.markdown("""
+    <style>
+    .lesson-highlight {
+        background: linear-gradient(120deg, #a8e6cf 0%, #dcedc1 100%);
+        padding: 15px;
+        border-radius: 8px;
+        border-left: 4px solid #4CAF50;
+        margin: 10px 0;
+    }
+    .key-concept {
+        background: #fff3cd;
+        padding: 12px;
+        border-radius: 6px;
+        border-left: 4px solid #ffc107;
+        margin: 8px 0;
+        color: #333;
+    }
+    .key-concept * {
+        color: #333 !important;
+    }
+    .important-info {
+        background: #e3f2fd;
+        padding: 12px;
+        border-radius: 6px;
+        border-left: 4px solid #2196F3;
+        margin: 8px 0;
+        color: #333;
+    }
+    .important-info * {
+        color: #333 !important;
+    }
+    .visual-box {
+        background: #f5f5f5;
+        padding: 15px;
+        border-radius: 8px;
+        border: 2px solid #ddd;
+        margin: 15px 0;
+        font-family: 'Courier New', monospace;
+    }
+    .mermaid-container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px 0;
+        text-align: center;
+        border: 1px solid #e0e0e0;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+    
+    # Note: Mermaid.js will be loaded per diagram using st.components.v1.html
+    
     selected_course = st.selectbox(
         "Select a course to study:",
         options=[f"{c['code']} - {c['name']}" for c in courses_data],
@@ -8946,6 +12329,11 @@ elif page == "Learn & Practice":
     if course_topics_with_training:
         st.info(f"💡 This course has {len(course_topics_with_training)} topic(s) with hands-on training available in the Training Center!")
     
+    # Check if course has lessons
+    has_lessons = course_code in course_lessons
+    if has_lessons:
+        st.success(f"📚 This course has {len(course_lessons[course_code])} detailed lesson(s) available!")
+    
     tab1, tab2 = st.tabs(["Course Content", "Practice Questions"])
     
     with tab1:
@@ -8954,6 +12342,214 @@ elif page == "Learn & Practice":
         st.markdown(f"*{course['description']}*")
         
         st.markdown("---")
+        
+        # Check if course has lessons
+        if course_code in course_lessons:
+            st.markdown("### 📖 Course Lessons")
+            st.markdown("Explore detailed lessons with visual explanations and key concepts.")
+            st.markdown("")
+            
+            for lesson in course_lessons[course_code]:
+                with st.expander(f"📚 Lesson {lesson['lesson_number']}: {lesson['title']}", expanded=True):
+                    # Parse and render lesson content with Mermaid diagrams
+                    content = lesson['content']
+                    
+                    # Split content by Mermaid diagrams
+                    parts = re.split(r'(<div class="mermaid">.*?</div>)', content, flags=re.DOTALL)
+                    
+                    for part in parts:
+                        if part.strip().startswith('<div class="mermaid">'):
+                            # Extract Mermaid code
+                            mermaid_match = re.search(r'<div class="mermaid">(.*?)</div>', part, re.DOTALL)
+                            if mermaid_match:
+                                mermaid_code = mermaid_match.group(1).strip()
+                                # Render Mermaid diagram using HTML component
+                                # Render Mermaid diagram with zoom and pan controls
+                                mermaid_html = f"""
+                                <!DOCTYPE html>
+                                <html>
+                                <head>
+                                    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+                                    <style>
+                                        * {{
+                                            box-sizing: border-box;
+                                        }}
+                                        html, body {{
+                                            margin: 0; 
+                                            padding: 0; 
+                                            width: 100%;
+                                            height: 100%;
+                                            background: white; 
+                                            overflow: hidden;
+                                        }}
+                                        .diagram-container {{
+                                            width: 100%;
+                                            height: 100%;
+                                            min-height: 500px;
+                                            overflow: auto;
+                                            border: 1px solid #e0e0e0;
+                                            border-radius: 8px;
+                                            background: #fafafa;
+                                            position: relative;
+                                        }}
+                                        .mermaid-wrapper {{
+                                            width: 100%;
+                                            min-height: 100%;
+                                            padding: 40px;
+                                            display: flex;
+                                            justify-content: center;
+                                            align-items: flex-start;
+                                        }}
+                                        .mermaid {{
+                                            text-align: center;
+                                            width: 100%;
+                                            max-width: 100%;
+                                        }}
+                                        .mermaid svg {{
+                                            max-width: 100%;
+                                            height: auto;
+                                        }}
+                                        .controls {{
+                                            position: sticky;
+                                            top: 10px;
+                                            right: 10px;
+                                            z-index: 1000;
+                                            display: flex;
+                                            gap: 5px;
+                                            float: right;
+                                            margin: 10px;
+                                        }}
+                                        .control-btn {{
+                                            background: #4A90D9;
+                                            color: white;
+                                            border: none;
+                                            padding: 8px 12px;
+                                            border-radius: 4px;
+                                            cursor: pointer;
+                                            font-size: 12px;
+                                            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                                        }}
+                                        .control-btn:hover {{
+                                            background: #2E5C8A;
+                                        }}
+                                    </style>
+                                </head>
+                                <body>
+                                    <div class="diagram-container" id="diagram-container">
+                                        <div class="controls">
+                                            <button class="control-btn" onclick="zoomIn()">Zoom In +</button>
+                                            <button class="control-btn" onclick="zoomOut()">Zoom Out -</button>
+                                            <button class="control-btn" onclick="resetZoom()">Reset</button>
+                                        </div>
+                                        <div class="mermaid-wrapper" id="mermaid-wrapper">
+                                            <div class="mermaid" id="mermaid-diagram">
+{mermaid_code}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <script>
+                                        let currentZoom = 1;
+                                        const container = document.getElementById('diagram-container');
+                                        const wrapper = document.getElementById('mermaid-wrapper');
+                                        
+                                        function zoomIn() {{
+                                            currentZoom = Math.min(currentZoom + 0.2, 3);
+                                            wrapper.style.transform = `scale(${{currentZoom}})`;
+                                            wrapper.style.transformOrigin = 'center center';
+                                        }}
+                                        
+                                        function zoomOut() {{
+                                            currentZoom = Math.max(currentZoom - 0.2, 0.5);
+                                            wrapper.style.transform = `scale(${{currentZoom}})`;
+                                            wrapper.style.transformOrigin = 'center center';
+                                        }}
+                                        
+                                        function resetZoom() {{
+                                            currentZoom = 1;
+                                            wrapper.style.transform = 'scale(1)';
+                                            container.scrollTop = 0;
+                                            container.scrollLeft = 0;
+                                        }}
+                                        
+                                        // Enable panning with mouse drag
+                                        let isDragging = false;
+                                        let startX, startY, scrollLeft, scrollTop;
+                                        
+                                        container.addEventListener('mousedown', (e) => {{
+                                            isDragging = true;
+                                            startX = e.pageX - container.offsetLeft;
+                                            startY = e.pageY - container.offsetTop;
+                                            scrollLeft = container.scrollLeft;
+                                            scrollTop = container.scrollTop;
+                                            container.style.cursor = 'grabbing';
+                                        }});
+                                        
+                                        container.addEventListener('mouseleave', () => {{
+                                            isDragging = false;
+                                            container.style.cursor = 'grab';
+                                        }});
+                                        
+                                        container.addEventListener('mouseup', () => {{
+                                            isDragging = false;
+                                            container.style.cursor = 'grab';
+                                        }});
+                                        
+                                        container.addEventListener('mousemove', (e) => {{
+                                            if (!isDragging) return;
+                                            e.preventDefault();
+                                            const x = e.pageX - container.offsetLeft;
+                                            const y = e.pageY - container.offsetTop;
+                                            const walkX = (x - startX) * 2;
+                                            const walkY = (y - startY) * 2;
+                                            container.scrollLeft = scrollLeft - walkX;
+                                            container.scrollTop = scrollTop - walkY;
+                                        }});
+                                        
+                                        container.style.cursor = 'grab';
+                                        
+                                        if (typeof mermaid !== 'undefined') {{
+                                            mermaid.initialize({{ 
+                                                startOnLoad: true, 
+                                                theme: 'default',
+                                                themeVariables: {{ 
+                                                    primaryColor: '#4A90D9',
+                                                    primaryTextColor: '#fff',
+                                                    primaryBorderColor: '#2E5C8A',
+                                                    lineColor: '#4A90D9',
+                                                    secondaryColor: '#FFD700',
+                                                    tertiaryColor: '#FF6B6B'
+                                                }},
+                                                flowchart: {{
+                                                    useMaxWidth: true,
+                                                    htmlLabels: true,
+                                                    curve: 'basis'
+                                                }}
+                                            }});
+                                        }}
+                                    </script>
+                                </body>
+                                </html>
+                                """
+                                html(mermaid_html, height=700, width=None, scrolling=False)
+                        else:
+                            # Render regular markdown content
+                            if part.strip():
+                                st.markdown(part, unsafe_allow_html=True)
+                    
+                    st.markdown("---")
+                    
+                    # Key Takeaways with visual emphasis
+                    st.markdown("### ⭐ Key Takeaways")
+                    st.markdown('<div class="important-info">', unsafe_allow_html=True)
+                    for i, point in enumerate(lesson['key_points'], 1):
+                        st.markdown(f"**{i}.** {point}")
+                    st.markdown('</div>', unsafe_allow_html=True)
+                    
+                    # Visual elements indicator
+                    if lesson.get('visual_elements', {}).get('diagrams'):
+                        st.caption("📊 This lesson includes interactive Mermaid diagrams for better visual understanding")
+            
+            st.markdown("---")
         
         col1, col2 = st.columns(2)
         
