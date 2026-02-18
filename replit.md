@@ -124,3 +124,26 @@ https://studiekatalog.edutorium.no/voc/en/programme/PDAN/2025-autumn
 ```bash
 streamlit run app.py --server.port 5000
 ```
+
+## Excel Profiling Script (Reusable)
+Use `excel_profile.py` to inspect any `.xlsx` file and print the most important data profile (sheet size, column types, missing values, duplicates, date ranges, numeric summary, and top categories).
+
+### Quick Run
+```bash
+python excel_profile.py "/path/to/your-file.xlsx"
+```
+
+### Show More/Fewer Top Values
+```bash
+python excel_profile.py "/path/to/your-file.xlsx" --top 5
+```
+
+### Profile One Specific Sheet
+```bash
+python excel_profile.py "/path/to/your-file.xlsx" --sheet "SheetName"
+```
+
+### Save Full Profile to JSON
+```bash
+python excel_profile.py "/path/to/your-file.xlsx" --json-out profile.json
+```

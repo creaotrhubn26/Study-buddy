@@ -5,6 +5,7 @@ import os
 import json
 import time
 import re
+import base64
 from datetime import datetime, timedelta, date
 from streamlit.components.v1 import html
 try:
@@ -50,6 +51,82 @@ st.markdown(MATERIAL_ICONS_CSS, unsafe_allow_html=True)
 def mui_icon(icon_name, size=20):
     """Helper function to render Material Icons"""
     return f'<span class="mui-icon" style="font-size: {size}px;">{icon_name}</span>'
+    
+def mui_title(icon_name, text):
+    st.markdown(f"# {mui_icon(icon_name, 30)} {text}", unsafe_allow_html=True)
+
+def mui_subheader(icon_name, text):
+    st.markdown(f"### {mui_icon(icon_name, 22)} {text}", unsafe_allow_html=True)
+
+
+EMOJI_HEADING_PATTERN = re.compile(r'[\U0001F300-\U0001FAFF\u2600-\u27BF]')
+
+
+def _escape_svg_text(value):
+    return (
+        value.replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+    )
+
+
+def _build_heading_banner(title, level):
+    palette = {
+        2: ("#E8F3FF", "#4A90D9", "#1F4E79"),
+        3: ("#EAFBF1", "#39A96B", "#1D6B44"),
+        4: ("#FFF4E8", "#E58E26", "#8A4A00"),
+        5: ("#F3F0FF", "#7E57C2", "#4A2B87"),
+        6: ("#F5F5F5", "#8E8E8E", "#333333"),
+    }
+    bg, border, text_color = palette.get(level, palette[4])
+    safe_title = _escape_svg_text(title)
+    return f"""
+<svg width=\"680\" height=\"72\" viewBox=\"0 0 680 72\" xmlns=\"http://www.w3.org/2000/svg\" role=\"img\" aria-label=\"Section visual banner\">
+  <rect x=\"1\" y=\"1\" width=\"678\" height=\"70\" rx=\"10\" fill=\"{bg}\" stroke=\"{border}\" stroke-width=\"2\"/>
+  <text x=\"20\" y=\"44\" fill=\"{text_color}\" font-size=\"20\" font-weight=\"700\">{safe_title}</text>
+</svg>
+"""
+
+
+def convert_emoji_headings_to_visuals(markdown_text):
+    lines = markdown_text.splitlines()
+    transformed = []
+    in_code_block = False
+
+    for line in lines:
+        stripped = line.strip()
+
+        if stripped.startswith("```"):
+            in_code_block = not in_code_block
+            transformed.append(line)
+            continue
+
+        if in_code_block:
+            transformed.append(line)
+            continue
+
+        heading_match = re.match(r'^(#{2,6})\s+(.+)$', stripped)
+        if not heading_match:
+            transformed.append(line)
+            continue
+
+        hashes = heading_match.group(1)
+        heading_text = heading_match.group(2)
+
+        if not EMOJI_HEADING_PATTERN.search(heading_text):
+            transformed.append(line)
+            continue
+
+        clean_heading = EMOJI_HEADING_PATTERN.sub('', heading_text)
+        clean_heading = re.sub(r'\s{2,}', ' ', clean_heading).strip(' -')
+        if not clean_heading:
+            clean_heading = heading_text
+
+        level = len(hashes)
+        transformed.append(_build_heading_banner(clean_heading, level))
+        transformed.append(f"{hashes} {clean_heading}")
+
+    return "\n".join(transformed)
 
 st.set_page_config(
     page_title="Data Analyst Study App",
@@ -57,10 +134,26 @@ st.set_page_config(
     layout="wide"
 )
 
-client = OpenAI(
-    api_key=os.environ.get("AI_INTEGRATIONS_OPENAI_API_KEY"),
-    base_url=os.environ.get("AI_INTEGRATIONS_OPENAI_BASE_URL")
-)
+class MissingOpenAIClient:
+    def __getattr__(self, _name):
+        return self
+
+    def __call__(self, *args, **kwargs):
+        raise RuntimeError(
+            "OpenAI API key is not configured. Set OPENAI_API_KEY or AI_INTEGRATIONS_OPENAI_API_KEY to use AI features."
+        )
+
+
+openai_api_key = os.environ.get("AI_INTEGRATIONS_OPENAI_API_KEY") or os.environ.get("OPENAI_API_KEY")
+openai_base_url = os.environ.get("AI_INTEGRATIONS_OPENAI_BASE_URL") or os.environ.get("OPENAI_BASE_URL")
+
+if openai_api_key:
+    client = OpenAI(
+        api_key=openai_api_key,
+        base_url=openai_base_url
+    )
+else:
+    client = MissingOpenAIClient()
 
 # Training modules with structured lessons
 training_modules = {
@@ -8830,11 +8923,17 @@ flowchart TD
 5. How do the four analytics levels build upon each other?
 </div>
 
-#### 📝 The Task
+<svg width="680" height="82" viewBox="0 0 680 82" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Lesson task banner">
+    <rect x="1" y="1" width="678" height="80" rx="10" fill="#EAFBF1" stroke="#39A96B" stroke-width="2"/>
+    <text x="20" y="34" fill="#1D6B44" font-size="18" font-weight="700">Lesson Task</text>
+    <text x="20" y="56" fill="#1D6B44" font-size="13">Self-reflection activity: define goals, skills, and your data analysis path.</text>
+</svg>
+
+#### The Task
 
 In this lesson, you learnt about the fundamental roles in the field of data analysis, the various hard and soft skills required by data analysts and the different types of analysis which may be performed. For today's lesson task, you need to consider your goals in data analysis.
 
-##### 🎯 Self-Reflection Exercise
+##### Self-Reflection Exercise
 
 This is a bit of self-reflection to help you with your first step on your journey to becoming a data analyst. Take some time to think about and answer the following questions:
 
@@ -8876,7 +8975,7 @@ This is a bit of self-reflection to help you with your first step on your journe
   - Prescriptive Analytics (What should we do?)
 - Why are you drawn to this level?
 
-##### 🗺️ Your Data Analysis Journey
+##### Your Data Analysis Journey
 
 <div class="mermaid">
 flowchart TD
@@ -8896,7 +8995,7 @@ flowchart TD
     style Achieve fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
 </div>
 
-##### 📋 Skills Assessment Template
+##### Skills Assessment Template
 
 <div class="key-concept">
 **Rate Your Current Skills (1-5 scale)**:
@@ -13847,11 +13946,17 @@ graph LR
 
 ---
 
-### 📝 The Task: Internal vs External Data Sources
+<svg width="680" height="82" viewBox="0 0 680 82" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Lesson task banner">
+    <rect x="1" y="1" width="678" height="80" rx="10" fill="#FFF4E8" stroke="#E58E26" stroke-width="2"/>
+    <text x="20" y="34" fill="#8A4A00" font-size="18" font-weight="700">Lesson Task: Internal vs External Data Sources</text>
+    <text x="20" y="56" fill="#8A4A00" font-size="13">Classify data sources and design clear feature tables with types and storage.</text>
+</svg>
+
+### The Task: Internal vs External Data Sources
 
 In this lesson, you learned about various considerations related to data, including **internal and external sources**. Let's complete a practical exercise to solidify your understanding.
 
-#### 🎯 Task Requirements
+#### Task Requirements
 
 **Select:**
 - **2 types of internal data**
@@ -13867,7 +13972,7 @@ In this lesson, you learned about various considerations related to data, includ
 
 ### ✅ Complete Solution with Examples
 
-#### 📊 Internal Data Source 1: Human Resources (HR) Data
+#### Internal Data Source 1: Human Resources (HR) Data
 
 <div class="key-concept">
 **About HR Data:**
@@ -13901,7 +14006,7 @@ Human Resources data contains information about employees within an organization
 
 ---
 
-#### 💰 Internal Data Source 2: Transactional/Sales Data
+#### Internal Data Source 2: Transactional/Sales Data
 
 <div class="key-concept">
 **About Transactional Data:**
@@ -13935,7 +14040,7 @@ Transactional data captures business transactions such as sales, purchases, and 
 
 ---
 
-#### 🌐 External Data Source 1: Social Media Data
+#### External Data Source 1: Social Media Data
 
 <div class="key-concept">
 **About Social Media Data:**
@@ -13971,7 +14076,7 @@ Social media data comes from platforms like Twitter, Facebook, Instagram, and Li
 
 ---
 
-#### 🌤️ External Data Source 2: Weather/IoT Sensor Data
+#### External Data Source 2: Weather/IoT Sensor Data
 
 <div class="key-concept">
 **About Weather/IoT Data:**
@@ -14012,7 +14117,7 @@ Weather and IoT sensor data comes from external sources like weather APIs, envir
 
 Now let's see how to work with this data in practice using different tools and technologies.
 
-#### 📊 Example 1: Creating HR Data in Excel/CSV
+#### Example 1: Creating HR Data in Excel/CSV
 
 <div class="important-info">
 **Scenario:** You need to create a structured HR database for a small company with 10 employees.
@@ -14049,7 +14154,7 @@ Column O (performance_rating): Data Type = Whole Number, Between 1 and 5
 
 ---
 
-#### 🐍 Example 2: Working with Transactional Data in Python (Pandas)
+#### Example 2: Working with Transactional Data in Python (Pandas)
 
 <div class="important-info">
 **Scenario:** Analyze sales transactions to find top-selling products and revenue by category.
@@ -14197,7 +14302,7 @@ Name: total_amount, dtype: float64
 
 ---
 
-#### 🗄️ Example 3: Storing HR Data in SQL Database
+#### Example 3: Storing HR Data in SQL Database
 
 <div class="important-info">
 **Scenario:** Create a relational database for HR data with proper data types and constraints.
@@ -14300,7 +14405,7 @@ ORDER BY hire_date;
 
 ---
 
-#### 🌐 Example 4: Analyzing Social Media Data with Python
+#### Example 4: Analyzing Social Media Data with Python
 
 <div class="important-info">
 **Scenario:** Collect and analyze social media sentiment about your brand.
@@ -14350,7 +14455,7 @@ df_social['post_timestamp'] = pd.to_datetime(df_social['post_timestamp'])
 
 # Perform sentiment analysis
 def analyze_sentiment(text):
-    """Analyze sentiment of text using TextBlob"""
+    # Analyze sentiment of text using TextBlob
     blob = TextBlob(text)
     polarity = blob.sentiment.polarity  # -1 (negative) to +1 (positive)
 
@@ -14464,7 +14569,7 @@ TOP ENGAGING POSTS
 
 ---
 
-### 🎯 Key Insights from the Task
+### Key Insights from the Task
 
 <div class="key-concept">
 **What You've Learned:**
@@ -14606,6 +14711,8298 @@ This comprehensive task solution demonstrates how to identify, document, structu
             "visual_elements": {
                 "diagrams": True,
                 "tables": True,
+                "highlighted_sections": True
+            }
+        },
+        {
+            "lesson_number": "1.3",
+            "title": "Data Collection",
+            "content": """
+### Primary and Secondary Data
+
+Even though a wealth of data is already available, some studies require collecting 'new' data. These two broad categories for data collection can be used to categorise data as **primary** or **secondary**.
+
+#### 🎯 Core Concept: Primary vs Secondary Data
+
+<div class="mermaid">
+flowchart LR
+    A[Data Collection] --> B[Primary Data<br/>📝<br/>First-hand Information]
+    A --> C[Secondary Data<br/>📚<br/>Pre-existing Information]
+    
+    B --> B1[Collected by<br/>Researcher]
+    B --> B2[For Specific<br/>Purpose]
+    
+    C --> C1[Collected by<br/>Others]
+    C --> C2[For Different<br/>Purpose]
+    
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style B1 fill:#C8E6C9,stroke:#4CAF50,stroke-width:2px
+    style B2 fill:#C8E6C9,stroke:#4CAF50,stroke-width:2px
+    style C1 fill:#FFE0B2,stroke:#E65100,stroke-width:2px
+    style C2 fill:#FFE0B2,stroke:#E65100,stroke-width:2px
+</div>
+
+---
+
+### 📝 Primary Data (First-Order Data)
+
+First-hand information gathered by the researcher or analysts for a particular research project or goal is **primary** or **first-order data**. Primary data is collected from the source and is intended to respond to specific research questions.
+
+#### 🎨 Primary Data Collection Methods
+
+<div class="mermaid">
+graph TB
+    A[Primary Data<br/>Collection Methods] --> B[Surveys<br/>📋<br/>Questionnaires]
+    A --> C[Interviews<br/>🎤<br/>One-on-one]
+    A --> D[Experiments<br/>🔬<br/>Controlled Tests]
+    A --> E[Direct Observation<br/>👁️<br/>Recording Behavior]
+    A --> F[Focus Groups<br/>👥<br/>Group Discussions]
+    
+    B --> B1[Online/Paper<br/>Structured Questions]
+    C --> C1[In-depth<br/>Qualitative Insights]
+    D --> D1[Controlled<br/>Variables]
+    E --> E1[Natural<br/>Settings]
+    F --> F1[Interactive<br/>Feedback]
+    
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style D fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style E fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style F fill:#4ECDC4,stroke:#2C7873,stroke-width:2px,color:#fff
+</div>
+
+There are various techniques for gathering primary data, and the choice of method frequently depends on the **purpose of the study**, the **resources at hand**, and the **kind of data** being sought. Here are typical primary data collection methods:
+
+##### 1. Surveys / Questionnaires 📋
+
+**Description**: Structured questionnaires distributed to a target audience to gather quantitative and qualitative data.
+
+**Delivery Methods**:
+- **In-person**: Face-to-face administration in specific locations
+- **Mail**: Postal surveys sent to respondents' addresses
+- **Phone**: Telephone interviews using standardized questions
+- **Online**: Web-based surveys via email, websites, or social media
+
+**Characteristics**:
+- Structured questions ensure consistency across respondents
+- Can reach large audiences quickly
+- Standardized format for easy analysis
+- Collect information from a sample of people
+- Mix of closed-ended (quantitative) and open-ended (qualitative) questions
+
+**Examples**:
+- Customer satisfaction surveys
+- Market research questionnaires
+- Employee engagement surveys
+- Product feedback forms
+- Net Promoter Score (NPS) surveys
+
+**Advantages**:
+- Cost-effective for large samples
+- Easy to analyze statistically
+- Respondents can answer at their convenience
+- Anonymity can encourage honest responses
+- Standardized data collection
+- Can cover wide geographic areas
+
+**Disadvantages**:
+- Low response rates (especially mail/online)
+- Limited depth of responses
+- Potential for biased or misunderstood questions
+- No opportunity for follow-up clarification
+- Response bias (only motivated people respond)
+
+##### 2. Interviews 🎤
+
+**Description**: One-on-one conversations between researcher and participant to gather in-depth qualitative information.
+
+**Delivery Methods**:
+- **In-person**: Face-to-face interviews
+- **Phone**: Telephone interviews
+- **Online**: Video conferencing (Zoom, Teams, Skype)
+
+**Types of Interviews**:
+
+**Structured Interviews** 📋
+- Predetermined list of questions in fixed order
+- Same questions asked to all participants
+- Limited flexibility for follow-up
+- Easier to analyze and compare responses
+- Good for quantitative analysis
+
+**Semi-Structured Interviews** 🔄
+- Some predetermined questions as framework
+- Freedom to delve deeper into interesting topics
+- Can probe for more details
+- Flexible order of questions
+- Balance between consistency and exploration
+
+**Unstructured Interviews** 💬
+- More like a guided conversation
+- Broad topics rather than specific questions
+- Maximum flexibility to explore emerging themes
+- Participant-led discussion
+- Rich, detailed qualitative data
+
+**Examples**:
+- Customer interviews about product experiences
+- Expert interviews for industry insights
+- User research interviews
+- Stakeholder interviews
+- Job interviews
+- Clinical interviews
+
+**Advantages**:
+- Rich, detailed information
+- Can explore complex topics in depth
+- Flexibility to follow interesting leads
+- Build rapport with participants
+- Clarify misunderstandings immediately
+- Observe non-verbal cues (in-person)
+
+**Disadvantages**:
+- Time-consuming and expensive
+- Small sample sizes
+- Interviewer bias can influence responses
+- Difficult to analyze and quantify
+- Requires skilled interviewers
+- Cannot guarantee anonymity
+
+##### 3. Observations 👁️
+
+**Description**: Systematically observing and documenting phenomena or behavior as it arises naturally in the wild.
+
+**Types of Observation**:
+
+**Overt Observation** 👀
+- Participants are **aware** they are being watched
+- Researcher's presence is known
+- May affect natural behavior (Hawthorne effect)
+- More ethical (informed consent)
+- Examples: Store managers observing customer service
+
+**Covert Observation** 🕵️
+- Participants are **unaware** they are being watched
+- Hidden or disguised observation
+- More natural behavior
+- Ethical concerns (privacy, consent)
+- Examples: Mystery shoppers, hidden cameras
+
+**Participant vs Non-Participant**:
+- **Participant observation**: Researcher joins the activity
+- **Non-participant observation**: Researcher observes from outside
+
+**Characteristics**:
+- No manipulation of environment
+- Real-world settings
+- Objective recording of behaviors
+- Can be structured (specific behaviors) or unstructured (general observation)
+
+**Examples**:
+- Observing customer behavior in stores
+- Watching how users interact with software
+- Studying workplace processes
+- Recording traffic patterns
+- Classroom observations
+- Wildlife behavior studies
+
+**Advantages**:
+- Natural behavior in real settings
+- First-hand data collection
+- Can capture non-verbal cues
+- Rich contextual information
+- Good for behaviors people can't articulate
+- No reliance on self-reporting
+
+**Disadvantages**:
+- Observer may influence behavior (Hawthorne effect)
+- Time-intensive
+- Limited to observable behaviors (not thoughts/feelings)
+- Difficult to record everything
+- Ethical concerns with covert observation
+- Observer bias in interpretation
+
+##### 4. Experiments 🔬
+
+**Description**: Controlled studies in which one variable is changed to track how it affects another variable.
+
+**Characteristics**:
+- Control over variables (independent and dependent)
+- Random assignment of participants to conditions
+- Establish cause-and-effect relationships
+- Replicable under same conditions
+- Manipulation of independent variable
+- Measurement of dependent variable
+
+**Types**:
+- **Laboratory experiments**: Controlled environment
+- **Field experiments**: Natural settings with controls
+- **Natural experiments**: Observe naturally occurring conditions
+
+**Examples**:
+- A/B testing website designs
+- Product testing in controlled environments
+- Clinical trials for new treatments
+- Usability testing
+- Marketing campaign experiments
+- Psychology experiments
+
+**Advantages**:
+- Can establish causality (cause-and-effect)
+- High level of control over variables
+- Replicable and verifiable
+- Precise measurements
+- Can isolate specific factors
+- Scientific rigor
+
+**Disadvantages**:
+- Artificial settings may not reflect reality
+- Expensive and time-consuming
+- Ethical constraints in some contexts
+- May not be feasible for all research questions
+- External validity concerns (generalizability)
+- Resource-intensive
+
+**Note**: Even though they can be resource-intensive and inappropriate for some research questions, experiments can be a **powerful tool for demonstrating cause-and-effect relationships**.
+
+##### 5. Focus Groups 👥
+
+**Description**: A moderator guides a group discussion on a specific subject, exploring people's experiences, beliefs, or attitudes.
+
+**Characteristics**:
+- Moderated group interaction (typically 6-12 participants)
+- Participants build on each other's ideas
+- Explore attitudes, perceptions, and opinions
+- Generate qualitative insights through discussion
+- Interactive and dynamic
+- Typically 60-90 minutes duration
+
+**Process**:
+1. Moderator introduces topic
+2. Guided discussion with open-ended questions
+3. Participants share perspectives
+4. Group interaction reveals consensus and differences
+5. Moderator probes deeper on key themes
+
+**Examples**:
+- Testing new product concepts
+- Gathering feedback on advertising campaigns
+- Understanding customer preferences
+- Exploring user needs
+- Political opinion research
+- Brand perception studies
+
+**Advantages**:
+- Rich discussion and idea generation
+- Participants stimulate each other's thinking
+- Cost-effective for multiple participants simultaneously
+- Can reveal consensus and differences
+- Group dynamics can uncover insights
+- Observe interactions and reactions
+
+**Disadvantages**:
+- Group dynamics may inhibit some participants
+- Dominant voices can skew results
+- Moderator skill critically important
+- Results not statistically generalizable
+- Groupthink may limit diverse opinions
+- Difficult to schedule and coordinate
+
+**Helpful Tip**: Focus groups can be helpful in **thoroughly examining people's experiences, beliefs, or attitudes** through interactive discussion.
+
+##### 6. Case Studies 📁
+
+**Description**: Thorough investigation of a single subject (such as a person, group, organization, or event) using various data sources.
+
+**Characteristics**:
+- In-depth, comprehensive examination
+- Multiple data sources (triangulation)
+- Contextual analysis
+- Holistic understanding
+- Longitudinal or cross-sectional
+- Rich qualitative data
+
+**Data Sources Used**:
+- Interviews with key individuals
+- Document analysis
+- Observations
+- Archival records
+- Physical artifacts
+- Quantitative data
+
+**Examples**:
+- Business case studies (company success/failure)
+- Medical case studies (patient treatment)
+- Educational case studies (teaching methods)
+- Legal case studies (court cases)
+- Organizational change case studies
+- Individual biography studies
+
+**Advantages**:
+- Thorough understanding of one situation
+- Rich, detailed, contextual data
+- Can explore complex phenomena
+- Reveals interconnections and processes
+- Real-world context preserved
+- Multiple perspectives
+
+**Disadvantages**:
+- Results might not apply to others (limited generalizability)
+- Time and resource intensive
+- Potential for researcher bias
+- Difficult to replicate
+- Cannot establish causality
+- Small sample (typically n=1)
+
+**Note**: Case studies can give you a **thorough understanding of one situation**, but the results might **not apply to others** due to limited generalizability.
+
+##### 7. Field Trials / Pilots 🌾
+
+**Description**: Testing a concept under actual/real-world conditions while recording results.
+
+**Characteristics**:
+- Real-world testing environment
+- Controlled variables where possible
+- Observation and measurement of outcomes
+- Iterative testing and refinement
+- Practical application focus
+
+**Common Applications**:
+- **Product Development**: Testing prototypes with real users
+- **Engineering**: Testing new systems or processes
+- **Agriculture**: Testing new crops, fertilizers, or farming methods
+- **Medicine**: Clinical trials in real healthcare settings
+- **Software**: Beta testing with actual users
+
+**Examples**:
+- Agricultural field trials of new crop varieties
+- Pilot programs for new software features
+- Beta testing consumer products
+- Trial run of new manufacturing process
+- Pilot implementation of new policy
+- Test marketing in select regions
+
+**Advantages**:
+- Real-world feedback and validation
+- Identifies practical problems before full rollout
+- Reduces risk of large-scale failure
+- Generates authentic user data
+- Can refine before full launch
+- Documents real-world performance
+
+**Disadvantages**:
+- Can be expensive to set up
+- May have limited duration
+- Results may vary in different contexts
+- Potential disruption to operations
+- Ethical considerations for participants
+- Difficult to control all variables
+
+**Note**: Field trials are frequently used in **product development, engineering, or agriculture** to test concepts under actual conditions while carefully recording results.
+
+##### 8. Ethnography 🌍
+
+**Description**: Researcher immerses themselves in a community for an extended period to study the behaviors, culture, and practices of its members.
+
+**Characteristics**:
+- Long-term immersion (months to years)
+- Participant observation
+- Cultural context and meaning
+- Holistic perspective
+- Naturalistic setting
+- Qualitative and interpretive
+
+**Methods Used**:
+- Participant observation
+- In-depth interviews
+- Field notes and journals
+- Document analysis
+- Photography/video recording
+- Cultural artifact collection
+
+**Examples**:
+- Studying workplace culture
+- Understanding consumer behavior in natural settings
+- Researching community practices
+- Exploring organizational rituals
+- Investigating subcultures
+- Cross-cultural studies
+
+**Advantages**:
+- Deep cultural understanding
+- Rich contextual data
+- Natural behavior observed
+- Insider perspective
+- Uncovers hidden patterns
+- Long-term relationships build trust
+
+**Disadvantages**:
+- Extremely time-consuming (months/years)
+- Very expensive
+- Researcher can "go native" (lose objectivity)
+- Difficult to generalize findings
+- Ethical challenges of dual roles
+- Language and cultural barriers
+
+**Note**: To study behaviors, culture, and practices, the **researcher immerses themselves** in a community for an **extended period**, gaining insider perspective and deep understanding.
+
+---
+
+### 🔄 Mixed-Methods Approach
+
+It is **typical to combine several methods** within a single study to obtain a more thorough understanding of the research topic. A **mixed-methods approach** is a common term for this.
+
+<div class="mermaid">
+graph TB
+    A[Mixed-Methods<br/>Research] --> B[Quantitative<br/>Methods<br/>📊]
+    A --> C[Qualitative<br/>Methods<br/>💬]
+    
+    B --> B1[Surveys<br/>Experiments<br/>Structured Obs.]
+    C --> C1[Interviews<br/>Focus Groups<br/>Ethnography]
+    
+    B1 --> D[Triangulation]
+    C1 --> D
+    
+    D --> E[Comprehensive<br/>Understanding<br/>💡]
+    
+    E --> F[Numbers<br/>+ Context]
+    E --> G[Breadth<br/>+ Depth]
+    E --> H[Validation<br/>+ Exploration]
+    
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style D fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style E fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+</div>
+
+**Benefits of Mixed-Methods**:
+- **Triangulation**: Validate findings through multiple sources
+- **Complementarity**: Different methods reveal different aspects
+- **Development**: One method informs the design of another
+- **Expansion**: Extend breadth and range of inquiry
+- **Comprehensive**: Numbers provide what/how much, words provide why/how
+
+**Example - Customer Experience Research**:
+1. **Survey** (n=1,000): Quantify satisfaction levels and identify problem areas
+2. **Interviews** (n=20): Understand why customers are dissatisfied
+3. **Observation**: Watch actual customer interactions
+4. **Analysis**: Combine all sources for complete picture
+
+**Advantages and Disadvantages Summary**:
+
+Each method has **advantages and disadvantages**, and the **best one will depend on**:
+- Nature of the research question
+- Context and setting
+- Resources available (time, budget, staff)
+- Researcher's skills and expertise
+- Ethical considerations
+- Required depth vs breadth
+
+<div class="mermaid">
+flowchart TB
+    A[Choose Primary<br/>Data Method] --> B{Research Goals?}
+    
+    B -->|Large sample,<br/>quantitative| C[Survey<br/>📋]
+    B -->|In-depth,<br/>qualitative| D[Interview<br/>🎤]
+    B -->|Test causality| E[Experiment<br/>🔬]
+    B -->|Natural behavior| F[Observation<br/>👁️]
+    B -->|Group insights| G[Focus Group<br/>👥]
+    
+    C --> H[Analysis]
+    D --> H
+    E --> H
+    F --> H
+    G --> H
+    
+    H --> I[Insights for<br/>Decision Making<br/>💡]
+    
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style B fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style C fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style D fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style E fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style F fill:#4ECDC4,stroke:#2C7873,stroke-width:2px,color:#fff
+    style G fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff
+    style H fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style I fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+</div>
+
+---
+
+### ❓ Primary Data Question Types
+
+Surveys and questionnaires, interviews, and focus groups are three commonly used primary data collection methods. The data collector, interviewer, or focus group leader may use a variety of questions during interviews conducted on paper, online, or in person. The type of question used in surveys can impact the calibre of the responses and the kind of analysis you can run.
+
+#### 📋 Survey and Questionnaire Question Types
+
+Here are a few examples of typical survey question types and how they influence analysis:
+
+**Multiple choice questions**
+- Offer a list of options for respondents to select one or more.
+- Simple to analyze quantitatively, but predefined options may miss edge cases.
+
+**Rating scale (Likert scale) questions**
+- Use a scale such as 1-5 or 1-7 to measure agreement or satisfaction.
+- Common anchors include "strongly disagree" to "strongly agree" or "very dissatisfied" to "very satisfied".
+
+**Rank order questions**
+- Ask participants to rank items by importance or preference.
+- Useful for relative priorities, but can be demanding with long lists.
+
+**Open-ended questions**
+- Let respondents answer in their own words.
+- Provide rich detail but require more effort to analyze.
+
+**Dichotomous questions**
+- Offer two possible responses, usually "yes" or "no".
+- Easy to answer and analyze, but limited depth.
+
+**Demographic questions**
+- Capture attributes like age, gender, income, education, or occupation.
+- Essential for segmentation and context.
+
+**Matrix questions**
+- Present several statements with the same response options.
+- Efficient for related items, but can be overwhelming if too large.
+
+**Pictorial questions**
+- Use images as response options.
+- Engaging for visual topics but can be interpreted differently.
+
+**Semantic differential questions**
+- Ask respondents to rate a concept between bipolar adjectives (e.g., "low quality" to "high quality").
+- Useful for measuring attitudes, but requires careful adjective choice to avoid bias.
+
+When designing a survey, consider the data you need, how easy the questions are to answer and analyze, and the overall respondent experience. Balancing these factors improves response quality and usability.
+
+#### 🎤 Interview and Focus Group Question Types
+
+The purpose of interviews and focus groups is to explore a topic in depth and understand participants' viewpoints, experiences, or attitudes. Open-ended formats are common, but structured prompts help keep sessions focused.
+
+**Open-ended questions**
+- Encourage participants to explain in their own words.
+- Example: "Can you describe a typical day at your job?"
+
+**Probing questions**
+- Follow-up prompts to clarify or expand an answer.
+- Example: "Can you tell me more about that experience?"
+
+**Experience or example questions**
+- Ask for specific stories or incidents.
+- Example: "Can you share a time you handled a challenging situation at work?"
+
+**Hypothetical questions**
+- Explore reactions to imagined scenarios.
+- Example: "What would you change if you were the manager of this company?"
+
+**Opinion or belief questions**
+- Capture attitudes or viewpoints on a topic.
+- Example: "What are your opinions on working remotely?"
+
+**Knowledge questions**
+- Gauge a participant's familiarity with a topic.
+- Example: "What do you know about our sustainability initiative?"
+
+**Sensory questions**
+- Explore perceptions related to sensory experience.
+- Example: "How would you describe the flavor of our new chocolate bar?"
+
+**Demographic questions**
+- Provide context such as age, gender, education, or occupation.
+- Often asked at the end to avoid early drop-off.
+
+#### ✅ Question Type Selection Tips (Quick Table)
+
+| Goal | Recommended Question Type | Data Type |
+|------|---------------------------|-----------|
+| Measure agreement or satisfaction | Likert/rating scale | Quantitative |
+| Prioritize options | Rank order | Quantitative |
+| Capture detailed explanations | Open-ended | Qualitative |
+| Confirm a yes/no condition | Dichotomous | Quantitative |
+| Segment respondents | Demographic | Quantitative |
+| Compare multiple items quickly | Matrix | Quantitative |
+| Assess attitudes between opposites | Semantic differential | Quantitative |
+| Explore experiences and context | Open-ended + probing | Qualitative |
+
+**Tip**: Use fewer question types per survey to reduce fatigue, and place sensitive or demographic items near the end.
+
+---
+
+### 🌐 Modern Online Primary Data Collection
+
+Modern online environments have **significantly impacted primary data collection techniques**, offering fresh approaches to information gathering, archiving, and analysis. The digital revolution has transformed how researchers collect, store, and analyze data.
+
+<div class="mermaid">
+graph TB
+    A[Modern Online<br/>Data Collection] --> B[Online Surveys<br/>📱<br/>Digital Platforms]
+    A --> C[Virtual Meetings<br/>💻<br/>Video Conferencing]
+    A --> D[Web Analytics<br/>📊<br/>Behavior Tracking]
+    A --> E[Online Experiments<br/>🔬<br/>A/B Testing]
+    A --> F[Crowdsourcing<br/>👥<br/>Public Participation]
+    A --> G[Mobile Collection<br/>📲<br/>Smartphone Data]
+    
+    B --> H[Fresh Approaches to<br/>Data Collection<br/>🌟]
+    C --> H
+    D --> H
+    E --> H
+    F --> H
+    G --> H
+    
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style D fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style E fill:#4ECDC4,stroke:#2C7873,stroke-width:2px,color:#fff
+    style F fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style G fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff
+    style H fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+</div>
+
+#### 📱 1. Online Surveys and Questionnaires
+
+The way surveys are conducted has been **revolutionised by digital platforms**. Today, surveys can be distributed via email or shared on social media, which makes it **quicker and less expensive** to reach a larger and more varied audience.
+
+**Digital Survey Platforms**:
+- **Google Forms**: Free, user-friendly, integrates with Google Sheets
+- **SurveyMonkey**: Professional features, templates, analytics
+- **Typeform**: Interactive, engaging user interface
+- **Qualtrics**: Advanced research features, enterprise-level
+- **Microsoft Forms**: Integrated with Office 365
+
+**Key Benefits**:
+- **Speed**: Instant distribution to thousands of participants
+- **Cost**: Minimal distribution and processing costs
+- **Reach**: Global audience accessibility
+- **Automated**: Data entry and analysis automatically handled
+- **Reduced Errors**: No manual data entry mistakes
+- **Real-time**: Results available immediately
+- **Skip Logic**: Dynamic questions based on previous answers
+- **Multimedia**: Include images, videos, audio in questions
+
+**Distribution Channels**:
+- Email campaigns
+- Social media (Facebook, Twitter, LinkedIn)
+- Website pop-ups
+- QR codes
+- SMS text messages
+- Embedded forms
+
+**Features**:
+- Automated data entry and analysis
+- Lower possibility of errors
+- Accelerated research process
+- Branching logic and conditional questions
+- Multi-language support
+- Mobile-responsive design
+
+**Example**:
+A retail company sends an email survey to 10,000 customers after purchase. Within 24 hours, 2,000 responses are collected and automatically analyzed, revealing satisfaction trends by product category.
+
+<div class="mermaid">
+flowchart LR
+    A[Create<br/>Survey] --> B[Digital<br/>Platform]
+    B --> C[Distribution<br/>📧📱]
+    
+    C --> D1[Email]
+    C --> D2[Social Media]
+    C --> D3[Website]
+    C --> D4[QR Code]
+    
+    D1 --> E[Responses<br/>Collected]
+    D2 --> E
+    D3 --> E
+    D4 --> E
+    
+    E --> F[Automated<br/>Analysis<br/>📊]
+    F --> G[Real-time<br/>Results<br/>✅]
+    
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style E fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style F fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style G fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+</div>
+
+#### 💻 2. Virtual Interviews and Focus Groups
+
+The development of **video conferencing tools** has made it possible to conduct focus groups and interviews online. Due to this, **participants from all over the world can now be included**, and recordings can now be more thoroughly transcribed and analysed.
+
+**Video Conferencing Platforms**:
+- **Zoom**: Screen sharing, breakout rooms, recording
+- **Microsoft Teams**: Integration with Office, collaborative features
+- **Google Meet**: Simple, browser-based, integrated with Calendar
+- **Skype**: One-on-one interviews, international calling
+- **Cisco Webex**: Enterprise security, large group capacity
+
+**Advantages**:
+- **Global Reach**: Include participants worldwide
+- **Cost Savings**: No travel expenses or venue rental
+- **Convenience**: Participants join from home/office
+- **Recording**: Automatic transcription and analysis
+- **Screen Sharing**: Present stimuli, documents, prototypes
+- **Breakout Rooms**: Divide focus groups for sub-discussions
+- **Chat Features**: Backchannel for notes and questions
+- **Accessibility**: Options for closed captions, translation
+
+**Considerations**:
+- Technical requirements (internet, camera, microphone)
+- Digital literacy of participants
+- Privacy and security settings
+- Time zone coordination
+- Non-verbal cues may be harder to read
+
+**Example**:
+A global company conducts virtual focus groups with customers in 5 countries simultaneously, using breakout rooms for regional discussions and recording sessions for detailed analysis later.
+
+<div class="mermaid">
+graph TB
+    A[Virtual Research] --> B[Interviews<br/>1-on-1]
+    A --> C[Focus Groups<br/>6-12 people]
+    
+    B --> D[Video Platform<br/>💻]
+    C --> D
+    
+    D --> E[Features]
+    
+    E --> F[Recording<br/>📹]
+    E --> G[Screen Share<br/>📊]
+    E --> H[Chat<br/>💬]
+    E --> I[Breakout Rooms<br/>👥]
+    
+    F --> J[Analysis<br/>Transcription<br/>✅]
+    G --> J
+    H --> J
+    I --> J
+    
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style D fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style E fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style J fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+</div>
+
+#### 📊 3. Web Analytics and Digital Ethnography
+
+**Online behaviour** is now a valuable source of first-hand information. With the user's permission, researchers can track users' online behaviour, including the websites they visit, the links they click, and how long they spend on each page.
+
+**Tracking Methods**:
+- **Cookies**: Track user sessions and behavior across visits
+- **Server Logs**: Record all server requests and interactions
+- **Specialized Software**: Google Analytics, Hotjar, Mixpanel
+- **Heatmaps**: Visualize where users click, scroll, move
+- **Session Recording**: Replay user interactions
+- **Eye Tracking**: Advanced studies of visual attention
+
+**Data Collected**:
+- **Page Views**: Which pages users visit
+- **Click Behavior**: What links/buttons users click
+- **Time on Page**: Duration of engagement
+- **Scroll Depth**: How far users scroll down pages
+- **Navigation Paths**: User journey through website
+- **Conversion Tracking**: Actions completed (purchases, signups)
+- **Demographics**: Location, device type, browser
+
+**Research Applications**:
+- **Online Consumer Behavior**: Purchase patterns, product browsing
+- **Social Media Use**: Engagement, sharing, interactions
+- **Information-Seeking Behavior**: Search patterns, content consumption
+- **User Experience (UX)**: Website usability, pain points
+- **Digital Marketing**: Campaign effectiveness, attribution
+
+**Privacy Considerations**:
+- ⚠️ Requires user consent and permission
+- Must comply with GDPR, CCPA regulations
+- Clear privacy policies and cookie notices
+- Option to opt-out of tracking
+- Anonymization of personal data
+
+**Example**:
+An e-commerce site uses heatmaps to discover that users consistently miss the "Add to Cart" button. Repositioning it increases conversions by 25%.
+
+<div class="mermaid">
+flowchart TD
+    A[User Visits<br/>Website] --> B{Consent<br/>Given?}
+    
+    B -->|Yes| C[Tracking Tools]
+    B -->|No| D[No Tracking<br/>Privacy Respected]
+    
+    C --> E[Cookies<br/>🍪]
+    C --> F[Server Logs<br/>📝]
+    C --> G[Analytics<br/>📊]
+    
+    E --> H[Behavior Data]
+    F --> H
+    G --> H
+    
+    H --> I[Analysis]
+    
+    I --> J[Insights:<br/>• Pages viewed<br/>• Click patterns<br/>• Time spent<br/>• User journey]
+    
+    J --> K[Improvements<br/>✅]
+    
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff
+    style C fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style D fill:#9E9E9E,stroke:#424242,stroke-width:2px,color:#fff
+    style H fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style J fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style K fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+</div>
+
+#### 🔬 4. Online Experiments (A/B Testing)
+
+**A/B tests**, in which different web page versions are shown to different visitors to see which performs better, have become **simpler to conduct** thanks to platforms like Google Optimize and Optimizely.
+
+**A/B Testing Platforms**:
+- **Google Optimize**: Free, integrates with Google Analytics
+- **Optimizely**: Enterprise-level, advanced features
+- **VWO (Visual Website Optimizer)**: Visual editor, easy setup
+- **Adobe Target**: Comprehensive testing and personalization
+- **Unbounce**: Landing page optimization
+
+**What Can Be Tested**:
+- **Headlines**: Different wording, length, tone
+- **Call-to-Action (CTA) Buttons**: Color, text, placement, size
+- **Images**: Different visuals, product photos, illustrations
+- **Layout**: Page structure, element positioning
+- **Copy**: Product descriptions, value propositions
+- **Pricing**: Different price points, display formats
+- **Forms**: Number of fields, required vs optional
+
+**Process**:
+1. **Hypothesis**: "Changing button color to green will increase clicks"
+2. **Create Variants**: Version A (blue button) vs Version B (green button)
+3. **Split Traffic**: 50% see A, 50% see B
+4. **Collect Data**: Track clicks, conversions, time on page
+5. **Analyze Results**: Statistical significance testing
+6. **Implement Winner**: Roll out better-performing version
+
+**Benefits**:
+- **Data-Driven Decisions**: Remove guesswork
+- **Quick Results**: Get answers in days or weeks
+- **Continuous Improvement**: Iterative optimization
+- **Measurable Impact**: Clear ROI on changes
+- **Low Risk**: Test before full implementation
+
+**Example**:
+An online retailer tests two checkout button colors. The green button achieves a 15% higher conversion rate than the red button, resulting in $50,000 additional monthly revenue.
+
+<div class="mermaid">
+graph LR
+    A[Original Page<br/>Version A] --> C[Split Traffic<br/>50/50]
+    B[Modified Page<br/>Version B] --> C
+    
+    C --> D[Visitors]
+    
+    D --> E[Measure Results]
+    
+    E --> F[Version A:<br/>5% conversion]
+    E --> G[Version B:<br/>7% conversion]
+    
+    F --> H{Winner?}
+    G --> H
+    
+    H -->|Version B<br/>Performs Better| I[Implement<br/>Version B<br/>✅]
+    
+    style A fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style E fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style H fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style I fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+</div>
+
+#### 👥 5. Crowdsourcing and Citizen Science
+
+The Internet allows researchers to **collect data from the general public on a previously unimaginable scale**.
+
+**Crowdsourcing Platforms**:
+- **Amazon Mechanical Turk (MTurk)**: Micro-tasks, surveys, data labeling
+- **Prolific**: Research-focused participant pool
+- **Zooniverse**: Citizen science projects
+- **Figure Eight (Appen)**: Data annotation and collection
+- **Crowdflower**: Human-in-the-loop machine learning
+
+**Applications**:
+
+**Academic Research** 🎓
+- Large-scale psychology experiments
+- Linguistic studies
+- Economic games and decision-making
+- Survey research with diverse samples
+
+**Citizen Science Projects** 🔬
+- **Wildlife Studies**: Report bird sightings, animal observations
+- **Astronomy**: Classify galaxies, discover exoplanets
+- **Environmental Monitoring**: Track pollution, weather patterns
+- **Health Research**: Track disease symptoms, medication effects
+
+**Digital Humanities** 📚
+- **Transcription**: Historical document transcription
+- **Translation**: Multilingual content translation
+- **Categorization**: Image tagging, content classification
+- **Digitization**: Converting analog records to digital
+
+**Examples**:
+- **eBird**: Millions of bird sightings reported globally by birdwatchers
+- **Galaxy Zoo**: Citizens classify galaxy images, contributing to astronomical research
+- **Foldit**: Players solve protein-folding puzzles, advancing medical research
+- **Old Weather**: Volunteers transcribe historical ship logs for climate research
+
+**Benefits**:
+- **Scale**: Collect massive amounts of data
+- **Speed**: Parallel processing by many contributors
+- **Cost**: Often lower than traditional methods
+- **Diversity**: Access varied perspectives and expertise
+- **Engagement**: Public participation in science
+
+**Challenges**:
+- **Quality Control**: Variable accuracy, need validation
+- **Participant Motivation**: Ensuring engagement
+- **Data Consistency**: Standardizing contributions
+- **Attribution**: Crediting contributors appropriately
+
+<div class="mermaid">
+graph TB
+    A[Crowdsourcing<br/>Platform] --> B[Research Task]
+    
+    B --> C1[Thousands of<br/>Contributors<br/>🌍]
+    
+    C1 --> D1[Participant 1<br/>Contributes Data]
+    C1 --> D2[Participant 2<br/>Contributes Data]
+    C1 --> D3[Participant 3<br/>Contributes Data]
+    C1 --> D4[... Participant N<br/>Contributes Data]
+    
+    D1 --> E[Aggregated<br/>Dataset]
+    D2 --> E
+    D3 --> E
+    D4 --> E
+    
+    E --> F[Quality Control<br/>& Validation]
+    
+    F --> G[Research<br/>Insights<br/>💡]
+    
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style B fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style C1 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style E fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style F fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style G fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+</div>
+
+#### 📲 6. Mobile Data Collection
+
+Due to the **widespread use of smartphones**, data collection has become **quicker and more effective**. Various fields, including social science, health research, environmental studies, and more, use this technology.
+
+**Mobile Data Types**:
+
+**GPS Location Data** 📍
+- Track movement patterns
+- Map user journeys
+- Location-based services
+- Geofencing studies
+- Travel behavior research
+
+**Images and Videos** 📸
+- Photo documentation
+- Visual diaries
+- Product usage evidence
+- Environmental observations
+- Medical imaging (symptom tracking)
+
+**Real-Time Responses** ⏱️
+- Experience sampling (ESM)
+- Momentary assessments
+- Ecological momentary assessment (EMA)
+- Real-time mood tracking
+- Activity logging
+
+**Sensor Data** 📊
+- Accelerometer (movement, activity)
+- Gyroscope (orientation)
+- Proximity sensors
+- Light sensors
+- Biometric sensors (heart rate, steps)
+
+**Applications by Field**:
+
+**Social Science** 👥
+- Time-use studies
+- Social interaction patterns
+- Communication behavior
+- Daily activities tracking
+
+**Health Research** 🏥
+- Medication adherence
+- Symptom tracking
+- Physical activity monitoring
+- Mental health assessments
+- Disease surveillance
+
+**Environmental Studies** 🌳
+- Air quality monitoring
+- Noise pollution mapping
+- Wildlife observations
+- Citizen science data
+- Climate change tracking
+
+**Market Research** 💼
+- Shopping behavior
+- Product usage patterns
+- In-store experiences
+- Receipt scanning
+- Mobile surveys at point of purchase
+
+**Mobile Survey Tools**:
+- **SurveyMonkey Mobile**: Native apps for iOS/Android
+- **Qualtrics Mobile**: Offline data collection
+- **ODK (Open Data Kit)**: Open-source, works offline
+- **KoBoToolbox**: Humanitarian and development research
+- **CommCare**: Health and social services data
+
+**Benefits**:
+- **Real-Time**: Capture data as events occur
+- **Context-Aware**: Location and environmental data
+- **Multimedia**: Photos, audio, video capabilities
+- **Always Available**: People carry phones constantly
+- **Offline Capability**: Collect data without internet
+- **Reduced Recall Bias**: Capture in-the-moment experiences
+
+**Example**:
+A health study uses a mobile app to prompt participants five times daily to report mood, stress levels, and current activity. GPS data correlates mood with locations, revealing that time in nature improves well-being.
+
+<div class="mermaid">
+flowchart TD
+    A[Smartphone<br/>📱] --> B[Data Collection<br/>Capabilities]
+    
+    B --> C1[GPS<br/>📍<br/>Location]
+    B --> C2[Camera<br/>📸<br/>Images/Video]
+    B --> C3[Sensors<br/>📊<br/>Movement/Bio]
+    B --> C4[Surveys<br/>📋<br/>Real-time]
+    
+    C1 --> D[Research<br/>Applications]
+    C2 --> D
+    C3 --> D
+    C4 --> D
+    
+    D --> E1[Social<br/>Science]
+    D --> E2[Health<br/>Research]
+    D --> E3[Environmental<br/>Studies]
+    D --> E4[Market<br/>Research]
+    
+    E1 --> F[Quick &<br/>Effective<br/>Data Collection<br/>✅]
+    E2 --> F
+    E3 --> F
+    E4 --> F
+    
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style B fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style D fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style F fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+</div>
+
+---
+
+### ⚠️ Challenges and Ethical Considerations of Online Data Collection
+
+But these developments also bring **new difficulties and moral dilemmas** that researchers must carefully address.
+
+<div class="mermaid">
+graph TB
+    A[Online Data<br/>Collection<br/>Challenges] --> B[Privacy &<br/>Security<br/>🔒]
+    A --> C[Digital Divide<br/>& Bias<br/>⚖️]
+    A --> D[Data Quality<br/>📊]
+    A --> E[Technical<br/>Issues<br/>💻]
+    
+    B --> F[Mitigation<br/>Strategies]
+    C --> F
+    D --> F
+    E --> F
+    
+    style A fill:#E74C3C,stroke:#C0392B,stroke-width:3px,color:#fff
+    style B fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style C fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style D fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style E fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style F fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+</div>
+
+#### 🔒 1. Privacy and Data Security Issues
+
+**Online data collection raises significant privacy and data security issues.**
+
+**Key Concerns**:
+
+**Personal Data Protection** 🛡️
+- Collection of sensitive information
+- Risk of data breaches and hacks
+- Unauthorized access to participant data
+- Third-party data sharing
+- Data retention and deletion
+
+**Surveillance Concerns** 👁️
+- Tracking online behavior
+- Location monitoring
+- Continuous data collection
+- Scope creep (collecting more than necessary)
+- Government or corporate surveillance
+
+**Best Practices**:
+
+✅ **Informed Consent**
+- Clear explanation of data collection
+- Specific purposes stated
+- Right to withdraw explained
+- Consent obtained before collection
+- Language accessible to participants
+
+✅ **Data Anonymization**
+- Remove personally identifiable information (PII)
+- Use pseudonyms or participant IDs
+- Aggregate data where possible
+- De-identification techniques
+- Prevent re-identification risks
+
+✅ **Secure Data Storage**
+- Encryption at rest and in transit
+- Secure servers and databases
+- Access controls and authentication
+- Regular security audits
+- Backup and recovery procedures
+
+✅ **Compliance with Regulations**
+- **GDPR** (General Data Protection Regulation - EU)
+- **CCPA** (California Consumer Privacy Act - USA)
+- **HIPAA** (Health Insurance Portability and Accountability Act - healthcare)
+- **COPPA** (Children's Online Privacy Protection Act - under 13)
+- Local data protection laws
+
+**Example of Good Practice**:
+A health research app collects symptom data with clear consent forms, encrypts all data, stores it on HIPAA-compliant servers, and automatically deletes participant data after study completion.
+
+#### ⚖️ 2. Digital Divide and Sampling Bias
+
+**Online data can be biased** because it frequently underrepresents some demographic groups and overrepresents others.
+
+**Overrepresented Groups** ✅ (Online):
+- Younger individuals (18-45 years)
+- More educated individuals (college/university)
+- Wealthier individuals (higher income)
+- Urban and suburban residents
+- Tech-savvy populations
+- Developed countries
+
+**Underrepresented Groups** ❌ (Online):
+- Older adults (65+ years)
+- Less-educated individuals
+- Low-income individuals
+- Rural residents
+- People with disabilities
+- Developing countries
+- Non-native language speakers
+
+**Consequences**:
+- **Skewed Results**: Don't represent general population
+- **Limited Generalizability**: Findings may not apply broadly
+- **Exclusion**: Voices of marginalized groups not heard
+- **Policy Implications**: Decisions based on incomplete data
+- **Digital Inequality**: Reinforces existing disparities
+
+**Mitigation Strategies**:
+
+🔧 **Mixed-Mode Data Collection**
+- Combine online with phone, mail, in-person
+- Offer multiple participation options
+- Reach those without internet access
+
+🔧 **Targeted Recruitment**
+- Actively recruit underrepresented groups
+- Partner with community organizations
+- Provide devices and internet access if needed
+- Offer incentives for participation
+
+🔧 **Accessibility Features**
+- Screen reader compatibility
+- Multiple language options
+- Simple, clear interfaces
+- Mobile-responsive design
+- Low-bandwidth options
+
+🔧 **Statistical Weighting**
+- Weight responses to match population demographics
+- Post-stratification adjustments
+- Acknowledge limitations in reporting
+
+**Example**:
+A government survey combines online responses with telephone interviews and mailed paper surveys to ensure representation across all age groups and socioeconomic levels.
+
+#### 📊 3. Data Quality Concerns
+
+**Online Data Quality Issues**:
+- **Bot Responses**: Automated fake responses
+- **Satisficing**: Rushed, low-effort responses
+- **Multiple Submissions**: Same person responding multiple times
+- **Attention Failures**: Not reading questions carefully
+- **Technical Errors**: Survey glitches, incomplete submissions
+
+**Quality Control Measures**:
+- CAPTCHA verification
+- Attention check questions
+- Response time monitoring
+- IP address tracking
+- Data validation rules
+- Duplicate detection
+
+#### 💻 4. Technical Issues
+
+**Common Technical Challenges**:
+- Internet connectivity problems
+- Device compatibility issues
+- Browser incompatibilities
+- Software bugs and glitches
+- Data transmission errors
+- Platform downtime
+
+**Solutions**:
+- Responsive design for all devices
+- Cross-browser testing
+- Offline data collection options
+- Automatic save features
+- Technical support availability
+- Pilot testing before launch
+
+<div class="mermaid">
+flowchart LR
+    A[Online Data<br/>Collection] --> B{Ethical<br/>Review}
+    
+    B --> C1[✅ Privacy<br/>Protected]
+    B --> C2[✅ Informed<br/>Consent]
+    B --> C3[✅ Secure<br/>Storage]
+    B --> C4[✅ Representative<br/>Sample]
+    
+    C1 --> D[Proceed with<br/>Collection]
+    C2 --> D
+    C3 --> D
+    C4 --> D
+    
+    D --> E[Quality<br/>Data<br/>💎]
+    
+    B -->|❌ Issues| F[Address<br/>Concerns]
+    F --> B
+    
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B fill:#FFD700,stroke:#B8860B,stroke-width:3px
+    style C1 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C2 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C3 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C4 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style D fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style E fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+    style F fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff
+</div>
+
+---
+
+### 🔑 Key Benefits vs Challenges Summary
+
+| Aspect | Benefits ✅ | Challenges ⚠️ |
+|--------|------------|---------------|
+| **Reach** | Global audience, large samples | Digital divide, sampling bias |
+| **Cost** | Lower than traditional methods | May exclude those without internet |
+| **Speed** | Real-time data, quick deployment | Technical issues, connectivity problems |
+| **Convenience** | Participants respond anytime, anywhere | Requires devices and digital literacy |
+| **Analysis** | Automated, immediate results | Data quality concerns (bots, satisficing) |
+| **Privacy** | Anonymous response options | Security risks, tracking concerns |
+| **Flexibility** | Multimedia, interactive features | Platform compatibility issues |
+| **Scale** | Crowdsourcing massive data collection | Quality control at scale difficult |
+
+---
+
+### 🛠️ Primary Data Collection Platforms
+
+Although the **pen-and-paper method is still an option**, collecting data online can be **much more efficient**. Surveys and questionnaires are some of the most popular methods for gathering data online. Many existing online tools have been specifically designed for this purpose, so it **may not be necessary for some organisations to create their own tools**.
+
+<div class="mermaid">
+graph TB
+    A[Primary Data<br/>Collection Platforms] --> B[Survey Tools<br/>📋<br/>Online Questionnaires]
+    A --> C[Video Conferencing<br/>💻<br/>Interviews & Focus Groups]
+    A --> D[Web Analytics<br/>📊<br/>Behavior Tracking]
+    
+    B --> B1[Google Forms<br/>SurveyMonkey<br/>Qualtrics]
+    C --> C1[Zoom<br/>Teams<br/>Google Meet]
+    D --> D1[Google Analytics<br/>Hotjar<br/>Mixpanel]
+    
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style D fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style B1 fill:#C8E6C9,stroke:#4CAF50,stroke-width:2px
+    style C1 fill:#E1BEE7,stroke:#9C27B0,stroke-width:2px
+    style D1 fill:#FFE0B2,stroke:#E65100,stroke-width:2px
+</div>
+
+---
+
+#### 📋 Online Survey Platforms
+
+These platforms allow you to create, distribute, and analyze surveys efficiently. Each offers different features and pricing models to suit various needs.
+
+##### 1. Google Forms 🟢
+
+**Description**: A free tool included in the Google online application suite.
+
+**Key Features**:
+- **Simple to use**: Intuitive drag-and-drop interface
+- **Question Types**: Multiple choice, drop-down, linear scale, checkboxes, short answer, paragraph, file upload, date/time
+- **Real-time Collaboration**: Multiple users can edit simultaneously
+- **Integration**: Responses compiled in Google Sheets for analysis
+- **Templates**: Pre-built forms for common use cases
+- **Free**: No cost for unlimited surveys and responses
+
+**Best For**: Quick surveys, simple questionnaires, event registrations, feedback forms
+
+**Pricing**: Free
+
+**Website**: https://www.google.com/forms/about/
+
+##### 2. SurveyMonkey 🐵
+
+**Description**: One of the most popular survey tools available online with extensive customization options.
+
+**Key Features**:
+- **Customization**: Customize survey's look and feel (colors, logos, themes)
+- **Question Types**: Wide variety including matrix, ranking, slider, A/B testing
+- **Logic and Branching**: Skip logic, piping, randomization
+- **Analysis Tools**: Built-in analytics, cross-tabulations, filtering
+- **Distribution**: Email, web link, social media, website embed
+- **Templates**: 200+ expert-designed survey templates
+
+**Pricing**:
+- **Basic**: Free (limited to 10 questions, 40 responses per survey)
+- **Paid Plans**: More sophisticated features available with subscription
+
+**Best For**: Professional surveys, market research, customer satisfaction, employee engagement
+
+**Website**: https://www.surveymonkey.com/
+
+##### 3. Qualtrics 🔬
+
+**Description**: Feature-rich and complex survey tool frequently used in academic, market research, and business settings.
+
+**Key Features**:
+- **Advanced Question Types**: Extensive library of question formats
+- **Complex Branching**: Intricate logic and skip patterns
+- **Powerful Analysis**: Statistical analysis, text analytics, predictive intelligence
+- **Enterprise Features**: API access, single sign-on, advanced security
+- **Multi-language**: Support for 100+ languages
+- **Academic License**: Special pricing for universities
+
+**Pricing**:
+- **Paid Service**: Enterprise pricing (custom quotes)
+- **Trial**: Free trial period available
+- **Academic**: Discounted rates for educational institutions
+
+**Best For**: Academic research, large-scale enterprise surveys, complex market research
+
+**Website**: https://www.qualtrics.com/uk/lp/uk-ppc-experience-management/
+
+##### 4. Typeform 🎨
+
+**Description**: Tool renowned for its distinctive, aesthetically pleasing interface that creates engaging user experiences.
+
+**Key Features**:
+- **Unique Interface**: One-question-at-a-time format
+- **Conversational Feel**: Feels like a conversation, not a survey
+- **Beautiful Design**: Modern, visually appealing templates
+- **Logic Jumps**: Smart conditional logic based on answers
+- **Integrations**: Connects with 100+ apps (Google Sheets, Mailchimp, Slack)
+- **Analytics**: Track completion rates, average time, drop-off points
+
+**Pricing**:
+- **Basic**: Free (limited features, 10 questions, 100 responses/month)
+- **Paid Plans**: More sophisticated features available
+
+**Best For**: Engaging surveys, lead generation, customer feedback, creative questionnaires
+
+**Website**: https://www.typeform.com/
+
+##### 5. Microsoft Forms 📊
+
+**Description**: Component of Microsoft Office 365, comparable to Google Forms with seamless Microsoft integration.
+
+**Key Features**:
+- **Office 365 Integration**: Works with Excel, Teams, SharePoint
+- **Question Types**: Multiple choice, text, rating, date, ranking, Likert
+- **Branching**: Basic skip logic and sections
+- **Quizzes**: Create tests with automatic grading
+- **Collaboration**: Share with colleagues for co-editing
+- **Responses**: Collected in Excel workbook
+
+**Pricing**: Included with Microsoft Office 365 subscription (or free basic version)
+
+**Best For**: Organizations using Microsoft ecosystem, internal surveys, quizzes, polls
+
+**Website**: https://forms.office.com/
+
+##### 6. Zoho Survey 🔶
+
+**Description**: Part of the Zoho business app suite with comprehensive features and easy sharing.
+
+**Key Features**:
+- **Zoho Ecosystem**: Integrates with other Zoho apps (CRM, Analytics)
+- **Question Types**: 25+ question types available
+- **Multi-language**: Support for multiple languages
+- **Offline Surveys**: Collect data without internet connection
+- **Custom Themes**: Brand surveys with your colors and logo
+- **Analytics Dashboard**: Real-time response tracking
+
+**Pricing**:
+- **Free Basic Version**: Limited features
+- **Paid Plans**: Advanced features available
+
+**Best For**: Businesses using Zoho suite, multi-platform sharing, offline data collection
+
+**Website**: https://www.zoho.com/survey/
+
+##### 7. QuestionPro 📝
+
+**Description**: Reliable tool offering wide range of features for creating, disseminating, and analysing surveys.
+
+**Key Features**:
+- **Comprehensive Features**: Survey creation, distribution, analysis
+- **Question Library**: 100+ question types and templates
+- **Complex Logic**: Advanced branching, piping, quotas
+- **Multi-language**: Support for 100+ languages
+- **Offline Data Collection**: Mobile app for offline surveys
+- **Panel Management**: Build and manage respondent panels
+- **Advanced Analytics**: Statistical analysis, sentiment analysis, text analytics
+
+**Pricing**:
+- **Free Basic Plan**: Limited features
+- **Premium Plans**: Advanced features (offline collection, panel management, advanced analytics)
+
+**Best For**: Complex research projects, panel management, offline data collection, enterprise surveys
+
+**Website**: https://www.questionpro.com/
+
+---
+
+#### 📊 Survey Platform Comparison Table
+
+| Platform | Pricing | Best For | Key Strength | Integration |
+|----------|---------|----------|--------------|-------------|
+| **Google Forms** | Free | Quick surveys, simple needs | Ease of use, Google ecosystem | Google Workspace |
+| **SurveyMonkey** | Free + Paid | Professional surveys, market research | Wide adoption, templates | 100+ apps |
+| **Qualtrics** | Paid | Academic, enterprise research | Advanced analytics, complexity | Enterprise systems |
+| **Typeform** | Free + Paid | Engaging experiences | Beautiful design, UX | 100+ apps |
+| **Microsoft Forms** | Free/O365 | Microsoft users, quizzes | Office 365 integration | Microsoft ecosystem |
+| **Zoho Survey** | Free + Paid | Zoho users, offline collection | Zoho ecosystem | Zoho apps |
+| **QuestionPro** | Free + Paid | Complex research, panels | Advanced features | Multiple platforms |
+
+---
+
+#### 💻 Video Conferencing Platforms
+
+Online focus groups and interviews can be conducted using various platforms that enable simultaneous communication with multiple participants.
+
+##### 1. Zoom 🔵
+
+**Description**: Well-liked video conferencing platform commonly used for focus groups, interviews, and remote meetings.
+
+**Key Features**:
+- **Screen Sharing**: Present materials, prototypes, stimuli
+- **Recording**: Record sessions for later transcription and analysis
+- **Breakout Rooms**: Create smaller discussion groups from larger focus groups
+- **Chat**: Text messaging during sessions
+- **Virtual Backgrounds**: Professional appearance
+- **Whiteboard**: Collaborative visual brainstorming
+- **Polling**: Quick surveys during sessions
+- **Capacity**: Up to 1,000 participants (with large meeting add-on)
+
+**Pricing**:
+- **Free**: 40-minute limit for group meetings
+- **Paid Plans**: Unlimited duration, more features
+
+**Best For**: Focus groups, one-on-one interviews, large webinars, breakout discussions
+
+**Website**: https://zoom.us/
+
+##### 2. Microsoft Teams 🟦
+
+**Description**: Collaboration platform supporting video conferencing, part of Microsoft 365 product line.
+
+**Key Features**:
+- **Video Conferencing**: HD video and audio
+- **Screen Sharing**: Share entire screen or specific windows
+- **Breakout Rooms**: Divide into smaller groups
+- **Recording**: Meeting recordings saved to OneDrive/SharePoint
+- **Chat**: Persistent chat before/during/after meetings
+- **Files**: Share and collaborate on documents during calls
+- **Integration**: Deep integration with Office 365 apps
+- **Live Captions**: Real-time transcription
+
+**Pricing**: Included with Microsoft 365 subscription (or free basic version)
+
+**Best For**: Organizations using Microsoft ecosystem, ongoing collaboration, file sharing
+
+**Website**: https://www.microsoft.com/en-za/microsoft-teams/log-in
+
+##### 3. Google Meet 🟢
+
+**Description**: Video conferencing platform part of Google Workspace with seamless Google integration.
+
+**Key Features**:
+- **Large Meeting Support**: Up to 250 participants (with enterprise plan)
+- **Screen Sharing**: Present to all participants
+- **Recording**: Save meetings to Google Drive
+- **Live Captions**: Automatic speech-to-text (English)
+- **Google Calendar**: Integrated scheduling
+- **Breakout Rooms**: Create up to 100 breakout rooms
+- **Polls and Q&A**: Engage participants
+- **Mobile Apps**: Join from anywhere
+
+**Pricing**:
+- **Free**: 60-minute limit for group meetings
+- **Paid**: Google Workspace subscription
+
+**Best For**: Google Workspace users, projects using Google services, simple video calls
+
+**Website**: https://workspace.google.com/intl/en/lp/meet/
+
+##### 4. Cisco Webex 🔷
+
+**Description**: Video conferencing platform frequently used in business settings with enterprise-grade security.
+
+**Key Features**:
+- **Large Meetings**: Support for up to 100,000 participants (webinar mode)
+- **Breakout Sessions**: Divide participants into groups
+- **Screen Sharing**: Share screen, applications, or files
+- **Recording**: Cloud or local recording options
+- **Whiteboard**: Collaborative brainstorming
+- **Polls and Q&A**: Interactive engagement
+- **End-to-End Encryption**: Enterprise security
+- **AI Features**: Real-time transcription, noise removal
+
+**Pricing**:
+- **Free**: Basic features
+- **Paid Plans**: Advanced features and capacity
+
+**Best For**: Enterprise environments, high-security requirements, large webinars
+
+**Website**: https://www.webex.com/
+
+##### 5. GoTo Meeting 🟧
+
+**Description**: Video conferencing service with high-quality audio and video, ideal for professional meetings.
+
+**Key Features**:
+- **High-Quality Audio/Video**: Crystal-clear communication
+- **Screen Sharing**: Share screen or specific applications
+- **Recording**: Cloud recording with transcription
+- **Mobile Access**: Full-featured mobile apps
+- **Drawing Tools**: Annotate shared screens
+- **Keyboard and Mouse Sharing**: Remote control capabilities
+- **Meeting Lock**: Secure meetings from late joiners
+- **Personal Meeting Room**: Consistent meeting URL
+
+**Pricing**: Paid plans (14-day free trial available)
+
+**Best For**: Professional interviews, sales presentations, client meetings
+
+**Website**: https://www.goto.com/meeting
+
+---
+
+#### 🎥 Video Platform Comparison Table
+
+| Platform | Max Participants (Free) | Breakout Rooms | Recording | Best For |
+|----------|------------------------|----------------|-----------|----------|
+| **Zoom** | 100 (40 min limit) | ✅ Yes | ✅ Yes | Focus groups, versatility |
+| **Microsoft Teams** | 100 (60 min limit) | ✅ Yes | ✅ Yes (to OneDrive) | Microsoft 365 users |
+| **Google Meet** | 100 (60 min limit) | ✅ Yes | ✅ Yes (to Drive) | Google Workspace users |
+| **Cisco Webex** | 100 (50 min limit) | ✅ Yes | ✅ Yes | Enterprise security |
+| **GoTo Meeting** | N/A (paid only) | ❌ No | ✅ Yes | Professional meetings |
+
+---
+
+#### 📊 Web Analytics Platforms
+
+Web analytics tools are a large group of platforms for gathering, analysing, and reporting on user interactions with websites. Understanding user behaviour and improving the user experience on a website depends greatly on these platforms.
+
+##### 1. Google Analytics 📈
+
+**Description**: Arguably the most well-liked web analytics tool on the market, mainly because of its extensive feature set and free entry point.
+
+**Key Features**:
+- **Comprehensive Statistics**: Website traffic, traffic sources, user demographics
+- **Conversion Tracking**: Measure sales, signups, downloads
+- **E-commerce Tracking**: Revenue, transactions, product performance
+- **Real-time Data**: Current visitors, active pages, traffic sources
+- **Custom Reports**: Build reports tailored to your needs
+- **Goals and Funnels**: Track conversion paths
+- **Integration**: Works with Google Ads, Search Console, other Google tools
+- **Mobile App Analytics**: Track app usage
+
+**Pricing**: Free (with Google Analytics 360 for enterprise needs)
+
+**Best For**: Most websites, comprehensive free analytics, Google ecosystem integration
+
+**Website**: https://analytics.google.com/analytics/web/#/
+
+##### 2. Adobe Analytics 💼
+
+**Description**: Powerful, enterprise-level analytics tool part of Adobe Experience Cloud.
+
+**Key Features**:
+- **Multi-channel Data Collection**: Web, mobile, IoT, offline
+- **Real-time Data**: Instant insights and alerts
+- **AI and Machine Learning**: Adobe Sensei for predictive analytics
+- **Advanced Segmentation**: Deep customer segmentation
+- **Attribution Analysis**: Multi-touch attribution models
+- **Predictive Analytics**: Forecast trends and behaviors
+- **Data Warehouse**: Store and analyze historical data
+- **Custom Variables**: Unlimited custom dimensions
+
+**Pricing**: Enterprise pricing (custom quotes)
+
+**Best For**: Large enterprises, complex analytics needs, Adobe ecosystem users
+
+**Website**: https://business.adobe.com/products/analytics/adobe-analytics.html
+
+##### 3. Mixpanel 🔬
+
+**Description**: User-centric data tool tracking user interactions with web and mobile applications.
+
+**Key Features**:
+- **Event-Based Tracking**: Track specific user actions
+- **User Profiles**: Individual user journey tracking
+- **Funnel Analysis**: Conversion funnel visualization
+- **Retention Reports**: User engagement over time
+- **Cohort Analysis**: Group users by shared characteristics
+- **A/B Testing**: Experiment tracking
+- **Targeted Communication**: Send messages to specific user segments
+- **User-Friendly Design**: Intuitive interface
+
+**Pricing**:
+- **Free Plan**: Up to 100,000 monthly tracked users
+- **Paid Plans**: More users and features
+
+**Best For**: Product analytics, SaaS applications, mobile apps, user behavior tracking
+
+**Website**: https://mixpanel.com/
+
+##### 4. Heap 📦
+
+**Description**: Automatically records every web, mobile, and cloud interaction without needing to define events beforehand.
+
+**Key Features**:
+- **Auto-Capture**: Automatically captures all events (clicks, submits, transactions, etc.)
+- **Retroactive Analysis**: Analyze past data without prior event definition
+- **No Code Required**: No need for manual event tracking code
+- **User Sessions**: Replay individual user sessions
+- **Conversion Funnels**: Analyze user paths
+- **Event Visualizer**: Point-and-click event definition
+- **Data Science Tools**: SQL access, Python/R integration
+
+**Pricing**:
+- **Free Plan**: Limited features
+- **Paid Plans**: Full feature access
+
+**Best For**: Teams without developers, retroactive analysis, complete data capture
+
+**Website**: https://www.heap.io/
+
+##### 5. Matomo (formerly Piwik) 🔓
+
+**Description**: Open-source web analytics platform offering powerful analytics with full data ownership and privacy.
+
+**Key Features**:
+- **Open Source**: Self-hosted option for complete data control
+- **Privacy-Focused**: GDPR, CCPA compliant by design
+- **Full Data Ownership**: Your data stays on your servers
+- **Comprehensive Analytics**: Similar features to Google Analytics
+- **Heatmaps and Session Recording**: Visual behavior analysis
+- **Custom Reports**: Unlimited custom dimensions and metrics
+- **No Data Sampling**: Analyze 100% of your data
+- **No Data Limits**: Track unlimited websites and users
+
+**Pricing**:
+- **Free**: Self-hosted open-source version
+- **Cloud**: Paid cloud hosting option available
+
+**Best For**: Privacy-conscious organizations, data sovereignty requirements, unlimited data
+
+**Website**: https://matomo.org/
+
+##### 6. Clicky ⚡
+
+**Description**: All-inclusive web analytics tool that tracks and monitors website traffic in real time.
+
+**Key Features**:
+- **Real-time Analytics**: See visitors as they browse
+- **Heatmaps**: Visual click analytics
+- **Uptime Monitoring**: Site availability tracking
+- **Individual Visitor Tracking**: Detailed visitor profiles
+- **Twitter Search**: Monitor Twitter mentions
+- **Campaign Tracking**: UTM and custom parameters
+- **Goals and Conversions**: Track important actions
+- **Simple Interface**: Easy to understand reports
+
+**Pricing**:
+- **Free Plan**: Up to 3,000 daily page views
+- **Paid Plans**: Higher limits and more features
+
+**Best For**: Real-time monitoring, small to medium websites, simple analytics
+
+**Website**: https://clicky.com/
+
+##### 7. Hotjar 🔥
+
+**Description**: User behaviour analytics tool providing heatmaps, session recordings, and survey tools.
+
+**Key Features**:
+- **Heatmaps**: Click, move, scroll heatmaps
+- **Session Recordings**: Watch user interactions
+- **Conversion Funnels**: Identify drop-off points
+- **Form Analysis**: See where users abandon forms
+- **Feedback Polls**: On-site user surveys
+- **Incoming Feedback**: Users can report issues
+- **Recruit Users**: Find participants for user testing
+- **Qualitative Insights**: Understand the "why" behind the data
+
+**Pricing**:
+- **Free Plan**: Basic features, limited data
+- **Paid Plans**: More recordings, unlimited heatmaps
+
+**Best For**: UX research, qualitative insights, used with another analytics tool
+
+**Website**: https://www.hotjar.com/behavior-analytics-software2/
+
+##### 8. Crazy Egg 🥚
+
+**Description**: Visual analytics tool using heatmaps, scroll maps, and other visual reports to understand user interaction.
+
+**Key Features**:
+- **Heatmaps**: Click and attention heatmaps
+- **Scroll Maps**: See how far users scroll
+- **Confetti Reports**: Segment clicks by traffic source
+- **Overlay Reports**: Click data directly on your page
+- **Session Recordings**: Watch user sessions
+- **A/B Testing**: Test page variations
+- **User Surveys**: On-site feedback collection
+- **Error Tracking**: Identify technical issues
+
+**Pricing**: Paid plans (30-day free trial)
+
+**Best For**: Visual analytics, page optimization, conversion improvement
+
+**Website**: https://www.crazyegg.com/
+
+---
+
+#### 🔬 Web Analytics Platform Comparison Table
+
+| Platform | Pricing | Focus | Key Strength | Best For |
+|----------|---------|-------|--------------|----------|
+| **Google Analytics** | Free + Enterprise | Comprehensive | Free, powerful, widely used | Most websites |
+| **Adobe Analytics** | Enterprise | Enterprise-level | AI/ML, predictive analytics | Large enterprises |
+| **Mixpanel** | Free + Paid | Product/User | User-centric, event tracking | SaaS, mobile apps |
+| **Heap** | Free + Paid | Auto-capture | Retroactive analysis | No-code analytics |
+| **Matomo** | Free (self-hosted) + Cloud | Privacy | Data ownership, open-source | Privacy-conscious |
+| **Clicky** | Free + Paid | Real-time | Live monitoring | Real-time insights |
+| **Hotjar** | Free + Paid | UX/Qualitative | Heatmaps, recordings | User experience |
+| **Crazy Egg** | Paid | Visual | Visual reports | Page optimization |
+
+---
+
+### 💡 Choosing the Right Platform
+
+<div class="mermaid">
+flowchart TD
+    A[Choose Platform] --> B{Purpose?}
+    
+    B -->|Survey| C{Budget &<br/>Features?}
+    B -->|Video Meeting| D{Ecosystem?}
+    B -->|Web Analytics| E{Privacy &<br/>Control?}
+    
+    C -->|Free, Simple| C1[Google Forms<br/>Typeform Free]
+    C -->|Professional| C2[SurveyMonkey<br/>Qualtrics]
+    
+    D -->|Google| D1[Google Meet]
+    D -->|Microsoft| D2[Teams]
+    D -->|Neutral| D3[Zoom]
+    
+    E -->|Full Control| E1[Matomo<br/>Self-hosted]
+    E -->|Managed| E2[Google Analytics<br/>Mixpanel]
+    E -->|Visual UX| E3[Hotjar<br/>Crazy Egg]
+    
+    C1 --> F[Start Collecting!]
+    C2 --> F
+    D1 --> F
+    D2 --> F
+    D3 --> F
+    E1 --> F
+    E2 --> F
+    E3 --> F
+    
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style B fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style C fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style D fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style E fill:#4ECDC4,stroke:#2C7873,stroke-width:2px,color:#fff
+    style F fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+</div>
+
+**Selection Criteria**:
+
+✅ **Budget**: Free vs paid features needed  
+✅ **Existing Ecosystem**: Integration with current tools  
+✅ **Technical Expertise**: Ease of use vs advanced features  
+✅ **Data Privacy**: Control and ownership requirements  
+✅ **Scale**: Number of responses/participants needed  
+✅ **Features**: Specific capabilities required  
+✅ **Support**: Level of customer support needed
+
+---
+
+#### ✅ Advantages of Primary Data
+
+One of its main advantages is that primary data is **specifically targeted to the research question at hand** and can offer **in-depth, accurate information** that is directly applicable to the project.
+
+**Key Advantages**:
+
+**1. Specificity** 🎯
+- Designed exactly for your research question
+- Addresses specific information needs
+- No irrelevant data collection
+- Perfect fit for research objectives
+
+**2. Accuracy** ✓
+- Collected using controlled methods
+- First-hand verification possible
+- Known data quality and reliability
+- Researcher controls quality assurance
+
+**3. Currency** 📅
+- Most up-to-date information
+- Reflects current conditions
+- No time lag between collection and use
+- Relevant to present context
+
+**4. Ownership** 🔑
+- Exclusive access to unique data
+- Competitive advantage
+- Control over data usage
+- Intellectual property potential
+
+**5. Control** ⚙️
+- Choose collection methods
+- Design questions/instruments
+- Select sample and timing
+- Ensure consistency
+
+<div class="mermaid">
+graph TB
+    A[Primary Data<br/>Advantages] --> B[Specificity<br/>🎯<br/>Exact Fit]
+    A --> C[Accuracy<br/>✓<br/>High Quality]
+    A --> D[Currency<br/>📅<br/>Up-to-date]
+    A --> E[Ownership<br/>🔑<br/>Exclusive]
+    A --> F[Control<br/>⚙️<br/>Full Control]
+    
+    B --> G[Better Research<br/>Outcomes<br/>📈]
+    C --> G
+    D --> G
+    E --> G
+    F --> G
+    
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style D fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style E fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style F fill:#4ECDC4,stroke:#2C7873,stroke-width:2px,color:#fff
+    style G fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+</div>
+
+#### ❌ Disadvantages of Primary Data
+
+However, gathering primary data can **take a while and be costly**, especially if it calls for extensive surveys or challenging experiments.
+
+**Key Disadvantages**:
+
+**1. Time-Consuming** ⏱️
+- Designing research instruments
+- Recruiting participants
+- Conducting data collection
+- Processing and cleaning data
+- Analyzing results
+
+**2. Expensive** 💰
+- Staff and researcher costs
+- Participant incentives/compensation
+- Equipment and materials
+- Travel and logistics
+- Technology platforms
+
+**3. Limited Scope** 📏
+- Budget constraints limit sample size
+- Time constraints limit depth
+- May not be comprehensive
+- Trade-offs between breadth and depth
+
+**4. Expertise Required** 🎓
+- Proper methodology design
+- Valid sampling techniques
+- Bias mitigation strategies
+- Statistical analysis skills
+- Ethical considerations
+
+**5. Potential Bias** ⚠️
+- Researcher bias in design
+- Selection bias in sampling
+- Response bias from participants
+- Observer effects
+- Interpretation bias
+
+<div class="mermaid">
+graph TB
+    A[Primary Data<br/>Disadvantages] --> B[Time-Consuming<br/>⏱️<br/>Long Process]
+    A --> C[Expensive<br/>💰<br/>High Cost]
+    A --> D[Limited Scope<br/>📏<br/>Constraints]
+    A --> E[Expertise Required<br/>🎓<br/>Skills Needed]
+    A --> F[Potential Bias<br/>⚠️<br/>Various Biases]
+    
+    B --> G[Consider<br/>Trade-offs<br/>⚖️]
+    C --> G
+    D --> G
+    E --> G
+    F --> G
+    
+    G --> H[Primary Data<br/>Worth It?]
+    
+    style A fill:#E74C3C,stroke:#C0392B,stroke-width:3px,color:#fff
+    style B fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style C fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style D fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style E fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style F fill:#4ECDC4,stroke:#2C7873,stroke-width:2px,color:#fff
+    style G fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style H fill:#FFD700,stroke:#B8860B,stroke-width:2px
+</div>
+
+---
+
+### 📚 Secondary Data (Second-Order Data)
+
+On the other hand, **secondary data**, also called **second-order data**, is information that another party gathers for a different objective. This can include information obtained from company records, information obtained from government databases, information obtained from other researchers (which may have been published in books, articles, or reports), etc.
+
+#### 🎨 Secondary Data Sources
+
+<div class="mermaid">
+graph TB
+    A[Secondary Data<br/>Sources] --> B[Internal<br/>💼<br/>Company Records]
+    A --> C[Government<br/>🏛️<br/>Public Databases]
+    A --> D[Commercial<br/>💵<br/>Market Research]
+    A --> E[Academic<br/>🎓<br/>Research Publications]
+    A --> F[Media<br/>📰<br/>News & Reports]
+    
+    B --> B1[Sales records<br/>Financial data<br/>HR records]
+    C --> C1[Census data<br/>Economic indicators<br/>Health statistics]
+    D --> D1[Industry reports<br/>Market analysis<br/>Consumer data]
+    E --> E1[Journal articles<br/>Studies<br/>Dissertations]
+    F --> F1[News articles<br/>Industry publications<br/>Online content]
+    
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style D fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style E fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style F fill:#4ECDC4,stroke:#2C7873,stroke-width:2px,color:#fff
+</div>
+
+#### 🧭 Secondary Data Collection Methods
+
+Using data already collected by others is known as **secondary data collection**. It is often **time- and cost-efficient**, but it requires careful evaluation of quality and relevance.
+
+**Common Methods**:
+
+**Public records**
+- Birth and death certificates, marriage licenses, and other official records.
+- Useful for demographic research and longitudinal trends.
+
+**Statistical data**
+- Data published by government agencies, international organizations, and NGOs.
+- Includes social trends, economic indicators, health statistics, and more.
+
+**Literature reviews**
+- Academic books, theses, dissertations, and journal articles.
+- Summarize prior research findings and methodologies on a topic.
+
+**Online databases**
+- Open or subscription databases for market research, legal cases, legislation, and scientific research.
+- Efficient for cross-domain evidence gathering.
+
+**Archives**
+- Historical records, corporate records, and document collections.
+- Can be physical (libraries, museums) or digital (newspaper archives).
+
+**Internal business data**
+- Sales records, CRM data, support logs, and website analytics.
+- Enables secondary analysis for market or competitive insights.
+
+**Social media data**
+- Platform data reflecting consumer behavior, trends, and sentiment.
+- Useful for brand monitoring and public opinion analysis.
+
+**Data aggregators**
+- Organizations that compile datasets from multiple sources for purchase or subscription.
+- Provides broad coverage but may limit transparency in methodology.
+
+**Quality and Ethics Check**:
+- Evaluate relevance, accuracy, and timeliness before use.
+- Consider copyright, licensing, and privacy laws.
+- Document limitations and potential biases in your analysis.
+
+#### 📊 Secondary Methods Comparison Table
+
+| Method | Typical Use | Strength | Risk to Watch |
+|--------|-------------|----------|---------------|
+| Public records | Demographic and legal context | Official, standardized | Coverage gaps, access limits |
+| Statistical data | Trends and benchmarking | Broad scope | Outdated or aggregated too coarsely |
+| Literature reviews | Research synthesis | Depth and rigor | Publication bias |
+| Online databases | Market or scientific evidence | Fast access | Paywalls, unclear methodology |
+| Archives | Historical context | Long-term view | Incomplete or fragmented records |
+| Internal business data | Performance and operations | High relevance | Data silos, quality issues |
+| Social media data | Sentiment and trends | Real-time signals | Sampling bias, privacy concerns |
+| Data aggregators | Multi-source coverage | Convenience | Opaque sourcing/licensing |
+
+**Types of Secondary Data Sources**:
+
+##### 1. Company Records 💼
+
+**Description**: Internal data already collected by the organization.
+
+**Examples**:
+- Sales and transaction histories
+- Customer relationship management (CRM) data
+- Financial records and reports
+- Employee records
+- Production and inventory data
+- Previous research reports
+
+**Use Cases**:
+- Trend analysis over time
+- Performance benchmarking
+- Historical comparisons
+- Internal decision-making
+
+##### 2. Government Databases 🏛️
+
+**Description**: Public data collected by government agencies.
+
+**Examples**:
+- Census data (population, demographics)
+- Economic indicators (GDP, unemployment, inflation)
+- Health statistics (disease rates, mortality)
+- Environmental data (weather, pollution)
+- Education statistics
+- Crime statistics
+
+**Common Sources**:
+- data.gov (United States)
+- data.gov.uk (United Kingdom)
+- Eurostat (European Union)
+- Statistics Norway (SSB)
+- National statistical agencies
+
+**Use Cases**:
+- Market research
+- Policy analysis
+- Academic research
+- Business planning
+
+##### 3. Commercial Data Providers 💵
+
+**Description**: Data sold by market research firms and data brokers.
+
+**Examples**:
+- Market research reports (Nielsen, Gartner, Forrester)
+- Industry analysis
+- Consumer behavior data
+- Credit reports
+- Business intelligence databases
+- Subscription databases
+
+**Characteristics**:
+- High quality and reliability
+- Professional analysis included
+- Can be expensive
+- Regularly updated
+
+##### 4. Academic Research 🎓
+
+**Description**: Published studies and research papers.
+
+**Examples**:
+- Peer-reviewed journal articles
+- Academic books and textbooks
+- Conference papers
+- Dissertations and theses
+- Research databases (Google Scholar, JSTOR, PubMed)
+
+**Use Cases**:
+- Literature reviews
+- Theoretical foundation
+- Methodology reference
+- Building on previous research
+
+##### 5. Media and Publications 📰
+
+**Description**: Information from news outlets and industry publications.
+
+**Examples**:
+- News articles and reports
+- Industry magazines and trade journals
+- Online blogs and websites
+- Press releases
+- Annual reports
+
+**Use Cases**:
+- Current events and trends
+- Industry insights
+- Competitor analysis
+- Market monitoring
+
+<div class="mermaid">
+flowchart LR
+    A[Choose Secondary<br/>Data Source] --> B{Data Needs?}
+    
+    B -->|Internal trends| C[Company<br/>Records<br/>💼]
+    B -->|Population data| D[Government<br/>Databases<br/>🏛️]
+    B -->|Market insights| E[Commercial<br/>Providers<br/>💵]
+    B -->|Research basis| F[Academic<br/>Publications<br/>🎓]
+    B -->|Current trends| G[Media &<br/>Publications<br/>📰]
+    
+    C --> H[Data Collection]
+    D --> H
+    E --> H
+    F --> H
+    G --> H
+    
+    H --> I[Analysis &<br/>Application<br/>💡]
+    
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style B fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style C fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style D fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style E fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style F fill:#4ECDC4,stroke:#2C7873,stroke-width:2px,color:#fff
+    style G fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff
+    style H fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style I fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+</div>
+
+#### ✅ Advantages of Secondary Data
+
+The main benefit of secondary data is that it may be **easier and quicker to obtain** than primary data because the data collection has already been completed. Secondary data can offer a **more comprehensive or long-term perspective** than what may be possible to gather with primary data.
+
+**Key Advantages**:
+
+**1. Cost-Effective** 💰
+- No data collection expenses
+- Often free or low-cost (especially government data)
+- Saves resources for analysis
+- Multiple researchers can use same data
+
+**2. Time-Saving** ⏱️
+- Data already collected
+- Immediate availability
+- No waiting for responses
+- Quick start to analysis
+
+**3. Large Sample Sizes** 📊
+- Census data covers entire populations
+- Commercial databases have extensive samples
+- Longitudinal data spans many years
+- Geographic breadth
+
+**4. Historical Perspective** 📅
+- Access to past data
+- Trend analysis over time
+- Long-term comparisons
+- Historical context
+
+**5. Credibility** ✓
+- Government and academic sources
+- Professional data collection methods
+- Peer-reviewed research
+- Established reputation
+
+**6. Comprehensive Coverage** 🌍
+- Broad geographic scope
+- Multiple variables
+- Large-scale studies
+- Diverse populations
+
+<div class="mermaid">
+graph TB
+    A[Secondary Data<br/>Advantages] --> B[Cost-Effective<br/>💰<br/>Low Expense]
+    A --> C[Time-Saving<br/>⏱️<br/>Quick Access]
+    A --> D[Large Samples<br/>📊<br/>Extensive Data]
+    A --> E[Historical<br/>📅<br/>Long-term View]
+    A --> F[Credibility<br/>✓<br/>Trusted Sources]
+    A --> G[Comprehensive<br/>🌍<br/>Broad Coverage]
+    
+    B --> H[Efficient<br/>Research<br/>⚡]
+    C --> H
+    D --> H
+    E --> H
+    F --> H
+    G --> H
+    
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style D fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style E fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style F fill:#4ECDC4,stroke:#2C7873,stroke-width:2px,color:#fff
+    style G fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff
+    style H fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+</div>
+
+#### ❌ Disadvantages of Secondary Data
+
+Secondary data does not always **perfectly fit the research question**, and the researcher has **less control over the accuracy or relevance** of the data.
+
+**Key Disadvantages**:
+
+**1. Relevance Issues** 🎯
+- Collected for different purpose
+- May not address your specific questions
+- Variables may not match your needs
+- Context may differ from your study
+
+**2. Quality Concerns** ⚠️
+- Unknown data collection methods
+- Uncertain accuracy and reliability
+- Potential biases in original collection
+- Difficult to verify quality
+
+**3. Outdated Information** 📅
+- May not reflect current conditions
+- Time lag between collection and use
+- Changes in definitions or methods over time
+- Historical data may not predict future
+
+**4. Limited Control** 🔒
+- Cannot modify collection methods
+- Cannot add variables
+- Cannot control sample selection
+- No influence on quality
+
+**5. Accessibility** 🚫
+- Some data requires payment
+- Privacy restrictions
+- Limited documentation
+- Format compatibility issues
+
+**6. Fit Problems** 📏
+- Geographic mismatch
+- Different time periods
+- Incompatible definitions
+- Aggregation levels don't match needs
+
+<div class="mermaid">
+graph TB
+    A[Secondary Data<br/>Disadvantages] --> B[Relevance<br/>🎯<br/>May Not Fit]
+    A --> C[Quality<br/>⚠️<br/>Unknown Methods]
+    A --> D[Outdated<br/>📅<br/>Not Current]
+    A --> E[Limited Control<br/>🔒<br/>Cannot Modify]
+    A --> F[Accessibility<br/>🚫<br/>Restrictions]
+    A --> G[Fit Problems<br/>📏<br/>Mismatches]
+    
+    B --> H[Careful<br/>Evaluation<br/>Needed<br/>🔍]
+    C --> H
+    D --> H
+    E --> H
+    F --> H
+    G --> H
+    
+    style A fill:#E74C3C,stroke:#C0392B,stroke-width:3px,color:#fff
+    style B fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style C fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style D fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style E fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style F fill:#4ECDC4,stroke:#2C7873,stroke-width:2px,color:#fff
+    style G fill:#E1BEE7,stroke:#9C27B0,stroke-width:2px
+    style H fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+</div>
+
+---
+
+### 🔄 Combining Primary and Secondary Data
+
+In reality, **primary and secondary data are frequently combined** in the work of researchers and analysts. For instance, a market researcher may use **secondary data** to gain a general understanding of industry trends before conducting a **survey (primary data)** to gain more detailed knowledge about consumer attitudes.
+
+#### 📊 Integration Strategy
+
+<div class="mermaid">
+flowchart TD
+    A[Research Project] --> B{Start with<br/>Secondary Data}
+    
+    B --> C[Literature Review<br/>📚<br/>What's Known?]
+    C --> D[Industry Reports<br/>📊<br/>Market Context]
+    D --> E[Government Data<br/>🏛️<br/>Demographics]
+    
+    E --> F{Gaps<br/>Identified?}
+    
+    F -->|Yes| G[Design Primary<br/>Data Collection<br/>📝]
+    F -->|No| H[Use Only<br/>Secondary Data]
+    
+    G --> I[Surveys /<br/>Interviews /<br/>Experiments]
+    
+    I --> J[Combine<br/>Both Sources<br/>🔄]
+    H --> J
+    
+    J --> K[Comprehensive<br/>Analysis<br/>💡]
+    
+    K --> L[Actionable<br/>Insights<br/>✅]
+    
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style B fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style C fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style D fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style E fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style F fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff
+    style G fill:#4ECDC4,stroke:#2C7873,stroke-width:2px,color:#fff
+    style H fill:#C8E6C9,stroke:#4CAF50,stroke-width:2px
+    style I fill:#E1BEE7,stroke:#9C27B0,stroke-width:2px
+    style J fill:#FFD700,stroke:#B8860B,stroke-width:3px
+    style K fill:#4CAF50,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style L fill:#50C878,stroke:#2E7D32,stroke-width:3px,color:#fff
+</div>
+
+#### 💼 Real-World Example: Market Research Project
+
+**Scenario**: A retail company wants to understand consumer preferences for a new product line.
+
+**Phase 1: Secondary Data** 📚
+- **Industry reports**: Overall market size and trends
+- **Government data**: Demographics of target market
+- **Competitor analysis**: Published financial reports and news articles
+- **Academic research**: Consumer behavior studies
+
+**Insights from Secondary Data**:
+- Market is growing at 15% annually
+- Target demographic: 25-40 years old, urban
+- Major competitors and their market share
+- Key factors influencing purchase decisions
+
+**Phase 2: Primary Data** 📝
+- **Surveys**: 1,000 potential customers about specific product features
+- **Focus groups**: In-depth discussions with 50 participants
+- **A/B testing**: Website designs with 5,000 visitors
+- **Interviews**: 20 one-on-one interviews with key customers
+
+**Insights from Primary Data**:
+- Specific features customers value most
+- Price points customers are willing to pay
+- Preferred marketing messages
+- Unmet needs in current market
+
+**Phase 3: Combined Analysis** 🔄
+- **Secondary data** provides context and benchmarks
+- **Primary data** addresses specific product questions
+- **Integration** creates comprehensive understanding
+- **Validation** of secondary insights through primary research
+
+**Outcome**: 
+- Developed product features based on customer preferences
+- Priced competitively based on market research
+- Targeted marketing to identified segments
+- Projected market share using combined insights
+
+<div class="mermaid">
+graph LR
+    subgraph "Secondary Data Foundation"
+        A1[Industry<br/>Trends] --> C
+        A2[Demographics] --> C
+        A3[Competitor<br/>Analysis] --> C
+    end
+    
+    subgraph "Primary Data Specifics"
+        B1[Customer<br/>Surveys] --> C
+        B2[Focus<br/>Groups] --> C
+        B3[A/B<br/>Testing] --> C
+    end
+    
+    C[Integrated<br/>Analysis<br/>🔄] --> D[Product<br/>Development]
+    C --> E[Pricing<br/>Strategy]
+    C --> F[Marketing<br/>Plan]
+    
+    D --> G[Successful<br/>Product Launch<br/>🚀]
+    E --> G
+    F --> G
+    
+    style C fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style G fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+</div>
+
+---
+
+### 📋 Primary vs Secondary Data Comparison
+
+#### Comprehensive Comparison Table
+
+| Aspect | Primary Data | Secondary Data |
+|--------|-------------|----------------|
+| **Definition** | First-hand information collected by researcher for specific purpose | Pre-existing information collected by others for different purpose |
+| **Collection** | Surveys, interviews, experiments, observations, focus groups | Company records, government databases, published research, media |
+| **Cost** | High (collection expenses, staff time, materials) | Low to moderate (often free or subscription-based) |
+| **Time** | Long (design, collect, process, analyze) | Short (readily available, immediate access) |
+| **Specificity** | Perfectly tailored to research question | May not perfectly match research needs |
+| **Accuracy** | High (controlled collection methods) | Variable (depends on original source) |
+| **Control** | Full control over methods and quality | Limited or no control |
+| **Currency** | Most up-to-date | May be outdated |
+| **Sample Size** | Usually smaller (budget/time constraints) | Often larger (government/commercial data) |
+| **Ownership** | Exclusive to collector | Shared, publicly available |
+| **Flexibility** | Can modify approach during collection | Fixed, cannot change |
+| **Reliability** | Known (researcher controls quality) | Unknown (must evaluate source) |
+| **Geographic Scope** | Limited by resources | Often comprehensive |
+| **Historical Data** | Only current collection | May span decades |
+| **Best For** | Specific research questions, unique needs | Context, trends, benchmarks, exploratory research |
+| **Examples** | Customer satisfaction survey, user interviews | Census data, industry reports, academic studies |
+
+#### 🎯 Decision Framework: When to Use Which?
+
+<div class="mermaid">
+flowchart TD
+    Start{Research<br/>Question} --> Q1{Data<br/>Exists?}
+    
+    Q1 -->|No| Primary[Use Primary<br/>Data<br/>📝]
+    Q1 -->|Yes| Q2{Fits Your<br/>Needs?}
+    
+    Q2 -->|Yes| Secondary[Use Secondary<br/>Data<br/>📚]
+    Q2 -->|Partially| Q3{Budget &<br/>Time?}
+    
+    Q3 -->|Limited| Secondary2[Secondary<br/>+ Small Primary]
+    Q3 -->|Adequate| Both[Use Both<br/>🔄]
+    
+    Primary --> End[Data Collection<br/>& Analysis]
+    Secondary --> End
+    Secondary2 --> End
+    Both --> End
+    
+    style Start fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style Q1 fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style Q2 fill:#FF9800,stroke:#E65100,stroke-width:2px
+    style Q3 fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style Primary fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style Secondary fill:#4ECDC4,stroke:#2C7873,stroke-width:2px,color:#fff
+    style Secondary2 fill:#E1BEE7,stroke:#9C27B0,stroke-width:2px
+    style Both fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style End fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+</div>
+
+**Use Primary Data When**:
+- No existing data addresses your question
+- Need very specific information
+- Require current, up-to-date data
+- Need to establish causality (experiments)
+- Competitive advantage from unique insights
+- Have sufficient budget and time
+
+**Use Secondary Data When**:
+- Existing data meets your needs
+- Need quick, cost-effective information
+- Require historical perspective
+- Need large sample sizes or broad coverage
+- Building foundation before primary research
+- Limited resources
+
+**Use Both When**:
+- Secondary provides context, primary provides specifics
+- Need to validate secondary findings
+- Comprehensive research project
+- Triangulation for reliability
+- Filling gaps in existing data
+
+---
+
+### 🎯 Best Practices for Data Collection
+
+#### Primary Data Collection Best Practices
+
+**1. Clear Objectives** 🎯
+- Define specific research questions
+- Identify key variables needed
+- Determine required sample size
+- Establish success criteria
+
+**2. Proper Design** 📐
+- Choose appropriate method (survey/interview/etc.)
+- Design unbiased questions
+- Pilot test instruments
+- Plan sampling strategy
+
+**3. Ethical Considerations** ⚖️
+- Obtain informed consent
+- Protect participant privacy
+- Ensure data security
+- Follow GDPR/regulations
+
+**4. Quality Control** ✓
+- Train data collectors
+- Monitor collection process
+- Validate responses
+- Document procedures
+
+**5. Data Management** 💾
+- Plan storage and backup
+- Ensure data security
+- Document metadata
+- Prepare for analysis
+
+### ⚖️ Ethical and Privacy Concerns
+
+Whether primary or secondary, data collection raises ethical and privacy issues. These issues are more prominent than ever in today’s digital age because gathering, storing, and analyzing vast amounts of data is possible.
+
+**Informed consent**
+- Participants must understand how data will be used, stored, who can access it, and how long it will be retained.
+- Participation should be voluntary, and withdrawal must always be an option.
+
+**Anonymity and confidentiality**
+- Protect participant identities through anonymization or secure access controls.
+- Do not disclose identities in reports without explicit permission.
+
+**Data security**
+- Use encryption, secure servers, and access controls to prevent unauthorized access or loss.
+- Especially important for sensitive data such as health or financial records.
+
+**Data accuracy**
+- Ensure accurate collection to avoid flawed conclusions and harmful decisions.
+- Validate instruments and clarify misunderstandings during collection.
+
+**Use of secondary data**
+- Evaluate whether the original consent covers new uses of the data.
+- Consider context, licensing, and the ethical fit of reuse.
+
+**Transparency**
+- Clearly explain how data will be used, stored, and protected.
+- Provide contact points for questions or concerns.
+
+**Legal compliance**
+- Follow applicable laws and regulations (for example, GDPR in the EU).
+- Non-compliance can result in significant penalties and reputational risk.
+
+#### ✅ Ethics Checklist (Quick Use)
+
+- Informed consent captured and documented
+- Participation is voluntary with clear withdrawal options
+- Anonymity/confidentiality protections in place
+- Data stored securely with access controls
+- Secondary data reuse fits original consent and licensing
+- Legal requirements reviewed (GDPR/sector rules)
+
+### 🏛️ Data Protection Acts and Laws
+
+A data analyst may need to consider several privacy laws and regulations when working with personal data worldwide. The list below highlights a few major frameworks, but laws and regulations are not limited to these:
+
+**General Data Protection Regulation (GDPR)**
+- European Union regulation that reshaped global privacy practices.
+- Applies to any organization processing EU residents' personal data, regardless of location.
+
+**California Consumer Privacy Act (CCPA)**
+- California state law that strengthens consumer privacy rights.
+- Applies to companies handling personal data of California residents, even if based elsewhere.
+
+**Personal Data Protection Act (PDPA)**
+- Singapore law governing collection, use, and disclosure of personal data by private organizations.
+- Emphasizes consent, purpose limitation, and reasonable security safeguards.
+
+**Data Protection Act 2018 (DPA 2018)**
+- UK law that supplements GDPR and replaced the 1998 act.
+- Sets rules for how organizations process personal data in the UK.
+
+**Personal Information Protection and Electronic Documents Act (PIPEDA)**
+- Canadian federal law covering commercial use of personal information.
+- Requires transparency, consent, and accountable handling of personal data.
+
+**Brazil General Personal Data Protection Law (LGPD)**
+- Brazil's privacy law similar to GDPR with rights for data subjects.
+- Applies broadly to processing of Brazilian personal data.
+
+**Privacy Act 1988**
+- Australian law protecting personal information used by government agencies and many organizations.
+- Covers principles around collection, use, disclosure, and data quality.
+
+**Protection of Personal Information Act (POPIA)**
+- South African law governing personal data in both public and private sectors.
+- Establishes processing conditions and data subject rights.
+
+**Key Reminder**: These laws differ in scope, requirements, and penalties. Analysts should confirm which rules apply, document compliance steps, and stay updated as regulations evolve.
+
+#### 🌍 Regional Comparison (At a Glance)
+
+| Region | Key Laws | Primary Focus |
+|--------|----------|----------------|
+| EU | GDPR | Strong data subject rights, lawful basis, cross-border safeguards |
+| US (California) | CCPA | Consumer rights to access, delete, and opt-out of sale/sharing |
+| UK | DPA 2018 + UK GDPR | GDPR-aligned rules with local governance |
+| Canada | PIPEDA | Consent-based commercial data handling |
+| Brazil | LGPD | GDPR-like framework with national oversight |
+| Singapore | PDPA | Consent and purpose limitation for private organizations |
+| Australia | Privacy Act 1988 | Principles-based protection across sectors |
+| South Africa | POPIA | Processing conditions and data subject rights |
+
+<div class="mermaid">
+flowchart TD
+    A[Start: Personal Data?] --> B{Data subject location?}
+    B -->|EU| C[Apply GDPR]
+    B -->|UK| D[Apply UK GDPR + DPA 2018]
+    B -->|California| E[Apply CCPA]
+    B -->|Canada| F[Apply PIPEDA]
+    B -->|Brazil| G[Apply LGPD]
+    B -->|Singapore| H[Apply PDPA]
+    B -->|Australia| I[Apply Privacy Act 1988]
+    B -->|South Africa| J[Apply POPIA]
+    B -->|Other| K[Check local privacy laws]
+
+    C --> L[Confirm lawful basis,
+consent, retention, rights]
+    D --> L
+    E --> L
+    F --> L
+    G --> L
+    H --> L
+    I --> L
+    J --> L
+    K --> L
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:3px,color:#fff
+    style B fill:#FFD700,stroke:#B8860B,stroke-width:2px
+    style C fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style D fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style E fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style F fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style G fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style H fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style I fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style J fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style K fill:#9E9E9E,stroke:#424242,stroke-width:2px,color:#fff
+    style L fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
+</div>
+
+**Cross-border note**: If data moves across borders, check transfer rules (e.g., GDPR adequacy decisions, SCCs) and document safeguards.
+
+### 🇪🇺 GDPR (General Data Protection Regulation)
+
+The GDPR is a cornerstone of modern data protection. Adopted by the European Union, it took effect on 25 May 2018 and reshaped how personal data about individuals is handled within the EU and beyond.
+
+**Key Features**:
+
+**Territorial scope**
+- Applies to any organization processing the personal data of EU residents, regardless of where the organization is located.
+- Covers organizations that offer goods/services to, or monitor, people in the EU.
+
+**Consent**
+- Must be freely given, specific, informed, and unambiguous.
+- It must be as easy to withdraw consent as it is to give it.
+
+**Rights of individuals**
+- Access to personal data and information about processing.
+- Rectification of inaccurate data.
+- Erasure ("right to be forgotten").
+- Restriction of processing.
+- Data portability.
+- Objection to processing.
+
+**Data Protection Impact Assessments (DPIAs)**
+- Required for high-risk processing to identify and reduce privacy risks.
+
+**Data Protection Officers (DPOs)**
+- Mandatory in certain cases, such as public authorities or large-scale processing of special category data.
+
+**Breach notification**
+- Certain breaches must be reported to the supervisory authority within 72 hours.
+- Individuals must be notified if there is a high risk to their rights and freedoms.
+
+**Penalties**
+- Severe fines: up to 4% of global annual turnover or 20 million EUR (whichever is higher).
+
+**Why it matters for analysts**: GDPR gives people more control over their data and requires transparent, careful handling. Analysts regularly work with personal data and must ensure collection, storage, and analysis remain compliant.
+
+#### 🔎 GDPR vs CCPA (Quick Comparison)
+
+| Area | GDPR (EU) | CCPA (California) |
+|------|----------|-------------------|
+| Scope | Applies to processing EU residents' personal data | Applies to personal data of California residents |
+| Legal basis | Requires a lawful basis (e.g., consent, contract, legitimate interest) | Focuses on consumer rights; no explicit lawful basis model |
+| Consent | Often required; must be explicit and easy to withdraw | Opt-out model for sale/sharing of personal data |
+| Individual rights | Access, rectification, erasure, restriction, portability, objection | Access, delete, opt-out of sale/sharing, non-discrimination |
+| Breach notice | Notify authority within 72 hours for qualifying breaches | Notification required under state breach laws |
+| Penalties | Up to 4% of global turnover or 20M EUR | Civil penalties enforced by the state; private right of action for certain breaches |
+
+#### 🔎 GDPR vs LGPD (Quick Comparison)
+
+| Area | GDPR (EU) | LGPD (Brazil) |
+|------|----------|--------------|
+| Scope | Applies to processing EU residents' personal data | Applies to processing Brazilian personal data |
+| Legal basis | Requires a lawful basis (e.g., consent, contract, legitimate interest) | Similar lawful bases including consent and legitimate interest |
+| Individual rights | Access, rectification, erasure, restriction, portability, objection | Access, correction, anonymization/deletion, portability, objection |
+| Regulator | Independent supervisory authorities | National Data Protection Authority (ANPD) |
+| Penalties | Up to 4% of global turnover or 20M EUR | Up to 2% of revenue in Brazil, capped by law |
+
+#### Secondary Data Evaluation Best Practices
+
+**1. Source Credibility** 🔍
+- Who collected the data?
+- What is their reputation?
+- What were their objectives?
+- Any potential biases?
+
+**2. Methodology Assessment** 📊
+- How was data collected?
+- What was the sample size?
+- What time period covered?
+- Any limitations noted?
+
+**3. Relevance Check** 🎯
+- Does it address your question?
+- Are definitions compatible?
+- Is geographic scope appropriate?
+- Is time period relevant?
+
+**4. Currency Evaluation** 📅
+- When was data collected?
+- Still relevant today?
+- Have conditions changed?
+- Need supplementary current data?
+
+**5. Quality Indicators** ✓
+- Peer-reviewed?
+- Government/academic source?
+- Transparent methodology?
+- Replicable results?
+
+<div class="mermaid">
+graph TB
+    subgraph "Primary Data Best Practices"
+        P1[Clear<br/>Objectives] --> P6[Quality<br/>Data]
+        P2[Proper<br/>Design] --> P6
+        P3[Ethical<br/>Considerations] --> P6
+        P4[Quality<br/>Control] --> P6
+        P5[Data<br/>Management] --> P6
+    end
+    
+    subgraph "Secondary Data Best Practices"
+        S1[Source<br/>Credibility] --> S6[Reliable<br/>Data]
+        S2[Methodology<br/>Assessment] --> S6
+        S3[Relevance<br/>Check] --> S6
+        S4[Currency<br/>Evaluation] --> S6
+        S5[Quality<br/>Indicators] --> S6
+    end
+    
+    P6 --> Final[Successful<br/>Research<br/>Outcomes<br/>🎯]
+    S6 --> Final
+    
+    style P6 fill:#50C878,stroke:#2E7D32,stroke-width:3px,color:#fff
+    style S6 fill:#FF9800,stroke:#E65100,stroke-width:3px,color:#fff
+    style Final fill:#4CAF50,stroke:#2E7D32,stroke-width:4px,color:#fff
+</div>
+
+---
+
+<svg width="680" height="82" viewBox="0 0 680 82" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Lesson task banner">
+    <rect x="1" y="1" width="678" height="80" rx="10" fill="#E8F3FF" stroke="#4A90D9" stroke-width="2"/>
+    <text x="20" y="34" fill="#1F4E79" font-size="18" font-weight="700">Lesson Task</text>
+    <text x="20" y="56" fill="#1F4E79" font-size="13">Design a short Google Forms survey with clear structure and valid question types.</text>
+</svg>
+
+### The Task
+
+In this lesson, you learned how to collect primary data using online methods. A simple and free approach is to create a survey in **Google Forms**. If you have never used Google Forms, follow this short guide and build the survey described below.
+
+#### Quick Guide: How to Create a Google Form
+
+1. Go to https://forms.google.com and sign in.
+2. Click **Blank** to create a new form.
+3. Add a **title** and **description** (e.g., "Customer Experience Survey").
+4. Use **Add question** to insert items and choose the **question type**.
+5. Group questions with **Section** to keep the survey short and clear.
+6. Turn on **Required** for essential questions only.
+7. Click **Send** to share by link, email, or QR code.
+
+#### Survey Scenario and Requirements
+
+**Scenario**: Alex manages a well-known clothing store and wants to understand customers better to improve offerings and satisfaction.
+
+Design a survey that captures:
+- **Demographics** (age, gender, location, income)
+- **Shopping habits** (frequency, spend, channel)
+- **Store experience** (layout, cleanliness, fitting rooms, checkout)
+- **Customer service** (friendliness, product knowledge, responsiveness)
+- **Product selection** (variety, brands, quality, style, price)
+- **Loyalty programs and promotions** (awareness, participation, appeal)
+- **Overall satisfaction and improvement suggestions**
+
+Keep the survey short and focused to respect customers' time. Start with the most essential questions and end with demographics.
+
+#### Example Survey Structure (Recommended Question Types)
+
+**Section 1: Shopping Habits**
+- How often do you shop with us? (Multiple choice)
+- What is your typical spend per visit? (Multiple choice)
+- Which channels do you use most? In-store, online, both (Multiple choice)
+
+**Section 2: Store Experience**
+- Rate the store layout and ease of finding items. (Likert scale)
+- Rate cleanliness and fitting room experience. (Likert scale)
+- How would you rate checkout speed? (Rating scale)
+
+**Section 3: Customer Service**
+- Staff friendliness (Likert scale)
+- Product knowledge (Likert scale)
+- Responsiveness to questions (Likert scale)
+
+**Section 4: Product Selection**
+- Is our product selection adequate? (Yes/No)
+- Which categories should we expand? (Checkboxes)
+- Rate quality, style, and price. (Matrix)
+
+**Section 5: Loyalty and Promotions**
+- Are you aware of our loyalty program? (Yes/No)
+- Do you participate in it? (Yes/No)
+- What would make it more appealing? (Open-ended)
+
+**Section 6: Overall Satisfaction**
+- Overall satisfaction with the store (Likert scale)
+- What is one improvement you want most? (Open-ended)
+
+**Section 7: Demographics**
+- Age group, gender, location, income range (Multiple choice)
+
+**Tip**: Aim for 12-18 questions total. Use mostly closed questions for analysis and 2-3 open-ended questions for insight.
+
+#### Submission Checklist (Rubric)
+
+- Covers all required categories (demographics, habits, experience, service, products, loyalty, satisfaction)
+- Uses appropriate question types (Likert, multiple choice, matrix, open-ended)
+- Survey length is reasonable (12-18 questions)
+- Questions are clear, unbiased, and easy to answer
+- Sensitive items (demographics, income) placed near the end
+
+#### Sample Google Form Title and Description
+
+**Title**: Customer Experience Survey - Alex's Clothing Store
+
+**Description**: Thank you for visiting our store. This short survey (3-5 minutes) helps us understand your experience and improve our products and service. Your answers are anonymous and will be used only for research and service improvement. By continuing, you consent to participate and may stop at any time.
+
+#### Sample Survey Questions (18 Items)
+
+1. How often do you shop with us? (Multiple choice)
+2. What is your typical spend per visit? (Multiple choice)
+3. Which shopping channel do you use most? In-store, online, both (Multiple choice)
+4. Rate the store experience (layout, cleanliness, fitting rooms, checkout). (Matrix)
+5. Rate staff service (friendliness, product knowledge, responsiveness). (Matrix)
+6. Is our product selection adequate? (Yes/No)
+7. Which categories should we expand? (Checkboxes)
+8. Rate product quality, style, and price. (Matrix)
+9. Are you aware of our loyalty program? (Yes/No)
+10. Do you participate in the loyalty program? (Yes/No)
+11. What would make the loyalty program more appealing? (Open-ended)
+12. Overall satisfaction with the store. (Likert scale)
+13. What is one improvement you want most? (Open-ended)
+14. Age group. (Multiple choice)
+15. Gender. (Multiple choice)
+16. Location. (Multiple choice)
+17. Household income range. (Multiple choice)
+18. How did you first hear about our store? (Multiple choice)
+
+### 📚 What Did I Learn in This Lesson?
+
+This lesson provided the following insights:
+
+- Primary and secondary data are two broad categories describing how data was collected.
+- There are a variety of existing platforms for collecting primary data or retrieving secondary data.
+- Applying the right question type improves the quality of data collected.
+- All data must be collected and stored according to ethical principles and in adherence to the privacy laws of the region where data is collected or retained.
+
+### 💡 Key Takeaways
+
+1. **Primary data** = first-hand information collected by researcher for specific research purpose
+2. **Secondary data** = pre-existing information collected by others for different purposes
+3. **Primary data methods** include: surveys/questionnaires, interviews, observations, experiments, focus groups, case studies, field trials/pilots, ethnography
+4. **Surveys** can be delivered in-person, by mail, by phone, or online; use structured questions to collect information from samples
+5. **Interviews** have three types: structured (predetermined questions), semi-structured (mix of set and exploratory), unstructured (guided conversation)
+6. **Survey question types** include multiple choice, Likert scale, rank order, open-ended, dichotomous, demographic, matrix, pictorial, and semantic differential
+7. **Interview/focus group questions** commonly include open-ended, probing, experience/example, hypothetical, opinion, knowledge, sensory, and demographic prompts
+8. **Question design** should balance data needs, analysis simplicity, and respondent experience to improve response quality
+9. **Observations** can be overt (participants aware) or covert (participants unaware); also participant vs non-participant
+10. **Experiments** are controlled studies changing one variable to track effects on another; powerful for demonstrating cause-and-effect
+11. **Focus groups** use moderator-guided discussions (6-12 people) to explore experiences, beliefs, and attitudes in depth
+12. **Case studies** thoroughly investigate single subjects using various data sources; provide deep understanding but limited generalizability
+13. **Field trials/pilots** test concepts under real-world conditions; frequently used in product development, engineering, agriculture
+14. **Ethnography** involves researcher immersion in community for extended period to study behaviors, culture, and practices
+15. **Mixed-methods approach** combines several methods (e.g., surveys + interviews) for more thorough understanding
+16. **Modern online environments** have significantly impacted primary data collection, offering fresh approaches to gathering, archiving, and analyzing data
+17. **Online surveys** revolutionized by digital platforms; quicker, less expensive, larger and more varied audience reach via email/social media
+18. **Digital survey platforms** (Google Forms, SurveyMonkey, Typeform, Qualtrics) enable automated data entry and analysis, reducing errors
+19. **Virtual interviews/focus groups** made possible by video conferencing tools; include participants worldwide, enable thorough transcription
+20. **Web analytics and digital ethnography** track online behavior (websites visited, links clicked, time on page) with user permission
+21. **Online experiments (A/B testing)** platforms (Google Optimize, Optimizely) make it simple to test different versions and see which performs better
+22. **Crowdsourcing and citizen science** allow researchers to collect data from general public on previously unimaginable scale
+23. **Mobile data collection** uses smartphones for GPS data, images, videos, real-time responses; quicker and more effective across fields
+24. **Privacy and data security** are significant concerns with online data collection; requires informed consent, anonymization, secure storage
+25. **Digital divide creates bias**: Online data often overrepresents younger, educated, wealthier individuals and underrepresents older, less-educated, low-income groups
+26. **GDPR, CCPA, HIPAA compliance** essential for protecting participants' privacy and securing data properly
+27. **Primary data advantages**: Specificity (exact fit), accuracy (controlled), currency (up-to-date), ownership (exclusive), control (full)
+28. **Primary data disadvantages**: Time-consuming, expensive, limited scope, requires expertise, potential bias
+29. **Secondary data sources**: company records, government databases, commercial providers, academic research, media publications
+30. **Secondary data collection methods** include public records, statistical data, literature reviews, online databases, and archives
+31. **Internal business data, social media data, and data aggregators** provide rich secondary datasets for market, trend, and sentiment insights
+32. **Ethical data collection** requires informed consent, voluntary participation, and clear withdrawal options
+33. **Anonymity and confidentiality** protect identities; avoid disclosure without explicit permission
+34. **Data security and accuracy** are critical to prevent misuse and incorrect conclusions
+35. **Secondary data reuse** must respect original context, licensing, and consent scope
+36. **Legal compliance** (e.g., GDPR) is mandatory and violations can be costly
+37. **GDPR scope** applies to organizations processing EU residents' data, regardless of location
+38. **GDPR consent** must be freely given, specific, informed, and easy to withdraw
+39. **GDPR rights** include access, rectification, erasure, restriction, portability, and objection
+40. **GDPR obligations** include DPIAs, DPOs in certain cases, and 72-hour breach notification
+41. **Data protection frameworks** include GDPR, CCPA, PDPA, DPA 2018, PIPEDA, LGPD, Privacy Act 1988, and POPIA
+42. **Quality and ethics checks** are essential: evaluate relevance, accuracy, timeliness, licensing, privacy, and copyright constraints
+43. **Secondary data advantages**: Cost-effective, time-saving, large samples, historical perspective, credibility, comprehensive coverage
+44. **Secondary data disadvantages**: Relevance issues, quality concerns, outdated information, limited control, accessibility restrictions
+45. **Best practice**: Combine primary and secondary data for comprehensive research; start with secondary for context, use primary to fill gaps
+46. **Triangulation**: Using multiple data sources and methods (mixed-methods) increases reliability and validity of research findings
+            """,
+            "key_points": [
+                "Primary data is first-hand information collected by the researcher for a specific research purpose",
+                "Secondary data is pre-existing information collected by others for different objectives",
+                "Choice of primary data collection method depends on: purpose of study, resources at hand, kind of data being sought",
+                "Surveys/Questionnaires: Can be delivered in-person, by mail, by phone, or online; use structured questions to gather quantitative data from samples",
+                "Interviews: Three types - Structured (predetermined questions), Semi-structured (some predetermined + freedom to explore), Unstructured (guided conversation)",
+                "Survey question types include multiple choice, Likert scale, rank order, open-ended, dichotomous, demographic, matrix, pictorial, and semantic differential; choice impacts analysis",
+                "Interview and focus group questions commonly use open-ended, probing, experience/example, hypothetical, opinion, knowledge, sensory, and demographic prompts",
+                "Good question design balances data needs, analysis simplicity, and respondent experience to improve response quality",
+                "Interviews can be conducted in-person, by phone, or online via various platforms",
+                "Observations: Can be overt (participants aware) or covert (participants unaware); methodically observe and document behavior as it arises naturally",
+                "Experiments: Controlled studies changing one variable to track effects on another; powerful for demonstrating cause-and-effect but resource-intensive",
+                "Focus Groups: Moderator-guided group discussion (6-12 participants) on specific topics; helpful for thoroughly examining experiences, beliefs, attitudes",
+                "Case Studies: Thorough investigation of single subject using various data sources; provides deep understanding but results might not apply to others",
+                "Field Trials/Pilots: Test concepts under actual/real-world conditions while recording results; frequently used in product development, engineering, agriculture",
+                "Ethnography: Researcher immerses in community for extended period to study behaviors, culture, and practices of members",
+                "Mixed-methods approach: Typical to combine several methods within single study to obtain more thorough understanding of research topic",
+                "Modern online environments have significantly impacted primary data collection techniques, offering fresh approaches to information gathering, archiving, and analysis",
+                "Online surveys revolutionized by digital platforms (Google Forms, SurveyMonkey, Typeform, Qualtrics); quicker, less expensive to reach larger, more varied audience",
+                "Digital surveys enable automated data entry and analysis, lowering possibility of errors and accelerating the research process",
+                "Virtual interviews and focus groups made possible by video conferencing tools (Zoom, Teams, Google Meet); participants from all over world can be included",
+                "Video conferencing enables recordings for thorough transcription and analysis of interviews and focus groups",
+                "Web analytics and digital ethnography: Track online behavior (websites visited, links clicked, time spent) with user's permission using cookies, server logs, specialized software",
+                "Online behavior data valuable for researching social media use, online consumer behavior, and information-seeking behavior",
+                "Online experiments (A/B testing): Platforms like Google Optimize and Optimizely make it simpler to test different web page versions to see which performs better",
+                "Crowdsourcing and citizen science: Internet allows collecting data from general public on previously unimaginable scale (e.g., wildlife sightings, document transcriptions)",
+                "Mobile data collection: Widespread smartphones enable quicker, more effective data collection using GPS data, images, videos, and real-time responses",
+                "Mobile data used across social science, health research, environmental studies, market research, and more fields",
+                "Online data collection brings new difficulties and moral dilemmas that must be carefully addressed",
+                "Privacy and data security: Online data collection raises significant issues; crucial to get informed consent, anonymize data, and ensure secure storage",
+                "GDPR, CCPA, HIPAA compliance essential to protect participants' privacy throughout online data collection process",
+                "Digital divide creates sampling bias: Online data frequently overrepresents younger, more educated, wealthier individuals",
+                "Digital divide underrepresents older adults, less-educated individuals, low-income individuals in online research",
+                "Mitigation strategies for bias: Mixed-mode data collection, targeted recruitment, accessibility features, statistical weighting to match population demographics",
+                "Each method has advantages and disadvantages; best choice depends on research question nature, context, resources, and researcher skills/expertise",
+                "Primary data advantages: specificity (exact fit), accuracy (controlled methods), currency (up-to-date), ownership (exclusive), control (full)",
+                "Primary data disadvantages: time-consuming, expensive, limited scope, requires expertise, potential for various biases",
+                "Secondary data sources: company records, government databases, commercial providers, academic research, media publications",
+                "Secondary data collection methods include public records, statistical data, literature reviews, online databases, and archives",
+                "Internal business data, social media data, and data aggregators provide additional secondary datasets for market and sentiment insights",
+                "Ethical data collection requires informed consent, voluntary participation, and clear withdrawal options",
+                "Anonymity and confidentiality protect participant identities; do not disclose without explicit permission",
+                "Data security and accuracy are critical to prevent misuse and incorrect conclusions",
+                "Secondary data reuse must respect original context, licensing, and consent scope",
+                "Legal compliance (e.g., GDPR) is mandatory and violations can be costly",
+                "GDPR scope applies to organizations processing EU residents' data, regardless of location",
+                "GDPR consent must be freely given, specific, informed, and easy to withdraw",
+                "GDPR rights include access, rectification, erasure, restriction, portability, and objection",
+                "GDPR obligations include DPIAs, DPOs in certain cases, and 72-hour breach notification",
+                "Data protection frameworks include GDPR, CCPA, PDPA, DPA 2018, PIPEDA, LGPD, Privacy Act 1988, and POPIA",
+                "Quality and ethics checks: evaluate relevance, accuracy, timeliness, licensing, privacy, and copyright constraints before use",
+                "Secondary data advantages: cost-effective, time-saving, large sample sizes, historical perspective, credibility, comprehensive coverage",
+                "Secondary data disadvantages: relevance issues, quality concerns, outdated information, limited control, accessibility restrictions, fit problems",
+                "Best practice: Combine primary and secondary data for comprehensive research outcomes (e.g., secondary for context, primary for specifics)",
+                "Integration strategy: Start with secondary data for general understanding, then conduct primary data collection for more detailed knowledge",
+                "Decision framework: Use primary when no existing data fits; use secondary when existing data meets needs; use both for comprehensive projects",
+                "Quality evaluation essential: Assess source credibility, methodology, relevance, currency, and quality indicators for secondary data",
+                "Ethical considerations critical: Informed consent, privacy protection, data security, especially for online methods, covert observation, and ethnography",
+                "Triangulation: Using multiple data sources and methods (mixed-methods) increases reliability and validity of research findings"
+            ],
+            "visual_elements": {
+                "diagrams": True,
+                "tables": True,
+                "highlighted_sections": True
+            }
+        },
+        {
+            "lesson_number": "1.4",
+            "title": "Calculating Distributions",
+            "content": """
+### Introduction
+
+The features in a data set are the fundamental building blocks in a data analyst's arsenal in providing insights regarding the state of a situation or domain. Features may be used to describe a specific outcome or represent an outcome that requires description.
+
+Regardless of the approach, gathering descriptive statistics regarding a data set is helpful. These descriptive statistics may be generated differently for the various features and feature types and yield different insights to aid analysis.
+ 
+---
+
+### Explained vs Explanatory Variables
+
+When conducting data analysis, some fields support an outcome, whereas others represent the outcome. These two types of variables are represented by explanatory and explained variables.
+
+**Explained variables** are the variables we are trying to predict or forecast in a statistical model. For instance, the **house price** would be the explained variable in a linear regression model that forecasts house prices. It is also frequently known as the target, response, dependent, or outcome variable. It is "explained" in that the model's independent or explanatory variables can explain its values.
+
+**Explanatory variables** explain or influence the changes in the explained variable. The house size, number of bedrooms, age, and other factors could all be explanatory variables in the house price example. These variables explain the variability in the dependent (explained) variable. They can also be referred to as features, input variables, predictor variables, independent variables, or regressors. One of the first steps in conducting an analysis is learning more about the specifics of the various variables used, which is why descriptive statistics are generated early in the process.
+
+It is important to remember that unless a study specifically intends to establish a causal relationship, the relationship between explained and explanatory variables in a statistical model is typically **association rather than causation** (such as in a randomized controlled trial). It is not always the case that explanatory variables cause changes in the explained variable, even when a model shows they are associated with those changes.
+
+#### 📌 Example: Variable Roles
+
+| Scenario | Explained Variable (Target) | Explanatory Variables (Predictors) |
+|----------|-----------------------------|------------------------------------|
+| House price model | House price | Size, bedrooms, age, location |
+| Sales forecasting | Monthly sales | Ad spend, season, promotions, price |
+| Customer churn | Churn (yes/no) | Tenure, usage, support tickets |
+
+#### 🧠 Mini Exercise: Identify Target vs Predictors
+
+1. A retailer wants to predict weekly sales using store size, local income, and promotion spend.
+2. A hospital wants to predict patient length of stay using age, diagnosis, and procedure type.
+3. A streaming service wants to predict churn using watch time, plan type, and recent support tickets.
+
+**Answer key**:
+1. Target: weekly sales; Predictors: store size, local income, promotion spend.
+2. Target: length of stay; Predictors: age, diagnosis, procedure type.
+3. Target: churn; Predictors: watch time, plan type, support tickets.
+
+---
+
+### 1. Feature Types and Distributions
+
+Different feature types require different summaries. Numeric variables are summarized with measures like mean or standard deviation, while categorical variables are summarized with counts and proportions.
+
+| Feature Type | Examples | Typical Distribution Summary |
+|--------------|----------|------------------------------|
+| Numeric (continuous) | income, height, time | mean, median, variance, standard deviation |
+| Numeric (discrete) | orders, defects, clicks | frequency table, mean, variance |
+| Categorical | brand, region, payment method | counts, percentages, mode |
+| Ordinal | satisfaction rating, size (S/M/L) | counts, median, percentile |
+
+<div class="mermaid">
+flowchart TB
+    A[Feature Type] --> B[Numeric]
+    A --> C[Categorical]
+    B --> D[Central Tendency]
+    B --> E[Spread]
+    B --> F[Shape]
+    C --> G[Counts]
+    C --> H[Percentages]
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style D fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style E fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style F fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style G fill:#FFD700,stroke:#B8860B,stroke-width:2px,color:#000
+    style H fill:#FFD700,stroke:#B8860B,stroke-width:2px,color:#000
+</div>
+
+---
+
+### Descriptive Statistics
+
+Descriptive statistics summarize and organize the characteristics of a data set, whether numerical or categorical.
+
+#### Numerical Data
+
+Common descriptive measures include:
+- **Central tendency**: mean, median, mode
+- **Dispersion**: variance, standard deviation, range, interquartile range (IQR)
+- **Distribution shape**: skewness and kurtosis
+
+These measures help condense the overall distribution. Knowing whether a data set is approximately normal (Gaussian) can influence which statistical tests or predictive models are appropriate.
+
+#### Categorical Data
+
+Descriptive statistics for categorical variables typically include:
+- **Frequency counts**: how often each category appears
+- **Proportions**: percentage of the total for each category
+- **Cross-tabulations**: relationship between two categorical variables
+
+<div class="important-info">
+In essence, any technique that summarizes, organizes, and describes the properties of a data set can be regarded as descriptive statistics.
+</div>
+
+#### Example: Cross-Tabulation
+
+| Gender \ Satisfaction | Low | Medium | High | Total |
+|-----------------------|-----|--------|------|-------|
+| Female | 8 | 22 | 30 | 60 |
+| Male | 10 | 18 | 12 | 40 |
+| Total | 18 | 40 | 42 | 100 |
+
+**Interpretation**: This table suggests higher satisfaction among female respondents, while male responses skew more toward low and medium satisfaction.
+
+---
+
+### Distribution of Values
+
+A variable's distribution describes how its values are spread across the range of possible values. Understanding distributions helps reveal patterns, trends, and outliers, and it guides which statistical tools and models are appropriate.
+
+**Why distribution matters**:
+- Some methods assume specific distributions (e.g., normal, binomial).
+- The distribution affects how you interpret mean, median, mode, variance, and standard deviation.
+- Unexpected distributions can signal data quality issues or collection errors.
+- Skewed distributions can indicate meaningful trends (values clustering at one end).
+
+**Model implications**:
+- If assumptions are violated, you may need transformations or alternative models.
+- Distribution checks are often one of the first steps in analysis.
+
+#### Categorical Variable Distributions
+
+For categorical data, the focus is on counts and proportions across categories:
+
+**Frequency counts**
+- Count how many times each category appears.
+
+**Relative frequencies (proportions)**
+- Convert counts to percentages of the total.
+
+**Cumulative frequencies**
+- Total counts up to a given category (useful for ordered categories).
+
+These numeric summaries complement common visuals such as bar charts and pie charts.
+
+#### Understanding Frequency Counts with Real Examples
+
+**What is a frequency count?**
+
+A frequency count is a straightforward approach to summarizing categorical data. The goal is to determine **how often each category appears** in your dataset. This reveals which categories are most and least prevalent, giving you a basic understanding of your data's distribution.
+
+---
+
+##### Example 1: Norwegian Cities Dataset
+
+**Scenario**: You have data on 20 individuals and where they live in Norway.
+
+**Raw Data**:
+
+| ID | Home_City | ID | Home_City |
+|----|-----------|----|-----------|
+| 1 | Oslo | 11 | Oslo |
+| 2 | Oslo | 12 | Oslo |
+| 3 | Kristiansand | 13 | Stavanger |
+| 4 | Bergen | 14 | Bergen |
+| 5 | Oslo | 15 | Kristiansand |
+| 6 | Stavanger | 16 | Kristiansand |
+| 7 | Stavanger | 17 | Stavanger |
+| 8 | Bergen | 18 | Oslo |
+| 9 | Bergen | 19 | Bergen |
+| 10 | Kristiansand | 20 | Stavanger |
+
+**Analysis Steps**:
+1. Identify distinct cities in the data
+2. Count how many people live in each city
+3. Create a frequency table
+
+**Frequency Count Result**:
+
+| City | Frequency Count |
+|------|-----------------|
+| Bergen | 5 |
+| Kristiansand | 4 |
+| Oslo | 6 |
+| Stavanger | 5 |
+
+**Interpretation**: Oslo is the most common city (6 people), followed by Bergen and Stavanger (5 each), and Kristiansand (4).
+
+---
+
+**How to Calculate: Excel Method**
+
+**Step 1: Enter your data** in Excel:
+
+| A | B |
+|---|---|
+| ID | Home_City |
+| 1 | Oslo |
+| 2 | Oslo |
+| 3 | Kristiansand |
+| 4 | Bergen |
+| 5 | Oslo |
+| ... | ... |
+| 20 | Stavanger |
+
+**Step 2: Create frequency table** using COUNTIF:
+
+In columns D and E, create:
+
+| D | E | Formula |
+|---|---|---|
+| **City** | **Frequency Count** | |
+| Bergen | 5 | =COUNTIF($B$2:$B$21,"Bergen") |
+| Kristiansand | 4 | =COUNTIF($B$2:$B$21,"Kristiansand") |
+| Oslo | 6 | =COUNTIF($B$2:$B$21,"Oslo") |
+| Stavanger | 5 | =COUNTIF($B$2:$B$21,"Stavanger") |
+| **Total** | 20 | =SUM(E2:E5) |
+
+**Alternative: Use a Pivot Table**
+1. Select your data (A1:B21)
+2. Insert → PivotTable
+3. Drag "Home_City" to **Rows**
+4. Drag "Home_City" to **Values** (it will count automatically)
+
+---
+
+**How to Calculate: Python Method**
+
+```python
+import pandas as pd
+
+# Create the dataset
+data = {
+    'ID': range(1, 21),
+    'Home_City': ['Oslo', 'Oslo', 'Kristiansand', 'Bergen', 'Oslo', 'Stavanger', 
+                  'Stavanger', 'Bergen', 'Bergen', 'Kristiansand', 'Oslo', 'Oslo', 
+                  'Stavanger', 'Bergen', 'Kristiansand', 'Kristiansand', 'Stavanger', 
+                  'Oslo', 'Bergen', 'Stavanger']
+}
+df = pd.DataFrame(data)
+
+# Method 1: Using value_counts()
+frequency = df['Home_City'].value_counts().sort_index()
+print("Frequency Count by City:")
+print(frequency)
+
+# Method 2: Create a more detailed table
+frequency_table = pd.DataFrame({
+    'City': frequency.index,
+    'Frequency Count': frequency.values
+})
+print("\nFormatted Table:")
+print(frequency_table)
+
+# Verify total
+print(f"\nTotal observations: {frequency.sum()}")
+```
+
+**Expected Output**:
+```
+Frequency Count by City:
+Bergen          5
+Kristiansand    4
+Oslo            6
+Stavanger       5
+Name: Home_City, dtype: int64
+
+Formatted Table:
+           City  Frequency Count
+0      Bergen              5
+1  Kristiansand              4
+2         Oslo              6
+3     Stavanger              5
+
+Total observations: 20
+```
+
+---
+
+##### Example 2: Student Satisfaction Ratings
+
+**Scenario**: You surveyed 51 university students asking them to rate the quality of learning materials on a scale of 1-5:
+- 1 = Very Poor
+- 2 = Poor  
+- 3 = Neutral
+- 4 = Good
+- 5 = Excellent
+
+**Raw Ratings Data**:
+```
+3, 4, 5, 2, 1, 4, 3, 2, 5, 5, 3, 4, 2, 1, 3, 5, 2, 2, 3, 4, 4, 4, 5, 1, 3, 3, 4, 5, 
+2, 1, 4, 3, 2, 5, 5, 3, 2, 2, 3, 4, 4, 4, 5, 2, 3, 3, 4, 5, 2, 1, 4
+```
+
+**Analysis Steps**:
+1. Find all distinct rating values (1, 2, 3, 4, 5)
+2. Count how many times each rating appears
+3. Create a frequency table
+
+---
+
+**Step-by-Step Manual Counting (Understanding the Process)**
+
+Before using Python, let's understand the manual process so you grasp what's happening under the hood.
+
+**Step 1: Identify the distinct categories**
+
+The rating scale is 1 to 5, so the possible categories are:
+- 1 (Very Poor)
+- 2 (Poor)
+- 3 (Neutral)
+- 4 (Good)
+- 5 (Excellent)
+
+**Step 2: Create an empty counting table**
+
+Start with a table with columns for Category and Count:
+
+| Rating | Count |
+|--------|-------|
+| 1 | ? |
+| 2 | ? |
+| 3 | ? |
+| 4 | ? |
+| 5 | ? |
+
+**Step 3: Go through the data and count each category**
+
+Raw data: 3, 4, 5, 2, 1, 4, 3, 2, 5, 5, 3, 4, 2, 1, 3, 5, 2, 2, 3, 4, 4, 4, 5, 1, 3, 3, 4, 5, 2, 1, 4, 3, 2, 5, 5, 3, 2, 2, 3, 4, 4, 4, 5, 2, 3, 3, 4, 5, 2, 1, 4
+
+**Count all the 1's**: Go through and mark each time you see a 1:
+- Position 5: 1
+- Position 14: 1
+- Position 24: 1
+- Position 30: 1
+- Position 50: 1
+- **Total 1's: 5**
+
+**Count all the 2's**: Go through and mark each time you see a 2:
+- Positions: 4, 8, 13, 17, 18, 29, 33, 37, 38, 44, 49, 51
+- **Total 2's: 7**
+
+**Count all the 3's**: Go through and mark each time you see a 3:
+- Positions: 1, 7, 11, 15, 20, 25, 26, 32, 36, 40, 45, 46
+- **Total 3's: 10**
+
+**Count all the 4's**: Continue the same process...
+- **Total 4's: 14**
+
+**Count all the 5's**: Continue the same process...
+- **Total 5's: 15**
+
+**Step 4: Fill in the final table**
+
+After counting all categories, you get:
+
+| Rating | Count | Label |
+|--------|-------|-------|
+| 1 | 5 | Very Poor |
+| 2 | 7 | Poor |
+| 3 | 10 | Neutral |
+| 4 | 14 | Good |
+| 5 | 15 | Excellent |
+| **Total** | **51** | |
+
+✅ **Quick Verification**: 5 + 7 + 10 + 14 + 15 = 51 ✓
+
+**Key Insight**: As you can see, manual counting:
+- ⚠️ **Time-consuming** with larger datasets
+- ⚠️ **Error-prone** (easy to miscount)
+- ⚠️ **Tedious** to verify
+
+This is why we use Python - it does this automatically, accurately, and instantly!
+
+---
+
+**Automated Counting with Python Code**:
+
+
+```python
+import pandas as pd
+
+# Raw survey responses
+ratings = [3, 4, 5, 2, 1, 4, 3, 2, 5, 5, 3, 4, 2, 1, 3, 5, 2, 2, 3, 4, 4, 4, 5, 1, 3, 
+           3, 4, 5, 2, 1, 4, 3, 2, 5, 5, 3, 2, 2, 3, 4, 4, 4, 5, 2, 3, 3, 4, 5, 2, 1, 4]
+
+df = pd.DataFrame({'Rating': ratings})
+
+# Step 1: Count frequency for each rating
+frequency = df['Rating'].value_counts().sort_index()
+print("Frequency by Rating:")
+print(frequency)
+
+# Step 2: Create detailed frequency table with interpretation
+rating_labels = {
+    1: 'Very Poor',
+    2: 'Poor',
+    3: 'Neutral',
+    4: 'Good',
+    5: 'Excellent'
+}
+
+frequency_table = pd.DataFrame({
+    'Rating': frequency.index,
+    'Label': [rating_labels[r] for r in frequency.index],
+    'Frequency Count': frequency.values,
+    'Percentage': (frequency.values / len(df) * 100).round(2)
+})
+
+print("\nDetailed Frequency Table:")
+print(frequency_table)
+
+# Step 3: Quick insights
+print(f"\nTotal responses: {len(df)}")
+print(f"Most common rating: {frequency.idxmax()} ({frequency.max()} responses)")
+print(f"Least common rating: {frequency.idxmin()} ({frequency.min()} responses)")
+```
+
+**Expected Output**:
+```
+Frequency by Rating:
+1    5
+2    7
+3    10
+4    14
+5    15
+Name: Rating, dtype: int64
+
+Detailed Frequency Table:
+   Rating      Label  Frequency Count  Percentage
+0       1  Very Poor                5        9.80
+1       2      Poor                7       13.73
+2       3    Neutral               10       19.61
+3       4      Good               14       27.45
+4       5   Excellent              15       29.41
+
+Total responses: 51
+Most common rating: 5 (15 responses)
+Least common rating: 1 (5 responses)
+```
+
+**Interpretation**:
+- **5 (Excellent)** is the most common rating with 15 responses (29.41%)
+- **4 (Good)** is the second most common with 14 responses (27.45%)
+- Together, ratings 4 and 5 represent 56.86% of responses (very positive feedback)
+- Only 9.80% gave a "Very Poor" rating (1)
+
+---
+
+##### Example 3: Exam Grade Distribution
+
+**Scenario**: A statistics professor wants to analyze the grade distribution for 40 students who completed the final exam. Grades are on a scale of A through F.
+
+**Raw Grade Data**:
+```
+B, A, C, B, B, A, F, C, B, A, C, D, B, A, C, B, A, B, C, A, 
+D, B, A, C, B, B, A, C, D, A, B, C, A, F, B, A, C, B, A, C
+```
+
+**Grade Distribution Breakdown**:
+- **A**: Excellent (90-100%)
+- **B**: Good (80-89%)
+- **C**: Average (70-79%)
+- **D**: Below Average (60-69%)
+- **F**: Fail (<60%)
+
+---
+
+**Analysis Steps**:
+1. Count frequency of each grade (A, B, C, D, F)
+2. Calculate relative frequencies (proportions)
+3. Calculate percentages
+4. Interpret the results
+
+---
+
+**How to Calculate: Excel Method**
+
+**Step 1: Enter grades in Excel**:
+
+| A | B |
+|---|---|
+| Student_ID | Grade |
+| 1 | B |
+| 2 | A |
+| 3 | C |
+| ... | ... |
+| 40 | C |
+
+**Step 2: Create frequency table** (columns D-E):
+
+| D | E | Formula |
+|---|---|---|
+| **Grade** | **Frequency** | |
+| A | 13 | =COUNTIF($B$2:$B$41,"A") |
+| B | 14 | =COUNTIF($B$2:$B$41,"B") |
+| C | 9 | =COUNTIF($B$2:$B$41,"C") |
+| D | 2 | =COUNTIF($B$2:$B$41,"D") |
+| F | 2 | =COUNTIF($B$2:$B$41,"F") |
+| **Total** | 40 | =SUM(E2:E6) |
+
+**Step 3: Calculate relative frequency** (column F):
+
+| F | Formula |
+|---|---|
+| **Relative Freq** | |
+| 0.325 | =E2/$E$7 |
+| 0.350 | =E3/$E$7 |
+| 0.225 | =E4/$E$7 |
+| 0.050 | =E5/$E$7 |
+| 0.050 | =E6/$E$7 |
+| 1.000 | =SUM(F2:F6) |
+
+**Step 4: Calculate percentage** (column G):
+
+| G | Formula |
+|---|---|
+| **Percentage (%)** | |
+| 32.5 | =F2*100 |
+| 35.0 | =F3*100 |
+| 22.5 | =F4*100 |
+| 5.0 | =F5*100 |
+| 5.0 | =F6*100 |
+| 100.0 | =SUM(G2:G6) |
+
+**Final Excel Table**:
+
+| Grade | Frequency | Relative Frequency | Percentage (%) |
+|-------|-----------|-------------------|----------------|
+| A | 13 | 0.325 | 32.5 |
+| B | 14 | 0.350 | 35.0 |
+| C | 9 | 0.225 | 22.5 |
+| D | 2 | 0.050 | 5.0 |
+| F | 2 | 0.050 | 5.0 |
+| **Total** | 40 | 1.000 | 100.0 |
+
+---
+
+**How to Calculate: Python Method**
+
+```python
+import pandas as pd
+
+# Raw exam grades
+grades = ['B', 'A', 'C', 'B', 'B', 'A', 'F', 'C', 'B', 'A', 'C', 'D', 'B', 'A', 
+          'C', 'B', 'A', 'B', 'C', 'A', 'D', 'B', 'A', 'C', 'B', 'B', 'A', 'C', 
+          'D', 'A', 'B', 'C', 'A', 'F', 'B', 'A', 'C', 'B', 'A', 'C']
+
+df = pd.DataFrame({'Grade': grades})
+
+# Define grade order (A to F)
+grade_order = ['A', 'B', 'C', 'D', 'F']
+
+# Step 1: Calculate frequency for each grade
+frequency = df['Grade'].value_counts().reindex(grade_order)
+print("Frequency by Grade:")
+print(frequency)
+
+# Step 2: Calculate relative frequencies
+rel_freq = frequency / len(df)
+print("\nRelative Frequencies:")
+print(rel_freq)
+
+# Step 3: Calculate percentages
+percentages = (frequency / len(df) * 100).round(1)
+print("\nPercentages:")
+print(percentages)
+
+# Step 4: Create comprehensive summary table
+grade_labels = {
+    'A': 'Excellent',
+    'B': 'Good',
+    'C': 'Average',
+    'D': 'Below Average',
+    'F': 'Fail'
+}
+
+summary_table = pd.DataFrame({
+    'Grade': frequency.index,
+    'Label': [grade_labels[g] for g in frequency.index],
+    'Frequency': frequency.values,
+    'Relative Freq': rel_freq.round(3).values,
+    'Percentage (%)': percentages.values
+})
+
+print("\nComplete Grade Distribution:")
+print(summary_table)
+
+# Step 5: Calculate pass/fail statistics
+pass_count = summary_table[summary_table['Grade'] != 'F']['Frequency'].sum()
+fail_count = summary_table[summary_table['Grade'] == 'F']['Frequency'].sum()
+pass_rate = (pass_count / len(df) * 100).round(1)
+
+print(f"\nPass/Fail Analysis:")
+print(f"Students who passed (A-D): {pass_count} ({pass_rate}%)")
+print(f"Students who failed (F): {fail_count} ({100-pass_rate}%)")
+
+# Step 6: Calculate students with A or B (excellent/good performance)
+high_performers = summary_table[summary_table['Grade'].isin(['A', 'B'])]['Frequency'].sum()
+high_performer_rate = (high_performers / len(df) * 100).round(1)
+
+print(f"\nHigh Performers (A or B): {high_performers} students ({high_performer_rate}%)")
+```
+
+**Expected Output**:
+```
+Frequency by Grade:
+A    13
+B    14
+C     9
+D     2
+F     2
+Name: Grade, dtype: int64
+
+Relative Frequencies:
+A    0.325
+B    0.350
+C    0.225
+D    0.050
+F    0.050
+Name: Grade, dtype: float64
+
+Percentages:
+A    32.5
+B    35.0
+C    22.5
+D     5.0
+F     5.0
+Name: Grade, dtype: float64
+
+Complete Grade Distribution:
+  Grade          Label  Frequency  Relative Freq  Percentage (%)
+0     A      Excellent         13          0.325            32.5
+1     B           Good         14          0.350            35.0
+2     C        Average          9          0.225            22.5
+3     D  Below Average          2          0.050             5.0
+4     F           Fail          2          0.050             5.0
+
+Pass/Fail Analysis:
+Students who passed (A-D): 38 (95.0%)
+Students who failed (F): 2 (5.0%)
+
+High Performers (A or B): 27 students (67.5%)
+```
+
+**Interpretation**:
+- **Most common grade**: B (35.0%), followed by A (32.5%)
+- **Pass rate**: 95% of students passed the exam (grades A-D)
+- **High performers**: 67.5% of students achieved A or B grades (excellent/good performance)
+- **Concern area**: 5% failed (2 students) - may need remedial support
+- **Distribution shape**: Positively skewed - most students performed well
+- **Grade C and below**: Only 32.5% of students - indicates exam was fair but not too easy
+
+**Teaching Insights from this Data**:
+- ✅ High pass rate suggests effective teaching and appropriate difficulty level
+- ✅ Strong concentration in A-B range indicates student comprehension
+- ⚠️ Consider reviewing content for the 2 students who failed
+- 📊 Healthy distribution with most students in "good" to "excellent" range
+
+---
+
+##### Your Turn: Practice Problem
+
+**Dataset**: 30 survey responses on preferred learning mode:
+```
+'Online', 'In-Person', 'Hybrid', 'Online', 'Hybrid', 'In-Person', 'Online', 'Online', 'In-Person', 'Hybrid',
+'Online', 'Online', 'Hybrid', 'In-Person', 'Online', 'In-Person', 'Hybrid', 'Online', 'In-Person', 'Online',
+'Online', 'Hybrid', 'In-Person', 'Online', 'Online', 'In-Person', 'Hybrid', 'Online', 'Hybrid', 'In-Person'
+```
+
+**Your Task**:
+1. Create a pandas dataframe with this data
+2. Calculate the frequency count for each learning mode
+3. Create a table showing: Mode, Frequency Count, Percentage
+4. Answer: Which mode is most preferred? What percentage?
+
+**Solution Code Template**:
+```python
+import pandas as pd
+
+learning_modes = [
+    'Online', 'In-Person', 'Hybrid', 'Online', 'Hybrid', 'In-Person', 'Online', 'Online', 'In-Person', 'Hybrid',
+    'Online', 'Online', 'Hybrid', 'In-Person', 'Online', 'In-Person', 'Hybrid', 'Online', 'In-Person', 'Online',
+    'Online', 'Hybrid', 'In-Person', 'Online', 'Online', 'In-Person', 'Hybrid', 'Online', 'Hybrid', 'In-Person'
+]
+
+df = pd.DataFrame({'Learning_Mode': learning_modes})
+
+# YOUR CODE HERE: Calculate frequency and create table
+# frequency = ...
+# table = ...
+# print(table)
+```
+
+<details>
+<summary><strong>Click to see solution</strong></summary>
+
+```python
+import pandas as pd
+
+learning_modes = [
+    'Online', 'In-Person', 'Hybrid', 'Online', 'Hybrid', 'In-Person', 'Online', 'Online', 'In-Person', 'Hybrid',
+    'Online', 'Online', 'Hybrid', 'In-Person', 'Online', 'In-Person', 'Hybrid', 'Online', 'In-Person', 'Online',
+    'Online', 'Hybrid', 'In-Person', 'Online', 'Online', 'In-Person', 'Hybrid', 'Online', 'Hybrid', 'In-Person'
+]
+
+df = pd.DataFrame({'Learning_Mode': learning_modes})
+
+# Calculate frequency
+frequency = df['Learning_Mode'].value_counts().sort_index()
+
+# Create summary table
+summary_table = pd.DataFrame({
+    'Learning Mode': frequency.index,
+    'Frequency Count': frequency.values,
+    'Percentage': (frequency.values / len(df) * 100).round(2)
+})
+
+print(summary_table)
+print(f"\nMost preferred: {frequency.idxmax()} ({frequency.max()} responses, {frequency.max()/len(df)*100:.2f}%)")
+```
+
+**Result**:
+```
+  Learning Mode  Frequency Count  Percentage
+0        Hybrid                7       23.33
+1    In-Person                9       30.00
+2       Online               14       46.67
+
+Most preferred: Online (14 responses, 46.67%)
+```
+
+</details>
+
+---
+
+### Relative Frequencies
+
+The **relative frequency** of a category is the **percentage** (or proportion) that category represents out of the total. While frequency counts show raw numbers, relative frequencies normalize the data, making it easier to compare categories and understand data distribution.
+
+**Formula**:
+$$\text{Relative Frequency} = \frac{\text{Frequency Count}}{\text{Total Observations}}$$
+
+$$\text{Relative Frequency (\%)} = \frac{\text{Frequency Count}}{\text{Total Observations}} \times 100$$
+
+---
+
+#### Example: Norwegian Cities Revisited
+
+Using our 20 people across Norwegian cities, let's calculate relative frequencies:
+
+| City | Frequency Count | Calculation | Relative Frequency | Relative Frequency (%) |
+|------|-----------------|-------------|-------------------|----------------------|
+| Bergen | 5 | 5 / 20 | 0.25 | 25% |
+| Kristiansand | 4 | 4 / 20 | 0.20 | 20% |
+| Oslo | 6 | 6 / 20 | 0.30 | 30% |
+| Stavanger | 5 | 5 / 20 | 0.25 | 25% |
+| **Totals** | **20** | N/A | **1.00** | **100%** |
+
+**Interpretation**: 
+- 30% of people live in **Oslo** (most common)
+- 25% live in **Bergen** and **Stavanger** (tied)
+- 20% live in **Kristiansand** (least common)
+
+**Why use relative frequencies?**
+- **Easier to communicate**: "30% of people live in Oslo" is clearer than "6 out of 20 people"
+- **Better for comparison**: When comparing datasets of different sizes, percentages allow fair comparison
+- **Normalized view**: Shows proportions rather than raw counts, which is especially helpful with large datasets
+
+---
+
+#### How to Calculate Relative Frequencies: Excel vs Python
+
+You can calculate relative frequencies using either **Excel** or **Python**. Both methods produce the same results, but each has different strengths.
+
+---
+
+##### Method 1: Excel (Manual Approach)
+
+**Step-by-Step Instructions:**
+
+1. **Enter your data** in Excel:
+
+| A | B |
+|---|---|
+| ID | Home_City |
+| 1 | Oslo |
+| 2 | Oslo |
+| 3 | Kristiansand |
+| 4 | Bergen |
+| ... | ... |
+| 20 | Stavanger |
+
+2. **Create a frequency count table** (in columns D-E):
+
+| D | E |
+|---|---|
+| **City** | **Frequency Count** |
+| Bergen | =COUNTIF($B$2:$B$21,"Bergen") |
+| Kristiansand | =COUNTIF($B$2:$B$21,"Kristiansand") |
+| Oslo | =COUNTIF($B$2:$B$21,"Oslo") |
+| Stavanger | =COUNTIF($B$2:$B$21,"Stavanger") |
+
+**Result**: E2:E5 will show 5, 4, 6, 5
+
+3. **Calculate total observations** (cell E6):
+```
+=SUM(E2:E5)
+```
+**Result**: 20
+
+4. **Calculate relative frequency** (column F):
+
+| F | Formula |
+|---|---|
+| **Relative Frequency** | |
+| =E2/$E$6 | (for Bergen) |
+| =E3/$E$6 | (for Kristiansand) |
+| =E4/$E$6 | (for Oslo) |
+| =E5/$E$6 | (for Stavanger) |
+
+**Note**: The `$` signs lock the total cell reference when copying the formula down.
+
+**Result**: F2:F5 will show 0.25, 0.20, 0.30, 0.25
+
+5. **Calculate percentage** (column G):
+
+| G | Formula |
+|---|---|
+| **Percentage (%)** | |
+| =F2*100 | (for Bergen) |
+| =F3*100 | (for Kristiansand) |
+| =F4*100 | (for Oslo) |
+| =F5*100 | (for Stavanger) |
+
+**Or combine steps 4 & 5**:
+```
+=E2/$E$6*100
+```
+
+**Result**: G2:G5 will show 25.00, 20.00, 30.00, 25.00
+
+6. **Verify**: Add a SUM formula in F6 and G6 to check:
+- `=SUM(F2:F5)` should equal **1.00**
+- `=SUM(G2:G5)` should equal **100.00**
+
+**Final Excel Table**:
+
+| City | Frequency Count | Relative Frequency | Percentage (%) |
+|------|-----------------|-------------------|----------------|
+| Bergen | 5 | 0.25 | 25.00 |
+| Kristiansand | 4 | 0.20 | 20.00 |
+| Oslo | 6 | 0.30 | 30.00 |
+| Stavanger | 5 | 0.25 | 25.00 |
+| **Total** | 20 | 1.00 | 100.00 |
+
+---
+
+**Excel Tips:**
+- Use **Pivot Tables** for larger datasets: Insert → PivotTable → Drag "Home_City" to Rows and Values
+- Format cells: Right-click column → Format Cells → Percentage (for column F) or Number with 2 decimals (for column G)
+- Use **COUNTIF** for categorical data, **FREQUENCY** for numerical ranges
+
+---
+
+##### Method 2: Python with Pandas (Automated Approach)
+
+
+```python
+import pandas as pd
+
+# Norwegian cities data
+data = {
+    'Home_City': ['Oslo', 'Oslo', 'Kristiansand', 'Bergen', 'Oslo', 'Stavanger', 
+                  'Stavanger', 'Bergen', 'Bergen', 'Kristiansand', 'Oslo', 'Oslo', 
+                  'Stavanger', 'Bergen', 'Kristiansand', 'Kristiansand', 'Stavanger', 
+                  'Oslo', 'Bergen', 'Stavanger']
+}
+df = pd.DataFrame(data)
+
+# Step 1: Calculate frequency counts
+frequency = df['Home_City'].value_counts().sort_index()
+print("Frequency counts:")
+print(frequency)
+
+# Step 2: Calculate relative frequencies (as decimals)
+relative_freq = frequency / len(df)
+print("\nRelative frequencies (as decimals):")
+print(relative_freq)
+
+# Step 3: Calculate relative frequencies (as percentages)
+relative_freq_percent = (frequency / len(df) * 100).round(2)
+print("\nRelative frequencies (as percentages):")
+print(relative_freq_percent)
+
+# Step 4: Create comprehensive table
+summary_table = pd.DataFrame({
+    'City': frequency.index,
+    'Frequency Count': frequency.values,
+    'Relative Frequency': relative_freq.values.round(2),
+    'Percentage (%)': relative_freq_percent.values
+})
+
+print("\nComplete Summary Table:")
+print(summary_table)
+
+# Verification
+print(f"\nTotal observations: {len(df)}")
+print(f"Sum of relative frequencies: {relative_freq.sum():.2f}")  # Should be 1.00
+print(f"Sum of percentages: {relative_freq_percent.sum():.2f}")  # Should be 100.00
+```
+
+**Expected Output**:
+```
+Frequency counts:
+Bergen          5
+Kristiansand    4
+Oslo            6
+Stavanger       5
+Name: Home_City, dtype: int64
+
+Relative frequencies (as decimals):
+Bergen          0.25
+Kristiansand    0.20
+Oslo            0.30
+Stavanger       0.25
+Name: Home_City, dtype: float64
+
+Relative frequencies (as percentages):
+Bergen          25.00
+Kristiansand    20.00
+Oslo            30.00
+Stavanger       25.00
+Name: Home_City, dtype: float64
+
+Complete Summary Table:
+           City  Frequency Count  Relative Frequency  Percentage (%)
+0      Bergen              5                  0.25               25.0
+1  Kristiansand              4                  0.20               20.0
+2         Oslo              6                  0.30               30.0
+3     Stavanger              5                  0.25               25.0
+
+Total observations: 20
+Sum of relative frequencies: 1.00
+Sum of percentages: 100.00
+```
+
+---
+
+#### Student Task: Relative Frequencies for Satisfaction Ratings
+
+**Using the student satisfaction data from earlier** (51 students rating learning materials 1-5):
+
+```
+3, 4, 5, 2, 1, 4, 3, 2, 5, 5, 3, 4, 2, 1, 3, 5, 2, 2, 3, 4, 4, 4, 5, 1, 3, 
+3, 4, 5, 2, 1, 4, 3, 2, 5, 5, 3, 2, 2, 3, 4, 4, 4, 5, 2, 3, 3, 4, 5, 2, 1, 4
+```
+
+**Your Task**:
+1. Calculate the **relative frequency** (as a decimal) for each rating (1-5)
+2. Calculate the **relative frequency as a percentage** for each rating
+3. Create a table showing: Rating, Frequency Count, Relative Frequency, Percentage
+4. Verify your total: The percentages should sum to 100%
+5. **Interpretation**: Which rating represents more than 25% of responses?
+
+**Choose Your Method**: You can use either **Excel** or **Python** to complete this task.
+
+---
+
+##### Solution Option A: Excel Method
+
+**Step 1: Enter the raw data**
+
+Put all 51 ratings in column A (cells A2:A52):
+
+| A |
+|---|
+| Rating |
+| 3 |
+| 4 |
+| 5 |
+| 2 |
+| ... |
+| 4 |
+
+**Step 2: Create frequency count table**
+
+In columns C-D:
+
+| C | D | Formula for D |
+|---|---|---|
+| **Rating** | **Frequency Count** | |
+| 1 | =COUNTIF($A$2:$A$52,1) | → Result: 5 |
+| 2 | =COUNTIF($A$2:$A$52,2) | → Result: 7 |
+| 3 | =COUNTIF($A$2:$A$52,3) | → Result: 10 |
+| 4 | =COUNTIF($A$2:$A$52,4) | → Result: 14 |
+| 5 | =COUNTIF($A$2:$A$52,5) | → Result: 15 |
+
+**Step 3: Calculate total** (cell D7):
+```
+=SUM(D2:D6)
+```
+→ Result: 51
+
+**Step 4: Calculate relative frequency** (column E):
+
+| E | Formula |
+|---|---|
+| **Relative Frequency** | |
+| =D2/$D$7 | → 0.0980 |
+| =D3/$D$7 | → 0.1373 |
+| =D4/$D$7 | → 0.1961 |
+| =D5/$D$7 | → 0.2745 |
+| =D6/$D$7 | → 0.2941 |
+
+**Step 5: Calculate percentage** (column F):
+
+| F | Formula |
+|---|---|
+| **Percentage (%)** | |
+| =E2*100 | → 9.80 |
+| =E3*100 | → 13.73 |
+| =E4*100 | → 19.61 |
+| =E5*100 | → 27.45 |
+| =E6*100 | → 29.41 |
+
+**Or use combined formula**:
+```
+=D2/$D$7*100
+```
+
+**Step 6: Verify totals**:
+- `=SUM(E2:E6)` should equal **1.00** (or close to it due to rounding)
+- `=SUM(F2:F6)` should equal **100.00**
+
+**Step 7: Find ratings > 25%**:
+- Look at column F: Ratings **4** (27.45%) and **5** (29.41%) both exceed 25%
+
+**Final Excel Result**:
+
+| Rating | Frequency Count | Relative Frequency | Percentage (%) |
+|--------|-----------------|-------------------|----------------|
+| 1 | 5 | 0.0980 | 9.80 |
+| 2 | 7 | 0.1373 | 13.73 |
+| 3 | 10 | 0.1961 | 19.61 |
+| 4 | 14 | 0.2745 | 27.45 |
+| 5 | 15 | 0.2941 | 29.41 |
+| **Total** | 51 | 1.00 | 100.00 |
+
+---
+
+##### Solution Option B: Python Method
+
+**Solution Code Template**:
+```python
+import pandas as pd
+
+ratings = [3, 4, 5, 2, 1, 4, 3, 2, 5, 5, 3, 4, 2, 1, 3, 5, 2, 2, 3, 4, 4, 4, 5, 1, 3, 
+           3, 4, 5, 2, 1, 4, 3, 2, 5, 5, 3, 2, 2, 3, 4, 4, 4, 5, 2, 3, 3, 4, 5, 2, 1, 4]
+
+df = pd.DataFrame({'Rating': ratings})
+
+# YOUR CODE HERE:
+# 1. Calculate frequency counts
+# frequency = ...
+
+# 2. Calculate relative frequencies (decimal)
+# rel_freq = ...
+
+# 3. Calculate percentages
+# percentages = ...
+
+# 4. Create summary table
+# summary = pd.DataFrame({...})
+
+# 5. Print and verify
+# print(summary)
+```
+
+<details>
+<summary><strong>Click to see solution</strong></summary>
+
+```python
+import pandas as pd
+
+ratings = [3, 4, 5, 2, 1, 4, 3, 2, 5, 5, 3, 4, 2, 1, 3, 5, 2, 2, 3, 4, 4, 4, 5, 1, 3, 
+           3, 4, 5, 2, 1, 4, 3, 2, 5, 5, 3, 2, 2, 3, 4, 4, 4, 5, 2, 3, 3, 4, 5, 2, 1, 4]
+
+df = pd.DataFrame({'Rating': ratings})
+
+# Step 1: Calculate frequency counts
+frequency = df['Rating'].value_counts().sort_index()
+
+# Step 2: Calculate relative frequencies
+rel_freq = frequency / len(df)
+
+# Step 3: Calculate percentages
+percentages = (frequency / len(df) * 100).round(2)
+
+# Step 4: Create summary table
+summary = pd.DataFrame({
+    'Rating': frequency.index,
+    'Frequency Count': frequency.values,
+    'Relative Frequency': rel_freq.round(4).values,
+    'Percentage (%)': percentages.values
+})
+
+print(summary)
+print(f"\nTotal: {len(df)} observations")
+print(f"Percentages sum to: {percentages.sum():.2f}%")
+
+# Answer interpretation question
+over_25_percent = summary[summary['Percentage (%)'] > 25]
+print(f"\nRatings representing > 25% of responses:")
+print(over_25_percent)
+```
+
+**Result**:
+```
+   Rating  Frequency Count  Relative Frequency  Percentage (%)
+0       1                5              0.0980            9.80
+1       2                7              0.1373           13.73
+2       3               10              0.1961           19.61
+3       4               14              0.2745           27.45
+4       5               15              0.2941           29.41
+
+Total: 51 observations
+Percentages sum to: 100.00%
+
+Ratings representing > 25% of responses:
+   Rating  Frequency Count  Relative Frequency  Percentage (%)
+3       4               14              0.2745           27.45
+4       5               15              0.2941           29.41
+```
+
+**Interpretation**: 
+- Ratings **4 (Good)** and **5 (Excellent)** both represent more than 25% of responses
+- Combined, they represent **56.86%** of all responses (very positive feedback!)
+- Only **9.80%** gave the lowest rating (1 - Very Poor)
+
+</details>
+
+---
+
+#### Excel vs Python: When to Use Which?
+
+Here's a quick guide to help you choose the right tool:
+
+| Aspect | Excel | Python |
+|--------|-------|--------|
+| **Best for** | Small to medium datasets (<10,000 rows) | Large datasets (>10,000 rows) or complex analysis |
+| **Ease of use** | Visual, click-based, beginner-friendly | Code-based, steeper learning curve |
+| **Speed** | Fast for small data; slow for large datasets | Very fast, even with millions of rows |
+| **Reproducibility** | Manual steps; easy to make errors when repeating | Code is fully reproducible and shareable |
+| **Automation** | Limited automation (macros/VBA needed) | Highly automated; can process many files at once |
+| **Visualization** | Built-in charts and formatting | Requires libraries (matplotlib, seaborn) but more flexible |
+| **Collaboration** | Easy to share .xlsx files | Requires Python installation but code is portable |
+| **Cost** | Microsoft Office license required | Free and open-source |
+
+**Recommendation**:
+- ✅ **Use Excel** for: Quick one-time analyses, small datasets, sharing with non-technical stakeholders
+- ✅ **Use Python** for: Repeated analyses, large datasets, automation, advanced statistical methods, reproducible research
+
+**Pro Tip**: You can combine both! Do exploratory analysis in Excel, then automate your workflow in Python once you know what you need.
+
+---
+
+### Cumulative Frequencies
+
+The **cumulative frequency** for a category is the **running total** of frequencies from the first category up to and including that category. It shows how many observations fall at or below a certain point in your ordered data.
+
+**Formula**:
+$$\text{Cumulative Frequency}_i = \sum_{j=1}^{i} \text{Frequency}_j$$
+
+**When to use cumulative frequencies**:
+- Categories have a natural order (alphabetical, geographic, temporal, ordinal scales)
+- You want to know "how many observations up to this point?"
+- Analyzing percentiles or quartiles
+- Creating cumulative distribution functions (CDFs)
+
+**Key Point**: Cumulative frequencies change when you reorder categories, so the ordering must be meaningful!
+
+---
+
+#### Example 1: Norwegian Cities (Alphabetical Order)
+
+Using our 20 people across Norwegian cities, let's calculate cumulative frequencies **in alphabetical order**:
+
+| City | Frequency Count | Calculation | Cumulative Frequency |
+|------|-----------------|-------------|---------------------|
+| Bergen | 5 | Bergen | 5 |
+| Kristiansand | 4 | Bergen + Kristiansand | 9 |
+| Oslo | 6 | Bergen + Kristiansand + Oslo | 15 |
+| Stavanger | 5 | Bergen + Kristiansand + Oslo + Stavanger | 20 |
+
+**Interpretation**:
+- 5 people live in cities alphabetically up to "Bergen"
+- 9 people live in cities alphabetically up to "Kristiansand" (B-K)
+- 15 people live in cities alphabetically up to "Oslo" (B-O)
+- 20 people total (cumulative total matches dataset size ✓)
+
+---
+
+#### Example 2: Norwegian Cities (Geographic Order - North to South)
+
+Now let's reorder the same data **by latitude** (North → South):
+
+| City | Frequency Count | Calculation | Cumulative Frequency |
+|------|-----------------|-------------|---------------------|
+| Bergen | 5 | Bergen | 5 |
+| Oslo | 6 | Bergen + Oslo | 11 |
+| Stavanger | 5 | Bergen + Oslo + Stavanger | 16 |
+| Kristiansand | 4 | Bergen + Oslo + Stavanger + Kristiansand | 20 |
+
+**Interpretation**:
+- 5 people live in Bergen or further north
+- 11 people live north of or at the same latitude as Oslo
+- 16 people live north of Kristiansand
+- **Notice**: The cumulative frequencies changed dramatically just by reordering!
+
+**Key Insight**: 11 people live further north than Stavanger, while 16 live further north than Kristiansand. This geographic perspective provides different insights than alphabetical ordering.
+
+---
+
+#### How to Calculate Cumulative Frequencies: Excel vs Python
+
+---
+
+##### Method 1: Excel (Step-by-Step)
+
+**Step 1: Set up your frequency table** (from previous examples):
+
+| D | E |
+|---|---|
+| **City** | **Frequency** |
+| Bergen | 5 |
+| Kristiansand | 4 |
+| Oslo | 6 |
+| Stavanger | 5 |
+
+**Step 2: Add cumulative frequency column** (column F):
+
+| F | Formula | Result |
+|---|---|---|
+| **Cumulative Freq** | | |
+| 5 | =E2 | 5 |
+| 9 | =F2+E3 | 9 |
+| 15 | =F3+E4 | 15 |
+| 20 | =F4+E5 | 20 |
+
+**Alternative: Using SUM with absolute reference**
+
+| F | Formula | Result |
+|---|---|---|
+| **Cumulative Freq** | | |
+| 5 | =SUM($E$2:E2) | 5 |
+| 9 | =SUM($E$2:E3) | 9 |
+| 15 | =SUM($E$2:E4) | 15 |
+| 20 | =SUM($E$2:E5) | 20 |
+
+**Why this works**: The `$E$2` locks the starting row, while `E2`, `E3`, `E4`, `E5` expand the range as you copy the formula down.
+
+**Step 3: Verify**: The last cumulative frequency should equal your total count (20).
+
+**Complete Excel Table**:
+
+| City | Frequency | Cumulative Freq | Cumulative % |
+|------|-----------|----------------|--------------|
+| Bergen | 5 | 5 | 25.0 |
+| Kristiansand | 4 | 9 | 45.0 |
+| Oslo | 6 | 15 | 75.0 |
+| Stavanger | 5 | 20 | 100.0 |
+
+**Cumulative % formula** (column G):
+```
+=F2/$F$5*100
+```
+
+---
+
+##### Method 2: Python with Pandas
+
+```python
+import pandas as pd
+
+# Norwegian cities data (alphabetical order)
+cities_data = {
+    'City': ['Bergen', 'Kristiansand', 'Oslo', 'Stavanger'],
+    'Frequency': [5, 4, 6, 5]
+}
+df = pd.DataFrame(cities_data)
+
+# Calculate cumulative frequency
+df['Cumulative Freq'] = df['Frequency'].cumsum()
+
+# Calculate cumulative percentage
+df['Cumulative %'] = (df['Cumulative Freq'] / df['Frequency'].sum() * 100).round(1)
+
+print("Alphabetical Order:")
+print(df)
+
+# Now reorder by latitude (North to South)
+cities_geographic = {
+    'City': ['Bergen', 'Oslo', 'Stavanger', 'Kristiansand'],
+    'Frequency': [5, 6, 5, 4]
+}
+df_geo = pd.DataFrame(cities_geographic)
+
+# Recalculate cumulative frequency with new order
+df_geo['Cumulative Freq'] = df_geo['Frequency'].cumsum()
+df_geo['Cumulative %'] = (df_geo['Cumulative Freq'] / df_geo['Frequency'].sum() * 100).round(1)
+
+print("\nGeographic Order (North to South):")
+print(df_geo)
+
+# Compare the difference
+print("\nKey Insight:")
+print(f"People north of Stavanger (geographic): {df_geo[df_geo['City']=='Oslo']['Cumulative Freq'].values[0]}")
+print(f"People alphabetically before Stavanger: {df[df['City']=='Oslo']['Cumulative Freq'].values[0]}")
+```
+
+**Expected Output**:
+```
+Alphabetical Order:
+           City  Frequency  Cumulative Freq  Cumulative %
+0     Bergen          5                5          25.0
+1  Kristiansand          4                9          45.0
+2         Oslo          6               15          75.0
+3     Stavanger          5               20         100.0
+
+Geographic Order (North to South):
+           City  Frequency  Cumulative Freq  Cumulative %
+0      Bergen          5                5          25.0
+1         Oslo          6               11          55.0
+2    Stavanger          5               16          80.0
+3  Kristiansand          4               20         100.0
+
+Key Insight:
+People north of Stavanger (geographic): 11
+People alphabetically before Stavanger: 15
+```
+
+---
+
+#### Example 3: Exam Grades with Cumulative Frequencies
+
+**Scenario**: Analyze the cumulative distribution of 40 exam grades (A, B, C, D, F) to understand performance thresholds.
+
+**Raw Grade Data** (same as before):
+```
+B, A, C, B, B, A, F, C, B, A, C, D, B, A, C, B, A, B, C, A, 
+D, B, A, C, B, B, A, C, D, A, B, C, A, F, B, A, C, B, A, C
+```
+
+**Grade counts**: A=13, B=14, C=9, D=2, F=2
+
+---
+
+**How to Calculate: Excel Method**
+
+**Step 1: Create frequency table** (ordered F → A, worst to best):
+
+| D | E | F | Formula for F |
+|---|---|---|---|
+| **Grade** | **Frequency** | **Cumulative Freq** | |
+| F | 2 | 2 | =E2 |
+| D | 2 | 4 | =F2+E3 |
+| C | 9 | 13 | =F3+E4 |
+| B | 14 | 27 | =F4+E5 |
+| A | 13 | 40 | =F5+E6 |
+
+**Or use SUM with expanding range**:
+```
+=SUM($E$2:E2)  (for F2)
+=SUM($E$2:E3)  (for F3)
+... and so on
+```
+
+**Step 2: Add cumulative percentage** (column G):
+
+| G | Formula |
+|---|---|
+| **Cumulative %** | |
+| 5.0 | =F2/$F$6*100 |
+| 10.0 | =F3/$F$6*100 |
+| 32.5 | =F4/$F$6*100 |
+| 67.5 | =F5/$F$6*100 |
+| 100.0 | =F6/$F$6*100 |
+
+**Complete Excel Table**:
+
+| Grade | Frequency | Cumulative Freq | Cumulative % |
+|-------|-----------|----------------|--------------|
+| F (Fail) | 2 | 2 | 5.0 |
+| D (Below Avg) | 2 | 4 | 10.0 |
+| C (Average) | 9 | 13 | 32.5 |
+| B (Good) | 14 | 27 | 67.5 |
+| A (Excellent) | 13 | 40 | 100.0 |
+
+---
+
+**How to Calculate: Python Method**
+
+```python
+import pandas as pd
+
+# Raw exam grades
+grades = ['B', 'A', 'C', 'B', 'B', 'A', 'F', 'C', 'B', 'A', 'C', 'D', 'B', 'A', 
+          'C', 'B', 'A', 'B', 'C', 'A', 'D', 'B', 'A', 'C', 'B', 'B', 'A', 'C', 
+          'D', 'A', 'B', 'C', 'A', 'F', 'B', 'A', 'C', 'B', 'A', 'C']
+
+df = pd.DataFrame({'Grade': grades})
+
+# Define grade order (F to A, worst to best)
+grade_order = ['F', 'D', 'C', 'B', 'A']
+grade_labels = {
+    'F': 'Fail',
+    'D': 'Below Average',
+    'C': 'Average',
+    'B': 'Good',
+    'A': 'Excellent'
+}
+
+# Calculate frequency for each grade
+frequency = df['Grade'].value_counts().reindex(grade_order)
+
+# Create summary table
+summary = pd.DataFrame({
+    'Grade': frequency.index,
+    'Label': [grade_labels[g] for g in frequency.index],
+    'Frequency': frequency.values,
+    'Cumulative Freq': frequency.cumsum().values,
+    'Cumulative %': (frequency.cumsum() / len(df) * 100).round(1).values
+})
+
+print("Cumulative Grade Distribution:")
+print(summary)
+
+# Key insights using cumulative frequencies
+print("\nKey Performance Thresholds:")
+print(f"Students at D or below: {summary[summary['Grade']=='D']['Cumulative Freq'].values[0]} ({summary[summary['Grade']=='D']['Cumulative %'].values[0]}%)")
+print(f"Students at C or below: {summary[summary['Grade']=='C']['Cumulative Freq'].values[0]} ({summary[summary['Grade']=='C']['Cumulative %'].values[0]}%)")
+print(f"Students at B or below: {summary[summary['Grade']=='B']['Cumulative Freq'].values[0]} ({summary[summary['Grade']=='B']['Cumulative %'].values[0]}%)")
+
+# Percentile interpretation
+print("\nPercentile Interpretation:")
+print(f"67.5% of students scored B or lower")
+print(f"32.5% of students scored A (top third of class)")
+```
+
+**Expected Output**:
+```
+Cumulative Grade Distribution:
+  Grade          Label  Frequency  Cumulative Freq  Cumulative %
+0     F           Fail          2                2           5.0
+1     D  Below Average          2                4          10.0
+2     C        Average          9               13          32.5
+3     B           Good         14               27          67.5
+4     A      Excellent         13               40         100.0
+
+Key Performance Thresholds:
+Students at D or below: 4 (10.0%)
+Students at C or below: 13 (32.5%)
+Students at B or below: 27 (67.5%)
+
+Percentile Interpretation:
+67.5% of students scored B or lower
+32.5% of students scored A (top third of class)
+```
+
+**Interpretation**:
+- **5% failed** (F grade) - 2 students need remedial support
+- **10% at D or below** - 4 students are struggling
+- **32.5% at C or below** - bottom third of class
+- **67.5% at B or below** - two-thirds scored "good" or lower
+- **Top 32.5% earned an A** - excellent performers (13 students)
+
+**Educational Insights**:
+- 📊 Grade distribution shows most students in the B-A range (good performance)
+- ✅ Only 10% at risk (D or F) - manageable intervention group
+- 🎯 Median performance is around B (50th percentile falls in B range)
+- 📈 Top third performed excellently - consider honors/advanced track
+
+---
+
+#### Student Task: Calculate Cumulative Frequencies for Satisfaction Ratings
+
+**Using the student satisfaction data** (51 students rating learning materials 1-5):
+
+Frequency counts from earlier:
+- Rating 1 (Very Poor): 5 students
+- Rating 2 (Poor): 7 students  
+- Rating 3 (Neutral): 10 students
+- Rating 4 (Good): 14 students
+- Rating 5 (Excellent): 15 students
+
+**Your Task**:
+1. Calculate cumulative frequencies for ratings 1 through 5 (in order)
+2. Calculate cumulative percentages
+3. Create a complete table showing: Rating, Frequency, Cumulative Freq, Cumulative %
+4. **Interpretation**: What percentage of students gave a rating of 3 (Neutral) or lower?
+
+---
+
+**Choose Your Method**:
+
+##### Solution Option A: Excel Method
+
+**Step 1: Set up your table** (columns A-B):
+
+| A | B |
+|---|---|
+| **Rating** | **Frequency** |
+| 1 | 5 |
+| 2 | 7 |
+| 3 | 10 |
+| 4 | 14 |
+| 5 | 15 |
+
+**Step 2: Add cumulative frequency** (column C):
+
+| C | Formula |
+|---|---|
+| **Cumulative Freq** | |
+| 5 | =SUM($B$2:B2) |
+| 12 | =SUM($B$2:B3) |
+| 22 | =SUM($B$2:B4) |
+| 36 | =SUM($B$2:B5) |
+| 51 | =SUM($B$2:B6) |
+
+**Step 3: Add cumulative percentage** (column D):
+
+| D | Formula |
+|---|---|
+| **Cumulative %** | |
+| 9.8 | =C2/$C$6*100 |
+| 23.5 | =C3/$C$6*100 |
+| 43.1 | =C4/$C$6*100 |
+| 70.6 | =C5/$C$6*100 |
+| 100.0 | =C6/$C$6*100 |
+
+**Final Excel Table**:
+
+| Rating | Label | Frequency | Cumulative Freq | Cumulative % |
+|--------|-------|-----------|----------------|--------------|
+| 1 | Very Poor | 5 | 5 | 9.8 |
+| 2 | Poor | 7 | 12 | 23.5 |
+| 3 | Neutral | 10 | 22 | 43.1 |
+| 4 | Good | 14 | 36 | 70.6 |
+| 5 | Excellent | 15 | 51 | 100.0 |
+
+**Answer**: 43.1% of students gave a rating of 3 (Neutral) or lower.
+
+---
+
+##### Solution Option B: Python Method
+
+```python
+import pandas as pd
+
+ratings = [3, 4, 5, 2, 1, 4, 3, 2, 5, 5, 3, 4, 2, 1, 3, 5, 2, 2, 3, 4, 4, 4, 5, 1, 3, 
+           3, 4, 5, 2, 1, 4, 3, 2, 5, 5, 3, 2, 2, 3, 4, 4, 4, 5, 2, 3, 3, 4, 5, 2, 1, 4]
+
+df = pd.DataFrame({'Rating': ratings})
+
+# Define rating order and labels
+rating_order = [1, 2, 3, 4, 5]
+rating_labels = {
+    1: 'Very Poor',
+    2: 'Poor',
+    3: 'Neutral',
+    4: 'Good',
+    5: 'Excellent'
+}
+
+# Calculate frequency counts
+frequency = df['Rating'].value_counts().sort_index()
+
+# Create comprehensive summary table
+summary = pd.DataFrame({
+    'Rating': frequency.index,
+    'Label': [rating_labels[r] for r in frequency.index],
+    'Frequency': frequency.values,
+    'Cumulative Freq': frequency.cumsum().values,
+    'Cumulative %': (frequency.cumsum() / len(df) * 100).round(1).values
+})
+
+print("Cumulative Satisfaction Distribution:")
+print(summary)
+print(f"\nTotal responses: {len(df)}")
+
+# Answer the question
+neutral_or_lower = summary[summary['Rating'] <= 3]['Cumulative Freq'].max()
+neutral_or_lower_pct = summary[summary['Rating'] <= 3]['Cumulative %'].max()
+
+print(f"\nAnswer: {neutral_or_lower_pct}% of students gave a rating of 3 (Neutral) or lower")
+print(f"That's {neutral_or_lower} out of {len(df)} students")
+
+# Additional insights
+print("\nAdditional Insights:")
+print(f"Students rating 4 or higher (satisfied): {51-22} ({100-43.1:.1f}%)")
+print(f"Students rating 2 or lower (dissatisfied): {summary[summary['Rating']==2]['Cumulative Freq'].values[0]} ({summary[summary['Rating']==2]['Cumulative %'].values[0]}%)")
+```
+
+**Expected Output**:
+```
+Cumulative Satisfaction Distribution:
+   Rating      Label  Frequency  Cumulative Freq  Cumulative %
+0       1  Very Poor          5                5           9.8
+1       2       Poor          7               12          23.5
+2       3    Neutral         10               22          43.1
+3       4       Good         14               36          70.6
+4       5  Excellent         15               51         100.0
+
+Total responses: 51
+
+Answer: 43.1% of students gave a rating of 3 (Neutral) or lower
+That's 22 out of 51 students
+
+Additional Insights:
+Students rating 4 or higher (satisfied): 29 (56.9%)
+Students rating 2 or lower (dissatisfied): 12 (23.5%)
+```
+
+**Interpretation**:
+- **43.1% rated Neutral or lower** (22 students) - nearly half aren't satisfied
+- **56.9% rated Good or Excellent** (29 students) - majority are satisfied
+- **23.5% dissatisfied** (ratings 1-2) - this group needs attention
+- **70th percentile** falls at rating 4 (Good)
+- **Top 29.4%** gave Excellent rating
+
+**Actionable Insights**:
+- ⚠️ 43% neutral-or-lower is concerning - investigate root causes
+- ✅ Majority (57%) are satisfied - learning materials are working for most
+- 🎯 Focus on the 23.5% who are dissatisfied (12 students)
+- 📊 Consider what separates satisfied from unsatisfied students
+
+---
+
+### Binning (Grouping Continuous Data)
+
+**Binning** is the process of dividing continuous numerical values into discrete **bins** or **intervals**. This technique transforms continuous data into categorical data, making it easier to analyze, visualize, and interpret, especially with large datasets.
+
+**Why use binning?**
+- Simplifies analysis of continuous variables with many unique values
+- Reduces noise and outliers in data
+- Makes data easier to visualize (histograms, bar charts)
+- Groups similar values together for pattern recognition
+- Converts continuous data for methods that require categorical input
+
+**Formula for bin width (equal width binning)**:
+$$\text{Bin Width} = \frac{\text{Max Value} - \text{Min Value}}{\text{Number of Bins}}$$
+
+---
+
+#### Example: Norwegian Cities with Age Data
+
+Let's extend our Norwegian cities example by adding an **Age** feature:
+
+| ID | Home_City | Age |
+|----|-----------|-----|
+| 1 | Oslo | 25 |
+| 2 | Oslo | 60 |
+| 3 | Kristiansand | 33 |
+| 4 | Bergen | 42 |
+| 5 | Oslo | 19 |
+| 6 | Stavanger | 56 |
+| 7 | Stavanger | 34 |
+| 8 | Bergen | 57 |
+| 9 | Bergen | 43 |
+| 10 | Kristiansand | 61 |
+| 11 | Oslo | 27 |
+| 12 | Oslo | 31 |
+| 13 | Stavanger | 52 |
+| 14 | Bergen | 29 |
+| 15 | Kristiansand | 63 |
+| 16 | Kristiansand | 39 |
+| 17 | Stavanger | 34 |
+| 18 | Oslo | 28 |
+| 19 | Bergen | 41 |
+| 20 | Stavanger | 47 |
+
+**Data Range**: Ages 18-65 (online survey restrictions)
+
+---
+
+#### Common Binning Methods
+
+There are several approaches to creating bins, each with different use cases:
+
+##### 1. Equal Width Binning
+
+**Concept**: Divide the entire range into intervals of equal size.
+
+**Example**: Ages 0-100 → bins of 10 years each (0-9, 10-19, 20-29, etc.)
+
+**Calculation**:
+1. Find range: Max - Min
+2. Divide by number of bins: Range / Number of Bins
+3. Create bins of that width
+
+**Example with our data**:
+- Min age: 18, Max age: 65
+- Range: 65 - 18 = 47
+- If we want 5 bins: 47 / 5 = 9.4 ≈ 9-10 per bin
+- **Note**: When using whole numbers, one bin may be larger (typically the last one)
+
+**Pros**: Simple, easy to understand
+**Cons**: Can create bins with very different numbers of observations if data is skewed
+
+---
+
+##### 2. Equal Frequency (Quantile) Binning
+
+**Concept**: Divide data so each bin has roughly the same number of observations.
+
+**Example**: 100 observations → 4 bins of 25 observations each
+
+**Pros**: Each bin equally representative of the sample
+**Cons**: Bin widths can vary significantly
+
+---
+
+##### 3. Custom Binning (Domain-Specific)
+
+**Concept**: Use expert knowledge to define meaningful bins.
+
+**Example - Age Groups (Life Stages)**:
+
+| Description | Bin Range | Reasoning |
+|-------------|-----------|-----------|
+| Young adults | 18-25 | College/early career |
+| Adults | 26-35 | Career establishment |
+| Mature adults | 36-45 | Career peak |
+| Middle-aged | 46-55 | Pre-retirement |
+| Senior adults | 56-65 | Near retirement |
+
+**Pros**: Bins have real-world meaning and interpretability
+**Cons**: Requires domain expertise, may not be optimal for statistical analysis
+
+---
+
+##### 4. Automated Binning
+
+**Concept**: Use algorithms (Sturges' rule, Scott's rule, Freedman-Diaconis) to determine optimal bin count.
+
+**Sturges' Rule**: Number of bins = $\lceil \log_2(n) + 1 \rceil$ where $n$ = number of observations
+
+**Example**: For 20 observations: $\lceil \log_2(20) + 1 \rceil = \lceil 5.32 \rceil = 6$ bins
+
+---
+
+#### How to Bin Data: Excel vs Python
+
+We'll use **custom binning** with the 5 age groups defined above.
+
+---
+
+##### Method 1: Excel Binning
+
+**Step 1: Set up your data** (columns A-C):
+
+| A | B | C |
+|---|---|---|
+| ID | Home_City | Age |
+| 1 | Oslo | 25 |
+| 2 | Oslo | 60 |
+| ... | ... | ... |
+| 20 | Stavanger | 47 |
+
+**Step 2: Create bin definitions** (columns E-F):
+
+| E | F |
+|---|---|
+| **Bin Label** | **Range** |
+| Young adults | 18-25 |
+| Adults | 26-35 |
+| Mature adults | 36-45 |
+| Middle-aged | 46-55 |
+| Senior adults | 56-65 |
+
+**Step 3: Add Age_Group column** (column D) using nested IF:
+
+```excel
+=IF(C2<=25, "Young adults",
+  IF(C2<=35, "Adults",
+    IF(C2<=45, "Mature adults",
+      IF(C2<=55, "Middle-aged", "Senior adults"))))
+```
+
+**Or use IFS function** (Excel 2016+):
+```excel
+=IFS(C2<=25, "Young adults",
+     C2<=35, "Adults",
+     C2<=45, "Mature adults",
+     C2<=55, "Middle-aged",
+     C2<=65, "Senior adults")
+```
+
+**Step 4: Create frequency table** (columns H-I):
+
+| H | I | Formula |
+|---|---|---|
+| **Age Group** | **Count** | |
+| Young adults | 3 | =COUNTIF($D$2:$D$21,"Young adults") |
+| Adults | 6 | =COUNTIF($D$2:$D$21,"Adults") |
+| Mature adults | 5 | =COUNTIF($D$2:$D$21,"Mature adults") |
+| Middle-aged | 3 | =COUNTIF($D$2:$D$21,"Middle-aged") |
+| Senior adults | 3 | =COUNTIF($D$2:$D$21,"Senior adults") |
+
+**Result Table**:
+
+| ID | Home_City | Age | Age_Group |
+|----|-----------|-----|-----------|
+| 1 | Oslo | 25 | Young adults |
+| 2 | Oslo | 60 | Senior adults |
+| 3 | Kristiansand | 33 | Adults |
+| 4 | Bergen | 42 | Mature adults |
+| 5 | Oslo | 19 | Young adults |
+| ... | ... | ... | ... |
+
+**Frequency Summary**:
+
+| Age Group | Count | Percentage |
+|-----------|-------|------------|
+| Young adults (18-25) | 3 | 15% |
+| Adults (26-35) | 6 | 30% |
+| Mature adults (36-45) | 5 | 25% |
+| Middle-aged (46-55) | 3 | 15% |
+| Senior adults (56-65) | 3 | 15% |
+
+---
+
+##### Method 2: Python Binning
+
+```python
+import pandas as pd
+
+# Create the Norwegian cities + age dataset
+data = {
+    'ID': range(1, 21),
+    'Home_City': ['Oslo', 'Oslo', 'Kristiansand', 'Bergen', 'Oslo', 'Stavanger',
+                  'Stavanger', 'Bergen', 'Bergen', 'Kristiansand', 'Oslo', 'Oslo',
+                  'Stavanger', 'Bergen', 'Kristiansand', 'Kristiansand', 'Stavanger',
+                  'Oslo', 'Bergen', 'Stavanger'],
+    'Age': [25, 60, 33, 42, 19, 56, 34, 57, 43, 61, 27, 31, 52, 29, 63, 39, 34, 28, 41, 47]
+}
+df = pd.DataFrame(data)
+
+# Method 1: Using pd.cut() with custom bins
+bins = [18, 25, 35, 45, 55, 65]
+labels = ['Young adults', 'Adults', 'Mature adults', 'Middle-aged', 'Senior adults']
+
+df['Age_Group'] = pd.cut(df['Age'], bins=bins, labels=labels, right=True, include_lowest=True)
+
+print("Dataset with Age Groups:")
+print(df)
+
+# Calculate frequency distribution of age groups
+age_group_freq = df['Age_Group'].value_counts().sort_index()
+print("\nAge Group Frequency:")
+print(age_group_freq)
+
+# Create comprehensive summary
+summary = pd.DataFrame({
+    'Age Group': labels,
+    'Range': ['18-25', '26-35', '36-45', '46-55', '56-65'],
+    'Count': [age_group_freq.get(label, 0) for label in labels],
+    'Percentage': [(age_group_freq.get(label, 0) / len(df) * 100).round(1) for label in labels]
+})
+
+print("\nAge Group Summary:")
+print(summary)
+
+# Find min and max ages
+print(f"\nData Range:")
+print(f"Minimum age: {df['Age'].min()}")
+print(f"Maximum age: {df['Age'].max()}")
+print(f"Age span: {df['Age'].max() - df['Age'].min()} years")
+```
+
+**Expected Output**:
+```
+Dataset with Age Groups:
+    ID     Home_City  Age      Age_Group
+0    1          Oslo   25  Young adults
+1    2          Oslo   60 Senior adults
+2    3  Kristiansand   33        Adults
+3    4        Bergen   42 Mature adults
+4    5          Oslo   19  Young adults
+...
+
+Age Group Frequency:
+Young adults     2
+Adults           7
+Mature adults    4
+Middle-aged      2
+Senior adults    5
+Name: Age_Group, dtype: int64
+
+Age Group Summary:
+       Age Group  Range  Count  Percentage
+0  Young adults  18-25      2        10.0
+1        Adults  26-35      7        35.0
+2 Mature adults  36-45      4        20.0
+3   Middle-aged  46-55      2        10.0
+4 Senior adults  56-65      5        25.0
+
+Data Range:
+Minimum age: 19
+Maximum age: 63
+Age span: 44 years
+```
+
+**Interpretation**:
+- **Most common age group**: Adults (26-35) with 7 people (35%)
+- **Least common groups**: Young adults and Middle-aged (10% each)
+- **Distribution pattern**: Relatively balanced across life stages
+- **Data concentration**: 55% of respondents are in Adults and Senior adults groups
+
+**Using Binning for Longitudinal Analysis**:
+
+Binning makes it easier to:
+- **Compare results over time**: If this survey is repeated next year, you can easily see if the age distribution remains stable
+- **Track demographic shifts**: Monitor whether the Mature adults bin frequency increases while the Adults bin decreases (aging population)
+- **Identify trends**: Spot patterns like whether younger age groups are growing or shrinking
+- **Standardize comparisons**: Same bins allow year-over-year comparison even with different sample sizes
+
+**Example Year-over-Year Comparison**:
+
+| Age Group | 2025 Count | 2025 % | 2026 Count | 2026 % | Change |
+|-----------|------------|--------|------------|--------|--------|
+| Young adults | 2 | 10% | 3 | 12% | +1 (+2%) |
+| Adults | 7 | 35% | 6 | 24% | -1 (-11%) |
+| Mature adults | 4 | 20% | 5 | 20% | +1 (0%) |
+| Middle-aged | 2 | 10% | 3 | 12% | +1 (+2%) |
+| Senior adults | 5 | 25% | 8 | 32% | +3 (+7%) |
+
+**Insight**: Population is aging - Adults group declining while Senior adults increasing.
+
+---
+
+**Important Note: Bin Choice Affects Insights**
+
+Different binning strategies produce different results and insights. Consider these alternatives:
+
+**Alternative 1: Broader bins** (3 categories)
+- Young (18-35): 9 people (45%)
+- Middle (36-55): 6 people (30%)
+- Senior (56-65): 5 people (25%)
+
+**Alternative 2: Narrower bins** (10-year intervals)
+- 18-27: 4 people (20%)
+- 28-37: 5 people (25%)
+- 38-47: 4 people (20%)
+- 48-57: 4 people (20%)
+- 58-65: 3 people (15%)
+
+**Takeaway**: Always experiment with different bin ranges to see which provides the most meaningful insights for your analysis. Binning is especially helpful when creating **histograms** - visual representations of frequency distributions.
+
+---
+
+#### Example: Movie Runtime Binning
+
+**Scenario**: You're analyzing a movie database and have 20 movie runtimes (in minutes). You want to categorize them by length.
+
+**Raw Movie Runtimes (minutes)**:
+```
+125, 98, 105, 134, 90, 102, 145, 87, 115, 129, 96, 122, 135, 110, 140, 85, 100, 132, 95, 130
+```
+
+**Analysis Goal**: Group movies into Short, Medium, and Long categories to understand the distribution of movie lengths.
+
+**Custom Bins**:
+
+| Category | Runtime Range | Description |
+|----------|---------------|-------------|
+| Short | < 100 minutes | Quick viewing |
+| Medium | 100-120 minutes | Standard length |
+| Long | > 120 minutes | Extended viewing |
+
+---
+
+**How to Calculate: Excel Method**
+
+**Step 1: Enter runtimes** in column A (A2:A21):
+
+| A |
+|---|
+| **Runtime** |
+| 125 |
+| 98 |
+| 105 |
+| ... |
+| 130 |
+
+**Step 2: Create Length_Category column** (column B) using nested IF:
+
+```excel
+=IF(A2<100, "Short",
+  IF(A2<=120, "Medium", "Long"))
+```
+
+**Step 3: Create frequency table** (columns D-E):
+
+| D | E | Formula |
+|---|---|---|
+| **Category** | **Count** | |
+| Short | 5 | =COUNTIF($B$2:$B$21,"Short") |
+| Medium | 6 | =COUNTIF($B$2:$B$21,"Medium") |
+| Long | 9 | =COUNTIF($B$2:$B$21,"Long") |
+| **Total** | 20 | =SUM(E2:E4) |
+
+**Step 4: Add percentages** (column F):
+
+| F | Formula |
+|---|---|
+| **Percentage** | |
+| 25% | =E2/$E$5*100 |
+| 30% | =E3/$E$5*100 |
+| 45% | =E4/$E$5*100 |
+
+**Complete Excel Table**:
+
+| Runtime | Category | | Summary |
+|---------|----------|---|---------|
+| 125 | Long | | **Category** \| **Count** \| **%** |
+| 98 | Short | | Short \| 5 \| 25% |
+| 105 | Medium | | Medium \| 6 \| 30% |
+| 134 | Long | | Long \| 9 \| 45% |
+| 90 | Short | | **Total** \| **20** \| **100%** |
+| ... | ... | | |
+
+---
+
+**How to Calculate: Python Method**
+
+```python
+import pandas as pd
+
+# Movie runtimes in minutes
+runtimes = [125, 98, 105, 134, 90, 102, 145, 87, 115, 129, 96, 122, 135, 110, 140, 85, 100, 132, 95, 130]
+
+df = pd.DataFrame({'Runtime': runtimes})
+
+# Method 1: Using pd.cut() with custom bins
+bins = [0, 100, 120, float('inf')]
+labels = ['Short', 'Medium', 'Long']
+
+df['Category'] = pd.cut(df['Runtime'], bins=bins, labels=labels, right=False)
+
+print("Movies with Categories:")
+print(df)
+
+# Calculate frequency distribution
+category_freq = df['Category'].value_counts().reindex(labels)
+
+# Create summary table
+summary = pd.DataFrame({
+    'Category': labels,
+    'Runtime Range': ['< 100 min', '100-120 min', '> 120 min'],
+    'Count': category_freq.values,
+    'Percentage': (category_freq.values / len(df) * 100).round(1)
+})
+
+print("\nRuntime Distribution:")
+print(summary)
+
+# Statistical insights
+print(f"\nRuntime Statistics:")
+print(f"Mean runtime: {df['Runtime'].mean():.1f} minutes")
+print(f"Median runtime: {df['Runtime'].median():.1f} minutes")
+print(f"Shortest movie: {df['Runtime'].min()} minutes")
+print(f"Longest movie: {df['Runtime'].max()} minutes")
+print(f"Most common category: {category_freq.idxmax()} ({category_freq.max()} movies)")
+```
+
+**Expected Output**:
+```
+Movies with Categories:
+    Runtime Category
+0       125     Long
+1        98    Short
+2       105   Medium
+3       134     Long
+4        90    Short
+5       102   Medium
+6       145     Long
+7        87    Short
+8       115   Medium
+9       129     Long
+10       96    Short
+11      122     Long
+12      135     Long
+13      110   Medium
+14      140     Long
+15       85    Short
+16      100   Medium
+17      132     Long
+18       95    Short
+19      130     Long
+
+Runtime Distribution:
+  Category Runtime Range  Count  Percentage
+0    Short     < 100 min      5        25.0
+1   Medium   100-120 min      6        30.0
+2     Long     > 120 min      9        45.0
+
+Runtime Statistics:
+Mean runtime: 113.8 minutes
+Median runtime: 113.5 minutes
+Shortest movie: 85 minutes
+Longest movie: 145 minutes
+Most common category: Long (9 movies)
+```
+
+**Interpretation**:
+- **45% of movies are Long** (> 120 min) - most common category
+- **30% are Medium length** (100-120 min) - standard theatrical releases
+- **25% are Short** (< 100 min) - quick viewing options
+- **Mean ≈ Median**: Symmetric distribution, no significant skew
+- **Range**: 60 minutes (85 to 145) - moderate variability
+
+**Practical Insights**:
+- 🎬 Most movies trend toward longer runtimes (45% > 2 hours)
+- 📊 If planning a movie night, 75% of options are 100+ minutes
+- 🕐 Short movies (< 100 min) are less common - only 25% of collection
+- 📈 Distribution is right-skewed toward longer films
+
+---
+
+**Student Task: Bin the Movie Runtimes**
+
+**Your Assignment**: Practice binning by categorizing the 20 movie runtimes yourself.
+
+**Data**: 125, 98, 105, 134, 90, 102, 145, 87, 115, 129, 96, 122, 135, 110, 140, 85, 100, 132, 95, 130
+
+**Steps**:
+1. **Choose bins**: Use Short (< 100), Medium (100-120), Long (> 120)
+2. **Categorize each movie**: Assign each runtime to the appropriate bin
+3. **Count frequencies**: How many movies in each category?
+4. **Create a table**: Show Category, Count, and Percentage
+5. **Interpret**: Which category is most common? What does this tell you about the movie collection?
+
+**Choose Your Method**:
+
+**Option A: Manual Counting**
+- Go through the list and mark each runtime as S, M, or L
+- Count how many in each category
+- Calculate percentages
+
+**Option B: Excel**
+- Enter runtimes in column A
+- Use IF formula to categorize
+- Use COUNTIF to count frequencies
+
+**Option C: Python**
+- Use pd.cut() to bin the data
+- Use value_counts() for frequencies
+- Create summary table
+
+**Expected Results**:
+- Short: 5 movies (25%)
+- Medium: 6 movies (30%)
+- Long: 9 movies (45%)
+
+**Reflection Questions**:
+1. What if you used different bins like (< 90, 90-130, > 130)? Would the insights change?
+2. Which binning strategy is more useful for a movie streaming service?
+3. How would you bin if you wanted to separate "Epic" films (> 150 min)?
+
+---
+
+#### Example: Binning Exam Scores
+
+**Scenario**: A professor has 40 exam scores (0-100) and wants to bin them into letter grade categories.
+
+**Raw Scores**:
+```
+78, 92, 65, 88, 71, 45, 95, 73, 82, 91, 68, 55, 84, 93, 76, 81, 90, 69, 87, 94,
+58, 85, 92, 77, 80, 83, 91, 72, 61, 89, 86, 74, 93, 52, 79, 90, 70, 84, 91, 75
+```
+
+**Custom Bins (Grading Scale)**:
+
+| Grade | Range | Description |
+|-------|-------|-------------|
+| A | 90-100 | Excellent |
+| B | 80-89 | Good |
+| C | 70-79 | Average |
+| D | 60-69 | Below Average |
+| F | 0-59 | Fail |
+
+---
+
+**How to Calculate: Excel Method**
+
+**Step 1: Enter scores** in column A (A2:A41)
+
+**Step 2: Create Grade column** (column B) using nested IF:
+
+```excel
+=IF(A2>=90, "A",
+  IF(A2>=80, "B",
+    IF(A2>=70, "C",
+      IF(A2>=60, "D", "F"))))
+```
+
+**Step 3: Create frequency table**:
+
+| D | E | Formula |
+|---|---|---|
+| **Grade** | **Count** | |
+| A (90-100) | 13 | =COUNTIF($B$2:$B$41,"A") |
+| B (80-89) | 14 | =COUNTIF($B$2:$B$41,"B") |
+| C (70-79) | 9 | =COUNTIF($B$2:$B$41,"C") |
+| D (60-69) | 2 | =COUNTIF($B$2:$B$41,"D") |
+| F (0-59) | 2 | =COUNTIF($B$2:$B$41,"F") |
+
+---
+
+**How to Calculate: Python Method**
+
+```python
+import pandas as pd
+
+# Exam scores
+scores = [78, 92, 65, 88, 71, 45, 95, 73, 82, 91, 68, 55, 84, 93, 76, 81, 90, 69, 87, 94,
+          58, 85, 92, 77, 80, 83, 91, 72, 61, 89, 86, 74, 93, 52, 79, 90, 70, 84, 91, 75]
+
+df = pd.DataFrame({'Score': scores})
+
+# Method 1: Using pd.cut() with custom bins
+bins = [0, 60, 70, 80, 90, 100]
+labels = ['F', 'D', 'C', 'B', 'A']
+
+df['Grade'] = pd.cut(df['Score'], bins=bins, labels=labels, right=False, include_lowest=True)
+
+print("Scores with Grades:")
+print(df.head(10))
+
+# Calculate grade distribution
+grade_freq = df['Grade'].value_counts().reindex(['A', 'B', 'C', 'D', 'F'])
+
+# Create summary with grade ranges
+grade_summary = pd.DataFrame({
+    'Grade': ['A', 'B', 'C', 'D', 'F'],
+    'Range': ['90-100', '80-89', '70-79', '60-69', '0-59'],
+    'Count': grade_freq.values,
+    'Percentage': (grade_freq.values / len(df) * 100).round(1),
+    'Cumulative Count': grade_freq.cumsum().values,
+    'Cumulative %': (grade_freq.cumsum() / len(df) * 100).round(1).values
+})
+
+print("\nGrade Distribution:")
+print(grade_summary)
+
+# Statistical insights
+print(f"\nStatistical Summary:")
+print(f"Mean score: {df['Score'].mean():.1f}")
+print(f"Median score: {df['Score'].median():.1f}")
+print(f"Minimum score: {df['Score'].min()}")
+print(f"Maximum score: {df['Score'].max()}")
+print(f"Pass rate (≥60): {(df['Score'] >= 60).sum() / len(df) * 100:.1f}%")
+```
+
+**Expected Output**:
+```
+Scores with Grades:
+   Score Grade
+0     78     C
+1     92     A
+2     65     D
+3     88     B
+4     71     C
+5     45     F
+6     95     A
+7     73     C
+8     82     B
+9     91     A
+
+Grade Distribution:
+  Grade   Range  Count  Percentage  Cumulative Count  Cumulative %
+0     A  90-100     13        32.5                13          32.5
+1     B   80-89     14        35.0                27          67.5
+2     C   70-79      9        22.5                36          90.0
+3     D   60-69      2         5.0                38          95.0
+4     F    0-59      2         5.0                40         100.0
+
+Statistical Summary:
+Mean score: 78.5
+Median score: 80.5
+Minimum score: 45
+Maximum score: 95
+Pass rate (≥60): 95.0%
+```
+
+**Interpretation**:
+- **Binning reveals patterns**: 67.5% scored A or B (excellent/good performance)
+- **Mean (78.5) vs Median (80.5)**: Slight left skew due to a few low scores
+- **Pass rate**: 95% (38/40 students) passed with 60 or higher
+- **Grade distribution**: Relatively normal with most students in B-C range
+
+---
+
+#### Choosing the Right Binning Method
+
+| Method | Use When | Example |
+|--------|----------|---------|
+| **Equal Width** | Range is known and uniform distribution expected | Temperature ranges, test scores across full 0-100 scale |
+| **Equal Frequency** | Need balanced bins for comparison | Quartiles for income data, percentile rankings |
+| **Custom** | Categories have real-world meaning | Age groups (child, teen, adult), performance levels |
+| **Automated** | Exploratory analysis, no domain knowledge | Initial data exploration, automatic histogram creation |
+
+**Best Practice Tips**:
+- ✅ **Know your min/max**: Always check data range before binning
+- ✅ **Consider context**: What makes sense for interpretation?
+- ✅ **Test multiple approaches**: Try different bin counts and methods
+- ✅ **Avoid too many bins**: Defeats the purpose of simplification
+- ✅ **Avoid too few bins**: Loses important patterns
+- ⚠️ **Watch bin boundaries**: Decide if boundaries are inclusive (≤) or exclusive (<)
+
+---
+
+#### Python Implementation: Computing Distributions with Pandas
+
+Here's how to calculate frequency counts, relative frequencies, and cumulative frequencies using **Python and the pandas library**. All examples use real, runnable code with expected outputs.
+
+##### Example 1: Frequency Counts
+
+**Scenario**: You have customer satisfaction survey responses (Satisfied, Neutral, Dissatisfied).
+
+**Step 1: Create or load your data**
+
+```python
+import pandas as pd
+
+# Create a dataset with survey responses
+data = {
+    'satisfaction': ['Satisfied', 'Dissatisfied', 'Satisfied', 'Neutral', 
+                     'Satisfied', 'Satisfied', 'Dissatisfied', 'Neutral', 
+                     'Satisfied', 'Satisfied']
+}
+df = pd.DataFrame(data)
+
+# View first few rows
+print(df.head())
+```
+
+**Output:**
+```
+  satisfaction
+0     Satisfied
+1  Dissatisfied
+2     Satisfied
+3       Neutral
+4     Satisfied
+```
+
+**Step 2: Calculate frequency counts**
+
+```python
+# Method 1: Using value_counts()
+frequency = df['satisfaction'].value_counts()
+print(frequency)
+```
+
+**Output:**
+```
+Satisfied      6
+Dissatisfied   2
+Neutral        2
+Name: satisfaction, dtype: int64
+```
+
+**What this means**: "Satisfied" appears 6 times, "Dissatisfied" 2 times, "Neutral" 2 times.
+
+---
+
+##### Example 2: Relative Frequencies (Percentages)
+
+**Using the same data, calculate proportions:**
+
+```python
+# Method 1: Divide by total and multiply by 100
+relative_freq = (df['satisfaction'].value_counts() / len(df)) * 100
+print(relative_freq)
+
+# Method 2: Use normalize=True parameter
+relative_freq_alt = df['satisfaction'].value_counts(normalize=True) * 100
+print(relative_freq_alt)
+```
+
+**Output:**
+```
+Satisfied      60.0
+Dissatisfied   20.0
+Neutral        20.0
+Name: satisfaction, dtype: float64
+```
+
+**What this means**: 60% of responses are "Satisfied", 20% are "Dissatisfied", and 20% are "Neutral".
+
+---
+
+##### Example 3: Cumulative Frequencies
+
+**For ordered categories, calculate cumulative counts:**
+
+```python
+# Step 1: Create an ordered dataframe
+# First, define the category order (Dissatisfied → Neutral → Satisfied)
+category_order = ['Dissatisfied', 'Neutral', 'Satisfied']
+
+# Get frequency counts and sort by category order
+frequency = df['satisfaction'].value_counts().reindex(category_order)
+print("Frequency counts (ordered):")
+print(frequency)
+
+# Step 2: Calculate cumulative frequencies
+cumulative = frequency.cumsum()
+print("\nCumulative frequencies:")
+print(cumulative)
+```
+
+**Output:**
+```
+Frequency counts (ordered):
+Dissatisfied    2
+Neutral         2
+Satisfied       6
+Name: satisfaction, dtype: int64
+
+Cumulative frequencies:
+Dissatisfied     2
+Neutral          4
+Satisfied       10
+Name: satisfaction, dtype: int64
+```
+
+**What this means**: 
+- Up to "Dissatisfied": 2 responses
+- Up to "Neutral": 4 responses (2 + 2)
+- Up to "Satisfied": 10 responses (2 + 2 + 6, which is the total)
+
+---
+
+##### Example 4: Creating a Summary Table
+
+**Combine all three into one table:**
+
+```python
+# Create a comprehensive summary table
+summary_df = pd.DataFrame({
+    'Category': category_order,
+    'Frequency': frequency.values,
+    'Relative Freq (%)': (frequency.values / len(df)) * 100,
+    'Cumulative Freq': cumulative.values,
+    'Cumulative % ': (cumulative.values / len(df)) * 100
+})
+
+print(summary_df)
+```
+
+**Output:**
+```
+        Category  Frequency  Relative Freq (%)  Cumulative Freq  Cumulative %
+0  Dissatisfied          2               20.0                2            20.0
+1       Neutral          2               20.0                4            40.0
+2      Satisfied          6               60.0               10           100.0
+```
+
+**Using this table:**
+- **Frequency**: Raw count of each category
+- **Relative Freq (%)**: Percentage of total responses
+- **Cumulative Freq**: Running total of observations up to that point
+- **Cumulative %**: Cumulative percentage (tops out at 100%)
+
+---
+
+##### Example 5: Continuous Data with Binning
+
+**For numerical data, bin values and calculate distributions:**
+
+```python
+import pandas as pd
+import numpy as np
+
+# Create order value data
+orders = {
+    'order_value': [15, 32, 48, 51, 75, 82, 95, 120, 145, 180, 
+                    25, 40, 65, 110, 160, 55, 90, 135, 175, 22]
+}
+df_orders = pd.DataFrame(orders)
+
+# Step 1: Create bins
+bins = [0, 50, 100, 150, 200]
+labels = ['0-49', '50-99', '100-149', '150-199']
+
+# Step 2: Bin the data
+df_orders['bin'] = pd.cut(df_orders['order_value'], bins=bins, labels=labels, right=False)
+
+# Step 3: Calculate frequency counts per bin
+bin_counts = df_orders['bin'].value_counts().sort_index()
+print("Frequency by bin:")
+print(bin_counts)
+
+# Step 4: Create binned summary table
+binned_summary = pd.DataFrame({
+    'Range ($)': bin_counts.index,
+    'Count': bin_counts.values,
+    'Relative Freq (%)': (bin_counts.values / len(df_orders)) * 100,
+    'Cumulative Count': bin_counts.cumsum().values
+})
+
+print("\nBinned Summary:")
+print(binned_summary)
+```
+
+**Output:**
+```
+Frequency by bin:
+0-49        5
+50-99       6
+100-149     5
+150-199     4
+Name: bin, dtype: int64
+
+Binned Summary:
+  Range ($)  Count  Relative Freq (%)  Cumulative Count
+0     0-49      5               25.0                 5
+1    50-99      6               30.0               11
+2  100-149      5               25.0               16
+3  150-199      4               20.0               20
+```
+
+---
+
+#### Quick Reference: Common Pandas Functions for Distributions
+
+Here's a handy summary of the key functions you'll use:
+
+| Function | Purpose | Example |
+|----------|---------|---------|
+| `.value_counts()` | Count occurrences of each category | `df['satisfaction'].value_counts()` |
+| `.value_counts(normalize=True)` | Get proportions (not percentages) | `df['satisfaction'].value_counts(normalize=True)` |
+| `.cumsum()` | Calculate cumulative sum | `frequency.cumsum()` |
+| `pd.cut()` | Bin continuous values into ranges | `pd.cut(df['age'], bins=[0, 18, 65, 100])` |
+| `.describe()` | Get summary statistics (mean, std, min, max, etc.) | `df['order_value'].describe()` |
+| `.crosstab()` | Create cross-tabulation (frequency table) | `pd.crosstab(df['gender'], df['satisfaction'])` |
+
+**Tip**: To save your results to a CSV file, use:
+```python
+summary_df.to_csv('distribution_summary.csv', index=False)
+```
+
+---
+
+#### Hands-On Exercise: Calculate Distributions from Your Data
+
+**Objective**: Practice calculating frequency, relative frequency, and cumulative frequency distributions.
+
+**Step-by-step:**
+
+1. **Prepare your environment**:
+   ```python
+   import pandas as pd
+   ```
+
+2. **Load your data** (choose one):
+   - Create sample data (as shown above)
+   - Read from a CSV: `df = pd.read_csv('your_file.csv')`
+   - Read from Excel: `df = pd.read_excel('your_file.xlsx')`
+
+3. **Choose a column** and calculate distributions:
+   ```python
+   # Replace 'column_name' with your actual column
+   column = 'column_name'
+   
+   # Frequency count
+   freq = df[column].value_counts().sort_index()
+   
+   # Relative frequency (%)
+   rel_freq = (df[column].value_counts(normalize=True) * 100).sort_index()
+   
+   # Cumulative frequency
+   cum_freq = freq.cumsum()
+   
+   # Create summary table
+   result = pd.DataFrame({
+       'Category': freq.index,
+       'Frequency': freq.values,
+       'Relative Freq (%)': rel_freq.values,
+       'Cumulative Freq': cum_freq.values
+   })
+   
+   print(result)
+   ```
+
+4. **Interpret the results**:
+   - Which category is most common?
+   - What percentage of the total does it represent?
+   - At what cumulative count do you reach 50% of the data?
+
+**Troubleshooting**:
+- **Error: "KeyError"** → Check that `column_name` matches exactly (case-sensitive)
+- **No output** → Add `print()` statements to see intermediate results
+- **Wrong calculations** → Verify your data has no missing values with `df[column].isnull().sum()`
+
+---
+
+#### Continuous Variable Distributions
+
+For continuous variables, you may **bin** values into ranges to make distributions easier to interpret:
+
+- **Binning** groups continuous values into fewer intervals.
+- Helps reveal skewness and shape when the raw data is highly granular.
+
+**Example: Binned Frequency Table (Order Value)**
+
+| Range ($) | Count |
+|-----------|-------|
+| 0-49 | 18 |
+| 50-99 | 26 |
+| 100-149 | 14 |
+| 150-199 | 7 |
+| 200+ | 5 |
+
+**Quick check for normality**: Use a histogram or Q-Q plot to see if values roughly follow a bell curve.
+
+---
+
+#### Common Mistakes When Computing Distributions
+
+**Mistake 1: Forgetting to handle missing values**
+```python
+# ❌ Wrong: Calculates distribution including NaN values
+freq = df['column'].value_counts()
+
+# ✅ Right: Removes missing values first
+freq = df['column'].dropna().value_counts()
+```
+
+**Mistake 2: Not sorting by a meaningful order**
+```python
+# ❌ Wrong: Categories sorted by frequency, not logically
+freq = df['satisfaction'].value_counts()  # Returns: Satisfied, Dissatisfied, Neutral
+
+# ✅ Right: Define a logical order
+order = ['Very Dissatisfied', 'Dissatisfied', 'Neutral', 'Satisfied', 'Very Satisfied']
+freq = df['satisfaction'].value_counts().reindex(order)
+```
+
+**Mistake 3: Using percentages instead of proportions in normalize**
+```python
+# ❌ Wrong: Returns 0.25 when you want 25%
+rel_freq = df['column'].value_counts(normalize=True)
+
+# ✅ Right: Multiply by 100 if you want percentages
+rel_freq = df['column'].value_counts(normalize=True) * 100
+```
+
+**Mistake 4: Incorrect bin boundaries**
+```python
+# ❌ Wrong: Data < 0 or >= 200 gets lost
+bins = [0, 50, 100, 150, 200]
+df['binned'] = pd.cut(df['value'], bins=bins)
+
+# ✅ Right: Set bin limits beyond your data range
+bins = [-float('inf'), 50, 100, 150, float('inf')]
+df['binned'] = pd.cut(df['value'], bins=bins)
+```
+
+**Mistake 5: Not checking the cumulative total**
+```python
+# Always verify your cumulative frequency ends at the total count
+print(f"Total observations: {len(df)}")
+print(f"Max cumulative freq: {cum_freq.iloc[-1]}")  # Should match total
+```
+
+---
+
+### 2. Central Tendency
+
+Central tendency describes the typical or central value in a distribution.
+
+**Mean**: Average value, sensitive to outliers.
+
+$$\bar{x} = \frac{\sum x_i}{n}$$
+
+**Median**: Middle value when sorted; robust to outliers.
+
+**Mode**: Most frequent value; useful for categorical data.
+
+---
+
+### 3. Spread (Dispersion)
+
+Spread tells you how much values vary.
+
+**Range**: Max minus min.
+
+**Variance**: Average squared deviation from the mean.
+
+$$s^2 = \frac{\sum (x_i - \bar{x})^2}{n-1}$$
+
+**Standard deviation**: Square root of variance; in the same units as the data.
+
+$$s = \sqrt{s^2}$$
+
+**Interquartile range (IQR)**: $Q3 - Q1$; robust to outliers.
+
+---
+
+### 4. Distribution Shape
+
+Shape indicates how values are distributed.
+
+- **Symmetric**: Mean and median are similar.
+- **Right-skewed**: Long tail to the right; mean > median.
+- **Left-skewed**: Long tail to the left; mean < median.
+
+---
+
+### 5. Example: Quick Summary
+
+**Sample data (daily orders)**: 5, 7, 7, 9, 12
+
+- Mean = (5 + 7 + 7 + 9 + 12) / 5 = 8
+- Median = 7
+- Mode = 7
+- Range = 12 - 5 = 7
+
+---
+
+### 6. Choosing the Right Summary
+
+- Use **mean + standard deviation** for roughly symmetric numeric data.
+- Use **median + IQR** for skewed data or when outliers exist.
+- Use **counts and percentages** for categorical data.
+
+---
+
+### 📚 What Did I Learn in This Lesson?
+
+In this lesson, you learned how to calculate and interpret distributions, which are fundamental to understanding your data before building models or making predictions.
+
+**1. Individual Data Attributes as Explanatory/Explained Variables**
+
+You now understand that data attributes (features) play different roles in analysis:
+- **Explained variables** (target, outcome, dependent) are what you're trying to predict or understand
+- **Explanatory variables** (predictors, independent, features) help explain the variation in the target
+- Example: Predicting house prices (explained) using size, bedrooms, and location (explanatory)
+
+This distinction helps you structure your analysis and choose appropriate statistical methods.
+
+**2. Descriptive Statistics Provide Valuable Insights**
+
+You learned that summarizing data with descriptive statistics is essential for:
+- Understanding central tendency (mean, median, mode)
+- Measuring spread (range, variance, standard deviation, IQR)
+- Identifying distribution shape (symmetric, skewed)
+- Detecting outliers and unusual patterns
+- Choosing appropriate analysis methods
+
+These statistics give you a quick snapshot of your data before diving into complex modeling.
+
+**3. Calculating Distributions is an Initial Step for Gathering Insights**
+
+You now know how to calculate and interpret different types of distributions:
+
+**Frequency Counts**: How often each value or category appears
+- Identifies most/least common values
+- Detects data quality issues
+- Foundation for all other distribution calculations
+
+**Relative Frequencies**: Proportions or percentages
+- Enables comparison across datasets of different sizes
+- Helps communicate findings clearly (e.g., "60% of customers are satisfied")
+- Useful for probability calculations
+
+**Cumulative Frequencies**: Running totals
+- Answers "how many up to this point?" questions
+- Calculates percentiles and quartiles
+- Identifies thresholds (e.g., "75% of students scored below 85")
+
+**Binning**: Grouping continuous values into intervals
+- Simplifies complex data for patterns
+- Creates meaningful categories (age groups, income brackets)
+- Enables longitudinal analysis and trend tracking
+
+**Key Takeaway**: Distribution calculations are the foundation of exploratory data analysis. They help you understand what you're working with, identify problems early, and guide your choice of statistical methods.
+
+---
+
+### ✅ Practice Questions
+
+1. A dataset of salaries is heavily right-skewed. Which summary statistics are most appropriate?
+2. For the values 3, 3, 4, 8, 12, compute the mean and median.
+3. Which feature type is best summarized with counts and percentages: payment method, height, or response time?
+4. Explain why the mean can be misleading when outliers are present.
+5. A distribution has mean < median. Is it left-skewed or right-skewed?
+
+#### ✅ Answer Key
+
+1. Median and IQR (robust to skew and outliers).
+2. Mean = 6; median = 4.
+3. Payment method (categorical).
+4. Outliers can pull the mean away from the typical value.
+5. Left-skewed.
+
+---
+
+## 🚗 Comprehensive Task: Car Dealership Distribution Analysis
+
+### The Scenario
+
+You are working as a data analyst at a car dealership that sold 30 cars with the following attributes:
+- **Colour**: Red, Blue, Black, White, Silver
+- **Type**: Sedan, SUV, Hatchback
+- **Price**: Between 82,071 NOK and 890,996 NOK
+
+Your task is to analyze this data by calculating frequency counts, relative frequencies, cumulative frequencies, and binning prices into meaningful categories.
+
+---
+
+### Part 1: Frequency Counts
+
+**Step 1A: Count color frequencies**
+
+| Colour | Frequency |
+|--------|-----------|
+| Red | 11 |
+| Black | 6 |
+| Blue | 5 |
+| White | 5 |
+| Silver | 3 |
+| **Total** | **30** |
+
+**Step 1B: Count type frequencies**
+
+| Type | Frequency |
+|------|-----------|
+| Sedan | 17 |
+| Hatchback | 7 |
+| SUV | 6 |
+| **Total** | **30** |
+
+**Excel Method (COUNTIF)**:
+```excel
+=COUNTIF($B$2:$B$31, "Red")      → 11
+=COUNTIF($B$2:$B$31, "Sedan")    → 17
+```
+
+**Python Method**:
+```python
+import pandas as pd
+
+# Create dataset
+df = pd.DataFrame({
+    'Colour': ['Black', 'Silver', 'Silver', 'White', 'Black', 'Blue', ..., 'Red'],
+    'Type': ['Sedan', 'Hatchback', 'Hatchback', 'Sedan', 'Sedan', 'SUV', ..., 'Sedan'],
+    'Price': [547580.14, 82071.31, 795637.68, ..., 594293.78]
+})
+
+# Frequency counts
+colour_freq = df['Colour'].value_counts().sort_values(ascending=False)
+print("Colour Frequency:")
+print(colour_freq)
+
+type_freq = df['Type'].value_counts().sort_values(ascending=False)
+print("\nType Frequency:")
+print(type_freq)
+```
+
+**Output:**
+```
+Colour Frequency:
+Red      11
+Black     6
+Blue      5
+White     5
+Silver    3
+
+Type Frequency:
+Sedan       17
+Hatchback    7
+SUV          6
+```
+
+---
+
+### Part 2: Relative Frequencies
+
+**Step 2A: Calculate color relative frequencies**
+
+| Colour | Frequency | Relative Frequency (%) |
+|--------|-----------|------------------------|
+| Red | 11 | 36.7% |
+| Black | 6 | 20.0% |
+| Blue | 5 | 16.7% |
+| White | 5 | 16.7% |
+| Silver | 3 | 10.0% |
+| **Total** | **30** | **100%** |
+
+**Step 2B: Calculate type relative frequencies**
+
+| Type | Frequency | Relative Frequency (%) |
+|------|-----------|------------------------|
+| Sedan | 17 | 56.7% |
+| Hatchback | 7 | 23.3% |
+| SUV | 6 | 20.0% |
+| **Total** | **30** | **100%** |
+
+**Excel Method**:
+```excel
+=E2/$E$6*100  where E2 is frequency and E6 is total (30)
+```
+Formula for Red: `=E2/$E$6*100` → 11/30 × 100 = 36.7%
+
+**Python Method**:
+```python
+# Relative frequencies (percentages)
+colour_rel_freq = (df['Colour'].value_counts() / len(df) * 100).sort_values(ascending=False)
+print("Colour Relative Frequency (%):")
+print(colour_rel_freq.round(1))
+
+type_rel_freq = (df['Type'].value_counts() / len(df) * 100).sort_values(ascending=False)
+print("\nType Relative Frequency (%):")
+print(type_rel_freq.round(1))
+```
+
+**Output:**
+```
+Colour Relative Frequency (%):
+Red      36.7
+Black    20.0
+Blue     16.7
+White    16.7
+Silver   10.0
+
+Type Relative Frequency (%):
+Sedan       56.7
+Hatchback   23.3
+SUV         20.0
+```
+
+**📊 Interpretation**: Over one-third (36.7%) of sales are red cars. Sedans dominate the inventory at 56.7%, more than half of all sales.
+
+---
+
+### Part 3: Cumulative Frequencies
+
+**Step 3A: Cumulative color frequencies (alphabetical order)**
+
+| Colour | Frequency | Cumulative Frequency | Cumulative % |
+|--------|-----------|----------------------|--------------|
+| Black | 6 | 6 | 20.0% |
+| Blue | 5 | 11 | 36.7% |
+| Red | 11 | 22 | 73.3% |
+| Silver | 3 | 25 | 83.3% |
+| White | 5 | 30 | 100.0% |
+
+**Step 3B: Cumulative type frequencies (alphabetical order)**
+
+| Type | Frequency | Cumulative Frequency | Cumulative % |
+|------|-----------|----------------------|--------------|
+| Hatchback | 7 | 7 | 23.3% |
+| Sedan | 17 | 24 | 80.0% |
+| SUV | 6 | 30 | 100.0% |
+
+**Excel Method (Expanding SUM)**:
+```excel
+Colour Cumulative (Column F):
+F2: =E2              → 6
+F3: =F2+E3           → 6+5 = 11
+F4: =F3+E4           → 11+11 = 22
+...and so on
+
+Or use expanding absolute reference:
+=SUM($E$2:E2)  (copy down, E2 changes to E3, E4, etc.)
+```
+
+**Python Method**:
+```python
+# Sort colours alphabetically
+colour_freq_sorted = df['Colour'].value_counts().reindex(['Black', 'Blue', 'Red', 'Silver', 'White'])
+
+# Cumulative frequency
+cumulative_colour = colour_freq_sorted.cumsum()
+cumulative_pct = (cumulative_colour / len(df) * 100).round(1)
+
+print("Cumulative Colour Distribution:")
+print(f"{'Colour':<10} {'Frequency':<12} {'Cumulative':<12} {'Cumulative %':<12}")
+for colour in ['Black', 'Blue', 'Red', 'Silver', 'White']:
+    freq = colour_freq_sorted[colour]
+    cum = cumulative_colour[colour]
+    pct = cum / len(df) * 100
+    print(f"{colour:<10} {freq:<12} {cum:<12} {pct:.1f}%")
+```
+
+**Output:**
+```
+Cumulative Colour Distribution:
+Colour     Frequency    Cumulative   Cumulative %
+Black             6            6         20.0%
+Blue              5           11         36.7%
+Red              11           22         73.3%
+Silver            3           25         83.3%
+White             5           30        100.0%
+```
+
+**📊 Interpretation**: By the time you reach "Red" alphabetically, you've accounted for 73.3% of all cars sold. This shows that red, blue, and black together make up 73.3% of the dealership's inventory.
+
+---
+
+### Part 4: Binning Price Data
+
+**Binning Strategy**: Create meaningful price categories
+
+| Category | Price Range (NOK) |
+|----------|------------------|
+| Affordable | < 200,000 |
+| Mid-range | 200,000 – 350,000 |
+| Expensive | 350,000 – 500,000 |
+| Luxury | > 500,000 |
+
+**Frequency Distribution by Price Category**:
+
+| Category | Count | Percentage |
+|----------|-------|-----------|
+| Affordable (< 200K) | 4 | 13.3% |
+| Mid-range (200K-350K) | 3 | 10.0% |
+| Expensive (350K-500K) | 3 | 10.0% |
+| Luxury (> 500K) | 20 | 66.7% |
+| **Total** | **30** | **100%** |
+
+**Excel Method (Nested IF)**:
+```excel
+=IF(D2<200000, "Affordable", IF(D2<350000, "Mid-range", IF(D2<500000, "Expensive", "Luxury")))
+
+Example for Price 547,580.14:
+→ 547,580.14 is not < 200,000
+→ 547,580.14 is not < 350,000
+→ 547,580.14 is not < 500,000
+→ Result: "Luxury"
+```
+
+Then use COUNTIF to count frequency:
+```excel
+=COUNTIF($F$2:$F$31, "Affordable")    → 4
+=COUNTIF($F$2:$F$31, "Mid-range")     → 3
+=COUNTIF($F$2:$F$31, "Expensive")     → 3
+=COUNTIF($F$2:$F$31, "Luxury")        → 20
+```
+
+**Python Method (pd.cut)**:
+```python
+# Define bins and labels
+bins = [0, 200000, 350000, 500000, float('inf')]
+labels = ['Affordable', 'Mid-range', 'Expensive', 'Luxury']
+
+# Bin the data
+df['PriceCategory'] = pd.cut(df['Price'], bins=bins, labels=labels, right=False)
+
+# Count frequencies
+price_freq = df['PriceCategory'].value_counts().reindex(labels)
+price_pct = (price_freq / len(df) * 100).round(1)
+
+print("Price Category Distribution:")
+print(price_freq)
+print("\nPercentages:")
+print(price_pct)
+
+# Summary statistics by category
+print("\nPrice Statistics by Category:")
+print(df.groupby('PriceCategory')['Price'].agg(['count', 'mean', 'min', 'max']))
+```
+
+**Output:**
+```
+Price Category Distribution:
+Affordable        4
+Mid-range         3
+Expensive         3
+Luxury           20
+
+Percentages:
+Affordable      13.3%
+Mid-range       10.0%
+Expensive       10.0%
+Luxury          66.7%
+
+Price Statistics by Category:
+               count      mean        min        max
+Affordable         4  149427.00   82071.31  185742.39
+Mid-range          3  269388.47  201352.85  271786.76
+Expensive          3  446390.47  424513.15  487342.31
+Luxury            20  681816.50  506469.01  890996.07
+```
+
+---
+
+### Part 5: Business Interpretation
+
+**📈 Key Finding**: 66.7% (20 out of 30) of cars sold are in the **Luxury category** (above 500,000 NOK).
+
+**What does this tell us about the neighbourhood?**
+
+👉 **Answer: The dealership is serving a WEALTHY neighbourhood.**
+
+**Reasoning**:
+- The dealership's primary inventory consists of luxury vehicles costing over 500,000 NOK
+- The average price for luxury cars is 681,816 NOK
+- Only 13.3% of sales are in the "Affordable" category (< 200,000 NOK)
+- The dealer is not focused on budget-conscious consumers
+- This pricing strategy and inventory mix indicates the dealership targets high-income customers in a wealthy area
+
+**Additional Context**:
+- Mid-range and Expensive categories combined represent only 20% of sales
+- This is a luxury-focused dealership, not a mass-market dealer
+- The neighbourhood likely has above-average income levels, allowing residents to purchase premium vehicles
+- A low-income neighbourhood would typically see more "Affordable" cars; an average-income area would have more "Mid-range" sales
+
+---
+
+### 💡 Summary: What the Data Shows
+
+This car dealership analysis demonstrates all four distribution techniques in a real business context:
+
+1. **Frequency counts** revealed that Red is the most popular colour (11 cars) and Sedans dominate (17 cars)
+2. **Relative frequencies** showed these represent 36.7% and 56.7% respectively, making them easy to communicate
+3. **Cumulative frequencies** indicated that 73.3% of cars come from just 3 color categories
+4. **Binning** categorized continuous price data into meaningful segments, revealing 66.7% of cars are luxury vehicles
+5. **Business insight** concluded the dealership serves wealthy customers based on pricing distribution
+
+This is how data analysts use distribution analysis to understand business operations and customer segments!
+
+            """,
+            "key_points": [
+                "Features are the basic building blocks used to describe outcomes in a data set",
+                "Descriptive statistics summarize features to provide quick insights",
+                "Different feature types require different descriptive statistics",
+                "Central tendency is measured with mean, median, and mode",
+                "Spread is measured with range, variance, standard deviation, and IQR",
+                "Distribution shape can be symmetric, right-skewed, or left-skewed",
+                "Use mean and standard deviation for symmetric data; use median and IQR for skewed data"
+            ],
+            "visual_elements": {
+                "diagrams": True,
+                "tables": True,
+                "highlighted_sections": True
+            }
+        }
+    ],
+    "FI1BBSF05": [
+        {
+            "lesson_number": "1.1",
+            "title": "Microsoft 365 - Excel as a Spreadsheet",
+            "content": """
+### Introduction
+
+In this session, we'll review the fundamental ideas of spreadsheets and their background. We will focus on **Microsoft Excel**, including its main features, user interface, and organizational structure.
+
+Since we have already been working with data in Excel throughout earlier activities, some components in this lesson may feel familiar. They are intentionally repeated and summarized, but now with **additional context** and **clearer explanations** to strengthen your foundation.
+
+---
+
+### What You Will Learn in This Lesson
+
+- A brief history of spreadsheets and how they evolved
+- Why Excel remains one of the most important tools for structured data work
+- How Excel's interface is organized (workbook, worksheet, rows, columns, cells, ribbon, formulas bar)
+- How spreadsheets support data organization and early-stage analysis
+- How Excel compares with alternative spreadsheet tools
+- How Excel compares with other data analysis tools
+
+---
+
+### Course Direction
+
+This course begins with a short history of spreadsheets and ends by discussing practical **Excel alternatives**. Along the way, we will continuously contrast Excel with other data-analysis environments and organize new concepts as they are introduced.
+
+By the end of this lesson, you should be able to explain where Excel fits in a modern data workflow and why spreadsheet fundamentals are critical for further analytical work.
+
+---
+
+### History of Spreadsheets
+
+Spreadsheets are popular tools for introductory and intermediate-level data analysis. It is estimated that around **90% of companies** use spreadsheets in financial planning, strategic decision-making, or aggregate forecasting.
+
+It is important to note that spreadsheets are not limited to financial data. They can also be used for simple computations in many other domains, including scientific data analysis, as long as dataset size is manageable and advanced modelling is not required.
+
+So when did spreadsheets begin, and how did they evolve?
+
+The first spreadsheet software was developed in the late 1970s. One of the most successful early programs was **VisiCalc**. Although its developers did not originally use the word “spreadsheet,” today we would describe it as a straightforward spreadsheet tool.
+
+VisiCalc was released in **1979** for the **Apple II** computer. It was easy to use and made it possible to sort and store data in tabular rows and columns. It was created to replace manual spreadsheet management methods (Heather, 2022).
+
+In many business contexts, financial projection rules repeat each month, quarter, or year. Repeating these tasks manually requires substantial time, effort, and cost. Spreadsheets changed this by allowing users to define basic calculations once and let computers recompute results whenever data changes or new data arrives.
+
+This was tremendously impactful and contributed to the rapid success of spreadsheet software.
+
+Another major advantage was accessibility: many data manipulations and calculations could be programmed relatively simply. As a result, spreadsheets became useful for programmers, analysts, accountants, and financial professionals alike.
+
+Users did not need deep programming or computer science experience to begin building useful models in spreadsheet tools. At the same time, data analysts still benefit from technical understanding of how spreadsheet systems work, especially when working professionally in organizations.
+
+VisiCalc in particular enabled non-programmers to build quantitative models on computers—an important milestone in the democratization of data work.
+
+However, early spreadsheet programs lacked a graphical interface that would make them more user-friendly. This was mainly due to the limitations of operating systems at the time.
+
+With the emergence of **Graphical User Interfaces (GUI)**, visual elements began replacing text-dominated interactions, and working with spreadsheet software became significantly easier.
+
+Excel stood out because it was easier to use than existing alternatives. It introduced features such as:
+- **Drop-down menus** (lists of choices shown when users click menu titles)
+- **WYSIWYG formatting** (What You See Is What You Get), meaning edited content closely matches how it appears in the final output
+
+Microsoft has updated Excel many times since its original release. These updates continuously improved how calculations are performed, what data types can be handled, and how common business calculations and summaries can be created more efficiently.
+
+Soon after its release, Excel established itself as the leading spreadsheet tool for business and remains one of the most flexible and widely used spreadsheet applications.
+
+Its primary purpose is to support **fundamental to intermediate analysis** and **business presentation workflows**.
+
+---
+
+### Alternative Spreadsheet Software Suites
+
+Excel is, without a doubt, the undisputed leader in spreadsheet applications. It has established a reputation as the preferred tool for many tasks, including financial modelling and data analysis.
+
+However, Excel is not the only breakthrough in the wider field of digital productivity. There are several alternative spreadsheet software suites available, each with distinct strengths and benefits.
+
+On the desktop side, tools such as Airtable, LibreOffice Calc, and Apple Numbers are often seen as strong alternatives to Excel.
+
+In the cloud era, online spreadsheet solutions like Google Sheets and Zoho Sheet have been major game-changers. Compared with many desktop-only tools, online spreadsheet applications have grown significantly in popularity because of easier sharing and collaboration.
+
+#### Common Alternatives
+
+- **Google Sheets**: A cloud-based spreadsheet by Google with functionality similar to Excel and strong real-time collaboration.
+- **Apple Numbers**: A spreadsheet tool for Apple devices with a user-friendly interface and integration with Apple apps.
+- **LibreOffice Calc**: Part of the open-source LibreOffice suite, with a broad spreadsheet feature set and compatibility with Excel formats.
+- **Apache OpenOffice Calc**: An open-source spreadsheet alternative that supports multiple file formats.
+- **Zoho Sheet**: A web-based spreadsheet with collaborative functions and integration with Zoho productivity tools.
+- **Quip**: A collaborative platform combining documents, spreadsheets, and task management.
+- **Airtable**: A flexible, database-driven spreadsheet environment for visual organization and analysis.
+- **Smartsheet**: A spreadsheet-style platform focused on project planning and collaboration.
+- **WPS Office Spreadsheets**: A free office suite spreadsheet with an interface and feature set similar to Excel.
+- **OnlyOffice**: A full office suite offering spreadsheet, document, and presentation tools compatible with Excel files.
+
+These alternatives provide different combinations of compatibility, functionality, and collaboration options, allowing users to choose tools that best match their workflow needs.
+
+In this course, we will focus on **Microsoft 365 Excel**, since much of the core functionality and spreadsheet logic is transferable across most major software suites.
+
+---
+
+### The Spreadsheet Interface
+
+What is a spreadsheet? Imagine a tool that allows us to ingest and view both numerical values and character-string data in a **table-like format** made of **rows (horizontal)** and **columns (vertical)**.
+
+This is what we call a spreadsheet (also referred to as a worksheet).
+
+Each value in a cell can be:
+- an independent value entered directly by the user, or
+- a calculated value produced by an arithmetic expression, function, or formula.
+
+This cell-based structure is what makes spreadsheet software effective for organizing data, applying logic, and performing repeatable calculations.
+
+---
+
+### Formula Bar
+
+Excel has a dedicated region above the worksheet grid called the **formula bar**. Users can insert formulas and functions to perform calculations, or inspect and edit the contents of the selected cell.
+
+#### Main Features of the Formula Bar
+
+- **Cell reference**: When a cell is selected, its address appears in the formula bar (for example, selecting `B2` shows `B2`).
+- **Edit cell content**: Users can click in the formula bar and directly edit the selected cell content; updates are reflected immediately in the worksheet.
+- **Formula input**: Users can enter formulas and functions using operators (`+`, `-`, `*`, `/`) and functions such as `SUM`, `AVERAGE`, and `IF`.
+- **Formula autocomplete**: As users type, Excel suggests functions and named ranges to reduce typing time and errors.
+- **Error messages**: If a formula has a syntax issue or invalid reference, Excel surfaces an error so users can identify and correct it.
+- **Formula auditing**: Users can trace precedents and dependents to understand relationships between cells and formulas.
+- **Multi-line editing**: Long formulas or text can be edited across multiple lines; users can press `Alt+Enter` to insert line breaks.
+
+In short, the formula bar is the central area for viewing, entering, and editing formulas and functions, enabling data transformation, calculations, and robust spreadsheet logic.
+
+---
+
+### Status Bar
+
+At the bottom of the Excel window is a horizontal strip called the **status bar**. It provides quick access to options and useful worksheet context.
+
+#### Main Components of the Status Bar
+
+- **Ready indicator**: The left side often shows `Ready`, meaning Excel is idle and available for input.
+- **Worksheet information**: Depending on settings, it can show context about the active worksheet and selected cell.
+- **Calculation mode**: If Excel is in manual calculation mode, the status bar shows an indicator so users know formulas will not recalculate automatically.
+- **Num Lock indicator**: Shows when the numeric keypad is active.
+- **AutoSum / Average / Count**: When selecting a range, quick aggregate results are displayed directly on the status bar.
+- **Zoom slider**: On the right side, users can zoom in or out by adjusting worksheet magnification.
+- **View indicators**: Page Layout and Page Break Preview indicators allow fast switching between worksheet views.
+- **Customization options**: Right-clicking the status bar opens options to add or remove displayed items.
+
+Excel's status bar helps users monitor worksheet state, perform quick checks, adjust display settings, and personalize what information is visible.
+
+---
+
+### Worksheet vs Workbook
+
+There is a clear distinction between two commonly used spreadsheet terms:
+
+- a **worksheet**, and
+- a **workbook**.
+
+A **worksheet** is a single page that contains data in a table of rectangular cells. The selected worksheet name appears on its tab and can be renamed by double-clicking the tab label.
+
+By clicking the **+** button next to sheet tabs, users can add a new worksheet to the current Excel file.
+
+A **workbook** is a collection of worksheets. It consists of one or more sheets, and the sheet tabs are used to navigate between them.
+
+In short:
+- Worksheet = one sheet/page of data
+- Workbook = the full Excel file containing one or more worksheets
+
+---
+
+### Rows and Columns
+
+In Excel, a worksheet is organized into rows and columns, creating a grid-like structure where data is entered and stored.
+
+#### Rows
+
+Rows are horizontal divisions in a worksheet and are numbered from top to bottom.
+
+- Each row has a unique number shown on the left side of the worksheet.
+- Excel provides **1,048,576 rows** by default (from `1` to `1,048,576`).
+- Rows are used to organize data horizontally.
+
+#### Columns
+
+Columns are vertical divisions in a worksheet.
+
+- Columns are labeled alphabetically (`A` to `Z`, then `AA`, `AB`, `AC`, and so on).
+- Excel provides **16,384 columns** by default (from `A` to `XFD`).
+- Columns are used to organize data vertically.
+
+#### Intersection of Rows and Columns
+
+The intersection of a row and a column is called a **cell**.
+
+- Each cell is uniquely identified by column letter + row number.
+- Example: `A1` means column `A`, row `1`.
+
+#### Usage in Data Work
+
+Rows and columns are the core structure for entering and managing spreadsheet data.
+
+- Columns often represent variables/fields (for example: Name, Date, Amount).
+- Rows often represent records/entries.
+- Users can resize rows and columns for readability.
+- Rows and columns can be selected, copied, moved, hidden, or deleted as needed.
+
+Excel's grid structure makes it highly effective for calculations, analysis, and presentation by giving users a clear tabular system for organizing and manipulating information.
+
+---
+
+### What Did I Learn in This Lesson?
+
+This lesson provided the following insights:
+
+- We came to understand what a spreadsheet actually is.
+- We explored the history of spreadsheets.
+- We learned about the basic elements of a spreadsheet interface.
+- We examined the basic functionalities of a spreadsheet.
+- We learned more about the difference between workbooks and worksheets.
+- We explored some spreadsheet alternatives to Excel.
+
+---
+
+### The Task - Answers (Visual Study Guide)
+
+<div style="display:flex; gap:12px; margin: 8px 0 16px 0;">
+    <svg width="220" height="90" viewBox="0 0 220 90" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Core Concepts visual card">
+        <rect x="1" y="1" width="218" height="88" rx="10" fill="#E8F3FF" stroke="#4A90D9" stroke-width="2"/>
+        <text x="14" y="34" fill="#1F4E79" font-size="16" font-weight="700">Core Concepts</text>
+        <text x="14" y="58" fill="#1F4E79" font-size="12">Definition • Uses • Basics</text>
+    </svg>
+    <svg width="220" height="90" viewBox="0 0 220 90" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Excel Interface visual card">
+        <rect x="1" y="1" width="218" height="88" rx="10" fill="#EAFBF1" stroke="#39A96B" stroke-width="2"/>
+        <text x="14" y="34" fill="#1D6B44" font-size="16" font-weight="700">Excel Interface</text>
+        <text x="14" y="58" fill="#1D6B44" font-size="12">Ribbon • Formula Bar • Status Bar</text>
+    </svg>
+    <svg width="220" height="90" viewBox="0 0 220 90" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Practice Actions visual card">
+        <rect x="1" y="1" width="218" height="88" rx="10" fill="#FFF4E8" stroke="#E58E26" stroke-width="2"/>
+        <text x="14" y="34" fill="#8A4A00" font-size="16" font-weight="700">Practice Actions</text>
+        <text x="14" y="58" fill="#8A4A00" font-size="12">Resize • Move • Hide • Analyze</text>
+    </svg>
+</div>
+
+#### Quick Snapshot
+
+| Topic | Fast Answer |
+|---|---|
+| Spreadsheet | A grid-based tool with rows, columns, and cells for data + formulas |
+| Workbook vs Worksheet | Workbook = file, Worksheet = one sheet inside the file |
+| Excel Capacity | 1,048,576 rows and 16,384 columns (A to XFD) |
+| Cell ID | Column letter + row number (e.g., `B2`) |
+
+---
+
+#### Core Concepts
+
+**1) What is a spreadsheet?**  
+A worksheet-based tool that organizes data in rows and columns, where each cell can hold text, numbers, or formulas.
+
+**2) Common applications of spreadsheets**  
+Budgeting, financial planning, forecasting, reporting, data cleaning, KPI tracking, inventory management, and basic scientific/statistical analysis.
+
+**3) Basic functionalities**  
+Data entry, formatting, sorting/filtering, formulas/functions, charting, summarization, simple analysis, and tabular reporting.
+
+---
+
+#### Excel Interface
+
+**4) Main elements of the Excel menu bar**  
+Common ribbon tabs include **File, Home, Insert, Page Layout, Formulas, Data, Review, View,** and **Help** (plus optional add-in tabs).
+
+**5) Main features/functions of the formula bar**  
+Shows selected cell reference/content, enables direct editing, formula/function input, autocomplete, error visibility, formula auditing, and multi-line editing.
+
+**6) Information/options on the status bar**  
+Ready/Mode indicators, worksheet context, calculation mode status, quick aggregates (Sum/Average/Count), zoom slider, view shortcuts, and customization options.
+
+---
+
+#### Worksheets, Workbooks, and Structure
+
+**7) Difference between worksheet and workbook**  
+A worksheet is one sheet of cells; a workbook is the full Excel file containing one or more worksheets.
+
+**8) How to add a new worksheet**  
+Click the **+** button next to worksheet tabs.
+
+**9) Deleting the last worksheet**  
+Excel does not allow deletion of the last remaining sheet; at least one worksheet must stay in a workbook.
+
+**10) How rows and columns are organized**  
+Rows are horizontal and numbered; columns are vertical and lettered.
+
+**11) Default rows and columns in Excel**  
+**1,048,576 rows** and **16,384 columns** (A to XFD).
+
+**12) How to identify a specific cell**  
+By cell reference: column letter + row number (for example, `B2`, `A1`, `XFD1048576`).
+
+**13) Purpose of rows and columns**  
+They provide structure for organizing records (rows) and fields/variables (columns) in a consistent tabular layout.
+
+---
+
+#### Practical Actions
+
+**14) Change column width / row height**  
+Drag column/row boundaries, double-click boundaries for AutoFit, or use Home → Format options.
+
+**15) Select, copy, relocate, hide, or remove rows/columns**  
+Select row/column headers, then use right-click menu, keyboard shortcuts (Copy/Cut/Paste), drag-and-drop for relocation, and Hide/Unhide or Delete/Insert commands.
+
+**16) Advantages of the grid-like structure**  
+It provides clarity, consistency, and scalability for data entry, calculations, analysis, filtering, and presentation.
+
+---
+
+<svg width="680" height="82" viewBox="0 0 680 82" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Progress check banner">
+    <rect x="1" y="1" width="678" height="80" rx="10" fill="#F3F0FF" stroke="#7E57C2" stroke-width="2"/>
+    <text x="20" y="34" fill="#4A2B87" font-size="18" font-weight="700">Progress Check</text>
+    <text x="20" y="56" fill="#4A2B87" font-size="13">Can you explain 1, 4, 7, 11 and 16 without notes? You are mastering Lesson 1.1.</text>
+</svg>
+
+#### Motivation Check
+
+If you can explain items **1, 4, 7, 11, and 16** without looking, you already understand the core of this lesson.
+            """,
+            "key_points": [
+                "Spreadsheets are widely used in business planning, strategy, and forecasting",
+                "Spreadsheet use extends beyond finance into domains like scientific analysis",
+                "VisiCalc (1979, Apple II) was the first major spreadsheet software breakthrough",
+                "Spreadsheet automation reduced repetitive manual calculation work",
+                "Spreadsheet tools enabled non-programmers to build quantitative models",
+                "GUI and WYSIWYG capabilities made spreadsheet software significantly more user-friendly",
+                "Excel became the dominant business spreadsheet platform through continuous product updates",
+                "Alternative desktop and cloud spreadsheet suites offer different collaboration and compatibility strengths",
+                "A spreadsheet interface organizes data in rows, columns, and formula-driven cells",
+                "The formula bar is used to view, edit, and build formulas and functions",
+                "The status bar provides live worksheet indicators, quick aggregates, and display controls",
+                "A worksheet is a single sheet, while a workbook is a file containing one or more worksheets",
+                "Rows, columns, and their intersections (cells) form Excel's core data structure"
+            ],
+            "visual_elements": {
+                "diagrams": False,
+                "tables": True,
+                "highlighted_sections": True
+            }
+        },
+        {
+            "lesson_number": "1.2",
+            "title": "Entering, Editing and Importing Data",
+            "content": """
+### 1.2 Lesson - Entering, Editing and Importing Data
+
+### Introduction
+
+Fundamental Excel operations that let you input, change, and import external data into your spreadsheets include entering, editing, and importing data. These steps are essential for efficiently organising, analysing, and presenting data. In this lesson, we will examine the fundamental approaches and procedures for entering, editing, and importing data in Excel.
+
+### Entering Data
+
+The first step in utilising the capability of this flexible spreadsheet program is entering data in Excel. Users can systematically enter and arrange data in Excel, facilitating effective data analysis, calculations, and visualisation. Excel has a user-friendly interface that makes data entry easy, whether you are working with numerical data, text, dates, or formulas. Excel users may unlock the ability to manage and analyse data accurately and precisely by learning the foundations of data entry, such as cell selection, data kinds, and techniques for efficient input.
+
+#### Direct typing
+
+By clicking on a cell, you can enter data immediately. This approach can be used to enter text, numbers, dates, or easy formulas. You can go to the following cell in the chosen direction by pressing Enter or Tab.
+
+#### Formula bar
+
+You can select a cell and enter or edit data in the formula bar at the top of the Excel window. The formula bar allows you to see and modify the contents of the active cell more clearly, especially when dealing with lengthy data.
+
+### Importing and Exporting Datasets
+
+Importing and exporting datasets in Excel is a fundamental skill that allows you to manage and analyse data efficiently. Importing data involves bringing external datasets into Excel, while exporting refers to saving Excel data in a format that can be used by other applications or shared with others.
+
+Importing data into Excel allows you to work with data from various sources such as databases, text files, CSV (Comma Separated Values) files, or other Excel workbooks. This enables you to combine and analyse data from multiple sources, perform calculations, create visualisations, and generate reports.
+
+On the other hand, exporting data from Excel allows you to share your work or collaborate with others who may not have Excel or need the data in a different format. Exporting options include saving Excel files as different file types like CSV files, PDF (Portable Document Format), or XPS (XML Paper Specification), among others. Each format has its advantages depending on the intended use of the exported data.
+
+Importing and exporting data in Excel offers flexibility, versatility, and compatibility in managing and sharing datasets. Whether you need to analyse external data within Excel or distribute your findings to others, mastering these capabilities empowers you to make the most of your data-driven tasks. In the following sections, we will explore the specific methods and techniques for importing and exporting data in Excel.
+
+### To import a CSV dataset
+
+Let’s start by importing a CSV file. This is a very popular way to save files due to its simplicity and the fact that it is widely supported, lightweight, platform-independent and easily integrated with programming languages. To import data in Excel from a CSV (Comma Separated Values) file, you can follow these steps:
+
+1. Open a new or existing Excel workbook.
+2. Click on the Data tab in the Excel ribbon menu.
+3. Select From Text/CSV from the options.
+4. Navigate to the location where your CSV file is stored.
+5. Choose the CSV file you want to import and click on the Open button.
+6. Excel will open the load page. See Figure 2 - Text import wizard.
+
+### Here’s how to proceed with the wizard
+
+In the Text Import Wizard, you’ll see a preview of the CSV file data. It allows you to review the data and make necessary adjustments before importing.
+
+#### Show how it’s done
+
+1. Confirm the file origin/encoding so special characters are displayed correctly.
+2. Verify the delimiter (for example comma, semicolon, or tab) so columns split properly.
+3. Check that headers are recognised and that each column appears in the correct field.
+4. If needed, set column data types (Text, Date, Number) to avoid wrong automatic conversions.
+5. Click Load to import directly, or use Transform Data to clean/shape the dataset before loading.
+6. Choose where to place the imported data (new worksheet or existing location), then finish the import.
+
+### Delimiter check before loading
+
+Select the Delimiter option if it’s not already selected. This indicates that specific delimiters, such as commas or tabs, separate your data. Excel will carry this out automatically, but it is advisable to check to make sure everything is done correctly.
+
+Choose the delimiter that matches the one used in your CSV file (typically a comma). You can see a preview of how your data will be separated based on your selection.
+
+Click on the Load button to import the data.
+
+Excel will import the CSV data and display it in the selected location within your workbook. You can now work with the imported data, apply formulas, create charts, or perform any other desired data analysis tasks.
+
+### Real scenario example
+
+Imagine you are a junior data analyst in a retail company. Every Monday, the sales system exports a CSV file with columns like `Date`, `Store`, `Product`, `Units_Sold`, and `Revenue`.
+
+When you import this file into Excel:
+
+1. You first verify the delimiter is comma so each field lands in the correct column.
+2. You check the preview to confirm dates and numbers are not merged into one column.
+3. You click Load and place the data in a new worksheet called `Weekly_Sales`.
+4. You create a PivotTable to summarise total revenue by store.
+5. You add a chart to compare week-over-week performance.
+
+This is a common real-world workflow: import CSV correctly, validate column structure, then analyse and present insights.
+
+### Editing Data
+
+In Excel, the Copy, Cut, Paste, and Delete functions are essential for managing and manipulating data.
+
+### Popular Excel functions
+
+Let’s first discuss the Copy option.
+Copying allows you to duplicate the content of a selected cell or range of cells. To copy, select the cell(s) you want to copy and either right-click and choose Copy or use the shortcut Ctrl+C. The copied content is stored in Excel’s clipboard, ready to be pasted elsewhere.
+
+The next option is Cut.
+Cutting works similarly to copying, but it removes the selected content from its original location and stores it in the clipboard. To cut, select the cell(s) you want to move, right-click and choose Cut or use the shortcut Ctrl+X. The cut content is temporarily stored in the clipboard until you paste it elsewhere.
+
+The next option is Paste.
+Pasting allows you to insert the copied or cut content into a new location in the worksheet. To paste, select the destination cell or range, right-click, and choose Paste or use the shortcut Ctrl+V. Excel pastes the content from the clipboard into the selected location, duplicating or moving the data.
+
+- **Paste Values**: This option pastes only the values from the copied or cut cells, excluding any formatting or formulas.
+- **Paste Formulas**: This option pastes the formulas from the copied or cut cells, allowing you to replicate calculations or references to other cells.
+- **Paste Formats**: This option pastes only the formatting (e.g., font, colour, borders) from the copied or cut cells without the actual content.
+- **Paste Special**: This option provides additional paste options, such as pasting only values, formulas, formats, or specific formatting attributes.
+
+Another option is Delete.
+Deleting removes the selected cell(s) or range(s) from the worksheet. To delete, select the cell(s) or range(s) you want to remove and either right-click and choose Delete or use the shortcut Delete key. Excel shifts the remaining cells up or left to fill the empty space created by the deletion.
+
+- **Delete Contents**: This option removes the content from the selected cells while leaving the formatting intact.
+- **Delete Cells**: This option removes the content and formatting from the selected cells, shifting the surrounding cells to fill the gap.
+
+### How to select a cell
+
+Selection in Excel refers to the process of choosing a specific cell or range of cells to perform various operations on them. There are two main types of selection in Excel: selecting a single cell and selecting a range of cells.
+
+#### Click
+
+To select a single cell, simply click on the desired cell with the mouse pointer. The selected cell is highlighted, indicating that it is the active cell.
+
+#### Keyboard navigation
+
+Use the arrow keys on the keyboard to navigate and move the selection to different cells. The active cell moves in the direction of the arrow key pressed.
+
+### How to select a range of cells
+
+#### Click and drag
+
+To select a range of cells, click on the starting cell, hold down the mouse button, and drag the mouse to the ending cell of the range. All the cells within the selected range will be highlighted.
+
+#### Shift key
+
+Click on the starting cell, then hold down the Shift key and click on the ending cell of the range. This method is helpful in selecting a range that is not adjacent to each other.
+
+#### Ctrl key
+
+Hold the Ctrl key and click on individual cells to select non-contiguous cells or ranges.
+
+Additionally, there are shortcuts that can help you quickly select cells or ranges:
+
+#### Ctrl+A
+
+Selects the entire worksheet if pressed once. If pressed again, it selects the current region around the active cell.
+
+#### Ctrl+Shift+Arrow Keys
+
+Extends the selection to the last non-empty cell in the direction of the arrow key.
+
+You can carry out various activities on a cell or range once you’ve selected it, including entering data, formatting, copying, cutting, pasting, deleting, or using functions and formulae. You may easily edit data in Excel by using these actions, which have the selected cell or range as their target.
+
+### AutoFill
+
+With Excel’s AutoFill tool, you can rapidly and automatically fill a group of cells with information or formatting based on an established pattern. It is especially helpful when inserting repeated or sequential data into a column or row. AutoFill can be used as follows:
+
+1. Enter the initial value or series of values in a cell.
+2. Select the cell(s) containing the value(s) you want to AutoFill.
+3. Position the mouse cursor over the small square at the bottom right corner of the selected cell(s). The cursor will change to a thin black crosshair, indicating the AutoFill handle.
+4. Click and drag the AutoFill handle across the range where you want the values to be filled.
+
+Excel intelligently detects the pattern of the selected data and automatically fills the remaining cells based on that pattern. The pattern can include numbers, dates, text, or a combination. For example:
+
+#### Sequential numbers
+
+If you enter a sequence like 1, 2, 3 and then drag the AutoFill handle, Excel will fill the cells with the subsequent numbers (4, 5, 6, and so on).
+
+#### Dates
+
+If you enter a date like 01/01/2023 and drag the AutoFill handle, Excel will fill the cells with the subsequent dates in the series.
+
+#### Text
+
+If you enter a word or phrase and drag the AutoFill handle, Excel will fill the cells with the same text.
+
+AutoFill can also be used with specific patterns like weekdays, months, years, custom lists, etc. Additionally, you can customise the AutoFill behaviour by dragging the AutoFill handle with the right mouse button, which opens a menu with different options like copying cells, filling series, formatting only, or creating formulas based on the pattern.
+
+Overall, AutoFill is a handy feature in Excel that saves time and effort by automatically filling cells based on existing data patterns, allowing you to quickly populate a range of cells with consistent and structured information.
+
+### Different Types and Sources
+
+Excel supports importing various types of datasets from different sources. Here are some of the common dataset types and sources that Excel can import:
+
+#### CSV (Comma Separated Values)
+
+CSV files are plain text files that store tabular data, where each value is separated by a comma or other specified delimiter.
+
+#### Excel workbooks
+
+Excel can import data from other Excel workbooks or worksheets. To mention a few, `.XLSM`, `.XLSB`, `.XLS` and `.XLTX`. This allows you to combine or extract data from multiple sources within Excel itself.
+
+#### Text files
+
+Excel can import data from plain text files, such as TXT files. You can specify the delimiter used to separate the data columns.
+
+#### Access databases
+
+Excel can import data from Microsoft Access databases (`.mdb`, `.accdb`). It allows you to choose tables, queries, or entire databases to import.
+
+#### Web pages
+
+Excel can import data from web pages using the From Web feature. You can specify the URL and Excel will extract tables or data from the web page.
+
+#### XML files
+
+Excel can import data from XML (eXtensible Markup Language) files. XML files store structured data, and Excel can map the XML elements to cells.
+
+#### SQL databases
+
+Excel supports importing data from SQL databases, including Microsoft SQL Server, MySQL, and others. You can specify a connection string or use the built-in data connection wizard.
+
+#### SharePoint lists
+
+If you have data stored in SharePoint lists, Excel can connect to the SharePoint site and import the list data into a worksheet.
+
+#### Online services
+
+Excel can connect to various online services, such as Microsoft Azure Data Lake, Power BI, Dynamics 365, and more, allowing you to import data from these services.
+
+#### Other data sources
+
+Excel provides options to import data from other sources like ODBC (Open Database Connectivity) data sources, Microsoft Query, and even external data sources through add-ins or custom connections.
+
+### Demonstrate a few more ways we can import datasets
+
+#### 1) Import from another Excel workbook
+
+1. Go to **Data** → **Get Data** → **From File** → **From Workbook**.
+2. Select the source workbook and open it.
+3. In the Navigator, choose the sheet or table you need.
+4. Click **Load** (or **Transform Data** first if you need cleaning).
+
+Use case: combining monthly reports from different departments into one analysis workbook.
+
+#### 2) Import from a text file (TXT)
+
+1. Go to **Data** → **Get Data** → **From File** → **From Text/CSV**.
+2. Select the TXT file.
+3. Set the correct delimiter (tab, comma, semicolon, etc.).
+4. Confirm encoding and column split in preview.
+5. Click **Load**.
+
+Use case: loading system log exports or survey files saved as tab-delimited text.
+
+#### 3) Import from a web page
+
+1. Go to **Data** → **Get Data** → **From Other Sources** → **From Web**.
+2. Paste the page URL and confirm.
+3. Select the table(s) detected by Excel.
+4. Click **Load** to bring the web table into Excel.
+
+Use case: importing public statistics tables (for example exchange rates, population, or market indicators).
+
+#### 4) Import from a SQL database
+
+1. Go to **Data** → **Get Data** → **From Database**.
+2. Choose your database type (for example SQL Server or MySQL connector).
+3. Enter server/database details and credentials.
+4. Select the required table or write a query.
+5. Load data to worksheet or the Data Model.
+
+Use case: connecting directly to production sales/order databases for recurring reporting.
+
+#### 5) Import XML data
+
+1. Go to **Data** → **Get Data** → **From File** → **From XML** (or legacy XML import option depending on Excel version).
+2. Select the XML file.
+3. Map elements to tabular columns if prompted.
+4. Load and validate field mapping.
+
+Use case: importing structured exports from ERP/integration systems that provide XML output.
+
+### Review, Transform and Load Data into Excel
+
+When importing a dataset into Excel, the Review and Transform Data feature allows you to perform data cleaning and transformation tasks before the data is loaded into your worksheet. This step is part of the Power Query Editor, a powerful data preparation tool in Excel.
+
+### How to open Power Query Editor
+
+Figure 7: Launch Power Query editor.
+
+1. Ensure that your dataset is loaded in Excel.
+2. Select the Data tab.
+3. Select Get Data.
+4. Navigate down to Launch Power Query Editor.
+
+Figure 8: Dataset loaded into Power Query Editor.
+
+In this view, you can see the imported table in the main preview grid and the **Queries & Connections** pane on the right, which confirms that the query has been loaded and is ready for transformation steps.
+
+### Here’s an overview of the review and transform data process
+
+#### Accessing Power Query Editor
+
+After selecting the dataset you want to import, you can choose to load it directly into a worksheet or use the Transform Data option to open the dataset in the Power Query Editor.
+
+#### Data preview
+
+In the Power Query Editor, you will see a preview of the imported data. This allows you to inspect the data structure, column names, and sample values to ensure it is imported correctly.
+
+#### Cleaning and transforming data
+
+The Power Query Editor provides a wide range of data transformation options. You can perform tasks such as removing unwanted columns, filtering rows, splitting columns, merging data from multiple sources, changing data types, and applying calculations or formulas to create new columns. Let’s look at a few of these techniques:
+
+##### Removing columns
+
+Select the column to be deleted by right-clicking on the column header and then selecting Remove.
+
+Figure 9: Power Query Editor: Removing a column.
+
+##### Filtering and removing empty rows
+
+Select the column and click the drop-down arrow. Here you can apply the filter options and remove empty rows.
+
+Figure 10: Power Query Editor: Filter options and removing empty rows.
+
+##### Splitting columns
+
+Select the column to be split. Under the Transform tab, select Split Column. Here, you will find multiple options for splitting the content into separate columns.
+
+Figure 11: Power Query Editor: Splitting columns.
+
+##### Merge columns
+
+Select multiple columns to be merged. To do this, click + CTRL for each column. Under the Transform tab, select Merge Columns. Select a separator (if required) and rename the new column.
+
+Figure 12: Power Query Editor: Merging columns.
+
+##### Changing data types
+
+Select the column to be changed. The data type is shown to the left of the column header. By clicking on it, you can change the data type from the drop-down list.
+
+Figure 13: Power Query Editor: Changing data types.
+
+##### Apply calculations to new columns
+
+Select Custom Column under the Add Column tab. Name the new column and create the formula. The available columns are displayed and can be inserted into your calculation as required.
+
+Figure 14: Power Query Editor: Applying calculations to new columns.
+
+##### Adding an Index Column
+
+Select the Index Column drop-down arrow under the Add Column tab. Choose whether to start from 0 or 1. The column will be added as the last column. To move the column, simply click, hold, and drag the column.
+
+Figure 15: Power Query Editor: Adding an index column.
+
+##### Data shape and structure
+
+The Power Query Editor enables you to reshape the data by pivoting, unpivoting, grouping, aggregating, and sorting. These operations help you organise the data to suit your analysis needs.
+
+##### Data quality and error handling
+
+You can address data quality issues by handling missing values, correcting errors, or detecting and removing duplicates. This is simply done by selecting the Remove rows drop-down arrow under the Home tab. The Power Query Editor provides tools for data profiling, data type detection, and data cleansing.
+
+Figure 16: Power Query Editor: Remove rows.
+
+##### Query settings and refresh options
+
+Once you have completed the necessary transformations, you can configure query settings such as column renaming, data type conversions, or sorting orders. You can also set up refresh options to automatically update the data when the source changes.
+
+##### Loading the transformed data
+
+After you finish reviewing and transforming the data, you can choose to load it directly into a new worksheet, an existing worksheet, or the Excel Data Model. Loading the data transfers the transformed dataset into Excel for further analysis and reporting.
+
+Figure 17: Load transformed dataset into Excel.
+
+### ETL Dataset Power Query Editor
+
+Use this setup when you want a repeatable ETL flow (Extract, Transform, Load) in Excel.
+
+#### Setup workflow
+
+1. Open Excel and create a new workbook.
+2. Go to the Data tab on the Excel ribbon at the top of the window.
+3. Get, Transform, and Load the dataset.
+4. Review the imported data in the Power Query Editor window. You can preview, filter, and make any necessary changes to the data.
+5. Apply transformations to the dataset using the available options in the Power Query Editor. For example, you can remove unnecessary columns, filter rows based on specific criteria, or change data types.
+6. Once you have finished transforming the data, click the Close & Load button in the Power Query Editor. Excel will load the transformed data into a new worksheet or a specified location in your current workbook.
+
+#### Re-open and continue editing
+
+1. To make changes to the data using Power Query, select the imported dataset in Excel.
+2. Go to the Data tab and click on the Launch Power Query Editor button in the Get Data section. This will open the Queries & Connections sidebar.
+3. Right-click on the dataset and select Edit from the context menu. The Power Query Editor window will open again, allowing you to make further changes to the data.
+4. Apply additional transformations or adjustments to the dataset as needed in the Power Query Editor.
+5. Once you are satisfied with the changes, click the Close & Load button in the Power Query Editor to load the final transformed data back into Excel.
+
+#### Quick setup checklist (using your CSV)
+
+- Confirm file structure has headers: Title, Developer(s), Publisher(s), Genre, Release date, ref.
+- In Power Query, remove empty trailing rows and duplicate header-like rows.
+- Set data types explicitly (for example, Text for names/genre, Date where possible for release date).
+- Keep Applied Steps readable (rename key steps) so refreshes are easy to audit.
+- Use Refresh to update when the source CSV changes.
+
+### Practice Task - df_1.csv ETL Mini-Exercise
+
+Use `df_1.csv` and complete the following in Power Query:
+
+1. Import the CSV with correct delimiter and header recognition.
+2. Remove the trailing duplicate header-like row (the row containing `title, developer(s), publisher(s), ...`).
+3. Remove rows where `Publisher(s)` is blank.
+4. Change `Release date` to Date where possible (leave invalid/ambiguous values as null if needed).
+5. Add an Index column starting from 1.
+6. Add a Custom Column named `Dev-Pub` that combines `Developer(s)` and `Publisher(s)` with ` - `.
+7. Load the transformed result to a new worksheet named `Games_Clean`.
+
+#### Expected answer points (self-check)
+
+- The dataset loads without column-shift issues.
+- The duplicate header-like trailing row is removed.
+- Blank publishers are filtered out.
+- `Release date` has the correct type for parseable dates.
+- Index starts at 1 and increments by 1.
+- `Dev-Pub` appears with expected combined text values.
+- The query is saved and can be refreshed after source-file updates.
+
+### Export Datasets
+
+Exporting datasets in Excel refers to the process of saving data from Excel to an external file format that can be used by other applications or shared with others. Excel provides various options for exporting datasets:
+
+#### Save As
+
+You can use the Save As feature in Excel to export your dataset in different file formats. Click on File in the menu, select Save As, and choose the desired file format, such as Excel workbook (`.xlsx`), CSV (Comma delimited) (`.csv`), or PDF (`.pdf`). Selecting the appropriate file format will determine how the data is structured and presented in the exported file.
+
+Figure 18: Export Excel dataset.
+
+#### Export to PDF
+
+Excel allows you to export your dataset as a PDF file. This is useful when you want to share the data in a non-editable format that preserves formatting and layout. Go to File, select Save As, choose PDF as the file format, and click Save.
+
+#### Copy and paste
+
+You can manually copy the dataset from Excel and paste it into another application, such as Word, PowerPoint, or an email client. Select the cells or range of data you want to export, right-click, choose Copy, go to the desired application, and paste the data.
+
+#### Export to text
+
+Excel allows you to export your dataset as a plain text file (`.txt`). This format helps share data with applications that require simple, delimited text files. Go to File, select Save As, choose Text (Tab delimited) (`.txt`) or CSV (Comma delimited) (`.csv`) as the file format, and click Save.
+
+#### Publish to Web
+
+Excel provides a feature called Publish to Web that allows you to export your dataset as an interactive web page. This is useful for sharing your data online and enabling others to explore and interact with it. Go to File, select Publish to Web, choose the desired options, and click Publish. You will receive a link that you can share with others.
+
+#### Export to database or external system
+
+Excel also supports exporting datasets to databases or external systems. This can be done using specific data integration or export functionalities the target system provides. For example, you can export data from Excel to a Microsoft Access database or import the data into a Customer Relationship Management (CRM) system.
+
+### The Task
+
+#### Question 1
+
+In this activity, we are going to test your understanding of this lesson:
+
+1. Open a new Excel workbook.
+2. Use the provided CSV example file: `avocado.csv`.
+3. Import the dataset into Excel.
+4. Open Power Query Editor.
+5. Do the following transformations:
+    - Make the first line a heading.
+    - Remove the following columns: Index, Total Volume, 4046, 4225, 4770, Total Bags, Type, Year, and Region.
+    - Sort by the Date column.
+    - Add a column called Index, move it to column A, and number each row from 1 up to the end of the table.
+    - Add a column called Total Bags Sold, and add columns Small Bags, Large Bags, and XLarge Bags.
+6. Save the Workbook as Avocado Sales.xlsx.
+7. Export the Workbook as a CSV file.
+
+#### Show me (worked example using avocado.csv)
+
+1. In Excel: **Data** → **From Text/CSV** → select `avocado.csv`.
+2. In the preview, confirm delimiter and click **Transform Data**.
+3. In Power Query: **Home** → **Use First Row as Headers**.
+4. Remove columns: `Index`, `Total Volume`, `4046`, `4225`, `4770`, `Total Bags`, `Type`, `Year`, `Region`.
+5. Sort the `Date` column ascending.
+6. Add index: **Add Column** → **Index Column** → **From 1**.
+7. Move `Index` to the first position (column A) by dragging it left.
+8. Add custom column `Total Bags Sold` with formula:
+    `["Small Bags"] + ["Large Bags"] + ["XLarge Bags"]`
+9. Click **Close & Load** to return data to Excel.
+10. Save workbook as `Avocado Sales.xlsx`, then **File** → **Save As** → `CSV`.
+
+#### Question 2
+
+Let your creativity loose and find a dataset on any website you like.
+
+1. Open a new Excel workbook.
+2. Import the dataset(s) from your chosen website.
+3. Do basic transformations to ensure a clean and workable dataset.
+4. Ensure informative column headings.
+5. Remove rows that contain blanks.
+6. Remove rows that contain errors.
+7. Add or remove columns if required.
+8. Save your workbook as an .XLSX.
+
+### Task Solution (Worked Answer)
+
+Provided solution workbook:
+
+- `SPF 0102 Task solution.xlsx` (path: `/workspaces/Study-buddy/SPF 0102 Task solution.xlsx`)
+- Use this file to compare your transformation steps and final output against the worked process below.
+
+#### Solved - Question 1 (avocado.csv)
+
+Use this exact workflow to complete Question 1:
+
+1. **Import**
+    - Data → From Text/CSV → select `avocado.csv` → click **Transform Data**.
+
+2. **Promote first row to headers**
+    - Home → **Use First Row as Headers**.
+
+3. **Remove required columns**
+    - Remove: `Index`, `Total Volume`, `4046`, `4225`, `4770`, `Total Bags`, `Type`, `Year`, `Region`.
+    - Keep these core columns: `Date`, `AveragePrice`, `Small Bags`, `Large Bags`, `XLarge Bags` (and any other required analysis columns).
+
+4. **Sort by Date**
+    - Click the `Date` column filter arrow → Sort Ascending.
+
+5. **Add Index and move to column A**
+    - Add Column → Index Column → **From 1**.
+    - Drag the `Index` column to the far left.
+
+6. **Add Total Bags Sold column**
+    - Add Column → Custom Column
+    - Name: `Total Bags Sold`
+    - Formula:
+      `["Small Bags"] + ["Large Bags"] + ["XLarge Bags"]`
+
+7. **Load and save**
+    - Home → **Close & Load**.
+    - Save workbook as `Avocado Sales.xlsx`.
+    - File → Save As → `CSV (Comma delimited)`.
+
+##### Exact clicks (expanded walkthrough)
+
+Use this detailed sequence if you want to reproduce the final answer exactly:
+
+1. **Data import**
+    - Excel → Data tab → **From Text/CSV**.
+    - Select `avocado.csv`.
+    - In preview, confirm delimiter and encoding look correct.
+    - Click **Transform Data** (not Load).
+
+2. **Header + data types**
+    - Home → **Use First Row as Headers**.
+    - Set types:
+      - `Date` → Date
+      - `AveragePrice` → Decimal Number
+      - `Small Bags`, `Large Bags`, `XLarge Bags` → Decimal Number
+
+3. **Remove columns required by the task**
+    - Ctrl-click each of these columns:
+      `Index`, `Total Volume`, `4046`, `4225`, `4770`, `Total Bags`, `Type`, `Year`, `Region`.
+    - Home → **Remove Columns**.
+
+4. **Sort date**
+    - Click the drop-down on `Date`.
+    - Choose **Sort Ascending**.
+
+5. **Add task index**
+    - Add Column → Index Column → **From 1**.
+    - Drag `Index` to the first column position.
+
+6. **Create Total Bags Sold**
+    - Add Column → **Custom Column**.
+    - Column name: `Total Bags Sold`.
+    - Formula:
+      `["Small Bags"] + ["Large Bags"] + ["XLarge Bags"]`
+    - Confirm the new column is Decimal Number.
+
+7. **Load output**
+    - Home → **Close & Load To...**
+    - Choose Table → New worksheet.
+    - Rename sheet to `avocado` (to match solution file structure).
+
+8. **Save both deliverables**
+    - Save workbook as `Avocado Sales.xlsx`.
+    - File → Save As → `CSV (Comma delimited)` for export requirement.
+
+##### Validation against the provided solved workbook
+
+Compare your output to `SPF 0102 Task solution.xlsx`:
+
+- Expected solved sheet name: `avocado`
+- Expected columns (in order):
+  `Index`, `Date`, `AveragePrice`, `Small Bags`, `Large Bags`, `XLarge Bags`, `Total bags Sold`
+- Expected first data row pattern:
+  `1, 2015-01-04, 1.75, 13061.1, 537.36, 0, 13598.46`
+- Expected total rows in solved sheet: `18,250`
+
+##### Troubleshooting tips (common issues)
+
+- **Wrong column split**: go back to Source step and re-check delimiter.
+- **Date not sorting correctly**: ensure `Date` type is Date (not Text).
+- **Errors in Total Bags Sold**: confirm all three bag columns are numeric.
+- **Missing rows after filters**: review Applied Steps for accidental filters.
+- **Output differs from solution workbook**: compare column order and data types first.
+
+##### Power Query M script template (advanced)
+
+Use this template in **Advanced Editor** and adjust the source path if needed:
+
+```powerquery
+let
+    Source = Csv.Document(
+        File.Contents("/workspaces/Study-buddy/avocado.csv"),
+        [Delimiter=",", Columns=14, Encoding=65001, QuoteStyle=QuoteStyle.Csv]
+    ),
+    PromotedHeaders = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+    RemovedColumns = Table.RemoveColumns(
+        PromotedHeaders,
+        {"Index", "Total Volume", "4046", "4225", "4770", "Total Bags", "Type", "Year", "region"}
+    ),
+    ChangedTypes = Table.TransformColumnTypes(
+        RemovedColumns,
+        {
+            {"Date", type date},
+            {"AveragePrice", type number},
+            {"Small Bags", type number},
+            {"Large Bags", type number},
+            {"XLarge Bags", type number}
+        }
+    ),
+    SortedByDate = Table.Sort(ChangedTypes, {{"Date", Order.Ascending}}),
+    AddedIndex = Table.AddIndexColumn(SortedByDate, "Index", 1, 1, Int64.Type),
+    ReorderedColumns = Table.ReorderColumns(
+        AddedIndex,
+        {"Index", "Date", "AveragePrice", "Small Bags", "Large Bags", "XLarge Bags"}
+    ),
+    AddedTotalBagsSold = Table.AddColumn(
+        ReorderedColumns,
+        "Total Bags Sold",
+        each [#"Small Bags"] + [#"Large Bags"] + [#"XLarge Bags"],
+        type number
+    )
+in
+    AddedTotalBagsSold
+```
+
+If your CSV has `Region` (capital R) instead of `region`, replace that field name in `RemovedColumns` accordingly.
+
+##### Expected result check
+
+- `Index` starts at 1 and increments by 1.
+- `Date` is sorted ascending.
+- Removed columns are no longer present.
+- `Total Bags Sold` equals `Small Bags + Large Bags + XLarge Bags` for every row.
+- Workbook and CSV export both exist.
+
+##### Reference solution file (verified)
+
+Official solution workbook: `SPF 0102 Task solution.xlsx`
+
+- Main solved sheet: `avocado`
+- Structure: 7 columns and 18,250 rows
+- Header row:
+    - `Index`
+    - `Date`
+    - `AveragePrice`
+    - `Small Bags`
+    - `Large Bags`
+    - `XLarge Bags`
+    - `Total bags Sold`
+- Example first data row:
+    - `1, 2015-01-04, 1.75, 13061.1, 537.36, 0, 13598.46`
+
+You can use this workbook to compare your result after completing the ETL steps.
+
+#### Solved - Question 2 (example approach)
+
+If you choose any public dataset, use this clean baseline solution:
+
+1. Import dataset with correct delimiter/headers.
+2. Promote headers and rename unclear column names.
+3. Remove blank rows and obvious error rows.
+4. Fix column data types (Text, Number, Date).
+5. Remove irrelevant columns and add any required derived column.
+6. Sort by one meaningful business field (for example Date).
+7. Close & Load, then save as `.xlsx`.
+
+##### Example answer quality criteria
+
+- Headings are readable and consistent.
+- No blank/error rows remain in core fields.
+- Data types are correctly assigned.
+- Dataset is ready for pivot tables/charts without additional cleaning.
+            """,
+            "key_points": [
+                "Entering data is a core operation for building usable worksheets",
+                "Editing data helps keep spreadsheet content accurate and up to date",
+                "Importing data enables integration of external data sources into Excel",
+                "Exporting data to formats like CSV, PDF, and XPS improves sharing and compatibility",
+                "CSV import through Data > From Text/CSV supports preview, delimiter checks, and controlled loading",
+                "Copy, Cut, Paste, and Delete are core editing operations in Excel",
+                "Cell/range selection techniques and shortcuts improve editing speed and precision",
+                "AutoFill can quickly extend sequences, dates, and repeated patterns",
+                "Excel can import datasets from CSV, text files, workbooks, databases, web pages, XML, and online services",
+                "Get Data workflows support both direct loading and pre-load transformation",
+                "Power Query Editor enables review, cleaning, and transformation before loading data",
+                "Query settings and refresh options help keep transformed datasets up to date",
+                "ETL in Excel follows a repeatable cycle: import, transform, close and load, re-open, refine, and refresh",
+                "Practical ETL tasks help validate import quality, cleaning logic, type handling, and refresh readiness",
+                "Use Save As to export transformed datasets to formats like XLSX, CSV, and PDF",
+                "Excel supports additional export paths including copy/paste workflows, text formats, web publishing, and external systems",
+                "A complete worked solution includes import, cleaning, transformation, validation, and export checks",
+                "These operations support efficient data organisation, analysis, and presentation"
+            ],
+            "visual_elements": {
+                "diagrams": False,
+                "tables": False,
+                "highlighted_sections": True
+            }
+        },
+        {
+            "lesson_number": "1.3",
+            "title": "Basic Formatting in Excel",
+            "content": """
+### 1.3. Lesson - Basic Formatting in Excel
+
+### Introduction
+
+The primary methods used to alter the appearance of cells and data within a spreadsheet are referred to as basic formatting in Excel.
+
+Your Excel paper’s visual appeal, readability, and general professionalism are greatly improved by formatting.
+
+You may highlight vital information, efficiently organise data, and present it clearly and organised by using simple formatting options, including font styles, colours, cell borders, and alignment settings.
+
+This primer’s discussion of fundamental Excel formatting principles will give you the information and abilities to make your spreadsheets more aesthetically pleasing and understandable.
+
+### Cell Data Formats
+
+How data is displayed within individual cells in Excel is called cell data formats. With the help of Excel’s many formatting choices, users may alter how various types of data - including numbers, dates, currencies, percentages, and more - appear.
+
+These formats not only influence how the data is displayed but also make it possible for users to do calculations and handle data easily. Users can ensure that numbers are displayed with the correct number of decimal places and dates are formatted in accordance with regional standards. Currencies are displayed with the proper symbols and separators by applying the necessary data formats.
+
+Right-click on the cell or a group of cells you wish to format, and then choose Format Cells from the context menu. Under the Home tab, basic formatting is also accessible.
+
+### Numeric cell formats
+
+In Excel, altering the appearance of numerical data within cells is called number formatting. When displaying numbers, users can adjust the decimal places, thousand separators, currency symbols, and percentage forms. For data to be presented accurately and understandably, number formatting is essential. Refer to Figure 1:
+
+Figure 1: Excel number formatting options.
+
+Excel provides a wide range of pre-defined number formats to cater to different needs. Some common number formats are shown in Figure 2:
+
+Figure 2: Examples of numeric formatting.
+
+#### Common pre-defined number formats
+
+**General**  
+This is the default format in Excel, where numbers are displayed as entered.
+
+**Number**  
+This format is used for general numeric values and allows users to specify decimal places, separators, and negative number formatting.
+
+**Currency**  
+This format is used for displaying monetary values and includes options for currency symbols, decimal places, and negative numbers.
+
+**Accounting**  
+Similar to the currency format, the accounting format aligns currency symbols and decimal places for better visual appeal.
+
+**Date**  
+This format is used for displaying dates and offers various options for date formats, such as month/day/year or day/month/year, depending on regional conventions.
+
+**Time**  
+This format is used for displaying time values and allows users to control the appearance of hours, minutes, and seconds.
+
+**Percentage**  
+This format multiplies the cell value by 100 and adds a percentage symbol (%).
+
+**Scientific**  
+This format is used for displaying numbers in scientific notation, useful for large or small values.
+
+Excel has the versatility to generate unique number forms in addition to these pre-defined formats. Users can create their own formatting rules for numbers by combining various symbols, characters, and codes to produce desired formatting effects.
+
+Excel’s number formatting influences computations and formulas in addition to their visual appearance. Although the formatting changes how the data is shown, the underlying data is unaffected. It is important to remember that number formatting does not impact the data’s calculations or real value.
+
+### Text cell formats
+
+In Excel, text cell formatting describes the process of changing the way text behaves and appears inside cells. Text formatting, as opposed to number formatting, which deals with numerical data, is concerned with how text is presented, aligned, wrapped, and styled. Examples are demonstrated in figures 3-5 below:
+
+Figure 3: Excel text formatting options.
+
+Figure 4: Excel alignment formatting options.
+
+Figure 5: Excel border formatting options.
+
+In Excel, text cell formatting options allow users to make their text more visually appealing and easier to read. Some common text formatting features include:
+
+#### Font styles
+
+Excel provides a variety of font styles, such as bold, italic, underline, and strikethrough, to emphasise or highlight specific text.
+
+#### Font colours
+
+Users can change the colour of the text to make it stand out or match a particular theme or visual preference.
+
+#### Font size
+
+Excel allows users to adjust the text size to make it more prominent or fit within a designated space.
+
+#### Alignment
+
+Text alignment options enable users to control how the text is positioned within a cell, such as left-aligned, right-aligned, centred, or justified.
+
+#### Text wrapping
+
+With text wrapping, users can specify whether the text should wrap within a cell or overflow to adjacent cells, making it easier to read lengthy text entries.
+
+Figure 6: Example of text wrapping.
+
+#### Indentation
+
+Users can apply indentation to align text within cells, such as using a hanging indent for bullet points or nested lists.
+
+#### Borders
+
+Excel offers border styles to create visual boundaries around cells, enabling users to separate or group text.
+
+Figure 7: Example of cell borders.
+
+#### Cell protection
+
+Text cell formatting also includes options for cell protection, allowing users to lock or unlock cells to prevent accidental changes.
+
+### The Task - Cell formatting in Excel
+
+In this activity, you will practice basic cell formatting in Excel, specifically numeric and text formatting. Follow the instructions provided below to complete the tasks.
+
+#### Task 1: Numeric formatting
+
+1. Open a new Excel workbook.
+2. In cell `A1`, enter the number `1234.56`.
+3. Apply the **Currency** format to cell `A1`, displaying the number with a currency symbol and two decimal places.
+4. In cell `B1`, enter the percentage value `0.75`.
+5. Apply the **Percentage** format to cell `B1`, displaying the number as a percentage with two decimal places.
+6. In cell `C1`, enter the date `May 10, 2023`.
+7. Apply the **Short Date** format to cell `C1`, displaying the date in the format `MM/DD/YYYY`.
+
+#### Task 2: Text formatting
+
+1. In cell `A3`, enter the text `Sales Report`.
+2. Apply **bold** formatting to the text in cell `A3`.
+3. In cell `B3`, enter the text `Product Name`.
+4. Apply **underline** formatting to the text in cell `B3`.
+5. In cell `C3`, enter the text `Quantity Sold`.
+6. Apply **italic** formatting to the text in cell `C3`.
+7. In cell `D3`, enter the text `Total Revenue`.
+8. Apply **strikethrough** formatting to the text in cell `D3`.
+
+#### Task 3: Data alignment
+
+1. Select cells `A1` to `D3`.
+2. Apply **centre alignment** to the selected cells.
+3. Adjust the column widths to fit the content in each cell.
+
+#### Task 4: Cell border formatting
+
+1. Select cells `A1` to `D3`.
+2. Apply a border around the selected cells.
+3. Adjust the border style and thickness as desired.
+
+### Visual solved example (with explanation)
+
+Use this exact click path to complete and verify the task quickly:
+
+1. Enter values in `A1`, `B1`, `C1`.
+2. Format `A1`: Home → Number group → Currency (2 decimals).  
+    **Why:** makes monetary values clear and consistent.
+3. Format `B1`: Home → Number group → Percentage (2 decimals).  
+    **Why:** converts decimal ratios to readable percentages.
+4. Format `C1`: Home → Number group → Short Date (`MM/DD/YYYY`).  
+    **Why:** standardises date presentation.
+5. Enter headings in row 3 (`A3:D3`) and apply bold/underline/italic/strikethrough as requested.  
+    **Why:** demonstrates common text emphasis tools.
+6. Select `A1:D3` → Center alignment.  
+    **Why:** creates a clean, report-like layout.
+7. With `A1:D3` selected, apply `All Borders` (or Outside + Inside borders) and choose preferred line style.  
+    **Why:** visually separates data blocks and improves readability.
+8. AutoFit columns `A:D` (double-click column boundaries).  
+    **Why:** ensures no clipped text or values.
+
+#### Expected final view
+
+| Cell | Input | Required format | Expected display example |
+|---|---|---|---|
+| A1 | 1234.56 | Currency, 2 decimals | $1,234.56 |
+| B1 | 0.75 | Percentage, 2 decimals | 75.00% |
+| C1 | May 10, 2023 | Short Date | 05/10/2023 |
+| A3 | Sales Report | Bold | **Sales Report** |
+| B3 | Product Name | Underline | <u>Product Name</u> |
+| C3 | Quantity Sold | Italic | *Quantity Sold* |
+| D3 | Total Revenue | Strikethrough | ~~Total Revenue~~ |
+
+#### Quick self-check
+
+- Currency has symbol and two decimals.
+- Percentage shows two decimals.
+- Date is shown as short date.
+- A1:D3 is centered and bordered.
+- Columns are wide enough to show all content.
+
+### Sorting and Filtering
+
+Excel’s sophisticated sorting and filtering functions let users efficiently organise and analyse data. These capabilities allow users to extract pertinent information based on predetermined criteria, spot trends, and arrange data in a particular way. Let’s delve deeper into sorting and filtering:
+
+Figure 8: Excel sorting and filtering options.
+
+### Sorting data
+
+Sorting data in Excel rearranges the rows based on the values in one or more columns. Sorting can be done in ascending (smallest to largest) or descending (largest to smallest) order. Refer to Figure 8 to sort data in Excel:
+
+1. Select the range of cells or the entire table.
+2. Navigate to the Data tab and click on the Sort button.
+3. Specify the column(s) to sort by and the sort order.
+4. Excel will rearrange the data based on the selected criteria, ensuring all rows remain intact.
+
+For activities like alphabetising names, ranking data, or locating the greatest or lowest values within a dataset, sorting is especially helpful. Excel additionally enables multi-level sorting, which arranges data in hierarchical order according to many columns.
+
+### Filtering data
+
+Filtering data in Excel displays only the rows that meet specific criteria, temporarily hiding the rest of the data. This helps users focus on relevant information and extract subsets of data. To apply filters to data in Excel:
+
+1. Select the range of cells or the entire table.
+2. Go to the Data tab and click on the Filter button.
+3. Drop-down arrows will appear in the header row of each column.
+4. Click on the drop-down arrow of a column to set filter criteria, such as text filters, number filters, date filters, or advanced filters.
+5. Excel will display only the rows that meet the specified criteria while hiding the others.
+
+Applying many filters at once can further refine filtered data. Excel also offers tools for sorting data inside the results of filtering, allowing users to focus their investigation efficiently.
+
+For activities like locating duplicate entries, examining patterns within a dataset, or isolating data based on certain criteria, including date periods or particular values, filtering data is useful.
+
+### Advanced filtering
+
+Excel offers advanced filtering options for more complex filtering requirements. Advanced filtering allows users to define custom criteria using formulas, extract unique records, or copy filtered data to a new location within the worksheet or another sheet.
+
+To access advanced filtering options, users can navigate to the Data tab, click Advanced in the Sort & Filter group, and specify the criteria in the Advanced Filter dialog box.
+
+Advanced filtering is particularly useful for scenarios with insufficient standard filters, such as filtering data based on multiple conditions or extracting unique values from a large dataset.
+
+Users may manage and analyse vast amounts of data, spot patterns, and derive useful insights using Excel’s sorting and filtering features. These functions give users flexibility and control over how data is presented, allowing them to engage with the data in a way that best matches their individual needs and improves data-driven decision-making.
+
+### Sorting and Filtering in Excel - Practice Activity
+
+In this activity, you will practice sorting and filtering data in Excel. Follow the instructions provided below to complete the tasks.
+
+#### Task 1: Sorting data
+
+1. Open a new Excel workbook.
+2. Enter the following data into columns `A`, `B`, and `C`, starting from row `1`:
+    - Column `A`: Student Name (`Alex`, `Ben`, `Claire`, `David`, `Emma`)
+    - Column `B`: Age (`21`, `19`, `22`, `20`, `21`)
+    - Column `C`: Grade (`A`, `B`, `C`, `B`, `A`)
+3. Select the entire dataset (`A1:C6`).
+4. Sort the data in ascending order based on the `Student Name` column.
+5. Sort the data in descending order based on the `Age` column.
+6. Sort the data in alphabetical order based on the `Grade` column.
+
+#### Task 2: Filtering data
+
+1. Select the entire dataset (`A1:C6`).
+2. Apply filters to the dataset.
+3. Filter the data to display only students who are `21` years old.
+4. Filter the data to display only students with a grade of `A`.
+5. Filter the data to display only students whose names start with the letter `B`.
+
+#### Task 3: Multiple criteria filtering
+
+1. Select the entire dataset (`A1:C6`).
+2. Apply filters to the dataset if they are not already applied.
+3. Filter the data to display only students who are `20` years old **and** have a grade of `B`.
+
+#### Task 4: Removing filters
+
+1. Select the entire dataset (`A1:C6`).
+2. Remove all filters from the dataset.
+
+### Tutor solution (step-by-step with expected results)
+
+#### Step 0: Build the dataset correctly
+
+Enter this exact table:
+
+| Student Name | Age | Grade |
+|---|---:|:---:|
+| Alex | 21 | A |
+| Ben | 19 | B |
+| Claire | 22 | C |
+| David | 20 | B |
+| Emma | 21 | A |
+
+Select `A1:C6` before each sort/filter operation.
+
+#### Step 1: Sort by Student Name (A→Z)
+
+1. Data → Sort.
+2. Sort by: `Student Name`.
+3. Order: `A to Z`.
+4. Click OK.
+
+**Expected order:** Alex, Ben, Claire, David, Emma.
+
+#### Step 2: Sort by Age (Largest→Smallest)
+
+1. Data → Sort.
+2. Sort by: `Age`.
+3. Order: `Largest to Smallest`.
+4. Click OK.
+
+**Expected order by Age:** 22, 21, 21, 20, 19.
+
+#### Step 3: Sort by Grade (A→Z)
+
+1. Data → Sort.
+2. Sort by: `Grade`.
+3. Order: `A to Z`.
+4. Click OK.
+
+**Expected grouping:** `A` rows first, then `B`, then `C`.
+
+#### Step 4: Apply filters
+
+1. Data → Filter (funnel icon).
+2. Confirm drop-down arrows appear in row 1 headers.
+
+#### Step 5: Filter for Age = 21
+
+1. Click filter on `Age`.
+2. Clear Select All.
+3. Check only `21`.
+4. Click OK.
+
+**Expected visible rows:** Alex and Emma.
+
+#### Step 6: Filter for Grade = A
+
+1. Clear previous Age filter (Age drop-down → Clear Filter from Age).
+2. Click filter on `Grade`.
+3. Select only `A`.
+4. Click OK.
+
+**Expected visible rows:** Alex and Emma.
+
+#### Step 7: Filter names starting with B
+
+1. Clear previous Grade filter.
+2. Click filter on `Student Name`.
+3. Text Filters → Begins With...
+4. Enter `B` and click OK.
+
+**Expected visible row:** Ben only.
+
+#### Step 8: Multiple criteria (Age = 20 and Grade = B)
+
+1. Clear all current filters.
+2. Set `Age` filter to `20`.
+3. Set `Grade` filter to `B`.
+
+**Expected visible row:** David only.
+
+#### Step 9: Remove all filters
+
+Option A: Data → Clear (clears criteria, keeps filter arrows).  
+Option B: Data → Filter (turns filter mode off and removes arrows).
+
+**Expected final state:** all 5 student rows are visible again.
+
+#### Common mistakes (and fixes)
+
+- Sorting only one column: always select the full table (`A1:C6`) so rows stay intact.
+- Missing header checkbox: in Sort dialog, keep **My data has headers** enabled.
+- Stacked filters by accident: use Data → Clear before starting a new filter scenario.
+- Wrong result count: check bottom status bar to verify visible row count.
+
+### Window Formatting
+
+Window formatting in Excel refers to the customisation and adjustment of the visible portion of the worksheet within the Excel application window. It allows users to modify the worksheet’s view, zoom level, and layout to suit their preferences and optimise their working environment. Let’s explore the various window formatting options in Excel.
+
+### Zooming
+
+Zooming in Excel adjusts the magnification level of the worksheet, making the content appear larger or smaller on the screen. It helps users adjust the level of detail visible on the screen. Zooming options can be accessed through the View tab or the Zoom slider in the bottom-right corner of the Excel window.
+
+### Freeze panes
+
+Freezing panes in Excel allow users to lock specific rows or columns in place while scrolling through large datasets. By freezing panes, users can keep important headings or labels visible at all times, enhancing readability and ease of navigation. This feature is accessed through the View tab, where users can freeze the top row, leftmost column, or a combination of rows and columns.
+
+Figure 9: Excel freeze panes options.
+
+### Splitting windows
+
+Splitting windows in Excel divides the worksheet into separate panes, allowing users to view different parts of the same worksheet simultaneously. This feature is particularly useful when working with large datasets or comparing data from different sections of the worksheet. Users can split the window horizontally or vertically or create multiple windows for more complex analysis. Splitting windows can be accessed through the View tab, as demonstrated in Figure 10.
+
+Figure 10: Example of Window Splitting.
+
+### Page Layout view
+
+Page Layout view in Excel provides a preview of how the worksheet will appear when printed. Demonstrated in Figure 11. It enables users to adjust the layout, margins, headers, footers, and other worksheet elements to ensure optimal printing results. Page Layout view can be accessed through the View tab and is useful for formatting and designing professional-looking printed documents.
+
+Figure 11: Excel Page Layout options.
+
+### Full-Screen View
+
+Full-Screen view hides the Excel ribbon and other toolbars, maximising the available screen space for the worksheet. This immersive view is helpful when users need to focus solely on the data and minimise distractions. The Full-screen view can be accessed through the View tab or by pressing the F11 key.
+
+### Custom Views
+
+Custom Views allow users to save different combinations of window formatting settings, including zoom level, freeze panes, and other display options. Users can create and switch between Custom Views to quickly apply specific window formatting configurations based on their needs.
+
+These Excel window layout options offer flexibility and customizability to improve working conditions and increase data analysis. Users may navigate through big datasets, compare data effectively, and present information that best matches their needs by changing the view, freezing panes, splitting windows, and using other window formatting tools.
+
+### Page breaks
+
+Window formatting in Excel also encompasses managing page breaks, which determine how data is divided and displayed across multiple pages when printing. Excel provides tools to control and adjust page breaks to ensure the desired layout and formatting. Let’s explore page breaks in Excel:
+
+#### Automatic page breaks
+
+Excel automatically inserts page breaks based on the paper size, margins, and print settings. These automatic page breaks determine where the content of the worksheet will break onto the next page. Users can view and adjust these automatic page breaks in Page Break Preview.
+
+#### Page Break Preview
+
+This is a viewing mode in Excel that displays the worksheet with dashed lines indicating page breaks. It allows users to see how the data will be distributed across multiple pages when printed. In this view, users can manually adjust and move page breaks to control the layout. Page Break Preview can be accessed through the View tab.
+
+#### Inserting manual page breaks
+
+Excel allows users to insert manual page breaks to specify exactly where they want the data to break onto the next page. To insert a manual page break, users can:
+
+1. Select the row or column below or to the right of where they want the page break to appear.
+2. Navigate to the Page Layout tab and click on the Breaks button.
+3. Choose Insert Page Break to insert a horizontal page break above the selected row or a vertical page break to the left of the selected column.
+
+#### Removing page breaks
+
+Users can also remove page breaks in Excel. To remove a manual page break, users can:
+
+1. Select a cell in the row or column where the page break is located.
+2. Navigate to the Page Layout tab and click on the Breaks button.
+3. Choose Remove Page Break to eliminate the selected page break.
+
+Users can control how their data is dispersed across printed pages in Excel by modifying and managing page breaks, guaranteeing optimal layout and readability, and avoiding unpleasant data cut-offs. The freedom to tailor worksheet printing, considering various paper sizes and formatting needs, is made possible via Excel’s page break capabilities.
+
+Overall, by including page breaks in Excel’s window formatting settings, users can precisely control printed documents’ layout and appearance, making it simpler to understand and analyse data when working with physical copies.
+
+### Printing
+
+Printing in Excel refers to the process of generating physical copies of worksheets or selected data from an Excel workbook. Excel provides various options and settings to customise the printing experience and ensure that the printed output meets the desired requirements. Refer to Figure 12, and let’s explore the steps and considerations involved in printing in Excel:
+
+Figure 12: Excel Print options.
+
+### Print Preview
+
+Before printing, previewing the document to get an idea of how the content will appear on paper is recommended. Excel’s Print Preview feature allows users to view the entire worksheet or a selected range as it will be printed. It allows for checking the layout, adjusting page breaks, and making necessary formatting changes before printing.
+
+### Page Setup
+
+Excel’s Page Setup options enable users to customise the printed pages’ layout, margins, orientation, and scaling. To access the Page Setup settings:
+
+1. Go to the Page Layout tab and click on the Page Setup group.
+2. Adjust settings such as paper size, orientation (portrait or landscape), margins, and scaling options.
+
+### Print area
+
+Users can define a specific print area in Excel, which determines the range of cells or data that will be printed. This feature is helpful when only a portion of the worksheet needs to be printed. To set a print area:
+
+1. Select the desired range of cells.
+2. Go to the Page Layout tab and click on the Print Area button in the Page Setup group.
+3. Choose Set Print Area to define the selected range as the print area.
+
+### Print settings
+
+Excel offers various settings to customise the printing process. These settings can be accessed in the Print dialog box, which appears when the user selects Print or presses Ctrl+P. Some common print settings include:
+
+#### Number of copies
+
+Specify the number of copies to be printed.
+
+#### Print range
+
+Choose to print the entire workbook, active sheets, or selected range.
+
+#### Print order
+
+Determine the order in which pages will be printed.
+
+#### Print titles
+
+Define rows or columns to repeat on each printed page for better readability.
+
+### Print options
+
+Excel provides additional print options allowing users to enhance the printed output further. These options include:
+
+#### Gridlines and headings
+
+Include or exclude gridlines and row/column headings in the printed output.
+
+#### Background colours and images
+
+Determine whether background colours and images should be printed.
+
+#### Scaling
+
+Adjust the size of the printed output by scaling the content to fit a specific number of pages.
+
+#### Page breaks
+
+Control and adjust automatic or manual page breaks for optimal printing.
+
+### Print
+
+Once all the desired settings have been configured, users can initiate the printing process by selecting the Print option. This sends the worksheet or selected range to the printer, producing physical copies of the data based on the specified settings.
+
+By leveraging Excel’s printing capabilities, users can generate well-formatted and readable hard copies of their worksheets, reports, charts, or any other data-driven documents. Understanding Excel’s printing options and settings allows users to customise the printouts according to their preferences and effectively communicate their data.
+
+### Window formatting in Excel - Practice Activity
+
+In this activity, you will practice window formatting, page breaks, and printing functions in Excel. Follow the instructions provided below to complete the tasks.
+
+#### Task 1: Window Formatting
+
+1. Open a new Excel workbook.
+2. Enter some sample data in cells `A1` to `E10` to create a dataset.
+3. Adjust the zoom level to `75%`.
+4. Split the window into two panes, vertically, at column `C` so that both sections of the dataset are visible simultaneously.
+5. Freeze the top row and the leftmost column, ensuring they remain visible while scrolling.
+
+#### Task 2: Page breaks
+
+1. Navigate to the Page Break Preview.
+2. Adjust the automatic page breaks to ensure data is distributed optimally across pages if necessary.
+3. Insert a manual page break above row `7`, ensuring that the data above and below the page break is separated correctly.
+4. Remove any unnecessary page breaks.
+
+#### Task 3: Printing
+
+1. Set the print area to include the dataset from `A1` to `E10`.
+2. Adjust the page setup options to print the worksheet in landscape orientation.
+3. Include the row and column headings on every printed page.
+4. Configure the margins to ensure the data is properly aligned on the printed page.
+5. Print the worksheet and review the output for accuracy.
+
+#### Task 4: Custom views
+
+1. Create a custom view called `Split View` that includes the split window formatting, zoom level, and frozen panes.
+2. Create another custom view called `Print View` that includes the adjusted page breaks, print area, and page setup options.
+3. Switch between the custom views to observe the changes in window formatting and printing settings.
+
+### Tutor solution (step-by-step)
+
+#### Step 1: Build your sample dataset
+
+- Fill `A1:E1` with headers such as `ID`, `Name`, `Category`, `Amount`, `Date`.
+- Fill rows `2:10` with sample values.
+- Select `A1:E10` and apply `All Borders` for clear visual checking.
+
+#### Step 2: Window formatting setup
+
+1. Set zoom to `75%`:
+    - Use the bottom-right zoom slider, or View → Zoom → 75.
+2. Split window at column `C`:
+    - Click cell `C1` then View → Split.
+    - This creates a vertical split so left and right sections can be viewed together.
+3. Freeze top row and first column:
+    - Click cell `B2`.
+    - View → Freeze Panes → Freeze Panes.
+    - Result: row 1 and column A stay visible while you scroll.
+
+#### Step 3: Page break configuration
+
+1. Open View → Page Break Preview.
+2. Review dashed/solid page break lines.
+3. Insert manual break above row `7`:
+    - Click row `7`.
+    - Page Layout → Breaks → Insert Page Break.
+4. Remove unwanted breaks:
+    - Select a row/column containing the break.
+    - Page Layout → Breaks → Remove Page Break.
+
+#### Step 4: Printing setup
+
+1. Set print area:
+    - Select `A1:E10`.
+    - Page Layout → Print Area → Set Print Area.
+2. Set orientation:
+    - Page Layout → Orientation → Landscape.
+3. Include row/column headings:
+    - Page Layout → Page Setup launcher (small diagonal arrow) → Sheet tab.
+    - Check `Row and column headings`.
+4. Adjust margins:
+    - Page Layout → Margins → choose Normal/Narrow or Custom Margins as needed.
+5. Preview and print:
+    - Ctrl+P and review preview.
+    - Confirm page split, headings, margins, and orientation before printing.
+
+#### Step 5: Create custom views
+
+1. Create `Split View`:
+    - Keep split + freeze + zoom at 75% active.
+    - View → Custom Views → Add.
+    - Name: `Split View`.
+2. Create `Print View`:
+    - Switch to print-focused settings (print area, landscape, page breaks).
+    - View → Custom Views → Add.
+    - Name: `Print View`.
+3. Test switching:
+    - View → Custom Views.
+    - Select each view and click Show to verify the expected layout/settings.
+
+#### Validation checklist
+
+- Zoom is 75%.
+- Split is vertical at column C.
+- Row 1 and column A remain fixed while scrolling.
+- Manual page break is placed above row 7.
+- Print area is A1:E10.
+- Orientation is Landscape.
+- Row and column headings are enabled for print.
+- Both custom views are saved and switch correctly.
+
+### The Task
+
+#### Question 1 - Numeric formatting
+
+1. Open a new Excel workbook.
+2. In cell `A1`, enter the number `9876.43`.
+3. Apply the **Accounting** format to cell `A1`, displaying the number with currency symbols, decimal places, and aligned formatting.
+4. In cell `B1`, enter the percentage value `0.25`.
+5. Apply the **Percentage** format to cell `B1`, displaying the number as a percentage with two decimal places.
+6. In cell `C1`, enter the date `June 13, 2023`.
+7. Apply the **Long Date** format to cell `C1`, displaying the date in the format `MMMM DD, YYYY`.
+
+#### Question 2 - Text formatting
+
+1. In cell `A3`, enter the text `Inventory List`.
+2. Apply bold formatting to the text in cell `A3`.
+3. In cell `B3`, enter the text `Product Code`.
+4. Apply underline formatting to the text in cell `B3`.
+5. In cell `C3`, enter the text `Quantity in Stock`.
+6. Apply italic formatting to the text in cell `C3`.
+7. In cell `D3`, enter the text `Price per Unit`.
+8. Apply strikethrough formatting to the text in cell `D3`.
+
+#### Question 3 - Data alignment
+
+1. Select cells `A1` to `D3`.
+2. Apply centre alignment to the selected cells.
+3. Adjust the column widths to fit the content in each cell.
+
+#### Question 4 - Cell border formatting
+
+1. Select cells `A1` to `D3`.
+2. Apply a thick border around the selected cells.
+3. Adjust the border style to a double line.
+
+#### Question 5 - Sorting data
+
+1. Add a new worksheet.
+2. Enter the following data into columns `A`, `B`, and `C`, starting from row `1`:
+    - Column `A`: Country (`USA`, `Canada`, `Germany`, `France`, `Australia`)
+    - Column `B`: Population (`328`, `38`, `83`, `67`, `25`)
+    - Column `C`: GDP (`21.43`, `1.64`, `4.44`, `2.71`, `1.37`)
+3. Select the entire dataset (`A1:C6`).
+4. Sort the data in ascending order based on the `Country` column.
+5. Sort the data in descending order based on the `Population` column.
+6. Sort the data in descending order based on the `GDP` column.
+
+#### Question 6 - Filtering data
+
+1. Select the entire dataset (`A1:C6`).
+2. Apply filters to the dataset.
+3. Filter the data to display only countries with a population greater than `50` million.
+4. Filter the data to display only countries with a GDP of less than `5` trillion.
+5. Filter the data to display only countries whose names start with the letter `C`.
+
+#### Question 7 - Multiple criteria filtering
+
+1. Select the entire dataset (`A1:C6`).
+2. Apply filters to the dataset if they are not already applied.
+3. Filter the data to display only countries with a population greater than `50` million and a GDP less than `3` trillion.
+
+#### Question 8 - Removing filters
+
+1. Select the entire dataset (`A1:C6`).
+2. Remove all filters from the dataset.
+
+#### Question 9 - Window formatting
+
+1. Add a new worksheet.
+2. Enter some sample data in cells `A1` to `F15` to create a dataset.
+3. Adjust the zoom level to `90%`.
+4. Split the window into two panes, horizontally, at row `6`, so that both sections of the dataset are visible simultaneously.
+5. Freeze the top two rows and the leftmost column, ensuring they remain visible while scrolling.
+
+#### Question 10 - Page breaks
+
+1. Navigate to the Page Break Preview.
+2. Adjust the automatic page breaks, if necessary, to ensure data is distributed optimally across pages.
+3. Insert a manual page break above row `12`, ensuring that the data above and below the page break is separated correctly.
+4. Remove any unnecessary page breaks.
+
+#### Question 11 - Printing
+
+1. Set the print area to include the dataset from `A1` to `F15`.
+2. Adjust the page setup options to print the worksheet in portrait orientation.
+3. Include the row and column headings on every printed page.
+4. Configure the margins to ensure the data is properly aligned on the printed page.
+5. Print the worksheet and review the output for accuracy.
+
+### Tutor solution and validation guide
+
+Use this answer strategy during practicals/exams:
+
+1. Complete Questions 1-4 on worksheet 1, then take a quick screenshot for evidence.
+2. Complete Questions 5-8 on worksheet 2, verifying sort/filter results after each step.
+3. Complete Questions 9-11 on worksheet 3, then check print preview before final print/export.
+4. Save your workbook and keep one validated output per question group.
+
+#### Required output checks
+
+- `A1` shows accounting format with aligned currency.
+- `B1` shows `25.00%`.
+- `C1` shows long date format for June 13, 2023.
+- `A1:D3` is centered with thick/double border formatting.
+- Country dataset sorts correctly by `Country`, `Population`, and `GDP` in required order.
+- Filters return correct subsets (single and multiple criteria).
+- Window split/freeze/zoom settings match the task.
+- Page break exists above row `12`.
+- Print setup is portrait with headings and correct margins.
+
+#### Reference files
+
+- `/workspaces/Study-buddy/SPF-0103 Lesson Task solution.pdf`
+- `/workspaces/Study-buddy/SPF 0103 Lesson task solution Task 9 dataset.csv`
+
+### Expected Answers Snapshot (Exam-Ready)
+
+Use this quick rubric to verify your final workbook before submission.
+
+| Question | What examiner expects to see |
+|---|---|
+| Q1 Numeric formatting | `A1` in Accounting format, `B1` as `25.00%`, `C1` in Long Date format (`June 13, 2023` style) |
+| Q2 Text formatting | `A3` bold, `B3` underline, `C3` italic, `D3` strikethrough |
+| Q3 Alignment | Range `A1:D3` centered and column widths adjusted (no clipped text) |
+| Q4 Borders | Range `A1:D3` has thick outer border and double-line border style applied as requested |
+| Q5 Sorting | Country dataset sorted correctly by Country ascending, Population descending, GDP descending |
+| Q6 Filtering | Correct filtered subsets for `Population > 50`, `GDP < 5`, and names beginning with `C` |
+| Q7 Multiple criteria | Only rows meeting both conditions (`Population > 50` AND `GDP < 3`) remain visible |
+| Q8 Remove filters | All filters cleared and full dataset visible again |
+| Q9 Window formatting | Worksheet with zoom `90%`, horizontal split at row `6`, top two rows + first column frozen |
+| Q10 Page breaks | Page Break Preview reviewed, manual break inserted above row `12`, unnecessary breaks removed |
+| Q11 Printing | Print area `A1:F15`, portrait orientation, row/column headings included, margins adjusted, preview checked |
+
+#### Exam submission checklist
+
+- Save workbook with clear sheet names (for example `Q1_Q4_Formatting`, `Q5_Q8_SortFilter`, `Q9_Q11_Print`).
+- Capture at least one screenshot per question group as evidence.
+- Re-open each worksheet and verify all settings persisted before final submission.
+- Review Print Preview one final time to avoid page-break or margin penalties.
+
+### What Did I Learn in This Lesson?
+
+This lesson provided the following insights:
+
+- We looked at cell data formats and how they influence the appearance and handling of data in Excel.
+- We learnt how users can format numeric data in Excel, and about some of the common number formats available.
+- We explored text cell formatting in Excel and how users can modify the appearance of text within cells.
+- We learnt how users can perform sorting and filtering in Excel, and what the benefits of these functions are.
+- We examined window formatting options in Excel and how users can customise the view, zoom level, and layout of their worksheets.
+- We explored how freezing panes in Excel work and what advantages it offers for working with large datasets.
+- We examined how users can split windows in Excel and why this feature is useful when working with extensive data or comparing different sections of a worksheet.
+- We learned how Page Layout view in Excel helps users in formatting and designing printed documents.
+- We covered Full-Screen view in Excel and how it contributes to a distraction-free working environment.
+- We learnt how users can create and switch between custom views in Excel and what benefits this feature offers in terms of window formatting.
+- We examined how page breaks work in Excel and what tools Excel provides to manage and adjust page breaks for optimal printing results.
+- We covered inserting manual page breaks and removing page breaks in Excel when customising the layout of printed documents.
+            """,
+            "key_points": [
+                "Basic formatting in Excel changes the appearance of cells and worksheet content",
+                "Formatting improves visual appeal, readability, and professionalism",
+                "Formatting helps highlight important information",
+                "Font styles, colours, borders, and alignment are core formatting tools",
+                "Clear and organised formatting supports better communication of data",
+                "Cell data formats control how values like numbers, dates, and currencies are displayed",
+                "Number formatting improves readability with decimal control, separators, and symbols",
+                "Format Cells and Home tab tools provide quick access to formatting features",
+                "Excel provides pre-defined number categories such as General, Number, Currency, Accounting, Date, Time, Percentage, and Scientific",
+                "Text cell formatting controls text presentation, alignment, wrapping, and styling",
+                "Text formatting options include font style, colour, size, alignment, wrapping, indentation, borders, and cell protection",
+                "Sorting rearranges rows based on one or more selected columns",
+                "Filtering shows only rows that match selected criteria",
+                "Advanced filtering supports formula criteria, unique records, and copying filtered results",
+                "Single and multiple-criteria filters help isolate precise data subsets for analysis",
+                "Window formatting includes zoom controls and freeze panes for better navigation",
+                "Splitting windows enables simultaneous viewing of multiple worksheet areas",
+                "Page Layout view helps prepare worksheets for professional printing",
+                "Full-Screen view reduces distractions by maximizing worksheet workspace",
+                "Custom Views save and reapply preferred worksheet display configurations",
+                "Page break tools help control printed page layout and readability",
+                "Printing options in Excel allow customization of output for physical documents",
+                "Print Preview, Page Setup, and Print Area improve print accuracy and layout control",
+                "Print settings and options help tailor copies, ranges, scaling, and readability",
+                "Custom views can preserve and switch between analysis-focused and print-focused layouts"
+            ],
+            "visual_elements": {
+                "diagrams": False,
+                "tables": False,
+                "highlighted_sections": True
+            }
+        },
+        {
+            "lesson_number": "1.4",
+            "title": "Data Validation and Conditional Formatting",
+            "content": """
+### 1.4. Lesson - Data Validation and Conditional Formatting
+
+### Introduction
+
+Data validation and conditional formatting are essential techniques used in data analysis and management to ensure data quality, consistency, and visual representation in various applications, such as spreadsheets, databases, and other data-driven systems. These techniques improve data quality, maintain data integrity, or do both to aid decision-making processes.
+
+Data validation guarantees that only accurate and appropriate data is entered into a system by creating and enforcing rules or constraints on data entry. It helps avoid errors, inconsistencies, and inaccuracies by setting clear guidelines that data must adhere to before being accepted. This may involve restrictions on the range of data types, requirements for uniqueness, and more. Data validation is crucial for ensuring data dependability and integrity because it lessens the potential of erroneous or unreliable data entering a system.
+
+Contrarily, conditional formatting allows users to format and highlight cells or ranges in line with established rules or criteria. Users can quickly identify patterns, trends, or outliers in a dataset by adding numerous formatting styles such as font colour, background colour, borders, and data bars to cells that meet specific criteria. When data analysts and consumers use conditional formatting to graphically portray data in a way that highlights important information, it is easier to understand and analyse massive datasets.
+
+Various applications extensively use conditional formatting and data validation, including spreadsheet programs like Microsoft Excel, Google Sheets, and database management systems. These techniques are valuable tools for data analysts, managers, and users whose decisions depend on accurate and appealing data. By using conditional formatting and adopting data validation criteria, organisations may enhance the quality of their data, streamline their data analysis processes, and promote decision-making that is informed by data.
+
+### Data Validation
+
+Excel has a tool called Data Validation that guarantees the integrity and quality of data entered into cells. Users can specify precise requirements for data input, such as text lengths, numerical ranges, or the selection of values from a predetermined list. Excel can be configured to perform data validation, which checks entered data against predefined criteria and alerts users with error messages or warnings if the input does not comply. This feature helps to maintain data quality and reduces the likelihood of mistakes in spreadsheets.
+
+This is how we access the Data Validation menu in Excel as demonstrated in Figures 1 and 2:
+
+Figure 1: Access Data Validation in Excel.
+
+1. Select the cell or range where you want to apply data validation.
+2. Go to the Data tab and click on Data Validation.
+3. In the Data Validation dialog box, select the option from the Allow drop-down list.
+4. Specify the desired criteria.
+5. Click OK to apply the validation.
+
+Figure 2: Data Validation settings.
+
+Here you to be my tutor:
+
+Let’s examine a few prevalent examples:
+
+#### Whole number
+
+This validation ensures that the value entered is an integer with no decimal places. It is helpful in situations that only allow whole numbers, including counting things or keeping track of quantities. Refer to Figure 3.
+
+1. Select the cell or range where you want to apply data validation.
+2. Go to the Data tab and click on Data Validation.
+3. In the Data Validation dialog box, select Whole number from the Allow drop-down list.
+4. Specify the desired criteria, such as the minimum and maximum values.
+5. Click OK to apply the validation.
+
+Figure 3: Data validation: Whole number.
+
+#### Decimal number
+
+Decimal places can be entered for numeric values with this validation. It helps guarantee that the provided data falls within a specified range or has a specific number of decimal places, making it appropriate for measurements or financial calculations. Demonstrated in Figure 4.
+
+1. Follow the same steps as above for data validation.
+2. In the Data Validation dialog box, select Decimal from the Allow drop-down list.
+3. Set the criteria for decimal places or value range as per your requirements.
+
+Figure 4: Data validation: Decimal number.
+
+#### Time and date
+
+Time or date entries are validated using this validator. When dealing with timetables, deadlines, or time-sensitive information, it ensures that the input adheres to the proper time or date format, preventing mistakes and promoting uniformity. Demonstrated in Figure 5.
+
+1. Select the cell or range where you want to apply data validation.
+2. Go to the Data tab and click on Data Validation.
+3. In the Data Validation dialog box, select Time or Date from the Allow drop-down list.
+4. Specify the appropriate time or date format and any additional criteria, if needed.
+
+Figure 5: Data Validation: Time and date.
+
+#### List
+
+Input is limited via list validation to a predetermined range of values. It allows users to design a drop-down menu of choices, guaranteeing that the entered value corresponds to one of the designated options. This is beneficial for data input operations that call for reliable and consistent selection from a predetermined list of options. Demonstrated in Figures 6 and 7.
+
+1. Select the cell or range where you want to create the drop-down list.
+2. Go to the Data tab and click on Data Validation.
+3. In the Data Validation dialog box, select List from the Allow drop-down list.
+4. Enter the list of values you want to appear in the drop-down list, either in a range or separated by commas.
+5. Optionally, you can choose to show an error message or an input message for the drop-down list.
+
+Figure 7: List options within the cell.
+
+#### Text length
+
+Users can determine the minimum and maximum characters that can be entered by using text length validation. It aids in regulating the length of text input by setting character limits for names and keeping comments to a predetermined length. Demonstrated in Figure 8.
+
+1. Follow the same steps as above for data validation.
+2. In the Data Validation dialog box, select Text length from the Allow drop-down list.
+3. Specify the desired minimum and maximum lengths for the text.
+
+Figure 8: Data Validation: Text length.
+
+### Conditional Formatting
+
+Excel’s sophisticated conditional formatting function lets users dynamically format cells according to predefined parameters or criteria. Conditional formatting highlights or styles cells automatically by specifying rules, such as comparing values, using colour scales, or utilising data bars, and offers visual clues to analyse and interpret data more efficiently. Users can use this tool to find trends, outliers, and patterns in their data, making it simpler to recognise essential information quickly and improving the visual appeal of their Excel worksheets as a whole.
+
+#### Cell-specific
+
+You can format cells based on conditions you establish, such as highlighting cells greater than a given value or containing a particular text, with conditional formatting based on specific cell values. In the below example, we have exam marks scored by students in three subjects. We want a visual representation of the marks from lowest to highest using a colour scale from red (lowest) to yellow (highest). Demonstrated in Figures 10, 11 and 12.
+
+Figure 10: Conditional Formatting: New rule.
+Figure 11: Creating new rule.
+Figure 12: Result.
+
+1. Select the cell(s) you want to apply conditional formatting to.
+2. Go to the Home tab and click on Conditional Formatting in the Styles group.
+3. Choose New Rule from the drop-down menu.
+4. In the New Formatting Rule dialog box, select Format only cells that contain and specify the condition, such as equal to, greater than, or less than.
+5. Set the formatting options for the cells that meet the condition.
+6. Click OK to apply the conditional formatting.
+
+#### Colour scales
+
+Conditional formatting’s colour scales assign various colours to cells depending on their values, generating a visual gradient that makes it simple to spot data variances and contrast relative values. Demonstrated in Figures 13, 14 and 15.
+
+1. Select the cell(s) you want to apply conditional formatting to.
+2. Go to the Home tab and click on Conditional Formatting in the Styles group.
+3. Choose Colour Scales from the drop-down menu.
+4. Select the desired colour scale option, such as a two-colour or three-colour scale.
+5. Excel automatically applies the colour scale to the selected cells based on their values.
+
+Figure 13: Colour Scales.
+Figure 14: Formatting rules.
+Figure 15: Result.
+
+#### Data bars
+
+Conditional formatting adds horizontal bars inside cells to reflect the values they hold in the case of data bars. Giving a visual depiction of the data distribution, the length of the bar matches the value. Choose the cell(s) to which conditional formatting should be applied. In the example below, we want to add Data Bars to visually indicate the distribution of the scores where the length of the line matches the value. Demonstrated in Figure 16.
+
+1. Go to the Home tab and click on Conditional Formatting in the Styles group.
+2. Choose Data Bars from the drop-down menu.
+3. Select the desired data bar option, such as a gradient or solid fill.
+4. Excel automatically applies data bars to the selected cells based on their values.
+
+Figure 16: Conditional Formatting: Data Bars.
+
+### Conditional Formatting (continued)
+
+#### Icon sets
+
+Based on the values of the cells, conditional formatting’s icon sets add icons, like arrows or symbols, to the cells. These icons give you a brief visual representation of trends or categories so you can examine data more quickly. Choose the cell(s) to which conditional formatting should be applied. In the example below, we can use Icon Sets to represent trends for each subject visually. Up arrows (highest scores), Down arrows (lowest scores), Right arrows (average scores), Right-Up arrows (higher than average), and Right-Down arrows (lower than average). Demonstrated in Figure 17.
+
+1. Go to the Home tab and click on Conditional Formatting in the Styles group.
+2. Choose Icon Sets from the drop-down menu.
+3. Select the desired icon set, such as arrows, symbols, or traffic lights.
+4. Set the thresholds for each icon by specifying the values or percentages.
+5. Excel automatically applies the appropriate icon to the selected cells based on their values.
+
+Figure 17: Conditional Formatting: Icon Set.
+
+#### Duplicate values
+
+Formatting with conditions for duplicate values automatically identifies and manages duplicate items within a range by highlighting cells or rows that contain duplicate data. Choose the range of cells where duplicates should be found. Demonstrated in Figures 18 and 19.
+
+1. Go to the Home tab and click on Conditional Formatting in the Styles group.
+2. Choose Highlight Cells Rules from the drop-down menu.
+3. Select Duplicate Values from the submenu.
+4. Choose the formatting style for highlighting duplicate values.
+5. Click OK to apply the conditional formatting, and Excel will highlight any duplicate values in the selected range.
+
+Figure 18: Conditional Formatting: Duplicate Values.
+Figure 19: Result.
+
+#### Top and bottom values
+
+With conditional formatting, you can easily spot outliers or important data points by emphasising the greatest or lowest numbers within a range. Demonstrated in Figures 20 and 21.
+
+1. Select the range of cells you want to format.
+2. Go to the Home tab and click on Conditional Formatting in the Styles group.
+3. Choose Top/Bottom Rules from the drop-down menu.
+4. Select Top 10 Items, Bottom 10 Items, or any other desired option.
+5. Set the criteria, such as top or bottom values, percentage, or rank.
+6. Choose the formatting style for highlighting the top or bottom values.
+7. Click OK to apply the conditional formatting, and Excel will format the cells based on the specified criteria.
+
+Figure 20: Conditional Formatting: Top/Bottom values.
+Figure 21: Customise Top 5 with red.
+
+#### Custom formatting
+
+With custom conditional formatting, you may create your own formulae and rules to format cells in accordance with requirements or circumstances that are not addressed by the built-in formatting options. It gives you more freedom to apply conditional formatting tailored to your particular requirements. Choose the cell(s) to which conditional formatting should be applied. Demonstrated in Figures 22 and 23.
+
+1. Go to the Home tab and click on Conditional Formatting in the Styles group.
+2. Choose New Rule from the drop-down menu.
+3. In the New Formatting Rule dialog box, select Use a formula to determine which cells to format.
+4. Enter the formula that evaluates to either TRUE or FALSE for the desired condition.
+5. Set the formatting options for the cells that meet the condition.
+6. Click OK to apply the conditional formatting.
+
+### Activity 2 - Conditional formatting in Excel (guided)
+
+**Dataset:** `SPF+-+Sample+dataset+Activity+2.xlsx`
+
+Path:
+- `/workspaces/Study-buddy/SPF+-+Sample+dataset+Activity+2.xlsx`
+
+Open the workbook and confirm columns:
+- **A:** Name
+- **B:** Mathematics
+- **C:** Science
+- **D:** English
+
+#### Visual setup map
+
+| Rule | Column | Menu path | Expected visual |
+|---|---|---|---|
+| Math below 60 | B | Conditional Formatting → Highlight Cells Rules → Less Than | Red cells |
+| Science above 90 | C | Conditional Formatting → Highlight Cells Rules → Greater Than | Green cells |
+| English between 70 and 80 | D | Conditional Formatting → Highlight Cells Rules → Between | Yellow cells |
+| Math distribution | B | Conditional Formatting → Color Scales (red→green) | Low=red, high=green |
+| Science 2-color scale | C | Conditional Formatting → Color Scales → More Rules | Lowest/highest contrast |
+| English data bars | D | Conditional Formatting → Data Bars | Bar length matches score |
+| Math icon set | B | Conditional Formatting → Icon Sets → More Rules | Above avg / avg / below avg |
+| Duplicate names | A | Conditional Formatting → Highlight Cells Rules → Duplicate Values | Duplicate names highlighted |
+| Top 3 Science | C | Conditional Formatting → Top/Bottom Rules → Top 10 Items (change 10→3) | Top 3 standout format |
+| Bottom 3 Mathematics | B | Conditional Formatting → Top/Bottom Rules → Bottom 10 Items (change 10→3) | Bottom 3 standout format |
+
+#### Visual reference
+
+![Conditional formatting quick visual](attached_assets/image_1767396605515.png)
+
+#### Required steps
+
+1. Highlight cells in **Mathematics** that have scores below `60` in red.
+2. Highlight cells in **Science** that have scores above `90` in green.
+3. Highlight cells in **English** that have scores between `70` and `80` in yellow.
+4. Apply a colour scale to **Mathematics** (lower=red, higher=green).
+5. Apply a two-colour scale to **Science** for lowest and highest scores.
+6. Add **Data Bars** to **English**.
+7. Apply **Icon Sets** to **Mathematics** to indicate above average, average, and below average.
+8. Highlight duplicate values in **Name**.
+9. Highlight the **top three** scores in **Science**.
+10. Highlight the **bottom three** scores in **Mathematics**.
+11. Add/change rows and verify formatting updates dynamically.
+
+#### Tutor check (quick)
+
+- If colors overlap unexpectedly, open **Conditional Formatting → Manage Rules** and reorder priority.
+- Use consistent formatting styles so each rule is visually distinct.
+- After adding rows, verify every rule still applies to the full data range.
+            """,
+            "key_points": [
+                "Data validation enforces rules to keep input accurate and consistent",
+                "Validation constraints reduce entry errors and protect data integrity",
+                "Conditional formatting highlights important patterns, trends, and outliers",
+                "Visual rules improve readability and speed up data interpretation",
+                "These techniques are widely used in Excel, Google Sheets, and data systems",
+                "Better validation and formatting support stronger data-driven decisions",
+                "Data Validation rules can constrain inputs by type, range, length, and list options",
+                "Applying validation through the Data tab helps prevent spreadsheet input mistakes",
+                "Whole number validation can enforce integer-only inputs within defined minimum/maximum limits",
+                "Decimal validation supports value ranges and precision requirements",
+                "Time and date validation enforces consistent temporal input formats",
+                "List validation provides controlled dropdown choices for consistent data entry",
+                "Text length validation enforces minimum and maximum character limits"
+            ],
+            "visual_elements": {
+                "diagrams": False,
+                "tables": False,
                 "highlighted_sections": True
             }
         }
@@ -15269,16 +23666,47 @@ def evaluate_answer(question, correct_answer, user_answer):
     except Exception as e:
         return f"Error evaluating answer: {str(e)}"
 
-st.sidebar.title("📊 Navigation")
+st.sidebar.title("Navigation")
+sidebar_pages = [
+    "Overview", "Course Plan", "Training Center", "Playground", "Learn & Practice",
+    "Study Notes", "Flashcards", "Exam Simulator", "Code Library", "Formula Reference",
+    "Study Timer", "Progress", "Learning Outcomes", "About"
+]
+sidebar_page_icons = {
+    "Overview": ":material/home:",
+    "Course Plan": ":material/map:",
+    "Training Center": ":material/local_library:",
+    "Playground": ":material/construction:",
+    "Learn & Practice": ":material/auto_stories:",
+    "Study Notes": ":material/note:",
+    "Flashcards": ":material/style:",
+    "Exam Simulator": ":material/fact_check:",
+    "Code Library": ":material/code:",
+    "Formula Reference": ":material/functions:",
+    "Study Timer": ":material/timer:",
+    "Progress": ":material/trending_up:",
+    "Learning Outcomes": ":material/workspace_premium:",
+    "About": ":material/info:"
+}
+
+if "sidebar_page_select" not in st.session_state:
+    st.session_state.sidebar_page_select = "Overview"
+
+if st.session_state.get("nav_target_page") in sidebar_pages:
+    st.session_state.sidebar_page_select = st.session_state["nav_target_page"]
+
 page = st.sidebar.radio(
     "Select page:",
-    ["Overview", "Course Plan", "Training Center", "Playground", "Learn & Practice", 
-     "Study Notes", "Flashcards", "Exam Simulator", "Code Library", "Formula Reference", 
-     "Study Timer", "Progress", "Learning Outcomes", "About"]
+    sidebar_pages,
+    key="sidebar_page_select",
+    format_func=lambda page_name: f"{sidebar_page_icons.get(page_name, ':material/chevron_right:')} {page_name}"
 )
 
+if st.session_state.get("nav_target_page") == page:
+    st.session_state.pop("nav_target_page", None)
+
 if page == "Overview":
-    st.title("🎓 Data Analyst 2 - Study App")
+    mui_title("school", "Data Analyst 2 - Study App")
     st.markdown("---")
     
     col1, col2, col3, col4 = st.columns(4)
@@ -15297,7 +23725,27 @@ if page == "Overview":
         st.metric("Progress", f"{progress_pct:.0f}%")
     
     st.markdown("---")
-    st.subheader("📅 Study Path")
+    mui_subheader("category", "Course Types Overview")
+
+    course_type_explanations = {
+        "Core Course": "Mandatory course that builds essential program competencies.",
+        "Elective Course": "Optional course that lets you specialise in selected topics.",
+        "Project Course": "Practice-focused course where you apply skills to real deliverables."
+    }
+    type_rows = []
+    for course_type, explanation in course_type_explanations.items():
+        count = sum(1 for c in courses_data if c.get("type") == course_type)
+        type_rows.append({
+            "Type": course_type,
+            "What it means": explanation,
+            "Courses in plan": count
+        })
+
+    st.dataframe(pd.DataFrame(type_rows), use_container_width=True, hide_index=True)
+    st.caption("This overview connects program structure to your detailed course lessons and practice tasks.")
+
+    st.markdown("---")
+    mui_subheader("timeline", "Study Path")
     
     semesters = ["2025 Spring", "2025 Fall", "2026 Spring", "2026 Fall"]
     
@@ -15311,14 +23759,14 @@ if page == "Overview":
             
             for course in sem_courses:
                 is_completed = course["code"] in st.session_state.completed_courses
-                status = "✅" if is_completed else "📚"
+                status = "Completed" if is_completed else "Not started"
                 st.markdown(f"{status} {course['name']}")
     
     st.markdown("---")
     col1, col2 = st.columns(2)
     
     with col1:
-        st.subheader("🎯 Training Progress")
+        mui_subheader("track_changes", "Training Progress")
         if st.session_state.training_progress:
             for topic, data in st.session_state.training_progress.items():
                 short_topic = topic[:40] + "..." if len(topic) > 40 else topic
@@ -15330,8 +23778,8 @@ if page == "Overview":
             st.info("Start training in the Training Center!")
     
     with col2:
-        st.subheader("🔗 Useful Links")
-        st.markdown("[📖 Study Catalog](https://studiekatalog.edutorium.no/voc/en/programme/PDAN/2025-autumn)")
+        mui_subheader("link", "Useful Links")
+        st.markdown("[Study Catalog](https://studiekatalog.edutorium.no/voc/en/programme/PDAN/2025-autumn)")
     
     st.markdown("---")
     
@@ -15343,14 +23791,14 @@ if page == "Overview":
     st.markdown(f"### {render_mui_icon('event', 28)} Important Dates", unsafe_allow_html=True)
     
     # Add new date form
-    with st.expander("➕ Add Important Date", expanded=False):
+    with st.expander("Add Important Date", expanded=False):
         st.markdown(f"{render_mui_icon('add_circle', 20)} **Add a new important date**", unsafe_allow_html=True)
         date_col1, date_col2 = st.columns(2)
         with date_col1:
             new_date = st.date_input("Date:", key="new_important_date")
             new_date_type = st.selectbox(
                 "Type:",
-                ["Exam", "Assignment Deadline", "Project Deadline", "Course Start", "Course End", "Other"],
+                ["Exam", "Assessment", "Assignment Deadline", "Project Deadline", "Course Start", "Course End", "Other"],
                 key="new_date_type"
             )
         with date_col2:
@@ -15361,7 +23809,7 @@ if page == "Overview":
                 key="new_date_course"
             )
         
-        if st.button("Add Date", type="primary", key="add_important_date"):
+        if st.button("Add Date", type="primary", icon=":material/add:", key="add_important_date"):
             if new_date_title:
                 date_entry = {
                     "date": new_date.isoformat(),
@@ -15415,6 +23863,7 @@ if page == "Overview":
                 # Type icon mapping
                 type_icons = {
                     "Exam": "quiz",
+                    "Assessment": "grading",
                     "Assignment Deadline": "assignment",
                     "Project Deadline": "folder",
                     "Course Start": "play_arrow",
@@ -15438,14 +23887,14 @@ if page == "Overview":
                         st.markdown(f"{render_mui_icon('schedule', 16)} {days_until} days", unsafe_allow_html=True)
                     
                     # Delete button
-                    delete_btn = st.button("🗑️", key=f"delete_date_{idx}", help="Delete this date")
+                    delete_btn = st.button("Delete", icon=":material/delete:", key=f"delete_date_{idx}", help="Delete this date")
                     if delete_btn:
                         st.session_state.important_dates.remove(date_entry)
                         st.rerun()
         
         # Display past dates (collapsed)
         if past_dates:
-            with st.expander(f"📜 Past Dates ({len(past_dates)})", expanded=False):
+            with st.expander(f"Past Dates ({len(past_dates)})", expanded=False):
                 st.markdown(f"{render_mui_icon('history', 18)} **Completed dates**", unsafe_allow_html=True)
                 for idx, date_entry in enumerate(past_dates):
                     event_date = date.fromisoformat(date_entry["date"])
@@ -15454,6 +23903,7 @@ if page == "Overview":
                     # Type icon mapping
                     type_icons = {
                         "Exam": "quiz",
+                        "Assessment": "grading",
                         "Assignment Deadline": "assignment",
                         "Project Deadline": "folder",
                         "Course Start": "play_arrow",
@@ -15472,16 +23922,16 @@ if page == "Overview":
                         st.markdown(f"{render_mui_icon('schedule', 16)} {days_ago} days ago", unsafe_allow_html=True)
                         
                         # Delete button
-                        delete_btn = st.button("🗑️", key=f"delete_past_date_{idx}", help="Delete this date")
+                        delete_btn = st.button("Delete", icon=":material/delete:", key=f"delete_past_date_{idx}", help="Delete this date")
                         if delete_btn:
                             st.session_state.important_dates.remove(date_entry)
                             st.rerun()
     else:
         st.markdown(f"{render_mui_icon('info', 18)} **No important dates added yet.** Use the form above to add dates like exams, deadlines, etc.", unsafe_allow_html=True)
-        st.info("💡 Tip: Add important dates like exam dates, assignment deadlines, and project milestones to keep track of your schedule.")
+        st.info("Tip: Add important dates like exam/assessment dates, assignment deadlines, and project milestones to keep track of your schedule.")
 
 elif page == "Training Center":
-    st.title("🎓 Training Center")
+    mui_title("local_library", "Training Center")
     st.markdown("*Hands-on learning with step-by-step lessons, exercises, and quizzes*")
     st.markdown("---")
     
@@ -15522,7 +23972,7 @@ elif page == "Training Center":
         # Semester filter
         available_semesters = sorted(organized_topics.keys())
         selected_semester = st.selectbox(
-            "📅 Semester:",
+            "Semester:",
             options=["All Semesters"] + available_semesters
         )
     
@@ -15550,7 +24000,7 @@ elif page == "Training Center":
         
         course_options = ["All Courses"] + list(course_display_map.keys())
         selected_course_display = st.selectbox(
-            "📚 Course:",
+            "Course:",
             options=course_options
         )
         
@@ -15587,10 +24037,10 @@ elif page == "Training Center":
         topic_options.append(f"{topic}")
     
     # Show topic count
-    st.caption(f"📖 {len(filtered_topics)} topics available")
+    st.caption(f"{len(filtered_topics)} topics available")
     
     selected_display = st.selectbox(
-        "🎯 Select Topic:",
+        "Select Topic:",
         options=topic_options,
         format_func=lambda x: x
     )
@@ -15615,7 +24065,7 @@ elif page == "Training Center":
         topic_code = course_to_semester[topic_course][1]
     
     # Show context with course code
-    st.markdown(f"**📅 {topic_semester}** | **📚 {topic_code} - {topic_course}**")
+    st.markdown(f"**{topic_semester}** | **{topic_code} - {topic_course}**")
     st.markdown(f"*{module['description']}*")
     
     # Initialize progress for this topic
@@ -15636,10 +24086,10 @@ elif page == "Training Center":
     
     st.markdown("---")
     
-    tab1, tab2, tab3 = st.tabs(["📖 Lessons", "✏️ Exercises", "📝 Quiz"])
+    tab1, tab2, tab3 = st.tabs(["Lessons", "Exercises", "Quiz"])
     
     with tab1:
-        st.subheader("Step-by-Step Lessons")
+        mui_subheader("menu_book", "Step-by-Step Lessons")
         
         for i, lesson in enumerate(module['lessons']):
             with st.expander(f"Lesson {i+1}: {lesson['title']}", expanded=(i == 0)):
@@ -15657,10 +24107,10 @@ elif page == "Training Center":
                         st.rerun()
                 
                 if progress['lessons_completed'] > i:
-                    st.success("✅ Completed")
+                    st.success("Completed")
     
     with tab2:
-        st.subheader("Hands-On Exercises")
+        mui_subheader("edit_note", "Hands-On Exercises")
         
         for i, exercise in enumerate(module['exercises']):
             with st.expander(f"Exercise {i+1}: {exercise['title']}", expanded=False):
@@ -15670,7 +24120,7 @@ elif page == "Training Center":
                 
                 # Hint button
                 if st.button(f"Show Hint", key=f"hint_{selected_topic}_{i}"):
-                    st.info(f"💡 Hint: {exercise['hint']}")
+                    st.info(f"Hint: {exercise['hint']}")
                 
                 # User answer input
                 user_answer = st.text_area(
@@ -15682,7 +24132,7 @@ elif page == "Training Center":
                 col1, col2 = st.columns(2)
                 
                 with col1:
-                    if st.button("Check Answer", key=f"check_{selected_topic}_{i}"):
+                    if st.button("Check Answer", icon=":material/task_alt:", key=f"check_{selected_topic}_{i}"):
                         if user_answer.strip():
                             with st.spinner("Evaluating..."):
                                 feedback = evaluate_answer(exercise['question'], exercise['answer'], user_answer)
@@ -15694,24 +24144,24 @@ elif page == "Training Center":
                 
                 with col2:
                     show_key = f"show_{selected_topic}_{i}"
-                    if st.button("Show Answer", key=f"reveal_{selected_topic}_{i}"):
+                    if st.button("Show Answer", icon=":material/visibility:", key=f"reveal_{selected_topic}_{i}"):
                         st.session_state.show_exercise_answer[show_key] = True
                 
                 if st.session_state.show_exercise_answer.get(f"show_{selected_topic}_{i}", False):
                     st.info(f"**Answer:** {exercise['answer']}")
                 
                 if i in progress['exercises_completed']:
-                    st.success("✅ Attempted")
+                    st.success("Attempted")
     
     with tab3:
-        st.subheader("Knowledge Quiz")
+        mui_subheader("quiz", "Knowledge Quiz")
         st.markdown("Test your understanding with this quiz!")
         
         quiz = module['quiz']
         
         if progress['quiz_score'] is not None:
             st.success(f"Quiz completed! Score: {progress['quiz_score']}/{len(quiz)}")
-            if st.button("Retake Quiz"):
+            if st.button("Retake Quiz", icon=":material/replay:"):
                 st.session_state.training_progress[selected_topic]['quiz_score'] = None
                 st.session_state.quiz_answers = {}
                 st.rerun()
@@ -15727,7 +24177,7 @@ elif page == "Training Center":
                 st.session_state.quiz_answers[f"{selected_topic}_{i}"] = q['options'].index(answer) if answer else None
                 st.markdown("---")
             
-            if st.button("Submit Quiz", type="primary"):
+            if st.button("Submit Quiz", type="primary", icon=":material/send:"):
                 score = 0
                 for i, q in enumerate(quiz):
                     user_ans = st.session_state.quiz_answers.get(f"{selected_topic}_{i}")
@@ -15749,7 +24199,7 @@ elif page == "Training Center":
                     st.markdown(f"   *{q['explanation']}*")
 
 elif page == "Course Plan":
-    st.title("📚 Course Plan")
+    mui_title("map", "Course Plan")
     st.markdown("---")
     
     df = pd.DataFrame([{
@@ -15783,7 +24233,7 @@ elif page == "Course Plan":
     st.dataframe(filtered_df, use_container_width=True, hide_index=True)
     
     st.markdown("---")
-    st.subheader("📊 Credits per Semester")
+    mui_subheader("bar_chart", "Credits per Semester")
     
     semester_credits = df.groupby("Semester")["Credits"].sum().reset_index()
     semester_order = ["2025 Spring", "2025 Fall", "2026 Spring", "2026 Fall"]
@@ -15793,7 +24243,7 @@ elif page == "Course Plan":
     st.bar_chart(semester_credits.set_index("Semester"))
 
 elif page == "Learn & Practice":
-    st.title("📖 Learn & Practice")
+    mui_title("auto_stories", "Learn & Practice")
     st.markdown("---")
     
     # Add custom CSS for lesson styling and Mermaid.js
@@ -15867,32 +24317,86 @@ elif page == "Learn & Practice":
             course_topics_with_training.append(topic)
     
     if course_topics_with_training:
-        st.info(f"💡 This course has {len(course_topics_with_training)} topic(s) with hands-on training available in the Training Center!")
+        st.info(f"This course has {len(course_topics_with_training)} topic(s) with hands-on training available in the Training Center.")
     
     # Check if course has lessons
     has_lessons = course_code in course_lessons
     if has_lessons:
-        st.success(f"📚 This course has {len(course_lessons[course_code])} detailed lesson(s) available!")
+        st.success(f"This course has {len(course_lessons[course_code])} detailed lesson(s) available.")
     
     tab1, tab2 = st.tabs(["Course Content", "Practice Questions"])
     
     with tab1:
-        st.subheader(f"📚 {course['name']}")
-        st.markdown(f"**{course['credits']} credits** | {course['weeks']} weeks | {course['hours']} hours | {course['semester']}")
+        st.subheader(f"{course['name']}")
+        st.markdown(f"**{course['credits']} credits** | {course['weeks']} weeks | {course['hours']} hours | {course['semester']} | **Type: {course['type']}**")
+
+        selected_course_type = course.get("type", "Core Course")
+        selected_type_explanations = {
+            "Core Course": "Mandatory course linked to core program outcomes and progression.",
+            "Elective Course": "Optional course used to deepen a chosen specialization area.",
+            "Project Course": "Application-focused course where skills are demonstrated through practical deliverables."
+        }
+        st.caption(f"{selected_course_type}: {selected_type_explanations.get(selected_course_type, 'Course classification used in the study plan.')} This helps connect the overview structure with the lesson content below.")
         st.markdown(f"*{course['description']}*")
+
+        linked_dates = [d for d in st.session_state.important_dates if d.get("course") == selected_course]
+        if linked_dates:
+            st.markdown("### Course-linked Important Dates")
+            st.caption("These dates are connected to this course and support lesson/exam planning.")
+
+            today = date.today()
+            linked_dates_sorted = sorted(linked_dates, key=lambda x: x["date"])
+            linked_upcoming = [d for d in linked_dates_sorted if date.fromisoformat(d["date"]) >= today]
+            linked_past = [d for d in linked_dates_sorted if date.fromisoformat(d["date"]) < today]
+
+            type_icons = {
+                "Exam": "quiz",
+                "Assessment": "grading",
+                "Assignment Deadline": "assignment",
+                "Project Deadline": "folder",
+                "Course Start": "play_arrow",
+                "Course End": "stop",
+                "Other": "event"
+            }
+
+            if linked_upcoming:
+                st.markdown("**Upcoming for this course**")
+                for d in linked_upcoming:
+                    event_date = date.fromisoformat(d["date"])
+                    days_until = (event_date - today).days
+                    icon = render_mui_icon(type_icons.get(d["type"], "event"), 18)
+                    st.markdown(
+                        f"{icon} **{d['type']}** — {d['title']} ({event_date.strftime('%B %d, %Y')}, in {days_until} days)",
+                        unsafe_allow_html=True
+                    )
+
+            if linked_past:
+                with st.expander(f"Past course dates ({len(linked_past)})", expanded=False):
+                    for d in linked_past:
+                        event_date = date.fromisoformat(d["date"])
+                        days_ago = (today - event_date).days
+                        icon = render_mui_icon(type_icons.get(d["type"], "event"), 18)
+                        st.markdown(
+                            f"{icon} **{d['type']}** — {d['title']} ({event_date.strftime('%B %d, %Y')}, {days_ago} days ago)",
+                            unsafe_allow_html=True
+                        )
+
+            st.markdown("---")
+        else:
+            st.info("No important dates linked to this course yet. Add one from Overview and choose this course in Related Course.")
         
         st.markdown("---")
         
         # Check if course has lessons
         if course_code in course_lessons:
-            st.markdown("### 📖 Course Lessons")
+            st.markdown("### Course Lessons")
             st.markdown("Explore detailed lessons with visual explanations and key concepts.")
             st.markdown("")
             
             for lesson in course_lessons[course_code]:
-                with st.expander(f"📚 Lesson {lesson['lesson_number']}: {lesson['title']}", expanded=True):
+                with st.expander(f"Lesson {lesson['lesson_number']}: {lesson['title']}", expanded=True):
                     # Parse and render lesson content with Mermaid diagrams
-                    content = lesson['content']
+                    content = convert_emoji_headings_to_visuals(lesson['content'])
                     
                     # Split content by Mermaid diagrams
                     parts = re.split(r'(<div class="mermaid">.*?</div>)', content, flags=re.DOTALL)
@@ -16079,7 +24583,7 @@ elif page == "Learn & Practice":
                     st.markdown("---")
                     
                     # Key Takeaways with visual emphasis
-                    st.markdown("### ⭐ Key Takeaways")
+                    st.markdown("### Key Takeaways")
                     st.markdown('<div class="important-info">', unsafe_allow_html=True)
                     for i, point in enumerate(lesson['key_points'], 1):
                         st.markdown(f"**{i}.** {point}")
@@ -16087,14 +24591,758 @@ elif page == "Learn & Practice":
                     
                     # Visual elements indicator
                     if lesson.get('visual_elements', {}).get('diagrams'):
-                        st.caption("📊 This lesson includes interactive Mermaid diagrams for better visual understanding")
+                        st.caption("This lesson includes interactive Mermaid diagrams for better visual understanding")
+
+                    if course_code == "FI1BBSF05" and str(lesson.get("lesson_number")) == "1.4":
+                        st.markdown("---")
+                        with st.expander("Activity 1.4.1 - Interactive Data Validation Lab", expanded=False):
+                            st.caption("Add rows in the table below. The script runs only when all validation rules are correct.")
+
+                            item_options_key = f"dv_item_options_{course_code}_{lesson['lesson_number']}"
+                            table_state_key = f"dv_table_data_{course_code}_{lesson['lesson_number']}"
+                            script_key = f"dv_script_{course_code}_{lesson['lesson_number']}"
+                            run_key = f"dv_run_{course_code}_{lesson['lesson_number']}"
+
+                            default_item_options_text = "Pen, Notebook, Eraser, Ruler, Marker"
+                            item_options_text = st.text_input(
+                                "Item Name options (exactly 5 comma-separated values)",
+                                value=st.session_state.get(item_options_key, default_item_options_text),
+                                key=item_options_key
+                            )
+
+                            parsed_item_options = [value.strip() for value in item_options_text.split(",") if value.strip()]
+                            if len(parsed_item_options) != 5:
+                                st.warning("Please provide exactly 5 item names for the Item Name list validation.")
+                                active_item_options = ["Pen", "Notebook", "Eraser", "Ruler", "Marker"]
+                            else:
+                                active_item_options = parsed_item_options
+
+                            status_options = ["In Progress", "Completed", "Cancelled"]
+
+                            if table_state_key not in st.session_state:
+                                st.session_state[table_state_key] = pd.DataFrame({
+                                    "Item Name": [active_item_options[i % len(active_item_options)] for i in range(10)],
+                                    "Quantity": [1, 2, 3, 4, 5, 6, 2, 3, 4, 5],
+                                    "Unit Price": [10.50, 12.00, 8.75, 3.99, 5.40, 14.25, 9.10, 7.80, 6.30, 11.00],
+                                    "Date": pd.to_datetime([
+                                        "2026-01-01", "2026-01-02", "2026-01-03", "2026-01-04", "2026-01-05",
+                                        "2026-01-06", "2026-01-07", "2026-01-08", "2026-01-09", "2026-01-10"
+                                    ]).date,
+                                    "Status": ["In Progress", "Completed", "Cancelled", "In Progress", "Completed", "Cancelled", "In Progress", "Completed", "Cancelled", "In Progress"]
+                                })
+
+                            st.markdown("**Required columns:** Item Name, Quantity, Unit Price, Date, Status")
+
+                            edited_validation_df = st.data_editor(
+                                st.session_state[table_state_key],
+                                num_rows="dynamic",
+                                use_container_width=True,
+                                key=f"dv_editor_{course_code}_{lesson['lesson_number']}",
+                                column_config={
+                                    "Item Name": st.column_config.SelectboxColumn("Item Name", options=active_item_options, required=True),
+                                    "Quantity": st.column_config.NumberColumn("Quantity", min_value=1, step=1, required=True),
+                                    "Unit Price": st.column_config.NumberColumn("Unit Price", min_value=0.01, max_value=1000.00, step=0.01, required=True),
+                                    "Date": st.column_config.DateColumn("Date", format="MM/DD/YYYY", required=True),
+                                    "Status": st.column_config.SelectboxColumn("Status", options=status_options, required=True),
+                                }
+                            )
+                            st.session_state[table_state_key] = edited_validation_df
+
+                            def _validate_activity_141(df_input: pd.DataFrame, item_choices: list[str], status_choices: list[str]):
+                                validation_issues = []
+
+                                required_columns = ["Item Name", "Quantity", "Unit Price", "Date", "Status"]
+                                missing_columns = [column for column in required_columns if column not in df_input.columns]
+                                if missing_columns:
+                                    validation_issues.append({
+                                        "Row": "Global",
+                                        "Issue": f"Missing required columns: {', '.join(missing_columns)}"
+                                    })
+                                    return validation_issues
+
+                                if len(df_input) < 10:
+                                    validation_issues.append({
+                                        "Row": "Global",
+                                        "Issue": "At least 10 rows are required for this activity."
+                                    })
+
+                                for row_idx, row in df_input.reset_index(drop=True).iterrows():
+                                    display_row = row_idx + 1
+
+                                    item_name = str(row.get("Item Name", "")).strip()
+                                    if not item_name:
+                                        validation_issues.append({"Row": display_row, "Issue": "Item Name is required."})
+                                    else:
+                                        if item_name not in item_choices:
+                                            validation_issues.append({"Row": display_row, "Issue": "Item Name must be one of the 5 allowed list values."})
+                                        if len(item_name) < 3 or len(item_name) > 10:
+                                            validation_issues.append({"Row": display_row, "Issue": "Item Name must be between 3 and 10 characters."})
+
+                                    quantity_value = row.get("Quantity")
+                                    if pd.isna(quantity_value):
+                                        validation_issues.append({"Row": display_row, "Issue": "Quantity is required."})
+                                    else:
+                                        quantity_numeric = pd.to_numeric(quantity_value, errors="coerce")
+                                        if pd.isna(quantity_numeric) or float(quantity_numeric) <= 0 or not float(quantity_numeric).is_integer():
+                                            validation_issues.append({"Row": display_row, "Issue": "Quantity must be a positive whole number."})
+
+                                    unit_price_value = row.get("Unit Price")
+                                    if pd.isna(unit_price_value):
+                                        validation_issues.append({"Row": display_row, "Issue": "Unit Price is required."})
+                                    else:
+                                        unit_price_numeric = pd.to_numeric(unit_price_value, errors="coerce")
+                                        if pd.isna(unit_price_numeric) or float(unit_price_numeric) < 0.01 or float(unit_price_numeric) > 1000.00:
+                                            validation_issues.append({"Row": display_row, "Issue": "Unit Price must be between 0.01 and 1000.00."})
+
+                                    date_value = row.get("Date")
+                                    if pd.isna(date_value):
+                                        validation_issues.append({"Row": display_row, "Issue": "Date is required (mm/dd/yyyy)."})
+                                    else:
+                                        parsed_date = pd.to_datetime(date_value, errors="coerce")
+                                        if pd.isna(parsed_date):
+                                            validation_issues.append({"Row": display_row, "Issue": "Date must be a valid date in mm/dd/yyyy format."})
+
+                                    status_value = str(row.get("Status", "")).strip()
+                                    if status_value not in status_choices:
+                                        validation_issues.append({"Row": display_row, "Issue": "Status must be In Progress, Completed, or Cancelled."})
+
+                                return validation_issues
+
+                            issues = _validate_activity_141(edited_validation_df, active_item_options, status_options)
+
+                            if issues:
+                                st.error(f"Validation failed with {len(issues)} issue(s). Fix them before running the script.")
+                                st.dataframe(pd.DataFrame(issues), use_container_width=True, hide_index=True)
+                            else:
+                                st.success("All rows are valid for Activity 1.4.1. You can run the script.")
+
+                                try:
+                                    from io import BytesIO
+                                    from openpyxl import Workbook
+                                    from openpyxl.worksheet.datavalidation import DataValidation
+                                    from openpyxl.styles import PatternFill
+                                    from openpyxl.formatting.rule import CellIsRule, FormulaRule
+
+                                    export_df = edited_validation_df.copy()
+                                    export_df["Date"] = pd.to_datetime(export_df["Date"], errors="coerce").dt.strftime("%m/%d/%Y")
+
+                                    excel_buffer = BytesIO()
+                                    with pd.ExcelWriter(excel_buffer, engine="openpyxl") as writer:
+                                        export_df.to_excel(writer, sheet_name="Activity_1_4_1", index=False)
+                                    excel_buffer.seek(0)
+
+                                    st.download_button(
+                                        "Export validated table to Excel (.xlsx)",
+                                        data=excel_buffer.getvalue(),
+                                        file_name="activity_1_4_1_validated.xlsx",
+                                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                                        icon=":material/download:"
+                                    )
+
+                                    validation_export_df = edited_validation_df.copy()
+                                    validation_export_df["Date"] = pd.to_datetime(validation_export_df["Date"], errors="coerce").dt.date
+
+                                    wb = Workbook()
+                                    ws = wb.active
+                                    ws.title = "Validation_List"
+
+                                    headers = ["Item Name", "Quantity", "Unit Price", "Date", "Status"]
+                                    ws.append(headers)
+                                    for _, row in validation_export_df[headers].iterrows():
+                                        ws.append([row["Item Name"], int(float(row["Quantity"])), float(row["Unit Price"]), row["Date"], row["Status"]])
+
+                                    ws_custom = wb.create_sheet("Validation_Custom")
+                                    ws_custom.append(headers)
+                                    for _, row in validation_export_df[headers].iterrows():
+                                        ws_custom.append([row["Item Name"], int(float(row["Quantity"])), float(row["Unit Price"]), row["Date"], row["Status"]])
+
+                                    lists_ws = wb.create_sheet("_lists")
+                                    for idx, item_name in enumerate(active_item_options, start=1):
+                                        lists_ws.cell(row=idx, column=1, value=item_name)
+                                    for idx, status_name in enumerate(status_options, start=1):
+                                        lists_ws.cell(row=idx, column=2, value=status_name)
+                                    lists_ws.sheet_state = "hidden"
+
+                                    item_list_formula = f'"{",".join(active_item_options)}"'
+                                    status_list_formula = f'"{",".join(status_options)}"'
+
+                                    def apply_standard_validations(sheet):
+                                        item_list_dv = DataValidation(type="list", formula1=item_list_formula, allow_blank=False)
+                                        item_list_dv.errorTitle = "Invalid Item Name"
+                                        item_list_dv.error = "Select an item from the drop-down list."
+
+                                        quantity_dv = DataValidation(type="whole", operator="greaterThan", formula1="0", allow_blank=False)
+                                        quantity_dv.errorTitle = "Invalid Quantity"
+                                        quantity_dv.error = "Quantity must be a positive whole number."
+
+                                        unit_price_dv = DataValidation(type="decimal", operator="between", formula1="0.01", formula2="1000", allow_blank=False)
+                                        unit_price_dv.errorTitle = "Invalid Unit Price"
+                                        unit_price_dv.error = "Unit Price must be between 0.01 and 1000.00."
+
+                                        date_dv = DataValidation(type="date", operator="between", formula1="DATE(1900,1,1)", formula2="DATE(2099,12,31)", allow_blank=False)
+                                        date_dv.errorTitle = "Invalid Date"
+                                        date_dv.error = "Enter a valid date in mm/dd/yyyy format."
+
+                                        status_dv = DataValidation(type="list", formula1=status_list_formula, allow_blank=False)
+                                        status_dv.errorTitle = "Invalid Status"
+                                        status_dv.error = "Status must be In Progress, Completed, or Cancelled."
+
+                                        sheet.add_data_validation(item_list_dv)
+                                        sheet.add_data_validation(quantity_dv)
+                                        sheet.add_data_validation(unit_price_dv)
+                                        sheet.add_data_validation(date_dv)
+                                        sheet.add_data_validation(status_dv)
+
+                                        item_list_dv.add("A2:A1048576")
+                                        quantity_dv.add("B2:B1048576")
+                                        unit_price_dv.add("C2:C1048576")
+                                        date_dv.add("D2:D1048576")
+                                        status_dv.add("E2:E1048576")
+
+                                    apply_standard_validations(ws)
+
+                                    custom_item_dv = DataValidation(
+                                        type="custom",
+                                        formula1="=AND(LEN(A2)>=3,LEN(A2)<=10,COUNTIF(_lists!$A$1:$A$5,A2)=1)",
+                                        allow_blank=False
+                                    )
+                                    custom_item_dv.errorTitle = "Invalid Item Name"
+                                    custom_item_dv.error = "Item Name must be in the list and 3-10 characters long."
+
+                                    quantity_custom_dv = DataValidation(type="whole", operator="greaterThan", formula1="0", allow_blank=False)
+                                    unit_price_custom_dv = DataValidation(type="decimal", operator="between", formula1="0.01", formula2="1000", allow_blank=False)
+                                    date_custom_dv = DataValidation(type="date", operator="between", formula1="DATE(1900,1,1)", formula2="DATE(2099,12,31)", allow_blank=False)
+                                    status_custom_dv = DataValidation(type="list", formula1=status_list_formula, allow_blank=False)
+
+                                    ws_custom.add_data_validation(custom_item_dv)
+                                    ws_custom.add_data_validation(quantity_custom_dv)
+                                    ws_custom.add_data_validation(unit_price_custom_dv)
+                                    ws_custom.add_data_validation(date_custom_dv)
+                                    ws_custom.add_data_validation(status_custom_dv)
+
+                                    custom_item_dv.add("A2:A1048576")
+                                    quantity_custom_dv.add("B2:B1048576")
+                                    unit_price_custom_dv.add("C2:C1048576")
+                                    date_custom_dv.add("D2:D1048576")
+                                    status_custom_dv.add("E2:E1048576")
+
+                                    for sheet in [ws, ws_custom]:
+                                        for row_idx in range(2, sheet.max_row + 1):
+                                            sheet[f"D{row_idx}"].number_format = "mm/dd/yyyy"
+                                            sheet[f"C{row_idx}"].number_format = "0.00"
+
+                                        red_fill = PatternFill(start_color="F8D7DA", end_color="F8D7DA", fill_type="solid")
+                                        yellow_fill = PatternFill(start_color="FFF3CD", end_color="FFF3CD", fill_type="solid")
+                                        green_fill = PatternFill(start_color="D1E7DD", end_color="D1E7DD", fill_type="solid")
+                                        orange_fill = PatternFill(start_color="FFE5B4", end_color="FFE5B4", fill_type="solid")
+                                        blue_fill = PatternFill(start_color="DDEBFF", end_color="DDEBFF", fill_type="solid")
+
+                                        max_row = max(sheet.max_row, 2)
+                                        status_range = f"E2:E{max_row}"
+                                        qty_range = f"B2:B{max_row}"
+                                        unit_price_range = f"C2:C{max_row}"
+                                        date_range = f"D2:D{max_row}"
+
+                                        sheet.conditional_formatting.add(
+                                            status_range,
+                                            FormulaRule(formula=['$E2="Cancelled"'], fill=red_fill)
+                                        )
+                                        sheet.conditional_formatting.add(
+                                            status_range,
+                                            FormulaRule(formula=['$E2="In Progress"'], fill=yellow_fill)
+                                        )
+                                        sheet.conditional_formatting.add(
+                                            status_range,
+                                            FormulaRule(formula=['$E2="Completed"'], fill=green_fill)
+                                        )
+
+                                        sheet.conditional_formatting.add(
+                                            qty_range,
+                                            CellIsRule(operator="lessThanOrEqual", formula=["2"], fill=orange_fill)
+                                        )
+                                        sheet.conditional_formatting.add(
+                                            unit_price_range,
+                                            CellIsRule(operator="greaterThan", formula=["500"], fill=blue_fill)
+                                        )
+                                        sheet.conditional_formatting.add(
+                                            date_range,
+                                            FormulaRule(formula=["$D2<TODAY()-30"], fill=yellow_fill)
+                                        )
+
+                                    validation_buffer = BytesIO()
+                                    wb.save(validation_buffer)
+                                    validation_buffer.seek(0)
+
+                                    st.download_button(
+                                        "Export Excel with validation rules (.xlsx)",
+                                        data=validation_buffer.getvalue(),
+                                        file_name="activity_1_4_1_validation_rules.xlsx",
+                                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                                        icon=":material/checklist:"
+                                    )
+                                    st.caption("Workbook includes two sheets: Validation_List (dropdown-based) and Validation_Custom (custom Item Name length + list rule).")
+                                except Exception as export_error:
+                                    st.warning(f"Excel export is unavailable: {export_error}")
+
+                            default_validation_script = """# df contains your validated Activity 1.4.1 table
+df = df.copy()
+df["Date"] = pd.to_datetime(df["Date"])
+df["Line Total"] = df["Quantity"] * df["Unit Price"]
+
+summary = df.groupby("Status", as_index=False)["Line Total"].sum().sort_values("Line Total", ascending=False)
+print("Rows:", len(df))
+print("Total value:", round(df["Line Total"].sum(), 2))
+
+# Optionally expose a dataframe preview in the UI:
+result_df = summary
+"""
+
+                            script_text = st.text_area(
+                                "Activity script",
+                                value=st.session_state.get(script_key, default_validation_script),
+                                height=200,
+                                key=script_key
+                            )
+
+                            if st.button("Run activity script", type="primary", icon=":material/play_arrow:", key=run_key):
+                                if issues:
+                                    st.warning("Script not executed. Resolve validation issues first.")
+                                else:
+                                    import io
+                                    import contextlib
+
+                                    runtime_scope = {
+                                        "pd": pd,
+                                        "df": edited_validation_df.copy()
+                                    }
+                                    output_buffer = io.StringIO()
+
+                                    try:
+                                        with contextlib.redirect_stdout(output_buffer):
+                                            exec(script_text, {"__builtins__": __builtins__}, runtime_scope)
+
+                                        execution_output = output_buffer.getvalue().strip()
+                                        if execution_output:
+                                            st.markdown("**Script output**")
+                                            st.code(execution_output, language="text")
+
+                                        result_df = runtime_scope.get("result_df")
+                                        if isinstance(result_df, pd.DataFrame):
+                                            st.markdown("**`result_df` preview**")
+                                            st.dataframe(result_df, use_container_width=True)
+                                        elif not execution_output:
+                                            st.info("Script ran successfully. No printed output or `result_df` returned.")
+                                    except Exception as run_error:
+                                        st.error(f"Script error: {run_error}")
+
+                    st.markdown("---")
+                    with st.expander("Lesson PDF Viewer (PDF.js)", expanded=False):
+                        st.caption("Upload a PDF tied to this lesson and view it directly here.")
+
+                        lesson_upload_key = f"lesson_pdf_upload_{course_code}_{lesson['lesson_number']}"
+                        lesson_page_key = f"lesson_pdf_page_{course_code}_{lesson['lesson_number']}"
+                        lesson_zoom_key = f"lesson_pdf_zoom_{course_code}_{lesson['lesson_number']}"
+                        lesson_sample_btn_key = f"lesson_pdf_sample_btn_{course_code}_{lesson['lesson_number']}"
+                        lesson_sample_state_key = f"lesson_pdf_sample_bytes_{course_code}_{lesson['lesson_number']}"
+                        lesson_sample_name_key = f"lesson_pdf_sample_name_{course_code}_{lesson['lesson_number']}"
+
+                        sample_pdf_path = os.path.join(os.path.dirname(__file__), "SPF-0103 Lesson Task solution.pdf")
+                        sample_pdf_available = os.path.exists(sample_pdf_path)
+
+                        if sample_pdf_available:
+                            if st.button("Open sample lesson PDF", key=lesson_sample_btn_key):
+                                try:
+                                    with open(sample_pdf_path, "rb") as sample_file:
+                                        st.session_state[lesson_sample_state_key] = sample_file.read()
+                                        st.session_state[lesson_sample_name_key] = os.path.basename(sample_pdf_path)
+                                    st.success("Sample PDF loaded.")
+                                except Exception as exc:
+                                    st.error(f"Could not load sample PDF: {exc}")
+                            st.caption(f"Sample detected: {os.path.basename(sample_pdf_path)}")
+                        else:
+                            st.caption("No sample repository PDF found for auto-load.")
+
+                        uploaded_lesson_pdf = st.file_uploader(
+                            "Upload lesson PDF",
+                            type=["pdf"],
+                            key=lesson_upload_key
+                        )
+
+                        lesson_pdf_bytes = None
+                        lesson_pdf_name = None
+
+                        if uploaded_lesson_pdf is not None:
+                            uploaded_bytes = uploaded_lesson_pdf.read()
+                            if uploaded_bytes:
+                                lesson_pdf_bytes = uploaded_bytes
+                                lesson_pdf_name = uploaded_lesson_pdf.name
+                            else:
+                                st.warning("The uploaded PDF is empty.")
+                        elif st.session_state.get(lesson_sample_state_key):
+                            lesson_pdf_bytes = st.session_state[lesson_sample_state_key]
+                            lesson_pdf_name = st.session_state.get(lesson_sample_name_key, "sample.pdf")
+
+                        if lesson_pdf_bytes:
+                            st.caption(f"Loaded: {lesson_pdf_name} ({len(lesson_pdf_bytes):,} bytes)")
+
+                            ctrl_col1, ctrl_col2 = st.columns(2)
+                            with ctrl_col1:
+                                lesson_initial_page = st.number_input(
+                                    "Start page",
+                                    min_value=1,
+                                    value=1,
+                                    step=1,
+                                    key=lesson_page_key
+                                )
+                            with ctrl_col2:
+                                lesson_initial_zoom = st.slider(
+                                    "Initial zoom (%)",
+                                    min_value=50,
+                                    max_value=250,
+                                    value=100,
+                                    step=10,
+                                    key=lesson_zoom_key
+                                )
+
+                            lesson_pdf_base64 = base64.b64encode(lesson_pdf_bytes).decode("utf-8")
+                            lesson_viewer_html = f"""
+                            <!doctype html>
+                            <html>
+                            <head>
+                              <meta charset=\"utf-8\" />
+                              <style>
+                                body {{ margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }}
+                                .toolbar {{ display: flex; gap: 8px; align-items: center; padding: 10px; border-bottom: 1px solid #e5e7eb; background: #f8fafc; }}
+                                .toolbar button {{ border: 1px solid #cbd5e1; background: #fff; border-radius: 6px; padding: 6px 10px; cursor: pointer; }}
+                                .meta {{ margin-left: auto; color: #334155; font-size: 13px; }}
+                                #canvas-wrap {{ height: 560px; overflow: auto; background: #f1f5f9; display: flex; justify-content: center; align-items: flex-start; padding: 16px 0; }}
+                                #pdf-canvas {{ border: 1px solid #cbd5e1; box-shadow: 0 2px 10px rgba(0,0,0,0.08); background: #fff; }}
+                                #error {{ color: #b91c1c; padding: 10px; font-size: 13px; }}
+                              </style>
+                            </head>
+                            <body>
+                              <div class=\"toolbar\">
+                                <button id=\"prev\">Prev</button>
+                                <button id=\"next\">Next</button>
+                                <button id=\"zoom-out\">-</button>
+                                <button id=\"zoom-in\">+</button>
+                                <button id=\"reset\">Reset</button>
+                                <div class=\"meta\" id=\"meta\">Loading PDF...</div>
+                              </div>
+                              <div id=\"canvas-wrap\"><canvas id=\"pdf-canvas\"></canvas></div>
+                              <div id=\"error\"></div>
+
+                              <script type=\"module\">
+                                import * as pdfjsLib from "https://cdn.jsdelivr.net/npm/pdfjs-dist@5.4.624/build/pdf.min.mjs";
+                                pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdn.jsdelivr.net/npm/pdfjs-dist@5.4.624/build/pdf.worker.min.mjs";
+
+                                const base64 = "{lesson_pdf_base64}";
+                                const binary = atob(base64);
+                                const bytes = new Uint8Array(binary.length);
+                                for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+
+                                const canvas = document.getElementById("pdf-canvas");
+                                const ctx = canvas.getContext("2d");
+                                const meta = document.getElementById("meta");
+                                const error = document.getElementById("error");
+
+                                let pdfDoc = null;
+                                let currentPage = {int(lesson_initial_page)};
+                                let scale = {float(lesson_initial_zoom) / 100.0};
+                                const baseScale = scale;
+
+                                async function renderPage(pageNum) {{
+                                  if (!pdfDoc) return;
+                                  const page = await pdfDoc.getPage(pageNum);
+                                  const viewport = page.getViewport({{ scale }});
+                                  canvas.width = viewport.width;
+                                  canvas.height = viewport.height;
+                                  await page.render({{ canvasContext: ctx, viewport }}).promise;
+                                  meta.textContent = `Page ${{currentPage}} / ${{pdfDoc.numPages}} • Zoom ${{Math.round(scale * 100)}}%`;
+                                }}
+
+                                async function loadPdf() {{
+                                  try {{
+                                    const loadingTask = pdfjsLib.getDocument({{ data: bytes }});
+                                    pdfDoc = await loadingTask.promise;
+                                    currentPage = Math.max(1, Math.min(currentPage, pdfDoc.numPages));
+                                    await renderPage(currentPage);
+                                  }} catch (e) {{
+                                    error.textContent = `Failed to load PDF: ${{e?.message || e}}`;
+                                  }}
+                                }}
+
+                                document.getElementById("prev").addEventListener("click", async () => {{
+                                  if (!pdfDoc || currentPage <= 1) return;
+                                  currentPage -= 1;
+                                  await renderPage(currentPage);
+                                }});
+
+                                document.getElementById("next").addEventListener("click", async () => {{
+                                  if (!pdfDoc || currentPage >= pdfDoc.numPages) return;
+                                  currentPage += 1;
+                                  await renderPage(currentPage);
+                                }});
+
+                                document.getElementById("zoom-in").addEventListener("click", async () => {{
+                                  scale = Math.min(4, scale + 0.1);
+                                  await renderPage(currentPage);
+                                }});
+
+                                document.getElementById("zoom-out").addEventListener("click", async () => {{
+                                  scale = Math.max(0.3, scale - 0.1);
+                                  await renderPage(currentPage);
+                                }});
+
+                                document.getElementById("reset").addEventListener("click", async () => {{
+                                  scale = baseScale;
+                                  await renderPage(currentPage);
+                                }});
+
+                                loadPdf();
+                              </script>
+                            </body>
+                            </html>
+                            """
+
+                            html(lesson_viewer_html, height=630, width=None, scrolling=False)
+                        else:
+                            st.caption("Upload a lesson PDF or click the sample button to preview it here with PDF.js.")
             
             st.markdown("---")
+
+            with st.expander("CSV Table Viewer", expanded=False):
+                st.caption("Upload a CSV file, apply quick filters, and view/download the result.")
+
+                csv_upload = st.file_uploader(
+                    "Upload CSV",
+                    type=["csv"],
+                    key=f"learn_csv_upload_{course_code}"
+                )
+
+                if csv_upload is not None:
+                    delimiter_choice = st.selectbox(
+                        "Delimiter",
+                        options=[",", ";", "\t", "|"],
+                        index=0,
+                        format_func=lambda value: {",": "Comma ( , )", ";": "Semicolon ( ; )", "\t": "Tab", "|": "Pipe ( | )"}[value],
+                        key=f"learn_csv_delimiter_{course_code}"
+                    )
+
+                    try:
+                        csv_dataframe = pd.read_csv(csv_upload, sep=delimiter_choice)
+                    except Exception as csv_error:
+                        st.error(f"Could not read CSV file: {csv_error}")
+                        csv_dataframe = None
+
+                    if csv_dataframe is not None:
+                        st.caption(
+                            f"Rows: {len(csv_dataframe):,} | Columns: {len(csv_dataframe.columns)} | File: {csv_upload.name}"
+                        )
+
+                        reset_key = f"learn_csv_reset_filters_{course_code}"
+                        if st.button("Reset all CSV filters", key=reset_key):
+                            reset_keys = [
+                                f"learn_csv_filter_column_{course_code}",
+                                f"learn_csv_filter_text_{course_code}",
+                                f"learn_csv_sort_column_{course_code}",
+                                f"learn_csv_sort_order_{course_code}",
+                                f"learn_csv_range_column_{course_code}",
+                                f"learn_csv_range_min_{course_code}",
+                                f"learn_csv_range_max_{course_code}",
+                            ]
+                            for session_key in reset_keys:
+                                if session_key in st.session_state:
+                                    del st.session_state[session_key]
+                            st.rerun()
+
+                        working_dataframe = csv_dataframe.copy()
+
+                        if len(working_dataframe.columns) > 0 and len(working_dataframe) > 0:
+                            filter_col1, filter_col2 = st.columns(2)
+                            with filter_col1:
+                                filter_column = st.selectbox(
+                                    "Filter column",
+                                    options=list(working_dataframe.columns),
+                                    key=f"learn_csv_filter_column_{course_code}"
+                                )
+                            with filter_col2:
+                                filter_text = st.text_input(
+                                    "Contains text",
+                                    value="",
+                                    key=f"learn_csv_filter_text_{course_code}"
+                                )
+
+                            if filter_text.strip():
+                                filter_mask = working_dataframe[filter_column].astype(str).str.contains(filter_text, case=False, na=False)
+                                working_dataframe = working_dataframe[filter_mask]
+
+                            numeric_columns = working_dataframe.select_dtypes(include=["number"]).columns.tolist()
+                            if numeric_columns:
+                                st.markdown("**Numeric range filter (optional)**")
+                                range_col1, range_col2, range_col3 = st.columns([2, 1, 1])
+
+                                with range_col1:
+                                    range_column = st.selectbox(
+                                        "Numeric column",
+                                        options=numeric_columns,
+                                        key=f"learn_csv_range_column_{course_code}"
+                                    )
+
+                                numeric_series = pd.to_numeric(working_dataframe[range_column], errors="coerce").dropna()
+                                if not numeric_series.empty:
+                                    range_min = float(numeric_series.min())
+                                    range_max = float(numeric_series.max())
+
+                                    with range_col2:
+                                        range_start = st.number_input(
+                                            "Min",
+                                            value=range_min,
+                                            key=f"learn_csv_range_min_{course_code}"
+                                        )
+                                    with range_col3:
+                                        range_end = st.number_input(
+                                            "Max",
+                                            value=range_max,
+                                            key=f"learn_csv_range_max_{course_code}"
+                                        )
+
+                                    if range_start > range_end:
+                                        st.warning("Min is greater than Max. Swap values to apply range filter.")
+                                    else:
+                                        range_mask = pd.to_numeric(working_dataframe[range_column], errors="coerce").between(range_start, range_end, inclusive="both")
+                                        working_dataframe = working_dataframe[range_mask.fillna(False)]
+                                else:
+                                    st.caption("Selected numeric column has no valid numeric values for range filtering.")
+
+                            sort_col1, sort_col2 = st.columns(2)
+                            with sort_col1:
+                                sort_column = st.selectbox(
+                                    "Sort by",
+                                    options=["(none)"] + list(working_dataframe.columns),
+                                    key=f"learn_csv_sort_column_{course_code}"
+                                )
+                            with sort_col2:
+                                sort_order = st.selectbox(
+                                    "Order",
+                                    options=["Ascending", "Descending"],
+                                    key=f"learn_csv_sort_order_{course_code}"
+                                )
+
+                            if sort_column != "(none)":
+                                working_dataframe = working_dataframe.sort_values(
+                                    by=sort_column,
+                                    ascending=(sort_order == "Ascending")
+                                )
+
+                        st.dataframe(working_dataframe, use_container_width=True)
+
+                        filtered_csv_bytes = working_dataframe.to_csv(index=False).encode("utf-8")
+                        st.download_button(
+                            "Download filtered CSV",
+                            data=filtered_csv_bytes,
+                            file_name=f"{csv_upload.name.rsplit('.', 1)[0]}_filtered.csv",
+                            mime="text/csv",
+                            icon=":material/download:"
+                        )
+
+                        st.markdown("---")
+                        st.markdown("**Run Python script on this CSV**")
+                        st.caption("`df` contains the currently filtered/sorted table. Optionally assign a DataFrame to `result_df` to display it.")
+
+                        csv_script_key = f"learn_csv_script_{course_code}"
+                        csv_run_key = f"learn_csv_run_script_{course_code}"
+
+                        default_script = """# `df` is available (filtered/sorted CSV)
+print(df.head())
+
+# Example transformation:
+# result_df = df.copy()
+# result_df['new_col'] = result_df.iloc[:, 0]
+"""
+
+                        script_text = st.text_area(
+                            "Python script",
+                            value=st.session_state.get(csv_script_key, default_script),
+                            height=180,
+                            key=csv_script_key
+                        )
+
+                        snippet_title_key = f"learn_csv_snippet_title_{course_code}"
+                        default_snippet_title = f"CSV Script - {csv_upload.name.rsplit('.', 1)[0]}"
+                        snippet_title = st.text_input(
+                            "Snippet title",
+                            value=st.session_state.get(snippet_title_key, default_snippet_title),
+                            key=snippet_title_key
+                        )
+
+                        action_col1, action_col2 = st.columns(2)
+                        with action_col1:
+                            save_snippet_key = f"learn_csv_save_script_{course_code}"
+                            snippet_saved_key = f"learn_csv_script_saved_{course_code}"
+                            if st.button("Save script as snippet", icon=":material/save:", key=save_snippet_key):
+                                if not isinstance(st.session_state.get("code_snippets"), dict):
+                                    st.session_state.code_snippets = {}
+
+                                snippet_id = f"csv_script_{int(time.time())}"
+                                st.session_state.code_snippets[snippet_id] = {
+                                    "title": snippet_title.strip() or default_snippet_title,
+                                    "code": script_text,
+                                    "language": "python",
+                                    "category": "Python",
+                                    "description": f"Saved from CSV Table Viewer ({csv_upload.name}) in {course_code}"
+                                }
+                                st.session_state["code_library_search_prefill"] = snippet_title.strip() or default_snippet_title
+                                st.session_state["code_library_category_prefill"] = "Python"
+                                st.session_state["code_library_language_prefill"] = "python"
+                                st.session_state[snippet_saved_key] = True
+                                st.success("Script saved to Code Library.")
+
+                        with action_col2:
+                            if st.button("Run script", type="primary", icon=":material/play_arrow:", key=csv_run_key):
+                                import io
+                                import contextlib
+
+                                runtime_scope = {
+                                    "pd": pd,
+                                    "df": working_dataframe.copy()
+                                }
+                                output_buffer = io.StringIO()
+
+                                try:
+                                    with contextlib.redirect_stdout(output_buffer):
+                                        exec(script_text, {"__builtins__": __builtins__}, runtime_scope)
+
+                                    script_output = output_buffer.getvalue().strip()
+                                    if script_output:
+                                        st.markdown("**Script output**")
+                                        st.code(script_output, language="text")
+
+                                    result_df = runtime_scope.get("result_df")
+                                    if isinstance(result_df, pd.DataFrame):
+                                        st.markdown("**`result_df` preview**")
+                                        st.dataframe(result_df, use_container_width=True)
+                                    elif not script_output:
+                                        st.info("Script completed. No printed output or `result_df` was provided.")
+                                except Exception as script_error:
+                                    st.error(f"Script error: {script_error}")
+
+                        if st.session_state.get(f"learn_csv_script_saved_{course_code}"):
+                            open_library_key = f"learn_csv_open_library_{course_code}"
+                            if st.button("Open in Code Library", icon=":material/open_in_new:", key=open_library_key):
+                                st.session_state["code_library_search_prefill"] = snippet_title.strip() or default_snippet_title
+                                st.session_state["code_library_category_prefill"] = "Python"
+                                st.session_state["code_library_language_prefill"] = "python"
+                                st.session_state["nav_target_page"] = "Code Library"
+                                st.session_state["sidebar_page_select"] = "Code Library"
+                                st.rerun()
+                else:
+                    st.caption("Upload a CSV file to start viewing it in-table.")
         
         col1, col2 = st.columns(2)
         
         with col1:
-            st.markdown("### 📖 Knowledge")
+            st.markdown("### Knowledge")
             st.markdown("*After this course, you will have knowledge of:*")
             for item in course['knowledge']:
                 # Check if topic has training
@@ -16103,19 +25351,19 @@ elif page == "Learn & Practice":
                 st.markdown(f"- {item}{training_badge}")
         
         with col2:
-            st.markdown("### 🛠️ Skills")
+            st.markdown("### Skills")
             st.markdown("*After this course, you will be able to:*")
             for item in course['skills']:
                 st.markdown(f"- {item}")
         
         st.markdown("---")
-        st.markdown("### 💡 General Competence")
+        st.markdown("### General Competence")
         st.markdown("*After this course, you will:*")
         for item in course['competence']:
             st.markdown(f"- {item}")
     
     with tab2:
-        st.subheader("🎯 Practice Questions")
+        mui_subheader("help_center", "Practice Questions")
         
         question_type = st.selectbox(
             "Question type:",
@@ -16134,7 +25382,7 @@ elif page == "Learn & Practice":
         if 'feedback' not in st.session_state:
             st.session_state.feedback = None
         
-        if st.button("Generate New Question", type="primary"):
+        if st.button("Generate New Question", type="primary", icon=":material/auto_awesome:"):
             with st.spinner("Generating question..."):
                 st.session_state.current_question = generate_practice_question(course, type_map[question_type])
                 st.session_state.show_answer = False
@@ -16166,7 +25414,7 @@ elif page == "Learn & Practice":
             col1, col2 = st.columns(2)
             
             with col1:
-                if st.button("Check My Answer"):
+                if st.button("Check My Answer", icon=":material/task_alt:"):
                     if user_answer.strip():
                         with st.spinner("Evaluating..."):
                             st.session_state.feedback = evaluate_answer(question_text, answer_text, user_answer)
@@ -16174,7 +25422,7 @@ elif page == "Learn & Practice":
                         st.warning("Please enter an answer first.")
             
             with col2:
-                if st.button("Show Answer"):
+                if st.button("Show Answer", icon=":material/visibility:"):
                     st.session_state.show_answer = True
             
             if st.session_state.feedback:
@@ -16941,7 +26189,7 @@ elif page == "Study Notes":
     menu_col1, menu_col2, menu_col3, menu_col4, menu_col5 = st.columns([1, 1, 1, 1, 1])
     with menu_col1:
         st.markdown(render_mui_icon('note_add', 18), unsafe_allow_html=True)
-        if st.button("New", key="word_new", use_container_width=True, help="Create new note"):
+        if st.button("New", key="word_new", icon=":material/note_add:", use_container_width=True, help="Create new note"):
             st.session_state.current_note_content = ""
             st.session_state.pop('editing_note_idx', None)
             st.session_state.pop('current_note_title', None)
@@ -16954,19 +26202,19 @@ elif page == "Study Notes":
             st.rerun()
     with menu_col2:
         st.markdown(render_mui_icon('save', 18), unsafe_allow_html=True)
-        if st.button("Save", key="word_save_top", use_container_width=True, help="Save note"):
+        if st.button("Save", key="word_save_top", icon=":material/save:", use_container_width=True, help="Save note"):
             st.session_state.trigger_save = True
     with menu_col3:
         st.markdown(render_mui_icon('download', 18), unsafe_allow_html=True)
-        if st.button("Export", key="word_export", use_container_width=True, help="Export notes"):
+        if st.button("Export", key="word_export", icon=":material/download:", use_container_width=True, help="Export notes"):
             st.session_state.show_export = True
     with menu_col4:
         st.markdown(render_mui_icon('smart_toy', 18), unsafe_allow_html=True)
-        if st.button("AI Help", key="word_ai", use_container_width=True, help="AI Assistant"):
+        if st.button("AI Help", key="word_ai", icon=":material/smart_toy:", use_container_width=True, help="AI Assistant"):
             st.session_state.show_ai_panel = not st.session_state.get('show_ai_panel', False)
     with menu_col5:
         st.markdown(render_mui_icon('analytics', 18), unsafe_allow_html=True)
-        if st.button("Stats", key="word_stats", use_container_width=True, help="Statistics"):
+        if st.button("Stats", key="word_stats", icon=":material/analytics:", use_container_width=True, help="Statistics"):
             st.session_state.show_stats = not st.session_state.get('show_stats', False)
     
     st.markdown("---")
@@ -17167,7 +26415,7 @@ elif page == "Study Notes":
         save_col1, save_col2, save_col3 = st.columns([1, 1, 2])
         with save_col1:
             st.markdown(render_mui_icon('save', 18), unsafe_allow_html=True)
-            if st.button("Save Note", type="primary", key="word_save_main", use_container_width=True) or st.session_state.get('trigger_save'):
+            if st.button("Save Note", type="primary", icon=":material/save:", key="word_save_main", use_container_width=True) or st.session_state.get('trigger_save'):
                 st.session_state.pop('trigger_save', None)
                 if note_title and st.session_state.get('current_note_content', ''):
                     tags_list = [t.strip() for t in note_tags.split(',') if t.strip()] if note_tags else []
@@ -17194,7 +26442,7 @@ elif page == "Study Notes":
                             })
                         note_data['version_history'] = history[-10:]
                         st.session_state.study_notes[selected_course_code][editing_idx] = note_data
-                        st.success("✅ Note updated!")
+                        st.success("Note updated!")
                     else:
                         st.session_state.study_notes[selected_course_code].append(note_data)
                         st.session_state.current_note_content = ""
@@ -17205,7 +26453,7 @@ elif page == "Study Notes":
                         st.session_state.pop('current_note_outcome', None)
                         st.session_state.pop('last_applied_template', None)
                         st.session_state.quill_key_counter = st.session_state.get('quill_key_counter', 0) + 1
-                        st.success("✅ New note created! Editor cleared for next note.")
+                        st.success("New note created! Editor cleared for next note.")
                     
                     st.rerun()
                 else:
@@ -17214,14 +26462,14 @@ elif page == "Study Notes":
         with save_col2:
             if st.session_state.get('editing_note_idx') is not None:
                 st.markdown(render_mui_icon('delete', 18), unsafe_allow_html=True)
-                if st.button("Delete", key="word_delete", use_container_width=True):
+                if st.button("Delete", key="word_delete", icon=":material/delete:", use_container_width=True):
                     idx = st.session_state.editing_note_idx
                     if idx < len(course_notes):
                         st.session_state.study_notes[selected_course_code].pop(idx)
                         st.session_state.current_note_content = ""
                         st.session_state.pop('editing_note_idx', None)
                         st.session_state.pop('current_note_title', None)
-                        st.success("✅ Deleted!")
+                        st.success("Deleted!")
                         st.rerun()
     
     if st.session_state.get('show_ai_panel'):
@@ -17268,7 +26516,7 @@ elif page == "Study Notes":
             action_col1, action_col2, action_col3, action_col4 = st.columns(4)
             
             with action_col1:
-                st.markdown("**📝 Content**")
+                st.markdown("**Content**")
                 if st.button("Summarize", key="ai_summarize", use_container_width=True):
                     st.session_state.ai_pending_action = "summarize"
                 if st.button("Expand", key="ai_expand", use_container_width=True):
@@ -17279,7 +26527,7 @@ elif page == "Study Notes":
                     st.session_state.ai_pending_action = "grammar"
             
             with action_col2:
-                st.markdown("**🎯 Enhance**")
+                st.markdown("**Enhance**")
                 if st.button("Add Examples", key="ai_examples", use_container_width=True):
                     st.session_state.ai_pending_action = "examples"
                 if st.button("Create Outline", key="ai_outline", use_container_width=True):
@@ -17290,7 +26538,7 @@ elif page == "Study Notes":
                     st.session_state.ai_pending_action = "context"
             
             with action_col3:
-                st.markdown("**📚 Study Tools**")
+                st.markdown("**Study Tools**")
                 if st.button("Study Questions", key="ai_questions", use_container_width=True):
                     st.session_state.ai_pending_action = "questions"
                 if st.button("Flashcards", key="ai_flashcards", use_container_width=True):
@@ -17390,7 +26638,7 @@ Guidelines:
             
             include_course_context = st.checkbox("Include course context in generation", value=True, key="ai_include_course")
             
-            if st.button("Generate", type="primary", key="ai_generate", use_container_width=True):
+            if st.button("Generate", type="primary", icon=":material/auto_awesome:", key="ai_generate", use_container_width=True):
                 if gen_topic:
                     context_to_use = full_context if include_course_context else ""
                     
@@ -17443,7 +26691,7 @@ Be practical and focused on real-world data analysis. {full_context if include_c
                 "Assess Exam Readiness"
             ], key="ai_analyze_type")
             
-            if st.button("Analyze", type="primary", key="ai_analyze", use_container_width=True):
+            if st.button("Analyze", type="primary", icon=":material/analytics:", key="ai_analyze", use_container_width=True):
                 if content:
                     analyze_prompts = {
                         "Check Completeness": f"Analyze this study note and check if it's complete. Identify what might be missing (definitions, examples, applications, etc.). {full_context}\n\nContent:\n{content}",
@@ -17485,7 +26733,7 @@ Be specific and actionable in your recommendations. {full_context}"""
             include_content = st.checkbox("Include current note content", value=True, key="ai_include_content")
             include_course_info = st.checkbox("Include course context", value=True, key="ai_include_course_info")
             
-            if st.button("Send to AI", type="primary", key="ai_custom_send", use_container_width=True):
+            if st.button("Send to AI", type="primary", icon=":material/send:", key="ai_custom_send", use_container_width=True):
                 if custom_prompt:
                     full_prompt = custom_prompt
                     if include_content and content:
@@ -17532,14 +26780,14 @@ Focus on data analysis concepts, tools, and real-world applications."""
         result_col1, result_col2, result_col3, result_col4 = st.columns(4)
         
         with result_col1:
-            if st.button("📥 Replace Content", key="ai_replace", use_container_width=True, type="primary"):
+            if st.button("Replace Content", key="ai_replace", use_container_width=True, type="primary", icon=":material/publish:"):
                 st.session_state.current_note_content = ai_result_content
                 st.session_state.quill_key_counter = st.session_state.get('quill_key_counter', 0) + 1
                 st.session_state.pop('ai_result', None)
                 st.rerun()
         
         with result_col2:
-            if st.button("➕ Append to Note", key="ai_append", use_container_width=True):
+            if st.button("Append to Note", key="ai_append", icon=":material/note_add:", use_container_width=True):
                 current = st.session_state.get('current_note_content', '')
                 separator = "<hr>" if current else ""
                 st.session_state.current_note_content = current + f"{separator}<h3>AI Generated Content</h3>{ai_result_content}"
@@ -17548,12 +26796,12 @@ Focus on data analysis concepts, tools, and real-world applications."""
                 st.rerun()
         
         with result_col3:
-            if st.button("📋 View HTML", key="ai_view_html", use_container_width=True):
+            if st.button("View HTML", key="ai_view_html", icon=":material/code:", use_container_width=True):
                 st.session_state.show_raw_html = not st.session_state.get('show_raw_html', False)
                 st.rerun()
         
         with result_col4:
-            if st.button("❌ Dismiss", key="ai_dismiss", use_container_width=True):
+            if st.button("Dismiss", key="ai_dismiss", icon=":material/close:", use_container_width=True):
                 st.session_state.pop('ai_result', None)
                 st.session_state.pop('show_raw_html', None)
                 st.rerun()
@@ -17563,7 +26811,7 @@ Focus on data analysis concepts, tools, and real-world applications."""
             st.markdown("---")
             st.markdown("**Raw HTML Code:**")
             st.code(ai_result_content, language='html')
-            st.info("💡 Copy this HTML code and paste it into your note editor if needed.")
+            st.info("Copy this HTML code and paste it into your note editor if needed.")
     
     if st.session_state.get('show_stats'):
         st.markdown("---")
@@ -17618,7 +26866,8 @@ Focus on data analysis concepts, tools, and real-world applications."""
                     "Download JSON",
                     data=export_json,
                     file_name=f"notes_{selected_course_code}_{datetime.now().strftime('%Y%m%d')}.json",
-                    mime="application/json"
+                    mime="application/json",
+                    icon=":material/download:"
                 )
             else:
                 md_content = f"# Study Notes - {selected_course_code}\n\n"
@@ -17631,7 +26880,8 @@ Focus on data analysis concepts, tools, and real-world applications."""
                     "Download Markdown",
                     data=md_content,
                     file_name=f"notes_{selected_course_code}_{datetime.now().strftime('%Y%m%d')}.md",
-                    mime="text/markdown"
+                    mime="text/markdown",
+                    icon=":material/download:"
                 )
         else:
             st.info("No notes to export.")
@@ -17642,7 +26892,7 @@ Focus on data analysis concepts, tools, and real-world applications."""
     char_count = len(st.session_state.get('current_note_content', ''))
     st.markdown(f"{render_mui_icon('description', 16)} {word_count} words | {char_count} characters | Course: {selected_course_code}", unsafe_allow_html=True)
 elif page == "Flashcards":
-    st.title("🎴 Flashcards")
+    mui_title("style", "Flashcards")
     st.markdown("*Learn with spaced repetition*")
     st.markdown("---")
     
@@ -17650,10 +26900,10 @@ elif page == "Flashcards":
     if 'flashcard_counter' not in st.session_state:
         st.session_state.flashcard_counter = 0
     
-    tab1, tab2, tab3 = st.tabs(["📚 Study", "➕ Create Cards", "📊 Statistics"])
+    tab1, tab2, tab3 = st.tabs(["Study", "Create Cards", "Statistics"])
     
     with tab1:
-        st.subheader("Study Mode")
+        mui_subheader("school", "Study Mode")
         
         # Get cards that need review
         now = datetime.now()
@@ -17671,7 +26921,7 @@ elif page == "Flashcards":
                 cards_to_review.append((card_id, card))
         
         if not cards_to_review:
-            st.info("🎉 No cards need review right now! Create some cards or check back later.")
+            st.info("No cards need review right now. Create some cards or check back later.")
         else:
             # Filter by course
             course_filter = st.selectbox(
@@ -17759,22 +27009,22 @@ elif page == "Flashcards":
                         st.rerun()
                     
                     with col_a:
-                        st.button("❌ Again", on_click=lambda: update_card_difficulty("Again"), use_container_width=True)
+                        st.button("Again", on_click=lambda: update_card_difficulty("Again"), use_container_width=True)
                     with col_b:
-                        st.button("😓 Hard", on_click=lambda: update_card_difficulty("Hard"), use_container_width=True)
+                        st.button("Hard", on_click=lambda: update_card_difficulty("Hard"), use_container_width=True)
                     with col_c:
-                        st.button("✅ Good", on_click=lambda: update_card_difficulty("Good"), use_container_width=True, type="primary")
+                        st.button("Good", on_click=lambda: update_card_difficulty("Good"), use_container_width=True, type="primary", icon=":material/thumb_up:")
                     with col_d:
-                        st.button("😊 Easy", on_click=lambda: update_card_difficulty("Easy"), use_container_width=True)
+                        st.button("Easy", on_click=lambda: update_card_difficulty("Easy"), use_container_width=True)
                 else:
-                    if st.button("👁️ Show Answer", type="primary", use_container_width=True):
+                    if st.button("Show Answer", type="primary", icon=":material/visibility:", use_container_width=True):
                         st.session_state[f"show_answer_{card_id}"] = True
                         st.rerun()
             else:
                 st.info("No cards to review for this course.")
     
     with tab2:
-        st.subheader("Create New Flashcard")
+        mui_subheader("add_box", "Create New Flashcard")
         
         col1, col2 = st.columns(2)
         with col1:
@@ -17788,7 +27038,7 @@ elif page == "Flashcards":
             card_back = st.text_area("Back:", height=150, placeholder="Answer or definition...")
             card_tags = st.text_input("Tags (optional):", placeholder="comma-separated")
         
-        if st.button("➕ Create Card", type="primary"):
+        if st.button("Create Card", type="primary", icon=":material/add_card:"):
             if card_front and card_back:
                 card_id = f"card_{st.session_state.flashcard_counter}"
                 st.session_state.flashcard_counter += 1
@@ -17813,7 +27063,7 @@ elif page == "Flashcards":
         
         # Show existing cards
         st.markdown("---")
-        st.subheader("Your Cards")
+        mui_subheader("view_carousel", "Your Cards")
         
         if st.session_state.flashcards:
             course_filter_create = st.selectbox(
@@ -17827,14 +27077,14 @@ elif page == "Flashcards":
                 filtered_cards = {k: v for k, v in filtered_cards.items() if v.get('course') == course_filter_create}
             
             for card_id, card in filtered_cards.items():
-                with st.expander(f"📴 {card.get('front', 'No front')[:50]}..."):
+                with st.expander(f"Card: {card.get('front', 'No front')[:50]}..."):
                     col_a, col_b = st.columns(2)
                     with col_a:
                         st.markdown(f"**Front:** {card.get('front')}")
                     with col_b:
                         st.markdown(f"**Back:** {card.get('back')}")
                     st.caption(f"Course: {card.get('course')} | Next review: {card.get('next_review', 'Not set')}")
-                    if st.button(f"🗑️ Delete", key=f"delete_card_{card_id}"):
+                    if st.button(f"Delete", key=f"delete_card_{card_id}"):
                         del st.session_state.flashcards[card_id]
                         st.session_state.flashcard_stats['total_cards'] = len(st.session_state.flashcards)
                         st.rerun()
@@ -17842,7 +27092,7 @@ elif page == "Flashcards":
             st.info("No cards created yet.")
     
     with tab3:
-        st.subheader("Statistics")
+        mui_subheader("analytics", "Statistics")
         
         stats = st.session_state.flashcard_stats
         total = stats.get('total_cards', 0)
@@ -17874,12 +27124,12 @@ elif page == "Flashcards":
                     st.markdown(f"- **{course}:** {count} cards")
 
 elif page == "Exam Simulator":
-    st.title("📋 Exam Simulator")
+    mui_title("fact_check", "Exam Simulator")
     st.markdown("*Practice for your exams with timed simulations*")
     st.markdown("---")
     
     if not st.session_state.exam_mode:
-        st.subheader("Configure Your Exam")
+        mui_subheader("settings", "Configure Your Exam")
         
         col1, col2 = st.columns(2)
         with col1:
@@ -17897,7 +27147,7 @@ elif page == "Exam Simulator":
                 default=["General", "Knowledge-based"]
             )
         
-        if st.button("🚀 Start Exam", type="primary"):
+        if st.button("Start Exam", type="primary", icon=":material/play_arrow:"):
             # Generate exam questions
             selected_course = next(c for c in courses_data if c['code'] == exam_course)
             exam_questions_list = []
@@ -17941,11 +27191,11 @@ elif page == "Exam Simulator":
         
         # Timer display
         if remaining_time > 0:
-            st.warning(f"⏱️ Time Remaining: {remaining_minutes:02d}:{remaining_seconds:02d}")
+            st.warning(f"Time Remaining: {remaining_minutes:02d}:{remaining_seconds:02d}")
             progress = elapsed_time / st.session_state.exam_duration
             st.progress(progress)
         else:
-            st.error("⏰ Time's up! Your exam will be submitted automatically.")
+            st.error("Time's up! Your exam will be submitted automatically.")
             if 'exam_submitted' not in st.session_state:
                 st.session_state.exam_submitted = True
                 st.rerun()
@@ -17992,13 +27242,13 @@ elif page == "Exam Simulator":
             # Navigation
             col_nav1, col_nav2, col_nav3 = st.columns(3)
             with col_nav1:
-                if st.button("⬅️ Previous", disabled=current_idx == 0):
+                if st.button("Previous", icon=":material/arrow_back:", disabled=current_idx == 0):
                     st.session_state.current_question_idx = max(0, current_idx - 1)
                     st.rerun()
             with col_nav2:
                 st.markdown(f"**{current_idx + 1}/{len(st.session_state.exam_questions)}**")
             with col_nav3:
-                if st.button("➡️ Next", disabled=current_idx == len(st.session_state.exam_questions) - 1):
+                if st.button("Next", icon=":material/arrow_forward:", disabled=current_idx == len(st.session_state.exam_questions) - 1):
                     st.session_state.current_question_idx = min(len(st.session_state.exam_questions) - 1, current_idx + 1)
                     st.rerun()
         
@@ -18031,11 +27281,11 @@ elif page == "Exam Simulator":
         # Submit exam
         col_sub1, col_sub2 = st.columns([1, 1])
         with col_sub1:
-            if st.button("📤 Submit Exam", type="primary"):
+            if st.button("Submit Exam", type="primary", icon=":material/send:"):
                 st.session_state.exam_submitted = True
                 st.rerun()
         with col_sub2:
-            if st.button("❌ Cancel Exam"):
+            if st.button("Cancel Exam", icon=":material/cancel:"):
                 if st.checkbox("Are you sure? This will discard your progress."):
                     st.session_state.exam_mode = False
                     st.session_state.exam_questions = []
@@ -18051,7 +27301,7 @@ elif page == "Exam Simulator":
     # Show results if exam submitted
     if st.session_state.get('exam_submitted', False) and st.session_state.exam_mode:
         st.markdown("---")
-        st.title("📊 Exam Results")
+        mui_title("assessment", "Exam Results")
         
         # Evaluate answers
         results = []
@@ -18094,14 +27344,14 @@ elif page == "Exam Simulator":
         st.metric("Your Score", f"{total_score:.1f}/{len(st.session_state.exam_questions)} ({percentage:.1f}%)")
         
         if percentage >= 80:
-            st.success("🎉 Excellent work!")
+            st.success("Excellent work!")
         elif percentage >= 60:
-            st.info("👍 Good job!")
+            st.info("Good job!")
         else:
-            st.warning("📚 Keep studying!")
+            st.warning("Keep studying!")
         
         st.markdown("---")
-        st.subheader("Detailed Feedback")
+        mui_subheader("feedback", "Detailed Feedback")
         
         for idx, result in enumerate(results):
             with st.expander(f"Question {idx + 1} - Score: {result['score']}/1"):
@@ -18110,7 +27360,7 @@ elif page == "Exam Simulator":
                 st.markdown(f"**Correct Answer:** {result['correct_answer']}")
                 st.markdown(f"**Feedback:** {result['feedback']}")
         
-        if st.button("🔄 Take Another Exam"):
+        if st.button("Take Another Exam"):
             st.session_state.exam_mode = False
             st.session_state.exam_submitted = False
             st.session_state.exam_questions = []
@@ -18119,7 +27369,7 @@ elif page == "Exam Simulator":
             st.rerun()
 
 elif page == "Code Library":
-    st.title("💻 Code Library")
+    mui_title("terminal", "Code Library")
     st.markdown("*Useful code snippets and examples*")
     st.markdown("---")
     
@@ -18418,6 +27668,57 @@ print(f\"z={z_score:.2f}, p-value={p_val:.4f}\")""",
                 "language": "python",
                 "category": "Statistics",
                 "description": "Lightweight two-proportion z-test without extra deps"
+            },
+            "excel_data_validation_activity_141": {
+                "title": "Excel Activity 1.4.1 - Data Validation Dataset Script",
+                "code": """import pandas as pd
+
+# Activity 1.4.1 dataset template
+item_names = ["Pen", "Notebook", "Eraser", "Ruler", "Marker"]
+status_options = ["In Progress", "Completed", "Cancelled"]
+
+df = pd.DataFrame({
+    "Item Name": ["Pen", "Notebook", "Eraser", "Ruler", "Marker", "Pen", "Notebook", "Eraser", "Ruler", "Marker"],
+    "Quantity": [5, 3, 8, 2, 6, 4, 1, 7, 9, 2],
+    "Unit Price": [1.5, 3.2, 0.99, 2.75, 4.6, 1.5, 3.2, 0.99, 2.75, 4.6],
+    "Date": ["01/10/2026", "01/11/2026", "01/12/2026", "01/13/2026", "01/14/2026", "01/15/2026", "01/16/2026", "01/17/2026", "01/18/2026", "01/19/2026"],
+    "Status": ["In Progress", "Completed", "Cancelled", "In Progress", "Completed", "Cancelled", "In Progress", "Completed", "Cancelled", "In Progress"]
+})
+
+# Validation checks
+issues = []
+for idx, row in df.iterrows():
+    row_no = idx + 1
+    if row["Item Name"] not in item_names:
+        issues.append((row_no, "Item Name not in list"))
+    if len(str(row["Item Name"])) < 3 or len(str(row["Item Name"])) > 10:
+        issues.append((row_no, "Item Name length not in 3..10"))
+    if not float(row["Quantity"]).is_integer() or row["Quantity"] <= 0:
+        issues.append((row_no, "Quantity must be positive whole number"))
+    if row["Unit Price"] < 0.01 or row["Unit Price"] > 1000.00:
+        issues.append((row_no, "Unit Price must be in 0.01..1000.00"))
+    parsed_date = pd.to_datetime(row["Date"], format="%m/%d/%Y", errors="coerce")
+    if pd.isna(parsed_date):
+        issues.append((row_no, "Date must match mm/dd/yyyy"))
+    if row["Status"] not in status_options:
+        issues.append((row_no, "Status must be In Progress/Completed/Cancelled"))
+
+if issues:
+    print("Validation issues found:")
+    for issue in issues:
+        print(issue)
+else:
+    print("All rows valid for Activity 1.4.1")
+    df["Date"] = pd.to_datetime(df["Date"], format="%m/%d/%Y")
+    df["Line Total"] = df["Quantity"] * df["Unit Price"]
+    print(df.head())
+
+    # Save for Excel testing
+    df.to_csv("activity_141_data.csv", index=False)
+    print("Saved: activity_141_data.csv")""",
+                "language": "python",
+                "category": "Excel",
+                "description": "Creates and validates Activity 1.4.1 table data for Excel Data Validation practice"
             }
         }
         st.session_state.code_snippets = default_snippets
@@ -18430,18 +27731,41 @@ print(f\"z={z_score:.2f}, p-value={p_val:.4f}\")""",
     languages_available = sorted(
         set(s.get('language', 'python') for s in st.session_state.code_snippets.values())
     )
+
+    if st.session_state.get("code_library_search_prefill"):
+        st.session_state["code_library_search_input"] = st.session_state["code_library_search_prefill"]
+        st.session_state.pop("code_library_search_prefill", None)
+
+    category_options = ["All"] + categories_available
+    if st.session_state.get("code_library_category_prefill"):
+        preferred_category = st.session_state["code_library_category_prefill"]
+        st.session_state["code_library_category_filter"] = preferred_category if preferred_category in category_options else "All"
+        st.session_state.pop("code_library_category_prefill", None)
+
+    language_options = ["All"] + languages_available
+    if st.session_state.get("code_library_language_prefill"):
+        preferred_language = st.session_state["code_library_language_prefill"]
+        st.session_state["code_library_language_filter"] = preferred_language if preferred_language in language_options else "All"
+        st.session_state.pop("code_library_language_prefill", None)
+
     col_search, col_filter, col_lang = st.columns([2, 1, 1])
     with col_search:
-        search_query = st.text_input("🔍 Search snippets:", placeholder="Search by title, description, or code...")
+        search_query = st.text_input(
+            "Search snippets:",
+            placeholder="Search by title, description, or code...",
+            key="code_library_search_input"
+        )
     with col_filter:
         category_filter = st.selectbox(
             "Category:",
-            ["All"] + categories_available
+            category_options,
+            key="code_library_category_filter"
         )
     with col_lang:
         language_filter = st.selectbox(
             "Language:",
-            ["All"] + languages_available
+            language_options,
+            key="code_library_language_filter"
         )
     
     col_meta1, col_meta2 = st.columns([1, 1])
@@ -18487,10 +27811,11 @@ print(f\"z={z_score:.2f}, p-value={p_val:.4f}\")""",
                 # Copy button (using download button as workaround)
                 code_text = snippet.get('code', '')
                 st.download_button(
-                    "📋 Copy Code",
+                    "Copy Code",
                     data=code_text,
                     file_name=f"{snippet.get('title', 'code')}.txt",
-                    mime="text/plain"
+                    mime="text/plain",
+                    icon=":material/content_copy:"
                 )
                 
                 # Favorite toggle
@@ -18502,22 +27827,23 @@ print(f\"z={z_score:.2f}, p-value={p_val:.4f}\")""",
                     favorites.discard(snippet_id)
                 st.session_state.code_snippet_favorites = list(favorites)
                 
-                if st.button(f"🗑️ Delete", key=f"delete_snippet_{snippet_id}"):
+                if st.button(f"Delete", key=f"delete_snippet_{snippet_id}"):
                     del st.session_state.code_snippets[snippet_id]
                     st.rerun()
     else:
         st.info("No snippets found. Create one below!")
     
     st.markdown("---")
-    st.subheader("📁 Import / Export")
+    mui_subheader("folder", "Import / Export")
     export_payload = json.dumps(st.session_state.code_snippets, indent=2)
     col_export, col_import = st.columns(2)
     with col_export:
         st.download_button(
-            "⬇️ Download library (.json)",
+            "Download Library (.json)",
             data=export_payload,
             file_name="code_snippets.json",
-            mime="application/json"
+            mime="application/json",
+            icon=":material/download:"
         )
     with col_import:
         uploaded = st.file_uploader("Upload snippets JSON", type=["json"])
@@ -18534,7 +27860,7 @@ print(f\"z={z_score:.2f}, p-value={p_val:.4f}\")""",
                 st.error(f"Could not import snippets: {exc}")
     
     st.markdown("---")
-    st.subheader("➕ Add Custom Snippet")
+    st.subheader("Add Custom Snippet")
     
     col1, col2 = st.columns(2)
     with col1:
@@ -18553,7 +27879,7 @@ print(f\"z={z_score:.2f}, p-value={p_val:.4f}\")""",
     
     new_code = st.text_area("Code:", height=200, placeholder="Paste your code here...")
     
-    if st.button("➕ Add Snippet", type="primary"):
+    if st.button("Add Snippet", type="primary", icon=":material/add:"):
         if new_title and new_code:
             snippet_id = f"custom_{int(time.time())}"
             st.session_state.code_snippets[snippet_id] = {
@@ -18569,7 +27895,7 @@ print(f\"z={z_score:.2f}, p-value={p_val:.4f}\")""",
             st.warning("Please fill in title and code.")
 
 elif page == "Formula Reference":
-    st.title("🔢 Formula Reference")
+    mui_title("functions", "Formula Reference")
     st.markdown("*Quick reference for statistical formulas*")
     st.markdown("---")
     
@@ -18580,7 +27906,7 @@ elif page == "Formula Reference":
     )
     
     # Search
-    search_query = st.text_input("🔍 Search formulas:", placeholder="Search by name or description...")
+    search_query = st.text_input("Search formulas:", placeholder="Search by name or description...")
     
     # Formula database
     formulas = {
@@ -18739,7 +28065,7 @@ elif page == "Formula Reference":
         st.info("No formulas found. Try a different search or category.")
 
 elif page == "Study Timer":
-    st.title("⏱️ Study Timer")
+    mui_title("timer", "Study Timer")
     st.markdown("*Track your study time with Pomodoro technique*")
     st.markdown("---")
     
@@ -18779,7 +28105,7 @@ elif page == "Study Timer":
             col_btn1, col_btn2, col_btn3 = st.columns(3)
             
             with col_btn1:
-                if st.button("⏸️ Pause", use_container_width=True):
+                if st.button("Pause", icon=":material/pause:", use_container_width=True):
                     if not st.session_state.timer_paused:
                         st.session_state.timer_paused = True
                         st.session_state.timer_pause_time = time.time()
@@ -18790,7 +28116,7 @@ elif page == "Study Timer":
                     st.rerun()
             
             with col_btn2:
-                if st.button("⏹️ Stop", use_container_width=True, type="primary"):
+                if st.button("Stop", use_container_width=True, type="primary", icon=":material/stop:"):
                     # Save session
                     if st.session_state.current_timer_course:
                         course_code = st.session_state.current_timer_course
@@ -18817,7 +28143,7 @@ elif page == "Study Timer":
                     st.rerun()
             
             with col_btn3:
-                if st.button("🔄 Reset", use_container_width=True):
+                if st.button("Reset", icon=":material/restart_alt:", use_container_width=True):
                     st.session_state.study_timer_start = time.time()
                     st.session_state.timer_paused = False
                     st.rerun()
@@ -18825,7 +28151,7 @@ elif page == "Study Timer":
             # Auto-stop when timer reaches 0
             if remaining <= 0:
                 st.balloons()
-                st.success("🎉 Time's up! Great work!")
+                st.success("Time's up! Great work!")
                 
                 # Save session
                 if st.session_state.current_timer_course:
@@ -18874,7 +28200,7 @@ elif page == "Study Timer":
                 ["None"] + [f"{c['code']} - {c['name']}" for c in courses_data]
             )
             
-            if st.button("▶️ Start Timer", type="primary", use_container_width=True):
+            if st.button("Start Timer", type="primary", icon=":material/play_arrow:", use_container_width=True):
                 st.session_state.study_timer_active = True
                 st.session_state.study_timer_start = time.time()
                 st.session_state.study_timer_duration = duration_minutes * 60
@@ -18889,7 +28215,7 @@ elif page == "Study Timer":
                 st.rerun()
     
     with col2:
-        st.subheader("📊 Statistics")
+        mui_subheader("insights", "Statistics")
         
         # Total study time
         total_seconds = sum(s.get('duration', 0) for s in st.session_state.study_sessions)
@@ -18922,7 +28248,7 @@ elif page == "Study Timer":
                 st.caption(f"{date_str}: {duration_min} min - {course_code}")
         
         # Clear data button
-        if st.button("🗑️ Clear All Data"):
+        if st.button("Clear All Data", icon=":material/delete_sweep:"):
             if st.checkbox("Are you sure? This cannot be undone."):
                 st.session_state.study_sessions = []
                 st.session_state.study_time_by_course = {}
@@ -18931,7 +28257,7 @@ elif page == "Study Timer":
                 st.rerun()
 
 elif page == "Progress":
-    st.title("📈 My Progress")
+    mui_title("trending_up", "My Progress")
     st.markdown("---")
     
     st.subheader("Mark Completed Courses")
@@ -18966,14 +28292,14 @@ elif page == "Progress":
     st.write(f"**{completed_credits:.1f} / {total_credits:.0f} credits completed ({progress*100:.0f}%)**")
 
 elif page == "Learning Outcomes":
-    st.title("🎯 Program Learning Outcomes")
+    mui_title("workspace_premium", "Program Learning Outcomes")
     st.markdown("*Based on the Norwegian Qualifications Framework (NQF)*")
     st.markdown("---")
     
     tab1, tab2, tab3 = st.tabs(["Knowledge", "Skills", "General Competence"])
     
     with tab1:
-        st.subheader("📖 Knowledge")
+        st.subheader("Knowledge")
         st.markdown("*After graduation, the candidate has knowledge of:*")
         
         for i, outcome in enumerate(knowledge_outcomes):
@@ -18989,7 +28315,7 @@ elif page == "Learning Outcomes":
         st.caption(f"{completed} / {len(knowledge_outcomes)} learning goals achieved")
     
     with tab2:
-        st.subheader("🛠️ Skills")
+        st.subheader("Skills")
         st.markdown("*After graduation, the candidate can:*")
         
         for i, outcome in enumerate(skills_outcomes):
@@ -19005,7 +28331,7 @@ elif page == "Learning Outcomes":
         st.caption(f"{completed} / {len(skills_outcomes)} learning goals achieved")
     
     with tab3:
-        st.subheader("💡 General Competence")
+        st.subheader("General Competence")
         st.markdown("*After graduation, the candidate:*")
         
         for i, outcome in enumerate(competence_outcomes):
@@ -19021,7 +28347,7 @@ elif page == "Learning Outcomes":
         st.caption(f"{completed} / {len(competence_outcomes)} learning goals achieved")
 
 elif page == "Playground":
-    st.title("🎮 Interactive Playground")
+    mui_title("construction", "Interactive Playground")
     st.markdown("*Practice with real tools - enter data, run code, and see results instantly*")
     st.markdown("---")
     
@@ -19033,14 +28359,16 @@ elif page == "Playground":
             ],
             "FI1BBSF05 - Spreadsheet Fundamentals": [
                 "Excel Formula Simulator",
-                "Power Query Simulator"
+                "Power Query Simulator",
+                "Excel Workbook Profiler"
             ],
             "FI1BBST05 - Statistical Tools": [
                 "Statistical Analysis",
                 "Z-Score & Outlier Tool"
             ],
             "FI1BBPF20 - Programming Fundamentals": [
-                "Python Code Runner"
+                "Python Code Runner",
+                "PDF Viewer (PDF.js)"
             ]
         },
         "Semester 2 - Data & Visualization": {
@@ -19082,7 +28410,7 @@ elif page == "Playground":
         # Category filter
         available_categories = list(playground_tools.keys())
         selected_category = st.selectbox(
-            "📅 Semester/Category:",
+            "Semester/Category:",
             options=["All Categories"] + available_categories
         )
     
@@ -19099,7 +28427,7 @@ elif page == "Playground":
             available_pg_courses = list(playground_tools[selected_category].keys())
         
         selected_pg_course = st.selectbox(
-            "📚 Course:",
+            "Course:",
             options=["All Courses"] + available_pg_courses,
             key="pg_course"
         )
@@ -19120,12 +28448,12 @@ elif page == "Playground":
         st.stop()
     
     # Show tool count
-    st.caption(f"🔧 {len(filtered_tools)} tools available")
+    st.caption(f"{len(filtered_tools)} tools available")
     
     # Tool selector
     tool_options = [t[0] for t in filtered_tools]
     playground_tab = st.selectbox(
-        "🎯 Select Tool:",
+        "Select Tool:",
         options=tool_options
     )
     
@@ -19142,7 +28470,7 @@ elif page == "Playground":
     st.markdown(f"**{tool_category}** | **{tool_course}**")
     
     if playground_tab == "Python Code Runner":
-        st.subheader("🐍 Python Code Playground")
+        mui_subheader("code", "Python Code Playground")
         st.markdown("Practice pandas operations on your own data! Edit the tables below, then run exercises.")
         
         # Initialize session state for editable data
@@ -19225,7 +28553,7 @@ elif page == "Playground":
         st.markdown("### Code")
         st.code(exercises[selected_exercise]['code'], language="python")
         
-        if st.button("▶️ Run Code", type="primary"):
+        if st.button("Run Code", type="primary", icon=":material/play_arrow:"):
             st.markdown("### Output:")
             
             # Execute the selected exercise safely with pre-defined data
@@ -19291,9 +28619,137 @@ elif page == "Playground":
         st.markdown("- `df.groupby()` - Group and aggregate")
         st.markdown("- `df.sort_values()` - Sort rows")
         st.markdown("- `df[condition]` - Filter rows")
-    
+
+    elif playground_tab == "PDF Viewer (PDF.js)":
+        mui_subheader("picture_as_pdf", "PDF Viewer (PDF.js)")
+        st.markdown("Upload a PDF and render it with PDF.js in the app.")
+
+        uploaded_pdf = st.file_uploader(
+            "Upload PDF",
+            type=["pdf"],
+            key="pdfjs_viewer_upload"
+        )
+
+        if uploaded_pdf is not None:
+            pdf_bytes = uploaded_pdf.read()
+            if not pdf_bytes:
+                st.warning("The uploaded file is empty.")
+            else:
+                st.caption(f"Loaded: {uploaded_pdf.name} ({len(pdf_bytes):,} bytes)")
+
+                col1, col2 = st.columns(2)
+                with col1:
+                    initial_page = st.number_input("Start page", min_value=1, value=1, step=1)
+                with col2:
+                    initial_zoom = st.slider("Initial zoom (%)", min_value=50, max_value=250, value=100, step=10)
+
+                pdf_base64 = base64.b64encode(pdf_bytes).decode("utf-8")
+                viewer_html = f"""
+                <!doctype html>
+                <html>
+                <head>
+                  <meta charset=\"utf-8\" />
+                  <style>
+                    body {{ margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }}
+                    .toolbar {{ display: flex; gap: 8px; align-items: center; padding: 10px; border-bottom: 1px solid #e5e7eb; background: #f8fafc; }}
+                    .toolbar button {{ border: 1px solid #cbd5e1; background: #fff; border-radius: 6px; padding: 6px 10px; cursor: pointer; }}
+                    .meta {{ margin-left: auto; color: #334155; font-size: 13px; }}
+                    #canvas-wrap {{ height: 690px; overflow: auto; background: #f1f5f9; display: flex; justify-content: center; align-items: flex-start; padding: 16px 0; }}
+                    #pdf-canvas {{ border: 1px solid #cbd5e1; box-shadow: 0 2px 10px rgba(0,0,0,0.08); background: #fff; }}
+                    #error {{ color: #b91c1c; padding: 10px; font-size: 13px; }}
+                  </style>
+                </head>
+                <body>
+                  <div class=\"toolbar\">
+                    <button id=\"prev\">Prev</button>
+                    <button id=\"next\">Next</button>
+                    <button id=\"zoom-out\">-</button>
+                    <button id=\"zoom-in\">+</button>
+                    <button id=\"reset\">Reset</button>
+                    <div class=\"meta\" id=\"meta\">Loading PDF...</div>
+                  </div>
+                  <div id=\"canvas-wrap\"><canvas id=\"pdf-canvas\"></canvas></div>
+                  <div id=\"error\"></div>
+
+                  <script type=\"module\">
+                    import * as pdfjsLib from "https://cdn.jsdelivr.net/npm/pdfjs-dist@5.4.624/build/pdf.min.mjs";
+                    pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdn.jsdelivr.net/npm/pdfjs-dist@5.4.624/build/pdf.worker.min.mjs";
+
+                    const base64 = "{pdf_base64}";
+                    const binary = atob(base64);
+                    const bytes = new Uint8Array(binary.length);
+                    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+
+                    const canvas = document.getElementById("pdf-canvas");
+                    const ctx = canvas.getContext("2d");
+                    const meta = document.getElementById("meta");
+                    const error = document.getElementById("error");
+
+                    let pdfDoc = null;
+                    let currentPage = {int(initial_page)};
+                    let scale = {float(initial_zoom) / 100.0};
+                    const baseScale = scale;
+
+                    async function renderPage(pageNum) {{
+                      if (!pdfDoc) return;
+                      const page = await pdfDoc.getPage(pageNum);
+                      const viewport = page.getViewport({{ scale }});
+                      canvas.width = viewport.width;
+                      canvas.height = viewport.height;
+                      await page.render({{ canvasContext: ctx, viewport }}).promise;
+                      meta.textContent = `Page ${{currentPage}} / ${{pdfDoc.numPages}} • Zoom ${{Math.round(scale * 100)}}%`;
+                    }}
+
+                    async function loadPdf() {{
+                      try {{
+                        const loadingTask = pdfjsLib.getDocument({{ data: bytes }});
+                        pdfDoc = await loadingTask.promise;
+                        currentPage = Math.max(1, Math.min(currentPage, pdfDoc.numPages));
+                        await renderPage(currentPage);
+                      }} catch (e) {{
+                        error.textContent = `Failed to load PDF: ${{e?.message || e}}`;
+                      }}
+                    }}
+
+                    document.getElementById("prev").addEventListener("click", async () => {{
+                      if (!pdfDoc || currentPage <= 1) return;
+                      currentPage -= 1;
+                      await renderPage(currentPage);
+                    }});
+
+                    document.getElementById("next").addEventListener("click", async () => {{
+                      if (!pdfDoc || currentPage >= pdfDoc.numPages) return;
+                      currentPage += 1;
+                      await renderPage(currentPage);
+                    }});
+
+                    document.getElementById("zoom-in").addEventListener("click", async () => {{
+                      scale = Math.min(4, scale + 0.1);
+                      await renderPage(currentPage);
+                    }});
+
+                    document.getElementById("zoom-out").addEventListener("click", async () => {{
+                      scale = Math.max(0.3, scale - 0.1);
+                      await renderPage(currentPage);
+                    }});
+
+                    document.getElementById("reset").addEventListener("click", async () => {{
+                      scale = baseScale;
+                      await renderPage(currentPage);
+                    }});
+
+                    loadPdf();
+                  </script>
+                </body>
+                </html>
+                """
+
+                html(viewer_html, height=760, scrolling=False)
+        else:
+            st.caption("Upload a PDF to start viewing pages with PDF.js.")
+
     elif playground_tab == "Excel Formula Simulator":
-        st.subheader("📊 Excel Formula Simulator")
+        mui_subheader("table_view", "Excel Formula Simulator")
         st.markdown("Practice Excel formulas including VLOOKUP and INDEX/MATCH!")
         
         # Main data table
@@ -19362,7 +28818,7 @@ elif page == "Playground":
             if numeric_cols:
                 column = st.selectbox("Select column:", numeric_cols)
                 
-                if st.button("Calculate", type="primary"):
+                if st.button("Calculate", type="primary", icon=":material/calculate:"):
                     try:
                         if formula_type == "SUM":
                             result = edited_data[column].sum()
@@ -19392,7 +28848,7 @@ elif page == "Playground":
                 if numeric_cols:
                     sum_col = st.selectbox("Value column:", numeric_cols)
             
-            if st.button("Calculate", type="primary"):
+            if st.button("Calculate", type="primary", icon=":material/calculate:"):
                 try:
                     mask = edited_data[crit_col].astype(str).str.lower() == str(criteria).lower()
                     
@@ -19427,7 +28883,7 @@ elif page == "Playground":
             with col2:
                 return_col = st.selectbox("Return column from lookup table:", lookup_data.columns.tolist()[1:])
             
-            if st.button("Run VLOOKUP", type="primary"):
+            if st.button("Run VLOOKUP", type="primary", icon=":material/search:"):
                 try:
                     lookup_key_col = lookup_data.columns[0]
                     match = lookup_data[lookup_data[lookup_key_col].astype(str).str.lower() == str(actual_lookup).lower()]
@@ -19466,7 +28922,7 @@ elif page == "Playground":
                 st.markdown("**INDEX: Return the value**")
                 return_col = st.selectbox("Return from column:", lookup_data.columns.tolist())
             
-            if st.button("Run INDEX/MATCH", type="primary"):
+            if st.button("Run INDEX/MATCH", type="primary", icon=":material/search:"):
                 try:
                     match_result = lookup_data[lookup_data[match_in_col].astype(str).str.lower() == str(actual_match).lower()]
                     
@@ -19504,7 +28960,7 @@ elif page == "Playground":
                 search_col = st.selectbox("Search in:", lookup_data.columns.tolist())
                 return_col = st.selectbox("Return from:", lookup_data.columns.tolist())
             
-            if st.button("Run XLOOKUP", type="primary"):
+            if st.button("Run XLOOKUP", type="primary", icon=":material/search:"):
                 try:
                     match = lookup_data[lookup_data[search_col].astype(str).str.lower() == str(lookup_val).lower()]
                     
@@ -19540,7 +28996,7 @@ elif page == "Playground":
                     else:
                         compare_col = st.selectbox("Column:", [c for c in numeric_cols if c != check_col])
                 
-                if st.button("Apply IF Formula", type="primary"):
+                if st.button("Apply IF Formula", type="primary", icon=":material/functions:"):
                     try:
                         if compare_to == "Value":
                             if operator == ">":
@@ -19596,7 +29052,7 @@ elif page == "Playground":
                     threshold = st.number_input("Highlight values greater than:", value=float(edited_data[format_col].mean()))
                     highlight_color = st.color_picker("Highlight color:", "#90EE90")
                     
-                    if st.button("Apply Formatting", type="primary"):
+                    if st.button("Apply Formatting", type="primary", icon=":material/format_paint:"):
                         result_df = edited_data.copy()
                         
                         def highlight_above(row):
@@ -19614,7 +29070,7 @@ elif page == "Playground":
                     threshold = st.number_input("Highlight values less than:", value=float(edited_data[format_col].mean()))
                     highlight_color = st.color_picker("Highlight color:", "#FFB6C1")
                     
-                    if st.button("Apply Formatting", type="primary"):
+                    if st.button("Apply Formatting", type="primary", icon=":material/format_paint:"):
                         result_df = edited_data.copy()
                         
                         def highlight_below(row):
@@ -19631,7 +29087,7 @@ elif page == "Playground":
                 elif format_type == "Color Scale (low to high)":
                     st.markdown("Color scales show values on a gradient from low (red) to high (green).")
                     
-                    if st.button("Apply Color Scale", type="primary"):
+                    if st.button("Apply Color Scale", type="primary", icon=":material/format_color_fill:"):
                         result_df = edited_data.copy()
                         
                         styled = result_df.style.background_gradient(
@@ -19648,7 +29104,7 @@ elif page == "Playground":
                 elif format_type == "Data Bars":
                     st.markdown("Data bars show relative values as bars within cells.")
                     
-                    if st.button("Apply Data Bars", type="primary"):
+                    if st.button("Apply Data Bars", type="primary", icon=":material/bar_chart:"):
                         result_df = edited_data.copy()
                         
                         styled = result_df.style.bar(
@@ -19667,7 +29123,7 @@ elif page == "Playground":
                     n_values = st.slider("Number of values:", 1, min(10, len(edited_data)), 3)
                     top_or_bottom = st.radio("Highlight:", ["Top N", "Bottom N"], horizontal=True)
                     
-                    if st.button("Apply Formatting", type="primary"):
+                    if st.button("Apply Formatting", type="primary", icon=":material/format_paint:"):
                         result_df = edited_data.copy()
                         
                         if top_or_bottom == "Top N":
@@ -19694,7 +29150,7 @@ elif page == "Playground":
                 elif format_type == "Highlight duplicates":
                     dup_col = st.selectbox("Check for duplicates in:", edited_data.columns.tolist())
                     
-                    if st.button("Find Duplicates", type="primary"):
+                    if st.button("Find Duplicates", type="primary", icon=":material/content_copy:"):
                         result_df = edited_data.copy()
                         mask = result_df.duplicated(subset=[dup_col], keep=False)
                         
@@ -19743,7 +29199,7 @@ elif page == "Playground":
                     st.markdown("**Aggregation:**")
                     agg_func = st.selectbox("Function:", ["Sum", "Average", "Count", "Min", "Max"])
                 
-                if st.button("Create Pivot Table", type="primary"):
+                if st.button("Create Pivot Table", type="primary", icon=":material/pivot_table_chart:"):
                     try:
                         agg_map = {"Sum": "sum", "Average": "mean", "Count": "count", "Min": "min", "Max": "max"}
                         
@@ -19885,7 +29341,7 @@ elif page == "Playground":
                         st.error(f"Error: {str(e)}")
     
     elif playground_tab == "SQL Query Tester":
-        st.subheader("🗄️ SQL Query Tester")
+        mui_subheader("database", "SQL Query Tester")
         st.markdown("Write SQL queries against your data - edit the tables below to add your own!")
         
         # Initialize editable tables in session state
@@ -19948,7 +29404,7 @@ elif page == "Playground":
         
         query = st.text_area("SQL Query:", value=default_query, height=100)
         
-        if st.button("▶️ Run Query", type="primary"):
+        if st.button("Run Query", type="primary", icon=":material/play_arrow:"):
             st.markdown("### Results:")
             
             try:
@@ -19977,7 +29433,7 @@ elif page == "Playground":
         st.markdown("3. List customers who have placed more than 1 order")
     
     elif playground_tab == "Chart Builder":
-        st.subheader("📈 Chart Builder")
+        mui_subheader("insert_chart", "Chart Builder")
         st.markdown("Create visualizations from your own data! Edit the table below.")
         
         # Initialize editable chart data in session state
@@ -20050,7 +29506,7 @@ elif page == "Playground":
         st.markdown("- **Scatter plots**: Best for showing relationships between two variables")
     
     elif playground_tab == "Data Visualization Studio":
-        st.subheader("🎨 Data Visualization Studio")
+        mui_subheader("palette", "Data Visualization Studio")
         st.markdown("*Practice choosing charts, designing for accessibility, and identifying visualization problems*")
         st.markdown("---")
         
@@ -20081,7 +29537,7 @@ elif page == "Playground":
                 )
                 interactive = st.checkbox("Does it need to be interactive?")
             
-            if st.button("🎯 Get Recommendations", type="primary"):
+            if st.button("Get Recommendations", type="primary", icon=":material/lightbulb:"):
                 st.markdown("---")
                 st.markdown("### Recommended Charts")
                 
@@ -20137,7 +29593,7 @@ elif page == "Playground":
                             st.markdown(badge)
                 
                 if warnings:
-                    st.markdown("### ⚠️ Watch Out For:")
+                    st.markdown("### Watch Out For:")
                     for w in warnings:
                         st.warning(w)
         
@@ -20180,7 +29636,7 @@ elif page == "Playground":
                 )
             }
             
-            if st.button("📋 Generate Accessibility Report", type="primary"):
+            if st.button("Generate Accessibility Report", type="primary", icon=":material/summarize:"):
                 st.markdown("---")
                 st.markdown("### Accessibility Report")
                 
@@ -20189,10 +29645,10 @@ elif page == "Playground":
                 
                 for check, value in checks.items():
                     if value == "Yes":
-                        st.success(f"✅ **{check}**: Good")
+                        st.success(f"**{check}**: Good")
                         score += 2
                     elif value == "Partially":
-                        st.warning(f"⚠️ **{check}**: Needs improvement")
+                        st.warning(f"**{check}**: Needs improvement")
                         score += 1
                     else:
                         st.error(f"❌ **{check}**: Missing")
@@ -20254,7 +29710,7 @@ elif page == "Playground":
                 height=100
             )
             
-            if st.button("🔍 Show Expert Analysis", type="primary"):
+            if st.button("Show Expert Analysis", type="primary", icon=":material/psychology:"):
                 st.markdown("---")
                 st.markdown("### Problems Identified:")
                 for p in scenario["problems"]:
@@ -20262,7 +29718,7 @@ elif page == "Playground":
                 
                 st.markdown("### Recommended Fixes:")
                 for f in scenario["fixes"]:
-                    st.success(f"✅ {f}")
+                    st.success(f"{f}")
         
         elif viz_mode == "Story Builder":
             st.markdown("### Data Story Builder")
@@ -20293,7 +29749,7 @@ elif page == "Playground":
                 height=80
             )
             
-            if st.button("📊 Generate Story Summary", type="primary"):
+            if st.button("Generate Story Summary", type="primary", icon=":material/auto_awesome:"):
                 if context and insight and action:
                     st.markdown("---")
                     st.markdown("### Your Data Story")
@@ -20318,16 +29774,17 @@ elif page == "Playground":
                     st.markdown(story)
                     
                     st.download_button(
-                        "📥 Download Story Framework",
+                        "Download Story Framework",
                         data=story,
                         file_name="data_story.md",
-                        mime="text/markdown"
+                        mime="text/markdown",
+                        icon=":material/download:"
                     )
                 else:
                     st.warning("Please fill in all sections to generate your story.")
     
     elif playground_tab == "Statistical Analysis":
-        st.subheader("📊 Statistical Analysis Tool")
+        mui_subheader("query_stats", "Statistical Analysis Tool")
         st.markdown("Perform correlation, regression, ANOVA, histogram, and covariance analysis on your data!")
         
         from scipy import stats
@@ -20379,7 +29836,7 @@ elif page == "Playground":
                 with col2:
                     var2 = st.selectbox("Variable 2:", [c for c in numeric_cols if c != var1])
                 
-                if st.button("Calculate Correlation", type="primary"):
+                if st.button("Calculate Correlation", type="primary", icon=":material/insights:"):
                     try:
                         correlation, p_value = stats.pearsonr(stats_data[var1], stats_data[var2])
                         
@@ -20441,7 +29898,7 @@ elif page == "Playground":
                 with col2:
                     y_var = st.selectbox("Dependent Variable (Y):", [c for c in numeric_cols if c != x_var])
                 
-                if st.button("Run Regression", type="primary"):
+                if st.button("Run Regression", type="primary", icon=":material/show_chart:"):
                     try:
                         slope, intercept, r_value, p_value, std_err = stats.linregress(
                             stats_data[x_var], stats_data[y_var]
@@ -20500,7 +29957,7 @@ elif page == "Playground":
                 with col2:
                     value_col = st.selectbox("Value Variable (numeric):", numeric_cols)
                 
-                if st.button("Run ANOVA", type="primary"):
+                if st.button("Run ANOVA", type="primary", icon=":material/query_stats:"):
                     try:
                         groups = [group[value_col].values for name, group in stats_data.groupby(group_col)]
                         
@@ -20553,7 +30010,7 @@ elif page == "Playground":
                 hist_col = st.selectbox("Select column:", numeric_cols)
                 bins = st.slider("Number of bins:", 5, 30, 10)
                 
-                if st.button("Create Histogram", type="primary"):
+                if st.button("Create Histogram", type="primary", icon=":material/bar_chart:"):
                     try:
                         import altair as alt
                         
@@ -20598,7 +30055,7 @@ elif page == "Playground":
             st.markdown("- Unlike correlation, covariance is not standardized (affected by scale)")
             
             if len(numeric_cols) >= 2:
-                if st.button("Calculate Covariance Matrix", type="primary"):
+                if st.button("Calculate Covariance Matrix", type="primary", icon=":material/table_chart:"):
                     try:
                         cov_matrix = stats_data[numeric_cols].cov()
                         
@@ -20630,7 +30087,7 @@ elif page == "Playground":
             if numeric_cols:
                 selected_col = st.selectbox("Select column:", numeric_cols)
                 
-                if st.button("Calculate Statistics", type="primary"):
+                if st.button("Calculate Statistics", type="primary", icon=":material/calculate:"):
                     try:
                         data = stats_data[selected_col]
                         
@@ -20674,7 +30131,7 @@ elif page == "Playground":
                 st.warning("Need at least 1 numeric column.")
     
     elif playground_tab == "Power Query Simulator":
-        st.subheader("⚡ Power Query Simulator")
+        mui_subheader("bolt", "Power Query Simulator")
         st.markdown("Learn data transformation steps like Power Query in Excel!")
         
         # Sample raw data that needs cleaning
@@ -20712,7 +30169,7 @@ elif page == "Playground":
             "Sort Data": st.checkbox("Sort Data", key="pq_sort")
         }
         
-        if st.button("Apply Transformations", type="primary"):
+        if st.button("Apply Transformations", type="primary", icon=":material/auto_fix_high:"):
             transformed = raw_data.copy()
             steps_applied = []
             
@@ -20791,9 +30248,503 @@ elif page == "Playground":
         st.markdown("- **Split/Merge Columns**: Restructure data")
         st.markdown("- **Pivot/Unpivot**: Reshape tables")
         st.markdown("- **Group By**: Aggregate data")
+
+    elif playground_tab == "Excel Workbook Profiler":
+        mui_subheader("upload_file", "Excel Workbook Profiler")
+        st.markdown("Upload any Excel file to quickly profile important data by sheet.")
+
+        with st.expander("Tutor Solution: Why this solves the task and how to use it in exams", expanded=False):
+            st.markdown("""
+### Why this solves the task
+In spreadsheet and data-analysis tasks, the **first requirement** is usually to understand data quality and structure before transforming anything.
+
+This profiler solves that by giving you immediate answers to the core diagnostic questions:
+- **Scope:** How many sheets, rows, and columns are included?
+- **Quality:** Are there missing values or duplicate rows?
+- **Structure:** What are the data types, and which columns are numeric/text/date?
+- **Signal:** What are the key distributions and top categories?
+
+Because these checks are automatic and repeatable, you avoid manual mistakes and can justify each cleaning decision with evidence.
+
+### Real tutor method (exam-ready)
+Use this sequence in every exam dataset:
+1. **Profile raw input** (before changes).
+2. **Document findings** (missing values, duplicates, weak columns, candidate keys).
+3. **Export evidence** (`Summary CSV` + `JSON Profile`) for your appendix/report.
+4. **Transform data** in Excel/Power Query/Python.
+5. **Re-profile final output** and compare before vs after.
+
+### How to explain this in your report/defense
+Use a short structure:
+- **Task:** “Assess and prepare the workbook for analysis.”
+- **Method:** “I ran a standardized workbook profile to evaluate structure and data quality.”
+- **Evidence:** “Profile results showed X missing values, Y duplicates, and Z relevant numeric fields.”
+- **Action:** “Based on this, I cleaned nulls, removed duplicates, standardized types, and exported analysis-ready data.”
+- **Result:** “The final dataset is consistent, traceable, and ready for statistical/visual analysis.”
+
+### Why teachers like this approach
+- It is **systematic** (same method every time).
+- It is **auditable** (exports prove what you found).
+- It is **professional** (mirrors real ETL/data quality workflow).
+""")
+
+        uploaded_workbook = st.file_uploader(
+            "Upload workbook (.xlsx, .xlsm, .xls)",
+            type=["xlsx", "xlsm", "xls"],
+            key="excel_profiler_upload"
+        )
+
+        if uploaded_workbook:
+            try:
+                workbook = pd.ExcelFile(uploaded_workbook)
+                st.success(f"Loaded workbook with {len(workbook.sheet_names)} sheet(s)")
+
+                col1, col2 = st.columns(2)
+                with col1:
+                    selected_sheet = st.selectbox(
+                        "Sheet to profile:",
+                        options=["All sheets"] + workbook.sheet_names,
+                        key="excel_profiler_sheet"
+                    )
+                with col2:
+                    top_n = st.slider("Top values per text column:", 1, 10, 3, key="excel_profiler_topn")
+
+                if st.button("Analyze Workbook", type="primary", icon=":material/analytics:"):
+                    target_sheets = workbook.sheet_names if selected_sheet == "All sheets" else [selected_sheet]
+                    summary_rows = []
+                    sheet_profiles = []
+                    sheet_details = {}
+
+                    for sheet_name in target_sheets:
+                        df = pd.read_excel(workbook, sheet_name=sheet_name)
+
+                        row_count = int(df.shape[0])
+                        col_count = int(df.shape[1])
+                        missing_cells = int(df.isna().sum().sum()) if col_count > 0 else 0
+                        total_cells = int(row_count * col_count) if row_count > 0 and col_count > 0 else 0
+                        missing_pct = (missing_cells / total_cells * 100) if total_cells > 0 else 0.0
+                        duplicate_rows = int(df.duplicated().sum()) if row_count > 0 else 0
+                        duplicate_pct = (duplicate_rows / row_count * 100) if row_count > 0 else 0.0
+                        numeric_cols = df.select_dtypes(include=["number"]).columns.tolist()
+                        datetime_cols = df.select_dtypes(include=["datetime", "datetimetz"]).columns.tolist()
+                        object_cols = df.select_dtypes(include=["object"]).columns.tolist()
+
+                        candidate_keys = []
+                        constant_cols = []
+                        if row_count > 0:
+                            for col in df.columns:
+                                missing_count = int(df[col].isna().sum())
+                                unique_count = int(df[col].nunique(dropna=True))
+                                if missing_count == 0 and unique_count == row_count:
+                                    candidate_keys.append(col)
+                                if unique_count <= 1:
+                                    constant_cols.append(col)
+
+                        date_like_cols = []
+                        for col in object_cols:
+                            series = df[col].dropna().astype(str).str.strip()
+                            if len(series) >= 3:
+                                parsed = pd.to_datetime(series, errors="coerce")
+                                parse_ratio = float(parsed.notna().mean())
+                                if parse_ratio >= 0.80:
+                                    date_like_cols.append({
+                                        "column": col,
+                                        "parse_success_pct": round(parse_ratio * 100, 1)
+                                    })
+
+                        outlier_rows = []
+                        outlier_total = 0
+                        for col in numeric_cols:
+                            series = pd.to_numeric(df[col], errors="coerce").dropna()
+                            if len(series) < 4:
+                                continue
+                            q1 = series.quantile(0.25)
+                            q3 = series.quantile(0.75)
+                            iqr = q3 - q1
+                            if pd.isna(iqr) or iqr <= 0:
+                                continue
+                            lower_bound = q1 - 1.5 * iqr
+                            upper_bound = q3 + 1.5 * iqr
+                            outlier_count = int(((series < lower_bound) | (series > upper_bound)).sum())
+                            if outlier_count > 0:
+                                outlier_rows.append({
+                                    "Column": col,
+                                    "Outlier Count": outlier_count,
+                                    "Outlier %": round((outlier_count / len(series)) * 100, 2),
+                                    "Lower Bound": round(float(lower_bound), 4),
+                                    "Upper Bound": round(float(upper_bound), 4)
+                                })
+                            outlier_total += outlier_count
+
+                        outlier_pct = 0.0
+                        if row_count > 0 and len(numeric_cols) > 0:
+                            outlier_pct = (outlier_total / (row_count * len(numeric_cols))) * 100
+
+                        penalty_missing = min(35.0, missing_pct * 0.7)
+                        penalty_duplicates = min(20.0, duplicate_pct)
+                        penalty_constant = min(10.0, len(constant_cols) * 2.0)
+                        penalty_outliers = min(15.0, outlier_pct * 0.6)
+                        penalty_no_key = 8.0 if row_count > 0 and col_count > 1 and len(candidate_keys) == 0 else 0.0
+                        quality_score = max(
+                            0.0,
+                            round(100.0 - (penalty_missing + penalty_duplicates + penalty_constant + penalty_outliers + penalty_no_key), 1)
+                        )
+
+                        if quality_score >= 85:
+                            quality_band = "Strong"
+                        elif quality_score >= 65:
+                            quality_band = "Needs cleanup"
+                        else:
+                            quality_band = "High risk"
+
+                        issues = []
+                        recommendations = []
+
+                        if missing_pct > 0:
+                            issues.append(f"Missing values: {missing_cells} cells ({missing_pct:.2f}%).")
+                            recommendations.append("Handle missing values column-by-column (impute, fill forward, or remove where justified).")
+                        if duplicate_rows > 0:
+                            issues.append(f"Duplicate rows: {duplicate_rows} rows ({duplicate_pct:.2f}%).")
+                            recommendations.append("Remove duplicates using business keys and keep the most recent valid record.")
+                        if len(constant_cols) > 0:
+                            issues.append(f"Low-information columns: {', '.join(constant_cols[:5])}{'...' if len(constant_cols) > 5 else ''}.")
+                            recommendations.append("Drop or ignore constant columns before modeling/visualization.")
+                        if len(candidate_keys) == 0 and row_count > 0 and col_count > 1:
+                            issues.append("No single-column candidate key detected.")
+                            recommendations.append("Create or validate a composite key to prevent duplicate business records.")
+                        if len(date_like_cols) > 0:
+                            cols_txt = ", ".join([item["column"] for item in date_like_cols[:5]])
+                            issues.append(f"Date-like text columns detected: {cols_txt}{'...' if len(date_like_cols) > 5 else ''}.")
+                            recommendations.append("Convert date-like text to true datetime types before trend analysis.")
+                        if outlier_total > 0:
+                            issues.append(f"Potential numeric outliers detected: {outlier_total} values by IQR rule.")
+                            recommendations.append("Review outliers with domain context before removing or capping values.")
+                        if not issues:
+                            issues.append("No major quality issues detected by automated checks.")
+                            recommendations.append("Proceed to analysis, then re-profile after transformations to confirm consistency.")
+
+                        summary_rows.append({
+                            "Sheet": sheet_name,
+                            "Rows": row_count,
+                            "Columns": col_count,
+                            "Missing Cells": missing_cells,
+                            "Missing %": round(missing_pct, 2),
+                            "Duplicate Rows": duplicate_rows,
+                            "Duplicate %": round(duplicate_pct, 2),
+                            "Numeric Columns": len(numeric_cols),
+                            "Datetime Columns": len(datetime_cols),
+                            "Candidate Keys": len(candidate_keys),
+                            "Quality Score": quality_score,
+                            "Quality Band": quality_band
+                        })
+
+                        numeric_summary_records = []
+                        if numeric_cols:
+                            numeric_summary_records = (
+                                df[numeric_cols]
+                                .describe()
+                                .transpose()
+                                [["count", "mean", "std", "min", "max"]]
+                                .reset_index()
+                                .rename(columns={"index": "Column"})
+                                .to_dict(orient="records")
+                            )
+
+                        text_top_values = {}
+                        text_cols = [
+                            col for col in df.columns
+                            if df[col].dtype == "object" and df[col].nunique(dropna=True) <= 50
+                        ]
+                        for col in text_cols:
+                            top_values = (
+                                df[col]
+                                .dropna()
+                                .astype(str)
+                                .value_counts()
+                                .head(top_n)
+                                .reset_index()
+                            )
+                            top_values.columns = ["Value", "Count"]
+                            text_top_values[col] = top_values.to_dict(orient="records")
+
+                        column_profile_df = pd.DataFrame({
+                            "Column": df.columns,
+                            "Type": [str(df[col].dtype) for col in df.columns],
+                            "Missing": [int(df[col].isna().sum()) for col in df.columns],
+                            "Missing %": [round((df[col].isna().sum() / row_count) * 100, 2) if row_count > 0 else 0.0 for col in df.columns],
+                            "Unique": [int(df[col].nunique(dropna=True)) for col in df.columns]
+                        })
+
+                        outlier_df = pd.DataFrame(outlier_rows) if outlier_rows else pd.DataFrame(columns=["Column", "Outlier Count", "Outlier %", "Lower Bound", "Upper Bound"])
+
+                        sheet_profiles.append({
+                            "sheet": sheet_name,
+                            "rows": row_count,
+                            "columns": col_count,
+                            "missing_cells": missing_cells,
+                            "missing_pct": round(missing_pct, 2),
+                            "duplicate_rows": duplicate_rows,
+                            "duplicate_pct": round(duplicate_pct, 2),
+                            "candidate_keys": candidate_keys,
+                            "quality_score": quality_score,
+                            "quality_band": quality_band,
+                            "issues": issues,
+                            "recommendations": recommendations,
+                            "date_like_columns": date_like_cols,
+                            "column_profile": column_profile_df.to_dict(orient="records"),
+                            "numeric_summary": numeric_summary_records,
+                            "outlier_summary": outlier_rows,
+                            "text_top_values": text_top_values,
+                            "preview": df.head(10).to_dict(orient="records")
+                        })
+
+                        sheet_details[sheet_name] = {
+                            "dataframe": df,
+                            "column_profile": column_profile_df,
+                            "numeric_cols": numeric_cols,
+                            "text_cols": text_cols,
+                            "outlier_df": outlier_df,
+                            "numeric_summary_df": pd.DataFrame(numeric_summary_records),
+                            "issues": issues,
+                            "recommendations": recommendations,
+                            "candidate_keys": candidate_keys,
+                            "date_like_cols": date_like_cols,
+                            "quality_score": quality_score,
+                            "quality_band": quality_band,
+                            "missing_cells": missing_cells,
+                            "missing_pct": missing_pct,
+                            "duplicate_rows": duplicate_rows,
+                            "duplicate_pct": duplicate_pct
+                        }
+
+                    st.markdown("### Workbook Summary")
+                    summary_df = pd.DataFrame(summary_rows)
+                    st.dataframe(summary_df, use_container_width=True, hide_index=True)
+
+                    avg_quality = round(float(summary_df["Quality Score"].mean()), 1) if not summary_df.empty else 0.0
+                    high_risk_sheets = int((summary_df["Quality Band"] == "High risk").sum()) if not summary_df.empty else 0
+                    sheets_with_issues = int((summary_df["Missing Cells"] > 0).sum() + (summary_df["Duplicate Rows"] > 0).sum()) if not summary_df.empty else 0
+                    col_a, col_b, col_c = st.columns(3)
+                    with col_a:
+                        st.metric("Average Quality Score", f"{avg_quality}")
+                    with col_b:
+                        st.metric("High Risk Sheets", f"{high_risk_sheets}")
+                    with col_c:
+                        st.metric("Sheets with Data Quality Flags", f"{sheets_with_issues}")
+
+                    st.markdown("### Recommended Cleaning Plan")
+                    plan_lines = []
+                    for row in summary_rows:
+                        plan_lines.append(f"- {row['Sheet']}: {row['Quality Band']} (score {row['Quality Score']})")
+                    st.markdown("\n".join(plan_lines))
+
+                    summary_csv = summary_df.to_csv(index=False).encode("utf-8")
+                    st.download_button(
+                        "Download Summary CSV",
+                        data=summary_csv,
+                        file_name=f"{uploaded_workbook.name.rsplit('.', 1)[0]}_summary.csv",
+                        mime="text/csv",
+                        icon=":material/download:"
+                    )
+
+                    if selected_sheet != "All sheets":
+                        sheet_df = sheet_details[selected_sheet]["dataframe"]
+                        sheet_csv = sheet_df.to_csv(index=False).encode("utf-8")
+                        st.download_button(
+                            f"Download {selected_sheet} as CSV",
+                            data=sheet_csv,
+                            file_name=f"{selected_sheet}.csv",
+                            mime="text/csv",
+                            icon=":material/table_view:"
+                        )
+
+                    profile_payload = {
+                        "workbook": uploaded_workbook.name,
+                        "generated_at": datetime.utcnow().isoformat(),
+                        "sheet_mode": selected_sheet,
+                        "top_values_limit": top_n,
+                        "summary": summary_rows,
+                        "sheets": sheet_profiles
+                    }
+                    st.download_button(
+                        "Download JSON Profile",
+                        data=json.dumps(profile_payload, indent=2, default=str),
+                        file_name=f"{uploaded_workbook.name.rsplit('.', 1)[0]}_profile.json",
+                        mime="application/json",
+                        icon=":material/download:"
+                    )
+
+                    report_lines = [
+                        "# Exam Method Report",
+                        "",
+                        "## Dataset Overview",
+                        f"- Workbook: {uploaded_workbook.name}",
+                        f"- Generated at (UTC): {profile_payload['generated_at']}",
+                        f"- Sheet mode: {selected_sheet}",
+                        f"- Sheets analyzed: {len(target_sheets)}",
+                        f"- Average quality score: {avg_quality}",
+                        "",
+                        "## Method",
+                        "1. Imported dataset into workbook profiling workflow.",
+                        "2. Evaluated structure (rows, columns, data types, keys).",
+                        "3. Evaluated quality (missing values, duplicates, outliers).",
+                        "4. Generated evidence exports (CSV + JSON) for traceability.",
+                        "5. Prepared sheet-by-sheet cleaning actions before transformation.",
+                        "",
+                        "## Sheet-by-Sheet Findings"
+                    ]
+
+                    for sheet_item in sheet_profiles:
+                        report_lines.extend([
+                            "",
+                            f"### {sheet_item['sheet']}",
+                            f"- Rows: {sheet_item['rows']}",
+                            f"- Columns: {sheet_item['columns']}",
+                            f"- Missing cells: {sheet_item['missing_cells']} ({sheet_item['missing_pct']}%)",
+                            f"- Duplicate rows: {sheet_item['duplicate_rows']} ({sheet_item['duplicate_pct']}%)",
+                            f"- Quality score: {sheet_item['quality_score']} ({sheet_item['quality_band']})",
+                            f"- Candidate keys: {', '.join(sheet_item['candidate_keys']) if sheet_item['candidate_keys'] else 'None detected'}",
+                            "- Issues:"
+                        ])
+                        for issue in sheet_item["issues"]:
+                            report_lines.append(f"  - {issue}")
+                        report_lines.append("- Recommended actions:")
+                        for action in sheet_item["recommendations"]:
+                            report_lines.append(f"  - {action}")
+
+                    report_lines.extend([
+                        "",
+                        "## Assignment Mapping",
+                        "- Question 1: Use the profiling evidence to justify Power Query steps (headers, column removal, sort, index, calculated Total Bags Sold, save XLSX, export CSV).",
+                        "- Question 2: Repeat the same profiling-to-cleaning method for a self-selected dataset, then document blanks/errors handling and final schema.",
+                        "",
+                        "## Conclusion",
+                        "This method provides a repeatable, auditable workflow that supports both practical execution and exam-grade documentation.",
+                        ""
+                    ])
+
+                    exam_report_md = "\n".join(report_lines)
+                    st.download_button(
+                        "Download Exam Method Report (.md)",
+                        data=exam_report_md,
+                        file_name=f"{uploaded_workbook.name.rsplit('.', 1)[0]}_exam_method_report.md",
+                        mime="text/markdown",
+                        icon=":material/description:"
+                    )
+
+                    with st.expander("Power Query Exam Checklist", expanded=False):
+                        st.markdown("Use this checklist directly in the interface while solving Question 1 and Question 2.")
+
+                        st.markdown("**Import & Structure**")
+                        st.markdown("- Open new workbook and import source dataset")
+                        st.markdown("- Open Power Query Editor")
+                        st.markdown("- Promote first row to headers")
+                        st.markdown("- Confirm correct data types (Date, Number, Text)")
+
+                        st.markdown("**Cleaning**")
+                        st.markdown("- Remove irrelevant columns")
+                        st.markdown("- Remove blank rows")
+                        st.markdown("- Remove rows with errors")
+                        st.markdown("- Remove duplicates (if present)")
+                        st.markdown("- Standardize text formatting/casing where needed")
+
+                        st.markdown("**Required Transformations (Avocado Task)**")
+                        st.markdown("- Remove: Index, Total Volume, 4046, 4225, 4770, Total Bags, Type, Year, Region")
+                        st.markdown("- Sort by Date")
+                        st.markdown("- Add Index column starting from 1 and move to column A")
+                        st.markdown("- Add Total Bags Sold = Small Bags + Large Bags + XLarge Bags")
+
+                        st.markdown("**Output**")
+                        st.markdown("- Close & Load transformed table into Excel")
+                        st.markdown("- Save as .XLSX")
+                        st.markdown("- Export .CSV")
+                        st.markdown("- Keep evidence files (summary/profile/report) for appendix")
+
+                        st.markdown("**Defense Script (Short)**")
+                        st.markdown("- Task: What was required?")
+                        st.markdown("- Method: What transformation sequence was used?")
+                        st.markdown("- Evidence: What quality issues were found and fixed?")
+                        st.markdown("- Result: Why the final dataset is analysis-ready")
+
+                    for sheet_name in target_sheets:
+                        df = sheet_details[sheet_name]["dataframe"]
+                        details = sheet_details[sheet_name]
+                        with st.expander(f"Details: {sheet_name}", expanded=(len(target_sheets) == 1)):
+                            if df.empty and len(df.columns) == 0:
+                                st.info("This sheet is empty.")
+                                continue
+
+                            m1, m2, m3, m4 = st.columns(4)
+                            with m1:
+                                st.metric("Quality Score", f"{details['quality_score']}")
+                            with m2:
+                                st.metric("Missing Cells", f"{details['missing_cells']}")
+                            with m3:
+                                st.metric("Duplicate Rows", f"{details['duplicate_rows']}")
+                            with m4:
+                                st.metric("Quality Band", details["quality_band"])
+
+                            st.markdown("**Detected issues**")
+                            for issue in details["issues"]:
+                                if issue.startswith("No major quality issues"):
+                                    st.success(issue)
+                                else:
+                                    st.warning(issue)
+
+                            st.markdown("**Recommended next actions**")
+                            for i, action in enumerate(details["recommendations"], start=1):
+                                st.markdown(f"{i}. {action}")
+
+                            if details["candidate_keys"]:
+                                st.info(f"Candidate key columns: {', '.join(details['candidate_keys'])}")
+                            else:
+                                st.info("No single-column candidate key identified automatically.")
+
+                            if details["date_like_cols"]:
+                                date_like_df = pd.DataFrame(details["date_like_cols"])
+                                st.markdown("**Date-like text columns (convert to datetime)**")
+                                st.dataframe(date_like_df, use_container_width=True, hide_index=True)
+
+                            st.markdown("**Column profile**")
+                            col_profile = details["column_profile"]
+                            st.dataframe(col_profile, use_container_width=True, hide_index=True)
+
+                            numeric_cols = details["numeric_cols"]
+                            if numeric_cols and not details["numeric_summary_df"].empty:
+                                st.markdown("**Numeric summary**")
+                                numeric_summary = details["numeric_summary_df"]
+                                st.dataframe(numeric_summary, use_container_width=True, hide_index=True)
+
+                            if not details["outlier_df"].empty:
+                                st.markdown("**Outlier summary (IQR method)**")
+                                st.dataframe(details["outlier_df"], use_container_width=True, hide_index=True)
+
+                            text_cols = details["text_cols"]
+                            if text_cols:
+                                st.markdown("**Top values in text columns**")
+                                for col in text_cols:
+                                    top_values = (
+                                        df[col]
+                                        .dropna()
+                                        .astype(str)
+                                        .value_counts()
+                                        .head(top_n)
+                                        .reset_index()
+                                    )
+                                    top_values.columns = ["Value", "Count"]
+                                    st.markdown(f"- {col}")
+                                    st.dataframe(top_values, use_container_width=True, hide_index=True)
+
+                            st.markdown("**Preview**")
+                            st.dataframe(df.head(10), use_container_width=True)
+
+            except Exception as exc:
+                st.error(f"Could not read workbook: {str(exc)}")
+        else:
+            st.caption("Upload an Excel file to begin profiling.")
     
     elif playground_tab == "Z-Score & Outlier Tool":
-        st.subheader("📏 Z-Score & Outlier Detection")
+        mui_subheader("straighten", "Z-Score & Outlier Detection")
         st.markdown("Calculate z-scores and identify outliers in your data!")
         
         from scipy import stats
@@ -20834,7 +30785,7 @@ elif page == "Playground":
             with col2:
                 threshold = st.slider("Z-score threshold for outliers:", 1.0, 4.0, 2.0, 0.5)
             
-            if st.button("Calculate Z-Scores", type="primary"):
+            if st.button("Calculate Z-Scores", type="primary", icon=":material/calculate:"):
                 try:
                     data = zscore_data[selected_col]
                     mean = data.mean()
@@ -20943,7 +30894,7 @@ elif page == "Playground":
             st.warning("Need at least 1 numeric column.")
     
     elif playground_tab == "Ethical Analysis Critique":
-        st.subheader("⚖️ Ethical Analysis Critique")
+        mui_subheader("gavel", "Ethical Analysis Critique")
         st.markdown("*Practice assessing and critiquing analysis approaches using ethical principles*")
         st.markdown("---")
         
@@ -21109,9 +31060,9 @@ A city police department uses predictive analytics to allocate patrol resources.
         
         col1, col2 = st.columns(2)
         with col1:
-            show_critique = st.button("📋 Show Expert Critique", type="primary")
+            show_critique = st.button("Show Expert Critique", type="primary", icon=":material/psychology:")
         with col2:
-            show_alternatives = st.button("💡 Show Recommended Alternatives")
+            show_alternatives = st.button("Show Recommended Alternatives")
         
         if show_critique:
             st.markdown("### Expert Critique Points")
@@ -21149,7 +31100,7 @@ A city police department uses predictive analytics to allocate patrol resources.
                 st.caption(description)
     
     elif playground_tab == "Error Detection Workshop":
-        st.subheader("🔍 Error Detection Workshop")
+        mui_subheader("bug_report", "Error Detection Workshop")
         st.markdown("*Practice identifying erroneous data and facilitating solution discussions*")
         st.markdown("---")
         
@@ -21223,12 +31174,12 @@ A city police department uses predictive analytics to allocate patrol resources.
             if st.checkbox(error_type, key=f"err_{error_type}"):
                 identified_errors.append(error_type)
         
-        if st.button("📊 Check My Answers", type="primary"):
+        if st.button("Check My Answers", type="primary", icon=":material/task_alt:"):
             score = len(identified_errors)
             total = len(error_types)
             
             if score == total:
-                st.success(f"🎉 Excellent! You found all {total} error types!")
+                st.success(f"Excellent! You found all {total} error types!")
             elif score >= total * 0.7:
                 st.info(f"Good job! You found {score}/{total} error types.")
             else:
@@ -21355,14 +31306,14 @@ A city police department uses predictive analytics to allocate patrol resources.
         )
         
         if user_discussion and st.button("Get Feedback"):
-            st.info("💡 **Tips for effective communication:**\n"
+            st.info("**Tips for effective communication:**\n"
                    "- Lead with impact, not technical details\n"
                    "- Quantify issues when possible\n"
                    "- Always propose solutions, not just problems\n"
                    "- Be clear about what decision or action you need")
     
     elif playground_tab == "Confidence Level Planner":
-        st.subheader("📊 Confidence Level Planner")
+        mui_subheader("psychology", "Confidence Level Planner")
         st.markdown("*Develop work methods for handling data with different confidence levels*")
         st.markdown("---")
         
@@ -21550,16 +31501,17 @@ ESCALATION:
             height=400
         )
         
-        if st.button("💾 Save Work Method (Download)", type="primary"):
+        if st.button("Save Work Method (Download)", type="primary", icon=":material/save:"):
             st.download_button(
                 label="Download Work Method Document",
                 data=work_method_template,
                 file_name=f"work_method_{selected_domain.lower().replace('/', '_')}.txt",
-                mime="text/plain"
+                mime="text/plain",
+                icon=":material/download:"
             )
     
     elif playground_tab == "BI & Big Data Explorer":
-        st.subheader("📊 BI & Big Data Explorer")
+        mui_subheader("hub", "BI & Big Data Explorer")
         st.markdown("*Explore Business Intelligence concepts and identify Big Data scenarios*")
         st.markdown("---")
         
@@ -21596,7 +31548,7 @@ ESCALATION:
                     ["Report what happened", "Understand why it happened", "Predict what will happen", "Automate decisions"]
                 )
             
-            if st.button("🔍 Classify Scenario", type="primary"):
+            if st.button("Classify Scenario", type="primary", icon=":material/category:"):
                 score = 0
                 reasons = []
                 
@@ -21665,7 +31617,7 @@ ESCALATION:
                 st.metric(f"Total ({retention_years} years)", format_bytes(total_bytes))
                 
                 if total_bytes >= 1e12:
-                    st.warning("⚠️ This volume may require Big Data infrastructure")
+                    st.warning("This volume may require Big Data infrastructure")
                 else:
                     st.success("✓ This volume is manageable with traditional BI tools")
         
@@ -21681,7 +31633,7 @@ ESCALATION:
             budget = st.radio("Budget:", ["Free/Low cost", "Medium", "Enterprise"], horizontal=True)
             tech_level = st.radio("Technical level:", ["Beginner", "Intermediate", "Advanced"], horizontal=True)
             
-            if st.button("🎯 Get Recommendations"):
+            if st.button("Get Recommendations", icon=":material/lightbulb:"):
                 st.markdown("### Recommended Tools")
                 
                 recommendations = []
@@ -21709,7 +31661,7 @@ ESCALATION:
                     st.caption(reason)
     
     elif playground_tab == "KPI Dashboard Builder":
-        st.subheader("📈 KPI Dashboard Builder")
+        mui_subheader("dashboard", "KPI Dashboard Builder")
         st.markdown("*Design and visualize Key Performance Indicators for different business functions*")
         st.markdown("---")
         
@@ -21821,7 +31773,7 @@ ESCALATION:
         st.markdown("**RAG Legend:** 🟢 On track (≥100%) | 🟡 At risk (80-99%) | 🔴 Off track (<80%)")
     
     elif playground_tab == "Decision Analysis Tool":
-        st.subheader("🎯 Decision Analysis Tool")
+        mui_subheader("rule", "Decision Analysis Tool")
         st.markdown("*Practice the four analytics philosophies: Descriptive, Diagnostic, Predictive, Prescriptive*")
         st.markdown("---")
         
@@ -21851,7 +31803,7 @@ ESCALATION:
                 use_container_width=True
             )
             
-            if st.button("📊 Generate Descriptive Summary"):
+            if st.button("Generate Descriptive Summary", icon=":material/summarize:"):
                 data = st.session_state.decision_data
                 st.markdown("### Summary Statistics")
                 col1, col2, col3 = st.columns(3)
@@ -21928,7 +31880,7 @@ ESCALATION:
             option2_benefit = st.number_input("Expected benefit ($):", value=80000, key="opt2_ben")
             option2_risk = st.slider("Risk level:", 1, 10, 5, key="opt2_risk")
             
-            if st.button("🎯 Get Recommendation"):
+            if st.button("Get Recommendation", icon=":material/lightbulb:"):
                 st.markdown("### Decision Matrix")
                 
                 roi1 = ((option1_benefit - option1_cost) / option1_cost) * 100 if option1_cost > 0 else 0
@@ -21953,7 +31905,7 @@ ESCALATION:
                     st.success(f"**Recommendation:** {option2_name} (higher risk-adjusted return)")
     
     elif playground_tab == "Project Planning Workshop":
-        st.subheader("📋 Project Planning Workshop")
+        mui_subheader("event_note", "Project Planning Workshop")
         st.markdown("*Practice planning a data analysis project with proper phases and deliverables*")
         st.markdown("---")
         
@@ -21978,7 +31930,7 @@ ESCALATION:
         total = phase1 + phase2 + phase3 + phase4 + phase5 + phase6
         
         if total != 100:
-            st.warning(f"⚠️ Total allocation is {total}%. Please adjust to equal 100%.")
+            st.warning(f"Total allocation is {total}%. Please adjust to equal 100%.")
         else:
             st.success("✓ Allocation totals 100%")
         
@@ -22027,7 +31979,7 @@ ESCALATION:
                     st.checkbox(item, key=f"del_{phase_name}_{item}")
         
         st.markdown("---")
-        if st.button("📥 Generate Project Plan Summary", type="primary"):
+        if st.button("Generate Project Plan Summary", type="primary", icon=":material/summarize:"):
             plan_summary = f"""PROJECT PLAN: {project_name}
 ========================================
 Duration: {project_duration} weeks
@@ -22057,11 +32009,12 @@ DELIVERABLES:
                 "Download Project Plan",
                 data=plan_summary,
                 file_name=f"project_plan_{project_name.lower().replace(' ', '_')}.txt",
-                mime="text/plain"
+                mime="text/plain",
+                icon=":material/download:"
             )
     
     elif playground_tab == "Report Writing Workshop":
-        st.subheader("📝 Report Writing Workshop")
+        mui_subheader("article", "Report Writing Workshop")
         st.markdown("*Practice writing professional analysis reports with proper structure and clarity*")
         st.markdown("---")
         
@@ -22106,7 +32059,7 @@ DELIVERABLES:
                 ["C-Suite Executives", "Department Managers", "Technical Team", "External Clients"]
             )
             
-            if st.button("📋 Generate Executive Summary", type="primary"):
+            if st.button("Generate Executive Summary", type="primary", icon=":material/summarize:"):
                 if main_finding and recommendation:
                     st.markdown("---")
                     st.markdown("### Your Executive Summary")
@@ -22140,10 +32093,11 @@ DELIVERABLES:
                     st.markdown(summary)
                     
                     st.download_button(
-                        "📥 Download Executive Summary",
+                        "Download Executive Summary",
                         data=summary,
                         file_name="executive_summary.md",
-                        mime="text/markdown"
+                        mime="text/markdown",
+                        icon=":material/download:"
                     )
                     
                     st.markdown("### Writing Tips for Your Audience:")
@@ -22188,7 +32142,7 @@ DELIVERABLES:
                 height=100
             )
             
-            if st.button("📖 Show Expert Rewrite", type="primary") and original_text:
+            if st.button("Show Expert Rewrite", type="primary", icon=":material/psychology:") and original_text:
                 st.markdown("---")
                 
                 expert_rewrites = {
@@ -22273,7 +32227,7 @@ DELIVERABLES:
                     key=f"plan_{section}"
                 )
             
-            if st.button("📥 Generate Report Outline", type="primary"):
+            if st.button("Generate Report Outline", type="primary", icon=":material/summarize:"):
                 outline = f"""# {report_type} Outline
 
 Type: {report_type}
@@ -22296,7 +32250,8 @@ Target Length: {structure['page_range']}
                     "Download Outline",
                     data=outline,
                     file_name=f"{report_type.lower().replace(' ', '_')}_outline.md",
-                    mime="text/markdown"
+                    mime="text/markdown",
+                    icon=":material/download:"
                 )
         
         elif report_mode == "Caption Writer":
@@ -22317,7 +32272,7 @@ Target Length: {structure['page_range']}
                 key_insight = st.text_input("Key Insight:", placeholder="e.g., North region leads by 15%")
                 data_source = st.text_input("Data Source:", placeholder="e.g., Sales Database, Q4 2025")
             
-            if st.button("✍️ Generate Caption", type="primary"):
+            if st.button("Generate Caption", type="primary", icon=":material/auto_awesome:"):
                 if title:
                     st.markdown("---")
                     st.markdown("### Generated Captions")
@@ -22359,7 +32314,7 @@ Target Length: {structure['page_range']}
                     st.warning("Please enter at least a title for your visual.")
     
     elif playground_tab == "Exam Project Toolkit":
-        st.subheader("🎓 Exam Project Toolkit")
+        mui_subheader("military_tech", "Exam Project Toolkit")
         st.markdown("*Practice planning and executing your comprehensive data analysis project*")
         st.markdown("---")
         
@@ -22403,7 +32358,7 @@ Target Length: {structure['page_range']}
                 placeholder="e.g., March 15, 2026"
             )
             
-            if st.button("📝 Generate Problem Statement", type="primary"):
+            if st.button("Generate Problem Statement", type="primary", icon=":material/description:"):
                 if organization and topic and action:
                     st.markdown("---")
                     st.markdown("### Your Problem Statement")
@@ -22426,15 +32381,16 @@ This analysis will examine **{data_sources if data_sources else '[specify data s
                     
                     for check, passed in checks:
                         if passed:
-                            st.markdown(f"✅ {check}")
+                            st.markdown(f"{check}")
                         else:
-                            st.markdown(f"⚠️ {check} - *add this for completeness*")
+                            st.markdown(f"{check} - *add this for completeness*")
                     
                     st.download_button(
-                        "📥 Download Problem Statement",
+                        "Download Problem Statement",
                         data=problem_statement,
                         file_name="problem_statement.md",
-                        mime="text/markdown"
+                        mime="text/markdown",
+                        icon=":material/download:"
                     )
                 else:
                     st.warning("Please fill in organization, topic, and purpose at minimum.")
@@ -22451,13 +32407,13 @@ This analysis will examine **{data_sources if data_sources else '[specify data s
             
             col1, col2 = st.columns(2)
             with col1:
-                st.markdown("**✅ In Scope** (what you WILL do)")
+                st.markdown("**In Scope** (what you WILL do)")
                 in_scope_1 = st.text_input("Question 1:", placeholder="e.g., Analyze sales trends for 2024-2025", key="scope_in_1")
                 in_scope_2 = st.text_input("Question 2:", placeholder="e.g., Identify top-performing products", key="scope_in_2")
                 in_scope_3 = st.text_input("Question 3:", placeholder="e.g., Create visualization dashboard", key="scope_in_3")
             
             with col2:
-                st.markdown("**❌ Out of Scope** (explicitly excluded)")
+                st.markdown("**Out of Scope** (explicitly excluded)")
                 out_scope_1 = st.text_input("Excluded 1:", placeholder="e.g., Competitor analysis", key="scope_out_1")
                 out_scope_2 = st.text_input("Excluded 2:", placeholder="e.g., Predictive modeling", key="scope_out_2")
                 out_scope_3 = st.text_input("Excluded 3:", placeholder="e.g., Real-time data integration", key="scope_out_3")
@@ -22477,9 +32433,9 @@ This analysis will examine **{data_sources if data_sources else '[specify data s
             if total_pct != 100:
                 st.warning(f"Total allocation is {total_pct}%. Adjust to equal 100%.")
             else:
-                st.success("✅ Time allocation totals 100%")
+                st.success("Time allocation totals 100%")
             
-            if st.button("📊 Generate Project Scope Document", type="primary"):
+            if st.button("Generate Project Scope Document", type="primary", icon=":material/description:"):
                 st.markdown("---")
                 st.markdown("### Project Scope Document")
                 
@@ -22516,7 +32472,8 @@ This analysis will examine **{data_sources if data_sources else '[specify data s
                     "Download Scope Document",
                     data=scope_doc,
                     file_name="project_scope.md",
-                    mime="text/markdown"
+                    mime="text/markdown",
+                    icon=":material/download:"
                 )
         
         elif toolkit_mode == "Quality Self-Assessment":
@@ -22559,7 +32516,7 @@ This analysis will examine **{data_sources if data_sources else '[specify data s
                 for i, item in enumerate(items):
                     scores[item] = st.slider(item, 1, 5, 3, key=f"qa_{category}_{i}")
             
-            if st.button("📋 Generate Assessment Report", type="primary"):
+            if st.button("Generate Assessment Report", type="primary", icon=":material/summarize:"):
                 st.markdown("---")
                 st.markdown("### Your Assessment Results")
                 
@@ -22578,7 +32535,7 @@ This analysis will examine **{data_sources if data_sources else '[specify data s
                 weak_areas = [item for item, score in scores.items() if score < 3]
                 if weak_areas:
                     for area in weak_areas:
-                        st.markdown(f"- ⚠️ {area}")
+                        st.markdown(f"- {area}")
                 else:
                     st.markdown("No critical areas identified - great work!")
                 
@@ -22586,7 +32543,7 @@ This analysis will examine **{data_sources if data_sources else '[specify data s
                 strong_areas = [item for item, score in scores.items() if score >= 4]
                 if strong_areas:
                     for area in strong_areas:
-                        st.markdown(f"- ✅ {area}")
+                        st.markdown(f"- {area}")
         
         elif toolkit_mode == "Presentation Planner":
             st.markdown("### Presentation Planner")
@@ -22622,7 +32579,7 @@ This analysis will examine **{data_sources if data_sources else '[specify data s
             if allocated != total_time:
                 st.warning(f"Allocated {allocated} minutes, but total is {total_time} minutes. Adjust to match.")
             else:
-                st.success(f"✅ Time allocation matches {total_time} minutes")
+                st.success(f"Time allocation matches {total_time} minutes")
             
             st.markdown("---")
             st.markdown("### Key Points per Section")
@@ -22636,7 +32593,7 @@ This analysis will examine **{data_sources if data_sources else '[specify data s
                     key=f"kp_{section}"
                 )
             
-            if st.button("📊 Generate Presentation Outline", type="primary"):
+            if st.button("Generate Presentation Outline", type="primary", icon=":material/slideshow:"):
                 st.markdown("---")
                 st.markdown("### Your Presentation Outline")
                 
@@ -22665,11 +32622,12 @@ Total Time: {total_time} minutes
                     "Download Outline",
                     data=outline,
                     file_name="presentation_outline.md",
-                    mime="text/markdown"
+                    mime="text/markdown",
+                    icon=":material/download:"
                 )
 
 elif page == "About":
-    st.title("ℹ️ About the Data Analyst Program")
+    mui_title("info", "About the Data Analyst Program")
     st.markdown("---")
     
     st.markdown("""
