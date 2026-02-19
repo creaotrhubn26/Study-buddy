@@ -5,7 +5,6 @@ import os
 import json
 import time
 import re
-import base64
 from datetime import datetime, timedelta, date
 from streamlit.components.v1 import html
 try:
@@ -51,82 +50,6 @@ st.markdown(MATERIAL_ICONS_CSS, unsafe_allow_html=True)
 def mui_icon(icon_name, size=20):
     """Helper function to render Material Icons"""
     return f'<span class="mui-icon" style="font-size: {size}px;">{icon_name}</span>'
-    
-def mui_title(icon_name, text):
-    st.markdown(f"# {mui_icon(icon_name, 30)} {text}", unsafe_allow_html=True)
-
-def mui_subheader(icon_name, text):
-    st.markdown(f"### {mui_icon(icon_name, 22)} {text}", unsafe_allow_html=True)
-
-
-EMOJI_HEADING_PATTERN = re.compile(r'[\U0001F300-\U0001FAFF\u2600-\u27BF]')
-
-
-def _escape_svg_text(value):
-    return (
-        value.replace("&", "&amp;")
-        .replace("<", "&lt;")
-        .replace(">", "&gt;")
-    )
-
-
-def _build_heading_banner(title, level):
-    palette = {
-        2: ("#E8F3FF", "#4A90D9", "#1F4E79"),
-        3: ("#EAFBF1", "#39A96B", "#1D6B44"),
-        4: ("#FFF4E8", "#E58E26", "#8A4A00"),
-        5: ("#F3F0FF", "#7E57C2", "#4A2B87"),
-        6: ("#F5F5F5", "#8E8E8E", "#333333"),
-    }
-    bg, border, text_color = palette.get(level, palette[4])
-    safe_title = _escape_svg_text(title)
-    return f"""
-<svg width=\"680\" height=\"72\" viewBox=\"0 0 680 72\" xmlns=\"http://www.w3.org/2000/svg\" role=\"img\" aria-label=\"Section visual banner\">
-  <rect x=\"1\" y=\"1\" width=\"678\" height=\"70\" rx=\"10\" fill=\"{bg}\" stroke=\"{border}\" stroke-width=\"2\"/>
-  <text x=\"20\" y=\"44\" fill=\"{text_color}\" font-size=\"20\" font-weight=\"700\">{safe_title}</text>
-</svg>
-"""
-
-
-def convert_emoji_headings_to_visuals(markdown_text):
-    lines = markdown_text.splitlines()
-    transformed = []
-    in_code_block = False
-
-    for line in lines:
-        stripped = line.strip()
-
-        if stripped.startswith("```"):
-            in_code_block = not in_code_block
-            transformed.append(line)
-            continue
-
-        if in_code_block:
-            transformed.append(line)
-            continue
-
-        heading_match = re.match(r'^(#{2,6})\s+(.+)$', stripped)
-        if not heading_match:
-            transformed.append(line)
-            continue
-
-        hashes = heading_match.group(1)
-        heading_text = heading_match.group(2)
-
-        if not EMOJI_HEADING_PATTERN.search(heading_text):
-            transformed.append(line)
-            continue
-
-        clean_heading = EMOJI_HEADING_PATTERN.sub('', heading_text)
-        clean_heading = re.sub(r'\s{2,}', ' ', clean_heading).strip(' -')
-        if not clean_heading:
-            clean_heading = heading_text
-
-        level = len(hashes)
-        transformed.append(_build_heading_banner(clean_heading, level))
-        transformed.append(f"{hashes} {clean_heading}")
-
-    return "\n".join(transformed)
 
 st.set_page_config(
     page_title="Data Analyst Study App",
@@ -134,26 +57,10 @@ st.set_page_config(
     layout="wide"
 )
 
-class MissingOpenAIClient:
-    def __getattr__(self, _name):
-        return self
-
-    def __call__(self, *args, **kwargs):
-        raise RuntimeError(
-            "OpenAI API key is not configured. Set OPENAI_API_KEY or AI_INTEGRATIONS_OPENAI_API_KEY to use AI features."
-        )
-
-
-openai_api_key = os.environ.get("AI_INTEGRATIONS_OPENAI_API_KEY") or os.environ.get("OPENAI_API_KEY")
-openai_base_url = os.environ.get("AI_INTEGRATIONS_OPENAI_BASE_URL") or os.environ.get("OPENAI_BASE_URL")
-
-if openai_api_key:
-    client = OpenAI(
-        api_key=openai_api_key,
-        base_url=openai_base_url
-    )
-else:
-    client = MissingOpenAIClient()
+client = OpenAI(
+    api_key=os.environ.get("AI_INTEGRATIONS_OPENAI_API_KEY"),
+    base_url=os.environ.get("AI_INTEGRATIONS_OPENAI_BASE_URL")
+)
 
 # Training modules with structured lessons
 training_modules = {
@@ -672,10 +579,4113 @@ Always document which outliers were removed and why!
             }
         ]
     },
+    "FI1BBSF05 - Spreadsheet Fundamentals": {
+        "course": "Spreadsheet Fundamentals",
+        "tool_type": "spreadsheet",
+        "description": "FI1BBSF05: Master Microsoft Excel from the ground up — interface navigation, formulas, data management, conditional formatting, charts, pivot tables, advanced functions, data validation, Power Query, and macro automation.",
+        "lessons": [
+            {
+                "title": "1.1 Introduction to Excel — Interface & Navigation",
+                "content": """
+**Welcome to Excel**
+
+Excel is a spreadsheet application where data is organised in a grid of **rows** (numbers) and **columns** (letters). The intersection of a row and column is a **cell**, referenced by its address, e.g. `A1`, `B3`, `D12`.
+
+**The Excel Interface:**
+```
+┌─────────────────────────────────────────────────────────┐
+│  Quick Access │        Title Bar         │  Ribbon Tabs  │
+│  Toolbar      │                          │               │
+├───────────────┴──────────────────────────┴───────────────┤
+│  HOME  INSERT  PAGE LAYOUT  FORMULAS  DATA  REVIEW  VIEW │
+├─────────────────────────────────────────────────────────┤
+│  Name Box │ Formula Bar                                  │
+├───┬───┬───┬───┬───────────────────────────────────────── │
+│   │ A │ B │ C │  ← Column letters                        │
+├───┼───┼───┼───┤                                          │
+│ 1 │   │   │   │  ← Row numbers                           │
+│ 2 │   │   │   │                                          │
+└───┴───┴───┴───┴──────────────────────────────────────────┘
+```
+
+**Key Areas:**
+| Element | Purpose |
+|---------|---------|
+| **Name Box** | Shows current cell address (e.g. A1) |
+| **Formula Bar** | Shows / edit the content or formula of the active cell |
+| **Ribbon** | All commands organised into tabs |
+| **Sheet tabs** | Navigate between sheets in the workbook |
+| **Freeze Panes** | View → Freeze Panes — keeps headers visible while scrolling |
+
+**Essential Keyboard Shortcuts:**
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl + Home` | Go to cell A1 |
+| `Ctrl + End` | Go to last used cell |
+| `Ctrl + Arrow` | Jump to edge of data |
+| `Ctrl + Shift + End` | Select from current cell to last used |
+| `F2` | Edit the active cell |
+| `Ctrl + Z` | Undo |
+| `Ctrl + S` | Save |
+| `Ctrl + PageUp/Down` | Switch between sheets |
+
+**Data Types in a Cell:**
+- **Text** — left-aligned by default
+- **Numbers** — right-aligned by default
+- **Dates/Times** — stored as numbers, displayed as dates
+- **Logical** — TRUE / FALSE
+- **Formulas** — start with `=`
+
+**Pro Tip:** Press `Ctrl + ;` to insert today's date, `Ctrl + :` to insert the current time.
+
+---
+
+**A Brief History of Spreadsheets:**
+
+| Year | Application | Key Innovation |
+|------|-------------|----------------|
+| **1979** | **VisiCalc** (Apple II) | First electronic spreadsheet. Defining feature: **automatic recalculation** — change one cell and every dependent cell updates instantly, eliminating hours of manual paper recalculation |
+| **1983** | **Lotus 1-2-3** (DOS) | Added charting and database features; dominated 1980s business computing |
+| **1985 / 1987** | **Microsoft Excel** (Mac / Windows) | GUI-based spreadsheet; gradually became the global industry standard |
+| **2007** | **Excel 2007** | Replaced the legacy **.xls** binary format with **.xlsx** (Office Open XML) as the new default |
+| **2013+** | **Power Query / Power BI** | Self-service data transformation and business intelligence built into Excel |
+
+> **Exam tip — VisiCalc (True/False):** "VisiCalc was capable of automatically recalculating the entire sheet when one value was changed" — **True**. This was its defining innovation and why it became the first *killer app* for personal computers.
+
+---
+
+**What Made Excel 1.0 Stand Out — WYSIWYG**
+
+> **Exam answer — Excel 1.0 standout feature:** **b) WYSIWYG (What You See Is What You Get)**
+
+Excel 1.0 (1985, Apple Mac) was the first spreadsheet where the screen showed *exactly* how the document would look when printed — fonts, bold, borders, and column widths were all rendered live on screen. Its DOS competitors required text-based commands and you had to physically print to see real formatting.
+
+**Why the other options are wrong:**
+| Option | Why it is NOT correct |
+|--------|----------------------|
+| a) Graphical presentation of Data (Charts) | Charts already existed in **Lotus 1-2-3 (1983)** — Excel did not invent them |
+| c) Advanced Calculations | Arithmetic calculations already existed in **VisiCalc (1979)** and Lotus |
+| d) Dropdown Menus | Menus were **not unique** to Excel — not a distinguishing feature |
+| **b) WYSIWYG ✅** | Only Excel 1.0 rendered fonts, bold, borders on screen matching the printed output |
+
+**DOS Lotus 1-2-3 vs Mac Excel 1.0 — Visualised:**
+```
+Lotus 1-2-3 (DOS, 1983)                 Excel 1.0 (Mac, 1985 — WYSIWYG)
+────────────────────────────────────    ────────────────────────────────────
+/wcs   ← type slash commands            Click column edge → drag to resize
+/pprint ← type to print to see result   Screen IS the print preview always
+Monospaced font only (no bold on screen) Bold, italic, real fonts visible live
+--- border: manually type dashes ---     ══ real border drawn on screen ══
+No formatting feedback until printed     "What You See" = "What You Get"
+```
+
+**How to remember it:** WYSIWYG = the screen *is* the print preview. Excel brought the Mac GUI world to spreadsheets while Lotus stayed stuck in text-command DOS until it was too late.
+
+---
+
+**Excel vs Google Sheets — What's the Difference?**
+
+Both are spreadsheet applications with similar core functionality. The key distinction is *where* they run and *what* they can do:
+
+| Feature | Microsoft Excel | Google Sheets |
+|---------|----------------|---------------|
+| **Platform** | Desktop app + Microsoft 365 web | **Cloud-based (browser only)** |
+| **Real-time collaboration** | ✅ Via Microsoft 365 | ✅ Built-in, seamless — multiple users see edits live |
+| **Core formulas** | Full library (XLOOKUP, IFS, etc.) | Very similar — most formulas work identically |
+| **PivotTables** | ✅ More advanced options | ✅ Available (called Pivot Tables) |
+| **Charts** | ✅ More chart types | ✅ Available |
+| **Power Query / VBA** | ✅ Full support | ❌ Not available |
+| **Offline use** | ✅ Full desktop use | ⚠ Limited (Chrome extension only) |
+| **File format** | .xlsx (default) | .gsheet (native) / exports as .xlsx |
+| **Cost** | Requires Microsoft 365 subscription | ✅ Free (Google account) |
+| **Storage** | Local or OneDrive | Google Drive |
+
+> **Exam tip (True/False):** "Google Sheets is a cloud-based spreadsheet application that offers real-time collaboration, making it similar in functionality to Excel" — **True**. Both support formulas, PivotTables, charts, and conditional formatting. The main differences are that Excel has Power Query/VBA (Google Sheets does not) and Google Sheets has seamless real-time collaboration built-in by default.
+                """,
+                "key_points": [
+                    "Cells are referenced by Column Letter + Row Number (e.g. B3)",
+                    "The Formula Bar shows and edits cell content",
+                    "Freeze Panes keeps headers visible when scrolling",
+                    "Numbers right-align; text left-aligns by default",
+                    "VisiCalc (1979) introduced automatic recalculation — the breakthrough that made spreadsheets essential for business",
+                    "Google Sheets is cloud-based with built-in real-time collaboration; Excel leads for Power Query, VBA, and advanced analysis",
+                    "Excel 1.0 (1985) stood out with WYSIWYG — screen matched printed output including fonts/bold/borders; DOS Lotus required printing to see real formatting"
+                ]
+            },
+            {
+                "title": "1.2 Data Entry, Formatting & Basic Functions",
+                "content": """
+**Entering and Formatting Data**
+
+**Data Entry Tips:**
+- Press `Enter` to confirm and move down
+- Press `Tab` to confirm and move right
+- Press `Escape` to cancel an entry
+- Double-click a cell to edit in-place (`F2` also works)
+- Use AutoFill: type a value, grab the fill handle (small square bottom-right of cell), drag down/across
+
+**AutoFill — Cursor Shapes Guide (exam question):**
+
+> **Exam answer — AutoFill cursor:** The **thin solid black crosshair (+)** = the **fill handle** at the bottom-right corner of a selected cell. This is what triggers AutoFill.
+
+| Cursor appearance | Where on the cell | What it does |
+|-------------------|-------------------|--------------|
+| Thick white/hollow arrow | **Middle** of cell | Normal select — click to select cell |
+| **Thin solid black crosshair (+)** ✅ | **Bottom-right corner** | **Fill handle — drag to AutoFill a pattern** |
+| Four-headed arrow (✛) | **Border/edge** of selection | Move — drag to relocate the cell(s) |
+| Flashing dashed border (marching ants) | Surrounds source range | Paste indicator — appears after `Ctrl+C` |
+| Green outlined border | Around active cell | Active cell indicator — not a cursor shape |
+
+**Why the other answer options are wrong:**
+| Option | What it actually is |
+|--------|--------------------|
+| a) The location to paste copied data | Shown by **flashing dashed border** (marching ants) after Ctrl+C — not a crosshair |
+| **b) The AutoFill handle ✅** | The thin black crosshair at the bottom-right corner — correct answer |
+| c) The direction of data import | No such cursor exists in Excel |
+| d) The current active cell | The active cell has a **green outlined border** — not a crosshair cursor |
+
+**AutoFill pattern examples:**
+| Starting input | AutoFill extends to... | How Excel detects the pattern |
+|---------------|------------------------|-------------------------------|
+| `Jan` | `Feb, Mar, Apr …` | Built-in month series |
+| `Monday` | `Tuesday, Wednesday …` | Built-in weekday series |
+| `1, 2` (two cells selected) | `3, 4, 5, 6 …` | Arithmetic step = +1 |
+| `2, 4` (two cells selected) | `6, 8, 10 …` | Arithmetic step = +2 |
+| `=A1*2` | `=A2*2, =A3*2 …` | Copies formula with relative shift |
+| `Q1` | `Q2, Q3, Q4` | Text + number pattern recognition |
+
+> **Key exam tip:** *Thin black crosshair* = fill handle = bottom-right corner = AutoFill. *Thick white arrow* = middle of cell = normal select. These two are the most commonly confused!
+
+**Number Formatting:**
+`Home → Number group`
+| Format | Example |
+|--------|---------|
+| General | 1500 |
+| Number | 1,500.00 |
+| Currency | $1,500.00 |
+| Percentage | 75% |
+| Date | 18/02/2026 |
+
+**Cell Formatting:**
+- **Bold / Italic / Underline**: `Ctrl+B`, `Ctrl+I`, `Ctrl+U`
+- **Cell borders**: Home → Font group → Borders
+- **Fill colour**: Home → Font group → Fill Color
+- **Merge & Centre**: Home → Alignment → Merge & Center
+
+**Basic Statistical Functions:**
+```
+=SUM(A1:A10)         Sum of range
+=AVERAGE(A1:A10)     Arithmetic mean
+=MIN(A1:A10)         Smallest value
+=MAX(A1:A10)         Largest value
+=COUNT(A1:A10)       Count of numeric cells
+=COUNTA(A1:A10)      Count of non-empty cells
+=MEDIAN(B1:B20)      Middle value
+=MODE(B1:B20)        Most frequent value
+=STDEV(B1:B20)       Sample standard deviation
+```
+
+**Relative vs Absolute References:**
+```
+=A1        Relative  — shifts when formula is copied
+=$A$1      Absolute  — always refers to A1
+=$A1       Mixed     — column fixed, row shifts
+=A$1       Mixed     — row fixed, column shifts
+```
+
+Key: press **F4** while editing a reference to cycle through modes.
+
+**Real-World Example:**
+Column B has 30 student scores. In C1:
+```
+=AVERAGE(B2:B31)    ← Average score
+=MAX(B2:B31)        ← Highest score
+=MIN(B2:B31)        ← Lowest score
+=COUNTIF(B2:B31,">=60")   ← How many passed
+```
+                """,
+                "key_points": [
+                    "F4 cycles a reference between relative, absolute, and mixed",
+                    "=SUM, =AVERAGE, =MIN, =MAX are the most-used starter functions",
+                    "AutoFill copies patterns and formulas down or across — triggered by the thin solid black crosshair (+) at the bottom-right corner (fill handle)",
+                    "Number format changes display only — not the underlying value",
+                    "Accounting format aligns currency symbols to the LEFT edge of the cell; Currency format places the symbol next to the number"
+                ]
+            },
+            {
+                "title": "1.3 Data Management — Tables, Sorting & Filtering",
+                "content": """
+**Organising and Finding Data**
+
+**Converting a Range to a Table:**
+Select data → `Insert → Table` (or `Ctrl+T`)
+- Adds automatic filter dropdowns to each header
+- New rows are included in formulas automatically
+- Table name appears in the Name Box (e.g. `Table1`)
+- Structured references: `=Table1[Mathematics]`
+
+**Sorting Data:**
+`Data → Sort` (or click a column header's dropdown)
+- **Single column**: Click column → `Data → Sort A→Z` or `Z→A`
+- **Multi-level sort**: Data → Sort → Add Level
+  - Example: Sort by Class (A→Z), then by Score (Z→A)
+
+**AutoFilter:**
+- Click any cell in data → `Data → Filter`
+- Click the dropdown arrow on a column header
+- Options: sort, filter by value, number filters, text filters
+- **Clear all filters**: Data → Clear
+
+**What filtering actually does — visually:**
+```
+Before filter:                After filter (Dept = "Marketing"):
+Row 1: Name   Dept            Row 1: Name   Dept      ← headers STAY visible
+Row 2: Alice  Marketing  ✅   Row 2: Alice  Marketing ✅
+Row 3: Bob    Engineering      Row 3: [hidden — NOT deleted]
+Row 4: Carol  Marketing  ✅   Row 4: Carol  Marketing ✅
+Row 5: Dave   HR               Row 5: [hidden — NOT deleted]
+                               ↑ row numbers jump (3,5 skip) = hidden, not gone
+```
+
+| What people think happens | What actually happens |
+|--------------------------|----------------------|
+| ❌ Rows are permanently deleted | ✅ Rows are temporarily **hidden** |
+| ❌ Column headers disappear | ✅ Headers stay visible and show **dropdown arrows** |
+| ❌ Data is sorted ascending | ✅ Order is unchanged — sort and filter are **separate** operations |
+| ✅ Only matching rows are displayed | ✅ Correct — non-matching rows are hidden, not removed |
+
+> **Exam tip (multiple choice):** Filtering **displays only rows meeting the criteria** — it never deletes data, never hides headers, and does not sort. Clear the filter with `Data → Clear` to restore all rows instantly.
+
+**Advanced Filter:**
+`Data → Advanced` — filter with AND/OR criteria in a separate range
+
+**Removing Duplicates:**
+`Data → Remove Duplicates` → select which columns to check
+
+**Text to Columns:**
+`Data → Text to Columns` — split one column into several using a delimiter (comma, space, tab)
+
+**Key Sorting/Filtering Functions:**
+```
+=SORT(A2:D31, 2, -1)         Sort range by column 2 descending (Excel 365)
+=FILTER(A2:D31, C2:C31>80)   Return rows where Science > 80 (Excel 365)
+=UNIQUE(A2:A31)              List of unique names (Excel 365)
+```
+
+**SPF Lesson 1.3 — Practical Example:**
+Dataset: Students with Name, Maths, Science, English
+
+| Task | How |
+|------|-----|
+| Show only students with Maths > 70 | Filter → Maths → Number Filters → Greater Than → 70 |
+| Sort by English descending | Sort → Column D → Z→A |
+| Find duplicate names | Home → Conditional Formatting → Highlight Duplicate Values |
+| Extract unique class list | =UNIQUE(B2:B31) in a spare column |
+                """,
+                "key_points": [
+                    "Convert to Table (Ctrl+T) for automatic filters and dynamic ranges",
+                    "Multi-level sort lets you sort by more than one column",
+                    "Remove Duplicates is in the Data tab",
+                    "Text to Columns splits delimited data into separate columns",
+                    "Filtering hides non-matching rows temporarily — it never deletes data, never hides headers, and does not sort"
+                ]
+            },
+            {
+                "title": "1.4 Data Validation & Conditional Formatting",
+                "content": """
+## 1.4 Data Validation and Conditional Formatting
+
+---
+
+## Part 1 — Data Validation
+
+### What is Data Validation?
+
+**Data Validation** is an Excel feature that controls what kind of data a user is allowed to enter into a cell. Its purpose is to **prevent errors at the point of entry** — before bad data ever makes it into the spreadsheet.
+
+**Why it matters:**
+- Reduces data-entry mistakes (wrong types, out-of-range values)
+- Enforces business rules (e.g. quantity must be a whole number ≥ 1)
+- Guides users with dropdown lists so they pick from approved options
+- Protects formulas and reports from being broken by invalid input
+
+**Primary purpose — eliminating the wrong answers:**
+
+| Option | Feature it describes | Is it Data Validation? |
+|--------|---------------------|------------------------|
+| a ❌ Customising cell formatting | `Home → Format Cells` (font, fill, borders, number format) | No |
+| b ✅ Ensuring data integrity and quality | Controlling what is **allowed to be entered** at the point of input | **Yes** |
+| c ❌ Sorting and filtering data | `Data → Sort` and `Data → Filter` / AutoFilter | No |
+| d ❌ Creating charts and graphs | `Insert → Charts` | No |
+
+> **Exam tip (multiple choice):** The primary purpose of Data Validation is **ensuring data integrity and quality** — it prevents bad data from entering the spreadsheet in the first place, rather than cleaning it up afterwards.
+
+**Location:** `Data → Data Tools → Data Validation`
+
+---
+
+### How Data Can Be Restricted Using Data Validation
+
+When you open the Data Validation dialog (`Data → Data Validation`) you set three things:
+
+1. **Settings tab** — choose the _Allow_ type and conditions
+2. **Input Message tab** — optional tooltip shown when the cell is selected
+3. **Error Alert tab** — message shown when invalid data is entered
+
+**Allow types and how they restrict input:**
+
+| Allow Type | What It Restricts | Example |
+|------------|-------------------|---------|
+| **Whole number** | Only integers within a range | Between 1 and 100 |
+| **Decimal** | Numbers with decimals within a range | Greater than 0.0 |
+| **List** | Only values from a predefined list | Dropdown: Yes, No, Pending |
+| **Date** | Only dates within a range | Between 01/01/2024 and 31/12/2024 |
+| **Time** | Only times within a range | Between 09:00 and 17:00 |
+| **Text length** | Limits character count | Between 5 and 10 characters |
+| **Custom** | Any formula that returns TRUE/FALSE | `=ISNUMBER(A1)`, `=A1<>""` |
+
+**Error Alert styles:**
+| Style | Behaviour |
+|-------|-----------|
+| **Stop** | Rejects invalid input completely — user must re-enter |
+| **Warning** | Warns the user but allows them to proceed |
+| **Information** | Informs the user; always allows the input |
+
+---
+
+### Key Options Available for Data Validation in Excel
+
+**1. Dropdown List (most common)**
+- Source can be a comma-separated list: `Yes,No,Pending`
+- Or a cell range: `=$F$1:$F$5`
+- Users click an arrow and select — no free typing needed
+
+**2. Whole Number / Decimal with Operators**
+- Operators: *between, not between, equal to, not equal to, greater than, less than, greater than or equal to, less than or equal to*
+- Example: Reject any mark outside 0–100 → Allow: Whole number, Between, 0, 100
+
+**3. Custom Formula**
+- Enter any formula that evaluates to TRUE (valid) or FALSE (invalid)
+- Example — only uppercase text: `=EXACT(A1,UPPER(A1))`
+- Example — no blanks allowed: `=LEN(TRIM(A1))>0`
+
+**4. Input Message**
+- Title + message appears as a tooltip when the cell is selected
+- Guides users before they type
+
+**5. Circle Invalid Data**
+- `Data → Data Validation → Circle Invalid Data` draws a red circle around cells that break the rule — useful for auditing existing data
+
+**Step-by-step: adding a dropdown list**
+```
+1. Select the cell(s) → Data → Data Validation
+2. Allow: List
+3. Source: type items separated by commas, OR select a range
+4. (Optional) Input Message tab: add a helpful hint
+5. (Optional) Error Alert tab: Stop / Warning / Information
+6. OK
+```
+
+---
+
+## Part 2 — Conditional Formatting
+
+### How Conditional Formatting Works in Excel
+
+**Conditional Formatting** automatically changes a cell's visual appearance — fill colour, font colour, font style, border — based on a **rule** you define. Every time the spreadsheet recalculates, Excel re-evaluates each rule and applies (or removes) the formatting instantly.
+
+**The basic mechanism:**
+1. You select a cell range
+2. You define a rule (e.g. "value > 90")
+3. You choose a format to apply when the rule is TRUE
+4. Excel continuously monitors the values — if the condition becomes TRUE the format appears; if it becomes FALSE the format disappears
+
+**Location:** `Home → Styles → Conditional Formatting`
+
+---
+
+### Benefits of Using Conditional Formatting
+
+| Benefit | Detail |
+|---------|--------|
+| **Instant visual insight** | Patterns, outliers, and trends become visible without reading every value |
+| **Dynamic** | Updates automatically as data changes — no manual re-colouring |
+| **No formulas needed for basic cases** | Built-in presets cover the most common scenarios |
+| **Works on large datasets** | Applies consistently to thousands of rows at once |
+| **Supports decision-making** | Managers can scan a report and immediately spot problems |
+| **Layering** | Multiple rules can be stacked on the same range for rich visualisation |
+
+---
+
+### Types of Conditional Formatting Available in Excel
+
+Excel provides six main categories, each accessed from `Home → Conditional Formatting`:
+
+#### 1. Highlight Cell Rules
+Applies a fill/font to cells that meet a simple value condition.
+
+| Condition | Menu option |
+|-----------|-------------|
+| Greater Than | `Highlight Cell Rules → Greater Than…` |
+| Less Than | `Highlight Cell Rules → Less Than…` |
+| Between | `Highlight Cell Rules → Between…` |
+| Equal To | `Highlight Cell Rules → Equal To…` |
+| Text that Contains | `Highlight Cell Rules → Text That Contains…` |
+| A Date Occurring | `Highlight Cell Rules → A Date Occurring…` |
+| Duplicate Values | `Highlight Cell Rules → Duplicate Values…` |
+
+#### 2. Top/Bottom Rules
+Highlights the highest or lowest values in a range.
+
+| Option | What it does |
+|--------|-------------|
+| Top 10 Items | Highlights the X highest values |
+| Top 10 % | Highlights the top X percent |
+| Bottom 10 Items | Highlights the X lowest values |
+| Bottom 10 % | Highlights the bottom X percent |
+| Above Average | Highlights values above the mean |
+| Below Average | Highlights values below the mean |
+
+*(The "10" is just the default — you can change it to any number)*
+
+#### 3. Data Bars
+Inserts a **bar chart inside each cell**, proportional to the cell's value. See the dedicated section below.
+
+#### 4. Colour Scales
+Applies a **gradient of colours** across a range, mapping values to a colour spectrum. See the dedicated section below.
+
+#### 5. Icon Sets
+Places a **small icon** (arrow, traffic light, star, etc.) inside each cell based on the value's position in the range. See the dedicated section below.
+
+#### 6. New Rule (Custom Formula)
+Lets you write any formula that returns TRUE or FALSE and apply any format you choose. This is the most powerful option.
+
+```
+Home → Conditional Formatting → New Rule → Use a formula to determine which cells to format
+Formula: =COUNTIF($A$2:$A$31, A2) > 1
+Format:  Choose fill/font/border
+```
+
+---
+
+### How the Colour Scales Option Works
+
+**Colour Scales** map a range of numeric values to a **continuous colour gradient**, giving an at-a-glance heat map.
+
+**2-Colour Scale:**
+- Two endpoints: **Minimum** → one colour, **Maximum** → another colour
+- Cells in between get an interpolated shade
+- Example: white (low) → dark blue (high)
+
+**3-Colour Scale:**
+- Three points: **Minimum**, **Midpoint**, **Maximum**, each gets its own colour
+- Cells are shaded proportionally between the three colours
+- Example (traffic-light): Red (low) → Yellow (mid) → Green (high)
+
+**Configuring a Colour Scale:**
+```
+Home → Conditional Formatting → Colour Scales
+  → pick a preset  (quick)
+  OR
+  → More Rules  (custom colours and thresholds)
+      Type: Lowest Value / Number / Percent / Percentile / Formula
+      Colour: choose any colour from the palette
+```
+
+**Threshold types:**
+| Type | Meaning |
+|------|---------|
+| Lowest / Highest Value | The actual minimum/maximum in the range |
+| Number | A fixed number you specify |
+| Percent | X% of the way between min and max |
+| Percentile | The Xth statistical percentile |
+| Formula | Result of any formula |
+
+**Practical tip:** Use the **Red–Yellow–Green** preset for scores or KPIs — red immediately flags problems, green signals success.
+
+**The four CF visual types — know which is which:**
+
+| CF type | Visual | What it does | Exam keyword |
+|---------|--------|-------------|-------------|
+| **Colour Scales** | Gradient heat map | **Assigns colours based on values** — each cell shaded proportionally | *"heat map"*, *"gradient"*, *"colour based on value"* |
+| **Data Bars** | In-cell horizontal bar | Bar length = relative magnitude | *"bar inside cell"*, *"proportional bar"* |
+| **Icon Sets** | Small icon (arrow, traffic light) | Symbol assigned by value tier | *"icons"*, *"arrows"*, *"traffic lights"* |
+| **Highlight Cell Rules** | Solid fill on matching cells | Fixed colour on cells meeting a condition | *"duplicate"*, *"greater than"*, *"specific value"* |
+
+> **Exam tip (multiple choice):** The purpose of Colour Scales is to **assign different colours to cells based on their values**. Icons = Icon Sets. Duplicates = Highlight Cell Rules. In-cell bars = Data Bars.
+
+---
+
+### The Purpose of Using Data Bars
+
+**Data Bars** render a **horizontal bar inside the cell**, with the bar length proportional to the cell's value relative to the other values in the range. They give every cell a built-in mini chart.
+
+**Why use Data Bars?**
+- Compare relative magnitudes without needing a separate chart
+- The number and the bar coexist — you see the precise value AND the visual comparison
+- Ideal for ranking columns (sales, scores, counts)
+
+**Options:**
+| Setting | Description |
+|---------|-------------|
+| **Gradient Fill** | Bar fades from a colour to white — softer look |
+| **Solid Fill** | Bar is a uniform colour — crisper look |
+| **Bar colour** | Any colour from the theme palette |
+| **Border** | Optional border around the bar |
+| **Bar direction** | Left-to-right (default) or right-to-left |
+| **Show Bar Only** | Hides the number so only the bar shows |
+| **Negative value bar** | Separate colour for bars that represent negative numbers |
+| **Axis position** | Where the zero-line sits when negative values exist |
+
+**How to apply:**
+```
+Select range → Home → Conditional Formatting → Data Bars
+  → Gradient Fill (or Solid Fill) → pick a colour preset
+  → More Rules to customise min/max, colours, direction
+```
+
+**Activity 2, Task 6:**
+```
+Range: D2:D31 (English scores)
+Home → Data Bars → Solid Fill Blue
+```
+
+---
+
+### How Icon Sets Are Used in Conditional Formatting
+
+**Icon Sets** place a **small graphic icon** inside each cell to classify its value into 3, 4, or 5 tiers. The icon communicates status at a glance without the user needing to read the number.
+
+**Available icon categories:**
+
+| Category | Examples |
+|----------|---------|
+| **Directional** | 3/4/5 Arrows (coloured or grey) |
+| **Shapes** | 3 Traffic Lights, 3 Symbols (circle/triangle/diamond) |
+| **Indicators** | 3 Symbols (✓ !, ✗), 4 Ratings |
+| **Ratings** | 4/5 Ratings (bars), 5 Quarters |
+
+**How the threshold logic works (3-icon example):**
+
+By default, Excel divides the range into thirds by percentile:
+- **Icon 1 (top):** value ≥ 67th percentile
+- **Icon 2 (middle):** 33rd ≤ value < 67th percentile
+- **Icon 3 (bottom):** value < 33rd percentile
+
+You can override these thresholds in **More Rules**:
+- Change the type: **Number**, **Percent**, **Percentile**, or **Formula**
+- Change the threshold values
+- Reverse the icon order (useful when lower = better)
+- Choose "Show Icon Only" to hide the number
+
+**How to apply:**
+```
+Select range → Home → Conditional Formatting → Icon Sets
+  → choose a set (e.g. 3 Arrows, Traffic Lights)
+  → More Rules to adjust thresholds or reverse order
+```
+
+**Activity 2, Task 7 — Maths icon set:**
+```
+Range: B2:B31
+Home → Icon Sets → Directional → 3 Arrows (Coloured)
+More Rules:
+  ↑ Green  when value is ≥ 67  (Percent)
+  → Yellow when value is ≥ 33  (Percent)
+  ↓ Red    when value is <  33  (Percent)
+```
+
+---
+
+### The Role of Conditional Formatting with Duplicate Values
+
+Spotting duplicates visually is one of the most common CF use cases.
+
+**Built-in Duplicate Values rule:**
+```
+Select range (e.g. A2:A31)
+Home → Conditional Formatting → Highlight Cell Rules → Duplicate Values…
+  → choose "Duplicate" and a preset format (e.g. light red fill)
+  → OK
+```
+This automatically highlights **every cell whose value appears more than once** in the selected range.
+
+**Custom formula approach (more control):**
+```
+New Rule → Use a formula:
+  =COUNTIF($A$2:$A$31, A2) > 1
+Format: any fill/font/border combination
+```
+- `COUNTIF($A$2:$A$31, A2)` counts how many times the value in A2 appears in the whole range
+- `> 1` is TRUE only if it appears at least twice → formula rule fires
+- The absolute range `$A$2:$A$31` stays fixed; the relative `A2` shifts each row
+
+**Activity 2, Task 8:**
+```
+Range: A2:A31 (student names)
+Formula: =COUNTIF($A$2:$A$31, A2) > 1
+Format:  Pink fill (#FFC7CE), dark red font (#9C0006)
+```
+
+---
+
+### Can Conditional Formatting Be Limited to Specific Cells or Ranges?
+
+**Yes — completely.** When you create or edit a rule, the `Applies to` field in the **Manage Rules** dialog controls exactly which cells are covered.
+
+**Ways to limit the range:**
+
+1. **Select before applying** — select only the target cells first, then apply CF; the rule scope is set automatically to your selection
+
+2. **Edit the Applies To field** — go to `Home → Conditional Formatting → Manage Rules`, click a rule, and edit the range in the **Applies to** box
+
+3. **Multiple non-contiguous ranges** — enter ranges separated by commas: `$B$2:$B$31,$D$2:$D$31`
+
+4. **Entire column / row** — enter `$B:$B` or `$2:$2` to cover a whole column/row (useful for dynamic tables that grow)
+
+5. **Table columns** — if your data is a formatted Excel Table, CF can be applied to a single table column and it will automatically expand as the table grows
+
+**Important:** Each rule is independent — you can have one rule on `B2:B31` for maths scores and a completely different rule on `C2:C31` for science scores, and they do not interfere.
+
+---
+
+### The Order in Which Rules Are Evaluated
+
+**Rules are evaluated top to bottom** in the `Manage Rules` list. The first rule whose condition is TRUE is applied, and whether subsequent rules also fire depends on the **Stop If True** checkbox.
+
+**Opening Manage Rules:**
+```
+Home → Conditional Formatting → Manage Rules
+(Select "This Worksheet" in the dropdown to see all rules)
+```
+
+**Evaluation flow:**
+
+```
+Rule 1 checked → TRUE?
+    Yes → apply format
+           Stop If True ticked? → Yes: skip all lower rules
+                                  No:  continue checking lower rules
+    No  → check Rule 2 → ...
+```
+
+**Changing rule priority:**
+- Select a rule → click the **▲ Move Up** or **▼ Move Down** arrows
+- Rules higher in the list have higher priority
+
+**Stop If True checkbox:**
+- When ticked, once a rule's condition is met and its format is applied, no lower-ranked rules are evaluated for that cell
+- Use this to create mutually exclusive rules (e.g. if ≥ 90 → green; else if ≥ 70 → yellow; else → red)
+
+**Example — grade colour ladder:**
+```
+Rule 1 (highest priority)  =B2>=90  → Green    ☑ Stop If True
+Rule 2                     =B2>=70  → Yellow   ☑ Stop If True
+Rule 3 (lowest priority)   =B2<70   → Red
+```
+Without Stop If True, a cell with 95 would get both Green (Rule 1) and Yellow (Rule 2) applied — the higher rule wins visually, but both are processed. With Stop If True on Rule 1, Rule 2 and Rule 3 are never checked for that cell.
+
+---
+
+### Can Conditional Formatting Be Copied to Other Cells or Ranges?
+
+**Yes — in several ways:**
+
+#### Method 1: Format Painter (most common) 🖌️
+```
+1. Click any cell that already has the CF rule you want to copy
+2. Home → Clipboard → Format Painter (paintbrush icon)
+3. Click and drag over the destination cells
+```
+- Copies ALL formatting from the source (including CF rules and any manual font/fill)
+- The `Applies to` range in the copied rule is updated to the destination range
+- Double-click Format Painter to paint multiple areas without re-clicking
+
+#### Method 2: Copy & Paste Special — Formats
+```
+1. Copy the source cell(s)  (Ctrl+C)
+2. Select the destination range
+3. Home → Paste → Paste Special (or Ctrl+Alt+V)
+4. Choose "Formats"  → OK
+```
+- Pastes only formats (including CF rules), not values or formulas
+
+#### Method 3: Extend the "Applies To" range
+```
+Home → Conditional Formatting → Manage Rules
+→ click the rule → edit the "Applies to" box
+→ add the new range:  $B$2:$B$31,$E$2:$E$31
+```
+- No copying required — the same rule now covers both ranges
+- Best when you want one rule to govern multiple separate columns
+
+#### Method 4: Drag the cell border
+- Drag the fill handle (bottom-right corner of the cell) over adjacent cells
+- CF copies along with all other formatting — works like Format Painter for adjacent ranges
+
+**Note on formula rules when copying:**
+- If the rule uses a **relative reference** (e.g. `A2` without $), the reference adjusts as the rule is applied to new cells — just like a normal formula
+- If the rule uses an **absolute reference** (e.g. `$A$2`), it stays fixed regardless of where the rule is copied
+
+---
+
+## Activity 2 — All Tasks Reference
+
+| Task | Range | Rule Type | Condition / Config | Format |
+|------|-------|-----------|-------------------|--------|
+| 1 | B2:B31 | Highlight Cell | `< 60` | Red fill |
+| 2 | C2:C31 | Highlight Cell | `> 90` | Green fill |
+| 3 | D2:D31 | Highlight Cell | `between 70 and 80` | Yellow fill |
+| 4 | B2:B31 | Colour Scale | 3-colour: Red–Yellow–Green | Gradient |
+| 5 | C2:C31 | Colour Scale | 2-colour: Light red → Blue | Gradient |
+| 6 | D2:D31 | Data Bars | Solid Fill blue | Bar |
+| 7 | B2:B31 | Icon Sets | 3 Arrows; ≥67% ↑, ≥33% →, <33% ↓ | Icons |
+| 8 | A2:A31 | Formula | `=COUNTIF($A$2:$A$31,A2)>1` | Pink fill, dark red font |
+| 9 | C2:C31 | Formula | `=C2>=LARGE($C$2:$C$31,3)` | Pale green fill, dark green font |
+| 10 | B2:B31 | Formula | `=B2<=SMALL($B$2:$B$31,3)` | Pale red fill, dark red font |
+| 11 | All | — | Dynamic — rules re-evaluate on any cell change | — |
+
+**Key formula functions:**
+| Function | Purpose |
+|----------|---------|
+| `COUNTIF($A$2:$A$31, A2) > 1` | TRUE if name in A2 appears more than once |
+| `C2 >= LARGE($C$2:$C$31, 3)` | TRUE if value is in the top 3 |
+| `B2 <= SMALL($B$2:$B$31, 3)` | TRUE if value is in the bottom 3 |
+
+---
+
+## What Did I Learn in This Lesson?
+
+- **Purpose of Data Validation:** Controls and restricts what users can enter into a cell, preventing errors at data-entry time before they can affect formulas or reports.
+
+- **Restricting data with Data Validation:** Use `Data → Data Validation`, choose an _Allow_ type (Whole number, Decimal, List, Date, Time, Text length, Custom) and set the conditions; invalid entries trigger an Error Alert (Stop, Warning, or Information).
+
+- **Data Validation options:** Dropdown lists (comma-separated or range-based), numeric ranges with operators, custom TRUE/FALSE formulas, input message tooltips, and the "Circle Invalid Data" audit tool.
+
+- **How Conditional Formatting works:** A rule defines a condition (value-based or formula-based); when the condition is TRUE, Excel automatically applies a chosen format (fill, font, border) to the cell; formatting updates every time the spreadsheet recalculates.
+
+- **Benefits of Conditional Formatting:** Instant visual patterns, fully dynamic (no manual re-colouring), works on large ranges at once, supports layered rules for rich visualisation, and aids decision-making at a glance.
+
+- **Types of Conditional Formatting:** Highlight Cell Rules, Top/Bottom Rules, Data Bars, Colour Scales, Icon Sets, and New Rule with a custom formula.
+
+- **Colour Scales:** Map numeric values to a colour gradient — a 2-colour scale has two endpoints; a 3-colour scale adds a midpoint. Thresholds can be set by lowest/highest value, number, percent, percentile, or formula. The classic Red–Yellow–Green preset acts as a heat map.
+
+- **Data Bars:** Display a proportional horizontal bar inside each cell — bar length reflects the value relative to the range. Can be gradient or solid fill; you can show bar only (no number). Useful for side-by-side comparison within a column.
+
+- **Icon Sets:** Place a graphic icon (arrows, traffic lights, symbols, ratings) inside each cell to classify its value into 3–5 tiers. Default thresholds are percentile-based but can be changed to numbers, percents, or formula results in "More Rules".
+
+- **Conditional Formatting and duplicate values:** The built-in `Highlight Cell Rules → Duplicate Values` option highlights every cell whose value appears more than once. For more control, use a custom formula: `=COUNTIF($A$2:$A$31, A2) > 1`.
+
+- **Limiting CF to specific cells or ranges:** Yes — every rule has an _Applies to_ field. Select your target range before applying, or edit the range directly in `Manage Rules`. Multiple non-contiguous ranges are supported (comma-separated).
+
+- **Rule evaluation order:** Rules are processed **top to bottom** in the Manage Rules list. Higher rules have higher priority. Tick **Stop If True** on a rule to prevent lower-priority rules from also applying to the same cell — essential for mutually exclusive categories like grade bands.
+
+- **Copying Conditional Formatting:** Use the **Format Painter** (single-click for one area, double-click for multiple), **Paste Special → Formats**, **dragging the fill handle**, or extending the `Applies to` range in Manage Rules. Relative references in formula rules adjust automatically when copied; absolute references stay fixed.
+                """,
+                "key_points": [
+                    "Data Validation primary purpose: ensuring data integrity and quality — it controls what is allowed to be entered at point of input (not formatting, sorting, or charts)",
+                    "Data Validation (Data → Data Validation) restricts cell input by type, range or list — error alerts can Stop, Warn, or Inform",
+                    "Conditional Formatting automatically applies fill/font/border when a rule is TRUE; it updates dynamically as values change",
+                    "Six CF types: Highlight Cell Rules, Top/Bottom Rules, Data Bars, Colour Scales, Icon Sets, New Rule (custom formula)",
+                    "Colour Scales create a heat map gradient across a range; 2-colour = two endpoints, 3-colour = min / midpoint / max",
+                    "The four CF visual types: Colour Scales (heat map) / Data Bars (in-cell bar) / Icon Sets (symbols) / Highlight Cell Rules (solid fill on condition)",
+                    "Data Bars draw a proportional bar inside each cell for quick comparison; Solid or Gradient fill, bar-only option available",
+                    "Icon Sets classify values into 3–5 tiers with graphics (arrows, traffic lights); thresholds are percentile-based by default but fully configurable",
+                    "Duplicate-value highlighting: built-in menu option OR custom formula =COUNTIF($A$2:$A$31,A2)>1",
+                    "CF can be limited to any specific range via the Applies To field in Manage Rules",
+                    "Rules evaluate top-to-bottom; use Stop If True to create mutually exclusive grade-band rules",
+                    "Copy CF with Format Painter, Paste Special → Formats, fill handle, or by extending the Applies To range"
+                ]
+            },
+            {
+                "title": "1.5 Charts & Data Visualisation",
+                "content": """
+**Creating Meaningful Charts in Excel**
+
+**Inserting a Chart:**
+1. Select your data range (include headers)
+2. `Insert → Charts` — choose a type
+3. The chart appears as a floating object; move and resize it
+4. Use **Chart Design** and **Format** tabs (appear when chart is selected)
+
+**Choosing the Right Chart:**
+| Data story | Chart type |
+|------------|-----------|
+| Compare categories | Clustered Bar or Column |
+| Show trend over time | Line chart |
+| Show composition (parts of a whole) | Pie or Donut (≤ 6 slices) |
+| Show relationship between two numbers | Scatter plot (XY) |
+| Show distribution | Histogram |
+| Compare across many groups | Radar/Spider chart |
+
+**Chart Elements:**
+```
+Title ──────────────────────────────────
+        │                              │
+Y-Axis  │  ████                        │
+(Values)│  ████ ████                   │
+        │  ████ ████ ████              │
+        └──────────────────────────────
+              Category A  B  C     X-Axis
+                        Legend ────────
+```
+Add / remove via `Chart Design → Add Chart Element`
+
+**Formatting a Chart:**
+- **Chart Title**: Click it, type a new title
+- **Axis Titles**: Add Chart Element → Axis Titles
+- **Data Labels**: Add Chart Element → Data Labels (shows values on bars)
+- **Colours**: Format Data Series → Fill
+- **Gridlines**: Add/remove for cleaner look
+
+**Sparklines:**
+Mini charts inside a single cell — great for tables:
+`Insert → Sparklines → Line / Column / Win-Loss`
+Select the data range and destination cell.
+
+**SPF Practical Example — Student Scores:**
+To create a column chart of all 30 students:
+1. Select A1:D31 (all student data)
+2. Insert → Recommended Charts → Clustered Column
+3. Add Chart Title: "Student Scores – Maths, Science, English"
+4. Add Data Labels to see exact values
+5. Change Science bars to green using Format Data Series
+
+**Pro Tips:**
+- Hold `Alt` while moving/resizing to snap to cell gridlines
+- Press `F11` to create a chart on a new sheet instantly
+- Use a **Combo chart** (Insert → Combo) to mix bar + line
+                """,
+                "key_points": [
+                    "Select data first, then Insert → Charts",
+                    "Line charts for trends; column/bar for comparisons",
+                    "Pie charts work best with ≤ 6 categories",
+                    "Add Data Labels for exact values on bars"
+                ]
+            },
+            {
+                "title": "1.6 Pivot Tables & PivotCharts",
+                "content": """
+**Pivot Tables — Instant Summary Analysis**
+
+A PivotTable summarises thousands of rows into a meaningful report without writing any formulas.
+
+**Creating a PivotTable:**
+1. Click anywhere in your data
+2. `Insert → PivotTable`
+3. Choose: New Worksheet (recommended)
+4. Click OK — the PivotTable pane opens
+
+**The Four Areas:**
+| Area | What to drag here | Effect |
+|------|-------------------|--------|
+| **Rows** | Category fields | One row per unique value |
+| **Columns** | Category fields | One column per unique value |
+| **Values** | Numeric fields | Calculations (Sum, Count, Average…) |
+| **Filters** | Category fields | Slice the whole table |
+
+**Example — Student Dataset:**
+
+To find the average score per subject:
+- Drag **Name** → Rows
+- Drag **Mathematics**, **Science**, **English** → Values
+- Change each to *Average* (click the field → Value Field Settings → Average)
+
+To count how many students scored above 80 in Maths:
+- Rows: (empty)
+- Values: Mathematics → Count
+- Filters: Mathematics → greater than 80
+
+**Calculated Field:**
+PivotTable Analyze → Fields, Items & Sets → Calculated Field
+```
+Name:    Total Score
+Formula: = Mathematics + Science + English
+```
+
+**Grouping Dates:**
+Right-click a date field → Group → choose Month / Quarter / Year
+
+**Slicers:**
+`PivotTable Analyze → Insert Slicer` — visual filter buttons you can click
+
+**PivotChart:**
+`PivotTable Analyze → PivotChart` — chart that stays linked to the PivotTable; filters apply to both instantly.
+
+**Refreshing Data:**
+When source data changes: right-click the PivotTable → Refresh  
+(Or: PivotTable Analyze → Refresh All)
+
+**SPF Practical Task:**
+Dataset: 30 students, Maths/Science/English
+
+| Goal | PivotTable Setup |
+|------|-----------------|
+| Average score per subject | Values: Average of each subject |
+| Find top scorer per subject | Sort Values Z→A |
+| Show only students who failed Maths (<60) | Filters: Maths → <60 |
+
+**Value Field Settings — all available statistics:**
+
+Right-click any value in the PivotTable → *Value Field Settings* → *Summarize Values By*:
+
+| Statistic | What it calculates |
+|-----------|--------------------|
+| **Sum** | Total of all values (default for numbers) |
+| **Count** | Number of non-empty cells (default for text) |
+| **Average** | Arithmetic mean |
+| **Max** | Largest value in the group |
+| **Min** | Smallest value in the group |
+| **Product** | Multiplies all values together |
+| **Count Numbers** | Counts only numeric cells (ignores text/blanks) |
+| **StdDev / StdDevp** | Sample / population standard deviation |
+| **Var / Varp** | Sample / population variance |
+
+> **Exam tip (True/False):** "Pivot tables cannot be used to calculate statistics like sum, average, or count of data" — **False**. PivotTables are specifically *designed* for exactly this — they support Sum, Count, Average, Max, Min, StdDev, Var, and more via Value Field Settings.
+                """,
+                "key_points": [
+                    "Drag fields to Rows, Columns, Values, Filters areas",
+                    "Change aggregation in Value Field Settings (Sum, Count, Average…)",
+                    "Slicers are visual, clickable filters for PivotTables",
+                    "PivotChart stays linked to the PivotTable automatically",
+                    "PivotTables support 9 statistics: Sum, Count, Average, Max, Min, Product, Count Numbers, StdDev, Var — not just totals"
+                ]
+            },
+            {
+                "title": "1.7 Advanced Functions — Lookup & Logic",
+                "content": """
+**Power Functions for Data Analysis**
+
+**VLOOKUP:**
+```
+=VLOOKUP(lookup_value, table_array, col_index_num, [range_lookup])
+
+Example:  =VLOOKUP(A2, StudentList, 3, FALSE)
+          Look for A2 in the first column of StudentList,
+          return the value from column 3
+          FALSE = exact match
+```
+⚠ Limitation: can only look to the RIGHT.
+
+**XLOOKUP (Excel 365 / 2019+) — replaces VLOOKUP:**
+```
+=XLOOKUP(lookup_value, lookup_array, return_array, [if_not_found])
+
+Example:  =XLOOKUP(A2, Names, Science_column, "Not found")
+          Looks both left and right; returns first match
+```
+
+**INDEX + MATCH (works in all versions):**
+```
+=INDEX(return_range, MATCH(lookup_value, lookup_range, 0))
+
+Example:  =INDEX(C2:C31, MATCH("Student 5", A2:A31, 0))
+          Find "Student 5" in A2:A31, return the Science score
+```
+
+**OFFSET — dynamic reference by rows and columns:**
+```
+=OFFSET(reference, rows, cols, [height], [width])
+```
+Starts at `reference`, moves `rows` down and `cols` right, then returns that cell (or a range if height/width are given):
+
+```
+=OFFSET(A1, 2, 3)          → moves 2 rows down, 3 right → value of D3
+=OFFSET(A1, 0, 0, 5, 1)    → returns range A1:A5 (5 tall, 1 wide)
+=SUM(OFFSET(A1,0,0,5,1))   → dynamic SUM of A1:A5
+```
+
+**Why each wrong answer is wrong:**
+
+| Option | Describes | Actual function |
+|--------|-----------|----------------|
+| a ✅ | Reference based on rows/columns from a start point | **OFFSET** |
+| b ❌ | Retrieves data from a closed workbook | External references / `INDIRECT` |
+| c ❌ | Text manipulation | `LEFT`, `RIGHT`, `TRIM`, `LEN`, etc. |
+| d ❌ | Returns the sum of a range | `SUM` / `SUMIF` |
+
+**OFFSET vs similar functions:**
+
+| Function | Returns | How it navigates |
+|----------|---------|------------------|
+| `OFFSET` | Dynamic reference | Start cell + row/col offset |
+| `INDEX` | Value or reference | Row/column number in a range |
+| `INDIRECT` | Reference from a text string | `=INDIRECT("A"&B1)` |
+
+> **Exam tip (multiple choice):** OFFSET = **reference shifted by rows and columns** from a starting point. It returns a reference, not a value directly — which makes it useful inside SUM, AVERAGE, or MATCH for building dynamic ranges.
+```
+=IF(condition, value_if_true, value_if_false)
+=IF(B2>=60, "Pass", "Fail")
+
+=IFS(B2>=90,"A", B2>=75,"B", B2>=60,"C", TRUE,"Fail")
+```
+
+**COUNTIF / COUNTIFS:**
+```
+=COUNTIF(B2:B31, ">=60")                          Count students who passed Maths (1 condition)
+=COUNTIFS(B2:B31,">=60", C2:C31,">=60")          Passed Maths AND Science (2 conditions simultaneously)
+=COUNTIFS(B2:B31,">60", B2:B31,"<90")            Maths between 60 and 90 (2 conditions, SAME range)
+```
+
+**COUNTIFS uses AND logic — every condition must be TRUE:**
+
+| Student | Maths | Science | Counted by `COUNTIFS(Maths>=60, Science>=60)`? |
+|---------|-------|---------|-----------------------------------------------|
+| Alice | 75 | 80 | ✅ Yes — both pass |
+| Bob | 55 | 85 | ❌ No — Maths fails |
+| Carol | 70 | 45 | ❌ No — Science fails |
+| Dave | 90 | 72 | ✅ Yes — both pass |
+
+Result = **2** (only Alice and Dave pass both conditions simultaneously)
+
+> **Exam tip (True/False):** "COUNTIFS can be used to count cells that meet multiple criteria simultaneously" — **True**. Each range/criteria pair is evaluated as AND logic — all pairs must be TRUE for a row to be counted. Criteria can be across different ranges or even two conditions on the same range (e.g. `>60` AND `<90`).
+
+**SUMIF / SUMIFS / AVERAGEIF / AVERAGEIFS:**
+
+The pattern is consistent: the **S suffix (plural) = multiple conditions**. Always use the `S` version when you need AND logic across two or more criteria.
+
+| Function | Conditions | Syntax | Example |
+|----------|-----------|--------|---------|
+| `AVERAGEIF` | **1** | `AVERAGEIF(range, criteria, avg_range)` | `=AVERAGEIF(B2:B31, ">60", B2:B31)` → avg of scores above 60 |
+| `AVERAGEIFS` | **2+** | `AVERAGEIFS(avg_range, range1, crit1, range2, crit2)` | `=AVERAGEIFS(D2:D31, B2:B31,">60", C2:C31,">60")` → avg English where Maths AND Science both >60 |
+| `SUMIF` | **1** | `SUMIF(range, criteria, sum_range)` | `=SUMIF(A2:A31, "North", C2:C31)` → sum sales in North |
+| `SUMIFS` | **2+** | `SUMIFS(sum_range, range1, crit1, range2, crit2)` | `=SUMIFS(C2:C31, A2:A31,"North", B2:B31,"Q1")` → North AND Q1 |
+| `COUNTIF` | **1** | `COUNTIF(range, criteria)` | `=COUNTIF(B2:B31, ">=60")` → count who passed |
+| `COUNTIFS` | **2+** | `COUNTIFS(range1, crit1, range2, crit2)` | `=COUNTIFS(B2:B31,">=60",C2:C31,">=60")` → passed both |
+
+> **Exam tip (True/False):** "AVERAGEIF calculates the average of a range of cells based on a single condition" — **True**. It takes exactly one `range`/`criteria` pair. For two or more conditions, you must use `AVERAGEIFS` instead.
+
+**IFERROR:**
+```
+=IFERROR(VLOOKUP(A2, Table1, 3, FALSE), "Not found")
+Prevents #N/A and #DIV/0! errors from showing
+```
+
+**IS-functions — check what a cell contains:**
+
+| Function | Returns TRUE when | Example |
+|----------|------------------|---------|
+| `ISNUMBER(value)` | Cell contains a **numeric value** | `=ISNUMBER(42)` → TRUE |
+| `ISTEXT(value)` | Cell contains **text** | `=ISTEXT("Hello")` → TRUE |
+| `ISBLANK(value)` | Cell is **empty** | `=ISBLANK(A1)` → TRUE if A1 is empty |
+| `ISFORMULA(ref)` | Cell contains a **formula** | `=ISFORMULA(B2)` → TRUE if B2 has `=SUM(...)` |
+| `ISERROR(value)` | Cell contains an **error** | `=ISERROR(A1)` → TRUE if A1 shows #N/A etc. |
+| `ISLOGICAL(value)` | Cell contains **TRUE or FALSE** | `=ISLOGICAL(TRUE)` → TRUE |
+
+**Why each wrong option points to a different function:**
+
+| Option | What you actually need |
+|--------|------------------------|
+| a ❌ Cell contains a date | Dates ARE stored as numbers — `ISNUMBER` returns TRUE for dates too; no dedicated `ISDATE` exists |
+| b ❌ Cell contains a formula | `=ISFORMULA(A1)` |
+| c ✅ Cell contains a numeric value | **`=ISNUMBER(A1)`** |
+| d ❌ Cell contains text | `=ISTEXT(A1)` |
+
+**Used inside IF for data validation:**
+```
+=IF(ISNUMBER(A1), "Valid", "Must be a number")
+=IF(ISBLANK(A1), "Required!", A1)
+=IF(ISTEXT(A1), UPPER(A1), A1)
+```
+
+> **Exam tip (multiple choice):** `ISNUMBER` checks for **numeric values**. The IS-function family all return TRUE/FALSE and are commonly nested inside `IF` to validate cell contents before processing.
+```
+=CHOOSE(index_num, value1, value2, value3, ...)
+
+=CHOOSE(1, "Apple","Banana","Cherry")  → "Apple"
+=CHOOSE(2, "Apple","Banana","Cherry")  → "Banana"
+=CHOOSE(3, "Apple","Banana","Cherry")  → "Cherry"
+```
+
+| index_num | Returns | Error? |
+|-----------|---------|--------|
+| 1 | value1 | |
+| 2 | value2 | |
+| 3 | value3 | |
+| 0 or > count | nothing | #VALUE! |
+
+**How CHOOSE differs from similar functions:**
+| Function | How it selects |
+|----------|----------------|
+| `CHOOSE` | By **index number** (1, 2, 3…) |
+| `SWITCH` | By **matching a value** to cases |
+| `IFS` | By **logical condition** (TRUE/FALSE) |
+| `INDEX` | By **row/column position** in a range |
+
+**Real-world use:** Convert WEEKDAY number to day name:
+```
+=CHOOSE(WEEKDAY(A1), "Sun","Mon","Tue","Wed","Thu","Fri","Sat")
+```
+WEEKDAY returns 1–7, CHOOSE picks the matching name.
+
+> **Exam tip (True/False):** "CHOOSE returns a value from a list of values based on a specified index number" — **True**. The first argument is always the position (1-based), the remaining arguments are the values to pick from.
+
+**TEXT Functions:**
+```
+=TRIM(A1)        Remove extra spaces
+=PROPER(A1)      Capitalize first letters
+=UPPER(A1)       ALL CAPS
+=LEFT(A1,5)      First 5 characters
+=LEN(A1)         Number of CHARACTERS (not words)
+=CONCATENATE(A1," ",B1)  or  =A1&" "&B1   Join text
+=TEXT(B2,"0.0%")  Format a number as percentage text
+```
+
+**LEN in depth — characters vs words:**
+
+LEN = **Len**gth. It counts every single character including spaces:
+```
+=LEN("Hello World")   → 11   (H-e-l-l-o-[space]-W-o-r-l-d)
+=LEN("Data")          → 4
+=LEN("")              → 0
+```
+
+LEN does **not** count words. To count words you need a workaround:
+```
+=LEN(TRIM(A1)) - LEN(SUBSTITUTE(A1," ","")) + 1
+```
+
+| Step | Formula piece | What it does |
+|------|---------------|--------------|
+| 1 | `TRIM(A1)` | Remove leading/trailing/extra spaces |
+| 2 | `LEN(TRIM(A1))` | Total character count |
+| 3 | `SUBSTITUTE(A1," ","")` | Remove ALL spaces |
+| 4 | `LEN(...)` of step 3 | Character count without spaces |
+| 5 | Step 2 − Step 4 + 1 | Spaces = words − 1, so +1 = word count |
+
+**Example:** "Hello World" → LEN=11, no-spaces LEN=10, difference=1 space → 1+1 = **2 words** ✓
+
+> **Exam tip (True/False):** "LEN can be used to count the number of words in a cell" — **False**. LEN counts **characters**. Counting words requires combining LEN with SUBSTITUTE and TRIM. On its own, `=LEN("Hello World")` returns 11 (characters), not 2 (words).
+
+**Date Functions:**
+```
+=TODAY()                      Today's date (no arguments needed)
+=NOW()                        Current date & time
+=DATE(year, month, day)       Build a date from three separate values
+=YEAR(A1)                     Extract the year from a date
+=MONTH(A1)                    Extract the month (1–12) from a date
+=DAY(A1)                      Extract the day (1–31) from a date
+=DATEDIF(A1,TODAY(),"D")      Days between two dates
+```
+
+**DATE() in depth:**  
+`=DATE(year, month, day)` creates an Excel date serial number from three numeric arguments.  
+- `=DATE(2026, 2, 19)` → 19/02/2026  
+- `=DATE(A2, B2, C2)` → combines year/month/day stored in separate cells  
+- Useful when importing data where year, month, and day arrive as separate columns  
+
+> **Exam tip (True/False):** "The DATE function allows you to create a date by specifying year, month, and day as separate arguments" — **True**.
+                """,
+                "key_points": [
+                    "XLOOKUP is the modern replacement for VLOOKUP — works in both directions",
+                    "INDEX/MATCH works in all Excel versions and is more flexible",
+                    "IFERROR wraps any formula to handle errors gracefully",
+                    "COUNTIFS / SUMIFS accept multiple criteria (AND logic)",
+                    "DATE(year, month, day) builds a date from three separate numeric arguments — useful when year/month/day are in different cells",
+                    "CHOOSE(index, val1, val2, …) returns the value at the given index position — index 1 = first value",
+                    "LEN counts characters, not words — =LEN('Hello World') returns 11, not 2",
+                    "OFFSET(ref, rows, cols) returns a reference shifted by rows/columns from a starting cell — useful for dynamic ranges",
+                    "COUNTIFS counts rows where ALL conditions are TRUE simultaneously (AND logic) — add the S suffix for multiple criteria",
+                    "ISNUMBER returns TRUE if a cell contains a numeric value — ISTEXT, ISBLANK, ISFORMULA, ISERROR cover the other types"
+                ]
+            },
+            {
+                "title": "1.8 Data Validation & Workbook Protection",
+                "content": """
+**Controlling What Users Can Enter**
+
+**Data Validation:**
+`Data → Data Validation`
+
+Prevents incorrect data entry before it happens — much better than cleaning it after.
+
+**Validation Types:**
+| Type | Example Use Case |
+|------|-----------------|
+| Whole Number | Age must be between 0 and 120 |
+| Decimal | Score must be between 0.0 and 100.0 |
+| List | Region must be North, South, East, or West |
+| Date | Date must be between 01/01/2020 and today |
+| Text Length | Code must be exactly 5 characters |
+| Custom formula | `=AND(A1>=0, A1<=100)` |
+
+**Creating a Dropdown List:**
+1. Select destination cells (e.g. E2:E31)
+2. Data → Data Validation → Allow: List
+3. Source: type `North,South,East,West` (comma-separated)
+   — or select a range like `$H$1:$H$4` for a dynamic list
+
+**Input Message & Error Alert:**
+- **Input Message** tab: shows a tooltip when the cell is selected
+- **Error Alert** tab: configure Stop (blocks invalid), Warning (warns), or Information (just notifies)
+
+**Protecting a Worksheet:**
+`Review → Protect Sheet`
+- Set a password (optional)
+- Choose what users CAN still do (select cells, format, etc.)
+- Prevents accidental edits to formulas or structural data
+
+**Protecting Specific Cells:**
+By default, ALL cells are "Locked". To allow editing in some cells:
+1. Select the cells you want editable
+2. `Home → Format → Format Cells → Protection → uncheck Locked`
+3. Then protect the sheet — only the unlocked cells remain editable
+
+**Workbook Protection:**
+`Review → Protect Workbook` — prevents adding/moving/deleting sheets
+
+**Hiding Formulas:**
+Format Cells → Protection → check Hidden → Protect Sheet  
+(Users see results but cannot see the formula in the formula bar)
+
+**SPF Practical Example:**
+Student entry form with validation:
+- Name column: Text length 3–50 characters
+- Score columns: Whole number 0–100, Error Alert "Stop", message "Score must be 0–100"
+- Class column: Dropdown list → Class A, Class B, Class C
+                """,
+                "key_points": [
+                    "Data Validation is in the Data tab — 'List' creates dropdowns",
+                    "Uncheck 'Locked' on editable cells, then Protect Sheet",
+                    "Stop error alerts completely block invalid entries",
+                    "Workbook Protection prevents sheet structure changes"
+                ]
+            },
+            {
+                "title": "1.9 Power Query — Importing & Transforming Data",
+                "content": """
+**Power Query: Get & Transform Data**
+
+Power Query lets you connect to external data sources, clean and reshape data, and refresh automatically — all without writing formulas.
+
+**Where to find it:**
+`Data → Get & Transform Data → Get Data`
+
+**Common Data Sources:**
+
+| Source | Import path | Structured? |
+|--------|------------|-------------|
+| **Excel Workbook** | `Get Data → From File → From Workbook` | ✅ Yes |
+| **CSV / Text file** | `Get Data → From File → From Text/CSV` | ✅ Yes |
+| **Access Database** | `Get Data → From Database → From Microsoft Access Database` | ✅ Yes |
+| **SQL Server** | `Get Data → From Database → From SQL Server` | ✅ Yes |
+| **Web (HTML table)** | `Get Data → From Other Sources → From Web` | ✅ Yes |
+| **SharePoint / OneDrive** | `Get Data → From Online Services` | ✅ Yes |
+| **JSON / XML** | `Get Data → From File → From JSON / From XML` | ✅ Yes |
+| **PDF** | Technically possible in Excel 365 but ❌ **not a common structured source** | ⚠️ Unreliable |
+
+> **Exam tip (multiple choice):** "Which is NOT a common dataset type Excel can import?" — **PDF**. CSV, Access Databases, and Excel Workbooks are all standard structured import sources with full native support. PDF is a fixed-layout presentation format designed for humans to read, not for machines to parse as data. Even though Excel 365 added experimental PDF import via Power Query, it is not considered a common or reliable data source.
+
+**Opening Power Query Editor:**
+`Data → Get Data → From File → From Excel/CSV`  
+After selecting a file, click **Transform Data** (not Load) to open the editor.
+
+**Common Transformations:**
+
+| Task | Power Query Action |
+|------|--------------------|
+| Remove columns | Right-click column → Remove |
+| Rename columns | Double-click column header |
+| Change data type | Click type icon (ABC, 123, Date) |
+| Filter rows | Column dropdown → filter |
+| Remove duplicate rows | Home → Remove Rows → Remove Duplicates |
+| Fill down empty cells | Transform → Fill → Down |
+| Split column | Transform → Split Column → By Delimiter |
+| Merge (join) tables | Home → Merge Queries |
+| Append tables | Home → Append Queries (stack rows) |
+| Pivot/Unpivot | Transform → Pivot Column / Unpivot Columns |
+
+**Applied Steps:**
+Every transformation is saved as a step in the right panel.  
+- Click any step to preview that stage of data
+- Delete or reorder steps if needed
+- Steps are written in **M language** (Power Query Formula Language)
+
+**Loading Data:**
+`Home → Close & Load` — loads data into a **new worksheet** as a Table (default)  
+`Home → Close & Load To…` — opens the Import Data dialog with six destination options:
+
+| # | Destination | Description |
+|---|-------------|-------------|
+| 1 | **Table — New worksheet** | Same as plain Close & Load; creates a new sheet (default) |
+| 2 | **Table — Existing worksheet** | Places the table at a cell you specify on any existing sheet |
+| 3 | **PivotTable Report** | Loads data directly into a new PivotTable (no sheet table) |
+| 4 | **PivotChart** | Loads data directly into a new PivotChart with an associated PivotTable |
+| 5 | **Only Create Connection** | No data written to any sheet — keeps the query available to feed the Data Model or other queries |
+| 6 | **Add to Data Model** | Loads into Power Pivot's in-memory model for relationships and DAX measures |
+
+> ⚠️ **Exam tip:** "Close & Load" and "Close & Load To…" behave differently. You are **not** limited to a new worksheet — there are six load destinations in total.
+
+**Refreshing:**
+When source file changes: `Data → Refresh All`  
+All Power Query connections update automatically.
+
+**Example Workflow — Importing a CSV File into Excel:**
+
+**What a CSV file looks like (it is already plain text — no conversion needed):**
+```
+Name,Age,Department,Salary
+Alice,32,Marketing,55000
+Bob,28,Engineering,72000
+```
+
+**The actual import steps:**
+
+| Step | Action | Notes |
+|------|--------|-------|
+| 1 | Open Excel (new workbook) | You need an open workbook to import into |
+| 2 | `Data → Get Data → From File → From Text/CSV` | Launches the file browser |
+| 3 | **Navigate to the CSV file location** and select it | Browse folders to find your file |
+| 4 | Excel previews data — **confirm the delimiter** (comma, semicolon, tab…) | Excel usually auto-detects; verify it is correct |
+| 5 | Click **Load** or **Transform Data** | Load = straight to sheet; Transform = open Power Query editor |
+
+**What is NOT a step:**
+- ❌ **Converting the data to plain text** — CSV files ARE already plain text (`.csv` = comma-separated values stored as text). No pre-conversion is ever required before importing.
+
+> **Exam tip (multiple choice):** The step that is NOT involved in importing a CSV is **"converting the data to plain text format"**. CSV is a plain text format by definition. The real steps are: open a workbook, navigate to the file, confirm the delimiter, and load.
+
+**Full workflow with Power Query:**
+1. Data → Get Data → From File → From CSV
+2. Transform Data → opens editor
+3. Rename columns to "Name", "Maths", "Science", "English"
+4. Change Maths/Science/English to decimal type
+5. Remove any blank rows (Home → Remove Rows → Remove Blank Rows)
+6. Close & Load → new sheet with clean table
+7. Later: replace CSV file with new version → Refresh All → table updates instantly
+                """,
+                "key_points": [
+                    "Power Query records every step — fully repeatable and auditable",
+                    "Refresh All updates all queries when source data changes",
+                    "Merge Queries = JOIN, Append Queries = stack rows vertically",
+                    "Change data type early — numbers imported as text cause formula errors",
+                    "Close & Load To… offers 6 destinations: new worksheet, existing worksheet, PivotTable, PivotChart, Connection Only, or Add to Data Model — you are NOT limited to a new worksheet",
+                    "Common import sources: CSV, Excel Workbook, Access Database, SQL Server, Web, JSON/XML — PDF is NOT a standard structured import source",
+                    "CSV files are already plain text — no conversion is needed before importing; the real steps are: open workbook, navigate to file, confirm delimiter, load"
+                ]
+            },
+            {
+                "title": "1.10 Macros & Automation with VBA",
+                "content": """
+**Automating Repetitive Tasks**
+
+**What is a Macro?**
+A macro is a recorded sequence of actions — or a small program written in VBA (Visual Basic for Applications) — that you can replay with one click or a keyboard shortcut.
+
+**Option A: Record a Macro (No coding required)**
+1. `View → Macros → Record Macro`
+2. Give it a name (no spaces) and optionally assign a shortcut key
+3. Choose where to store it (This Workbook vs Personal Macro Workbook)
+4. Perform your actions
+5. `View → Macros → Stop Recording`
+6. Run it: `View → Macros → View Macros → Run`
+
+**Option B: Write VBA**
+`Developer tab → Visual Basic` (or `Alt+F11`)
+
+```vba
+' Simple VBA example — highlight cells below 60 in Maths column
+Sub HighlightFails()
+    Dim ws As Worksheet
+    Dim cell As Range
+
+    Set ws = ThisWorkbook.Sheets("Sheet1")
+
+    For Each cell In ws.Range("B2:B31")
+        If cell.Value < 60 Then
+            cell.Interior.Color = RGB(255, 0, 0)  ' Red fill
+        Else
+            cell.Interior.ColorIndex = xlNone     ' Clear fill
+        End If
+    Next cell
+
+    MsgBox "Done! Fails highlighted in red."
+End Sub
+```
+
+**Common VBA Concepts:**
+| Concept | Meaning |
+|---------|---------|
+| `Sub` / `End Sub` | Start and end a macro |
+| `Dim x As Type` | Declare a variable (Integer, String, Range…) |
+| `For Each … Next` | Loop through cells |
+| `If … Then … Else … End If` | Conditional logic |
+| `Range("A1")` | Reference a cell or range |
+| `MsgBox "text"` | Show a popup message |
+| `Cells(row, col)` | Reference a cell by row/column numbers |
+| `ws.Range("B2:B31")` | Range on a specific sheet |
+
+**Excel File Formats — Know the Difference:**
+
+| Format | Full Name | Default for | Stores Macros? |
+|--------|-----------|-------------|----------------|
+| **.xls** | Excel 97-2003 Workbook | Excel 97–2003 *(legacy)* | Yes (binary, legacy) |
+| **.xlsx** | Excel Workbook (Open XML) | **Excel 2007–present ← current default** | ❌ No |
+| **.xlsm** | Excel Macro-Enabled Workbook | When VBA/macros are needed | ✅ Yes |
+| **.xlsb** | Excel Binary Workbook | Very large files (faster) | ✅ Yes |
+| **.csv** | Comma-Separated Values | Data exchange / import | ❌ No |
+
+> **Exam tip (True/False):** "XLS is the default file format in recent versions of Microsoft Excel" — **False**. **.xlsx** has been the default since Excel 2007. **.xls** is the *legacy* binary format from Excel 97–2003.
+
+**Save as Macro-Enabled Workbook:**
+`File → Save As → Excel Macro-Enabled Workbook (.xlsm)`  
+⚠ Standard `.xlsx` files strip macros when saved.
+
+**Assigning a Button:**
+1. `Developer → Insert → Button (Form Control)`
+2. Draw the button on the sheet
+3. Assign Macro → select your macro
+4. Click the button to run it
+
+**Security Note:**
+Macros can be used maliciously. Only enable macros from trusted sources.  
+`File → Options → Trust Center → Macro Settings → Disable all with notification`
+
+**Pro Tip — Personal Macro Workbook:**
+Store frequently used macros in the Personal Macro Workbook so they are available in every Excel file you open.
+                """,
+                "key_points": [
+                    "Record a macro for actions you repeat regularly — no coding needed",
+                    "VBA macros use Sub / End Sub and are written in the Visual Basic Editor (Alt+F11)",
+                    "Save as .xlsm to preserve macros — .xlsx removes them",
+                    "Assign macros to buttons for one-click execution",
+                    ".xlsx is the current default format (since Excel 2007) — .xls is the legacy Excel 97-2003 format"
+                ]
+            },
+            {
+                "title": "1.11 Example Exam Assignment — CA Lesson 1 Dataset",
+                "content": """
+**CA Lesson 1 Dataset — Worked Exam Assignment (Q21)**
+
+This is the full worked solution for the CA Lesson 1 exam assignment.  
+The dataset is: **CA Lesson 1 dataset.xlsx** — 20 rows of daily product sales.
+
+---
+
+**The Dataset (20 rows):**
+
+| Row | Date | Product ID | Units Sold | Price per Unit |
+|-----|------|-----------|-----------|---------------|
+| 2 | 2023-09-01 | P001 | 15 | $10 |
+| 3 | 2023-09-02 | P002 | 10 | $12 |
+| 4 | 2023-09-03 | P001 | 20 | $10 |
+| 5 | 2023-09-04 | P003 | 5 | $15 |
+| 6 | 2023-09-05 | P002 | 12 | $12 |
+| 7 | 2023-09-06 | P001 | 18 | $10 |
+| 8 | 2023-09-07 | P004 | 8 | $14 |
+| 9 | 2023-09-08 | P002 | 9 | $12 |
+| 10 | 2023-09-09 | P001 | 25 | $10 |
+| 11 | 2023-09-10 | P003 | 7 | $15 |
+| 12 | 2023-09-11 | P002 | 14 | $12 |
+| 13 | 2023-09-12 | P001 | 22 | $10 |
+| 14 | 2023-09-13 | P004 | 10 | $14 |
+| 15 | 2023-09-14 | P002 | 11 | $12 |
+| 16 | 2023-09-15 | P001 | 28 | $10 |
+| 17 | 2023-09-16 | P003 | 6 | $15 |
+| 18 | 2023-09-17 | P002 | 16 | $12 |
+| 19 | 2023-09-18 | P001 | 24 | $10 |
+| 20 | 2023-09-19 | P004 | 9 | $14 |
+| 21 | 2023-09-20 | P002 | 13 | $12 |
+
+*Columns: A=Date, B=Product ID, C=Units Sold, D=Price per Unit (header in row 1, data in rows 2–21)*
+
+---
+
+**Q21.1 — Total number of units sold for all products combined**
+
+> **Answer: 282**
+
+```
+=SUM(C2:C21)
+```
+**Why:** SUM adds every value in the Units Sold column (C2 to C21) in one operation.  
+Verify: 15+10+20+5+12+18+8+9+25+7+14+22+10+11+28+6+16+24+9+13 = **282**
+
+---
+
+**Q21.2 — Average price per unit for all products**
+
+> **Answer: 12.05**
+
+```
+=AVERAGE(D2:D21)
+```
+**Why:** AVERAGE sums all Price per Unit values and divides by the count.  
+The prices in the dataset are: $10 (×7 for P001), $12 (×7 for P002), $15 (×3 for P003), $14 (×3 for P004).  
+Calculation: (10×7 + 12×7 + 15×3 + 14×3) ÷ 20 = (70+84+45+42) ÷ 20 = 241 ÷ 20 = **12.05**
+
+---
+
+**Q21.3 — Highest number of units sold for a single product on any given day**
+
+> **Answer: 28**
+
+```
+=MAX(C2:C21)
+```
+**Why:** MAX scans all 20 values in Units Sold and returns the largest.  
+Scanning the data: the row 2023-09-15, P001, **28 units** is the highest.
+
+---
+
+**Q21.4 — Lowest price per unit among all products**
+
+> **Answer: 10**
+
+```
+=MIN(D2:D21)
+```
+**Why:** MIN returns the smallest value in the range.  
+The prices are $10, $12, $14, $15 — the minimum is **$10** (P001 rows).
+
+---
+
+**Q21.5 — Number of days when product "P002" was sold**
+
+> **Answer: 7**
+
+```
+=COUNTIF(B2:B21,"P002")
+```
+**Why:** COUNTIF counts every cell in B2:B21 that exactly matches "P002".  
+P002 appears on: Sep 02, Sep 05, Sep 08, Sep 11, Sep 14, Sep 17, Sep 20 = **7 days**
+
+---
+
+**Q21.6 — IF P001 on September 10th > 20: "High Sales", else "Low Sales"**
+
+> **Answer: Low Sales**
+
+```
+=IF(SUMIFS(C2:C21, A2:A21, DATE(2023,9,10), B2:B21, "P001")>20, "High Sales", "Low Sales")
+```
+**Why:** Look at the dataset — on 2023-09-10, the product sold was **P003** (not P001).  
+There is no P001 entry on September 10th.  
+`SUMIFS` returns **0** for P001 on Sep 10 (no matching rows).  
+Since 0 is NOT greater than 20 → condition is FALSE → result = **"Low Sales"**
+
+| What Excel checks | Value |
+|------------------|-------|
+| SUMIFS(P001 + Sep10) | 0 |
+| 0 > 20? | FALSE |
+| Result | **Low Sales** |
+
+---
+
+**Q21.7 — "Product Details" column = Product ID concatenated with Price per Unit for 2023-09-16**
+
+> **Answer: P003$15**
+
+```
+=B17&D17
+```
+(Row 17 = date 2023-09-16)
+
+**Why:** The `&` operator (or `=CONCAT(B17,D17)`) joins the two cell values as text.  
+Row 17: Product ID = **P003**, Price per Unit = **$15** (stored as text with $ sign)  
+P003 + $15 = **P003$15**
+
+---
+
+**Q21.8 — Leftmost 4 characters of Product ID for row with date 2023-09-06**
+
+> **Answer: P001**
+
+```
+=LEFT(B7, 4)
+```
+(Row 7 = date 2023-09-06)
+
+**Why:** `LEFT(text, num_chars)` extracts characters from the start of the string.  
+Row 7: Product ID = **P001** — and P001 is exactly 4 characters long.  
+LEFT(P001, 4) = **P001**
+
+| Character position | 1 | 2 | 3 | 4 |
+|-------------------|---|---|---|---|
+| Character | P | 0 | 0 | 1 |
+| LEFT(4) extracts | ✅ | ✅ | ✅ | ✅ |
+
+---
+
+**Q21.9 — Rightmost 3 characters of Product ID for row with date 2023-09-14**
+
+> **Answer: 002**
+
+```
+=RIGHT(B15, 3)
+```
+(Row 15 = date 2023-09-14)
+
+**Why:** `RIGHT(text, num_chars)` extracts characters from the END of the string.  
+Row 15: Product ID = **P002**  
+RIGHT(P002, 3) counts 3 chars from the right → **002**
+
+| Character position | 1 | 2 | 3 | 4 |
+|-------------------|---|---|---|---|
+| Character | P | 0 | 0 | 2 |
+| RIGHT(3) extracts | ❌ | ✅ | ✅ | ✅ |
+
+---
+
+**Summary of all 9 answers:**
+
+| Q | Task | Excel Formula | Answer |
+|---|------|--------------|--------|
+| 21.1 | Total units sold | `=SUM(C2:C21)` | **282** |
+| 21.2 | Average price per unit | `=AVERAGE(D2:D21)` | **12.05** |
+| 21.3 | Highest units sold (one day) | `=MAX(C2:C21)` | **28** |
+| 21.4 | Lowest price per unit | `=MIN(D2:D21)` | **10** |
+| 21.5 | Days P002 was sold | `=COUNTIF(B2:B21,"P002")` | **7** |
+| 21.6 | P001 on Sep 10 > 20? | `=IF(SUMIFS(...)>20,"High Sales","Low Sales")` | **Low Sales** |
+| 21.7 | Product Details (Sep 16) | `=B17&D17` | **P003$15** |
+| 21.8 | Left 4 chars (Sep 06) | `=LEFT(B7,4)` | **P001** |
+| 21.9 | Right 3 chars (Sep 14) | `=RIGHT(B15,3)` | **002** |
+
+---
+
+**How to do each one step-by-step in Excel:**
+
+**Before you start — open the file:**
+1. Open Excel → `File → Open` → select **CA Lesson 1 dataset.xlsx**
+2. Your data is in columns A (Date), B (Product ID), C (Units Sold), D (Price per Unit)
+3. Row 1 = headers. Data is in rows 2–21.
+4. Click an **empty cell** (e.g. F2) to enter your answer formula
+
+---
+
+**Q21.1 — SUM: Total units sold**
+```
+Steps in Excel:
+1. Click an empty cell (e.g. F2)
+2. Type:  =SUM(C2:C21)
+3. Press Enter
+4. Result: 282
+```
+> **What Excel does:** Adds every number in C2 through C21 in one step.  
+> You can also click the AutoSum button (Σ) on the Home tab → select the range → Enter.
+
+---
+
+**Q21.2 — AVERAGE: Mean price per unit**
+```
+Steps in Excel:
+1. Click an empty cell (e.g. F3)
+2. Type:  =AVERAGE(D2:D21)
+3. Press Enter
+4. Result: 12.05
+```
+> **What Excel does:** Sums all values in D2:D21 then divides by 20 (the count).  
+> ⚠ The Price per Unit column has a $ sign — if Excel stored it as TEXT, you need  
+> to strip the $ first using: =AVERAGE(VALUE(SUBSTITUTE(D2:D21,"$","")))  
+> (Enter as array formula with Ctrl+Shift+Enter in older Excel versions)
+
+---
+
+**Q21.3 — MAX: Highest units sold**
+```
+Steps in Excel:
+1. Click an empty cell (e.g. F4)
+2. Type:  =MAX(C2:C21)
+3. Press Enter
+4. Result: 28
+```
+> **What Excel does:** Scans every cell in C2:C21 and returns the largest number.  
+> Tip: To find WHICH row has the max, use: =MATCH(MAX(C2:C21),C2:C21,0)+1  
+> This returns row number 16 → row 16 = 2023-09-15, P001.
+
+---
+
+**Q21.4 — MIN: Lowest price per unit**
+```
+Steps in Excel:
+1. Click an empty cell (e.g. F5)
+2. Type:  =MIN(D2:D21)
+3. Press Enter
+4. Result: 10
+```
+> **What Excel does:** Finds the smallest value in the range. Opposite of MAX.
+
+---
+
+**Q21.5 — COUNTIF: Count days P002 was sold**
+```
+Steps in Excel:
+1. Click an empty cell (e.g. F6)
+2. Type:  =COUNTIF(B2:B21,"P002")
+3. Press Enter
+4. Result: 7
+```
+> **What Excel does:** Goes through every cell B2 to B21.  
+> If the cell value exactly matches "P002" → counts it. Total = 7.  
+> ⚠ The criteria "P002" MUST be in double quotes — it is a text string.  
+> Without quotes: =COUNTIF(B2:B21,P002) → Excel treats P002 as a cell address → wrong.
+
+---
+
+**Q21.6 — IF + SUMIFS: Conditional "High Sales" / "Low Sales"**
+```
+Steps in Excel:
+1. Click an empty cell (e.g. F7)
+2. Type:  =IF(SUMIFS(C2:C21,B2:B21,"P001",A2:A21,DATE(2023,9,10))>20,"High Sales","Low Sales")
+3. Press Enter
+4. Result: Low Sales
+```
+
+**Step 1 — Look at the actual data for September 10th:**
+
+| Row | Date | Product ID | Units Sold |
+|-----|------|-----------|-----------|
+| 11 | 2023-09-10 | **P003** | 7 |
+
+September 10th has **P003**, not P001. P001 was never sold on that date.  
+P001 only appears on: Sep 01, 03, 06, 09, 12, 15, 18 — it skips Sep 10 entirely.
+
+**Step 2 — What SUMIFS returns when there is no match:**
+```
+SUMIFS(C2:C21,          ← sum the Units Sold column
+       B2:B21,"P001",   ← Condition 1: Product ID must = "P001"
+       A2:A21,DATE(...))← Condition 2: Date must = 2023-09-10
+```
+SUMIFS requires **both conditions to be true at the same time** in the same row.  
+No single row has BOTH P001 AND Sep 10 → SUMIFS finds **zero matching rows** → returns **0**.
+
+**Step 3 — The IF logic:**
+```
+IF( 0 > 20, "High Sales", "Low Sales" )
+       ↓
+    FALSE  →  "Low Sales"
+```
+`0 > 20` is **FALSE**, so Excel goes to the *else* branch → **"Low Sales"**
+
+> **The exam trap:** The question says "P001 on September 10th" — but if you check  
+> the data, P001 simply does not exist on that date. The exam is testing whether  
+> you actually look at the data rather than assume the product was sold every day.
+
+**Memory rule:**
+```
+Row EXISTS  → SUMIFS returns the number → check if > 20
+Row MISSING → SUMIFS returns 0          → 0 > 20 = FALSE = "Low Sales"
+```
+
+---
+
+**Q21.7 — Concatenation: Product Details for Sep 16**
+```
+Steps in Excel:
+1. Click cell E2 (to create the new "Product Details" column)
+2. Type the header in E1:  Product Details
+3. In E2, type:  =B2&D2   then press Enter
+4. Double-click the fill handle (bottom-right corner of E2) to copy down to E21
+5. Find row 17 (date 2023-09-16) → result in E17: P003$15
+```
+
+**Step 1 — Find the row for 2023-09-16:**
+
+| Row | Date | Product ID (col B) | Price per Unit (col D) |
+|-----|------|--------------------|----------------------|
+| 17 | 2023-09-16 | **P003** | **$15** |
+
+**Step 2 — What "concatenate" means:**
+
+Concatenate = **join two pieces of text together into one string**, no maths involved.
+
+**There are 2 methods in Excel — both give the exact same result:**
+
+| Method | Formula | When to use |
+|--------|---------|-------------|
+| **Method 1 — & operator** | `=B17&D17` | Quickest to type; works in all Excel versions |
+| **Method 2 — CONCAT()** | `=CONCAT(B17,D17)` | More readable; good when joining many cells |
+
+```
+Method 1:  =B17&D17           → P003$15
+Method 2:  =CONCAT(B17,D17)   → P003$15
+```
+Both take whatever text is in B17, stick whatever text is in D17 directly onto the end,  
+with **no space or separator** between them.
+
+**Step 3 — What the cells actually contain:**
+```
+B17 = "P003"   ← text — the product code
+D17 = "$15"    ← text — stored with the dollar sign as part of the string
+
+"P003" & "$15"
+      ↓
+  "P003$15"
+```
+
+> **Why "$15" and not just "15"?**  
+> The Price per Unit column was entered/stored as **text with the $ already included** —  
+> it is not a number formatted as currency. If it were a pure number (15), the result  
+> would be `P00315`. Because the cell contains the text string `$15`, you get `P003$15`.
+
+> **Exam trap:** The question asks for a specific row (Sep 16), not just any row.  
+> You must look up which product is on that date first (P003, $15), then concatenate —  
+> picking the wrong row gives the wrong answer.
+
+> If you want a space between them: `=B17&" "&D17` → "P003 $15"  
+> If you want a dash: `=B17&"-"&D17` → "P003-$15"
+
+**What does this mean in a real-world scenario?**
+
+Imagine you work in a warehouse. You have a spreadsheet with separate columns for:
+- **Product ID** (e.g. P003)
+- **Price per Unit** (e.g. $15)
+
+Your manager asks you to generate a **single label** for each product to print on a shelf tag or export to another system. Instead of manually typing "P003$15" for every row, you use concatenation to **build the label automatically from the existing data**.
+
+Real examples of when you would use this:
+
+| Situation | Columns joined | Result |
+|-----------|---------------|--------|
+| Shelf label | Product ID + Price | `P003$15` |
+| Full name from separate columns | First name + " " + Last name | `John Smith` |
+| Address line | Street + ", " + City | `Main St, Oslo` |
+| Product code + size | Code + "-" + Size | `SHIRT-XL` |
+| Email from name + domain | Username + "@" + Domain | `john@noroff.no` |
+
+> **Key insight:** Concatenation does NOT change the original data in columns B and D.  
+> It creates a **new combined value** in a new column — the source cells stay untouched.  
+> This is why you always put the formula in a **new column (E)**, not over the existing data.
+
+---
+
+**Q21.8 — LEFT: Extract first 4 characters (Sep 06)**
+```
+Steps in Excel:
+1. Click an empty cell (e.g. G7)
+2. Type:  =LEFT(B7,4)
+3. Press Enter
+4. Result: P001
+```
+
+**Step 1 — Find the row for 2023-09-06:**
+
+| Row | Date | Product ID (col B) |
+|-----|------|-------------------|
+| 7 | 2023-09-06 | **P001** |
+
+**Step 2 — What LEFT does:**
+
+`LEFT(text, num_chars)` starts at the **first character** and counts right, extracting however many characters you ask for.
+```
+=LEFT(B7, 4)
+       ↑   ↑
+       |   └── how many characters to extract from the left
+       └─────── the cell containing the text
+```
+
+**Step 3 — Count the characters in P001:**
+```
+P  0  0  1
+↑  ↑  ↑  ↑
+1  2  3  4   ← character positions
+
+LEFT(4) extracts positions 1, 2, 3, 4  →  P001
+```
+Since `P001` is exactly 4 characters long, `LEFT(4)` returns the **entire string**.
+
+> **Why is this useful in practice?**  
+> Imagine product codes like `P001-BLUE-XL` — you only want the base code `P001`.  
+> `LEFT(4)` pulls just those 4 characters and ignores everything after them.  
+> In this dataset the IDs happen to be exactly 4 chars, so it returns the whole  
+> thing — but the skill is the same for any longer code.
+
+**LEFT vs RIGHT vs MID — comparison on "P001":**
+
+| Function | What it extracts | Result |
+|----------|-----------------|--------|
+| `=LEFT(B7, 4)` | First 4 from the **start** | `P001` |
+| `=LEFT(B7, 2)` | First 2 from the start | `P0` |
+| `=RIGHT(B7, 3)` | Last 3 from the **end** | `001` |
+| `=MID(B7, 2, 2)` | 2 chars starting at position 2 | `00` |
+
+---
+
+**Q21.9 — RIGHT: Extract last 3 characters (Sep 14)**
+```
+Steps in Excel:
+1. Click an empty cell (e.g. G15)
+2. Type:  =RIGHT(B15,3)
+3. Press Enter
+4. Result: 002
+```
+
+**Step 1 — Find the row for 2023-09-14:**
+
+| Row | Date | Product ID (col B) |
+|-----|------|-------------------|
+| 15 | 2023-09-14 | **P002** |
+
+**Step 2 — What RIGHT does:**
+
+`RIGHT(text, num_chars)` starts at the **last character** and counts backwards (left), extracting however many characters you ask for.
+```
+=RIGHT(B15, 3)
+        ↑    ↑
+        |    └── how many characters to extract from the right
+        └──────── the cell containing the text
+```
+
+**Step 3 — Count the characters in P002:**
+```
+P  0  0  2
+↑  ↑  ↑  ↑
+1  2  3  4   ← character positions from the LEFT
+
+RIGHT(3) counts 3 from the END:
+         ↑  ↑  ↑
+         2  3  4  ← these positions are extracted  →  "002"
+```
+The `P` at position 1 is **not included** — only the last 3 characters are pulled.
+
+**Why "002" and not "P002" or just "2"? — RIGHT with different numbers:**
+
+| Formula | Characters extracted | Result |
+|---------|---------------------|--------|
+| `=RIGHT(B15, 1)` | last 1 → `2` | `2` |
+| `=RIGHT(B15, 2)` | last 2 → `02` | `02` |
+| `=RIGHT(B15, 3)` | last 3 → `002` | **002** ← exam answer |
+| `=RIGHT(B15, 4)` | last 4 → `P002` | `P002` |
+
+> **Why is RIGHT useful in practice?**  
+> Imagine order codes like `ORD-2026-002` — you only want the last 3 digits (the order  
+> number `002`). `RIGHT(3)` extracts just that, regardless of what came before it.
+
+| Situation | Full code | RIGHT(3) extracts |
+|-----------|-----------|-------------------|
+| Order number suffix | `ORD-2026-002` | `002` |
+| Product suffix in this exam | `P002` | `002` |
+| Last 3 of phone | `+4712345678` | `678` |
+| Country code at end | `PROD-NO` | `-NO` |
+
+> **LEFT vs RIGHT — the key difference:**  
+> `LEFT` counts from the **start** → gives you the beginning of the text  
+> `RIGHT` counts from the **end** → gives you the tail of the text  
+> Both need: the cell and the number of characters to extract.
+                """,
+                "key_points": [
+                    "SUM, AVERAGE, MAX, MIN operate on a numeric range — always check column letters match your dataset",
+                    "COUNTIF(range, criteria) counts cells that match — criteria must be in quotes for text: \"P002\"",
+                    "IF + SUMIFS combo: SUMIFS returns 0 when no row matches — 0 > 20 is FALSE so the result is the else value",
+                    "& (ampersand) concatenates text from two cells — same as CONCAT(A,B)",
+                    "LEFT(text, n) extracts n chars from the start; RIGHT(text, n) extracts n chars from the end",
+                    "In this dataset row 7 = Sep 06, row 15 = Sep 14, row 17 = Sep 16 (row 1 is the header)"
+                ],
+                "dataset_file": "CA Lesson 1 dataset - Resolved.xlsx"
+            },
+            {
+                "title": "1.12 Example Exam Assignment — CA Lesson 3 Dataset (Lookup Functions)",
+                "content": """
+**CA Lesson 3 Dataset — Worked Exam Assignment (Q22)**
+
+The dataset is: **CA Lesson 3 dataset.xlsx** — 20 employees.
+
+---
+
+**The Dataset (20 rows):**
+
+| Row | Employee ID | Employee Name | Department | Salary |
+|-----|------------|--------------|-----------|--------|
+| 2 | 101 | Alice | HR | 50000 |
+| 3 | 102 | Bob | IT | 60000 |
+| 4 | 103 | Carol | Sales | 55000 |
+| 5 | 104 | Dave | IT | 62000 |
+| 6 | 105 | Eve | HR | 48000 |
+| 7 | 106 | Frank | Sales | 56000 |
+| 8 | 107 | Grace | Finance | 58000 |
+| 9 | 108 | Harry | IT | 63000 |
+| 10 | 109 | Irene | HR | 52000 |
+| 11 | 110 | Jack | Sales | 57000 |
+| 12 | 111 | Karen | IT | 61000 |
+| 13 | 112 | Leo | Finance | 59000 |
+| 14 | 113 | Maria | Sales | 54000 |
+| 15 | 114 | Neil | Finance | 57000 |
+| 16 | 115 | Olivia | HR | 49000 |
+| 17 | 116 | Paul | IT | 64000 |
+| 18 | 117 | Quin | Sales | 58000 |
+| 19 | 118 | Rachel | HR | 51000 |
+| 20 | 119 | Sam | Finance | 60000 |
+| 21 | 120 | Tina | IT | 62000 |
+
+*Columns: A=Employee ID, B=Employee Name, C=Department, D=Salary. Header row 1, data rows 2–21.*
+
+---
+
+**Q22.1 — Carol's salary using VLOOKUP**
+
+> **Answer: 55000**
+> **Formula: =VLOOKUP("Carol",B2:D21,3,FALSE)**
+
+**Step 1 — Find Carol in the dataset:**
+
+| Row | Employee Name (col B) | Department (col C) | Salary (col D) |
+|-----|-----------------------|-------------------|---------------|
+| 4 | **Carol** | Sales | **55000** |
+
+**Step 2 — How VLOOKUP works (annotated):**
+```
+=VLOOKUP( "Carol" , B2:D21 , 3 , FALSE )
+           ↑          ↑       ↑     ↑
+           │          │       │     └── FALSE = exact match (always use this)
+           │          │       └──────── col 3 of the table = D (Salary)
+           │          └──────────────── search this table (B=Name, C=Dept, D=Salary)
+           └─────────────────────────── what to search for
+```
+
+**Step 3 — Why col_index = 3?**
+
+VLOOKUP counts columns from the **start of your table range**, not from column A:
+```
+Table range B2:D21:
+  Column B = position 1 (Employee Name)  ← VLOOKUP searches HERE
+  Column C = position 2 (Department)
+  Column D = position 3 (Salary)         ← col_index 3 returns THIS
+```
+
+> **Exam trap:** If you use `A2:D21` instead of `B2:D21`, the col_index for Salary becomes 4.  
+> The col_index always counts from the FIRST column of the range you specify.
+
+**Why the other col_index values are wrong:**
+
+| col_index | Returns | Result |
+|-----------|---------|--------|
+| 1 | Employee Name | Carol |
+| 2 | Department | Sales |
+| **3** | **Salary** ✅ | **55000** |
+| 4 | Error — doesn't exist in B:D | #REF! |
+
+**Steps in Excel:**
+```
+1. Click an empty cell (e.g. F2)
+2. Type:  =VLOOKUP("Carol",B2:D21,3,FALSE)
+3. Press Enter → 55000
+```
+
+---
+
+**Q22.2 — Paul's department using VLOOKUP**
+
+> **Answer: IT**
+> **Formula: =VLOOKUP("Paul",B2:D21,2,FALSE)**
+
+**Step 1 — Find Paul in the dataset:**
+
+| Row | Employee Name (col B) | Department (col C) | Salary (col D) |
+|-----|-----------------------|-------------------|---------------|
+| 17 | **Paul** | **IT** | 64000 |
+
+**Step 2 — How VLOOKUP works here:**
+```
+=VLOOKUP( "Paul" , B2:D21 , 2 , FALSE )
+           ↑          ↑       ↑     ↑
+           │          │       │     └── exact match
+           │          │       └──────── col 2 of the table = C (Department)
+           │          └──────────────── search table B:D
+           └─────────────────────────── find "Paul"
+```
+
+**Step 3 — Why col_index = 2 this time?**
+```
+  Column B = position 1 (Employee Name)  ← VLOOKUP searches HERE
+  Column C = position 2 (Department)     ← col_index 2 returns THIS
+  Column D = position 3 (Salary)
+```
+
+**Comparison — Q22.1 vs Q22.2:**
+
+| Question | Looking for | Returns | col_index |
+|----------|------------|---------|-----------|
+| Q22.1 Carol | Salary (col D) | 55000 | 3 |
+| Q22.2 Paul | Department (col C) | IT | **2** |
+
+> **Memory rule:** Count how far RIGHT your target column is from the FIRST column of the range.
+
+**Steps in Excel:**
+```
+1. Click an empty cell
+2. Type:  =VLOOKUP("Paul",B2:D21,2,FALSE)
+3. Press Enter → IT
+```
+
+---
+
+**Q22.3 — Maria's salary using INDEX and MATCH**
+
+> **Answer: 54000**
+> **Formula: =INDEX(D2:D21,MATCH("Maria",B2:B21,0))**
+
+**Step 1 — Find Maria in the dataset:**
+
+| Row | Employee Name (col B) | Salary (col D) |
+|-----|-----------------------|---------------|
+| 14 | **Maria** | **54000** |
+
+**Step 2 — This is TWO functions working together. Solve inside-out:**
+```
+Inner:  MATCH("Maria", B2:B21, 0)
+        ↓ scans B2:B21 for "Maria" → she is the 13th name in the list
+        ↓ returns: 13
+
+Outer:  INDEX(D2:D21, 13)
+        ↓ returns the 13th value in D2:D21
+        ↓ returns: 54000
+```
+
+**Step 3 — Visual walkthrough:**
+```
+B2:B21 names list:         D2:D21 salary list:
+ 1. Alice                   1. 50000
+ 2. Bob                     2. 60000
+ 3. Carol                   3. 55000
+ ...                        ...
+13. Maria  ← MATCH finds   13. 54000  ← INDEX returns this
+ ...         position 13    ...
+```
+
+**Why use INDEX+MATCH instead of VLOOKUP?**
+
+| Feature | VLOOKUP | INDEX+MATCH |
+|---------|---------|-------------|
+| Search column | Must be LEFTMOST | Can be ANY column |
+| Return column | Must be to the RIGHT | Can be LEFT or RIGHT |
+| Breaking when columns inserted | Yes — col_index shifts | No — ranges are explicit |
+| Nested flexibility | Limited | Can combine with other functions easily |
+
+**Steps in Excel:**
+```
+1. Click an empty cell
+2. Type:  =INDEX(D2:D21,MATCH("Maria",B2:B21,0))
+3. Press Enter → 54000
+```
+
+> **Tip:** Always build the MATCH part first and test it alone before wrapping in INDEX.  
+> `=MATCH("Maria",B2:B21,0)` → should return 13. Then add the INDEX wrapper.
+
+---
+
+**Q22.4 — Row position of highest salary using MATCH**
+
+> **Answer: 16**
+> **Formula: =MATCH(MAX(D2:D21),D2:D21,0)**
+
+**Step 1 — What is the highest salary?**
+```
+MAX(D2:D21) → scans all 20 salaries → highest = 64000 (Paul, row 17)
+```
+
+**Step 2 — MATCH finds where 64000 sits in the range:**
+```
+=MATCH( MAX(D2:D21) , D2:D21 , 0 )
+         ↑                ↑      ↑
+         │                │      └── 0 = exact match
+         │                └───────── search in this range
+         └────────────────────────── what to find (=64000)
+
+D2:D21 positions:
+ Position 1  → Alice   50000
+ Position 2  → Bob     60000
+ ...
+ Position 16 → Paul    64000  ← MATCH returns 16
+ ...
+ Position 20 → Tina    62000
+```
+
+**Step 3 — Important: position ≠ Excel row number**
+
+| What MATCH returns | What it means |
+|--------------------|---------------|
+| 16 | 64000 is the **16th value** in the range D2:D21 |
+| NOT 16 | It does NOT mean Excel row 16 |
+| Excel row = 17 | Because D2 is row 2, so position 16 = row 2+15 = row **17** |
+
+> **Exam trap:** MATCH(MAX(...)) returns the position within the RANGE (1=first cell of range),  
+> not the spreadsheet row number. Paul is position 16 in D2:D21, but lives in Excel row 17.
+
+**Steps in Excel:**
+```
+1. Click an empty cell
+2. Type:  =MATCH(MAX(D2:D21),D2:D21,0)
+3. Press Enter → 16
+```
+
+---
+
+**Q22.5 — Sum of salaries for first 5 employees using OFFSET**
+
+> **Answer: 275000**
+> **Formula: =SUM(OFFSET(D2,0,0,5,1))**
+
+**Step 1 — Which 5 employees are "first 5"?**
+
+| Row | Employee | Salary |
+|-----|---------|--------|
+| 2 | Alice | 50000 |
+| 3 | Bob | 60000 |
+| 4 | Carol | 55000 |
+| 5 | Dave | 62000 |
+| 6 | Eve | 48000 |
+| | **Total** | **275000** |
+
+**Step 2 — OFFSET argument by argument:**
+```
+=OFFSET( D2 , 0 , 0 , 5 , 1 )
+          ↑    ↑   ↑   ↑   ↑
+          │    │   │   │   └── width = 1 column wide
+          │    │   │   └────── height = 5 rows tall
+          │    │   └────────── move 0 columns right (stay in col D)
+          │    └────────────── move 0 rows down (stay at D2)
+          └─────────────────── starting cell = D2 (Alice's salary)
+
+Result: a range reference to D2:D6
+```
+
+**Step 3 — OFFSET creates the range, SUM adds it up:**
+```
+OFFSET(D2,0,0,5,1) = D2:D6
+
+D2: 50000 ┐
+D3: 60000 │
+D4: 55000 ├── SUM(D2:D6) = 275000
+D5: 62000 │
+D6: 48000 ┘
+```
+
+> **Why use OFFSET instead of just =SUM(D2:D6)?**  
+> OFFSET builds the range **dynamically**. You can change the 5 to any number and it  
+> automatically expands. Useful in dashboards where the number of rows to sum changes.
+
+**Steps in Excel:**
+```
+1. Click an empty cell
+2. Type:  =SUM(OFFSET(D2,0,0,5,1))
+3. Press Enter → 275000
+```
+
+---
+
+**Q22.6 — Irene's department using INDEX and MATCH**
+
+> **Answer: HR**
+> **Formula: =INDEX(C2:C21,MATCH("Irene",B2:B21,0))**
+
+**Step 1 — Find Irene in the dataset:**
+
+| Row | Employee Name (col B) | Department (col C) |
+|-----|----------------------|-------------------|
+| 10 | **Irene** | **HR** |
+
+**Step 2 — Two-step calculation:**
+```
+Inner:  MATCH("Irene", B2:B21, 0)
+        → Irene is the 9th name in B2:B21
+        → returns: 9
+
+Outer:  INDEX(C2:C21, 9)
+        → returns the 9th value in C2:C21 (Department column)
+        → returns: HR
+```
+
+**Step 3 — Compare Q22.3 vs Q22.6 (same technique, different return column):**
+
+| Question | MATCH searches | INDEX returns from | Answer |
+|----------|---------------|-------------------|--------|
+| Q22.3 Maria salary | B2:B21 (Names) | D2:D21 (Salary) | 54000 |
+| Q22.6 Irene dept | B2:B21 (Names) | **C2:C21 (Dept)** | **HR** |
+
+> The MATCH part is identical — only the INDEX column changes depending on what you want to return.
+
+**Steps in Excel:**
+```
+1. Click an empty cell
+2. Type:  =INDEX(C2:C21,MATCH("Irene",B2:B21,0))
+3. Press Enter → HR
+```
+
+---
+
+**Q22.7 — Salary of employee in 15th row using INDIRECT**
+
+> **Answer: 57000**
+> **Formula: =INDIRECT("D15")**
+
+**Step 1 — Which employee is in Excel row 15?**
+```
+Row 1:  Header (Employee ID, Name, Department, Salary)
+Row 2:  Alice     (employee 1)
+Row 3:  Bob       (employee 2)
+Row 4:  Carol
+Row 5:  Dave
+Row 6:  Eve
+Row 7:  Frank
+Row 8:  Grace
+Row 9:  Harry
+Row 10: Irene
+Row 11: Jack
+Row 12: Karen
+Row 13: Leo
+Row 14: Maria
+Row 15: Neil      ← D15 = 57000
+Row 16: Olivia
+...
+```
+
+**Step 2 — What INDIRECT does:**
+```
+=INDIRECT("D15")
+           ↑
+           text string → Excel treats it as a cell address → reads D15 → 57000
+```
+
+INDIRECT converts a **text string into a live cell reference**. It does not go to the cell directly — it reads the text, parses it as an address, then fetches that cell's value.
+
+**Step 3 — Why is this useful?**
+```
+Normal formula:   =D15           ← hardcoded, always reads D15
+INDIRECT formula: =INDIRECT("D15")   ← same result, but...
+
+Dynamic version:  =INDIRECT("D"&A1)  ← if A1 contains 15, reads D15
+                                        change A1 to 16 → reads D16 (Olivia, 49000)
+```
+
+> **Exam trap:** "Row 15" means Excel row 15 (D15), not the 15th employee.  
+> The 15th employee (Olivia) is in Excel row 16 because row 1 is the header.  
+> Neil in row 15 is the **14th employee** — D15 = 57000.
+
+**Steps in Excel:**
+```
+1. Click an empty cell
+2. Type:  =INDIRECT("D15")
+3. Press Enter → 57000
+```
+
+---
+
+**Q22.8 — Grace's salary using LOOKUP**
+
+> **Answer: 58000**
+> **Formula: =LOOKUP("Grace",B2:B21,D2:D21)**
+
+**Step 1 — Find Grace in the dataset:**
+
+| Row | Employee Name (col B) | Salary (col D) |
+|-----|----------------------|---------------|
+| 8 | **Grace** | **58000** |
+
+**Step 2 — LOOKUP argument by argument:**
+```
+=LOOKUP( "Grace" , B2:B21 , D2:D21 )
+          ↑          ↑         ↑
+          │          │         └── result vector: return value from here
+          │          └──────────── lookup vector: search in this column
+          └─────────────────────── what to find
+```
+
+LOOKUP scans B2:B21 for "Grace", finds it at position 7, then returns the 7th value from D2:D21 = 58000.
+
+**Step 3 — The critical requirement: data MUST be sorted**
+
+LOOKUP uses a **binary search** (splits the list in half repeatedly). This only works correctly if the lookup vector is in ascending order.
+
+```
+This dataset: Alice, Bob, Carol, Dave, Eve, Frank, Grace...  ← alphabetical ✅
+LOOKUP works correctly.
+
+If unsorted: Sam, Alice, Grace, Paul, Bob...
+LOOKUP may return wrong results or #N/A ❌
+```
+
+**LOOKUP vs VLOOKUP vs XLOOKUP — when to use each:**
+
+| Function | Sorted needed? | Syntax complexity | Use when... |
+|----------|---------------|-----------------|-------------|
+| LOOKUP | Yes ✅ | Simple (3 args) | Data is sorted, quick lookup |
+| VLOOKUP | No (FALSE) | Medium (4 args) | Standard lookup, all Excel versions |
+| XLOOKUP | No | Simple (3+ args) | Modern Excel, need flexibility |
+
+**Steps in Excel:**
+```
+1. Click an empty cell
+2. Type:  =LOOKUP("Grace",B2:B21,D2:D21)
+3. Press Enter → 58000
+```
+
+---
+
+**Q22.9 — Sam's salary using XLOOKUP**
+
+> **Answer: 60000**
+> **Formula: =XLOOKUP("Sam",B2:B21,D2:D21)**
+
+**Step 1 — Find Sam in the dataset:**
+
+| Row | Employee Name (col B) | Salary (col D) |
+|-----|-----------------------|---------------|
+| 20 | **Sam** | **60000** |
+
+**Step 2 — XLOOKUP argument by argument:**
+```
+=XLOOKUP( "Sam" , B2:B21 , D2:D21 )
+           ↑         ↑         ↑
+           │         │         └── return_array: get value from D column
+           │         └──────────── lookup_array: search in B column (Names)
+           └────────────────────── lookup_value: find "Sam"
+```
+
+Sam is at position 19 in B2:B21 → XLOOKUP returns the 19th value from D2:D21 = 60000.
+
+**Step 3 — XLOOKUP vs VLOOKUP side by side on the same task:**
+```
+VLOOKUP:   =VLOOKUP("Sam", B2:D21, 3, FALSE)
+            ↑ table must include BOTH search and return columns
+            ↑ must count col_index (3) manually
+
+XLOOKUP:   =XLOOKUP("Sam", B2:B21, D2:D21)
+            ↑ search range and return range are SEPARATE
+            ↑ no col_index to count — just point at the return column
+```
+
+**XLOOKUP extra power — optional 4th argument:**
+```
+=XLOOKUP("Sam",B2:B21,D2:D21,"Not found")
+                               ↑
+                               if "Sam" is not in the list, show this
+                               instead of the #N/A error
+```
+
+**Why XLOOKUP is the modern choice:**
+
+| Feature | VLOOKUP | XLOOKUP |
+|---------|---------|---------|
+| Return column direction | RIGHT only | Left OR right |
+| col_index to maintain | Yes — breaks if columns inserted | No — explicit range |
+| Missing value error | #N/A | Optional fallback text |
+| Sorted data needed | No (FALSE) | No |
+| Available in | All Excel | Excel 365 / 2021+ only |
+
+**Steps in Excel:**
+```
+1. Click an empty cell
+2. Type:  =XLOOKUP("Sam",B2:B21,D2:D21)
+3. Press Enter → 60000
+```
+
+---
+
+**Summary of all 9 formula answers:**
+
+| Q | Task | Formula (no spaces) | Answer |
+|---|------|---------------------|--------|
+| 22.1 | Carol's salary (VLOOKUP) | `=VLOOKUP("Carol",B2:D21,3,FALSE)` | **55000** |
+| 22.2 | Paul's department (VLOOKUP) | `=VLOOKUP("Paul",B2:D21,2,FALSE)` | **IT** |
+| 22.3 | Maria's salary (INDEX+MATCH) | `=INDEX(D2:D21,MATCH("Maria",B2:B21,0))` | **54000** |
+| 22.4 | Position of highest salary (MATCH) | `=MATCH(MAX(D2:D21),D2:D21,0)` | **16** |
+| 22.5 | Sum first 5 salaries (OFFSET) | `=SUM(OFFSET(D2,0,0,5,1))` | **275000** |
+| 22.6 | Irene's department (INDEX+MATCH) | `=INDEX(C2:C21,MATCH("Irene",B2:B21,0))` | **HR** |
+| 22.7 | Salary in row 15 (INDIRECT) | `=INDIRECT("D15")` | **57000** |
+| 22.8 | Grace's salary (LOOKUP) | `=LOOKUP("Grace",B2:B21,D2:D21)` | **58000** |
+| 22.9 | Sam's salary (XLOOKUP) | `=XLOOKUP("Sam",B2:B21,D2:D21)` | **60000** |
+                """,
+                "key_points": [
+                    "VLOOKUP(value, table, col_index, FALSE) — col_index counts from the first column of the TABLE RANGE, not column A",
+                    "INDEX+MATCH is more flexible than VLOOKUP — can search any column and return any column",
+                    "MATCH returns the relative position (1-based) within the lookup range, not the Excel row number",
+                    "OFFSET(start, rows, cols, height, width) builds a dynamic range — wrap in SUM/AVERAGE to aggregate it",
+                    "INDIRECT converts a text string like \"D15\" into a live cell reference — row 15 = Neil (14th employee), not Olivia",
+                    "LOOKUP requires the lookup column to be sorted ascending; VLOOKUP and XLOOKUP do not (with FALSE/exact match)",
+                    "XLOOKUP is the modern replacement for VLOOKUP — no col_index needed, works left or right, optional fallback value"
+                ],
+                "dataset_file": "CA Lesson 3 dataset - Resolved.xlsx"
+            },
+            {
+                "title": "1.13 Example Exam Assignment — CA Lesson 4 Dataset (Conditional & Lookup Functions)",
+                "content": """
+**CA Lesson 4 Dataset — Worked Exam Assignment (Q23)**
+
+The dataset is: **CA Lesson 4 dataset.xlsx** — 20 employees.
+
+**Column layout (rows 2–21, row 1 = headers):**
+
+| Col | Header | Example values |
+|-----|--------|---------------|
+| A | Employee ID | 1–20 |
+| B | Employee Name | Alice Smith, Bob Johnson … |
+| C | Department | Sales, Finance, IT, HR |
+| D | Salary | 52000–63000 |
+| E | Years of Service | 1–4 |
+| F | Bonus Percentage | 0.05–0.10 (5 %–10 %) |
+
+**Full dataset reference:**
+
+| Row | Employee Name | Dept | Salary | Yrs | Bonus % |
+|-----|--------------|------|--------|-----|---------|
+| 2 | Alice Smith | Sales | 55000 | 2 | 5 % |
+| 3 | Bob Johnson | Finance | 59000 | 3 | 7 % |
+| 4 | Carol Williams | IT | 60000 | 4 | 6 % |
+| 5 | Dave Davis | HR | 52000 | 1 | 8 % |
+| 6 | Eve Brown | Sales | 56000 | 2 | 6 % |
+| 7 | Frank Lee | Finance | 57000 | 3 | 7 % |
+| 8 | Grace Martin | IT | 58000 | 4 | 6.5 % |
+| 9 | Harry Wilson | HR | 53000 | 1 | 8.5 % |
+| 10 | Irene Hall | Sales | 54000 | 2 | 5.5 % |
+| 11 | Jack White | Finance | 59000 | 3 | 7.5 % |
+| 12 | Karen Miller | IT | 61000 | 4 | 6.5 % |
+| 13 | Leo Robinson | HR | 53000 | 1 | 9 % |
+| 14 | Maria Garcia | Sales | 55000 | 2 | 5 % |
+| 15 | Neil Taylor | Finance | 58000 | 3 | 8 % |
+| 16 | Olivia Harris | IT | 62000 | 4 | 7 % |
+| 17 | Paul Anderson | HR | 54000 | 1 | 9.5 % |
+| 18 | Quin Lewis | Sales | 56000 | 2 | 6 % |
+| 19 | Rachel Turner | Finance | 59000 | 3 | 8.5 % |
+| 20 | Sam Scott | IT | 63000 | 4 | 7.5 % |
+| 21 | Tina Moore | HR | 55000 | 1 | 10 % |
+
+---
+
+**Q23.1 — Maximum salary in Sales with ≥ 2 years of service (MAXIFS)**
+
+> **Answer: 56000**
+> **Formula: =MAXIFS(D2:D21,C2:C21,"Sales",E2:E21,">=2")**
+
+**Step 1 — Filter: Department = Sales AND Years of Service ≥ 2:**
+
+| Row | Employee | Dept | Salary | Yrs |
+|-----|---------|------|--------|-----|
+| 2 | Alice Smith | Sales | 55000 | 2 ✅ |
+| 6 | Eve Brown | Sales | **56000** | 2 ✅ |
+| 10 | Irene Hall | Sales | 54000 | 2 ✅ |
+| 14 | Maria Garcia | Sales | 55000 | 2 ✅ |
+| 18 | Quin Lewis | Sales | **56000** | 2 ✅ |
+
+All 5 qualify. MAX = **56000** (Eve Brown AND Quin Lewis are tied).
+
+**Step 2 — MAXIFS argument by argument:**
+```
+=MAXIFS( D2:D21 , C2:C21 , "Sales" , E2:E21 , ">=2" )
+          ↑          ↑        ↑          ↑        ↑
+          │          │        │          │        └── condition 2: years >= 2
+          │          │        │          └─────────── range 2: Years of Service column
+          │          │        └────────────────────── condition 1: department = Sales
+          │          └─────────────────────────────── range 1: Department column
+          └────────────────────────────────────────── max_range: find the max here
+```
+
+**Step 3 — Why MAXIFS and not MAX + IF?**
+
+| Approach | Formula | Downside |
+|----------|---------|---------|
+| Old method | =MAX(IF((C2:C21="Sales")*(E2:E21>=2),D2:D21)) | Array formula — needs Ctrl+Shift+Enter |
+| Modern | =MAXIFS(D2:D21,C2:C21,"Sales",E2:E21,">=2") | Simple Enter — available Excel 2019+ |
+
+> **Exam trap:** The criteria ">=2" is a TEXT STRING — always wrap comparison operators in quotes.  
+> Writing >=2 without quotes will cause an error.
+
+**Steps in Excel:**
+```
+1. Click an empty cell
+2. Type:  =MAXIFS(D2:D21,C2:C21,"Sales",E2:E21,">=2")
+3. Press Enter → 56000
+```
+
+---
+
+**Q23.2 — Minimum bonus percentage in Finance with salary > 58000 (MINIFS)**
+
+> **Answer: 0.07 (7 %)**
+> **Formula: =MINIFS(F2:F21,C2:C21,"Finance",D2:D21,">58000")**
+
+**Step 1 — Filter: Department = Finance AND Salary > 58000:**
+
+| Row | Employee | Dept | Salary | Bonus % |
+|-----|---------|------|--------|---------|
+| 3 | Bob Johnson | Finance | 59000 | **7 %** ← minimum |
+| 11 | Jack White | Finance | 59000 | 7.5 % |
+| 19 | Rachel Turner | Finance | 59000 | 8.5 % |
+
+Frank Lee (57000) and Neil Taylor (58000) are excluded. Frank's salary < 58000; Neil's = 58000, not > 58000.
+
+MIN bonus% = **0.07 = 7 %** (Bob Johnson)
+
+**Step 2 — MINIFS argument by argument:**
+```
+=MINIFS( F2:F21 , C2:C21 , "Finance" , D2:D21 , ">58000" )
+          ↑          ↑        ↑           ↑        ↑
+          │          │        │           │        └── condition 2: salary strictly > 58000
+          │          │        │           └─────────── range 2: Salary column
+          │          │        └────────────────────── condition 1: dept = Finance
+          │          └─────────────────────────────── range 1: Department column
+          └────────────────────────────────────────── min_range: find the minimum here
+```
+
+> **Exam trap:** ">58000" (strictly greater) excludes Neil Taylor (salary = 58000 exactly).  
+> If the question said ">=58000", Neil would also qualify, but Bob Johnson's 7 % would still be the minimum.
+
+**Steps in Excel:**
+```
+1. Click an empty cell
+2. Type:  =MINIFS(F2:F21,C2:C21,"Finance",D2:D21,">58000")
+3. Press Enter → 0.07   (format the cell as % to see 7%)
+```
+
+---
+
+**Q23.3 — Count employees with bonus percentage ≥ 8 % (COUNTIF)**
+
+> **Answer: 7**
+> **Formula: =COUNTIF(F2:F21,">=0.08")**
+
+**Step 1 — Which employees qualify (Bonus % ≥ 8% = ≥ 0.08)?**
+
+| Row | Employee | Bonus % |
+|-----|---------|---------|
+| 5 | Dave Davis | 8 % ✅ |
+| 9 | Harry Wilson | 8.5 % ✅ |
+| 13 | Leo Robinson | 9 % ✅ |
+| 15 | Neil Taylor | 8 % ✅ |
+| 17 | Paul Anderson | 9.5 % ✅ |
+| 19 | Rachel Turner | 8.5 % ✅ |
+| 21 | Tina Moore | 10 % ✅ |
+
+Count = **7**
+
+**Step 2 — COUNTIF argument by argument:**
+```
+=COUNTIF( F2:F21 , ">=0.08" )
+           ↑          ↑
+           │          └── criteria: bonus% must be >= 0.08 (= 8%)
+           └──────────── range: check every cell in Bonus Percentage column
+```
+
+> **Why ">=0.08" and not ">=8%"?**  
+> The column stores the bonus as a decimal (0.08 in the cell, displayed as 8%).  
+> Excel compares the raw stored value, which is 0.08.  
+> Both ">=0.08" and ">=8%" work in Excel, but ">=0.08" is safest and most explicit.
+
+**COUNTIF vs COUNTIFS — when to use each:**
+
+| Function | Conditions | Example |
+|----------|-----------|---------|
+| COUNTIF | ONE condition | Count all bonus% >= 8% |
+| COUNTIFS | TWO or more conditions | Count IT employees with bonus% >= 8% |
+
+**Steps in Excel:**
+```
+1. Click an empty cell
+2. Type:  =COUNTIF(F2:F21,">=0.08")
+3. Press Enter → 7
+```
+
+---
+
+**Q23.4 — Count IT employees with salary > 60000 (COUNTIFS)**
+
+> **Answer: 3**
+> **Formula: =COUNTIFS(C2:C21,"IT",D2:D21,">60000")**
+
+**Step 1 — Filter: Department = IT AND Salary > 60000:**
+
+| Row | Employee | Dept | Salary |
+|-----|---------|------|--------|
+| 4 | Carol Williams | IT | 60000 | ❌ not > 60000 |
+| 8 | Grace Martin | IT | 58000 | ❌ |
+| 12 | Karen Miller | IT | **61000** | ✅ |
+| 16 | Olivia Harris | IT | **62000** | ✅ |
+| 20 | Sam Scott | IT | **63000** | ✅ |
+
+Carol Williams is excluded — salary = 60000, not strictly greater. Count = **3**
+
+**Step 2 — COUNTIFS argument by argument:**
+```
+=COUNTIFS( C2:C21 , "IT" , D2:D21 , ">60000" )
+            ↑         ↑       ↑         ↑
+            │         │       │         └── condition 2: salary strictly > 60000
+            │         │       └──────────── range 2: Salary column
+            │         └──────────────────── condition 1: department = IT
+            └────────────────────────────── range 1: Department column
+```
+
+> **Exam trap:** ">60000" is strictly greater. Carol Williams (60000) does NOT qualify.  
+> Always read conditions carefully: "greater than" ≠ "greater than or equal to."
+
+**Steps in Excel:**
+```
+1. Click an empty cell
+2. Type:  =COUNTIFS(C2:C21,"IT",D2:D21,">60000")
+3. Press Enter → 3
+```
+
+---
+
+**Q23.5 — Average salary of employees with bonus % < 6 % (AVERAGEIF)**
+
+> **Answer: 54666.67**
+> **Formula: =AVERAGEIF(F2:F21,"<0.06",D2:D21)**
+
+**Step 1 — Filter: Bonus Percentage < 6 % (< 0.06):**
+
+| Row | Employee | Salary | Bonus % |
+|-----|---------|--------|---------|
+| 2 | Alice Smith | 55000 | 5 % ✅ |
+| 10 | Irene Hall | 54000 | 5.5 % ✅ |
+| 14 | Maria Garcia | 55000 | 5 % ✅ |
+
+6 % (0.06) itself is NOT included — strictly less than. Count = 3.
+
+**Step 2 — Calculation:**
+```
+Average = (55000 + 54000 + 55000) / 3
+        = 164000 / 3
+        = 54666.666...
+        = 54666.67  (rounded to 2 decimal places)
+```
+
+**Step 3 — AVERAGEIF argument by argument:**
+```
+=AVERAGEIF( F2:F21 , "<0.06" , D2:D21 )
+             ↑          ↑         ↑
+             │          │         └── average_range: calculate average from Salary
+             │          └──────────── criteria: bonus% must be less than 0.06
+             └────────────────────── range: check every cell in Bonus % column
+```
+
+> **Note:** AVERAGEIF has 3 arguments: range (to check), criteria (the condition), and average_range (what to average).  
+> This is the same structure as SUMIF — just a different function name.
+
+**AVERAGEIF vs AVERAGEIFS:**
+
+| Function | Conditions | Formula |
+|----------|-----------|---------|
+| AVERAGEIF | ONE condition | =AVERAGEIF(F2:F21,"<0.06",D2:D21) |
+| AVERAGEIFS | TWO or more | =AVERAGEIFS(D2:D21,F2:F21,"<0.06",C2:C21,"Sales") |
+
+> **Note:** In AVERAGEIFS the average_range comes FIRST; in AVERAGEIF it comes LAST. This is a common exam trap!
+
+**Steps in Excel:**
+```
+1. Click an empty cell
+2. Type:  =AVERAGEIF(F2:F21,"<0.06",D2:D21)
+3. Press Enter → 54666.666...
+4. Format cell to 2 decimal places → 54666.67
+```
+
+---
+
+**Q23.6 — Average bonus percentage in Sales with > 1 year of service (AVERAGEIFS)**
+
+> **Answer: 0.055 (5.5 %)**
+> **Formula: =AVERAGEIFS(F2:F21,C2:C21,"Sales",E2:E21,">1")**
+
+**Step 1 — Filter: Department = Sales AND Years of Service > 1:**
+
+| Row | Employee | Yrs | Bonus % |
+|-----|---------|-----|---------|
+| 2 | Alice Smith | 2 | 5 % |
+| 6 | Eve Brown | 2 | 6 % |
+| 10 | Irene Hall | 2 | 5.5 % |
+| 14 | Maria Garcia | 2 | 5 % |
+| 18 | Quin Lewis | 2 | 6 % |
+
+All 5 Sales employees have exactly 2 years — all qualify (2 > 1).
+
+**Step 2 — Calculation:**
+```
+Average = (0.05 + 0.06 + 0.055 + 0.05 + 0.06) / 5
+        = 0.275 / 5
+        = 0.055  =  5.5 %
+```
+
+**Step 3 — AVERAGEIFS argument by argument:**
+```
+=AVERAGEIFS( F2:F21 , C2:C21 , "Sales" , E2:E21 , ">1" )
+              ↑          ↑        ↑          ↑        ↑
+              │          │        │          │        └── condition 2: years > 1
+              │          │        │          └─────────── range 2: Years of Service
+              │          │        └────────────────────── condition 1: dept = Sales
+              │          └─────────────────────────────── range 1: Department column
+              └────────────────────────────────────────── average_range: Bonus % column
+```
+
+> **Key difference AVERAGEIFS vs AVERAGEIF argument order:**
+> - AVERAGEIF:  range, criteria, **average_range** (average_range is argument 3)
+> - AVERAGEIFS: **average_range**, range1, criteria1, range2, criteria2 (average_range is argument 1)
+
+**Steps in Excel:**
+```
+1. Click an empty cell
+2. Type:  =AVERAGEIFS(F2:F21,C2:C21,"Sales",E2:E21,">1")
+3. Press Enter → 0.055
+4. Format cell as Percentage → 5.50%
+```
+
+---
+
+**Q23.7 — Bonus Amount column G with IFERROR division formula (IFERROR)**
+
+> **Answer formula: =IFERROR(G2/F2,"Error")**
+> *(Step 1: create G2 = D2*F2 for Bonus Amount first)*
+
+**Step 1 — Where does 2750 come from?**
+
+2750 is **not given** in the dataset — you calculate it yourself in column G first.
+
+The question says: *"Add a Column 'Bonus Amount' in Column G."*  
+So G2 must be built using the Salary (D2) and Bonus Percentage (F2) already in the dataset:
+
+| Cell | Column | Value | Source |
+|------|--------|-------|--------|
+| D2 | Salary | 55000 | Given in dataset |
+| F2 | Bonus % | 0.05 | Given in dataset (= 5 %) |
+| **G2** | **Bonus Amount** | **2750** | **=D2*F2 ← you create this** |
+
+```
+G2 = D2 * F2
+   = 55000 × 0.05
+   = 2750   ← Alice's bonus amount (5% of her salary)
+```
+
+In cell G1 type: `Bonus Amount`
+In cell G2 type: `=D2*F2`
+
+More examples to confirm the pattern:
+```
+G2 = 55000 × 0.05 = 2750   ← Alice  (Sales, 5%)
+G3 = 59000 × 0.07 = 4130   ← Bob    (Finance, 7%)
+G4 = 60000 × 0.06 = 3600   ← Carol  (IT, 6%)
+```
+
+**Step 2 — The IFERROR formula that divides G by F:**
+```
+=IFERROR( G2/F2 , "Error" )
+           ↑   ↑    ↑
+           │   │    └── value_if_error: display this text if division fails
+           │   └──────── divisor: Bonus Percentage (F2)
+           └──────────── numerator: Bonus Amount (G2) = Salary × Bonus%
+```
+
+**Step 3 — What does dividing G2 by F2 give?**
+```
+G2 / F2 = (D2 × F2) / F2 = D2 = Salary
+
+Alice:  2750 / 0.05 = 55000  (Alice's salary recovered)
+Bob:    4130 / 0.07 = 59000
+Carol:  3600 / 0.06 = 60000
+```
+
+The formula recovers the original salary — useful as a cross-check or when you only have the bonus amount and percentage.
+
+**Step 4 — Why IFERROR protects the formula:**
+```
+If F2 = 0:   G2/F2 → division by zero → #DIV/0! error
+With IFERROR: shows "Error" instead of crashing the spreadsheet
+```
+
+> **Exam tip:** IFERROR(value, value_if_error) is the MODERN way to handle errors.  
+> The older method was: =IF(ISERROR(G2/F2),"Error",G2/F2) — much longer.  
+> Always prefer IFERROR in current exam answers.
+
+| Approach | Formula | Length |
+|----------|---------|--------|
+| Modern | =IFERROR(G2/F2,"Error") | Short ✅ |
+| Old ISERROR | =IF(ISERROR(G2/F2),"Error",G2/F2) | Long |
+
+**Steps in Excel:**
+```
+1. In G1 type:  Bonus Amount
+2. In G2 type:  =D2*F2   → 2750
+3. In H2 type:  =IFERROR(G2/F2,"Error")   → 55000
+4. (or put the IFERROR formula directly in G2 if that is what is asked)
+```
+
+---
+
+**Q23.8 — Grace Martin's salary using LOOKUP**
+
+> **Answer: 58000**
+> **Formula: =LOOKUP("Grace Martin",B2:B21,D2:D21)**
+
+**Step 1 — Find Grace Martin in the dataset:**
+
+| Row | Employee Name (col B) | Salary (col D) |
+|-----|-----------------------|---------------|
+| 8 | **Grace Martin** | **58000** |
+
+**Step 2 — LOOKUP argument by argument:**
+```
+=LOOKUP( "Grace Martin" , B2:B21 , D2:D21 )
+          ↑                  ↑         ↑
+          │                  │         └── result vector: return value from Salary col
+          │                  └──────────── lookup vector: search in Employee Name col
+          └─────────────────────────────── lookup value: find exactly this name
+```
+
+**Step 3 — The sorted requirement:**
+
+LOOKUP uses binary search — it requires the lookup vector to be sorted A→Z.
+
+```
+Check: Are B2:B21 names in alphabetical order?
+Alice Smith ← A
+Bob Johnson ← B
+Carol Williams ← C
+Dave Davis ← D
+Eve Brown ← E
+Frank Lee ← F
+Grace Martin ← G  ✅ LOOKUP finds her here
+...
+Sam Scott ← S
+Tina Moore ← T
+
+Yes — alphabetical ✅  LOOKUP works correctly.
+```
+
+> **Exam trap:** Using LOOKUP on unsorted names will give wrong results.  
+> For unsorted data, use VLOOKUP("Grace Martin",B2:D21,3,FALSE) or XLOOKUP instead.
+
+**Steps in Excel:**
+```
+1. Click an empty cell
+2. Type:  =LOOKUP("Grace Martin",B2:B21,D2:D21)
+3. Press Enter → 58000
+```
+
+---
+
+**Q23.9 — Sam Scott's salary using XLOOKUP**
+
+> **Answer: 63000**
+> **Formula: =XLOOKUP("Sam Scott",B2:B21,D2:D21)**
+
+**Step 1 — Find Sam Scott in the dataset:**
+
+| Row | Employee Name (col B) | Salary (col D) |
+|-----|-----------------------|---------------|
+| 20 | **Sam Scott** | **63000** |
+
+**Step 2 — XLOOKUP argument by argument:**
+```
+=XLOOKUP( "Sam Scott" , B2:B21 , D2:D21 )
+           ↑               ↑         ↑
+           │               │         └── return_array: get salary from D column
+           │               └──────────── lookup_array: search in B column (Names)
+           └──────────────────────────── lookup_value: find "Sam Scott"
+```
+
+XLOOKUP scans B2:B21 for "Sam Scott", finds him at position 19, returns D20 = 63000.
+
+**Step 3 — Why "Sam Scott" needs the full name here:**
+
+Q22.9 (Lesson 1.12 dataset) had only first names. This dataset has full names (first + last). The formula must match the EXACT value in the cell.
+
+```
+=XLOOKUP("Sam",B2:B21,D2:D21)        → #N/A — "Sam" does not exist in B column
+=XLOOKUP("Sam Scott",B2:B21,D2:D21)  → 63000 ✅
+```
+
+**Step 4 — Optionally add a fallback for not-found:**
+```
+=XLOOKUP("Sam Scott",B2:B21,D2:D21,"Not found")
+                                    ↑
+                                    shows "Not found" instead of #N/A if name missing
+```
+
+**XLOOKUP vs VLOOKUP for this task:**
+```
+VLOOKUP: =VLOOKUP("Sam Scott",B2:D21,3,FALSE)  → 63000 (col_index = 3 for D)
+XLOOKUP: =XLOOKUP("Sam Scott",B2:B21,D2:D21)   → 63000 (no col_index needed)
+```
+
+**Steps in Excel:**
+```
+1. Click an empty cell
+2. Type:  =XLOOKUP("Sam Scott",B2:B21,D2:D21)
+3. Press Enter → 63000
+```
+
+---
+
+**Summary of all 9 formula answers:**
+
+| Q | Task | Formula | Answer |
+|---|------|---------|--------|
+| 23.1 | Max salary Sales ≥ 2 yrs (MAXIFS) | `=MAXIFS(D2:D21,C2:C21,"Sales",E2:E21,">=2")` | **56000** |
+| 23.2 | Min bonus% Finance salary>58000 (MINIFS) | `=MINIFS(F2:F21,C2:C21,"Finance",D2:D21,">58000")` | **0.07 (7%)** |
+| 23.3 | Count bonus% ≥ 8% (COUNTIF) | `=COUNTIF(F2:F21,">=0.08")` | **7** |
+| 23.4 | Count IT salary>60000 (COUNTIFS) | `=COUNTIFS(C2:C21,"IT",D2:D21,">60000")` | **3** |
+| 23.5 | Avg salary bonus%<6% (AVERAGEIF) | `=AVERAGEIF(F2:F21,"<0.06",D2:D21)` | **54666.67** |
+| 23.6 | Avg bonus% Sales >1 yr (AVERAGEIFS) | `=AVERAGEIFS(F2:F21,C2:C21,"Sales",E2:E21,">1")` | **0.055 (5.5%)** |
+| 23.7 | Bonus Amount ÷ Bonus% with error trap (IFERROR) | `=IFERROR(G2/F2,"Error")` | **55000** (for Alice) |
+| 23.8 | Grace Martin salary (LOOKUP) | `=LOOKUP("Grace Martin",B2:B21,D2:D21)` | **58000** |
+| 23.9 | Sam Scott salary (XLOOKUP) | `=XLOOKUP("Sam Scott",B2:B21,D2:D21)` | **63000** |
+                """,
+                "key_points": [
+                    "MAXIFS / MINIFS: max_or_min_range first, then pairs of (criteria_range, criteria) — criteria strings must be quoted",
+                    "COUNTIF for one condition; COUNTIFS for two or more conditions — criteria like '>60000' must be in quotes",
+                    "AVERAGEIF argument order: (range, criteria, average_range) — average_range is LAST",
+                    "AVERAGEIFS argument order: (average_range, range1, criteria1, ...) — average_range is FIRST",
+                    "IFERROR(value, value_if_error) is the modern compact way to suppress errors like #DIV/0! and #N/A",
+                    "LOOKUP requires the lookup vector to be sorted ascending; use VLOOKUP with FALSE or XLOOKUP for unsorted data",
+                    "XLOOKUP needs the exact value as it appears in the cell — 'Sam Scott' not just 'Sam' when full names are stored"
+                ],
+                "dataset_file": "CA Lesson 4 dataset - Resolved.xlsx"
+            },
+            {
+                "title": "1.14 Example Exam Assignment — CA Lesson 2 Dataset (Date, Time & Text Functions)",
+                "content": """
+**CA Lesson 2 Dataset — Worked Exam Assignment (Q24)**
+
+The dataset is: **CA Lesson 2 dataset.xlsx** — 20 orders.
+
+**Column layout (rows 2–21, row 1 = headers):**
+
+| Col | Header | Example values |
+|-----|--------|---------------|
+| A | Order ID | 1–20 |
+| B | Customer Name | John Smith, Jane Doe … |
+| C | Order Date | 2023-10-01 to 2023-10-20 |
+| D | Order Time | 09:15 to 16:30 |
+| E | Order Amount | 65.45–150.80 |
+
+**Full dataset reference:**
+
+| Row | Order ID | Customer Name | Order Date | Order Time | Order Amount |
+|-----|----------|--------------|------------|------------|-------------|
+| 2 | 1 | John Smith | 2023-10-01 | 09:30 | 100.50 |
+| 3 | 2 | Jane Doe | 2023-10-02 | 14:15 | 75.25 |
+| 4 | 3 | David Johnson | 2023-10-03 | 11:45 | 120.75 |
+| 5 | 4 | Mary Davis | 2023-10-04 | 16:00 | 90.30 |
+| 6 | 5 | Robert Brown | 2023-10-05 | 13:00 | 150.80 |
+| 7 | 6 | Sarah White | 2023-10-06 | 10:30 | 65.45 |
+| 8 | 7 | Michael Lee | 2023-10-07 | 15:20 | 110.60 |
+| 9 | 8 | Linda Harris | 2023-10-08 | 12:15 | 95.10 |
+| 10 | 9 | William Clark | 2023-10-09 | 09:45 | 130.25 |
+| 11 | 10 | Susan Turner | 2023-10-10 | 14:00 | 85.75 |
+| 12 | 11 | Richard Adams | 2023-10-11 | 11:00 | 115.90 |
+| 13 | 12 | Karen Martinez | 2023-10-12 | 16:30 | 70.20 |
+| 14 | 13 | James Walker | 2023-10-13 | 15:10 | 140.60 |
+| 15 | 14 | Patricia Hall | 2023-10-14 | 13:45 | 75.40 |
+| 16 | 15 | Charles Turner | 2023-10-15 | 10:20 | 105.25 |
+| 17 | 16 | Jennifer Lewis | 2023-10-16 | 12:00 | 80.15 |
+| 18 | 17 | Thomas Davis | 2023-10-17 | 14:45 | 125.80 |
+| 19 | 18 | Nancy Scott | 2023-10-18 | 09:15 | 70.90 |
+| 20 | 19 | Daniel Green | 2023-10-19 | 11:30 | 135.40 |
+| 21 | 20 | Susan Turner | 2023-10-20 | 15:30 | 90.75 |
+
+> **No spaces in formulas** — the automated marker expects `=C6+3` not `=C6 + 3`.
+
+---
+
+**Q24.1 — Next Order Date: 3 days after Order Date for Order ID 5**
+
+> **Answer: 2023-10-08**
+> **Formula: =C6+3**
+
+**Step 1 — Find Order ID 5 in the dataset:**
+
+| Row | Order ID | Customer Name | Order Date |
+|-----|----------|--------------|------------|
+| 6 | **5** | Robert Brown | **2023-10-05** ← C6 |
+
+**Step 2 — How date arithmetic works in Excel:**
+```
+Excel stores dates as numbers (serial numbers):
+  2023-10-05 = 45204  (days since 1900-01-01)
+  2023-10-05 + 3 = 45207 = 2023-10-08
+
+=C6+3
+  ↑
+  Add 3 to the date value in C6 → moves forward 3 calendar days
+```
+
+**Step 3 — Calculation:**
+```
+C6 = 2023-10-05
+C6 + 3 = 2023-10-08  ✅
+```
+
+> **Tip:** Adding/subtracting a whole number to a date always moves by that many days.
+> To add months use `=EDATE(C6,1)`. To add years use `=DATE(YEAR(C6)+1,MONTH(C6),DAY(C6))`.
+
+**Steps in Excel:**
+```
+1. Add header "Next Order Date" in column F
+2. Click F6
+3. Type:  =C6+3
+4. Press Enter → 2023-10-08
+```
+
+---
+
+**Q24.2 — Time Slot for Order ID 8: Morning / Afternoon (IF + TIME)**
+
+> **Answer: Afternoon**
+> **Formula: =IF(D9<TIME(12,0,0),"Morning","Afternoon")**
+
+**Step 1 — Find Order ID 8 in the dataset:**
+
+| Row | Order ID | Customer Name | Order Time |
+|-----|----------|--------------|------------|
+| 9 | **8** | Linda Harris | **12:15** ← D9 |
+
+**Step 2 — What TIME(12,0,0) does:**
+```
+TIME(hour, minute, second) creates a time value.
+TIME(12,0,0) = 12:00:00 = noon
+
+Excel stores times as fractions of 1 day:
+  12:00:00 = 0.5  (half a day)
+  09:30:00 = 0.395833...
+  12:15:00 = 0.510416...
+```
+
+**Step 3 — IF logic:**
+```
+=IF( D9 < TIME(12,0,0) , "Morning" , "Afternoon" )
+      ↑         ↑              ↑             ↑
+      │         │              │             └── D9 >= noon → Afternoon
+      │         │              └──────────────── D9 < noon → Morning
+      │         └─────────────────────────────── cutoff = 12:00:00
+      └───────────────────────────────────────── order time Linda Harris = 12:15
+
+12:15 < 12:00? → FALSE → result = "Afternoon"
+```
+
+> **Exam trap:** 12:00 PM exactly is NOT morning. The condition is strictly `<` noon.
+> Linda Harris at 12:15 → 12:15 < 12:00 is FALSE → **Afternoon**.
+
+**Time Slot classification for all 20 orders:**
+
+| Before 12:00 (Morning) | At/After 12:00 (Afternoon) |
+|------------------------|---------------------------|
+| John Smith 09:30 | Jane Doe 14:15 |
+| David Johnson 11:45 | Mary Davis 16:00 |
+| Sarah White 10:30 | Robert Brown 13:00 |
+| William Clark 09:45 | **Linda Harris 12:15** ← Q24.2 |
+| Richard Adams 11:00 | Susan Turner 14:00 |
+| Charles Turner 10:20 | Karen Martinez 16:30 |
+| Nancy Scott 09:15 | James Walker 15:10 |
+| Daniel Green 11:30 | Patricia Hall 13:45 |
+| | Michael Lee 15:20 |
+| | Jennifer Lewis 12:00 |
+| | Thomas Davis 14:45 |
+| | Susan Turner 15:30 |
+
+**Steps in Excel:**
+```
+1. Add header "Time Slot" in column G
+2. Click G9
+3. Type:  =IF(D9<TIME(12,0,0),"Morning","Afternoon")
+4. Press Enter → Afternoon
+```
+
+---
+
+**Q24.3 — Rounded Amount for Order ID 16 (ROUND)**
+
+> **Answer: 80**
+> **Formula: =ROUND(E17,0)**
+
+**Step 1 — Find Order ID 16 in the dataset:**
+
+| Row | Order ID | Customer Name | Order Amount |
+|-----|----------|--------------|-------------|
+| 17 | **16** | Jennifer Lewis | **80.15** ← E17 |
+
+**Step 2 — ROUND argument by argument:**
+```
+=ROUND( E17 , 0 )
+         ↑     ↑
+         │     └── num_digits = 0 → round to nearest whole number
+         └──────── number to round = 80.15
+```
+
+**Step 3 — How ROUND works:**
+```
+80.15
+  ↑
+  The digit after the decimal point is 1 (< 5) → round DOWN
+  Result = 80
+```
+
+**ROUND decimal places reference:**
+
+| num_digits | Rounds to | Example (80.15) |
+|------------|-----------|----------------|
+| 2 | 2 decimal places | 80.15 |
+| 1 | 1 decimal place | 80.2 |
+| **0** | **Whole number** | **80** |
+| -1 | Nearest 10 | 80 |
+
+> **ROUND vs INT vs TRUNC:**
+> - `=ROUND(80.15,0)` → **80** (rounds to nearest, .5 rounds up)
+> - `=INT(80.15)` → **80** (always rounds DOWN to integer)
+> - `=TRUNC(80.15,0)` → **80** (removes decimal, same as INT for positive numbers)
+> For exam purposes, always use ROUND when the question says "round to nearest".
+
+**Steps in Excel:**
+```
+1. Add header "Rounded Amount" in a new column
+2. Click the cell for Order ID 16 (row 17)
+3. Type:  =ROUND(E17,0)
+4. Press Enter → 80
+```
+
+---
+
+**Q24.4 — Length of Customer Name for Order ID 7 (LEN)**
+
+> **Answer: 11**
+> **Formula: =LEN(B8)**
+
+**Step 1 — Find Order ID 7 in the dataset:**
+
+| Row | Order ID | Customer Name |
+|-----|----------|--------------|
+| 8 | **7** | **Michael Lee** ← B8 |
+
+**Step 2 — LEN counts every character including spaces:**
+```
+"Michael Lee"
+ M-i-c-h-a-e-l = 7 characters
+ (space)       = 1 character
+ L-e-e         = 3 characters
+               ─────────────
+ Total         = 11 characters
+```
+
+**Step 3 — Formula:**
+```
+=LEN(B8)
+     ↑
+     B8 = "Michael Lee"
+     LEN counts all characters including the space
+     Result = 11
+```
+
+> **Exam trap:** LEN counts spaces as characters.
+> "Michael Lee" = 11, NOT 10. The space between first name and surname counts.
+
+**LEN for all 20 customers (pattern check):**
+
+| Name | Length |
+|------|--------|
+| John Smith | 10 |
+| Jane Doe | 8 |
+| David Johnson | 13 |
+| **Michael Lee** | **11** ← Q24.4 |
+| Karen Martinez | 15 |
+
+**Steps in Excel:**
+```
+1. Click an empty cell
+2. Type:  =LEN(B8)
+3. Press Enter → 11
+```
+
+---
+
+**Q24.5 — Initials and Surname for Order ID 12 (LEFT + MID + FIND)**
+
+> **Answer: K Martinez**
+> **Formula: =LEFT(B13,1)&" "&MID(B13,FIND(" ",B13)+1,LEN(B13))**
+
+**Step 1 — Find Order ID 12 in the dataset:**
+
+| Row | Order ID | Customer Name |
+|-----|----------|--------------|
+| 13 | **12** | **Karen Martinez** ← B13 |
+
+**Step 2 — Three functions working together:**
+
+```
+Part A — Extract the initial (first letter):
+  LEFT(B13, 1) = LEFT("Karen Martinez", 1) = "K"
+
+Part B — Find where the space is:
+  FIND(" ", B13) = FIND(" ", "Karen Martinez") = 6
+  (the space is at position 6: K-a-r-e-n-SPACE)
+
+Part C — Extract surname (everything after the space):
+  MID(B13, FIND(" ",B13)+1, LEN(B13))
+  = MID("Karen Martinez", 6+1, 15)
+  = MID("Karen Martinez", 7, 15)
+  = "Martinez"
+```
+
+**Step 3 — Combine with `&`:**
+```
+=LEFT(B13,1) & " " & MID(B13,FIND(" ",B13)+1,LEN(B13))
+= "K"         & " " & "Martinez"
+= "K Martinez"
+```
+
+**Visual character map of "Karen Martinez":**
+```
+Pos:  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15
+Char: K  a  r  e  n     M  a  r  t  i  n  e  z
+      ↑              ↑  ↑
+      LEFT(,1)="K"   │  FIND(" ")+1=7 → MID starts here
+                     FIND(" ")=6 (the space)
+```
+
+> **Why LEN(B13) as the third MID argument?**
+> MID(text, start, num_chars) — if num_chars is larger than remaining characters,
+> Excel just returns whatever is left. Using LEN(B13) guarantees we always get
+> the full surname no matter how long it is.
+
+**Steps in Excel:**
+```
+1. Add header "Initials and Surname" in a new column
+2. Click the cell for Order ID 12 (row 13)
+3. Type:  =LEFT(B13,1)&" "&MID(B13,FIND(" ",B13)+1,LEN(B13))
+4. Press Enter → K Martinez
+```
+
+---
+
+**Q24.6 — Order Status for Order ID 11: On Time or Delayed (IF + DATE)**
+
+> **Answer: Delayed**
+> **Formula: =IF(C12<=DATE(2023,10,10),"On Time","Delayed")**
+
+**Step 1 — Find Order ID 11 in the dataset:**
+
+| Row | Order ID | Customer Name | Order Date |
+|-----|----------|--------------|------------|
+| 12 | **11** | Richard Adams | **2023-10-11** ← C12 |
+
+**Step 2 — What DATE(2023,10,10) does:**
+```
+DATE(year, month, day) builds a date from three numbers.
+DATE(2023,10,10) = 2023-10-10 (the cutoff)
+```
+
+**Step 3 — IF logic:**
+```
+=IF( C12 <= DATE(2023,10,10) , "On Time" , "Delayed" )
+      ↑           ↑                ↑            ↑
+      │           │                │            └── later than Oct 10 → Delayed
+      │           │                └─────────────── on or before Oct 10 → On Time
+      │           └──────────────────────────────── cutoff = 2023-10-10
+      └──────────────────────────────────────────── C12 = 2023-10-11
+
+2023-10-11 <= 2023-10-10? → FALSE → result = "Delayed"
+```
+
+**Order status for all 20 orders:**
+
+| On Time (date ≤ 2023-10-10) | Delayed (date > 2023-10-10) |
+|-----------------------------|-----------------------------|
+| OID 1–10 (Oct 1–10) ✅ | OID 11–20 (Oct 11–20) ❌ |
+| includes Susan Turner Oct 10 | **Richard Adams Oct 11** ← Q24.6 |
+
+> **Exam trap:** The condition is `<=` (on or before). Order ID 10 (Susan Turner,
+> 2023-10-10) is **On Time** because Oct 10 = cutoff. Order ID 11 (Richard Adams,
+> 2023-10-11) is one day late → **Delayed**.
+
+**Steps in Excel:**
+```
+1. Add header "Order Status" in a new column
+2. Click the cell for Order ID 11 (row 12)
+3. Type:  =IF(C12<=DATE(2023,10,10),"On Time","Delayed")
+4. Press Enter → Delayed
+```
+
+---
+
+**Q24.7 — Discount for Order ID 5: 10% if Amount ≥ 100, else 0 (IF)**
+
+> **Answer: 15.08**
+> **Formula: =IF(E6>=100,E6*10%,0)**
+
+**Step 1 — Find Order ID 5 in the dataset:**
+
+| Row | Order ID | Customer Name | Order Amount |
+|-----|----------|--------------|-------------|
+| 6 | **5** | Robert Brown | **150.80** ← E6 |
+
+**Step 2 — IF logic:**
+```
+=IF( E6>=100 , E6*10% , 0 )
+      ↑             ↑      ↑
+      │             │      └── amount < 100 → no discount = 0
+      │             └─────────── amount >= 100 → 10% discount
+      └───────────────────────── E6 = 150.80, is 150.80 >= 100? YES
+```
+
+**Step 3 — Calculation:**
+```
+150.80 >= 100 → TRUE → apply 10% discount
+Discount = E6 * 10% = 150.80 * 0.10 = 15.08
+```
+
+**Step 4 — Discount examples across the dataset:**
+
+| Order ID | Amount | >= 100? | Discount |
+|----------|--------|---------|----------|
+| 2 | 75.25 | No | 0 |
+| 4 | 90.30 | No | 0 |
+| **5** | **150.80** | **Yes** | **15.08** ← Q24.7 |
+| 6 | 65.45 | No | 0 |
+| 7 | 110.60 | Yes | 11.06 |
+
+> **Note:** `E6*10%` is equivalent to `E6*0.1`. Excel treats `10%` as `0.10`.
+> Both `=IF(E6>=100,E6*10%,0)` and `=IF(E6>=100,E6*0.1,0)` give the same result.
+
+**Steps in Excel:**
+```
+1. Add header "Discount" in a new column
+2. Click the cell for Order ID 5 (row 6)
+3. Type:  =IF(E6>=100,E6*10%,0)
+4. Press Enter → 15.08
+```
+
+---
+
+**Summary of all 7 formula answers:**
+
+| Q | Task | Formula | Answer |
+|---|------|---------|--------|
+| 24.1 | Next Order Date OID5 (+3 days) | `=C6+3` | **2023-10-08** |
+| 24.2 | Time Slot OID8 (IF+TIME) | `=IF(D9<TIME(12,0,0),"Morning","Afternoon")` | **Afternoon** |
+| 24.3 | Rounded Amount OID16 (ROUND) | `=ROUND(E17,0)` | **80** |
+| 24.4 | Name length OID7 (LEN) | `=LEN(B8)` | **11** |
+| 24.5 | Initials+Surname OID12 | `=LEFT(B13,1)&" "&MID(B13,FIND(" ",B13)+1,LEN(B13))` | **K Martinez** |
+| 24.6 | Order Status OID11 (IF+DATE) | `=IF(C12<=DATE(2023,10,10),"On Time","Delayed")` | **Delayed** |
+| 24.7 | Discount OID5 (IF 10%) | `=IF(E6>=100,E6*10%,0)` | **15.08** |
+                """,
+                "key_points": [
+                    "Date arithmetic: =C6+3 adds 3 calendar days — Excel stores dates as serial numbers so plain addition works",
+                    "TIME(12,0,0) creates noon as a fraction (0.5) — use <TIME(12,0,0) to test for morning",
+                    "ROUND(number,0) rounds to nearest whole number — 80.15 → 80 because .1 < .5",
+                    "LEN counts ALL characters including spaces — 'Michael Lee' = 11, not 10",
+                    "Extract initial+surname: LEFT(B,1) for initial, FIND to locate the space, MID to get everything after it",
+                    "DATE(2023,10,10) builds a date from year/month/day numbers — safer than hard-coding a date string",
+                    "IF with percentage: E6*10% is the same as E6*0.1 — Excel understands % notation in formulas"
+                ],
+                "dataset_file": "CA Lesson 2 dataset - Resolved.xlsx"
+            }
+        ],
+        "exercises": [
+            {
+                "title": "1.4 Conditional Formatting — Formula Challenge",
+                "type": "practical",
+                "question": "Write the Excel conditional formatting formula to highlight any student name in A2:A31 that appears more than once (duplicate check). What range do you apply it to, and what formula do you use?",
+                "answer": "Range: A2:A31. Formula: =COUNTIF($A$2:$A$31,A2)>1. Explanation: COUNTIF counts how many times the value in A2 appears in the locked range $A$2:$A$31. If >1, the cell is a duplicate and gets highlighted. The $A$2:$A$31 is absolute (fixed) so the range stays the same for every row, but A2 is relative so it shifts to A3, A4... as the rule applies down the column.",
+                "hint": "Use COUNTIF with an absolute range but a relative starting cell. The formula must return TRUE or FALSE."
+            },
+            {
+                "title": "1.7 Advanced Functions — XLOOKUP vs VLOOKUP",
+                "type": "practical",
+                "question": "You have a student list in columns A (Name) and C (Science score). Write both a VLOOKUP and an XLOOKUP to find 'Student 15' science score. Then explain why XLOOKUP is preferred.",
+                "answer": "VLOOKUP: =VLOOKUP(\"Student 15\", A2:C31, 3, FALSE) — searches column A, returns the value 3 columns across (column C). XLOOKUP: =XLOOKUP(\"Student 15\", A2:A31, C2:C31, \"Not found\") — searches A2:A31, returns the matching value from C2:C31. XLOOKUP is preferred because: 1) It can look RIGHT or LEFT (VLOOKUP only right), 2) The return column is a separate argument so inserting columns won't break it, 3) You can specify a default value for no match, 4) It returns only what you need, not a whole range.",
+                "hint": "VLOOKUP needs col_index_num (count from lookup column); XLOOKUP has separate lookup_array and return_array"
+            },
+            {
+                "title": "1.6 Pivot Table Analysis",
+                "type": "scenario",
+                "question": "Using the 30-student dataset (Name, Mathematics, Science, English), describe how you would build a PivotTable to find the average score for each subject AND add a slicer to filter by score range.",
+                "answer": "Steps: 1) Click any cell in the data range A1:D31. 2) Insert → PivotTable → New Worksheet → OK. 3) In the PivotTable Fields pane, drag Mathematics, Science, English to the Values area. 4) Excel defaults to SUM — click each field in Values → Value Field Settings → change to Average. 5) The result shows one row with Average of Maths, Average of Science, Average of English. 6) To filter by score range: PivotTable Analyze → Insert Slicer → tick Mathematics → OK. The slicer appears; click a value range to filter the entire PivotTable instantly. 7) Optionally add a PivotChart: PivotTable Analyze → PivotChart → Column.",
+                "hint": "Values area defaults to SUM — always check Value Field Settings for the right aggregation"
+            },
+            {
+                "title": "1.9 Power Query — CSV Import",
+                "type": "practical",
+                "question": "You receive a new student CSV file each week. The scores column is imported as text (not numbers). Describe the Power Query steps to fix this and make the process repeatable.",
+                "answer": "1) Data → Get Data → From File → From CSV → select your file. 2) Click Transform Data to open the editor. 3) In the editor, click the data type icon (ABC) on each score column header → change to Decimal Number. 4) If any blank rows exist: Home → Remove Rows → Remove Blank Rows. 5) Rename any misnamed column headers by double-clicking. 6) Home → Close & Load → loads to a new sheet as a Table. 7) Next week when new CSV arrives: replace the old file with the same filename (same folder). 8) In Excel: Data → Refresh All. Power Query reruns all recorded steps on the new file — clean data in seconds, no manual work.",
+                "hint": "Power Query records every step. The key to repeatability is keeping the same filename/path and using Refresh All."
+            }
+        ],
+        "quiz": [
+            {
+                "question": "In Excel, pressing F4 while editing a cell reference does what?",
+                "options": ["Opens the Format Cells dialog", "Cycles between relative, absolute, and mixed references", "Recalculates the worksheet", "Opens the Find dialog"],
+                "correct": 1,
+                "explanation": "F4 cycles a reference through =A1 (relative) → =$A$1 (absolute) → =A$1 (row locked) → =$A1 (column locked) and back. This is the fastest way to add or remove $ signs."
+            },
+            {
+                "question": "Which conditional formatting formula correctly highlights duplicate names in A2:A31?",
+                "options": ["=COUNTIF(A2:A31,A2)>1", "=COUNTIF($A$2:$A$31,A2)>1", "=DUPLICATE(A2)=TRUE", "=COUNT($A$2:$A$31)>1"],
+                "correct": 1,
+                "explanation": "=COUNTIF($A$2:$A$31,A2)>1 is correct. The range $A$2:$A$31 must be absolute (locked) so it always checks the full list, while A2 is relative so it shifts to A3, A4... as the rule applies down."
+            },
+            {
+                "question": "You want to summarise 5,000 sales rows — total revenue by product category — without formulas. The best tool is:",
+                "options": ["SUMIF formula", "Conditional Formatting", "PivotTable", "Power Query"],
+                "correct": 2,
+                "explanation": "A PivotTable is designed for exactly this. Drag Category to Rows and Revenue to Values (set to Sum) — done in seconds. SUMIF works too but requires writing formulas for each category."
+            },
+            {
+                "question": "What does =XLOOKUP(\"Student 5\", A2:A31, C2:C31, \"Not found\") return?",
+                "options": ["The row number of Student 5", "The value in C2:C31 that corresponds to Student 5 in A2:A31", "How many times Student 5 appears", "An error if Student 5 is missing"],
+                "correct": 1,
+                "explanation": "XLOOKUP searches A2:A31 for 'Student 5' and returns the matching value from C2:C31. The 4th argument 'Not found' is returned if no match is found (no #N/A error)."
+            },
+            {
+                "question": "You save an Excel file with macros as .xlsx — what happens?",
+                "options": ["Macros are saved normally", "Macros are converted to VBA automatically", "Macros are stripped from the file", "The file size doubles"],
+                "correct": 2,
+                "explanation": ".xlsx is the standard format and cannot store macros. Always save as .xlsm (Excel Macro-Enabled Workbook) to preserve VBA code and recorded macros."
+            },
+            {
+                "question": "In Power Query, what does 'Refresh All' (Data tab) do?",
+                "options": ["Reformats all cells", "Reruns all Power Query steps on the current source data", "Clears all filters", "Recalculates all formulas"],
+                "correct": 1,
+                "explanation": "Refresh All re-executes all recorded transformation steps against the current state of the data source. This means weekly CSV updates can be processed automatically with one click."
+            },
+            {
+                "question": "What Excel feature prevents users from entering letters in a cell meant for scores (0–100)?",
+                "options": ["Conditional Formatting", "Data Validation", "Cell Protection", "Freeze Panes"],
+                "correct": 1,
+                "explanation": "Data Validation (Data tab) lets you restrict entries by type, range, list, etc. Setting Whole Number between 0 and 100 with a 'Stop' error alert blocks any invalid input."
+            },
+            {
+                "question": "True or False: VisiCalc was capable of automatically recalculating the entire sheet when one value was changed, which was a significant advancement from manual spreadsheet management.",
+                "options": ["True", "False"],
+                "correct": 0,
+                "explanation": "True. VisiCalc (1979), created by Dan Bricklin and Bob Frankston, was the first electronic spreadsheet and its defining innovation was automatic recalculation — change one cell and every dependent cell updates instantly. Before this, accountants had to manually recalculate every figure on paper when one number changed. This single feature made VisiCalc the first 'killer app' for personal computers and drove mass adoption of the Apple II in business."
+            },
+            {
+                "question": "True or False: XLS is the default file format used in recent versions of Microsoft Excel, and it stores data, formulas, formatting, charts, and other elements within a single file.",
+                "options": ["True", "False"],
+                "correct": 1,
+                "explanation": "False. XLS is the legacy binary format from Excel 97-2003 and is NOT the default in modern Excel. Since Excel 2007, the default format is .xlsx (Office Open XML). The four main formats are: .xls (legacy, no longer default), .xlsx (current default, cannot store macros), .xlsm (macro-enabled workbook), and .xlsb (binary, for large files). Always save as .xlsx unless you need macros (.xlsm) or are sharing with very old Excel versions."
+            },
+            {
+                "question": "True or False: Pivot tables cannot be used to calculate statistics like sum, average, or count of data.",
+                "options": ["True", "False"],
+                "correct": 1,
+                "explanation": "False. Calculating statistics is precisely what PivotTables are designed for. Via Value Field Settings (right-click a value → Value Field Settings → Summarize Values By), you can choose from: Sum, Count, Average, Max, Min, Product, Count Numbers, StdDev, StdDevp, Var, and Varp. The default is Sum for numbers and Count for text, but all 9+ statistics are available with a few clicks."
+            },
+            {
+                "question": "True or False: The DATE function in Excel allows you to create a date by specifying the year, month, and day as separate arguments.",
+                "options": ["True", "False"],
+                "correct": 0,
+                "explanation": "True. =DATE(year, month, day) constructs an Excel date serial number from three separate numeric arguments. For example, =DATE(2026, 2, 19) returns 19/02/2026. It is especially useful when year, month, and day values are stored in separate columns and need to be combined into a single date for calculations or formatting."
+            },
+            {
+                "question": "True or False: Google Sheets is a cloud-based spreadsheet application that offers real-time collaboration, making it similar in functionality to Excel.",
+                "options": ["True", "False"],
+                "correct": 0,
+                "explanation": "True. Google Sheets runs entirely in a browser (cloud-based) and multiple users can edit the same file simultaneously with changes visible in real time — this is built-in by default. It supports most of the same core features as Excel: formulas (XLOOKUP, IFS, SUMIF, etc.), PivotTables, charts, and conditional formatting. The main differences are that Excel has Power Query and VBA/macros (Google Sheets does not), and Google Sheets is free while Excel requires a Microsoft 365 subscription."
+            },
+            {
+                "question": "True or False: AVERAGEIF calculates the average of a range of cells based on a single condition.",
+                "options": ["True", "False"],
+                "correct": 0,
+                "explanation": "True. =AVERAGEIF(range, criteria, average_range) accepts exactly one condition. For example, =AVERAGEIF(B2:B31, '>60', B2:B31) returns the average of all scores above 60. If you need two or more conditions (AND logic), you must use AVERAGEIFS instead — same pattern as SUMIF vs SUMIFS and COUNTIF vs COUNTIFS: the S suffix always means multiple criteria."
+            },
+            {
+                "question": "True or False: Once you complete data transformation in Power Query Editor, you can only load the data into a new worksheet in Excel.",
+                "options": ["True", "False"],
+                "correct": 1,
+                "explanation": "False. When you click 'Close & Load To…', Power Query offers six destinations: (1) Table on a new worksheet — the default 'Close & Load', (2) Table on an existing worksheet — you specify the exact cell, (3) PivotTable Report, (4) PivotChart, (5) Only Create Connection — no data written to any sheet (typically used to feed the Data Model), (6) Add to Data Model — loads into Power Pivot's in-memory model. Only the basic 'Close & Load' (without 'To…') defaults to a new worksheet."
+            },
+            {
+                "question": "True or False: CHOOSE returns a value from a list of values based on a specified index number.",
+                "options": ["True", "False"],
+                "correct": 0,
+                "explanation": "True. =CHOOSE(index_num, value1, value2, value3, ...) returns the value at the position given by index_num. CHOOSE(1,...) returns value1, CHOOSE(2,...) returns value2, and so on (up to 254 values). If index_num is 0 or exceeds the number of values, Excel returns #VALUE!. It differs from SWITCH (which matches a value to cases) and IFS (which evaluates conditions). A classic use is converting WEEKDAY's number to a day name: =CHOOSE(WEEKDAY(A1),'Sun','Mon','Tue','Wed','Thu','Fri','Sat')."
+            },
+            {
+                "question": "True or False: LEN can be used to count the number of words in a cell.",
+                "options": ["True", "False"],
+                "correct": 1,
+                "explanation": "False. LEN counts characters (every letter, space, and punctuation mark), not words. =LEN('Hello World') returns 11 — the total character count — not 2 (words). To count words you need a workaround combining three functions: =LEN(TRIM(A1))-LEN(SUBSTITUTE(A1,' ',''))+1. This works by counting spaces (spaces = words minus 1) and adding 1. LEN alone has no concept of what a word is."
+            },
+            {
+                "question": "True or False: COUNTIFS can be used to count cells that meet multiple criteria simultaneously within the same range.",
+                "options": ["True", "False"],
+                "correct": 0,
+                "explanation": "True. =COUNTIFS(range1, criteria1, range2, criteria2, ...) counts rows where ALL conditions are TRUE simultaneously — AND logic. Criteria can span different ranges (e.g. Maths>=60 AND Science>=60) or apply two conditions to the same range (e.g. Maths>60 AND Maths<90). The S suffix pattern applies to the whole IF family: COUNTIF/COUNTIFS, SUMIF/SUMIFS, AVERAGEIF/AVERAGEIFS — S always means multiple criteria."
+            },
+            {
+                "question": "What does the OFFSET function in Excel do?",
+                "options": [
+                    "Returns a reference to a cell or range based on a specified number of rows and columns from a starting reference",
+                    "Retrieves data from a closed workbook",
+                    "Performs text manipulation tasks",
+                    "Returns the sum of a range of values"
+                ],
+                "correct": 0,
+                "explanation": "Answer a is correct. =OFFSET(reference, rows, cols, [height], [width]) starts at a reference cell and moves the specified number of rows down and columns right, returning that cell or range. Option b describes external references/INDIRECT, option c describes text functions (LEFT, TRIM, LEN, etc.), and option d describes SUM/SUMIF. OFFSET is powerful because it returns a dynamic reference — useful inside SUM or AVERAGE to build ranges that adjust automatically."
+            },
+            {
+                "question": "What is the primary purpose of Excel's Data Validation feature?",
+                "options": [
+                    "Customizing cell formatting",
+                    "Ensuring data integrity and quality",
+                    "Sorting and filtering data",
+                    "Creating charts and graphs"
+                ],
+                "correct": 1,
+                "explanation": "Answer b is correct. Data Validation (Data → Data Validation) controls what a user is allowed to enter into a cell, preventing errors at the point of entry. Option a describes Format Cells (Home tab), option c describes Sort and Filter (Data tab), and option d describes Insert Charts. The key distinction: Data Validation ensures data integrity and quality by stopping bad data before it enters — it does not change how data looks, arrange it, or visualise it."
+            },
+            {
+                "question": "When it comes to number formatting in Excel, what does the Accounting format align?",
+                "options": [
+                    "Decimal places",
+                    "Currency symbols",
+                    "Text wrapping",
+                    "Font styles"
+                ],
+                "correct": 1,
+                "explanation": "Answer b is correct. The Accounting format pins the currency symbol (£, $, €) to the LEFT edge of the cell, while the number and decimal align to the right — creating a clean column of symbols in financial reports. Currency format places the symbol directly next to the number. Option a (decimal places) is aligned by both Currency and Accounting, so it is not what uniquely defines Accounting. Option c (text wrapping) is in Format Cells → Alignment, and option d (font styles) is in the Home → Font group."
+            },
+            {
+                "question": "Which of the following is NOT a common dataset type that Excel can import?",
+                "options": [
+                    "PDF (Portable Document Format)",
+                    "Access Databases",
+                    "CSV (Comma Separated Values)",
+                    "Excel Workbooks"
+                ],
+                "correct": 0,
+                "explanation": "Answer a is correct — PDF is NOT a common structured import source. CSV, Access Databases, and Excel Workbooks are all fully supported via Data → Get Data with clean, reliable results every time. PDF is a fixed-layout presentation format designed for humans to read, not for machines to parse. While Excel 365 added experimental PDF import via Power Query, it is unreliable and requires manual mapping — it is not considered a standard data import format alongside CSV, Access, or Excel."
+            },
+            {
+                "question": "What does the ISNUMBER function in Excel check?",
+                "options": [
+                    "If a cell contains a date",
+                    "If a cell contains a formula",
+                    "If a cell contains a numeric value",
+                    "If a cell contains text"
+                ],
+                "correct": 2,
+                "explanation": "Answer c is correct. =ISNUMBER(value) returns TRUE if the value is numeric, FALSE otherwise. Option a (date) is wrong because dates ARE stored as numbers, so ISNUMBER returns TRUE for them too — there is no separate ISDATE function. Option b (formula) requires =ISFORMULA(ref). Option d (text) requires =ISTEXT(value). All IS-functions return TRUE/FALSE and are commonly used inside IF statements for data validation: =IF(ISNUMBER(A1), 'Valid', 'Must be a number')."
+            },
+            {
+                "question": "Which of the following is NOT a step involved in importing a CSV dataset into Excel?",
+                "options": [
+                    "Converting the data to plain text format",
+                    "Navigating to the location of the CSV file",
+                    "Selecting the delimiter used in the CSV file",
+                    "Opening a new Excel workbook"
+                ],
+                "correct": 0,
+                "explanation": "Answer a is correct — converting to plain text is NOT a step because CSV files are already plain text by definition (CSV = Comma-Separated Values stored as a .txt-style file). No pre-conversion is ever needed. The real import steps are: (b) navigate to the file location, (c) confirm the delimiter (comma, semicolon, tab, etc.), and (d) have an open workbook to import into. Excel reads CSV directly via Data → Get Data → From File → From Text/CSV."
+            },
+            {
+                "question": "What is the purpose of colour scales in conditional formatting?",
+                "options": [
+                    "To add icons to cells",
+                    "To assign different colours to cells based on their values",
+                    "To highlight duplicate values",
+                    "To format cells as data bars"
+                ],
+                "correct": 1,
+                "explanation": "Answer b is correct. Colour Scales create a continuous colour gradient (heat map) across a range — each cell is shaded proportionally to its value. Option a (icons) describes Icon Sets. Option c (duplicates) describes Highlight Cell Rules → Duplicate Values. Option d (data bars) describes Data Bars, which draw a proportional horizontal bar inside each cell. The four CF visual types are: Colour Scales (gradient heat map), Data Bars (in-cell bar), Icon Sets (symbols/arrows), Highlight Cell Rules (solid fill on condition)."
+            },
+            {
+                "question": "In Excel, what happens when you apply a filter to data?",
+                "options": [
+                    "It permanently deletes rows that don't meet the criteria",
+                    "It hides the column headers",
+                    "It sorts the data in ascending order",
+                    "It displays only the rows that meet the specified criteria"
+                ],
+                "correct": 3,
+                "explanation": "Answer d is correct. Filtering temporarily hides non-matching rows — they are NOT deleted and reappear when the filter is cleared (Data → Clear). Column headers always remain visible and gain dropdown arrows when filtering is active. Filtering does NOT sort data — sorting and filtering are separate operations. The row numbers of hidden rows skip (e.g. rows 3 and 5 are hidden so the list jumps from 2 to 4 to 6), which is a visual clue that a filter is active."
+            },
+            {
+                "question": "When using the Excel 'Auto-Fill' feature, what does the thin black crosshair cursor indicate?",
+                "options": [
+                    "The location to paste copied data",
+                    "The AutoFill handle for pattern recognition",
+                    "The direction of data import",
+                    "The current active cell"
+                ],
+                "correct": 1,
+                "explanation": "Answer b is correct. The thin solid black crosshair (+) appears when you hover over the bottom-right corner of a selected cell — this is the fill handle. Drag it to extend a pattern (Jan→Feb→Mar, 1,2→3,4,5, formulas, etc.). Option a (paste location) is shown by a flashing dashed border (marching ants) after Ctrl+C — not a crosshair. Option c (data import direction) does not correspond to any real Excel cursor. Option d (active cell) is indicated by a green outlined border, not a crosshair. The thick white/hollow arrow (hovering over the middle of the cell) is the normal select cursor — the thin black crosshair only appears at the bottom-right corner specifically."
+            },
+            {
+                "question": "What feature made Microsoft Excel 1.0 stand out and contributed to its ease of use?",
+                "options": [
+                    "Graphical presentation of Data",
+                    "WYSIWYG",
+                    "Advanced Calculations",
+                    "Dropdown Menus"
+                ],
+                "correct": 1,
+                "explanation": "Answer b is correct. Excel 1.0 (1985, Apple Mac) was the first spreadsheet with a true WYSIWYG (What You See Is What You Get) interface — the screen showed exactly how the spreadsheet would look when printed, including fonts, bold, borders and column widths. DOS competitor Lotus 1-2-3 required slash-text commands and you had to physically print to see real formatting. Option a (charts/graphical data) already existed in Lotus 1-2-3 (1983) before Excel. Option c (calculations) were already present in VisiCalc (1979) and Lotus. Option d (dropdown menus) were not Excel's unique differentiator. WYSIWYG was the feature that made Excel on the Mac feel revolutionary compared to everything else available in 1985."
+            },
+            {
+                "question": "Using the CA Lesson 1 dataset (20 rows, columns: Date, Product ID, Units Sold, Price per Unit), which formula correctly calculates the total number of units sold for ALL products combined?",
+                "options": [
+                    "=COUNT(C2:C21)",
+                    "=AVERAGE(C2:C21)",
+                    "=SUM(C2:C21)",
+                    "=MAX(C2:C21)"
+                ],
+                "correct": 2,
+                "explanation": "Answer c is correct. =SUM(C2:C21) adds every value in the Units Sold column (C2 to C21) giving 282. COUNT (option a) counts how many cells have numbers — not the total. AVERAGE (option b) divides the sum by the count — not what is asked. MAX (option d) returns only the highest single value (28), not the total."
+            },
+            {
+                "question": "In the CA Lesson 1 dataset, the Price per Unit column contains values like $10, $12, $14, $15. Which formula gives the AVERAGE price per unit across all 20 rows?",
+                "options": [
+                    "=SUM(D2:D21)/COUNT(D2:D21)",
+                    "=AVERAGE(D2:D21)",
+                    "=MEDIAN(D2:D21)",
+                    "=MODE(D2:D21)"
+                ],
+                "correct": 1,
+                "explanation": "Answer b is correct. =AVERAGE(D2:D21) computes the mean of all 20 Price per Unit values. The prices are $10 (×7), $12 (×7), $15 (×3), $14 (×3). Total = 241 ÷ 20 = 12.05. Option a also works mathematically but is the long way. MEDIAN (option c) = 12 (the middle value, not the mean). MODE (option d) = 10 or 12 (most frequent), not the average."
+            },
+            {
+                "question": "Using the CA Lesson 1 dataset, what Excel formula returns the highest number of units sold on any single day, and what is that value?",
+                "options": [
+                    "=MAX(C2:C21) → 25",
+                    "=MAX(C2:C21) → 28",
+                    "=LARGE(C2:C21,1) → 22",
+                    "=MAX(B2:B21) → P004"
+                ],
+                "correct": 1,
+                "explanation": "Answer b is correct. =MAX(C2:C21) scans all 20 Units Sold values and returns the largest. The row 2023-09-15, Product P001, has 28 units — the highest in the dataset. Option a has the right formula but wrong value (25 is P001 on Sep 09, not the max). Option c uses LARGE(range,1) which returns the same result as MAX but 22 is wrong. Option d looks at the wrong column (Product ID is text)."
+            },
+            {
+                "question": "In the CA Lesson 1 dataset, what formula finds the LOWEST price per unit, and what is the answer?",
+                "options": [
+                    "=MIN(D2:D21) → $12",
+                    "=MIN(C2:C21) → 5",
+                    "=MIN(D2:D21) → $10",
+                    "=SMALL(D2:D21,1) → $14"
+                ],
+                "correct": 2,
+                "explanation": "Answer c is correct. =MIN(D2:D21) returns the smallest value in the Price per Unit column. The four prices in the dataset are $10 (P001), $12 (P002), $14 (P004), $15 (P003). The minimum is $10. Option a has the right formula but wrong value. Option b applies MIN to Units Sold instead of Price per Unit. Option d uses SMALL(range,1) — correct technique but wrong value ($14 is P004, not the minimum)."
+            },
+            {
+                "question": "Using the CA Lesson 1 dataset, which formula counts the number of days that product 'P002' was sold, and what is the result?",
+                "options": [
+                    "=COUNTIF(B2:B21,P002) → 7",
+                    "=COUNTIF(B2:B21,\"P002\") → 7",
+                    "=SUMIF(B2:B21,\"P002\",C2:C21) → 7",
+                    "=COUNT(B2:B21,\"P002\") → 7"
+                ],
+                "correct": 1,
+                "explanation": "Answer b is correct. =COUNTIF(B2:B21,\"P002\") counts cells in B2:B21 that exactly match the text P002. P002 appears on Sep 02, 05, 08, 11, 14, 17, 20 = 7 rows. Option a is wrong because P002 without quotes is treated as a cell reference, not text — it would cause an error or wrong result. Option c (SUMIF) would sum the Units Sold for P002 (not count the days). Option d: COUNT does not accept a criteria argument this way."
+            },
+            {
+                "question": "In the CA Lesson 1 dataset, 2023-09-10 has product P003 (not P001). Using =IF(SUMIFS(C2:C21,B2:B21,\"P001\",A2:A21,DATE(2023,9,10))>20,\"High Sales\",\"Low Sales\"), what is the result?",
+                "options": [
+                    "High Sales — P001 on Sep 09 has 25 units",
+                    "High Sales — SUMIFS finds P001 and returns 25",
+                    "Low Sales — SUMIFS returns 0 (no P001 on Sep 10) and 0 is not > 20",
+                    "Error — P001 does not exist in the dataset"
+                ],
+                "correct": 2,
+                "explanation": "Answer c is correct. On 2023-09-10 the dataset has P003 (7 units) — there is NO P001 entry on September 10th. SUMIFS with both criteria (P001 AND Sep 10) finds zero matching rows, so it returns 0. The IF condition is 0 > 20 = FALSE, so the result is 'Low Sales'. Option a/b confuse Sep 09 (P001, 25 units) with Sep 10. Option d is wrong — no error occurs; SUMIFS simply returns 0 when nothing matches."
+            },
+            {
+                "question": "To create a 'Product Details' column by concatenating Product ID (col B) and Price per Unit (col D), which formula is used, and what does it return for row 17 (date 2023-09-16)?",
+                "options": [
+                    "=B17+D17 → P003$15",
+                    "=B17&D17 → P003$15",
+                    "=CONCAT(B17,\" \",D17) → P003 $15",
+                    "=B17&D17 → P003 - $15"
+                ],
+                "correct": 1,
+                "explanation": "Answer b is correct. The & operator joins two cell values as text without any separator. Row 17 (2023-09-16): Product ID = P003, Price per Unit = $15 (stored as text). B17&D17 = P003 + $15 = 'P003$15'. Option a uses + (addition) which causes a VALUE error on text. Option c adds a space between them, producing 'P003 $15' — not what was asked. Option d adds ' - ' which also produces a different result."
+            },
+            {
+                "question": "Using =LEFT(B7, 4) for the row with date 2023-09-06 in the CA Lesson 1 dataset, what is the result?",
+                "options": [
+                    "P00",
+                    "001",
+                    "P001",
+                    "P0"
+                ],
+                "correct": 2,
+                "explanation": "Answer c is correct. Row 7 (2023-09-06) has Product ID = P001. =LEFT(B7, 4) extracts the 4 leftmost characters: P-0-0-1 = 'P001'. Since P001 is exactly 4 characters, LEFT(4) returns the entire string. Option a (P00) would be LEFT(3). Option b (001) would be RIGHT(3) or MID(2,3). Option d (P0) would be LEFT(2)."
+            },
+            {
+                "question": "Using =RIGHT(B15, 3) for the row with date 2023-09-14 in the CA Lesson 1 dataset, what is the result?",
+                "options": [
+                    "P00",
+                    "P002",
+                    "002",
+                    "02"
+                ],
+                "correct": 2,
+                "explanation": "Answer c is correct. Row 15 (2023-09-14) has Product ID = P002. =RIGHT(B15, 3) extracts the 3 rightmost characters from P002: positions 2, 3, 4 = 0-0-2 = '002'. Option a (P00) is the LEFT(3) result. Option b (P002) is the full string (all 4 chars). Option d (02) would be RIGHT(2). Remember: LEFT counts from the start, RIGHT counts from the end."
+            },
+            {
+                "question": "Using the CA Lesson 3 dataset (columns: B=Employee Name, C=Department, D=Salary, rows 2-21), which VLOOKUP formula returns Carol's salary?",
+                "options": [
+                    "=VLOOKUP(\"Carol\",B2:D21,3,FALSE)",
+                    "=VLOOKUP(\"Carol\",A2:D21,3,FALSE)",
+                    "=VLOOKUP(\"Carol\",B2:D21,4,FALSE)",
+                    "=VLOOKUP(\"Carol\",B2:D21,2,FALSE)"
+                ],
+                "correct": 0,
+                "explanation": "Answer a is correct. =VLOOKUP(\"Carol\",B2:D21,3,FALSE) searches for Carol in B2:D21. The table starts at column B, so B=col 1 (Name), C=col 2 (Dept), D=col 3 (Salary). Col_index 3 returns the Salary. Option b uses A2:D21 which would make Salary col 4. Option c uses col 4, which doesn't exist in B:D. Option d returns col 2 (Department), not Salary. Carol's salary = 55000."
+            },
+            {
+                "question": "Using VLOOKUP on the CA Lesson 3 dataset, which formula returns Paul's Department, and what is the result?",
+                "options": [
+                    "=VLOOKUP(\"Paul\",B2:D21,3,FALSE) → Finance",
+                    "=VLOOKUP(\"Paul\",B2:D21,2,FALSE) → IT",
+                    "=VLOOKUP(\"Paul\",B2:C21,2,FALSE) → IT",
+                    "=VLOOKUP(\"Paul\",B2:D21,1,FALSE) → Paul"
+                ],
+                "correct": 1,
+                "explanation": "Answer b is correct. =VLOOKUP(\"Paul\",B2:D21,2,FALSE) — Department is column C, which is the 2nd column of the B:D table range, so col_index = 2. Paul is in row 17 and his department is IT. Option a returns Salary (col 3). Option c works but is unnecessarily restrictive (B:C range). Option d returns the name itself (col 1)."
+            },
+            {
+                "question": "Which formula uses INDEX and MATCH to return Maria's salary from the CA Lesson 3 dataset?",
+                "options": [
+                    "=INDEX(B2:B21,MATCH(\"Maria\",D2:D21,0))",
+                    "=INDEX(D2:D21,MATCH(\"Maria\",B2:B21,0))",
+                    "=MATCH(\"Maria\",B2:B21,INDEX(D2:D21,0))",
+                    "=INDEX(MATCH(\"Maria\",B2:B21,0),D2:D21)"
+                ],
+                "correct": 1,
+                "explanation": "Answer b is correct. =INDEX(D2:D21,MATCH(\"Maria\",B2:B21,0)) — MATCH finds Maria's position in B2:B21 (position 13), then INDEX returns the 13th value from D2:D21 (salary = 54000). Option a searches for Maria in the Salary column (wrong). Option c has the arguments in the wrong order. Option d has INDEX and MATCH reversed — MATCH should be the second argument of INDEX."
+            },
+            {
+                "question": "Using =MATCH(MAX(D2:D21),D2:D21,0) on the CA Lesson 3 dataset, what does the result 16 mean?",
+                "options": [
+                    "The employee with the highest salary is in Excel row 16",
+                    "There are 16 employees in the dataset",
+                    "The highest salary is the 16th value in the range D2:D21",
+                    "The highest salary is 16000"
+                ],
+                "correct": 2,
+                "explanation": "Answer c is correct. MATCH returns the relative position within the lookup range, not the Excel row number. D2:D21 contains 20 salary values. MAX(D2:D21)=64000 (Paul). Paul's 64000 is the 16th value in the range D2:D21. The actual Excel row is 17 (row 2 + 15 offset), not 16. Option a confuses relative position with Excel row number."
+            },
+            {
+                "question": "What does =SUM(OFFSET(D2,0,0,5,1)) calculate in the CA Lesson 3 dataset, and what is the result?",
+                "options": [
+                    "Sum of all 20 salaries → 1155000",
+                    "Sum of salaries in rows 1 to 5 of the spreadsheet → error",
+                    "Sum of the first 5 employee salaries starting from D2 → 275000",
+                    "Average of the first 5 salaries → 55000"
+                ],
+                "correct": 2,
+                "explanation": "Answer c is correct. OFFSET(D2,0,0,5,1) starts at D2, moves 0 rows and 0 columns, then creates a range 5 rows tall and 1 column wide — that is D2:D6 (Alice 50000, Bob 60000, Carol 55000, Dave 62000, Eve 48000). SUM of those = 275000. Option a sums all 20. Option b is wrong because row 1 is the header. Option d would require AVERAGE not SUM."
+            },
+            {
+                "question": "Which formula returns Irene's department using INDEX and MATCH on the CA Lesson 3 dataset?",
+                "options": [
+                    "=INDEX(D2:D21,MATCH(\"Irene\",B2:B21,0))",
+                    "=INDEX(C2:C21,MATCH(\"Irene\",D2:D21,0))",
+                    "=INDEX(C2:C21,MATCH(\"Irene\",B2:B21,0))",
+                    "=MATCH(\"Irene\",B2:B21,INDEX(C2:C21,0))"
+                ],
+                "correct": 2,
+                "explanation": "Answer c is correct. =INDEX(C2:C21,MATCH(\"Irene\",B2:B21,0)) — MATCH locates Irene in the Name column B2:B21 (position 9), then INDEX returns the 9th value from C2:C21 (Department column) = HR. Option a returns the Salary (D column), not Department. Option b searches for Irene in the Salary column (wrong). Option d has the syntax reversed."
+            },
+            {
+                "question": "In the CA Lesson 3 dataset, =INDIRECT(\"D15\") returns the salary of which employee, and what is the value?",
+                "options": [
+                    "Olivia → 49000 (15th data row)",
+                    "Neil → 57000 (Excel row 15)",
+                    "Paul → 64000 (highest salary)",
+                    "Maria → 54000 (13th employee)"
+                ],
+                "correct": 1,
+                "explanation": "Answer b is correct. INDIRECT(\"D15\") reads cell D15 literally. Row 1 is the header, row 2 = Alice, row 3 = Bob... row 15 = Neil (Finance, 57000). Option a confuses Excel row 15 with the 15th data row, which would be Excel row 16 (Olivia, 49000). INDIRECT always uses the actual Excel row number in its text argument."
+            },
+            {
+                "question": "Why does =LOOKUP(\"Grace\",B2:B21,D2:D21) work correctly in the CA Lesson 3 dataset but would fail on an unsorted list?",
+                "options": [
+                    "Because LOOKUP only works on numeric data",
+                    "Because the names in B2:B21 are in alphabetical (ascending) order — LOOKUP requires sorted data",
+                    "Because Grace is the 7th employee and LOOKUP needs exactly 7 rows",
+                    "Because LOOKUP always returns the last matching value"
+                ],
+                "correct": 1,
+                "explanation": "Answer b is correct. LOOKUP performs a binary search and requires the lookup vector to be sorted in ascending order. The names Alice, Bob, Carol... Tina are alphabetical, so LOOKUP correctly finds Grace and returns her salary 58000. On an unsorted list LOOKUP can return wrong results or an error. VLOOKUP with FALSE and XLOOKUP both handle unsorted data safely."
+            },
+            {
+                "question": "Which XLOOKUP formula returns Sam's salary from the CA Lesson 3 dataset, and what is the advantage over VLOOKUP?",
+                "options": [
+                    "=XLOOKUP(\"Sam\",B2:B21,D2:D21) → 60000; XLOOKUP needs no col_index and can search in any direction",
+                    "=XLOOKUP(\"Sam\",B2:D21,3) → 60000; XLOOKUP is faster than VLOOKUP",
+                    "=XLOOKUP(D2:D21,\"Sam\",B2:B21) → 60000; XLOOKUP works from right to left only",
+                    "=XLOOKUP(\"Sam\",B2:B21,D2:D21) → 51000; Rachel was the 18th employee"
+                ],
+                "correct": 0,
+                "explanation": "Answer a is correct. =XLOOKUP(\"Sam\",B2:B21,D2:D21) finds Sam in B2:B21 (position 19) and returns the matching value from D2:D21 = 60000. Unlike VLOOKUP, XLOOKUP takes separate lookup and return ranges so there is no col_index to count, it can return values to the LEFT of the search column, and accepts an optional fallback value for when the name is not found. Option b uses VLOOKUP-style syntax which is wrong for XLOOKUP. Option d has the wrong value."
+            },
+            {
+                "question": "Using the CA Lesson 4 dataset (D=Salary, C=Department, E=Years of Service, rows 2-21), which MAXIFS formula returns the maximum salary among Sales employees with 2 or more years of service?",
+                "options": [
+                    "=MAXIFS(D2:D21,C2:C21,\"Sales\",E2:E21,\">=2\") → 56000",
+                    "=MAXIFS(D2:D21,\"Sales\",C2:C21,2,E2:E21) → 56000",
+                    "=MAX(IF(C2:C21=\"Sales\",D2:D21)) → 56000",
+                    "=MAXIFS(C2:C21,\"Sales\",D2:D21,E2:E21,\">=2\") → 56000"
+                ],
+                "correct": 0,
+                "explanation": "Answer a is correct. MAXIFS takes: max_range first (D2:D21), then pairs of (criteria_range, criteria). The criteria string '>=2' must be in quotes. Option b has the argument order wrong. Option c is an array formula (needs Ctrl+Shift+Enter) and is the old approach. Option d puts the Department column as the max_range."
+            },
+            {
+                "question": "Using the CA Lesson 4 dataset (F=Bonus Percentage, C=Department, D=Salary, rows 2-21), which MINIFS formula returns the minimum bonus percentage among Finance employees with a salary greater than 58000?",
+                "options": [
+                    "=MINIFS(F2:F21,C2:C21,\"Finance\",D2:D21,\">58000\") → 0.07",
+                    "=MINIFS(F2:F21,C2:C21,\"Finance\",D2:D21,\">=58000\") → 0.07",
+                    "=MIN(IF(C2:C21=\"Finance\",F2:F21)) → 0.07",
+                    "=MINIFS(D2:D21,C2:C21,\"Finance\",F2:F21,\">58000\") → 57000"
+                ],
+                "correct": 0,
+                "explanation": "Answer a is correct. =MINIFS(F2:F21,...,'>58000') uses strict greater than, which excludes Neil Taylor (salary = 58000 exactly). The qualifying Finance employees are Bob Johnson, Jack White, and Rachel Turner (all 59000). The minimum bonus among them is Bob Johnson's 7% = 0.07. Option b uses >=58000 which also includes Neil Taylor (8%) — but Bob's 7% is still the minimum, so it would also give 0.07; however option a is the exact formula asked. Option d returns a salary, not a bonus percentage."
+            },
+            {
+                "question": "Using the CA Lesson 4 dataset (F=Bonus Percentage, rows 2-21), which COUNTIF formula counts employees with a bonus percentage greater than or equal to 8%?",
+                "options": [
+                    "=COUNTIF(F2:F21,\">=0.08\") → 7",
+                    "=COUNTIF(F2:F21,\">0.08\") → 5",
+                    "=COUNTIFS(F2:F21,\">=0.08\") → 7",
+                    "=COUNTIF(F2:F21,>=0.08) → error"
+                ],
+                "correct": 0,
+                "explanation": "Answer a is correct. The bonus percentage is stored as a decimal (0.08 = 8%), so the criteria is '>=0.08'. This returns 7: Dave Davis, Harry Wilson, Leo Robinson, Neil Taylor, Paul Anderson, Rachel Turner, Tina Moore. Option b uses strictly greater than (>0.08), excluding Dave Davis and Neil Taylor (exactly 0.08) — returning 5. Option c uses COUNTIFS syntax with only one condition — it works but COUNTIF is simpler for a single condition. Option d omits the quotes around the criteria, causing a formula error."
+            },
+            {
+                "question": "Using the CA Lesson 4 dataset (C=Department, D=Salary, rows 2-21), which COUNTIFS formula counts IT employees with a salary greater than 60000?",
+                "options": [
+                    "=COUNTIFS(C2:C21,\"IT\",D2:D21,\">60000\") → 3",
+                    "=COUNTIFS(C2:C21,\"IT\",D2:D21,\">=60000\") → 4",
+                    "=COUNTIF(C2:C21,\"IT\",D2:D21,\">60000\") → 3",
+                    "=COUNTIFS(D2:D21,\">60000\",C2:C21,\"IT\") → 4"
+                ],
+                "correct": 0,
+                "explanation": "Answer a is correct. =COUNTIFS(C2:C21,'IT',D2:D21,'>60000') returns 3: Karen Miller (61000), Olivia Harris (62000), Sam Scott (63000). Carol Williams (60000) is excluded because 60000 is NOT strictly greater than 60000. Option b uses >=60000 which includes Carol Williams, returning 4. Option c uses COUNTIF which only accepts one condition pair — adding more arguments causes an error. Option d has the condition pairs in reversed order — this actually gives the same result in COUNTIFS, but 4 is wrong because option d also uses >=60000 logic."
+            },
+            {
+                "question": "Using the CA Lesson 4 dataset (F=Bonus Percentage, D=Salary, rows 2-21), which AVERAGEIF formula returns the average salary of employees with a bonus percentage strictly less than 6%?",
+                "options": [
+                    "=AVERAGEIF(F2:F21,\"<0.06\",D2:D21) → 54666.67",
+                    "=AVERAGEIF(D2:D21,\"<0.06\",F2:F21) → 54666.67",
+                    "=AVERAGEIFS(D2:D21,F2:F21,\"<0.06\") → 54666.67",
+                    "=AVERAGEIF(F2:F21,\"<=0.06\",D2:D21) → 55000"
+                ],
+                "correct": 0,
+                "explanation": "Answer a is correct. AVERAGEIF argument order is: (range_to_check, criteria, range_to_average). Three employees qualify (bonus < 0.06): Alice Smith (55000, 5%), Irene Hall (54000, 5.5%), Maria Garcia (55000, 5%). Average = 164000/3 = 54666.67. Option b has range and average_range swapped — this would average the bonus% values where salary < 0.06, giving nonsense. Option c uses AVERAGEIFS syntax correctly (average_range first), and would also give the right answer but option a is cleaner for one condition. Option d uses <=0.06 which also includes employees at exactly 6%, changing the qualifying set."
+            },
+            {
+                "question": "Using the CA Lesson 4 dataset (F=Bonus Percentage, C=Department, E=Years of Service, rows 2-21), which AVERAGEIFS formula returns the average bonus percentage for Sales employees with more than 1 year of service?",
+                "options": [
+                    "=AVERAGEIFS(F2:F21,C2:C21,\"Sales\",E2:E21,\">1\") → 0.055",
+                    "=AVERAGEIF(F2:F21,C2:C21,\"Sales\",E2:E21,\">1\") → 0.055",
+                    "=AVERAGEIFS(C2:C21,\"Sales\",E2:E21,\">1\",F2:F21) → 0.055",
+                    "=AVERAGEIFS(F2:F21,C2:C21,\"Sales\",E2:E21,\">=2\") → 0.055"
+                ],
+                "correct": 0,
+                "explanation": "Answer a is correct. AVERAGEIFS argument order: average_range FIRST, then (criteria_range, criteria) pairs. The 5 Sales employees all have 2 years (>1), giving average bonus% = (5%+6%+5.5%+5%+6%)/5 = 5.5% = 0.055. Option b uses AVERAGEIF which only accepts ONE condition — adding extra arguments causes an error. Option c puts the average_range last, which is wrong for AVERAGEIFS (that's AVERAGEIF's order). Option d uses >=2 instead of >1 but gives the same result here since all Sales employees have exactly 2 years."
+            },
+            {
+                "question": "A spreadsheet has Salary in column D, Bonus Percentage in column F, and Bonus Amount in column G (=D*F). Which formula placed in another cell divides the bonus amount by the bonus percentage and shows 'Error' if something goes wrong?",
+                "options": [
+                    "=IFERROR(G2/F2,\"Error\")",
+                    "=IFERROR(F2/G2,\"Error\")",
+                    "=IF(ISERROR(G2/F2),G2/F2,\"Error\")",
+                    "=IFERROR(D2/F2,\"Error\")"
+                ],
+                "correct": 0,
+                "explanation": "Answer a is correct. =IFERROR(G2/F2,'Error') divides the Bonus Amount (G2) by the Bonus Percentage (F2), recovering the original salary (e.g. Alice: 2750/0.05=55000). If F2 is 0 or blank, the division would cause a #DIV/0! error — IFERROR catches this and shows the text 'Error' instead. Option b divides in the wrong order (F/G). Option c uses the old IF(ISERROR()) pattern which is longer and evaluates the formula twice. Option d divides salary by bonus% directly without using the Bonus Amount column G."
+            },
+            {
+                "question": "Using the CA Lesson 4 dataset (B=Employee Name, D=Salary, rows 2-21, names in alphabetical order), which LOOKUP formula returns Grace Martin's salary?",
+                "options": [
+                    "=LOOKUP(\"Grace Martin\",B2:B21,D2:D21) → 58000",
+                    "=LOOKUP(\"Grace Martin\",B2:D21,3) → 58000",
+                    "=LOOKUP(D2:D21,\"Grace Martin\",B2:B21) → 58000",
+                    "=LOOKUP(\"Grace\",B2:B21,D2:D21) → 58000"
+                ],
+                "correct": 0,
+                "explanation": "Answer a is correct. =LOOKUP(lookup_value, lookup_vector, result_vector) — the names are alphabetical so LOOKUP's binary search works. Grace Martin is in position 7 in B2:B21; LOOKUP returns the 7th value from D2:D21 = 58000. Option b uses VLOOKUP-style col_index syntax which is wrong for LOOKUP. Option c has the arguments in the wrong order. Option d searches for 'Grace' but the cells contain 'Grace Martin' (full name) — 'Grace' alone is not found and LOOKUP would return a wrong result or an error."
+            },
+            {
+                "question": "Using the CA Lesson 4 dataset (B=Employee Name, D=Salary, rows 2-21), which XLOOKUP formula returns Sam Scott's salary?",
+                "options": [
+                    "=XLOOKUP(\"Sam Scott\",B2:B21,D2:D21) → 63000",
+                    "=XLOOKUP(\"Sam\",B2:B21,D2:D21) → 63000",
+                    "=XLOOKUP(\"Sam Scott\",B2:D21,3) → 63000",
+                    "=XLOOKUP(B2:B21,\"Sam Scott\",D2:D21) → 63000"
+                ],
+                "correct": 0,
+                "explanation": "Answer a is correct. =XLOOKUP('Sam Scott',B2:B21,D2:D21) finds the exact string 'Sam Scott' in B2:B21 (position 19) and returns D20 = 63000. Option b searches for 'Sam' — but the cells contain 'Sam Scott' (full name), so 'Sam' alone returns #N/A. Option c uses VLOOKUP-style col_index syntax which is wrong for XLOOKUP. Option d has the lookup_value and lookup_array in the wrong positions."
+            },
+            {
+                "question": "Using the CA Lesson 2 dataset (C=Order Date, rows 2-21), which formula in column F calculates the Next Order Date (3 days after) for Order ID 5 in row 6?",
+                "options": [
+                    "=C6+3 → 2023-10-08",
+                    "=C6+DATE(3) → 2023-10-08",
+                    "=EDATE(C6,3) → 2024-01-05",
+                    "=C6&3 → error"
+                ],
+                "correct": 0,
+                "explanation": "Answer a is correct. In Excel, dates are stored as serial numbers, so adding 3 to a date moves it forward 3 days. C6 = 2023-10-05, so =C6+3 = 2023-10-08. Option b is wrong — DATE() requires 3 arguments (year, month, day) and DATE(3) is invalid. Option c uses EDATE which adds months, not days — EDATE(C6,3) would give 2024-01-05 (3 months later). Option d uses & which concatenates text and would produce a string, not a date."
+            },
+            {
+                "question": "Using the CA Lesson 2 dataset (D=Order Time, rows 2-21), which formula correctly classifies Order ID 8 (row 9, time 12:15) as Morning or Afternoon?",
+                "options": [
+                    "=IF(D9<TIME(12,0,0),\"Morning\",\"Afternoon\") → Afternoon",
+                    "=IF(D9<=TIME(12,0,0),\"Morning\",\"Afternoon\") → Morning",
+                    "=IF(D9<12,\"Morning\",\"Afternoon\") → Morning",
+                    "=IF(D9<\"12:00\",\"Morning\",\"Afternoon\") → error"
+                ],
+                "correct": 0,
+                "explanation": "Answer a is correct. TIME(12,0,0) creates the value for 12:00:00 noon. Linda Harris's time is 12:15, which is NOT less than 12:00, so the condition is FALSE and the result is 'Afternoon'. Option b uses <= which would classify exactly 12:00 as Morning — but noon is the start of afternoon. Option c compares D9 to the number 12, not to a time value — times in Excel are fractions (e.g. noon = 0.5, not 12). Option d compares to a text string '12:00' which does not work for time comparisons."
+            },
+            {
+                "question": "Using the CA Lesson 2 dataset (E=Order Amount, rows 2-21), Order ID 16 (row 17) has an Order Amount of 80.15. Which ROUND formula gives the rounded whole number?",
+                "options": [
+                    "=ROUND(E17,0) → 80",
+                    "=ROUND(E17,1) → 80.2",
+                    "=INT(E17) → 80",
+                    "=ROUND(E17,2) → 80.15"
+                ],
+                "correct": 0,
+                "explanation": "Answer a is correct. =ROUND(E17,0) rounds 80.15 to the nearest whole number. The digit after the decimal is 1, which is less than 5, so it rounds DOWN to 80. Option b rounds to 1 decimal place giving 80.2 (the second decimal .5 rounds up the first). Option c uses INT which also gives 80 here but INT always rounds DOWN (truncates) — for negative numbers INT and ROUND behave differently. Option d rounds to 2 decimal places which returns 80.15 (no change). The question asks for nearest whole number, so num_digits=0 is correct."
+            },
+            {
+                "question": "Using the CA Lesson 2 dataset (B=Customer Name, rows 2-21), Order ID 7 (row 8) is Michael Lee. Which LEN formula gives the character count?",
+                "options": [
+                    "=LEN(B8) → 11",
+                    "=LEN(B8) → 10",
+                    "=LEN(TRIM(B8)) → 10",
+                    "=COUNT(B8) → 11"
+                ],
+                "correct": 0,
+                "explanation": "Answer a is correct. LEN('Michael Lee') counts every character including the space: M-i-c-h-a-e-l (7) + space (1) + L-e-e (3) = 11. Option b gives the wrong number — 10 ignores the space. Option c uses TRIM first which removes leading/trailing spaces but not internal spaces, so 'Michael Lee' stays 'Michael Lee' and LEN still returns 11. Option d uses COUNT which counts numeric values in a range, not the length of a text string."
+            },
+            {
+                "question": "Using the CA Lesson 2 dataset (B=Customer Name, rows 2-21), Order ID 12 (row 13) is Karen Martinez. Which formula extracts the initial and surname as 'K Martinez'?",
+                "options": [
+                    "=LEFT(B13,1)&\" \"&MID(B13,FIND(\" \",B13)+1,LEN(B13)) → K Martinez",
+                    "=LEFT(B13,1)&MID(B13,FIND(\" \",B13)+1,LEN(B13)) → KMartinez",
+                    "=LEFT(B13,1)&\" \"&RIGHT(B13,8) → K Martinez",
+                    "=MID(B13,1,1)&\" \"&RIGHT(B13,FIND(\" \",B13)) → K Martinez"
+                ],
+                "correct": 0,
+                "explanation": "Answer a is correct. LEFT(B13,1) extracts 'K'. FIND(' ',B13) finds the space at position 6. MID(B13,7,LEN(B13)) extracts from position 7 to the end = 'Martinez'. The & ' ' & adds the space between them giving 'K Martinez'. Option b is missing the space separator giving 'KMartinez'. Option c hard-codes RIGHT(B13,8) which only works for surnames of exactly 8 characters — 'Martinez' happens to be 8 but this would break for other names. Option d uses RIGHT(B13,FIND(' ',B13)) = RIGHT(B13,6) = 'rtinez' — the FIND returns the space position (6) not the surname length."
+            },
+            {
+                "question": "Using the CA Lesson 2 dataset (C=Order Date, rows 2-21), Order ID 11 (row 12) has date 2023-10-11. The rule is: On Time if on or before 2023-10-10, else Delayed. What is the formula and result?",
+                "options": [
+                    "=IF(C12<=DATE(2023,10,10),\"On Time\",\"Delayed\") → Delayed",
+                    "=IF(C12<DATE(2023,10,10),\"On Time\",\"Delayed\") → Delayed",
+                    "=IF(C12<=DATE(2023,10,10),\"On Time\",\"Delayed\") → On Time",
+                    "=IF(C12<=\"2023-10-10\",\"On Time\",\"Delayed\") → On Time"
+                ],
+                "correct": 0,
+                "explanation": "Answer a is correct. DATE(2023,10,10) creates the cutoff date. 2023-10-11 <= 2023-10-10 is FALSE, so the result is 'Delayed'. Option b uses < (strictly less than) instead of <= — this gives the same result here since Oct 11 is not before Oct 10, but the formula is wrong for Oct 10 itself (Oct 10 would become 'Delayed' instead of 'On Time'). Option c shows the correct formula but the wrong answer — 2023-10-11 is after the cutoff so it is Delayed, not On Time. Option d compares to a text string '2023-10-10' which does not reliably compare with date serial numbers."
+            },
+            {
+                "question": "Using the CA Lesson 2 dataset (E=Order Amount, rows 2-21), Order ID 5 (row 6) has amount 150.80. The discount rule is: 10% if amount >= 100, else 0. What is the formula and result?",
+                "options": [
+                    "=IF(E6>=100,E6*10%,0) → 15.08",
+                    "=IF(E6>100,E6*10%,0) → 15.08",
+                    "=IF(E6>=100,10%,0) → 0.1",
+                    "=IF(E6>=100,E6*0.1,E6) → 15.08"
+                ],
+                "correct": 0,
+                "explanation": "Answer a is correct. 150.80 >= 100 is TRUE, so discount = 150.80 * 10% = 150.80 * 0.1 = 15.08. Option b uses strictly greater than (>100) — this works for 150.80 but would give 0 discount for exactly $100 orders, which contradicts the 'greater than or equal to' rule. Option c returns 10% (=0.1) as the discount value instead of calculating the actual discount amount. Option d returns E6 (the full amount) instead of 0 when no discount applies — it should return 0 for amounts under $100."
+            }
+        ]
+    },
     "Tool: Excel & Google Sheets": {
         "course": "Spreadsheet Fundamentals",
         "tool_type": "spreadsheet",
-        "description": "Master spreadsheet tools for data analysis - learn formulas, pivot tables, data cleaning, and automation techniques.",
+        "description": "Quick-reference tool for common Excel formulas, pivot tables, data cleaning, and automation techniques. Also covers Google Sheets — the free cloud-based alternative with built-in real-time collaboration.",
         "lessons": [
             {
                 "title": "Essential Formulas for Data Analysis",
@@ -8923,17 +12933,11 @@ flowchart TD
 5. How do the four analytics levels build upon each other?
 </div>
 
-<svg width="680" height="82" viewBox="0 0 680 82" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Lesson task banner">
-    <rect x="1" y="1" width="678" height="80" rx="10" fill="#EAFBF1" stroke="#39A96B" stroke-width="2"/>
-    <text x="20" y="34" fill="#1D6B44" font-size="18" font-weight="700">Lesson Task</text>
-    <text x="20" y="56" fill="#1D6B44" font-size="13">Self-reflection activity: define goals, skills, and your data analysis path.</text>
-</svg>
-
-#### The Task
+#### 📝 The Task
 
 In this lesson, you learnt about the fundamental roles in the field of data analysis, the various hard and soft skills required by data analysts and the different types of analysis which may be performed. For today's lesson task, you need to consider your goals in data analysis.
 
-##### Self-Reflection Exercise
+##### 🎯 Self-Reflection Exercise
 
 This is a bit of self-reflection to help you with your first step on your journey to becoming a data analyst. Take some time to think about and answer the following questions:
 
@@ -8975,7 +12979,7 @@ This is a bit of self-reflection to help you with your first step on your journe
   - Prescriptive Analytics (What should we do?)
 - Why are you drawn to this level?
 
-##### Your Data Analysis Journey
+##### 🗺️ Your Data Analysis Journey
 
 <div class="mermaid">
 flowchart TD
@@ -8995,7 +12999,7 @@ flowchart TD
     style Achieve fill:#4CAF50,stroke:#2E7D32,stroke-width:3px,color:#fff
 </div>
 
-##### Skills Assessment Template
+##### 📋 Skills Assessment Template
 
 <div class="key-concept">
 **Rate Your Current Skills (1-5 scale)**:
@@ -11173,7 +15177,7 @@ flowchart TD
         {
             "lesson_number": "1.2",
             "title": "It's All About Data",
-            "content": """
+            "content": '''
 ### Data Representation
 
 Data can be stored in various ways, some offering multiple ways of representing the data. In the broadest sense, data may be stored in an **unstructured manner** or represented in a **structured, tabular format**.
@@ -13946,17 +17950,11 @@ graph LR
 
 ---
 
-<svg width="680" height="82" viewBox="0 0 680 82" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Lesson task banner">
-    <rect x="1" y="1" width="678" height="80" rx="10" fill="#FFF4E8" stroke="#E58E26" stroke-width="2"/>
-    <text x="20" y="34" fill="#8A4A00" font-size="18" font-weight="700">Lesson Task: Internal vs External Data Sources</text>
-    <text x="20" y="56" fill="#8A4A00" font-size="13">Classify data sources and design clear feature tables with types and storage.</text>
-</svg>
-
-### The Task: Internal vs External Data Sources
+### 📝 The Task: Internal vs External Data Sources
 
 In this lesson, you learned about various considerations related to data, including **internal and external sources**. Let's complete a practical exercise to solidify your understanding.
 
-#### Task Requirements
+#### 🎯 Task Requirements
 
 **Select:**
 - **2 types of internal data**
@@ -13972,7 +17970,7 @@ In this lesson, you learned about various considerations related to data, includ
 
 ### ✅ Complete Solution with Examples
 
-#### Internal Data Source 1: Human Resources (HR) Data
+#### 📊 Internal Data Source 1: Human Resources (HR) Data
 
 <div class="key-concept">
 **About HR Data:**
@@ -14006,7 +18004,7 @@ Human Resources data contains information about employees within an organization
 
 ---
 
-#### Internal Data Source 2: Transactional/Sales Data
+#### 💰 Internal Data Source 2: Transactional/Sales Data
 
 <div class="key-concept">
 **About Transactional Data:**
@@ -14040,7 +18038,7 @@ Transactional data captures business transactions such as sales, purchases, and 
 
 ---
 
-#### External Data Source 1: Social Media Data
+#### 🌐 External Data Source 1: Social Media Data
 
 <div class="key-concept">
 **About Social Media Data:**
@@ -14076,7 +18074,7 @@ Social media data comes from platforms like Twitter, Facebook, Instagram, and Li
 
 ---
 
-#### External Data Source 2: Weather/IoT Sensor Data
+#### 🌤️ External Data Source 2: Weather/IoT Sensor Data
 
 <div class="key-concept">
 **About Weather/IoT Data:**
@@ -14117,7 +18115,7 @@ Weather and IoT sensor data comes from external sources like weather APIs, envir
 
 Now let's see how to work with this data in practice using different tools and technologies.
 
-#### Example 1: Creating HR Data in Excel/CSV
+#### 📊 Example 1: Creating HR Data in Excel/CSV
 
 <div class="important-info">
 **Scenario:** You need to create a structured HR database for a small company with 10 employees.
@@ -14154,7 +18152,7 @@ Column O (performance_rating): Data Type = Whole Number, Between 1 and 5
 
 ---
 
-#### Example 2: Working with Transactional Data in Python (Pandas)
+#### 🐍 Example 2: Working with Transactional Data in Python (Pandas)
 
 <div class="important-info">
 **Scenario:** Analyze sales transactions to find top-selling products and revenue by category.
@@ -14302,7 +18300,7 @@ Name: total_amount, dtype: float64
 
 ---
 
-#### Example 3: Storing HR Data in SQL Database
+#### 🗄️ Example 3: Storing HR Data in SQL Database
 
 <div class="important-info">
 **Scenario:** Create a relational database for HR data with proper data types and constraints.
@@ -14405,7 +18403,7 @@ ORDER BY hire_date;
 
 ---
 
-#### Example 4: Analyzing Social Media Data with Python
+#### 🌐 Example 4: Analyzing Social Media Data with Python
 
 <div class="important-info">
 **Scenario:** Collect and analyze social media sentiment about your brand.
@@ -14455,7 +18453,7 @@ df_social['post_timestamp'] = pd.to_datetime(df_social['post_timestamp'])
 
 # Perform sentiment analysis
 def analyze_sentiment(text):
-    # Analyze sentiment of text using TextBlob
+    """Analyze sentiment of text using TextBlob"""
     blob = TextBlob(text)
     polarity = blob.sentiment.polarity  # -1 (negative) to +1 (positive)
 
@@ -14569,7 +18567,7 @@ TOP ENGAGING POSTS
 
 ---
 
-### Key Insights from the Task
+### 🎯 Key Insights from the Task
 
 <div class="key-concept">
 **What You've Learned:**
@@ -14607,7 +18605,7 @@ TOP ENGAGING POSTS
 | **Weather/IoT Data** | External | Mixed (Structured readings + Unstructured images) | Temperature, humidity, sensor readings, timestamps, satellite images | Demand forecasting, logistics optimization, agriculture, energy management |
 
 This comprehensive task solution demonstrates how to identify, document, structure, and work with both internal and external data sources using industry-standard tools and best practices! 🚀
-            """,
+            ''',
             "key_points": [
                 "Data can be stored in structured (tabular) or unstructured (free-form) formats",
                 "Structured data is organized in tables with rows (records/entities) and columns (attributes)",
@@ -17517,17 +21515,11 @@ graph TB
 
 ---
 
-<svg width="680" height="82" viewBox="0 0 680 82" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Lesson task banner">
-    <rect x="1" y="1" width="678" height="80" rx="10" fill="#E8F3FF" stroke="#4A90D9" stroke-width="2"/>
-    <text x="20" y="34" fill="#1F4E79" font-size="18" font-weight="700">Lesson Task</text>
-    <text x="20" y="56" fill="#1F4E79" font-size="13">Design a short Google Forms survey with clear structure and valid question types.</text>
-</svg>
-
-### The Task
+### ✅ The Task
 
 In this lesson, you learned how to collect primary data using online methods. A simple and free approach is to create a survey in **Google Forms**. If you have never used Google Forms, follow this short guide and build the survey described below.
 
-#### Quick Guide: How to Create a Google Form
+#### 🧭 Quick Guide: How to Create a Google Form
 
 1. Go to https://forms.google.com and sign in.
 2. Click **Blank** to create a new form.
@@ -17537,7 +21529,7 @@ In this lesson, you learned how to collect primary data using online methods. A 
 6. Turn on **Required** for essential questions only.
 7. Click **Send** to share by link, email, or QR code.
 
-#### Survey Scenario and Requirements
+#### 🧩 Survey Scenario and Requirements
 
 **Scenario**: Alex manages a well-known clothing store and wants to understand customers better to improve offerings and satisfaction.
 
@@ -17552,7 +21544,7 @@ Design a survey that captures:
 
 Keep the survey short and focused to respect customers' time. Start with the most essential questions and end with demographics.
 
-#### Example Survey Structure (Recommended Question Types)
+#### 📝 Example Survey Structure (Recommended Question Types)
 
 **Section 1: Shopping Habits**
 - How often do you shop with us? (Multiple choice)
@@ -17588,7 +21580,7 @@ Keep the survey short and focused to respect customers' time. Start with the mos
 
 **Tip**: Aim for 12-18 questions total. Use mostly closed questions for analysis and 2-3 open-ended questions for insight.
 
-#### Submission Checklist (Rubric)
+#### ✅ Submission Checklist (Rubric)
 
 - Covers all required categories (demographics, habits, experience, service, products, loyalty, satisfaction)
 - Uses appropriate question types (Likert, multiple choice, matrix, open-ended)
@@ -17596,13 +21588,13 @@ Keep the survey short and focused to respect customers' time. Start with the mos
 - Questions are clear, unbiased, and easy to answer
 - Sensitive items (demographics, income) placed near the end
 
-#### Sample Google Form Title and Description
+#### 🧾 Sample Google Form Title and Description
 
 **Title**: Customer Experience Survey - Alex's Clothing Store
 
 **Description**: Thank you for visiting our store. This short survey (3-5 minutes) helps us understand your experience and improve our products and service. Your answers are anonymous and will be used only for research and service improvement. By continuing, you consent to participate and may stop at any time.
 
-#### Sample Survey Questions (18 Items)
+#### 🧩 Sample Survey Questions (18 Items)
 
 1. How often do you shop with us? (Multiple choice)
 2. What is your typical spend per visit? (Multiple choice)
@@ -20897,2115 +24889,6 @@ This is how data analysts use distribution analysis to understand business opera
                 "highlighted_sections": True
             }
         }
-    ],
-    "FI1BBSF05": [
-        {
-            "lesson_number": "1.1",
-            "title": "Microsoft 365 - Excel as a Spreadsheet",
-            "content": """
-### Introduction
-
-In this session, we'll review the fundamental ideas of spreadsheets and their background. We will focus on **Microsoft Excel**, including its main features, user interface, and organizational structure.
-
-Since we have already been working with data in Excel throughout earlier activities, some components in this lesson may feel familiar. They are intentionally repeated and summarized, but now with **additional context** and **clearer explanations** to strengthen your foundation.
-
----
-
-### What You Will Learn in This Lesson
-
-- A brief history of spreadsheets and how they evolved
-- Why Excel remains one of the most important tools for structured data work
-- How Excel's interface is organized (workbook, worksheet, rows, columns, cells, ribbon, formulas bar)
-- How spreadsheets support data organization and early-stage analysis
-- How Excel compares with alternative spreadsheet tools
-- How Excel compares with other data analysis tools
-
----
-
-### Course Direction
-
-This course begins with a short history of spreadsheets and ends by discussing practical **Excel alternatives**. Along the way, we will continuously contrast Excel with other data-analysis environments and organize new concepts as they are introduced.
-
-By the end of this lesson, you should be able to explain where Excel fits in a modern data workflow and why spreadsheet fundamentals are critical for further analytical work.
-
----
-
-### History of Spreadsheets
-
-Spreadsheets are popular tools for introductory and intermediate-level data analysis. It is estimated that around **90% of companies** use spreadsheets in financial planning, strategic decision-making, or aggregate forecasting.
-
-It is important to note that spreadsheets are not limited to financial data. They can also be used for simple computations in many other domains, including scientific data analysis, as long as dataset size is manageable and advanced modelling is not required.
-
-So when did spreadsheets begin, and how did they evolve?
-
-The first spreadsheet software was developed in the late 1970s. One of the most successful early programs was **VisiCalc**. Although its developers did not originally use the word “spreadsheet,” today we would describe it as a straightforward spreadsheet tool.
-
-VisiCalc was released in **1979** for the **Apple II** computer. It was easy to use and made it possible to sort and store data in tabular rows and columns. It was created to replace manual spreadsheet management methods (Heather, 2022).
-
-In many business contexts, financial projection rules repeat each month, quarter, or year. Repeating these tasks manually requires substantial time, effort, and cost. Spreadsheets changed this by allowing users to define basic calculations once and let computers recompute results whenever data changes or new data arrives.
-
-This was tremendously impactful and contributed to the rapid success of spreadsheet software.
-
-Another major advantage was accessibility: many data manipulations and calculations could be programmed relatively simply. As a result, spreadsheets became useful for programmers, analysts, accountants, and financial professionals alike.
-
-Users did not need deep programming or computer science experience to begin building useful models in spreadsheet tools. At the same time, data analysts still benefit from technical understanding of how spreadsheet systems work, especially when working professionally in organizations.
-
-VisiCalc in particular enabled non-programmers to build quantitative models on computers—an important milestone in the democratization of data work.
-
-However, early spreadsheet programs lacked a graphical interface that would make them more user-friendly. This was mainly due to the limitations of operating systems at the time.
-
-With the emergence of **Graphical User Interfaces (GUI)**, visual elements began replacing text-dominated interactions, and working with spreadsheet software became significantly easier.
-
-Excel stood out because it was easier to use than existing alternatives. It introduced features such as:
-- **Drop-down menus** (lists of choices shown when users click menu titles)
-- **WYSIWYG formatting** (What You See Is What You Get), meaning edited content closely matches how it appears in the final output
-
-Microsoft has updated Excel many times since its original release. These updates continuously improved how calculations are performed, what data types can be handled, and how common business calculations and summaries can be created more efficiently.
-
-Soon after its release, Excel established itself as the leading spreadsheet tool for business and remains one of the most flexible and widely used spreadsheet applications.
-
-Its primary purpose is to support **fundamental to intermediate analysis** and **business presentation workflows**.
-
----
-
-### Alternative Spreadsheet Software Suites
-
-Excel is, without a doubt, the undisputed leader in spreadsheet applications. It has established a reputation as the preferred tool for many tasks, including financial modelling and data analysis.
-
-However, Excel is not the only breakthrough in the wider field of digital productivity. There are several alternative spreadsheet software suites available, each with distinct strengths and benefits.
-
-On the desktop side, tools such as Airtable, LibreOffice Calc, and Apple Numbers are often seen as strong alternatives to Excel.
-
-In the cloud era, online spreadsheet solutions like Google Sheets and Zoho Sheet have been major game-changers. Compared with many desktop-only tools, online spreadsheet applications have grown significantly in popularity because of easier sharing and collaboration.
-
-#### Common Alternatives
-
-- **Google Sheets**: A cloud-based spreadsheet by Google with functionality similar to Excel and strong real-time collaboration.
-- **Apple Numbers**: A spreadsheet tool for Apple devices with a user-friendly interface and integration with Apple apps.
-- **LibreOffice Calc**: Part of the open-source LibreOffice suite, with a broad spreadsheet feature set and compatibility with Excel formats.
-- **Apache OpenOffice Calc**: An open-source spreadsheet alternative that supports multiple file formats.
-- **Zoho Sheet**: A web-based spreadsheet with collaborative functions and integration with Zoho productivity tools.
-- **Quip**: A collaborative platform combining documents, spreadsheets, and task management.
-- **Airtable**: A flexible, database-driven spreadsheet environment for visual organization and analysis.
-- **Smartsheet**: A spreadsheet-style platform focused on project planning and collaboration.
-- **WPS Office Spreadsheets**: A free office suite spreadsheet with an interface and feature set similar to Excel.
-- **OnlyOffice**: A full office suite offering spreadsheet, document, and presentation tools compatible with Excel files.
-
-These alternatives provide different combinations of compatibility, functionality, and collaboration options, allowing users to choose tools that best match their workflow needs.
-
-In this course, we will focus on **Microsoft 365 Excel**, since much of the core functionality and spreadsheet logic is transferable across most major software suites.
-
----
-
-### The Spreadsheet Interface
-
-What is a spreadsheet? Imagine a tool that allows us to ingest and view both numerical values and character-string data in a **table-like format** made of **rows (horizontal)** and **columns (vertical)**.
-
-This is what we call a spreadsheet (also referred to as a worksheet).
-
-Each value in a cell can be:
-- an independent value entered directly by the user, or
-- a calculated value produced by an arithmetic expression, function, or formula.
-
-This cell-based structure is what makes spreadsheet software effective for organizing data, applying logic, and performing repeatable calculations.
-
----
-
-### Formula Bar
-
-Excel has a dedicated region above the worksheet grid called the **formula bar**. Users can insert formulas and functions to perform calculations, or inspect and edit the contents of the selected cell.
-
-#### Main Features of the Formula Bar
-
-- **Cell reference**: When a cell is selected, its address appears in the formula bar (for example, selecting `B2` shows `B2`).
-- **Edit cell content**: Users can click in the formula bar and directly edit the selected cell content; updates are reflected immediately in the worksheet.
-- **Formula input**: Users can enter formulas and functions using operators (`+`, `-`, `*`, `/`) and functions such as `SUM`, `AVERAGE`, and `IF`.
-- **Formula autocomplete**: As users type, Excel suggests functions and named ranges to reduce typing time and errors.
-- **Error messages**: If a formula has a syntax issue or invalid reference, Excel surfaces an error so users can identify and correct it.
-- **Formula auditing**: Users can trace precedents and dependents to understand relationships between cells and formulas.
-- **Multi-line editing**: Long formulas or text can be edited across multiple lines; users can press `Alt+Enter` to insert line breaks.
-
-In short, the formula bar is the central area for viewing, entering, and editing formulas and functions, enabling data transformation, calculations, and robust spreadsheet logic.
-
----
-
-### Status Bar
-
-At the bottom of the Excel window is a horizontal strip called the **status bar**. It provides quick access to options and useful worksheet context.
-
-#### Main Components of the Status Bar
-
-- **Ready indicator**: The left side often shows `Ready`, meaning Excel is idle and available for input.
-- **Worksheet information**: Depending on settings, it can show context about the active worksheet and selected cell.
-- **Calculation mode**: If Excel is in manual calculation mode, the status bar shows an indicator so users know formulas will not recalculate automatically.
-- **Num Lock indicator**: Shows when the numeric keypad is active.
-- **AutoSum / Average / Count**: When selecting a range, quick aggregate results are displayed directly on the status bar.
-- **Zoom slider**: On the right side, users can zoom in or out by adjusting worksheet magnification.
-- **View indicators**: Page Layout and Page Break Preview indicators allow fast switching between worksheet views.
-- **Customization options**: Right-clicking the status bar opens options to add or remove displayed items.
-
-Excel's status bar helps users monitor worksheet state, perform quick checks, adjust display settings, and personalize what information is visible.
-
----
-
-### Worksheet vs Workbook
-
-There is a clear distinction between two commonly used spreadsheet terms:
-
-- a **worksheet**, and
-- a **workbook**.
-
-A **worksheet** is a single page that contains data in a table of rectangular cells. The selected worksheet name appears on its tab and can be renamed by double-clicking the tab label.
-
-By clicking the **+** button next to sheet tabs, users can add a new worksheet to the current Excel file.
-
-A **workbook** is a collection of worksheets. It consists of one or more sheets, and the sheet tabs are used to navigate between them.
-
-In short:
-- Worksheet = one sheet/page of data
-- Workbook = the full Excel file containing one or more worksheets
-
----
-
-### Rows and Columns
-
-In Excel, a worksheet is organized into rows and columns, creating a grid-like structure where data is entered and stored.
-
-#### Rows
-
-Rows are horizontal divisions in a worksheet and are numbered from top to bottom.
-
-- Each row has a unique number shown on the left side of the worksheet.
-- Excel provides **1,048,576 rows** by default (from `1` to `1,048,576`).
-- Rows are used to organize data horizontally.
-
-#### Columns
-
-Columns are vertical divisions in a worksheet.
-
-- Columns are labeled alphabetically (`A` to `Z`, then `AA`, `AB`, `AC`, and so on).
-- Excel provides **16,384 columns** by default (from `A` to `XFD`).
-- Columns are used to organize data vertically.
-
-#### Intersection of Rows and Columns
-
-The intersection of a row and a column is called a **cell**.
-
-- Each cell is uniquely identified by column letter + row number.
-- Example: `A1` means column `A`, row `1`.
-
-#### Usage in Data Work
-
-Rows and columns are the core structure for entering and managing spreadsheet data.
-
-- Columns often represent variables/fields (for example: Name, Date, Amount).
-- Rows often represent records/entries.
-- Users can resize rows and columns for readability.
-- Rows and columns can be selected, copied, moved, hidden, or deleted as needed.
-
-Excel's grid structure makes it highly effective for calculations, analysis, and presentation by giving users a clear tabular system for organizing and manipulating information.
-
----
-
-### What Did I Learn in This Lesson?
-
-This lesson provided the following insights:
-
-- We came to understand what a spreadsheet actually is.
-- We explored the history of spreadsheets.
-- We learned about the basic elements of a spreadsheet interface.
-- We examined the basic functionalities of a spreadsheet.
-- We learned more about the difference between workbooks and worksheets.
-- We explored some spreadsheet alternatives to Excel.
-
----
-
-### The Task - Answers (Visual Study Guide)
-
-<div style="display:flex; gap:12px; margin: 8px 0 16px 0;">
-    <svg width="220" height="90" viewBox="0 0 220 90" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Core Concepts visual card">
-        <rect x="1" y="1" width="218" height="88" rx="10" fill="#E8F3FF" stroke="#4A90D9" stroke-width="2"/>
-        <text x="14" y="34" fill="#1F4E79" font-size="16" font-weight="700">Core Concepts</text>
-        <text x="14" y="58" fill="#1F4E79" font-size="12">Definition • Uses • Basics</text>
-    </svg>
-    <svg width="220" height="90" viewBox="0 0 220 90" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Excel Interface visual card">
-        <rect x="1" y="1" width="218" height="88" rx="10" fill="#EAFBF1" stroke="#39A96B" stroke-width="2"/>
-        <text x="14" y="34" fill="#1D6B44" font-size="16" font-weight="700">Excel Interface</text>
-        <text x="14" y="58" fill="#1D6B44" font-size="12">Ribbon • Formula Bar • Status Bar</text>
-    </svg>
-    <svg width="220" height="90" viewBox="0 0 220 90" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Practice Actions visual card">
-        <rect x="1" y="1" width="218" height="88" rx="10" fill="#FFF4E8" stroke="#E58E26" stroke-width="2"/>
-        <text x="14" y="34" fill="#8A4A00" font-size="16" font-weight="700">Practice Actions</text>
-        <text x="14" y="58" fill="#8A4A00" font-size="12">Resize • Move • Hide • Analyze</text>
-    </svg>
-</div>
-
-#### Quick Snapshot
-
-| Topic | Fast Answer |
-|---|---|
-| Spreadsheet | A grid-based tool with rows, columns, and cells for data + formulas |
-| Workbook vs Worksheet | Workbook = file, Worksheet = one sheet inside the file |
-| Excel Capacity | 1,048,576 rows and 16,384 columns (A to XFD) |
-| Cell ID | Column letter + row number (e.g., `B2`) |
-
----
-
-#### Core Concepts
-
-**1) What is a spreadsheet?**  
-A worksheet-based tool that organizes data in rows and columns, where each cell can hold text, numbers, or formulas.
-
-**2) Common applications of spreadsheets**  
-Budgeting, financial planning, forecasting, reporting, data cleaning, KPI tracking, inventory management, and basic scientific/statistical analysis.
-
-**3) Basic functionalities**  
-Data entry, formatting, sorting/filtering, formulas/functions, charting, summarization, simple analysis, and tabular reporting.
-
----
-
-#### Excel Interface
-
-**4) Main elements of the Excel menu bar**  
-Common ribbon tabs include **File, Home, Insert, Page Layout, Formulas, Data, Review, View,** and **Help** (plus optional add-in tabs).
-
-**5) Main features/functions of the formula bar**  
-Shows selected cell reference/content, enables direct editing, formula/function input, autocomplete, error visibility, formula auditing, and multi-line editing.
-
-**6) Information/options on the status bar**  
-Ready/Mode indicators, worksheet context, calculation mode status, quick aggregates (Sum/Average/Count), zoom slider, view shortcuts, and customization options.
-
----
-
-#### Worksheets, Workbooks, and Structure
-
-**7) Difference between worksheet and workbook**  
-A worksheet is one sheet of cells; a workbook is the full Excel file containing one or more worksheets.
-
-**8) How to add a new worksheet**  
-Click the **+** button next to worksheet tabs.
-
-**9) Deleting the last worksheet**  
-Excel does not allow deletion of the last remaining sheet; at least one worksheet must stay in a workbook.
-
-**10) How rows and columns are organized**  
-Rows are horizontal and numbered; columns are vertical and lettered.
-
-**11) Default rows and columns in Excel**  
-**1,048,576 rows** and **16,384 columns** (A to XFD).
-
-**12) How to identify a specific cell**  
-By cell reference: column letter + row number (for example, `B2`, `A1`, `XFD1048576`).
-
-**13) Purpose of rows and columns**  
-They provide structure for organizing records (rows) and fields/variables (columns) in a consistent tabular layout.
-
----
-
-#### Practical Actions
-
-**14) Change column width / row height**  
-Drag column/row boundaries, double-click boundaries for AutoFit, or use Home → Format options.
-
-**15) Select, copy, relocate, hide, or remove rows/columns**  
-Select row/column headers, then use right-click menu, keyboard shortcuts (Copy/Cut/Paste), drag-and-drop for relocation, and Hide/Unhide or Delete/Insert commands.
-
-**16) Advantages of the grid-like structure**  
-It provides clarity, consistency, and scalability for data entry, calculations, analysis, filtering, and presentation.
-
----
-
-<svg width="680" height="82" viewBox="0 0 680 82" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Progress check banner">
-    <rect x="1" y="1" width="678" height="80" rx="10" fill="#F3F0FF" stroke="#7E57C2" stroke-width="2"/>
-    <text x="20" y="34" fill="#4A2B87" font-size="18" font-weight="700">Progress Check</text>
-    <text x="20" y="56" fill="#4A2B87" font-size="13">Can you explain 1, 4, 7, 11 and 16 without notes? You are mastering Lesson 1.1.</text>
-</svg>
-
-#### Motivation Check
-
-If you can explain items **1, 4, 7, 11, and 16** without looking, you already understand the core of this lesson.
-            """,
-            "key_points": [
-                "Spreadsheets are widely used in business planning, strategy, and forecasting",
-                "Spreadsheet use extends beyond finance into domains like scientific analysis",
-                "VisiCalc (1979, Apple II) was the first major spreadsheet software breakthrough",
-                "Spreadsheet automation reduced repetitive manual calculation work",
-                "Spreadsheet tools enabled non-programmers to build quantitative models",
-                "GUI and WYSIWYG capabilities made spreadsheet software significantly more user-friendly",
-                "Excel became the dominant business spreadsheet platform through continuous product updates",
-                "Alternative desktop and cloud spreadsheet suites offer different collaboration and compatibility strengths",
-                "A spreadsheet interface organizes data in rows, columns, and formula-driven cells",
-                "The formula bar is used to view, edit, and build formulas and functions",
-                "The status bar provides live worksheet indicators, quick aggregates, and display controls",
-                "A worksheet is a single sheet, while a workbook is a file containing one or more worksheets",
-                "Rows, columns, and their intersections (cells) form Excel's core data structure"
-            ],
-            "visual_elements": {
-                "diagrams": False,
-                "tables": True,
-                "highlighted_sections": True
-            }
-        },
-        {
-            "lesson_number": "1.2",
-            "title": "Entering, Editing and Importing Data",
-            "content": """
-### 1.2 Lesson - Entering, Editing and Importing Data
-
-### Introduction
-
-Fundamental Excel operations that let you input, change, and import external data into your spreadsheets include entering, editing, and importing data. These steps are essential for efficiently organising, analysing, and presenting data. In this lesson, we will examine the fundamental approaches and procedures for entering, editing, and importing data in Excel.
-
-### Entering Data
-
-The first step in utilising the capability of this flexible spreadsheet program is entering data in Excel. Users can systematically enter and arrange data in Excel, facilitating effective data analysis, calculations, and visualisation. Excel has a user-friendly interface that makes data entry easy, whether you are working with numerical data, text, dates, or formulas. Excel users may unlock the ability to manage and analyse data accurately and precisely by learning the foundations of data entry, such as cell selection, data kinds, and techniques for efficient input.
-
-#### Direct typing
-
-By clicking on a cell, you can enter data immediately. This approach can be used to enter text, numbers, dates, or easy formulas. You can go to the following cell in the chosen direction by pressing Enter or Tab.
-
-#### Formula bar
-
-You can select a cell and enter or edit data in the formula bar at the top of the Excel window. The formula bar allows you to see and modify the contents of the active cell more clearly, especially when dealing with lengthy data.
-
-### Importing and Exporting Datasets
-
-Importing and exporting datasets in Excel is a fundamental skill that allows you to manage and analyse data efficiently. Importing data involves bringing external datasets into Excel, while exporting refers to saving Excel data in a format that can be used by other applications or shared with others.
-
-Importing data into Excel allows you to work with data from various sources such as databases, text files, CSV (Comma Separated Values) files, or other Excel workbooks. This enables you to combine and analyse data from multiple sources, perform calculations, create visualisations, and generate reports.
-
-On the other hand, exporting data from Excel allows you to share your work or collaborate with others who may not have Excel or need the data in a different format. Exporting options include saving Excel files as different file types like CSV files, PDF (Portable Document Format), or XPS (XML Paper Specification), among others. Each format has its advantages depending on the intended use of the exported data.
-
-Importing and exporting data in Excel offers flexibility, versatility, and compatibility in managing and sharing datasets. Whether you need to analyse external data within Excel or distribute your findings to others, mastering these capabilities empowers you to make the most of your data-driven tasks. In the following sections, we will explore the specific methods and techniques for importing and exporting data in Excel.
-
-### To import a CSV dataset
-
-Let’s start by importing a CSV file. This is a very popular way to save files due to its simplicity and the fact that it is widely supported, lightweight, platform-independent and easily integrated with programming languages. To import data in Excel from a CSV (Comma Separated Values) file, you can follow these steps:
-
-1. Open a new or existing Excel workbook.
-2. Click on the Data tab in the Excel ribbon menu.
-3. Select From Text/CSV from the options.
-4. Navigate to the location where your CSV file is stored.
-5. Choose the CSV file you want to import and click on the Open button.
-6. Excel will open the load page. See Figure 2 - Text import wizard.
-
-### Here’s how to proceed with the wizard
-
-In the Text Import Wizard, you’ll see a preview of the CSV file data. It allows you to review the data and make necessary adjustments before importing.
-
-#### Show how it’s done
-
-1. Confirm the file origin/encoding so special characters are displayed correctly.
-2. Verify the delimiter (for example comma, semicolon, or tab) so columns split properly.
-3. Check that headers are recognised and that each column appears in the correct field.
-4. If needed, set column data types (Text, Date, Number) to avoid wrong automatic conversions.
-5. Click Load to import directly, or use Transform Data to clean/shape the dataset before loading.
-6. Choose where to place the imported data (new worksheet or existing location), then finish the import.
-
-### Delimiter check before loading
-
-Select the Delimiter option if it’s not already selected. This indicates that specific delimiters, such as commas or tabs, separate your data. Excel will carry this out automatically, but it is advisable to check to make sure everything is done correctly.
-
-Choose the delimiter that matches the one used in your CSV file (typically a comma). You can see a preview of how your data will be separated based on your selection.
-
-Click on the Load button to import the data.
-
-Excel will import the CSV data and display it in the selected location within your workbook. You can now work with the imported data, apply formulas, create charts, or perform any other desired data analysis tasks.
-
-### Real scenario example
-
-Imagine you are a junior data analyst in a retail company. Every Monday, the sales system exports a CSV file with columns like `Date`, `Store`, `Product`, `Units_Sold`, and `Revenue`.
-
-When you import this file into Excel:
-
-1. You first verify the delimiter is comma so each field lands in the correct column.
-2. You check the preview to confirm dates and numbers are not merged into one column.
-3. You click Load and place the data in a new worksheet called `Weekly_Sales`.
-4. You create a PivotTable to summarise total revenue by store.
-5. You add a chart to compare week-over-week performance.
-
-This is a common real-world workflow: import CSV correctly, validate column structure, then analyse and present insights.
-
-### Editing Data
-
-In Excel, the Copy, Cut, Paste, and Delete functions are essential for managing and manipulating data.
-
-### Popular Excel functions
-
-Let’s first discuss the Copy option.
-Copying allows you to duplicate the content of a selected cell or range of cells. To copy, select the cell(s) you want to copy and either right-click and choose Copy or use the shortcut Ctrl+C. The copied content is stored in Excel’s clipboard, ready to be pasted elsewhere.
-
-The next option is Cut.
-Cutting works similarly to copying, but it removes the selected content from its original location and stores it in the clipboard. To cut, select the cell(s) you want to move, right-click and choose Cut or use the shortcut Ctrl+X. The cut content is temporarily stored in the clipboard until you paste it elsewhere.
-
-The next option is Paste.
-Pasting allows you to insert the copied or cut content into a new location in the worksheet. To paste, select the destination cell or range, right-click, and choose Paste or use the shortcut Ctrl+V. Excel pastes the content from the clipboard into the selected location, duplicating or moving the data.
-
-- **Paste Values**: This option pastes only the values from the copied or cut cells, excluding any formatting or formulas.
-- **Paste Formulas**: This option pastes the formulas from the copied or cut cells, allowing you to replicate calculations or references to other cells.
-- **Paste Formats**: This option pastes only the formatting (e.g., font, colour, borders) from the copied or cut cells without the actual content.
-- **Paste Special**: This option provides additional paste options, such as pasting only values, formulas, formats, or specific formatting attributes.
-
-Another option is Delete.
-Deleting removes the selected cell(s) or range(s) from the worksheet. To delete, select the cell(s) or range(s) you want to remove and either right-click and choose Delete or use the shortcut Delete key. Excel shifts the remaining cells up or left to fill the empty space created by the deletion.
-
-- **Delete Contents**: This option removes the content from the selected cells while leaving the formatting intact.
-- **Delete Cells**: This option removes the content and formatting from the selected cells, shifting the surrounding cells to fill the gap.
-
-### How to select a cell
-
-Selection in Excel refers to the process of choosing a specific cell or range of cells to perform various operations on them. There are two main types of selection in Excel: selecting a single cell and selecting a range of cells.
-
-#### Click
-
-To select a single cell, simply click on the desired cell with the mouse pointer. The selected cell is highlighted, indicating that it is the active cell.
-
-#### Keyboard navigation
-
-Use the arrow keys on the keyboard to navigate and move the selection to different cells. The active cell moves in the direction of the arrow key pressed.
-
-### How to select a range of cells
-
-#### Click and drag
-
-To select a range of cells, click on the starting cell, hold down the mouse button, and drag the mouse to the ending cell of the range. All the cells within the selected range will be highlighted.
-
-#### Shift key
-
-Click on the starting cell, then hold down the Shift key and click on the ending cell of the range. This method is helpful in selecting a range that is not adjacent to each other.
-
-#### Ctrl key
-
-Hold the Ctrl key and click on individual cells to select non-contiguous cells or ranges.
-
-Additionally, there are shortcuts that can help you quickly select cells or ranges:
-
-#### Ctrl+A
-
-Selects the entire worksheet if pressed once. If pressed again, it selects the current region around the active cell.
-
-#### Ctrl+Shift+Arrow Keys
-
-Extends the selection to the last non-empty cell in the direction of the arrow key.
-
-You can carry out various activities on a cell or range once you’ve selected it, including entering data, formatting, copying, cutting, pasting, deleting, or using functions and formulae. You may easily edit data in Excel by using these actions, which have the selected cell or range as their target.
-
-### AutoFill
-
-With Excel’s AutoFill tool, you can rapidly and automatically fill a group of cells with information or formatting based on an established pattern. It is especially helpful when inserting repeated or sequential data into a column or row. AutoFill can be used as follows:
-
-1. Enter the initial value or series of values in a cell.
-2. Select the cell(s) containing the value(s) you want to AutoFill.
-3. Position the mouse cursor over the small square at the bottom right corner of the selected cell(s). The cursor will change to a thin black crosshair, indicating the AutoFill handle.
-4. Click and drag the AutoFill handle across the range where you want the values to be filled.
-
-Excel intelligently detects the pattern of the selected data and automatically fills the remaining cells based on that pattern. The pattern can include numbers, dates, text, or a combination. For example:
-
-#### Sequential numbers
-
-If you enter a sequence like 1, 2, 3 and then drag the AutoFill handle, Excel will fill the cells with the subsequent numbers (4, 5, 6, and so on).
-
-#### Dates
-
-If you enter a date like 01/01/2023 and drag the AutoFill handle, Excel will fill the cells with the subsequent dates in the series.
-
-#### Text
-
-If you enter a word or phrase and drag the AutoFill handle, Excel will fill the cells with the same text.
-
-AutoFill can also be used with specific patterns like weekdays, months, years, custom lists, etc. Additionally, you can customise the AutoFill behaviour by dragging the AutoFill handle with the right mouse button, which opens a menu with different options like copying cells, filling series, formatting only, or creating formulas based on the pattern.
-
-Overall, AutoFill is a handy feature in Excel that saves time and effort by automatically filling cells based on existing data patterns, allowing you to quickly populate a range of cells with consistent and structured information.
-
-### Different Types and Sources
-
-Excel supports importing various types of datasets from different sources. Here are some of the common dataset types and sources that Excel can import:
-
-#### CSV (Comma Separated Values)
-
-CSV files are plain text files that store tabular data, where each value is separated by a comma or other specified delimiter.
-
-#### Excel workbooks
-
-Excel can import data from other Excel workbooks or worksheets. To mention a few, `.XLSM`, `.XLSB`, `.XLS` and `.XLTX`. This allows you to combine or extract data from multiple sources within Excel itself.
-
-#### Text files
-
-Excel can import data from plain text files, such as TXT files. You can specify the delimiter used to separate the data columns.
-
-#### Access databases
-
-Excel can import data from Microsoft Access databases (`.mdb`, `.accdb`). It allows you to choose tables, queries, or entire databases to import.
-
-#### Web pages
-
-Excel can import data from web pages using the From Web feature. You can specify the URL and Excel will extract tables or data from the web page.
-
-#### XML files
-
-Excel can import data from XML (eXtensible Markup Language) files. XML files store structured data, and Excel can map the XML elements to cells.
-
-#### SQL databases
-
-Excel supports importing data from SQL databases, including Microsoft SQL Server, MySQL, and others. You can specify a connection string or use the built-in data connection wizard.
-
-#### SharePoint lists
-
-If you have data stored in SharePoint lists, Excel can connect to the SharePoint site and import the list data into a worksheet.
-
-#### Online services
-
-Excel can connect to various online services, such as Microsoft Azure Data Lake, Power BI, Dynamics 365, and more, allowing you to import data from these services.
-
-#### Other data sources
-
-Excel provides options to import data from other sources like ODBC (Open Database Connectivity) data sources, Microsoft Query, and even external data sources through add-ins or custom connections.
-
-### Demonstrate a few more ways we can import datasets
-
-#### 1) Import from another Excel workbook
-
-1. Go to **Data** → **Get Data** → **From File** → **From Workbook**.
-2. Select the source workbook and open it.
-3. In the Navigator, choose the sheet or table you need.
-4. Click **Load** (or **Transform Data** first if you need cleaning).
-
-Use case: combining monthly reports from different departments into one analysis workbook.
-
-#### 2) Import from a text file (TXT)
-
-1. Go to **Data** → **Get Data** → **From File** → **From Text/CSV**.
-2. Select the TXT file.
-3. Set the correct delimiter (tab, comma, semicolon, etc.).
-4. Confirm encoding and column split in preview.
-5. Click **Load**.
-
-Use case: loading system log exports or survey files saved as tab-delimited text.
-
-#### 3) Import from a web page
-
-1. Go to **Data** → **Get Data** → **From Other Sources** → **From Web**.
-2. Paste the page URL and confirm.
-3. Select the table(s) detected by Excel.
-4. Click **Load** to bring the web table into Excel.
-
-Use case: importing public statistics tables (for example exchange rates, population, or market indicators).
-
-#### 4) Import from a SQL database
-
-1. Go to **Data** → **Get Data** → **From Database**.
-2. Choose your database type (for example SQL Server or MySQL connector).
-3. Enter server/database details and credentials.
-4. Select the required table or write a query.
-5. Load data to worksheet or the Data Model.
-
-Use case: connecting directly to production sales/order databases for recurring reporting.
-
-#### 5) Import XML data
-
-1. Go to **Data** → **Get Data** → **From File** → **From XML** (or legacy XML import option depending on Excel version).
-2. Select the XML file.
-3. Map elements to tabular columns if prompted.
-4. Load and validate field mapping.
-
-Use case: importing structured exports from ERP/integration systems that provide XML output.
-
-### Review, Transform and Load Data into Excel
-
-When importing a dataset into Excel, the Review and Transform Data feature allows you to perform data cleaning and transformation tasks before the data is loaded into your worksheet. This step is part of the Power Query Editor, a powerful data preparation tool in Excel.
-
-### How to open Power Query Editor
-
-Figure 7: Launch Power Query editor.
-
-1. Ensure that your dataset is loaded in Excel.
-2. Select the Data tab.
-3. Select Get Data.
-4. Navigate down to Launch Power Query Editor.
-
-Figure 8: Dataset loaded into Power Query Editor.
-
-In this view, you can see the imported table in the main preview grid and the **Queries & Connections** pane on the right, which confirms that the query has been loaded and is ready for transformation steps.
-
-### Here’s an overview of the review and transform data process
-
-#### Accessing Power Query Editor
-
-After selecting the dataset you want to import, you can choose to load it directly into a worksheet or use the Transform Data option to open the dataset in the Power Query Editor.
-
-#### Data preview
-
-In the Power Query Editor, you will see a preview of the imported data. This allows you to inspect the data structure, column names, and sample values to ensure it is imported correctly.
-
-#### Cleaning and transforming data
-
-The Power Query Editor provides a wide range of data transformation options. You can perform tasks such as removing unwanted columns, filtering rows, splitting columns, merging data from multiple sources, changing data types, and applying calculations or formulas to create new columns. Let’s look at a few of these techniques:
-
-##### Removing columns
-
-Select the column to be deleted by right-clicking on the column header and then selecting Remove.
-
-Figure 9: Power Query Editor: Removing a column.
-
-##### Filtering and removing empty rows
-
-Select the column and click the drop-down arrow. Here you can apply the filter options and remove empty rows.
-
-Figure 10: Power Query Editor: Filter options and removing empty rows.
-
-##### Splitting columns
-
-Select the column to be split. Under the Transform tab, select Split Column. Here, you will find multiple options for splitting the content into separate columns.
-
-Figure 11: Power Query Editor: Splitting columns.
-
-##### Merge columns
-
-Select multiple columns to be merged. To do this, click + CTRL for each column. Under the Transform tab, select Merge Columns. Select a separator (if required) and rename the new column.
-
-Figure 12: Power Query Editor: Merging columns.
-
-##### Changing data types
-
-Select the column to be changed. The data type is shown to the left of the column header. By clicking on it, you can change the data type from the drop-down list.
-
-Figure 13: Power Query Editor: Changing data types.
-
-##### Apply calculations to new columns
-
-Select Custom Column under the Add Column tab. Name the new column and create the formula. The available columns are displayed and can be inserted into your calculation as required.
-
-Figure 14: Power Query Editor: Applying calculations to new columns.
-
-##### Adding an Index Column
-
-Select the Index Column drop-down arrow under the Add Column tab. Choose whether to start from 0 or 1. The column will be added as the last column. To move the column, simply click, hold, and drag the column.
-
-Figure 15: Power Query Editor: Adding an index column.
-
-##### Data shape and structure
-
-The Power Query Editor enables you to reshape the data by pivoting, unpivoting, grouping, aggregating, and sorting. These operations help you organise the data to suit your analysis needs.
-
-##### Data quality and error handling
-
-You can address data quality issues by handling missing values, correcting errors, or detecting and removing duplicates. This is simply done by selecting the Remove rows drop-down arrow under the Home tab. The Power Query Editor provides tools for data profiling, data type detection, and data cleansing.
-
-Figure 16: Power Query Editor: Remove rows.
-
-##### Query settings and refresh options
-
-Once you have completed the necessary transformations, you can configure query settings such as column renaming, data type conversions, or sorting orders. You can also set up refresh options to automatically update the data when the source changes.
-
-##### Loading the transformed data
-
-After you finish reviewing and transforming the data, you can choose to load it directly into a new worksheet, an existing worksheet, or the Excel Data Model. Loading the data transfers the transformed dataset into Excel for further analysis and reporting.
-
-Figure 17: Load transformed dataset into Excel.
-
-### ETL Dataset Power Query Editor
-
-Use this setup when you want a repeatable ETL flow (Extract, Transform, Load) in Excel.
-
-#### Setup workflow
-
-1. Open Excel and create a new workbook.
-2. Go to the Data tab on the Excel ribbon at the top of the window.
-3. Get, Transform, and Load the dataset.
-4. Review the imported data in the Power Query Editor window. You can preview, filter, and make any necessary changes to the data.
-5. Apply transformations to the dataset using the available options in the Power Query Editor. For example, you can remove unnecessary columns, filter rows based on specific criteria, or change data types.
-6. Once you have finished transforming the data, click the Close & Load button in the Power Query Editor. Excel will load the transformed data into a new worksheet or a specified location in your current workbook.
-
-#### Re-open and continue editing
-
-1. To make changes to the data using Power Query, select the imported dataset in Excel.
-2. Go to the Data tab and click on the Launch Power Query Editor button in the Get Data section. This will open the Queries & Connections sidebar.
-3. Right-click on the dataset and select Edit from the context menu. The Power Query Editor window will open again, allowing you to make further changes to the data.
-4. Apply additional transformations or adjustments to the dataset as needed in the Power Query Editor.
-5. Once you are satisfied with the changes, click the Close & Load button in the Power Query Editor to load the final transformed data back into Excel.
-
-#### Quick setup checklist (using your CSV)
-
-- Confirm file structure has headers: Title, Developer(s), Publisher(s), Genre, Release date, ref.
-- In Power Query, remove empty trailing rows and duplicate header-like rows.
-- Set data types explicitly (for example, Text for names/genre, Date where possible for release date).
-- Keep Applied Steps readable (rename key steps) so refreshes are easy to audit.
-- Use Refresh to update when the source CSV changes.
-
-### Practice Task - df_1.csv ETL Mini-Exercise
-
-Use `df_1.csv` and complete the following in Power Query:
-
-1. Import the CSV with correct delimiter and header recognition.
-2. Remove the trailing duplicate header-like row (the row containing `title, developer(s), publisher(s), ...`).
-3. Remove rows where `Publisher(s)` is blank.
-4. Change `Release date` to Date where possible (leave invalid/ambiguous values as null if needed).
-5. Add an Index column starting from 1.
-6. Add a Custom Column named `Dev-Pub` that combines `Developer(s)` and `Publisher(s)` with ` - `.
-7. Load the transformed result to a new worksheet named `Games_Clean`.
-
-#### Expected answer points (self-check)
-
-- The dataset loads without column-shift issues.
-- The duplicate header-like trailing row is removed.
-- Blank publishers are filtered out.
-- `Release date` has the correct type for parseable dates.
-- Index starts at 1 and increments by 1.
-- `Dev-Pub` appears with expected combined text values.
-- The query is saved and can be refreshed after source-file updates.
-
-### Export Datasets
-
-Exporting datasets in Excel refers to the process of saving data from Excel to an external file format that can be used by other applications or shared with others. Excel provides various options for exporting datasets:
-
-#### Save As
-
-You can use the Save As feature in Excel to export your dataset in different file formats. Click on File in the menu, select Save As, and choose the desired file format, such as Excel workbook (`.xlsx`), CSV (Comma delimited) (`.csv`), or PDF (`.pdf`). Selecting the appropriate file format will determine how the data is structured and presented in the exported file.
-
-Figure 18: Export Excel dataset.
-
-#### Export to PDF
-
-Excel allows you to export your dataset as a PDF file. This is useful when you want to share the data in a non-editable format that preserves formatting and layout. Go to File, select Save As, choose PDF as the file format, and click Save.
-
-#### Copy and paste
-
-You can manually copy the dataset from Excel and paste it into another application, such as Word, PowerPoint, or an email client. Select the cells or range of data you want to export, right-click, choose Copy, go to the desired application, and paste the data.
-
-#### Export to text
-
-Excel allows you to export your dataset as a plain text file (`.txt`). This format helps share data with applications that require simple, delimited text files. Go to File, select Save As, choose Text (Tab delimited) (`.txt`) or CSV (Comma delimited) (`.csv`) as the file format, and click Save.
-
-#### Publish to Web
-
-Excel provides a feature called Publish to Web that allows you to export your dataset as an interactive web page. This is useful for sharing your data online and enabling others to explore and interact with it. Go to File, select Publish to Web, choose the desired options, and click Publish. You will receive a link that you can share with others.
-
-#### Export to database or external system
-
-Excel also supports exporting datasets to databases or external systems. This can be done using specific data integration or export functionalities the target system provides. For example, you can export data from Excel to a Microsoft Access database or import the data into a Customer Relationship Management (CRM) system.
-
-### The Task
-
-#### Question 1
-
-In this activity, we are going to test your understanding of this lesson:
-
-1. Open a new Excel workbook.
-2. Use the provided CSV example file: `avocado.csv`.
-3. Import the dataset into Excel.
-4. Open Power Query Editor.
-5. Do the following transformations:
-    - Make the first line a heading.
-    - Remove the following columns: Index, Total Volume, 4046, 4225, 4770, Total Bags, Type, Year, and Region.
-    - Sort by the Date column.
-    - Add a column called Index, move it to column A, and number each row from 1 up to the end of the table.
-    - Add a column called Total Bags Sold, and add columns Small Bags, Large Bags, and XLarge Bags.
-6. Save the Workbook as Avocado Sales.xlsx.
-7. Export the Workbook as a CSV file.
-
-#### Show me (worked example using avocado.csv)
-
-1. In Excel: **Data** → **From Text/CSV** → select `avocado.csv`.
-2. In the preview, confirm delimiter and click **Transform Data**.
-3. In Power Query: **Home** → **Use First Row as Headers**.
-4. Remove columns: `Index`, `Total Volume`, `4046`, `4225`, `4770`, `Total Bags`, `Type`, `Year`, `Region`.
-5. Sort the `Date` column ascending.
-6. Add index: **Add Column** → **Index Column** → **From 1**.
-7. Move `Index` to the first position (column A) by dragging it left.
-8. Add custom column `Total Bags Sold` with formula:
-    `["Small Bags"] + ["Large Bags"] + ["XLarge Bags"]`
-9. Click **Close & Load** to return data to Excel.
-10. Save workbook as `Avocado Sales.xlsx`, then **File** → **Save As** → `CSV`.
-
-#### Question 2
-
-Let your creativity loose and find a dataset on any website you like.
-
-1. Open a new Excel workbook.
-2. Import the dataset(s) from your chosen website.
-3. Do basic transformations to ensure a clean and workable dataset.
-4. Ensure informative column headings.
-5. Remove rows that contain blanks.
-6. Remove rows that contain errors.
-7. Add or remove columns if required.
-8. Save your workbook as an .XLSX.
-
-### Task Solution (Worked Answer)
-
-Provided solution workbook:
-
-- `SPF 0102 Task solution.xlsx` (path: `/workspaces/Study-buddy/SPF 0102 Task solution.xlsx`)
-- Use this file to compare your transformation steps and final output against the worked process below.
-
-#### Solved - Question 1 (avocado.csv)
-
-Use this exact workflow to complete Question 1:
-
-1. **Import**
-    - Data → From Text/CSV → select `avocado.csv` → click **Transform Data**.
-
-2. **Promote first row to headers**
-    - Home → **Use First Row as Headers**.
-
-3. **Remove required columns**
-    - Remove: `Index`, `Total Volume`, `4046`, `4225`, `4770`, `Total Bags`, `Type`, `Year`, `Region`.
-    - Keep these core columns: `Date`, `AveragePrice`, `Small Bags`, `Large Bags`, `XLarge Bags` (and any other required analysis columns).
-
-4. **Sort by Date**
-    - Click the `Date` column filter arrow → Sort Ascending.
-
-5. **Add Index and move to column A**
-    - Add Column → Index Column → **From 1**.
-    - Drag the `Index` column to the far left.
-
-6. **Add Total Bags Sold column**
-    - Add Column → Custom Column
-    - Name: `Total Bags Sold`
-    - Formula:
-      `["Small Bags"] + ["Large Bags"] + ["XLarge Bags"]`
-
-7. **Load and save**
-    - Home → **Close & Load**.
-    - Save workbook as `Avocado Sales.xlsx`.
-    - File → Save As → `CSV (Comma delimited)`.
-
-##### Exact clicks (expanded walkthrough)
-
-Use this detailed sequence if you want to reproduce the final answer exactly:
-
-1. **Data import**
-    - Excel → Data tab → **From Text/CSV**.
-    - Select `avocado.csv`.
-    - In preview, confirm delimiter and encoding look correct.
-    - Click **Transform Data** (not Load).
-
-2. **Header + data types**
-    - Home → **Use First Row as Headers**.
-    - Set types:
-      - `Date` → Date
-      - `AveragePrice` → Decimal Number
-      - `Small Bags`, `Large Bags`, `XLarge Bags` → Decimal Number
-
-3. **Remove columns required by the task**
-    - Ctrl-click each of these columns:
-      `Index`, `Total Volume`, `4046`, `4225`, `4770`, `Total Bags`, `Type`, `Year`, `Region`.
-    - Home → **Remove Columns**.
-
-4. **Sort date**
-    - Click the drop-down on `Date`.
-    - Choose **Sort Ascending**.
-
-5. **Add task index**
-    - Add Column → Index Column → **From 1**.
-    - Drag `Index` to the first column position.
-
-6. **Create Total Bags Sold**
-    - Add Column → **Custom Column**.
-    - Column name: `Total Bags Sold`.
-    - Formula:
-      `["Small Bags"] + ["Large Bags"] + ["XLarge Bags"]`
-    - Confirm the new column is Decimal Number.
-
-7. **Load output**
-    - Home → **Close & Load To...**
-    - Choose Table → New worksheet.
-    - Rename sheet to `avocado` (to match solution file structure).
-
-8. **Save both deliverables**
-    - Save workbook as `Avocado Sales.xlsx`.
-    - File → Save As → `CSV (Comma delimited)` for export requirement.
-
-##### Validation against the provided solved workbook
-
-Compare your output to `SPF 0102 Task solution.xlsx`:
-
-- Expected solved sheet name: `avocado`
-- Expected columns (in order):
-  `Index`, `Date`, `AveragePrice`, `Small Bags`, `Large Bags`, `XLarge Bags`, `Total bags Sold`
-- Expected first data row pattern:
-  `1, 2015-01-04, 1.75, 13061.1, 537.36, 0, 13598.46`
-- Expected total rows in solved sheet: `18,250`
-
-##### Troubleshooting tips (common issues)
-
-- **Wrong column split**: go back to Source step and re-check delimiter.
-- **Date not sorting correctly**: ensure `Date` type is Date (not Text).
-- **Errors in Total Bags Sold**: confirm all three bag columns are numeric.
-- **Missing rows after filters**: review Applied Steps for accidental filters.
-- **Output differs from solution workbook**: compare column order and data types first.
-
-##### Power Query M script template (advanced)
-
-Use this template in **Advanced Editor** and adjust the source path if needed:
-
-```powerquery
-let
-    Source = Csv.Document(
-        File.Contents("/workspaces/Study-buddy/avocado.csv"),
-        [Delimiter=",", Columns=14, Encoding=65001, QuoteStyle=QuoteStyle.Csv]
-    ),
-    PromotedHeaders = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
-    RemovedColumns = Table.RemoveColumns(
-        PromotedHeaders,
-        {"Index", "Total Volume", "4046", "4225", "4770", "Total Bags", "Type", "Year", "region"}
-    ),
-    ChangedTypes = Table.TransformColumnTypes(
-        RemovedColumns,
-        {
-            {"Date", type date},
-            {"AveragePrice", type number},
-            {"Small Bags", type number},
-            {"Large Bags", type number},
-            {"XLarge Bags", type number}
-        }
-    ),
-    SortedByDate = Table.Sort(ChangedTypes, {{"Date", Order.Ascending}}),
-    AddedIndex = Table.AddIndexColumn(SortedByDate, "Index", 1, 1, Int64.Type),
-    ReorderedColumns = Table.ReorderColumns(
-        AddedIndex,
-        {"Index", "Date", "AveragePrice", "Small Bags", "Large Bags", "XLarge Bags"}
-    ),
-    AddedTotalBagsSold = Table.AddColumn(
-        ReorderedColumns,
-        "Total Bags Sold",
-        each [#"Small Bags"] + [#"Large Bags"] + [#"XLarge Bags"],
-        type number
-    )
-in
-    AddedTotalBagsSold
-```
-
-If your CSV has `Region` (capital R) instead of `region`, replace that field name in `RemovedColumns` accordingly.
-
-##### Expected result check
-
-- `Index` starts at 1 and increments by 1.
-- `Date` is sorted ascending.
-- Removed columns are no longer present.
-- `Total Bags Sold` equals `Small Bags + Large Bags + XLarge Bags` for every row.
-- Workbook and CSV export both exist.
-
-##### Reference solution file (verified)
-
-Official solution workbook: `SPF 0102 Task solution.xlsx`
-
-- Main solved sheet: `avocado`
-- Structure: 7 columns and 18,250 rows
-- Header row:
-    - `Index`
-    - `Date`
-    - `AveragePrice`
-    - `Small Bags`
-    - `Large Bags`
-    - `XLarge Bags`
-    - `Total bags Sold`
-- Example first data row:
-    - `1, 2015-01-04, 1.75, 13061.1, 537.36, 0, 13598.46`
-
-You can use this workbook to compare your result after completing the ETL steps.
-
-#### Solved - Question 2 (example approach)
-
-If you choose any public dataset, use this clean baseline solution:
-
-1. Import dataset with correct delimiter/headers.
-2. Promote headers and rename unclear column names.
-3. Remove blank rows and obvious error rows.
-4. Fix column data types (Text, Number, Date).
-5. Remove irrelevant columns and add any required derived column.
-6. Sort by one meaningful business field (for example Date).
-7. Close & Load, then save as `.xlsx`.
-
-##### Example answer quality criteria
-
-- Headings are readable and consistent.
-- No blank/error rows remain in core fields.
-- Data types are correctly assigned.
-- Dataset is ready for pivot tables/charts without additional cleaning.
-            """,
-            "key_points": [
-                "Entering data is a core operation for building usable worksheets",
-                "Editing data helps keep spreadsheet content accurate and up to date",
-                "Importing data enables integration of external data sources into Excel",
-                "Exporting data to formats like CSV, PDF, and XPS improves sharing and compatibility",
-                "CSV import through Data > From Text/CSV supports preview, delimiter checks, and controlled loading",
-                "Copy, Cut, Paste, and Delete are core editing operations in Excel",
-                "Cell/range selection techniques and shortcuts improve editing speed and precision",
-                "AutoFill can quickly extend sequences, dates, and repeated patterns",
-                "Excel can import datasets from CSV, text files, workbooks, databases, web pages, XML, and online services",
-                "Get Data workflows support both direct loading and pre-load transformation",
-                "Power Query Editor enables review, cleaning, and transformation before loading data",
-                "Query settings and refresh options help keep transformed datasets up to date",
-                "ETL in Excel follows a repeatable cycle: import, transform, close and load, re-open, refine, and refresh",
-                "Practical ETL tasks help validate import quality, cleaning logic, type handling, and refresh readiness",
-                "Use Save As to export transformed datasets to formats like XLSX, CSV, and PDF",
-                "Excel supports additional export paths including copy/paste workflows, text formats, web publishing, and external systems",
-                "A complete worked solution includes import, cleaning, transformation, validation, and export checks",
-                "These operations support efficient data organisation, analysis, and presentation"
-            ],
-            "visual_elements": {
-                "diagrams": False,
-                "tables": False,
-                "highlighted_sections": True
-            }
-        },
-        {
-            "lesson_number": "1.3",
-            "title": "Basic Formatting in Excel",
-            "content": """
-### 1.3. Lesson - Basic Formatting in Excel
-
-### Introduction
-
-The primary methods used to alter the appearance of cells and data within a spreadsheet are referred to as basic formatting in Excel.
-
-Your Excel paper’s visual appeal, readability, and general professionalism are greatly improved by formatting.
-
-You may highlight vital information, efficiently organise data, and present it clearly and organised by using simple formatting options, including font styles, colours, cell borders, and alignment settings.
-
-This primer’s discussion of fundamental Excel formatting principles will give you the information and abilities to make your spreadsheets more aesthetically pleasing and understandable.
-
-### Cell Data Formats
-
-How data is displayed within individual cells in Excel is called cell data formats. With the help of Excel’s many formatting choices, users may alter how various types of data - including numbers, dates, currencies, percentages, and more - appear.
-
-These formats not only influence how the data is displayed but also make it possible for users to do calculations and handle data easily. Users can ensure that numbers are displayed with the correct number of decimal places and dates are formatted in accordance with regional standards. Currencies are displayed with the proper symbols and separators by applying the necessary data formats.
-
-Right-click on the cell or a group of cells you wish to format, and then choose Format Cells from the context menu. Under the Home tab, basic formatting is also accessible.
-
-### Numeric cell formats
-
-In Excel, altering the appearance of numerical data within cells is called number formatting. When displaying numbers, users can adjust the decimal places, thousand separators, currency symbols, and percentage forms. For data to be presented accurately and understandably, number formatting is essential. Refer to Figure 1:
-
-Figure 1: Excel number formatting options.
-
-Excel provides a wide range of pre-defined number formats to cater to different needs. Some common number formats are shown in Figure 2:
-
-Figure 2: Examples of numeric formatting.
-
-#### Common pre-defined number formats
-
-**General**  
-This is the default format in Excel, where numbers are displayed as entered.
-
-**Number**  
-This format is used for general numeric values and allows users to specify decimal places, separators, and negative number formatting.
-
-**Currency**  
-This format is used for displaying monetary values and includes options for currency symbols, decimal places, and negative numbers.
-
-**Accounting**  
-Similar to the currency format, the accounting format aligns currency symbols and decimal places for better visual appeal.
-
-**Date**  
-This format is used for displaying dates and offers various options for date formats, such as month/day/year or day/month/year, depending on regional conventions.
-
-**Time**  
-This format is used for displaying time values and allows users to control the appearance of hours, minutes, and seconds.
-
-**Percentage**  
-This format multiplies the cell value by 100 and adds a percentage symbol (%).
-
-**Scientific**  
-This format is used for displaying numbers in scientific notation, useful for large or small values.
-
-Excel has the versatility to generate unique number forms in addition to these pre-defined formats. Users can create their own formatting rules for numbers by combining various symbols, characters, and codes to produce desired formatting effects.
-
-Excel’s number formatting influences computations and formulas in addition to their visual appearance. Although the formatting changes how the data is shown, the underlying data is unaffected. It is important to remember that number formatting does not impact the data’s calculations or real value.
-
-### Text cell formats
-
-In Excel, text cell formatting describes the process of changing the way text behaves and appears inside cells. Text formatting, as opposed to number formatting, which deals with numerical data, is concerned with how text is presented, aligned, wrapped, and styled. Examples are demonstrated in figures 3-5 below:
-
-Figure 3: Excel text formatting options.
-
-Figure 4: Excel alignment formatting options.
-
-Figure 5: Excel border formatting options.
-
-In Excel, text cell formatting options allow users to make their text more visually appealing and easier to read. Some common text formatting features include:
-
-#### Font styles
-
-Excel provides a variety of font styles, such as bold, italic, underline, and strikethrough, to emphasise or highlight specific text.
-
-#### Font colours
-
-Users can change the colour of the text to make it stand out or match a particular theme or visual preference.
-
-#### Font size
-
-Excel allows users to adjust the text size to make it more prominent or fit within a designated space.
-
-#### Alignment
-
-Text alignment options enable users to control how the text is positioned within a cell, such as left-aligned, right-aligned, centred, or justified.
-
-#### Text wrapping
-
-With text wrapping, users can specify whether the text should wrap within a cell or overflow to adjacent cells, making it easier to read lengthy text entries.
-
-Figure 6: Example of text wrapping.
-
-#### Indentation
-
-Users can apply indentation to align text within cells, such as using a hanging indent for bullet points or nested lists.
-
-#### Borders
-
-Excel offers border styles to create visual boundaries around cells, enabling users to separate or group text.
-
-Figure 7: Example of cell borders.
-
-#### Cell protection
-
-Text cell formatting also includes options for cell protection, allowing users to lock or unlock cells to prevent accidental changes.
-
-### The Task - Cell formatting in Excel
-
-In this activity, you will practice basic cell formatting in Excel, specifically numeric and text formatting. Follow the instructions provided below to complete the tasks.
-
-#### Task 1: Numeric formatting
-
-1. Open a new Excel workbook.
-2. In cell `A1`, enter the number `1234.56`.
-3. Apply the **Currency** format to cell `A1`, displaying the number with a currency symbol and two decimal places.
-4. In cell `B1`, enter the percentage value `0.75`.
-5. Apply the **Percentage** format to cell `B1`, displaying the number as a percentage with two decimal places.
-6. In cell `C1`, enter the date `May 10, 2023`.
-7. Apply the **Short Date** format to cell `C1`, displaying the date in the format `MM/DD/YYYY`.
-
-#### Task 2: Text formatting
-
-1. In cell `A3`, enter the text `Sales Report`.
-2. Apply **bold** formatting to the text in cell `A3`.
-3. In cell `B3`, enter the text `Product Name`.
-4. Apply **underline** formatting to the text in cell `B3`.
-5. In cell `C3`, enter the text `Quantity Sold`.
-6. Apply **italic** formatting to the text in cell `C3`.
-7. In cell `D3`, enter the text `Total Revenue`.
-8. Apply **strikethrough** formatting to the text in cell `D3`.
-
-#### Task 3: Data alignment
-
-1. Select cells `A1` to `D3`.
-2. Apply **centre alignment** to the selected cells.
-3. Adjust the column widths to fit the content in each cell.
-
-#### Task 4: Cell border formatting
-
-1. Select cells `A1` to `D3`.
-2. Apply a border around the selected cells.
-3. Adjust the border style and thickness as desired.
-
-### Visual solved example (with explanation)
-
-Use this exact click path to complete and verify the task quickly:
-
-1. Enter values in `A1`, `B1`, `C1`.
-2. Format `A1`: Home → Number group → Currency (2 decimals).  
-    **Why:** makes monetary values clear and consistent.
-3. Format `B1`: Home → Number group → Percentage (2 decimals).  
-    **Why:** converts decimal ratios to readable percentages.
-4. Format `C1`: Home → Number group → Short Date (`MM/DD/YYYY`).  
-    **Why:** standardises date presentation.
-5. Enter headings in row 3 (`A3:D3`) and apply bold/underline/italic/strikethrough as requested.  
-    **Why:** demonstrates common text emphasis tools.
-6. Select `A1:D3` → Center alignment.  
-    **Why:** creates a clean, report-like layout.
-7. With `A1:D3` selected, apply `All Borders` (or Outside + Inside borders) and choose preferred line style.  
-    **Why:** visually separates data blocks and improves readability.
-8. AutoFit columns `A:D` (double-click column boundaries).  
-    **Why:** ensures no clipped text or values.
-
-#### Expected final view
-
-| Cell | Input | Required format | Expected display example |
-|---|---|---|---|
-| A1 | 1234.56 | Currency, 2 decimals | $1,234.56 |
-| B1 | 0.75 | Percentage, 2 decimals | 75.00% |
-| C1 | May 10, 2023 | Short Date | 05/10/2023 |
-| A3 | Sales Report | Bold | **Sales Report** |
-| B3 | Product Name | Underline | <u>Product Name</u> |
-| C3 | Quantity Sold | Italic | *Quantity Sold* |
-| D3 | Total Revenue | Strikethrough | ~~Total Revenue~~ |
-
-#### Quick self-check
-
-- Currency has symbol and two decimals.
-- Percentage shows two decimals.
-- Date is shown as short date.
-- A1:D3 is centered and bordered.
-- Columns are wide enough to show all content.
-
-### Sorting and Filtering
-
-Excel’s sophisticated sorting and filtering functions let users efficiently organise and analyse data. These capabilities allow users to extract pertinent information based on predetermined criteria, spot trends, and arrange data in a particular way. Let’s delve deeper into sorting and filtering:
-
-Figure 8: Excel sorting and filtering options.
-
-### Sorting data
-
-Sorting data in Excel rearranges the rows based on the values in one or more columns. Sorting can be done in ascending (smallest to largest) or descending (largest to smallest) order. Refer to Figure 8 to sort data in Excel:
-
-1. Select the range of cells or the entire table.
-2. Navigate to the Data tab and click on the Sort button.
-3. Specify the column(s) to sort by and the sort order.
-4. Excel will rearrange the data based on the selected criteria, ensuring all rows remain intact.
-
-For activities like alphabetising names, ranking data, or locating the greatest or lowest values within a dataset, sorting is especially helpful. Excel additionally enables multi-level sorting, which arranges data in hierarchical order according to many columns.
-
-### Filtering data
-
-Filtering data in Excel displays only the rows that meet specific criteria, temporarily hiding the rest of the data. This helps users focus on relevant information and extract subsets of data. To apply filters to data in Excel:
-
-1. Select the range of cells or the entire table.
-2. Go to the Data tab and click on the Filter button.
-3. Drop-down arrows will appear in the header row of each column.
-4. Click on the drop-down arrow of a column to set filter criteria, such as text filters, number filters, date filters, or advanced filters.
-5. Excel will display only the rows that meet the specified criteria while hiding the others.
-
-Applying many filters at once can further refine filtered data. Excel also offers tools for sorting data inside the results of filtering, allowing users to focus their investigation efficiently.
-
-For activities like locating duplicate entries, examining patterns within a dataset, or isolating data based on certain criteria, including date periods or particular values, filtering data is useful.
-
-### Advanced filtering
-
-Excel offers advanced filtering options for more complex filtering requirements. Advanced filtering allows users to define custom criteria using formulas, extract unique records, or copy filtered data to a new location within the worksheet or another sheet.
-
-To access advanced filtering options, users can navigate to the Data tab, click Advanced in the Sort & Filter group, and specify the criteria in the Advanced Filter dialog box.
-
-Advanced filtering is particularly useful for scenarios with insufficient standard filters, such as filtering data based on multiple conditions or extracting unique values from a large dataset.
-
-Users may manage and analyse vast amounts of data, spot patterns, and derive useful insights using Excel’s sorting and filtering features. These functions give users flexibility and control over how data is presented, allowing them to engage with the data in a way that best matches their individual needs and improves data-driven decision-making.
-
-### Sorting and Filtering in Excel - Practice Activity
-
-In this activity, you will practice sorting and filtering data in Excel. Follow the instructions provided below to complete the tasks.
-
-#### Task 1: Sorting data
-
-1. Open a new Excel workbook.
-2. Enter the following data into columns `A`, `B`, and `C`, starting from row `1`:
-    - Column `A`: Student Name (`Alex`, `Ben`, `Claire`, `David`, `Emma`)
-    - Column `B`: Age (`21`, `19`, `22`, `20`, `21`)
-    - Column `C`: Grade (`A`, `B`, `C`, `B`, `A`)
-3. Select the entire dataset (`A1:C6`).
-4. Sort the data in ascending order based on the `Student Name` column.
-5. Sort the data in descending order based on the `Age` column.
-6. Sort the data in alphabetical order based on the `Grade` column.
-
-#### Task 2: Filtering data
-
-1. Select the entire dataset (`A1:C6`).
-2. Apply filters to the dataset.
-3. Filter the data to display only students who are `21` years old.
-4. Filter the data to display only students with a grade of `A`.
-5. Filter the data to display only students whose names start with the letter `B`.
-
-#### Task 3: Multiple criteria filtering
-
-1. Select the entire dataset (`A1:C6`).
-2. Apply filters to the dataset if they are not already applied.
-3. Filter the data to display only students who are `20` years old **and** have a grade of `B`.
-
-#### Task 4: Removing filters
-
-1. Select the entire dataset (`A1:C6`).
-2. Remove all filters from the dataset.
-
-### Tutor solution (step-by-step with expected results)
-
-#### Step 0: Build the dataset correctly
-
-Enter this exact table:
-
-| Student Name | Age | Grade |
-|---|---:|:---:|
-| Alex | 21 | A |
-| Ben | 19 | B |
-| Claire | 22 | C |
-| David | 20 | B |
-| Emma | 21 | A |
-
-Select `A1:C6` before each sort/filter operation.
-
-#### Step 1: Sort by Student Name (A→Z)
-
-1. Data → Sort.
-2. Sort by: `Student Name`.
-3. Order: `A to Z`.
-4. Click OK.
-
-**Expected order:** Alex, Ben, Claire, David, Emma.
-
-#### Step 2: Sort by Age (Largest→Smallest)
-
-1. Data → Sort.
-2. Sort by: `Age`.
-3. Order: `Largest to Smallest`.
-4. Click OK.
-
-**Expected order by Age:** 22, 21, 21, 20, 19.
-
-#### Step 3: Sort by Grade (A→Z)
-
-1. Data → Sort.
-2. Sort by: `Grade`.
-3. Order: `A to Z`.
-4. Click OK.
-
-**Expected grouping:** `A` rows first, then `B`, then `C`.
-
-#### Step 4: Apply filters
-
-1. Data → Filter (funnel icon).
-2. Confirm drop-down arrows appear in row 1 headers.
-
-#### Step 5: Filter for Age = 21
-
-1. Click filter on `Age`.
-2. Clear Select All.
-3. Check only `21`.
-4. Click OK.
-
-**Expected visible rows:** Alex and Emma.
-
-#### Step 6: Filter for Grade = A
-
-1. Clear previous Age filter (Age drop-down → Clear Filter from Age).
-2. Click filter on `Grade`.
-3. Select only `A`.
-4. Click OK.
-
-**Expected visible rows:** Alex and Emma.
-
-#### Step 7: Filter names starting with B
-
-1. Clear previous Grade filter.
-2. Click filter on `Student Name`.
-3. Text Filters → Begins With...
-4. Enter `B` and click OK.
-
-**Expected visible row:** Ben only.
-
-#### Step 8: Multiple criteria (Age = 20 and Grade = B)
-
-1. Clear all current filters.
-2. Set `Age` filter to `20`.
-3. Set `Grade` filter to `B`.
-
-**Expected visible row:** David only.
-
-#### Step 9: Remove all filters
-
-Option A: Data → Clear (clears criteria, keeps filter arrows).  
-Option B: Data → Filter (turns filter mode off and removes arrows).
-
-**Expected final state:** all 5 student rows are visible again.
-
-#### Common mistakes (and fixes)
-
-- Sorting only one column: always select the full table (`A1:C6`) so rows stay intact.
-- Missing header checkbox: in Sort dialog, keep **My data has headers** enabled.
-- Stacked filters by accident: use Data → Clear before starting a new filter scenario.
-- Wrong result count: check bottom status bar to verify visible row count.
-
-### Window Formatting
-
-Window formatting in Excel refers to the customisation and adjustment of the visible portion of the worksheet within the Excel application window. It allows users to modify the worksheet’s view, zoom level, and layout to suit their preferences and optimise their working environment. Let’s explore the various window formatting options in Excel.
-
-### Zooming
-
-Zooming in Excel adjusts the magnification level of the worksheet, making the content appear larger or smaller on the screen. It helps users adjust the level of detail visible on the screen. Zooming options can be accessed through the View tab or the Zoom slider in the bottom-right corner of the Excel window.
-
-### Freeze panes
-
-Freezing panes in Excel allow users to lock specific rows or columns in place while scrolling through large datasets. By freezing panes, users can keep important headings or labels visible at all times, enhancing readability and ease of navigation. This feature is accessed through the View tab, where users can freeze the top row, leftmost column, or a combination of rows and columns.
-
-Figure 9: Excel freeze panes options.
-
-### Splitting windows
-
-Splitting windows in Excel divides the worksheet into separate panes, allowing users to view different parts of the same worksheet simultaneously. This feature is particularly useful when working with large datasets or comparing data from different sections of the worksheet. Users can split the window horizontally or vertically or create multiple windows for more complex analysis. Splitting windows can be accessed through the View tab, as demonstrated in Figure 10.
-
-Figure 10: Example of Window Splitting.
-
-### Page Layout view
-
-Page Layout view in Excel provides a preview of how the worksheet will appear when printed. Demonstrated in Figure 11. It enables users to adjust the layout, margins, headers, footers, and other worksheet elements to ensure optimal printing results. Page Layout view can be accessed through the View tab and is useful for formatting and designing professional-looking printed documents.
-
-Figure 11: Excel Page Layout options.
-
-### Full-Screen View
-
-Full-Screen view hides the Excel ribbon and other toolbars, maximising the available screen space for the worksheet. This immersive view is helpful when users need to focus solely on the data and minimise distractions. The Full-screen view can be accessed through the View tab or by pressing the F11 key.
-
-### Custom Views
-
-Custom Views allow users to save different combinations of window formatting settings, including zoom level, freeze panes, and other display options. Users can create and switch between Custom Views to quickly apply specific window formatting configurations based on their needs.
-
-These Excel window layout options offer flexibility and customizability to improve working conditions and increase data analysis. Users may navigate through big datasets, compare data effectively, and present information that best matches their needs by changing the view, freezing panes, splitting windows, and using other window formatting tools.
-
-### Page breaks
-
-Window formatting in Excel also encompasses managing page breaks, which determine how data is divided and displayed across multiple pages when printing. Excel provides tools to control and adjust page breaks to ensure the desired layout and formatting. Let’s explore page breaks in Excel:
-
-#### Automatic page breaks
-
-Excel automatically inserts page breaks based on the paper size, margins, and print settings. These automatic page breaks determine where the content of the worksheet will break onto the next page. Users can view and adjust these automatic page breaks in Page Break Preview.
-
-#### Page Break Preview
-
-This is a viewing mode in Excel that displays the worksheet with dashed lines indicating page breaks. It allows users to see how the data will be distributed across multiple pages when printed. In this view, users can manually adjust and move page breaks to control the layout. Page Break Preview can be accessed through the View tab.
-
-#### Inserting manual page breaks
-
-Excel allows users to insert manual page breaks to specify exactly where they want the data to break onto the next page. To insert a manual page break, users can:
-
-1. Select the row or column below or to the right of where they want the page break to appear.
-2. Navigate to the Page Layout tab and click on the Breaks button.
-3. Choose Insert Page Break to insert a horizontal page break above the selected row or a vertical page break to the left of the selected column.
-
-#### Removing page breaks
-
-Users can also remove page breaks in Excel. To remove a manual page break, users can:
-
-1. Select a cell in the row or column where the page break is located.
-2. Navigate to the Page Layout tab and click on the Breaks button.
-3. Choose Remove Page Break to eliminate the selected page break.
-
-Users can control how their data is dispersed across printed pages in Excel by modifying and managing page breaks, guaranteeing optimal layout and readability, and avoiding unpleasant data cut-offs. The freedom to tailor worksheet printing, considering various paper sizes and formatting needs, is made possible via Excel’s page break capabilities.
-
-Overall, by including page breaks in Excel’s window formatting settings, users can precisely control printed documents’ layout and appearance, making it simpler to understand and analyse data when working with physical copies.
-
-### Printing
-
-Printing in Excel refers to the process of generating physical copies of worksheets or selected data from an Excel workbook. Excel provides various options and settings to customise the printing experience and ensure that the printed output meets the desired requirements. Refer to Figure 12, and let’s explore the steps and considerations involved in printing in Excel:
-
-Figure 12: Excel Print options.
-
-### Print Preview
-
-Before printing, previewing the document to get an idea of how the content will appear on paper is recommended. Excel’s Print Preview feature allows users to view the entire worksheet or a selected range as it will be printed. It allows for checking the layout, adjusting page breaks, and making necessary formatting changes before printing.
-
-### Page Setup
-
-Excel’s Page Setup options enable users to customise the printed pages’ layout, margins, orientation, and scaling. To access the Page Setup settings:
-
-1. Go to the Page Layout tab and click on the Page Setup group.
-2. Adjust settings such as paper size, orientation (portrait or landscape), margins, and scaling options.
-
-### Print area
-
-Users can define a specific print area in Excel, which determines the range of cells or data that will be printed. This feature is helpful when only a portion of the worksheet needs to be printed. To set a print area:
-
-1. Select the desired range of cells.
-2. Go to the Page Layout tab and click on the Print Area button in the Page Setup group.
-3. Choose Set Print Area to define the selected range as the print area.
-
-### Print settings
-
-Excel offers various settings to customise the printing process. These settings can be accessed in the Print dialog box, which appears when the user selects Print or presses Ctrl+P. Some common print settings include:
-
-#### Number of copies
-
-Specify the number of copies to be printed.
-
-#### Print range
-
-Choose to print the entire workbook, active sheets, or selected range.
-
-#### Print order
-
-Determine the order in which pages will be printed.
-
-#### Print titles
-
-Define rows or columns to repeat on each printed page for better readability.
-
-### Print options
-
-Excel provides additional print options allowing users to enhance the printed output further. These options include:
-
-#### Gridlines and headings
-
-Include or exclude gridlines and row/column headings in the printed output.
-
-#### Background colours and images
-
-Determine whether background colours and images should be printed.
-
-#### Scaling
-
-Adjust the size of the printed output by scaling the content to fit a specific number of pages.
-
-#### Page breaks
-
-Control and adjust automatic or manual page breaks for optimal printing.
-
-### Print
-
-Once all the desired settings have been configured, users can initiate the printing process by selecting the Print option. This sends the worksheet or selected range to the printer, producing physical copies of the data based on the specified settings.
-
-By leveraging Excel’s printing capabilities, users can generate well-formatted and readable hard copies of their worksheets, reports, charts, or any other data-driven documents. Understanding Excel’s printing options and settings allows users to customise the printouts according to their preferences and effectively communicate their data.
-
-### Window formatting in Excel - Practice Activity
-
-In this activity, you will practice window formatting, page breaks, and printing functions in Excel. Follow the instructions provided below to complete the tasks.
-
-#### Task 1: Window Formatting
-
-1. Open a new Excel workbook.
-2. Enter some sample data in cells `A1` to `E10` to create a dataset.
-3. Adjust the zoom level to `75%`.
-4. Split the window into two panes, vertically, at column `C` so that both sections of the dataset are visible simultaneously.
-5. Freeze the top row and the leftmost column, ensuring they remain visible while scrolling.
-
-#### Task 2: Page breaks
-
-1. Navigate to the Page Break Preview.
-2. Adjust the automatic page breaks to ensure data is distributed optimally across pages if necessary.
-3. Insert a manual page break above row `7`, ensuring that the data above and below the page break is separated correctly.
-4. Remove any unnecessary page breaks.
-
-#### Task 3: Printing
-
-1. Set the print area to include the dataset from `A1` to `E10`.
-2. Adjust the page setup options to print the worksheet in landscape orientation.
-3. Include the row and column headings on every printed page.
-4. Configure the margins to ensure the data is properly aligned on the printed page.
-5. Print the worksheet and review the output for accuracy.
-
-#### Task 4: Custom views
-
-1. Create a custom view called `Split View` that includes the split window formatting, zoom level, and frozen panes.
-2. Create another custom view called `Print View` that includes the adjusted page breaks, print area, and page setup options.
-3. Switch between the custom views to observe the changes in window formatting and printing settings.
-
-### Tutor solution (step-by-step)
-
-#### Step 1: Build your sample dataset
-
-- Fill `A1:E1` with headers such as `ID`, `Name`, `Category`, `Amount`, `Date`.
-- Fill rows `2:10` with sample values.
-- Select `A1:E10` and apply `All Borders` for clear visual checking.
-
-#### Step 2: Window formatting setup
-
-1. Set zoom to `75%`:
-    - Use the bottom-right zoom slider, or View → Zoom → 75.
-2. Split window at column `C`:
-    - Click cell `C1` then View → Split.
-    - This creates a vertical split so left and right sections can be viewed together.
-3. Freeze top row and first column:
-    - Click cell `B2`.
-    - View → Freeze Panes → Freeze Panes.
-    - Result: row 1 and column A stay visible while you scroll.
-
-#### Step 3: Page break configuration
-
-1. Open View → Page Break Preview.
-2. Review dashed/solid page break lines.
-3. Insert manual break above row `7`:
-    - Click row `7`.
-    - Page Layout → Breaks → Insert Page Break.
-4. Remove unwanted breaks:
-    - Select a row/column containing the break.
-    - Page Layout → Breaks → Remove Page Break.
-
-#### Step 4: Printing setup
-
-1. Set print area:
-    - Select `A1:E10`.
-    - Page Layout → Print Area → Set Print Area.
-2. Set orientation:
-    - Page Layout → Orientation → Landscape.
-3. Include row/column headings:
-    - Page Layout → Page Setup launcher (small diagonal arrow) → Sheet tab.
-    - Check `Row and column headings`.
-4. Adjust margins:
-    - Page Layout → Margins → choose Normal/Narrow or Custom Margins as needed.
-5. Preview and print:
-    - Ctrl+P and review preview.
-    - Confirm page split, headings, margins, and orientation before printing.
-
-#### Step 5: Create custom views
-
-1. Create `Split View`:
-    - Keep split + freeze + zoom at 75% active.
-    - View → Custom Views → Add.
-    - Name: `Split View`.
-2. Create `Print View`:
-    - Switch to print-focused settings (print area, landscape, page breaks).
-    - View → Custom Views → Add.
-    - Name: `Print View`.
-3. Test switching:
-    - View → Custom Views.
-    - Select each view and click Show to verify the expected layout/settings.
-
-#### Validation checklist
-
-- Zoom is 75%.
-- Split is vertical at column C.
-- Row 1 and column A remain fixed while scrolling.
-- Manual page break is placed above row 7.
-- Print area is A1:E10.
-- Orientation is Landscape.
-- Row and column headings are enabled for print.
-- Both custom views are saved and switch correctly.
-
-### The Task
-
-#### Question 1 - Numeric formatting
-
-1. Open a new Excel workbook.
-2. In cell `A1`, enter the number `9876.43`.
-3. Apply the **Accounting** format to cell `A1`, displaying the number with currency symbols, decimal places, and aligned formatting.
-4. In cell `B1`, enter the percentage value `0.25`.
-5. Apply the **Percentage** format to cell `B1`, displaying the number as a percentage with two decimal places.
-6. In cell `C1`, enter the date `June 13, 2023`.
-7. Apply the **Long Date** format to cell `C1`, displaying the date in the format `MMMM DD, YYYY`.
-
-#### Question 2 - Text formatting
-
-1. In cell `A3`, enter the text `Inventory List`.
-2. Apply bold formatting to the text in cell `A3`.
-3. In cell `B3`, enter the text `Product Code`.
-4. Apply underline formatting to the text in cell `B3`.
-5. In cell `C3`, enter the text `Quantity in Stock`.
-6. Apply italic formatting to the text in cell `C3`.
-7. In cell `D3`, enter the text `Price per Unit`.
-8. Apply strikethrough formatting to the text in cell `D3`.
-
-#### Question 3 - Data alignment
-
-1. Select cells `A1` to `D3`.
-2. Apply centre alignment to the selected cells.
-3. Adjust the column widths to fit the content in each cell.
-
-#### Question 4 - Cell border formatting
-
-1. Select cells `A1` to `D3`.
-2. Apply a thick border around the selected cells.
-3. Adjust the border style to a double line.
-
-#### Question 5 - Sorting data
-
-1. Add a new worksheet.
-2. Enter the following data into columns `A`, `B`, and `C`, starting from row `1`:
-    - Column `A`: Country (`USA`, `Canada`, `Germany`, `France`, `Australia`)
-    - Column `B`: Population (`328`, `38`, `83`, `67`, `25`)
-    - Column `C`: GDP (`21.43`, `1.64`, `4.44`, `2.71`, `1.37`)
-3. Select the entire dataset (`A1:C6`).
-4. Sort the data in ascending order based on the `Country` column.
-5. Sort the data in descending order based on the `Population` column.
-6. Sort the data in descending order based on the `GDP` column.
-
-#### Question 6 - Filtering data
-
-1. Select the entire dataset (`A1:C6`).
-2. Apply filters to the dataset.
-3. Filter the data to display only countries with a population greater than `50` million.
-4. Filter the data to display only countries with a GDP of less than `5` trillion.
-5. Filter the data to display only countries whose names start with the letter `C`.
-
-#### Question 7 - Multiple criteria filtering
-
-1. Select the entire dataset (`A1:C6`).
-2. Apply filters to the dataset if they are not already applied.
-3. Filter the data to display only countries with a population greater than `50` million and a GDP less than `3` trillion.
-
-#### Question 8 - Removing filters
-
-1. Select the entire dataset (`A1:C6`).
-2. Remove all filters from the dataset.
-
-#### Question 9 - Window formatting
-
-1. Add a new worksheet.
-2. Enter some sample data in cells `A1` to `F15` to create a dataset.
-3. Adjust the zoom level to `90%`.
-4. Split the window into two panes, horizontally, at row `6`, so that both sections of the dataset are visible simultaneously.
-5. Freeze the top two rows and the leftmost column, ensuring they remain visible while scrolling.
-
-#### Question 10 - Page breaks
-
-1. Navigate to the Page Break Preview.
-2. Adjust the automatic page breaks, if necessary, to ensure data is distributed optimally across pages.
-3. Insert a manual page break above row `12`, ensuring that the data above and below the page break is separated correctly.
-4. Remove any unnecessary page breaks.
-
-#### Question 11 - Printing
-
-1. Set the print area to include the dataset from `A1` to `F15`.
-2. Adjust the page setup options to print the worksheet in portrait orientation.
-3. Include the row and column headings on every printed page.
-4. Configure the margins to ensure the data is properly aligned on the printed page.
-5. Print the worksheet and review the output for accuracy.
-
-### Tutor solution and validation guide
-
-Use this answer strategy during practicals/exams:
-
-1. Complete Questions 1-4 on worksheet 1, then take a quick screenshot for evidence.
-2. Complete Questions 5-8 on worksheet 2, verifying sort/filter results after each step.
-3. Complete Questions 9-11 on worksheet 3, then check print preview before final print/export.
-4. Save your workbook and keep one validated output per question group.
-
-#### Required output checks
-
-- `A1` shows accounting format with aligned currency.
-- `B1` shows `25.00%`.
-- `C1` shows long date format for June 13, 2023.
-- `A1:D3` is centered with thick/double border formatting.
-- Country dataset sorts correctly by `Country`, `Population`, and `GDP` in required order.
-- Filters return correct subsets (single and multiple criteria).
-- Window split/freeze/zoom settings match the task.
-- Page break exists above row `12`.
-- Print setup is portrait with headings and correct margins.
-
-#### Reference files
-
-- `/workspaces/Study-buddy/SPF-0103 Lesson Task solution.pdf`
-- `/workspaces/Study-buddy/SPF 0103 Lesson task solution Task 9 dataset.csv`
-
-### Expected Answers Snapshot (Exam-Ready)
-
-Use this quick rubric to verify your final workbook before submission.
-
-| Question | What examiner expects to see |
-|---|---|
-| Q1 Numeric formatting | `A1` in Accounting format, `B1` as `25.00%`, `C1` in Long Date format (`June 13, 2023` style) |
-| Q2 Text formatting | `A3` bold, `B3` underline, `C3` italic, `D3` strikethrough |
-| Q3 Alignment | Range `A1:D3` centered and column widths adjusted (no clipped text) |
-| Q4 Borders | Range `A1:D3` has thick outer border and double-line border style applied as requested |
-| Q5 Sorting | Country dataset sorted correctly by Country ascending, Population descending, GDP descending |
-| Q6 Filtering | Correct filtered subsets for `Population > 50`, `GDP < 5`, and names beginning with `C` |
-| Q7 Multiple criteria | Only rows meeting both conditions (`Population > 50` AND `GDP < 3`) remain visible |
-| Q8 Remove filters | All filters cleared and full dataset visible again |
-| Q9 Window formatting | Worksheet with zoom `90%`, horizontal split at row `6`, top two rows + first column frozen |
-| Q10 Page breaks | Page Break Preview reviewed, manual break inserted above row `12`, unnecessary breaks removed |
-| Q11 Printing | Print area `A1:F15`, portrait orientation, row/column headings included, margins adjusted, preview checked |
-
-#### Exam submission checklist
-
-- Save workbook with clear sheet names (for example `Q1_Q4_Formatting`, `Q5_Q8_SortFilter`, `Q9_Q11_Print`).
-- Capture at least one screenshot per question group as evidence.
-- Re-open each worksheet and verify all settings persisted before final submission.
-- Review Print Preview one final time to avoid page-break or margin penalties.
-
-### What Did I Learn in This Lesson?
-
-This lesson provided the following insights:
-
-- We looked at cell data formats and how they influence the appearance and handling of data in Excel.
-- We learnt how users can format numeric data in Excel, and about some of the common number formats available.
-- We explored text cell formatting in Excel and how users can modify the appearance of text within cells.
-- We learnt how users can perform sorting and filtering in Excel, and what the benefits of these functions are.
-- We examined window formatting options in Excel and how users can customise the view, zoom level, and layout of their worksheets.
-- We explored how freezing panes in Excel work and what advantages it offers for working with large datasets.
-- We examined how users can split windows in Excel and why this feature is useful when working with extensive data or comparing different sections of a worksheet.
-- We learned how Page Layout view in Excel helps users in formatting and designing printed documents.
-- We covered Full-Screen view in Excel and how it contributes to a distraction-free working environment.
-- We learnt how users can create and switch between custom views in Excel and what benefits this feature offers in terms of window formatting.
-- We examined how page breaks work in Excel and what tools Excel provides to manage and adjust page breaks for optimal printing results.
-- We covered inserting manual page breaks and removing page breaks in Excel when customising the layout of printed documents.
-            """,
-            "key_points": [
-                "Basic formatting in Excel changes the appearance of cells and worksheet content",
-                "Formatting improves visual appeal, readability, and professionalism",
-                "Formatting helps highlight important information",
-                "Font styles, colours, borders, and alignment are core formatting tools",
-                "Clear and organised formatting supports better communication of data",
-                "Cell data formats control how values like numbers, dates, and currencies are displayed",
-                "Number formatting improves readability with decimal control, separators, and symbols",
-                "Format Cells and Home tab tools provide quick access to formatting features",
-                "Excel provides pre-defined number categories such as General, Number, Currency, Accounting, Date, Time, Percentage, and Scientific",
-                "Text cell formatting controls text presentation, alignment, wrapping, and styling",
-                "Text formatting options include font style, colour, size, alignment, wrapping, indentation, borders, and cell protection",
-                "Sorting rearranges rows based on one or more selected columns",
-                "Filtering shows only rows that match selected criteria",
-                "Advanced filtering supports formula criteria, unique records, and copying filtered results",
-                "Single and multiple-criteria filters help isolate precise data subsets for analysis",
-                "Window formatting includes zoom controls and freeze panes for better navigation",
-                "Splitting windows enables simultaneous viewing of multiple worksheet areas",
-                "Page Layout view helps prepare worksheets for professional printing",
-                "Full-Screen view reduces distractions by maximizing worksheet workspace",
-                "Custom Views save and reapply preferred worksheet display configurations",
-                "Page break tools help control printed page layout and readability",
-                "Printing options in Excel allow customization of output for physical documents",
-                "Print Preview, Page Setup, and Print Area improve print accuracy and layout control",
-                "Print settings and options help tailor copies, ranges, scaling, and readability",
-                "Custom views can preserve and switch between analysis-focused and print-focused layouts"
-            ],
-            "visual_elements": {
-                "diagrams": False,
-                "tables": False,
-                "highlighted_sections": True
-            }
-        },
-        {
-            "lesson_number": "1.4",
-            "title": "Data Validation and Conditional Formatting",
-            "content": """
-### 1.4. Lesson - Data Validation and Conditional Formatting
-
-### Introduction
-
-Data validation and conditional formatting are essential techniques used in data analysis and management to ensure data quality, consistency, and visual representation in various applications, such as spreadsheets, databases, and other data-driven systems. These techniques improve data quality, maintain data integrity, or do both to aid decision-making processes.
-
-Data validation guarantees that only accurate and appropriate data is entered into a system by creating and enforcing rules or constraints on data entry. It helps avoid errors, inconsistencies, and inaccuracies by setting clear guidelines that data must adhere to before being accepted. This may involve restrictions on the range of data types, requirements for uniqueness, and more. Data validation is crucial for ensuring data dependability and integrity because it lessens the potential of erroneous or unreliable data entering a system.
-
-Contrarily, conditional formatting allows users to format and highlight cells or ranges in line with established rules or criteria. Users can quickly identify patterns, trends, or outliers in a dataset by adding numerous formatting styles such as font colour, background colour, borders, and data bars to cells that meet specific criteria. When data analysts and consumers use conditional formatting to graphically portray data in a way that highlights important information, it is easier to understand and analyse massive datasets.
-
-Various applications extensively use conditional formatting and data validation, including spreadsheet programs like Microsoft Excel, Google Sheets, and database management systems. These techniques are valuable tools for data analysts, managers, and users whose decisions depend on accurate and appealing data. By using conditional formatting and adopting data validation criteria, organisations may enhance the quality of their data, streamline their data analysis processes, and promote decision-making that is informed by data.
-
-### Data Validation
-
-Excel has a tool called Data Validation that guarantees the integrity and quality of data entered into cells. Users can specify precise requirements for data input, such as text lengths, numerical ranges, or the selection of values from a predetermined list. Excel can be configured to perform data validation, which checks entered data against predefined criteria and alerts users with error messages or warnings if the input does not comply. This feature helps to maintain data quality and reduces the likelihood of mistakes in spreadsheets.
-
-This is how we access the Data Validation menu in Excel as demonstrated in Figures 1 and 2:
-
-Figure 1: Access Data Validation in Excel.
-
-1. Select the cell or range where you want to apply data validation.
-2. Go to the Data tab and click on Data Validation.
-3. In the Data Validation dialog box, select the option from the Allow drop-down list.
-4. Specify the desired criteria.
-5. Click OK to apply the validation.
-
-Figure 2: Data Validation settings.
-
-Here you to be my tutor:
-
-Let’s examine a few prevalent examples:
-
-#### Whole number
-
-This validation ensures that the value entered is an integer with no decimal places. It is helpful in situations that only allow whole numbers, including counting things or keeping track of quantities. Refer to Figure 3.
-
-1. Select the cell or range where you want to apply data validation.
-2. Go to the Data tab and click on Data Validation.
-3. In the Data Validation dialog box, select Whole number from the Allow drop-down list.
-4. Specify the desired criteria, such as the minimum and maximum values.
-5. Click OK to apply the validation.
-
-Figure 3: Data validation: Whole number.
-
-#### Decimal number
-
-Decimal places can be entered for numeric values with this validation. It helps guarantee that the provided data falls within a specified range or has a specific number of decimal places, making it appropriate for measurements or financial calculations. Demonstrated in Figure 4.
-
-1. Follow the same steps as above for data validation.
-2. In the Data Validation dialog box, select Decimal from the Allow drop-down list.
-3. Set the criteria for decimal places or value range as per your requirements.
-
-Figure 4: Data validation: Decimal number.
-
-#### Time and date
-
-Time or date entries are validated using this validator. When dealing with timetables, deadlines, or time-sensitive information, it ensures that the input adheres to the proper time or date format, preventing mistakes and promoting uniformity. Demonstrated in Figure 5.
-
-1. Select the cell or range where you want to apply data validation.
-2. Go to the Data tab and click on Data Validation.
-3. In the Data Validation dialog box, select Time or Date from the Allow drop-down list.
-4. Specify the appropriate time or date format and any additional criteria, if needed.
-
-Figure 5: Data Validation: Time and date.
-
-#### List
-
-Input is limited via list validation to a predetermined range of values. It allows users to design a drop-down menu of choices, guaranteeing that the entered value corresponds to one of the designated options. This is beneficial for data input operations that call for reliable and consistent selection from a predetermined list of options. Demonstrated in Figures 6 and 7.
-
-1. Select the cell or range where you want to create the drop-down list.
-2. Go to the Data tab and click on Data Validation.
-3. In the Data Validation dialog box, select List from the Allow drop-down list.
-4. Enter the list of values you want to appear in the drop-down list, either in a range or separated by commas.
-5. Optionally, you can choose to show an error message or an input message for the drop-down list.
-
-Figure 7: List options within the cell.
-
-#### Text length
-
-Users can determine the minimum and maximum characters that can be entered by using text length validation. It aids in regulating the length of text input by setting character limits for names and keeping comments to a predetermined length. Demonstrated in Figure 8.
-
-1. Follow the same steps as above for data validation.
-2. In the Data Validation dialog box, select Text length from the Allow drop-down list.
-3. Specify the desired minimum and maximum lengths for the text.
-
-Figure 8: Data Validation: Text length.
-
-### Conditional Formatting
-
-Excel’s sophisticated conditional formatting function lets users dynamically format cells according to predefined parameters or criteria. Conditional formatting highlights or styles cells automatically by specifying rules, such as comparing values, using colour scales, or utilising data bars, and offers visual clues to analyse and interpret data more efficiently. Users can use this tool to find trends, outliers, and patterns in their data, making it simpler to recognise essential information quickly and improving the visual appeal of their Excel worksheets as a whole.
-
-#### Cell-specific
-
-You can format cells based on conditions you establish, such as highlighting cells greater than a given value or containing a particular text, with conditional formatting based on specific cell values. In the below example, we have exam marks scored by students in three subjects. We want a visual representation of the marks from lowest to highest using a colour scale from red (lowest) to yellow (highest). Demonstrated in Figures 10, 11 and 12.
-
-Figure 10: Conditional Formatting: New rule.
-Figure 11: Creating new rule.
-Figure 12: Result.
-
-1. Select the cell(s) you want to apply conditional formatting to.
-2. Go to the Home tab and click on Conditional Formatting in the Styles group.
-3. Choose New Rule from the drop-down menu.
-4. In the New Formatting Rule dialog box, select Format only cells that contain and specify the condition, such as equal to, greater than, or less than.
-5. Set the formatting options for the cells that meet the condition.
-6. Click OK to apply the conditional formatting.
-
-#### Colour scales
-
-Conditional formatting’s colour scales assign various colours to cells depending on their values, generating a visual gradient that makes it simple to spot data variances and contrast relative values. Demonstrated in Figures 13, 14 and 15.
-
-1. Select the cell(s) you want to apply conditional formatting to.
-2. Go to the Home tab and click on Conditional Formatting in the Styles group.
-3. Choose Colour Scales from the drop-down menu.
-4. Select the desired colour scale option, such as a two-colour or three-colour scale.
-5. Excel automatically applies the colour scale to the selected cells based on their values.
-
-Figure 13: Colour Scales.
-Figure 14: Formatting rules.
-Figure 15: Result.
-
-#### Data bars
-
-Conditional formatting adds horizontal bars inside cells to reflect the values they hold in the case of data bars. Giving a visual depiction of the data distribution, the length of the bar matches the value. Choose the cell(s) to which conditional formatting should be applied. In the example below, we want to add Data Bars to visually indicate the distribution of the scores where the length of the line matches the value. Demonstrated in Figure 16.
-
-1. Go to the Home tab and click on Conditional Formatting in the Styles group.
-2. Choose Data Bars from the drop-down menu.
-3. Select the desired data bar option, such as a gradient or solid fill.
-4. Excel automatically applies data bars to the selected cells based on their values.
-
-Figure 16: Conditional Formatting: Data Bars.
-
-### Conditional Formatting (continued)
-
-#### Icon sets
-
-Based on the values of the cells, conditional formatting’s icon sets add icons, like arrows or symbols, to the cells. These icons give you a brief visual representation of trends or categories so you can examine data more quickly. Choose the cell(s) to which conditional formatting should be applied. In the example below, we can use Icon Sets to represent trends for each subject visually. Up arrows (highest scores), Down arrows (lowest scores), Right arrows (average scores), Right-Up arrows (higher than average), and Right-Down arrows (lower than average). Demonstrated in Figure 17.
-
-1. Go to the Home tab and click on Conditional Formatting in the Styles group.
-2. Choose Icon Sets from the drop-down menu.
-3. Select the desired icon set, such as arrows, symbols, or traffic lights.
-4. Set the thresholds for each icon by specifying the values or percentages.
-5. Excel automatically applies the appropriate icon to the selected cells based on their values.
-
-Figure 17: Conditional Formatting: Icon Set.
-
-#### Duplicate values
-
-Formatting with conditions for duplicate values automatically identifies and manages duplicate items within a range by highlighting cells or rows that contain duplicate data. Choose the range of cells where duplicates should be found. Demonstrated in Figures 18 and 19.
-
-1. Go to the Home tab and click on Conditional Formatting in the Styles group.
-2. Choose Highlight Cells Rules from the drop-down menu.
-3. Select Duplicate Values from the submenu.
-4. Choose the formatting style for highlighting duplicate values.
-5. Click OK to apply the conditional formatting, and Excel will highlight any duplicate values in the selected range.
-
-Figure 18: Conditional Formatting: Duplicate Values.
-Figure 19: Result.
-
-#### Top and bottom values
-
-With conditional formatting, you can easily spot outliers or important data points by emphasising the greatest or lowest numbers within a range. Demonstrated in Figures 20 and 21.
-
-1. Select the range of cells you want to format.
-2. Go to the Home tab and click on Conditional Formatting in the Styles group.
-3. Choose Top/Bottom Rules from the drop-down menu.
-4. Select Top 10 Items, Bottom 10 Items, or any other desired option.
-5. Set the criteria, such as top or bottom values, percentage, or rank.
-6. Choose the formatting style for highlighting the top or bottom values.
-7. Click OK to apply the conditional formatting, and Excel will format the cells based on the specified criteria.
-
-Figure 20: Conditional Formatting: Top/Bottom values.
-Figure 21: Customise Top 5 with red.
-
-#### Custom formatting
-
-With custom conditional formatting, you may create your own formulae and rules to format cells in accordance with requirements or circumstances that are not addressed by the built-in formatting options. It gives you more freedom to apply conditional formatting tailored to your particular requirements. Choose the cell(s) to which conditional formatting should be applied. Demonstrated in Figures 22 and 23.
-
-1. Go to the Home tab and click on Conditional Formatting in the Styles group.
-2. Choose New Rule from the drop-down menu.
-3. In the New Formatting Rule dialog box, select Use a formula to determine which cells to format.
-4. Enter the formula that evaluates to either TRUE or FALSE for the desired condition.
-5. Set the formatting options for the cells that meet the condition.
-6. Click OK to apply the conditional formatting.
-
-### Activity 2 - Conditional formatting in Excel (guided)
-
-**Dataset:** `SPF+-+Sample+dataset+Activity+2.xlsx`
-
-Path:
-- `/workspaces/Study-buddy/SPF+-+Sample+dataset+Activity+2.xlsx`
-
-Open the workbook and confirm columns:
-- **A:** Name
-- **B:** Mathematics
-- **C:** Science
-- **D:** English
-
-#### Visual setup map
-
-| Rule | Column | Menu path | Expected visual |
-|---|---|---|---|
-| Math below 60 | B | Conditional Formatting → Highlight Cells Rules → Less Than | Red cells |
-| Science above 90 | C | Conditional Formatting → Highlight Cells Rules → Greater Than | Green cells |
-| English between 70 and 80 | D | Conditional Formatting → Highlight Cells Rules → Between | Yellow cells |
-| Math distribution | B | Conditional Formatting → Color Scales (red→green) | Low=red, high=green |
-| Science 2-color scale | C | Conditional Formatting → Color Scales → More Rules | Lowest/highest contrast |
-| English data bars | D | Conditional Formatting → Data Bars | Bar length matches score |
-| Math icon set | B | Conditional Formatting → Icon Sets → More Rules | Above avg / avg / below avg |
-| Duplicate names | A | Conditional Formatting → Highlight Cells Rules → Duplicate Values | Duplicate names highlighted |
-| Top 3 Science | C | Conditional Formatting → Top/Bottom Rules → Top 10 Items (change 10→3) | Top 3 standout format |
-| Bottom 3 Mathematics | B | Conditional Formatting → Top/Bottom Rules → Bottom 10 Items (change 10→3) | Bottom 3 standout format |
-
-#### Visual reference
-
-![Conditional formatting quick visual](attached_assets/image_1767396605515.png)
-
-#### Required steps
-
-1. Highlight cells in **Mathematics** that have scores below `60` in red.
-2. Highlight cells in **Science** that have scores above `90` in green.
-3. Highlight cells in **English** that have scores between `70` and `80` in yellow.
-4. Apply a colour scale to **Mathematics** (lower=red, higher=green).
-5. Apply a two-colour scale to **Science** for lowest and highest scores.
-6. Add **Data Bars** to **English**.
-7. Apply **Icon Sets** to **Mathematics** to indicate above average, average, and below average.
-8. Highlight duplicate values in **Name**.
-9. Highlight the **top three** scores in **Science**.
-10. Highlight the **bottom three** scores in **Mathematics**.
-11. Add/change rows and verify formatting updates dynamically.
-
-#### Tutor check (quick)
-
-- If colors overlap unexpectedly, open **Conditional Formatting → Manage Rules** and reorder priority.
-- Use consistent formatting styles so each rule is visually distinct.
-- After adding rows, verify every rule still applies to the full data range.
-            """,
-            "key_points": [
-                "Data validation enforces rules to keep input accurate and consistent",
-                "Validation constraints reduce entry errors and protect data integrity",
-                "Conditional formatting highlights important patterns, trends, and outliers",
-                "Visual rules improve readability and speed up data interpretation",
-                "These techniques are widely used in Excel, Google Sheets, and data systems",
-                "Better validation and formatting support stronger data-driven decisions",
-                "Data Validation rules can constrain inputs by type, range, length, and list options",
-                "Applying validation through the Data tab helps prevent spreadsheet input mistakes",
-                "Whole number validation can enforce integer-only inputs within defined minimum/maximum limits",
-                "Decimal validation supports value ranges and precision requirements",
-                "Time and date validation enforces consistent temporal input formats",
-                "List validation provides controlled dropdown choices for consistent data entry",
-                "Text length validation enforces minimum and maximum character limits"
-            ],
-            "visual_elements": {
-                "diagrams": False,
-                "tables": False,
-                "highlighted_sections": True
-            }
-        }
     ]
 }
 
@@ -23666,47 +25549,16 @@ def evaluate_answer(question, correct_answer, user_answer):
     except Exception as e:
         return f"Error evaluating answer: {str(e)}"
 
-st.sidebar.title("Navigation")
-sidebar_pages = [
-    "Overview", "Course Plan", "Training Center", "Playground", "Learn & Practice",
-    "Study Notes", "Flashcards", "Exam Simulator", "Code Library", "Formula Reference",
-    "Study Timer", "Progress", "Learning Outcomes", "About"
-]
-sidebar_page_icons = {
-    "Overview": ":material/home:",
-    "Course Plan": ":material/map:",
-    "Training Center": ":material/local_library:",
-    "Playground": ":material/construction:",
-    "Learn & Practice": ":material/auto_stories:",
-    "Study Notes": ":material/note:",
-    "Flashcards": ":material/style:",
-    "Exam Simulator": ":material/fact_check:",
-    "Code Library": ":material/code:",
-    "Formula Reference": ":material/functions:",
-    "Study Timer": ":material/timer:",
-    "Progress": ":material/trending_up:",
-    "Learning Outcomes": ":material/workspace_premium:",
-    "About": ":material/info:"
-}
-
-if "sidebar_page_select" not in st.session_state:
-    st.session_state.sidebar_page_select = "Overview"
-
-if st.session_state.get("nav_target_page") in sidebar_pages:
-    st.session_state.sidebar_page_select = st.session_state["nav_target_page"]
-
+st.sidebar.title("📊 Navigation")
 page = st.sidebar.radio(
     "Select page:",
-    sidebar_pages,
-    key="sidebar_page_select",
-    format_func=lambda page_name: f"{sidebar_page_icons.get(page_name, ':material/chevron_right:')} {page_name}"
+    ["Overview", "Course Plan", "Training Center", "Playground", "Learn & Practice", 
+     "Study Notes", "Flashcards", "Exam Simulator", "Code Library", "Formula Reference", 
+     "Study Timer", "Progress", "Learning Outcomes", "Progression Plan", "About"]
 )
 
-if st.session_state.get("nav_target_page") == page:
-    st.session_state.pop("nav_target_page", None)
-
 if page == "Overview":
-    mui_title("school", "Data Analyst 2 - Study App")
+    st.title("🎓 Data Analyst 2 - Study App")
     st.markdown("---")
     
     col1, col2, col3, col4 = st.columns(4)
@@ -23725,27 +25577,7 @@ if page == "Overview":
         st.metric("Progress", f"{progress_pct:.0f}%")
     
     st.markdown("---")
-    mui_subheader("category", "Course Types Overview")
-
-    course_type_explanations = {
-        "Core Course": "Mandatory course that builds essential program competencies.",
-        "Elective Course": "Optional course that lets you specialise in selected topics.",
-        "Project Course": "Practice-focused course where you apply skills to real deliverables."
-    }
-    type_rows = []
-    for course_type, explanation in course_type_explanations.items():
-        count = sum(1 for c in courses_data if c.get("type") == course_type)
-        type_rows.append({
-            "Type": course_type,
-            "What it means": explanation,
-            "Courses in plan": count
-        })
-
-    st.dataframe(pd.DataFrame(type_rows), use_container_width=True, hide_index=True)
-    st.caption("This overview connects program structure to your detailed course lessons and practice tasks.")
-
-    st.markdown("---")
-    mui_subheader("timeline", "Study Path")
+    st.subheader("📅 Study Path")
     
     semesters = ["2025 Spring", "2025 Fall", "2026 Spring", "2026 Fall"]
     
@@ -23759,14 +25591,14 @@ if page == "Overview":
             
             for course in sem_courses:
                 is_completed = course["code"] in st.session_state.completed_courses
-                status = "Completed" if is_completed else "Not started"
+                status = "✅" if is_completed else "📚"
                 st.markdown(f"{status} {course['name']}")
     
     st.markdown("---")
     col1, col2 = st.columns(2)
     
     with col1:
-        mui_subheader("track_changes", "Training Progress")
+        st.subheader("🎯 Training Progress")
         if st.session_state.training_progress:
             for topic, data in st.session_state.training_progress.items():
                 short_topic = topic[:40] + "..." if len(topic) > 40 else topic
@@ -23778,8 +25610,54 @@ if page == "Overview":
             st.info("Start training in the Training Center!")
     
     with col2:
-        mui_subheader("link", "Useful Links")
-        st.markdown("[Study Catalog](https://studiekatalog.edutorium.no/voc/en/programme/PDAN/2025-autumn)")
+        st.subheader("🔗 Useful Links")
+        st.markdown("[📖 Study Catalog](https://studiekatalog.edutorium.no/voc/en/programme/PDAN/2025-autumn)")
+
+        st.markdown("---")
+        st.subheader("⏰ Upcoming Deadlines")
+        from datetime import date as _ov_date, datetime as _ov_dt
+        _ov_today = _ov_date.today()
+        _ov_deadlines = [
+            ("DAF", "Data Analysis Fundamentals",    "2025-11-09"),
+            ("SPF", "Spreadsheet Fundamentals",      "2025-11-30"),
+            ("DDM", "Data Driven Decision-Making",   "2026-01-11"),
+            ("STT", "Statistical Tools",             "2026-02-01"),
+            ("SP1", "Semester Project",              "2026-03-01"),
+            ("EVO", "Evaluation of Outcomes",        "2026-05-03"),
+            ("DVS", "Data Visualisation",            "2026-06-07"),
+            ("ARP", "Analysis Reporting",            "2026-08-30"),
+            ("EP1", "Exam Project 1",                "2026-10-11"),
+        ]
+        _ov_shown = 0
+        for _ov_code, _ov_cname, _ov_dl_str in _ov_deadlines:
+            _ov_dl = _ov_dt.strptime(_ov_dl_str, "%Y-%m-%d").date()
+            _ov_days = (_ov_dl - _ov_today).days
+            if _ov_days < 0:
+                continue
+            if _ov_days == 0:
+                _ov_ic, _ov_cl = "🔥", "#e74c3c"
+                _ov_txt = "DUE TODAY"
+            elif _ov_days <= 7:
+                _ov_ic, _ov_cl = "🔴", "#e74c3c"
+                _ov_txt = f"**{_ov_days}d left**"
+            elif _ov_days <= 21:
+                _ov_ic, _ov_cl = "🟡", "#f39c12"
+                _ov_txt = f"{_ov_days}d left"
+            else:
+                _ov_ic, _ov_cl = "🟢", "#2ecc71"
+                _ov_txt = f"{_ov_days}d"
+            st.markdown(
+                f"{_ov_ic} **{_ov_code}** – {_ov_cname}  \n"
+                f"<span style='color:#aaa; font-size:12px;'>{_ov_dl.strftime('%d %b %Y')} @ 23:59 &nbsp;·&nbsp; "
+                f"<span style='color:{_ov_cl}'>{_ov_txt}</span></span>",
+                unsafe_allow_html=True
+            )
+            _ov_shown += 1
+            if _ov_shown >= 4:
+                break
+        if _ov_shown == 0:
+            st.success("🎉 All Year 1 assessments completed!")
+        st.caption("→ See full schedule in **Progression Plan**")
     
     st.markdown("---")
     
@@ -23791,14 +25669,14 @@ if page == "Overview":
     st.markdown(f"### {render_mui_icon('event', 28)} Important Dates", unsafe_allow_html=True)
     
     # Add new date form
-    with st.expander("Add Important Date", expanded=False):
+    with st.expander("➕ Add Important Date", expanded=False):
         st.markdown(f"{render_mui_icon('add_circle', 20)} **Add a new important date**", unsafe_allow_html=True)
         date_col1, date_col2 = st.columns(2)
         with date_col1:
             new_date = st.date_input("Date:", key="new_important_date")
             new_date_type = st.selectbox(
                 "Type:",
-                ["Exam", "Assessment", "Assignment Deadline", "Project Deadline", "Course Start", "Course End", "Other"],
+                ["Exam", "Assignment Deadline", "Project Deadline", "Course Start", "Course End", "Other"],
                 key="new_date_type"
             )
         with date_col2:
@@ -23809,7 +25687,7 @@ if page == "Overview":
                 key="new_date_course"
             )
         
-        if st.button("Add Date", type="primary", icon=":material/add:", key="add_important_date"):
+        if st.button("Add Date", type="primary", key="add_important_date"):
             if new_date_title:
                 date_entry = {
                     "date": new_date.isoformat(),
@@ -23863,7 +25741,6 @@ if page == "Overview":
                 # Type icon mapping
                 type_icons = {
                     "Exam": "quiz",
-                    "Assessment": "grading",
                     "Assignment Deadline": "assignment",
                     "Project Deadline": "folder",
                     "Course Start": "play_arrow",
@@ -23887,14 +25764,14 @@ if page == "Overview":
                         st.markdown(f"{render_mui_icon('schedule', 16)} {days_until} days", unsafe_allow_html=True)
                     
                     # Delete button
-                    delete_btn = st.button("Delete", icon=":material/delete:", key=f"delete_date_{idx}", help="Delete this date")
+                    delete_btn = st.button("🗑️", key=f"delete_date_{idx}", help="Delete this date")
                     if delete_btn:
                         st.session_state.important_dates.remove(date_entry)
                         st.rerun()
         
         # Display past dates (collapsed)
         if past_dates:
-            with st.expander(f"Past Dates ({len(past_dates)})", expanded=False):
+            with st.expander(f"📜 Past Dates ({len(past_dates)})", expanded=False):
                 st.markdown(f"{render_mui_icon('history', 18)} **Completed dates**", unsafe_allow_html=True)
                 for idx, date_entry in enumerate(past_dates):
                     event_date = date.fromisoformat(date_entry["date"])
@@ -23903,7 +25780,6 @@ if page == "Overview":
                     # Type icon mapping
                     type_icons = {
                         "Exam": "quiz",
-                        "Assessment": "grading",
                         "Assignment Deadline": "assignment",
                         "Project Deadline": "folder",
                         "Course Start": "play_arrow",
@@ -23922,16 +25798,16 @@ if page == "Overview":
                         st.markdown(f"{render_mui_icon('schedule', 16)} {days_ago} days ago", unsafe_allow_html=True)
                         
                         # Delete button
-                        delete_btn = st.button("Delete", icon=":material/delete:", key=f"delete_past_date_{idx}", help="Delete this date")
+                        delete_btn = st.button("🗑️", key=f"delete_past_date_{idx}", help="Delete this date")
                         if delete_btn:
                             st.session_state.important_dates.remove(date_entry)
                             st.rerun()
     else:
         st.markdown(f"{render_mui_icon('info', 18)} **No important dates added yet.** Use the form above to add dates like exams, deadlines, etc.", unsafe_allow_html=True)
-        st.info("Tip: Add important dates like exam/assessment dates, assignment deadlines, and project milestones to keep track of your schedule.")
+        st.info("💡 Tip: Add important dates like exam dates, assignment deadlines, and project milestones to keep track of your schedule.")
 
 elif page == "Training Center":
-    mui_title("local_library", "Training Center")
+    st.title("🎓 Training Center")
     st.markdown("*Hands-on learning with step-by-step lessons, exercises, and quizzes*")
     st.markdown("---")
     
@@ -23972,7 +25848,7 @@ elif page == "Training Center":
         # Semester filter
         available_semesters = sorted(organized_topics.keys())
         selected_semester = st.selectbox(
-            "Semester:",
+            "📅 Semester:",
             options=["All Semesters"] + available_semesters
         )
     
@@ -24000,7 +25876,7 @@ elif page == "Training Center":
         
         course_options = ["All Courses"] + list(course_display_map.keys())
         selected_course_display = st.selectbox(
-            "Course:",
+            "📚 Course:",
             options=course_options
         )
         
@@ -24037,10 +25913,10 @@ elif page == "Training Center":
         topic_options.append(f"{topic}")
     
     # Show topic count
-    st.caption(f"{len(filtered_topics)} topics available")
+    st.caption(f"📖 {len(filtered_topics)} topics available")
     
     selected_display = st.selectbox(
-        "Select Topic:",
+        "🎯 Select Topic:",
         options=topic_options,
         format_func=lambda x: x
     )
@@ -24065,9 +25941,74 @@ elif page == "Training Center":
         topic_code = course_to_semester[topic_course][1]
     
     # Show context with course code
-    st.markdown(f"**{topic_semester}** | **{topic_code} - {topic_course}**")
+    st.markdown(f"**📅 {topic_semester}** | **📚 {topic_code} - {topic_course}**")
     st.markdown(f"*{module['description']}*")
-    
+
+    # ── Progression Plan reminder banner ─────────────────────────────────────
+    _pp_course_map = {
+        "Data Analysis Fundamentals":    ("DAF", "2025-11-03", "2025-11-09"),
+        "Spreadsheet Fundamentals":      ("SPF", "2025-11-24", "2025-11-30"),
+        "Data Driven Decision-Making":   ("DDM", "2026-01-05", "2026-01-11"),
+        "Statistical Tools":             ("STT", "2026-01-26", "2026-02-01"),
+        "Semester Project 1":            ("SP1", "2026-02-23", "2026-03-01"),
+        "Evaluation of Outcomes":        ("EVO", "2026-04-27", "2026-05-03"),
+        "Data Visualisation":            ("DVS", "2026-06-01", "2026-06-07"),
+        "Analysis Reporting":            ("ARP", "2026-08-24", "2026-08-30"),
+    }
+    if topic_course in _pp_course_map:
+        from datetime import date as _pp_date, datetime as _pp_dt
+        _pp_code, _pp_start_str, _pp_dl_str = _pp_course_map[topic_course]
+        _pp_today = _pp_date.today()
+        _pp_start = _pp_dt.strptime(_pp_start_str, "%Y-%m-%d").date()
+        _pp_dl    = _pp_dt.strptime(_pp_dl_str,    "%Y-%m-%d").date()
+        _pp_days  = (_pp_dl - _pp_today).days
+
+        if _pp_days < 0:
+            _pp_icon  = "✅"
+            _pp_cd    = f"Submitted {abs(_pp_days)} days ago"
+            _pp_bdr   = "#2ecc71"
+            _pp_bg    = "#0d2416"
+        elif _pp_days == 0:
+            _pp_icon  = "🔥"
+            _pp_cd    = "DUE TODAY — 23:59!"
+            _pp_bdr   = "#e74c3c"
+            _pp_bg    = "#3d0000"
+        elif _pp_days <= 3:
+            _pp_icon  = "🔴"
+            _pp_cd    = f"{_pp_days} day{'s' if _pp_days != 1 else ''} left!"
+            _pp_bdr   = "#e74c3c"
+            _pp_bg    = "#3d0000"
+        elif _pp_days <= 14:
+            _pp_icon  = "🟡"
+            _pp_cd    = f"{_pp_days} days left"
+            _pp_bdr   = "#f39c12"
+            _pp_bg    = "#2d2200"
+        else:
+            _pp_icon  = "🟢"
+            _pp_cd    = f"in {_pp_days} days"
+            _pp_bdr   = "#3498db"
+            _pp_bg    = "#0d1e2d"
+
+        st.markdown(f"""
+<div style="background:{_pp_bg}; border-left:5px solid {_pp_bdr}; border-radius:8px;
+            padding:10px 16px; margin:8px 0 12px 0; display:flex; align-items:center; gap:14px;">
+  <div style="font-size:22px;">{_pp_icon}</div>
+  <div style="flex:1;">
+    <span style="font-weight:700; color:#f0f0f0;">📋 {_pp_code} Progression Reminder</span><br>
+    <span style="font-size:12px; color:#bbb;">
+      Assessment week starts <b style="color:#ddd;">{_pp_start.strftime('%a %d %b')}</b>
+      &nbsp;·&nbsp;
+      Deadline <b style="color:#ddd;">{_pp_dl.strftime('%a %d %b %Y')} @ 23:59</b>
+    </span>
+  </div>
+  <div style="text-align:right; white-space:nowrap;">
+    <span style="font-size:15px; font-weight:700; color:{_pp_bdr};">{_pp_cd}</span><br>
+    <a href="?page=Progression+Plan" style="font-size:11px; color:#888;">View full plan ↗</a>
+  </div>
+</div>
+""", unsafe_allow_html=True)
+    # ─────────────────────────────────────────────────────────────────────────
+
     # Initialize progress for this topic
     if selected_topic not in st.session_state.training_progress:
         st.session_state.training_progress[selected_topic] = {
@@ -24086,10 +26027,10 @@ elif page == "Training Center":
     
     st.markdown("---")
     
-    tab1, tab2, tab3 = st.tabs(["Lessons", "Exercises", "Quiz"])
+    tab1, tab2, tab3 = st.tabs(["📖 Lessons", "✏️ Exercises", "📝 Quiz"])
     
     with tab1:
-        mui_subheader("menu_book", "Step-by-Step Lessons")
+        st.subheader("Step-by-Step Lessons")
         
         for i, lesson in enumerate(module['lessons']):
             with st.expander(f"Lesson {i+1}: {lesson['title']}", expanded=(i == 0)):
@@ -24100,6 +26041,20 @@ elif page == "Training Center":
                 for point in lesson['key_points']:
                     st.markdown(f"✓ {point}")
                 
+                # Dataset download button (only for lessons that have an attached file)
+                if lesson.get('dataset_file'):
+                    import os as _os
+                    _fp = lesson['dataset_file']
+                    if _os.path.exists(_fp):
+                        with open(_fp, 'rb') as _f:
+                            st.download_button(
+                                label=f"📥 Download Dataset: {_fp}",
+                                data=_f.read(),
+                                file_name=_fp,
+                                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                                key=f"dl_{selected_topic}_{i}"
+                            )
+                
                 if st.button(f"Mark Lesson {i+1} Complete", key=f"lesson_{selected_topic}_{i}"):
                     if progress['lessons_completed'] <= i:
                         st.session_state.training_progress[selected_topic]['lessons_completed'] = i + 1
@@ -24107,10 +26062,10 @@ elif page == "Training Center":
                         st.rerun()
                 
                 if progress['lessons_completed'] > i:
-                    st.success("Completed")
+                    st.success("✅ Completed")
     
     with tab2:
-        mui_subheader("edit_note", "Hands-On Exercises")
+        st.subheader("Hands-On Exercises")
         
         for i, exercise in enumerate(module['exercises']):
             with st.expander(f"Exercise {i+1}: {exercise['title']}", expanded=False):
@@ -24120,7 +26075,7 @@ elif page == "Training Center":
                 
                 # Hint button
                 if st.button(f"Show Hint", key=f"hint_{selected_topic}_{i}"):
-                    st.info(f"Hint: {exercise['hint']}")
+                    st.info(f"💡 Hint: {exercise['hint']}")
                 
                 # User answer input
                 user_answer = st.text_area(
@@ -24132,7 +26087,7 @@ elif page == "Training Center":
                 col1, col2 = st.columns(2)
                 
                 with col1:
-                    if st.button("Check Answer", icon=":material/task_alt:", key=f"check_{selected_topic}_{i}"):
+                    if st.button("Check Answer", key=f"check_{selected_topic}_{i}"):
                         if user_answer.strip():
                             with st.spinner("Evaluating..."):
                                 feedback = evaluate_answer(exercise['question'], exercise['answer'], user_answer)
@@ -24144,24 +26099,24 @@ elif page == "Training Center":
                 
                 with col2:
                     show_key = f"show_{selected_topic}_{i}"
-                    if st.button("Show Answer", icon=":material/visibility:", key=f"reveal_{selected_topic}_{i}"):
+                    if st.button("Show Answer", key=f"reveal_{selected_topic}_{i}"):
                         st.session_state.show_exercise_answer[show_key] = True
                 
                 if st.session_state.show_exercise_answer.get(f"show_{selected_topic}_{i}", False):
                     st.info(f"**Answer:** {exercise['answer']}")
                 
                 if i in progress['exercises_completed']:
-                    st.success("Attempted")
+                    st.success("✅ Attempted")
     
     with tab3:
-        mui_subheader("quiz", "Knowledge Quiz")
+        st.subheader("Knowledge Quiz")
         st.markdown("Test your understanding with this quiz!")
         
         quiz = module['quiz']
         
         if progress['quiz_score'] is not None:
             st.success(f"Quiz completed! Score: {progress['quiz_score']}/{len(quiz)}")
-            if st.button("Retake Quiz", icon=":material/replay:"):
+            if st.button("Retake Quiz"):
                 st.session_state.training_progress[selected_topic]['quiz_score'] = None
                 st.session_state.quiz_answers = {}
                 st.rerun()
@@ -24177,7 +26132,7 @@ elif page == "Training Center":
                 st.session_state.quiz_answers[f"{selected_topic}_{i}"] = q['options'].index(answer) if answer else None
                 st.markdown("---")
             
-            if st.button("Submit Quiz", type="primary", icon=":material/send:"):
+            if st.button("Submit Quiz", type="primary"):
                 score = 0
                 for i, q in enumerate(quiz):
                     user_ans = st.session_state.quiz_answers.get(f"{selected_topic}_{i}")
@@ -24199,7 +26154,7 @@ elif page == "Training Center":
                     st.markdown(f"   *{q['explanation']}*")
 
 elif page == "Course Plan":
-    mui_title("map", "Course Plan")
+    st.title("📚 Course Plan")
     st.markdown("---")
     
     df = pd.DataFrame([{
@@ -24231,9 +26186,67 @@ elif page == "Course Plan":
         ]
     
     st.dataframe(filtered_df, use_container_width=True, hide_index=True)
-    
+
+    # ── Progression Plan reminders (Course Plan) ──────────────────────────────
     st.markdown("---")
-    mui_subheader("bar_chart", "Credits per Semester")
+    st.subheader("⏰ Assessment Deadlines")
+    from datetime import date as _cp_date, datetime as _cp_dt
+    _cp_today = _cp_date.today()
+    _cp_schedule = [
+        ('IC',  'Introduction Course',         None,           '2025-10-19'),
+        ('DAF', 'Data Analysis Fundamentals',  '2025-11-03',   '2025-11-09'),
+        ('SPF', 'Spreadsheet Fundamentals',    '2025-11-24',   '2025-11-30'),
+        ('DDM', 'Data Driven Decision-Making', '2026-01-05',   '2026-01-11'),
+        ('STT', 'Statistical Tools',           '2026-01-26',   '2026-02-01'),
+        ('SP1', 'Semester Project',            '2026-02-23',   '2026-03-01'),
+        ('EVO', 'Evaluation of Outcomes',      '2026-04-27',   '2026-05-03'),
+        ('DVS', 'Data Visualisation',          '2026-06-01',   '2026-06-07'),
+        ('ARP', 'Analysis Reporting',          '2026-08-24',   '2026-08-30'),
+        ('EP1', 'Exam Project 1',              '2026-10-05',   '2026-10-11'),
+    ]
+    _cp_cols = st.columns(2)
+    for _cp_i, (_cp_code, _cp_cname, _cp_start_s, _cp_dl_s) in enumerate(_cp_schedule):
+        _cp_dl    = _cp_dt.strptime(_cp_dl_s, '%Y-%m-%d').date()
+        _cp_start = _cp_dt.strptime(_cp_start_s, '%Y-%m-%d').date() if _cp_start_s else None
+        _cp_days  = (_cp_dl - _cp_today).days
+        if _cp_days < 0:
+            _cp_ic, _cp_col = '✅', '#2ecc71'
+            _cp_cd = f'{abs(_cp_days)}d ago'
+            _cp_bg, _cp_bdr = '#0d2416', '#2ecc71'
+        elif _cp_days == 0:
+            _cp_ic, _cp_col = '🔥', '#e74c3c'
+            _cp_cd = 'TODAY!'
+            _cp_bg, _cp_bdr = '#3d0000', '#e74c3c'
+        elif _cp_days <= 7:
+            _cp_ic, _cp_col = '🔴', '#e74c3c'
+            _cp_cd = f'{_cp_days}d left'
+            _cp_bg, _cp_bdr = '#3d0000', '#e74c3c'
+        elif _cp_days <= 21:
+            _cp_ic, _cp_col = '🟡', '#f39c12'
+            _cp_cd = f'{_cp_days}d left'
+            _cp_bg, _cp_bdr = '#2d2200', '#f39c12'
+        else:
+            _cp_ic, _cp_col = '🟢', '#3498db'
+            _cp_cd = f'{_cp_days}d'
+            _cp_bg, _cp_bdr = '#0d1e2d', '#3498db'
+        _cp_start_txt = f"<span style='color:#aaa;'>Assessment from {_cp_start.strftime('%d %b')} · </span>" if _cp_start else ''
+        with _cp_cols[_cp_i % 2]:
+            st.markdown(f"""
+<div style="background:{_cp_bg}; border-left:4px solid {_cp_bdr}; border-radius:6px;
+            padding:8px 12px; margin:4px 0; display:flex; align-items:center; gap:10px;">
+  <span style="background:{_cp_bdr}; color:#fff; font-size:10px; font-weight:700;
+               padding:2px 6px; border-radius:10px; min-width:32px; text-align:center;">{_cp_code}</span>
+  <div style="flex:1;">
+    <span style="font-size:13px; font-weight:600; color:#f0f0f0;">{_cp_cname}</span><br>
+    <span style="font-size:11px;">{_cp_start_txt}<span style="color:#ccc;">Deadline {_cp_dl.strftime('%d %b %Y')}</span></span>
+  </div>
+  <span style="font-size:13px; font-weight:700; color:{_cp_col}; white-space:nowrap;">{_cp_ic} {_cp_cd}</span>
+</div>
+""", unsafe_allow_html=True)
+    st.caption("→ See full schedule in **Progression Plan**")
+
+    st.markdown("---")
+    st.subheader("📊 Credits per Semester")
     
     semester_credits = df.groupby("Semester")["Credits"].sum().reset_index()
     semester_order = ["2025 Spring", "2025 Fall", "2026 Spring", "2026 Fall"]
@@ -24243,7 +26256,7 @@ elif page == "Course Plan":
     st.bar_chart(semester_credits.set_index("Semester"))
 
 elif page == "Learn & Practice":
-    mui_title("auto_stories", "Learn & Practice")
+    st.title("📖 Learn & Practice")
     st.markdown("---")
     
     # Add custom CSS for lesson styling and Mermaid.js
@@ -24310,6 +26323,57 @@ elif page == "Learn & Practice":
     
     st.markdown("---")
     
+    # ── Progression Plan reminder (Learn & Practice) ──────────────────────────
+    _lp_course_map = {
+        "Data Analysis Fundamentals":    ("DAF", "2025-11-03", "2025-11-09"),
+        "Spreadsheet Fundamentals":      ("SPF", "2025-11-24", "2025-11-30"),
+        "Data Driven Decision-Making":   ("DDM", "2026-01-05", "2026-01-11"),
+        "Statistical Tools":             ("STT", "2026-01-26", "2026-02-01"),
+        "Semester Project 1":            ("SP1", "2026-02-23", "2026-03-01"),
+        "Evaluation of Outcomes":        ("EVO", "2026-04-27", "2026-05-03"),
+        "Data Visualisation":            ("DVS", "2026-06-01", "2026-06-07"),
+        "Analysis Reporting":            ("ARP", "2026-08-24", "2026-08-30"),
+    }
+    _lp_cname = course['name']
+    if _lp_cname in _lp_course_map:
+        from datetime import date as _lp_date, datetime as _lp_dt
+        _lp_code, _lp_start_str, _lp_dl_str = _lp_course_map[_lp_cname]
+        _lp_today = _lp_date.today()
+        _lp_start = _lp_dt.strptime(_lp_start_str, "%Y-%m-%d").date()
+        _lp_dl    = _lp_dt.strptime(_lp_dl_str,    "%Y-%m-%d").date()
+        _lp_days  = (_lp_dl - _lp_today).days
+        if _lp_days < 0:
+            _lp_icon, _lp_col, _lp_txt = "✅", "#2ecc71", f"Submitted {abs(_lp_days)} days ago"
+        elif _lp_days == 0:
+            _lp_icon, _lp_col, _lp_txt = "🔥", "#e74c3c", "DUE TODAY — 23:59!"
+        elif _lp_days <= 3:
+            _lp_icon, _lp_col, _lp_txt = "🔴", "#e74c3c", f"{_lp_days} day{'s' if _lp_days != 1 else ''} left!"
+        elif _lp_days <= 14:
+            _lp_icon, _lp_col, _lp_txt = "🟡", "#f39c12", f"{_lp_days} days left"
+        else:
+            _lp_icon, _lp_col, _lp_txt = "🟢", "#3498db", f"in {_lp_days} days"
+        _lp_bg  = "#3d0000" if _lp_days >= 0 and _lp_days <= 3 else (
+                  "#2d2200" if _lp_days <= 14 else (
+                  "#0d1e2d" if _lp_days > 0 else "#0d2416"))
+        st.markdown(f"""
+<div style="background:{_lp_bg}; border-left:5px solid {_lp_col}; border-radius:8px;
+            padding:10px 16px; margin:0 0 12px 0; display:flex; align-items:center; gap:14px;">
+  <div style="font-size:22px;">{_lp_icon}</div>
+  <div style="flex:1;">
+    <span style="font-weight:700; color:#f0f0f0;">📋 {_lp_code} Progression Reminder</span><br>
+    <span style="font-size:12px; color:#bbb;">
+      Assessment week starts <b style="color:#ddd;">{_lp_start.strftime('%a %d %b')}</b>
+      &nbsp;·&nbsp; Deadline <b style="color:#ddd;">{_lp_dl.strftime('%a %d %b %Y')} @ 23:59</b>
+    </span>
+  </div>
+  <div style="text-align:right; white-space:nowrap;">
+    <span style="font-size:15px; font-weight:700; color:{_lp_col};">{_lp_txt}</span><br>
+    <span style="font-size:11px; color:#888;">→ Progression Plan page</span>
+  </div>
+</div>
+""", unsafe_allow_html=True)
+    # ─────────────────────────────────────────────────────────────────────────
+
     # Check if this course has training modules
     course_topics_with_training = []
     for topic in training_modules.keys():
@@ -24317,86 +26381,32 @@ elif page == "Learn & Practice":
             course_topics_with_training.append(topic)
     
     if course_topics_with_training:
-        st.info(f"This course has {len(course_topics_with_training)} topic(s) with hands-on training available in the Training Center.")
+        st.info(f"💡 This course has {len(course_topics_with_training)} topic(s) with hands-on training available in the Training Center!")
     
     # Check if course has lessons
     has_lessons = course_code in course_lessons
     if has_lessons:
-        st.success(f"This course has {len(course_lessons[course_code])} detailed lesson(s) available.")
+        st.success(f"📚 This course has {len(course_lessons[course_code])} detailed lesson(s) available!")
     
     tab1, tab2 = st.tabs(["Course Content", "Practice Questions"])
     
     with tab1:
-        st.subheader(f"{course['name']}")
-        st.markdown(f"**{course['credits']} credits** | {course['weeks']} weeks | {course['hours']} hours | {course['semester']} | **Type: {course['type']}**")
-
-        selected_course_type = course.get("type", "Core Course")
-        selected_type_explanations = {
-            "Core Course": "Mandatory course linked to core program outcomes and progression.",
-            "Elective Course": "Optional course used to deepen a chosen specialization area.",
-            "Project Course": "Application-focused course where skills are demonstrated through practical deliverables."
-        }
-        st.caption(f"{selected_course_type}: {selected_type_explanations.get(selected_course_type, 'Course classification used in the study plan.')} This helps connect the overview structure with the lesson content below.")
+        st.subheader(f"📚 {course['name']}")
+        st.markdown(f"**{course['credits']} credits** | {course['weeks']} weeks | {course['hours']} hours | {course['semester']}")
         st.markdown(f"*{course['description']}*")
-
-        linked_dates = [d for d in st.session_state.important_dates if d.get("course") == selected_course]
-        if linked_dates:
-            st.markdown("### Course-linked Important Dates")
-            st.caption("These dates are connected to this course and support lesson/exam planning.")
-
-            today = date.today()
-            linked_dates_sorted = sorted(linked_dates, key=lambda x: x["date"])
-            linked_upcoming = [d for d in linked_dates_sorted if date.fromisoformat(d["date"]) >= today]
-            linked_past = [d for d in linked_dates_sorted if date.fromisoformat(d["date"]) < today]
-
-            type_icons = {
-                "Exam": "quiz",
-                "Assessment": "grading",
-                "Assignment Deadline": "assignment",
-                "Project Deadline": "folder",
-                "Course Start": "play_arrow",
-                "Course End": "stop",
-                "Other": "event"
-            }
-
-            if linked_upcoming:
-                st.markdown("**Upcoming for this course**")
-                for d in linked_upcoming:
-                    event_date = date.fromisoformat(d["date"])
-                    days_until = (event_date - today).days
-                    icon = render_mui_icon(type_icons.get(d["type"], "event"), 18)
-                    st.markdown(
-                        f"{icon} **{d['type']}** — {d['title']} ({event_date.strftime('%B %d, %Y')}, in {days_until} days)",
-                        unsafe_allow_html=True
-                    )
-
-            if linked_past:
-                with st.expander(f"Past course dates ({len(linked_past)})", expanded=False):
-                    for d in linked_past:
-                        event_date = date.fromisoformat(d["date"])
-                        days_ago = (today - event_date).days
-                        icon = render_mui_icon(type_icons.get(d["type"], "event"), 18)
-                        st.markdown(
-                            f"{icon} **{d['type']}** — {d['title']} ({event_date.strftime('%B %d, %Y')}, {days_ago} days ago)",
-                            unsafe_allow_html=True
-                        )
-
-            st.markdown("---")
-        else:
-            st.info("No important dates linked to this course yet. Add one from Overview and choose this course in Related Course.")
         
         st.markdown("---")
         
         # Check if course has lessons
         if course_code in course_lessons:
-            st.markdown("### Course Lessons")
+            st.markdown("### 📖 Course Lessons")
             st.markdown("Explore detailed lessons with visual explanations and key concepts.")
             st.markdown("")
             
             for lesson in course_lessons[course_code]:
-                with st.expander(f"Lesson {lesson['lesson_number']}: {lesson['title']}", expanded=True):
+                with st.expander(f"📚 Lesson {lesson['lesson_number']}: {lesson['title']}", expanded=True):
                     # Parse and render lesson content with Mermaid diagrams
-                    content = convert_emoji_headings_to_visuals(lesson['content'])
+                    content = lesson['content']
                     
                     # Split content by Mermaid diagrams
                     parts = re.split(r'(<div class="mermaid">.*?</div>)', content, flags=re.DOTALL)
@@ -24583,7 +26593,7 @@ elif page == "Learn & Practice":
                     st.markdown("---")
                     
                     # Key Takeaways with visual emphasis
-                    st.markdown("### Key Takeaways")
+                    st.markdown("### ⭐ Key Takeaways")
                     st.markdown('<div class="important-info">', unsafe_allow_html=True)
                     for i, point in enumerate(lesson['key_points'], 1):
                         st.markdown(f"**{i}.** {point}")
@@ -24591,758 +26601,14 @@ elif page == "Learn & Practice":
                     
                     # Visual elements indicator
                     if lesson.get('visual_elements', {}).get('diagrams'):
-                        st.caption("This lesson includes interactive Mermaid diagrams for better visual understanding")
-
-                    if course_code == "FI1BBSF05" and str(lesson.get("lesson_number")) == "1.4":
-                        st.markdown("---")
-                        with st.expander("Activity 1.4.1 - Interactive Data Validation Lab", expanded=False):
-                            st.caption("Add rows in the table below. The script runs only when all validation rules are correct.")
-
-                            item_options_key = f"dv_item_options_{course_code}_{lesson['lesson_number']}"
-                            table_state_key = f"dv_table_data_{course_code}_{lesson['lesson_number']}"
-                            script_key = f"dv_script_{course_code}_{lesson['lesson_number']}"
-                            run_key = f"dv_run_{course_code}_{lesson['lesson_number']}"
-
-                            default_item_options_text = "Pen, Notebook, Eraser, Ruler, Marker"
-                            item_options_text = st.text_input(
-                                "Item Name options (exactly 5 comma-separated values)",
-                                value=st.session_state.get(item_options_key, default_item_options_text),
-                                key=item_options_key
-                            )
-
-                            parsed_item_options = [value.strip() for value in item_options_text.split(",") if value.strip()]
-                            if len(parsed_item_options) != 5:
-                                st.warning("Please provide exactly 5 item names for the Item Name list validation.")
-                                active_item_options = ["Pen", "Notebook", "Eraser", "Ruler", "Marker"]
-                            else:
-                                active_item_options = parsed_item_options
-
-                            status_options = ["In Progress", "Completed", "Cancelled"]
-
-                            if table_state_key not in st.session_state:
-                                st.session_state[table_state_key] = pd.DataFrame({
-                                    "Item Name": [active_item_options[i % len(active_item_options)] for i in range(10)],
-                                    "Quantity": [1, 2, 3, 4, 5, 6, 2, 3, 4, 5],
-                                    "Unit Price": [10.50, 12.00, 8.75, 3.99, 5.40, 14.25, 9.10, 7.80, 6.30, 11.00],
-                                    "Date": pd.to_datetime([
-                                        "2026-01-01", "2026-01-02", "2026-01-03", "2026-01-04", "2026-01-05",
-                                        "2026-01-06", "2026-01-07", "2026-01-08", "2026-01-09", "2026-01-10"
-                                    ]).date,
-                                    "Status": ["In Progress", "Completed", "Cancelled", "In Progress", "Completed", "Cancelled", "In Progress", "Completed", "Cancelled", "In Progress"]
-                                })
-
-                            st.markdown("**Required columns:** Item Name, Quantity, Unit Price, Date, Status")
-
-                            edited_validation_df = st.data_editor(
-                                st.session_state[table_state_key],
-                                num_rows="dynamic",
-                                use_container_width=True,
-                                key=f"dv_editor_{course_code}_{lesson['lesson_number']}",
-                                column_config={
-                                    "Item Name": st.column_config.SelectboxColumn("Item Name", options=active_item_options, required=True),
-                                    "Quantity": st.column_config.NumberColumn("Quantity", min_value=1, step=1, required=True),
-                                    "Unit Price": st.column_config.NumberColumn("Unit Price", min_value=0.01, max_value=1000.00, step=0.01, required=True),
-                                    "Date": st.column_config.DateColumn("Date", format="MM/DD/YYYY", required=True),
-                                    "Status": st.column_config.SelectboxColumn("Status", options=status_options, required=True),
-                                }
-                            )
-                            st.session_state[table_state_key] = edited_validation_df
-
-                            def _validate_activity_141(df_input: pd.DataFrame, item_choices: list[str], status_choices: list[str]):
-                                validation_issues = []
-
-                                required_columns = ["Item Name", "Quantity", "Unit Price", "Date", "Status"]
-                                missing_columns = [column for column in required_columns if column not in df_input.columns]
-                                if missing_columns:
-                                    validation_issues.append({
-                                        "Row": "Global",
-                                        "Issue": f"Missing required columns: {', '.join(missing_columns)}"
-                                    })
-                                    return validation_issues
-
-                                if len(df_input) < 10:
-                                    validation_issues.append({
-                                        "Row": "Global",
-                                        "Issue": "At least 10 rows are required for this activity."
-                                    })
-
-                                for row_idx, row in df_input.reset_index(drop=True).iterrows():
-                                    display_row = row_idx + 1
-
-                                    item_name = str(row.get("Item Name", "")).strip()
-                                    if not item_name:
-                                        validation_issues.append({"Row": display_row, "Issue": "Item Name is required."})
-                                    else:
-                                        if item_name not in item_choices:
-                                            validation_issues.append({"Row": display_row, "Issue": "Item Name must be one of the 5 allowed list values."})
-                                        if len(item_name) < 3 or len(item_name) > 10:
-                                            validation_issues.append({"Row": display_row, "Issue": "Item Name must be between 3 and 10 characters."})
-
-                                    quantity_value = row.get("Quantity")
-                                    if pd.isna(quantity_value):
-                                        validation_issues.append({"Row": display_row, "Issue": "Quantity is required."})
-                                    else:
-                                        quantity_numeric = pd.to_numeric(quantity_value, errors="coerce")
-                                        if pd.isna(quantity_numeric) or float(quantity_numeric) <= 0 or not float(quantity_numeric).is_integer():
-                                            validation_issues.append({"Row": display_row, "Issue": "Quantity must be a positive whole number."})
-
-                                    unit_price_value = row.get("Unit Price")
-                                    if pd.isna(unit_price_value):
-                                        validation_issues.append({"Row": display_row, "Issue": "Unit Price is required."})
-                                    else:
-                                        unit_price_numeric = pd.to_numeric(unit_price_value, errors="coerce")
-                                        if pd.isna(unit_price_numeric) or float(unit_price_numeric) < 0.01 or float(unit_price_numeric) > 1000.00:
-                                            validation_issues.append({"Row": display_row, "Issue": "Unit Price must be between 0.01 and 1000.00."})
-
-                                    date_value = row.get("Date")
-                                    if pd.isna(date_value):
-                                        validation_issues.append({"Row": display_row, "Issue": "Date is required (mm/dd/yyyy)."})
-                                    else:
-                                        parsed_date = pd.to_datetime(date_value, errors="coerce")
-                                        if pd.isna(parsed_date):
-                                            validation_issues.append({"Row": display_row, "Issue": "Date must be a valid date in mm/dd/yyyy format."})
-
-                                    status_value = str(row.get("Status", "")).strip()
-                                    if status_value not in status_choices:
-                                        validation_issues.append({"Row": display_row, "Issue": "Status must be In Progress, Completed, or Cancelled."})
-
-                                return validation_issues
-
-                            issues = _validate_activity_141(edited_validation_df, active_item_options, status_options)
-
-                            if issues:
-                                st.error(f"Validation failed with {len(issues)} issue(s). Fix them before running the script.")
-                                st.dataframe(pd.DataFrame(issues), use_container_width=True, hide_index=True)
-                            else:
-                                st.success("All rows are valid for Activity 1.4.1. You can run the script.")
-
-                                try:
-                                    from io import BytesIO
-                                    from openpyxl import Workbook
-                                    from openpyxl.worksheet.datavalidation import DataValidation
-                                    from openpyxl.styles import PatternFill
-                                    from openpyxl.formatting.rule import CellIsRule, FormulaRule
-
-                                    export_df = edited_validation_df.copy()
-                                    export_df["Date"] = pd.to_datetime(export_df["Date"], errors="coerce").dt.strftime("%m/%d/%Y")
-
-                                    excel_buffer = BytesIO()
-                                    with pd.ExcelWriter(excel_buffer, engine="openpyxl") as writer:
-                                        export_df.to_excel(writer, sheet_name="Activity_1_4_1", index=False)
-                                    excel_buffer.seek(0)
-
-                                    st.download_button(
-                                        "Export validated table to Excel (.xlsx)",
-                                        data=excel_buffer.getvalue(),
-                                        file_name="activity_1_4_1_validated.xlsx",
-                                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                                        icon=":material/download:"
-                                    )
-
-                                    validation_export_df = edited_validation_df.copy()
-                                    validation_export_df["Date"] = pd.to_datetime(validation_export_df["Date"], errors="coerce").dt.date
-
-                                    wb = Workbook()
-                                    ws = wb.active
-                                    ws.title = "Validation_List"
-
-                                    headers = ["Item Name", "Quantity", "Unit Price", "Date", "Status"]
-                                    ws.append(headers)
-                                    for _, row in validation_export_df[headers].iterrows():
-                                        ws.append([row["Item Name"], int(float(row["Quantity"])), float(row["Unit Price"]), row["Date"], row["Status"]])
-
-                                    ws_custom = wb.create_sheet("Validation_Custom")
-                                    ws_custom.append(headers)
-                                    for _, row in validation_export_df[headers].iterrows():
-                                        ws_custom.append([row["Item Name"], int(float(row["Quantity"])), float(row["Unit Price"]), row["Date"], row["Status"]])
-
-                                    lists_ws = wb.create_sheet("_lists")
-                                    for idx, item_name in enumerate(active_item_options, start=1):
-                                        lists_ws.cell(row=idx, column=1, value=item_name)
-                                    for idx, status_name in enumerate(status_options, start=1):
-                                        lists_ws.cell(row=idx, column=2, value=status_name)
-                                    lists_ws.sheet_state = "hidden"
-
-                                    item_list_formula = f'"{",".join(active_item_options)}"'
-                                    status_list_formula = f'"{",".join(status_options)}"'
-
-                                    def apply_standard_validations(sheet):
-                                        item_list_dv = DataValidation(type="list", formula1=item_list_formula, allow_blank=False)
-                                        item_list_dv.errorTitle = "Invalid Item Name"
-                                        item_list_dv.error = "Select an item from the drop-down list."
-
-                                        quantity_dv = DataValidation(type="whole", operator="greaterThan", formula1="0", allow_blank=False)
-                                        quantity_dv.errorTitle = "Invalid Quantity"
-                                        quantity_dv.error = "Quantity must be a positive whole number."
-
-                                        unit_price_dv = DataValidation(type="decimal", operator="between", formula1="0.01", formula2="1000", allow_blank=False)
-                                        unit_price_dv.errorTitle = "Invalid Unit Price"
-                                        unit_price_dv.error = "Unit Price must be between 0.01 and 1000.00."
-
-                                        date_dv = DataValidation(type="date", operator="between", formula1="DATE(1900,1,1)", formula2="DATE(2099,12,31)", allow_blank=False)
-                                        date_dv.errorTitle = "Invalid Date"
-                                        date_dv.error = "Enter a valid date in mm/dd/yyyy format."
-
-                                        status_dv = DataValidation(type="list", formula1=status_list_formula, allow_blank=False)
-                                        status_dv.errorTitle = "Invalid Status"
-                                        status_dv.error = "Status must be In Progress, Completed, or Cancelled."
-
-                                        sheet.add_data_validation(item_list_dv)
-                                        sheet.add_data_validation(quantity_dv)
-                                        sheet.add_data_validation(unit_price_dv)
-                                        sheet.add_data_validation(date_dv)
-                                        sheet.add_data_validation(status_dv)
-
-                                        item_list_dv.add("A2:A1048576")
-                                        quantity_dv.add("B2:B1048576")
-                                        unit_price_dv.add("C2:C1048576")
-                                        date_dv.add("D2:D1048576")
-                                        status_dv.add("E2:E1048576")
-
-                                    apply_standard_validations(ws)
-
-                                    custom_item_dv = DataValidation(
-                                        type="custom",
-                                        formula1="=AND(LEN(A2)>=3,LEN(A2)<=10,COUNTIF(_lists!$A$1:$A$5,A2)=1)",
-                                        allow_blank=False
-                                    )
-                                    custom_item_dv.errorTitle = "Invalid Item Name"
-                                    custom_item_dv.error = "Item Name must be in the list and 3-10 characters long."
-
-                                    quantity_custom_dv = DataValidation(type="whole", operator="greaterThan", formula1="0", allow_blank=False)
-                                    unit_price_custom_dv = DataValidation(type="decimal", operator="between", formula1="0.01", formula2="1000", allow_blank=False)
-                                    date_custom_dv = DataValidation(type="date", operator="between", formula1="DATE(1900,1,1)", formula2="DATE(2099,12,31)", allow_blank=False)
-                                    status_custom_dv = DataValidation(type="list", formula1=status_list_formula, allow_blank=False)
-
-                                    ws_custom.add_data_validation(custom_item_dv)
-                                    ws_custom.add_data_validation(quantity_custom_dv)
-                                    ws_custom.add_data_validation(unit_price_custom_dv)
-                                    ws_custom.add_data_validation(date_custom_dv)
-                                    ws_custom.add_data_validation(status_custom_dv)
-
-                                    custom_item_dv.add("A2:A1048576")
-                                    quantity_custom_dv.add("B2:B1048576")
-                                    unit_price_custom_dv.add("C2:C1048576")
-                                    date_custom_dv.add("D2:D1048576")
-                                    status_custom_dv.add("E2:E1048576")
-
-                                    for sheet in [ws, ws_custom]:
-                                        for row_idx in range(2, sheet.max_row + 1):
-                                            sheet[f"D{row_idx}"].number_format = "mm/dd/yyyy"
-                                            sheet[f"C{row_idx}"].number_format = "0.00"
-
-                                        red_fill = PatternFill(start_color="F8D7DA", end_color="F8D7DA", fill_type="solid")
-                                        yellow_fill = PatternFill(start_color="FFF3CD", end_color="FFF3CD", fill_type="solid")
-                                        green_fill = PatternFill(start_color="D1E7DD", end_color="D1E7DD", fill_type="solid")
-                                        orange_fill = PatternFill(start_color="FFE5B4", end_color="FFE5B4", fill_type="solid")
-                                        blue_fill = PatternFill(start_color="DDEBFF", end_color="DDEBFF", fill_type="solid")
-
-                                        max_row = max(sheet.max_row, 2)
-                                        status_range = f"E2:E{max_row}"
-                                        qty_range = f"B2:B{max_row}"
-                                        unit_price_range = f"C2:C{max_row}"
-                                        date_range = f"D2:D{max_row}"
-
-                                        sheet.conditional_formatting.add(
-                                            status_range,
-                                            FormulaRule(formula=['$E2="Cancelled"'], fill=red_fill)
-                                        )
-                                        sheet.conditional_formatting.add(
-                                            status_range,
-                                            FormulaRule(formula=['$E2="In Progress"'], fill=yellow_fill)
-                                        )
-                                        sheet.conditional_formatting.add(
-                                            status_range,
-                                            FormulaRule(formula=['$E2="Completed"'], fill=green_fill)
-                                        )
-
-                                        sheet.conditional_formatting.add(
-                                            qty_range,
-                                            CellIsRule(operator="lessThanOrEqual", formula=["2"], fill=orange_fill)
-                                        )
-                                        sheet.conditional_formatting.add(
-                                            unit_price_range,
-                                            CellIsRule(operator="greaterThan", formula=["500"], fill=blue_fill)
-                                        )
-                                        sheet.conditional_formatting.add(
-                                            date_range,
-                                            FormulaRule(formula=["$D2<TODAY()-30"], fill=yellow_fill)
-                                        )
-
-                                    validation_buffer = BytesIO()
-                                    wb.save(validation_buffer)
-                                    validation_buffer.seek(0)
-
-                                    st.download_button(
-                                        "Export Excel with validation rules (.xlsx)",
-                                        data=validation_buffer.getvalue(),
-                                        file_name="activity_1_4_1_validation_rules.xlsx",
-                                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                                        icon=":material/checklist:"
-                                    )
-                                    st.caption("Workbook includes two sheets: Validation_List (dropdown-based) and Validation_Custom (custom Item Name length + list rule).")
-                                except Exception as export_error:
-                                    st.warning(f"Excel export is unavailable: {export_error}")
-
-                            default_validation_script = """# df contains your validated Activity 1.4.1 table
-df = df.copy()
-df["Date"] = pd.to_datetime(df["Date"])
-df["Line Total"] = df["Quantity"] * df["Unit Price"]
-
-summary = df.groupby("Status", as_index=False)["Line Total"].sum().sort_values("Line Total", ascending=False)
-print("Rows:", len(df))
-print("Total value:", round(df["Line Total"].sum(), 2))
-
-# Optionally expose a dataframe preview in the UI:
-result_df = summary
-"""
-
-                            script_text = st.text_area(
-                                "Activity script",
-                                value=st.session_state.get(script_key, default_validation_script),
-                                height=200,
-                                key=script_key
-                            )
-
-                            if st.button("Run activity script", type="primary", icon=":material/play_arrow:", key=run_key):
-                                if issues:
-                                    st.warning("Script not executed. Resolve validation issues first.")
-                                else:
-                                    import io
-                                    import contextlib
-
-                                    runtime_scope = {
-                                        "pd": pd,
-                                        "df": edited_validation_df.copy()
-                                    }
-                                    output_buffer = io.StringIO()
-
-                                    try:
-                                        with contextlib.redirect_stdout(output_buffer):
-                                            exec(script_text, {"__builtins__": __builtins__}, runtime_scope)
-
-                                        execution_output = output_buffer.getvalue().strip()
-                                        if execution_output:
-                                            st.markdown("**Script output**")
-                                            st.code(execution_output, language="text")
-
-                                        result_df = runtime_scope.get("result_df")
-                                        if isinstance(result_df, pd.DataFrame):
-                                            st.markdown("**`result_df` preview**")
-                                            st.dataframe(result_df, use_container_width=True)
-                                        elif not execution_output:
-                                            st.info("Script ran successfully. No printed output or `result_df` returned.")
-                                    except Exception as run_error:
-                                        st.error(f"Script error: {run_error}")
-
-                    st.markdown("---")
-                    with st.expander("Lesson PDF Viewer (PDF.js)", expanded=False):
-                        st.caption("Upload a PDF tied to this lesson and view it directly here.")
-
-                        lesson_upload_key = f"lesson_pdf_upload_{course_code}_{lesson['lesson_number']}"
-                        lesson_page_key = f"lesson_pdf_page_{course_code}_{lesson['lesson_number']}"
-                        lesson_zoom_key = f"lesson_pdf_zoom_{course_code}_{lesson['lesson_number']}"
-                        lesson_sample_btn_key = f"lesson_pdf_sample_btn_{course_code}_{lesson['lesson_number']}"
-                        lesson_sample_state_key = f"lesson_pdf_sample_bytes_{course_code}_{lesson['lesson_number']}"
-                        lesson_sample_name_key = f"lesson_pdf_sample_name_{course_code}_{lesson['lesson_number']}"
-
-                        sample_pdf_path = os.path.join(os.path.dirname(__file__), "SPF-0103 Lesson Task solution.pdf")
-                        sample_pdf_available = os.path.exists(sample_pdf_path)
-
-                        if sample_pdf_available:
-                            if st.button("Open sample lesson PDF", key=lesson_sample_btn_key):
-                                try:
-                                    with open(sample_pdf_path, "rb") as sample_file:
-                                        st.session_state[lesson_sample_state_key] = sample_file.read()
-                                        st.session_state[lesson_sample_name_key] = os.path.basename(sample_pdf_path)
-                                    st.success("Sample PDF loaded.")
-                                except Exception as exc:
-                                    st.error(f"Could not load sample PDF: {exc}")
-                            st.caption(f"Sample detected: {os.path.basename(sample_pdf_path)}")
-                        else:
-                            st.caption("No sample repository PDF found for auto-load.")
-
-                        uploaded_lesson_pdf = st.file_uploader(
-                            "Upload lesson PDF",
-                            type=["pdf"],
-                            key=lesson_upload_key
-                        )
-
-                        lesson_pdf_bytes = None
-                        lesson_pdf_name = None
-
-                        if uploaded_lesson_pdf is not None:
-                            uploaded_bytes = uploaded_lesson_pdf.read()
-                            if uploaded_bytes:
-                                lesson_pdf_bytes = uploaded_bytes
-                                lesson_pdf_name = uploaded_lesson_pdf.name
-                            else:
-                                st.warning("The uploaded PDF is empty.")
-                        elif st.session_state.get(lesson_sample_state_key):
-                            lesson_pdf_bytes = st.session_state[lesson_sample_state_key]
-                            lesson_pdf_name = st.session_state.get(lesson_sample_name_key, "sample.pdf")
-
-                        if lesson_pdf_bytes:
-                            st.caption(f"Loaded: {lesson_pdf_name} ({len(lesson_pdf_bytes):,} bytes)")
-
-                            ctrl_col1, ctrl_col2 = st.columns(2)
-                            with ctrl_col1:
-                                lesson_initial_page = st.number_input(
-                                    "Start page",
-                                    min_value=1,
-                                    value=1,
-                                    step=1,
-                                    key=lesson_page_key
-                                )
-                            with ctrl_col2:
-                                lesson_initial_zoom = st.slider(
-                                    "Initial zoom (%)",
-                                    min_value=50,
-                                    max_value=250,
-                                    value=100,
-                                    step=10,
-                                    key=lesson_zoom_key
-                                )
-
-                            lesson_pdf_base64 = base64.b64encode(lesson_pdf_bytes).decode("utf-8")
-                            lesson_viewer_html = f"""
-                            <!doctype html>
-                            <html>
-                            <head>
-                              <meta charset=\"utf-8\" />
-                              <style>
-                                body {{ margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }}
-                                .toolbar {{ display: flex; gap: 8px; align-items: center; padding: 10px; border-bottom: 1px solid #e5e7eb; background: #f8fafc; }}
-                                .toolbar button {{ border: 1px solid #cbd5e1; background: #fff; border-radius: 6px; padding: 6px 10px; cursor: pointer; }}
-                                .meta {{ margin-left: auto; color: #334155; font-size: 13px; }}
-                                #canvas-wrap {{ height: 560px; overflow: auto; background: #f1f5f9; display: flex; justify-content: center; align-items: flex-start; padding: 16px 0; }}
-                                #pdf-canvas {{ border: 1px solid #cbd5e1; box-shadow: 0 2px 10px rgba(0,0,0,0.08); background: #fff; }}
-                                #error {{ color: #b91c1c; padding: 10px; font-size: 13px; }}
-                              </style>
-                            </head>
-                            <body>
-                              <div class=\"toolbar\">
-                                <button id=\"prev\">Prev</button>
-                                <button id=\"next\">Next</button>
-                                <button id=\"zoom-out\">-</button>
-                                <button id=\"zoom-in\">+</button>
-                                <button id=\"reset\">Reset</button>
-                                <div class=\"meta\" id=\"meta\">Loading PDF...</div>
-                              </div>
-                              <div id=\"canvas-wrap\"><canvas id=\"pdf-canvas\"></canvas></div>
-                              <div id=\"error\"></div>
-
-                              <script type=\"module\">
-                                import * as pdfjsLib from "https://cdn.jsdelivr.net/npm/pdfjs-dist@5.4.624/build/pdf.min.mjs";
-                                pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdn.jsdelivr.net/npm/pdfjs-dist@5.4.624/build/pdf.worker.min.mjs";
-
-                                const base64 = "{lesson_pdf_base64}";
-                                const binary = atob(base64);
-                                const bytes = new Uint8Array(binary.length);
-                                for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-
-                                const canvas = document.getElementById("pdf-canvas");
-                                const ctx = canvas.getContext("2d");
-                                const meta = document.getElementById("meta");
-                                const error = document.getElementById("error");
-
-                                let pdfDoc = null;
-                                let currentPage = {int(lesson_initial_page)};
-                                let scale = {float(lesson_initial_zoom) / 100.0};
-                                const baseScale = scale;
-
-                                async function renderPage(pageNum) {{
-                                  if (!pdfDoc) return;
-                                  const page = await pdfDoc.getPage(pageNum);
-                                  const viewport = page.getViewport({{ scale }});
-                                  canvas.width = viewport.width;
-                                  canvas.height = viewport.height;
-                                  await page.render({{ canvasContext: ctx, viewport }}).promise;
-                                  meta.textContent = `Page ${{currentPage}} / ${{pdfDoc.numPages}} • Zoom ${{Math.round(scale * 100)}}%`;
-                                }}
-
-                                async function loadPdf() {{
-                                  try {{
-                                    const loadingTask = pdfjsLib.getDocument({{ data: bytes }});
-                                    pdfDoc = await loadingTask.promise;
-                                    currentPage = Math.max(1, Math.min(currentPage, pdfDoc.numPages));
-                                    await renderPage(currentPage);
-                                  }} catch (e) {{
-                                    error.textContent = `Failed to load PDF: ${{e?.message || e}}`;
-                                  }}
-                                }}
-
-                                document.getElementById("prev").addEventListener("click", async () => {{
-                                  if (!pdfDoc || currentPage <= 1) return;
-                                  currentPage -= 1;
-                                  await renderPage(currentPage);
-                                }});
-
-                                document.getElementById("next").addEventListener("click", async () => {{
-                                  if (!pdfDoc || currentPage >= pdfDoc.numPages) return;
-                                  currentPage += 1;
-                                  await renderPage(currentPage);
-                                }});
-
-                                document.getElementById("zoom-in").addEventListener("click", async () => {{
-                                  scale = Math.min(4, scale + 0.1);
-                                  await renderPage(currentPage);
-                                }});
-
-                                document.getElementById("zoom-out").addEventListener("click", async () => {{
-                                  scale = Math.max(0.3, scale - 0.1);
-                                  await renderPage(currentPage);
-                                }});
-
-                                document.getElementById("reset").addEventListener("click", async () => {{
-                                  scale = baseScale;
-                                  await renderPage(currentPage);
-                                }});
-
-                                loadPdf();
-                              </script>
-                            </body>
-                            </html>
-                            """
-
-                            html(lesson_viewer_html, height=630, width=None, scrolling=False)
-                        else:
-                            st.caption("Upload a lesson PDF or click the sample button to preview it here with PDF.js.")
+                        st.caption("📊 This lesson includes interactive Mermaid diagrams for better visual understanding")
             
             st.markdown("---")
-
-            with st.expander("CSV Table Viewer", expanded=False):
-                st.caption("Upload a CSV file, apply quick filters, and view/download the result.")
-
-                csv_upload = st.file_uploader(
-                    "Upload CSV",
-                    type=["csv"],
-                    key=f"learn_csv_upload_{course_code}"
-                )
-
-                if csv_upload is not None:
-                    delimiter_choice = st.selectbox(
-                        "Delimiter",
-                        options=[",", ";", "\t", "|"],
-                        index=0,
-                        format_func=lambda value: {",": "Comma ( , )", ";": "Semicolon ( ; )", "\t": "Tab", "|": "Pipe ( | )"}[value],
-                        key=f"learn_csv_delimiter_{course_code}"
-                    )
-
-                    try:
-                        csv_dataframe = pd.read_csv(csv_upload, sep=delimiter_choice)
-                    except Exception as csv_error:
-                        st.error(f"Could not read CSV file: {csv_error}")
-                        csv_dataframe = None
-
-                    if csv_dataframe is not None:
-                        st.caption(
-                            f"Rows: {len(csv_dataframe):,} | Columns: {len(csv_dataframe.columns)} | File: {csv_upload.name}"
-                        )
-
-                        reset_key = f"learn_csv_reset_filters_{course_code}"
-                        if st.button("Reset all CSV filters", key=reset_key):
-                            reset_keys = [
-                                f"learn_csv_filter_column_{course_code}",
-                                f"learn_csv_filter_text_{course_code}",
-                                f"learn_csv_sort_column_{course_code}",
-                                f"learn_csv_sort_order_{course_code}",
-                                f"learn_csv_range_column_{course_code}",
-                                f"learn_csv_range_min_{course_code}",
-                                f"learn_csv_range_max_{course_code}",
-                            ]
-                            for session_key in reset_keys:
-                                if session_key in st.session_state:
-                                    del st.session_state[session_key]
-                            st.rerun()
-
-                        working_dataframe = csv_dataframe.copy()
-
-                        if len(working_dataframe.columns) > 0 and len(working_dataframe) > 0:
-                            filter_col1, filter_col2 = st.columns(2)
-                            with filter_col1:
-                                filter_column = st.selectbox(
-                                    "Filter column",
-                                    options=list(working_dataframe.columns),
-                                    key=f"learn_csv_filter_column_{course_code}"
-                                )
-                            with filter_col2:
-                                filter_text = st.text_input(
-                                    "Contains text",
-                                    value="",
-                                    key=f"learn_csv_filter_text_{course_code}"
-                                )
-
-                            if filter_text.strip():
-                                filter_mask = working_dataframe[filter_column].astype(str).str.contains(filter_text, case=False, na=False)
-                                working_dataframe = working_dataframe[filter_mask]
-
-                            numeric_columns = working_dataframe.select_dtypes(include=["number"]).columns.tolist()
-                            if numeric_columns:
-                                st.markdown("**Numeric range filter (optional)**")
-                                range_col1, range_col2, range_col3 = st.columns([2, 1, 1])
-
-                                with range_col1:
-                                    range_column = st.selectbox(
-                                        "Numeric column",
-                                        options=numeric_columns,
-                                        key=f"learn_csv_range_column_{course_code}"
-                                    )
-
-                                numeric_series = pd.to_numeric(working_dataframe[range_column], errors="coerce").dropna()
-                                if not numeric_series.empty:
-                                    range_min = float(numeric_series.min())
-                                    range_max = float(numeric_series.max())
-
-                                    with range_col2:
-                                        range_start = st.number_input(
-                                            "Min",
-                                            value=range_min,
-                                            key=f"learn_csv_range_min_{course_code}"
-                                        )
-                                    with range_col3:
-                                        range_end = st.number_input(
-                                            "Max",
-                                            value=range_max,
-                                            key=f"learn_csv_range_max_{course_code}"
-                                        )
-
-                                    if range_start > range_end:
-                                        st.warning("Min is greater than Max. Swap values to apply range filter.")
-                                    else:
-                                        range_mask = pd.to_numeric(working_dataframe[range_column], errors="coerce").between(range_start, range_end, inclusive="both")
-                                        working_dataframe = working_dataframe[range_mask.fillna(False)]
-                                else:
-                                    st.caption("Selected numeric column has no valid numeric values for range filtering.")
-
-                            sort_col1, sort_col2 = st.columns(2)
-                            with sort_col1:
-                                sort_column = st.selectbox(
-                                    "Sort by",
-                                    options=["(none)"] + list(working_dataframe.columns),
-                                    key=f"learn_csv_sort_column_{course_code}"
-                                )
-                            with sort_col2:
-                                sort_order = st.selectbox(
-                                    "Order",
-                                    options=["Ascending", "Descending"],
-                                    key=f"learn_csv_sort_order_{course_code}"
-                                )
-
-                            if sort_column != "(none)":
-                                working_dataframe = working_dataframe.sort_values(
-                                    by=sort_column,
-                                    ascending=(sort_order == "Ascending")
-                                )
-
-                        st.dataframe(working_dataframe, use_container_width=True)
-
-                        filtered_csv_bytes = working_dataframe.to_csv(index=False).encode("utf-8")
-                        st.download_button(
-                            "Download filtered CSV",
-                            data=filtered_csv_bytes,
-                            file_name=f"{csv_upload.name.rsplit('.', 1)[0]}_filtered.csv",
-                            mime="text/csv",
-                            icon=":material/download:"
-                        )
-
-                        st.markdown("---")
-                        st.markdown("**Run Python script on this CSV**")
-                        st.caption("`df` contains the currently filtered/sorted table. Optionally assign a DataFrame to `result_df` to display it.")
-
-                        csv_script_key = f"learn_csv_script_{course_code}"
-                        csv_run_key = f"learn_csv_run_script_{course_code}"
-
-                        default_script = """# `df` is available (filtered/sorted CSV)
-print(df.head())
-
-# Example transformation:
-# result_df = df.copy()
-# result_df['new_col'] = result_df.iloc[:, 0]
-"""
-
-                        script_text = st.text_area(
-                            "Python script",
-                            value=st.session_state.get(csv_script_key, default_script),
-                            height=180,
-                            key=csv_script_key
-                        )
-
-                        snippet_title_key = f"learn_csv_snippet_title_{course_code}"
-                        default_snippet_title = f"CSV Script - {csv_upload.name.rsplit('.', 1)[0]}"
-                        snippet_title = st.text_input(
-                            "Snippet title",
-                            value=st.session_state.get(snippet_title_key, default_snippet_title),
-                            key=snippet_title_key
-                        )
-
-                        action_col1, action_col2 = st.columns(2)
-                        with action_col1:
-                            save_snippet_key = f"learn_csv_save_script_{course_code}"
-                            snippet_saved_key = f"learn_csv_script_saved_{course_code}"
-                            if st.button("Save script as snippet", icon=":material/save:", key=save_snippet_key):
-                                if not isinstance(st.session_state.get("code_snippets"), dict):
-                                    st.session_state.code_snippets = {}
-
-                                snippet_id = f"csv_script_{int(time.time())}"
-                                st.session_state.code_snippets[snippet_id] = {
-                                    "title": snippet_title.strip() or default_snippet_title,
-                                    "code": script_text,
-                                    "language": "python",
-                                    "category": "Python",
-                                    "description": f"Saved from CSV Table Viewer ({csv_upload.name}) in {course_code}"
-                                }
-                                st.session_state["code_library_search_prefill"] = snippet_title.strip() or default_snippet_title
-                                st.session_state["code_library_category_prefill"] = "Python"
-                                st.session_state["code_library_language_prefill"] = "python"
-                                st.session_state[snippet_saved_key] = True
-                                st.success("Script saved to Code Library.")
-
-                        with action_col2:
-                            if st.button("Run script", type="primary", icon=":material/play_arrow:", key=csv_run_key):
-                                import io
-                                import contextlib
-
-                                runtime_scope = {
-                                    "pd": pd,
-                                    "df": working_dataframe.copy()
-                                }
-                                output_buffer = io.StringIO()
-
-                                try:
-                                    with contextlib.redirect_stdout(output_buffer):
-                                        exec(script_text, {"__builtins__": __builtins__}, runtime_scope)
-
-                                    script_output = output_buffer.getvalue().strip()
-                                    if script_output:
-                                        st.markdown("**Script output**")
-                                        st.code(script_output, language="text")
-
-                                    result_df = runtime_scope.get("result_df")
-                                    if isinstance(result_df, pd.DataFrame):
-                                        st.markdown("**`result_df` preview**")
-                                        st.dataframe(result_df, use_container_width=True)
-                                    elif not script_output:
-                                        st.info("Script completed. No printed output or `result_df` was provided.")
-                                except Exception as script_error:
-                                    st.error(f"Script error: {script_error}")
-
-                        if st.session_state.get(f"learn_csv_script_saved_{course_code}"):
-                            open_library_key = f"learn_csv_open_library_{course_code}"
-                            if st.button("Open in Code Library", icon=":material/open_in_new:", key=open_library_key):
-                                st.session_state["code_library_search_prefill"] = snippet_title.strip() or default_snippet_title
-                                st.session_state["code_library_category_prefill"] = "Python"
-                                st.session_state["code_library_language_prefill"] = "python"
-                                st.session_state["nav_target_page"] = "Code Library"
-                                st.session_state["sidebar_page_select"] = "Code Library"
-                                st.rerun()
-                else:
-                    st.caption("Upload a CSV file to start viewing it in-table.")
         
         col1, col2 = st.columns(2)
         
         with col1:
-            st.markdown("### Knowledge")
+            st.markdown("### 📖 Knowledge")
             st.markdown("*After this course, you will have knowledge of:*")
             for item in course['knowledge']:
                 # Check if topic has training
@@ -25351,19 +26617,19 @@ print(df.head())
                 st.markdown(f"- {item}{training_badge}")
         
         with col2:
-            st.markdown("### Skills")
+            st.markdown("### 🛠️ Skills")
             st.markdown("*After this course, you will be able to:*")
             for item in course['skills']:
                 st.markdown(f"- {item}")
         
         st.markdown("---")
-        st.markdown("### General Competence")
+        st.markdown("### 💡 General Competence")
         st.markdown("*After this course, you will:*")
         for item in course['competence']:
             st.markdown(f"- {item}")
     
     with tab2:
-        mui_subheader("help_center", "Practice Questions")
+        st.subheader("🎯 Practice Questions")
         
         question_type = st.selectbox(
             "Question type:",
@@ -25382,7 +26648,7 @@ print(df.head())
         if 'feedback' not in st.session_state:
             st.session_state.feedback = None
         
-        if st.button("Generate New Question", type="primary", icon=":material/auto_awesome:"):
+        if st.button("Generate New Question", type="primary"):
             with st.spinner("Generating question..."):
                 st.session_state.current_question = generate_practice_question(course, type_map[question_type])
                 st.session_state.show_answer = False
@@ -25414,7 +26680,7 @@ print(df.head())
             col1, col2 = st.columns(2)
             
             with col1:
-                if st.button("Check My Answer", icon=":material/task_alt:"):
+                if st.button("Check My Answer"):
                     if user_answer.strip():
                         with st.spinner("Evaluating..."):
                             st.session_state.feedback = evaluate_answer(question_text, answer_text, user_answer)
@@ -25422,7 +26688,7 @@ print(df.head())
                         st.warning("Please enter an answer first.")
             
             with col2:
-                if st.button("Show Answer", icon=":material/visibility:"):
+                if st.button("Show Answer"):
                     st.session_state.show_answer = True
             
             if st.session_state.feedback:
@@ -26189,7 +27455,7 @@ elif page == "Study Notes":
     menu_col1, menu_col2, menu_col3, menu_col4, menu_col5 = st.columns([1, 1, 1, 1, 1])
     with menu_col1:
         st.markdown(render_mui_icon('note_add', 18), unsafe_allow_html=True)
-        if st.button("New", key="word_new", icon=":material/note_add:", use_container_width=True, help="Create new note"):
+        if st.button("New", key="word_new", use_container_width=True, help="Create new note"):
             st.session_state.current_note_content = ""
             st.session_state.pop('editing_note_idx', None)
             st.session_state.pop('current_note_title', None)
@@ -26202,19 +27468,19 @@ elif page == "Study Notes":
             st.rerun()
     with menu_col2:
         st.markdown(render_mui_icon('save', 18), unsafe_allow_html=True)
-        if st.button("Save", key="word_save_top", icon=":material/save:", use_container_width=True, help="Save note"):
+        if st.button("Save", key="word_save_top", use_container_width=True, help="Save note"):
             st.session_state.trigger_save = True
     with menu_col3:
         st.markdown(render_mui_icon('download', 18), unsafe_allow_html=True)
-        if st.button("Export", key="word_export", icon=":material/download:", use_container_width=True, help="Export notes"):
+        if st.button("Export", key="word_export", use_container_width=True, help="Export notes"):
             st.session_state.show_export = True
     with menu_col4:
         st.markdown(render_mui_icon('smart_toy', 18), unsafe_allow_html=True)
-        if st.button("AI Help", key="word_ai", icon=":material/smart_toy:", use_container_width=True, help="AI Assistant"):
+        if st.button("AI Help", key="word_ai", use_container_width=True, help="AI Assistant"):
             st.session_state.show_ai_panel = not st.session_state.get('show_ai_panel', False)
     with menu_col5:
         st.markdown(render_mui_icon('analytics', 18), unsafe_allow_html=True)
-        if st.button("Stats", key="word_stats", icon=":material/analytics:", use_container_width=True, help="Statistics"):
+        if st.button("Stats", key="word_stats", use_container_width=True, help="Statistics"):
             st.session_state.show_stats = not st.session_state.get('show_stats', False)
     
     st.markdown("---")
@@ -26291,6 +27557,59 @@ elif page == "Study Notes":
                     st.rerun()
     
     with main_col:
+        # ── Progression Plan reminder (Study Notes) ───────────────────────────────
+        _sn_course_obj = next((c for c in courses_data if c['code'] == selected_course_code), None)
+        _sn_course_name = _sn_course_obj['name'] if _sn_course_obj else ''
+        _sn_pp_map = {
+            'Data Analysis Fundamentals':  ('DAF', '2025-11-03', '2025-11-09'),
+            'Spreadsheet Fundamentals':    ('SPF', '2025-11-24', '2025-11-30'),
+            'Data Driven Decision-Making': ('DDM', '2026-01-05', '2026-01-11'),
+            'Statistical Tools':           ('STT', '2026-01-26', '2026-02-01'),
+            'Semester Project 1':          ('SP1', '2026-02-23', '2026-03-01'),
+            'Evaluation of Outcomes':      ('EVO', '2026-04-27', '2026-05-03'),
+            'Data Visualisation':          ('DVS', '2026-06-01', '2026-06-07'),
+            'Analysis Reporting':          ('ARP', '2026-08-24', '2026-08-30'),
+        }
+        if _sn_course_name in _sn_pp_map:
+            from datetime import date as _sn_date, datetime as _sn_dt
+            _sn_code, _sn_start_s, _sn_dl_s = _sn_pp_map[_sn_course_name]
+            _sn_today = _sn_date.today()
+            _sn_start = _sn_dt.strptime(_sn_start_s, '%Y-%m-%d').date()
+            _sn_dl    = _sn_dt.strptime(_sn_dl_s,    '%Y-%m-%d').date()
+            _sn_days  = (_sn_dl - _sn_today).days
+            if _sn_days < 0:
+                _sn_ic, _sn_col, _sn_txt = '✅', '#2ecc71', f'Submitted {abs(_sn_days)} days ago'
+                _sn_bg = '#0d2416'
+            elif _sn_days == 0:
+                _sn_ic, _sn_col, _sn_txt = '🔥', '#e74c3c', 'DUE TODAY — 23:59!'
+                _sn_bg = '#3d0000'
+            elif _sn_days <= 3:
+                _sn_ic, _sn_col, _sn_txt = '🔴', '#e74c3c', f'{_sn_days} day{"s" if _sn_days != 1 else ""} left!'
+                _sn_bg = '#3d0000'
+            elif _sn_days <= 14:
+                _sn_ic, _sn_col, _sn_txt = '🟡', '#f39c12', f'{_sn_days} days left'
+                _sn_bg = '#2d2200'
+            else:
+                _sn_ic, _sn_col, _sn_txt = '🟢', '#3498db', f'in {_sn_days} days'
+                _sn_bg = '#0d1e2d'
+            st.markdown(f"""
+<div style="background:{_sn_bg}; border-left:5px solid {_sn_col}; border-radius:8px;
+            padding:8px 14px; margin:0 0 10px 0; display:flex; align-items:center; gap:12px;">
+  <div style="font-size:20px;">{_sn_ic}</div>
+  <div style="flex:1;">
+    <span style="font-weight:700; color:#f0f0f0; font-size:13px;">📋 {_sn_code} Assessment Reminder</span><br>
+    <span style="font-size:11px; color:#bbb;">
+      Week starts <b style="color:#ddd;">{_sn_start.strftime('%a %d %b')}</b>
+      &nbsp;·&nbsp; Deadline <b style="color:#ddd;">{_sn_dl.strftime('%a %d %b %Y')} @ 23:59</b>
+    </span>
+  </div>
+  <div style="text-align:right; white-space:nowrap;">
+    <span style="font-size:14px; font-weight:700; color:{_sn_col};">{_sn_txt}</span>
+  </div>
+</div>
+""", unsafe_allow_html=True)
+        # ─────────────────────────────────────────────────────────────────────
+
         # Note properties
         prop_col1, prop_col2, prop_col3, prop_col4 = st.columns(4)
         with prop_col1:
@@ -26415,7 +27734,7 @@ elif page == "Study Notes":
         save_col1, save_col2, save_col3 = st.columns([1, 1, 2])
         with save_col1:
             st.markdown(render_mui_icon('save', 18), unsafe_allow_html=True)
-            if st.button("Save Note", type="primary", icon=":material/save:", key="word_save_main", use_container_width=True) or st.session_state.get('trigger_save'):
+            if st.button("Save Note", type="primary", key="word_save_main", use_container_width=True) or st.session_state.get('trigger_save'):
                 st.session_state.pop('trigger_save', None)
                 if note_title and st.session_state.get('current_note_content', ''):
                     tags_list = [t.strip() for t in note_tags.split(',') if t.strip()] if note_tags else []
@@ -26442,7 +27761,7 @@ elif page == "Study Notes":
                             })
                         note_data['version_history'] = history[-10:]
                         st.session_state.study_notes[selected_course_code][editing_idx] = note_data
-                        st.success("Note updated!")
+                        st.success("✅ Note updated!")
                     else:
                         st.session_state.study_notes[selected_course_code].append(note_data)
                         st.session_state.current_note_content = ""
@@ -26453,7 +27772,7 @@ elif page == "Study Notes":
                         st.session_state.pop('current_note_outcome', None)
                         st.session_state.pop('last_applied_template', None)
                         st.session_state.quill_key_counter = st.session_state.get('quill_key_counter', 0) + 1
-                        st.success("New note created! Editor cleared for next note.")
+                        st.success("✅ New note created! Editor cleared for next note.")
                     
                     st.rerun()
                 else:
@@ -26462,14 +27781,14 @@ elif page == "Study Notes":
         with save_col2:
             if st.session_state.get('editing_note_idx') is not None:
                 st.markdown(render_mui_icon('delete', 18), unsafe_allow_html=True)
-                if st.button("Delete", key="word_delete", icon=":material/delete:", use_container_width=True):
+                if st.button("Delete", key="word_delete", use_container_width=True):
                     idx = st.session_state.editing_note_idx
                     if idx < len(course_notes):
                         st.session_state.study_notes[selected_course_code].pop(idx)
                         st.session_state.current_note_content = ""
                         st.session_state.pop('editing_note_idx', None)
                         st.session_state.pop('current_note_title', None)
-                        st.success("Deleted!")
+                        st.success("✅ Deleted!")
                         st.rerun()
     
     if st.session_state.get('show_ai_panel'):
@@ -26516,7 +27835,7 @@ elif page == "Study Notes":
             action_col1, action_col2, action_col3, action_col4 = st.columns(4)
             
             with action_col1:
-                st.markdown("**Content**")
+                st.markdown("**📝 Content**")
                 if st.button("Summarize", key="ai_summarize", use_container_width=True):
                     st.session_state.ai_pending_action = "summarize"
                 if st.button("Expand", key="ai_expand", use_container_width=True):
@@ -26527,7 +27846,7 @@ elif page == "Study Notes":
                     st.session_state.ai_pending_action = "grammar"
             
             with action_col2:
-                st.markdown("**Enhance**")
+                st.markdown("**🎯 Enhance**")
                 if st.button("Add Examples", key="ai_examples", use_container_width=True):
                     st.session_state.ai_pending_action = "examples"
                 if st.button("Create Outline", key="ai_outline", use_container_width=True):
@@ -26538,7 +27857,7 @@ elif page == "Study Notes":
                     st.session_state.ai_pending_action = "context"
             
             with action_col3:
-                st.markdown("**Study Tools**")
+                st.markdown("**📚 Study Tools**")
                 if st.button("Study Questions", key="ai_questions", use_container_width=True):
                     st.session_state.ai_pending_action = "questions"
                 if st.button("Flashcards", key="ai_flashcards", use_container_width=True):
@@ -26638,7 +27957,7 @@ Guidelines:
             
             include_course_context = st.checkbox("Include course context in generation", value=True, key="ai_include_course")
             
-            if st.button("Generate", type="primary", icon=":material/auto_awesome:", key="ai_generate", use_container_width=True):
+            if st.button("Generate", type="primary", key="ai_generate", use_container_width=True):
                 if gen_topic:
                     context_to_use = full_context if include_course_context else ""
                     
@@ -26691,7 +28010,7 @@ Be practical and focused on real-world data analysis. {full_context if include_c
                 "Assess Exam Readiness"
             ], key="ai_analyze_type")
             
-            if st.button("Analyze", type="primary", icon=":material/analytics:", key="ai_analyze", use_container_width=True):
+            if st.button("Analyze", type="primary", key="ai_analyze", use_container_width=True):
                 if content:
                     analyze_prompts = {
                         "Check Completeness": f"Analyze this study note and check if it's complete. Identify what might be missing (definitions, examples, applications, etc.). {full_context}\n\nContent:\n{content}",
@@ -26733,7 +28052,7 @@ Be specific and actionable in your recommendations. {full_context}"""
             include_content = st.checkbox("Include current note content", value=True, key="ai_include_content")
             include_course_info = st.checkbox("Include course context", value=True, key="ai_include_course_info")
             
-            if st.button("Send to AI", type="primary", icon=":material/send:", key="ai_custom_send", use_container_width=True):
+            if st.button("Send to AI", type="primary", key="ai_custom_send", use_container_width=True):
                 if custom_prompt:
                     full_prompt = custom_prompt
                     if include_content and content:
@@ -26780,14 +28099,14 @@ Focus on data analysis concepts, tools, and real-world applications."""
         result_col1, result_col2, result_col3, result_col4 = st.columns(4)
         
         with result_col1:
-            if st.button("Replace Content", key="ai_replace", use_container_width=True, type="primary", icon=":material/publish:"):
+            if st.button("📥 Replace Content", key="ai_replace", use_container_width=True, type="primary"):
                 st.session_state.current_note_content = ai_result_content
                 st.session_state.quill_key_counter = st.session_state.get('quill_key_counter', 0) + 1
                 st.session_state.pop('ai_result', None)
                 st.rerun()
         
         with result_col2:
-            if st.button("Append to Note", key="ai_append", icon=":material/note_add:", use_container_width=True):
+            if st.button("➕ Append to Note", key="ai_append", use_container_width=True):
                 current = st.session_state.get('current_note_content', '')
                 separator = "<hr>" if current else ""
                 st.session_state.current_note_content = current + f"{separator}<h3>AI Generated Content</h3>{ai_result_content}"
@@ -26796,12 +28115,12 @@ Focus on data analysis concepts, tools, and real-world applications."""
                 st.rerun()
         
         with result_col3:
-            if st.button("View HTML", key="ai_view_html", icon=":material/code:", use_container_width=True):
+            if st.button("📋 View HTML", key="ai_view_html", use_container_width=True):
                 st.session_state.show_raw_html = not st.session_state.get('show_raw_html', False)
                 st.rerun()
         
         with result_col4:
-            if st.button("Dismiss", key="ai_dismiss", icon=":material/close:", use_container_width=True):
+            if st.button("❌ Dismiss", key="ai_dismiss", use_container_width=True):
                 st.session_state.pop('ai_result', None)
                 st.session_state.pop('show_raw_html', None)
                 st.rerun()
@@ -26811,7 +28130,7 @@ Focus on data analysis concepts, tools, and real-world applications."""
             st.markdown("---")
             st.markdown("**Raw HTML Code:**")
             st.code(ai_result_content, language='html')
-            st.info("Copy this HTML code and paste it into your note editor if needed.")
+            st.info("💡 Copy this HTML code and paste it into your note editor if needed.")
     
     if st.session_state.get('show_stats'):
         st.markdown("---")
@@ -26866,8 +28185,7 @@ Focus on data analysis concepts, tools, and real-world applications."""
                     "Download JSON",
                     data=export_json,
                     file_name=f"notes_{selected_course_code}_{datetime.now().strftime('%Y%m%d')}.json",
-                    mime="application/json",
-                    icon=":material/download:"
+                    mime="application/json"
                 )
             else:
                 md_content = f"# Study Notes - {selected_course_code}\n\n"
@@ -26880,8 +28198,7 @@ Focus on data analysis concepts, tools, and real-world applications."""
                     "Download Markdown",
                     data=md_content,
                     file_name=f"notes_{selected_course_code}_{datetime.now().strftime('%Y%m%d')}.md",
-                    mime="text/markdown",
-                    icon=":material/download:"
+                    mime="text/markdown"
                 )
         else:
             st.info("No notes to export.")
@@ -26892,7 +28209,7 @@ Focus on data analysis concepts, tools, and real-world applications."""
     char_count = len(st.session_state.get('current_note_content', ''))
     st.markdown(f"{render_mui_icon('description', 16)} {word_count} words | {char_count} characters | Course: {selected_course_code}", unsafe_allow_html=True)
 elif page == "Flashcards":
-    mui_title("style", "Flashcards")
+    st.title("🎴 Flashcards")
     st.markdown("*Learn with spaced repetition*")
     st.markdown("---")
     
@@ -26900,10 +28217,10 @@ elif page == "Flashcards":
     if 'flashcard_counter' not in st.session_state:
         st.session_state.flashcard_counter = 0
     
-    tab1, tab2, tab3 = st.tabs(["Study", "Create Cards", "Statistics"])
+    tab1, tab2, tab3 = st.tabs(["📚 Study", "➕ Create Cards", "📊 Statistics"])
     
     with tab1:
-        mui_subheader("school", "Study Mode")
+        st.subheader("Study Mode")
         
         # Get cards that need review
         now = datetime.now()
@@ -26921,7 +28238,7 @@ elif page == "Flashcards":
                 cards_to_review.append((card_id, card))
         
         if not cards_to_review:
-            st.info("No cards need review right now. Create some cards or check back later.")
+            st.info("🎉 No cards need review right now! Create some cards or check back later.")
         else:
             # Filter by course
             course_filter = st.selectbox(
@@ -27009,22 +28326,22 @@ elif page == "Flashcards":
                         st.rerun()
                     
                     with col_a:
-                        st.button("Again", on_click=lambda: update_card_difficulty("Again"), use_container_width=True)
+                        st.button("❌ Again", on_click=lambda: update_card_difficulty("Again"), use_container_width=True)
                     with col_b:
-                        st.button("Hard", on_click=lambda: update_card_difficulty("Hard"), use_container_width=True)
+                        st.button("😓 Hard", on_click=lambda: update_card_difficulty("Hard"), use_container_width=True)
                     with col_c:
-                        st.button("Good", on_click=lambda: update_card_difficulty("Good"), use_container_width=True, type="primary", icon=":material/thumb_up:")
+                        st.button("✅ Good", on_click=lambda: update_card_difficulty("Good"), use_container_width=True, type="primary")
                     with col_d:
-                        st.button("Easy", on_click=lambda: update_card_difficulty("Easy"), use_container_width=True)
+                        st.button("😊 Easy", on_click=lambda: update_card_difficulty("Easy"), use_container_width=True)
                 else:
-                    if st.button("Show Answer", type="primary", icon=":material/visibility:", use_container_width=True):
+                    if st.button("👁️ Show Answer", type="primary", use_container_width=True):
                         st.session_state[f"show_answer_{card_id}"] = True
                         st.rerun()
             else:
                 st.info("No cards to review for this course.")
     
     with tab2:
-        mui_subheader("add_box", "Create New Flashcard")
+        st.subheader("Create New Flashcard")
         
         col1, col2 = st.columns(2)
         with col1:
@@ -27038,7 +28355,7 @@ elif page == "Flashcards":
             card_back = st.text_area("Back:", height=150, placeholder="Answer or definition...")
             card_tags = st.text_input("Tags (optional):", placeholder="comma-separated")
         
-        if st.button("Create Card", type="primary", icon=":material/add_card:"):
+        if st.button("➕ Create Card", type="primary"):
             if card_front and card_back:
                 card_id = f"card_{st.session_state.flashcard_counter}"
                 st.session_state.flashcard_counter += 1
@@ -27063,7 +28380,7 @@ elif page == "Flashcards":
         
         # Show existing cards
         st.markdown("---")
-        mui_subheader("view_carousel", "Your Cards")
+        st.subheader("Your Cards")
         
         if st.session_state.flashcards:
             course_filter_create = st.selectbox(
@@ -27077,14 +28394,14 @@ elif page == "Flashcards":
                 filtered_cards = {k: v for k, v in filtered_cards.items() if v.get('course') == course_filter_create}
             
             for card_id, card in filtered_cards.items():
-                with st.expander(f"Card: {card.get('front', 'No front')[:50]}..."):
+                with st.expander(f"📴 {card.get('front', 'No front')[:50]}..."):
                     col_a, col_b = st.columns(2)
                     with col_a:
                         st.markdown(f"**Front:** {card.get('front')}")
                     with col_b:
                         st.markdown(f"**Back:** {card.get('back')}")
                     st.caption(f"Course: {card.get('course')} | Next review: {card.get('next_review', 'Not set')}")
-                    if st.button(f"Delete", key=f"delete_card_{card_id}"):
+                    if st.button(f"🗑️ Delete", key=f"delete_card_{card_id}"):
                         del st.session_state.flashcards[card_id]
                         st.session_state.flashcard_stats['total_cards'] = len(st.session_state.flashcards)
                         st.rerun()
@@ -27092,7 +28409,7 @@ elif page == "Flashcards":
             st.info("No cards created yet.")
     
     with tab3:
-        mui_subheader("analytics", "Statistics")
+        st.subheader("Statistics")
         
         stats = st.session_state.flashcard_stats
         total = stats.get('total_cards', 0)
@@ -27124,12 +28441,12 @@ elif page == "Flashcards":
                     st.markdown(f"- **{course}:** {count} cards")
 
 elif page == "Exam Simulator":
-    mui_title("fact_check", "Exam Simulator")
+    st.title("📋 Exam Simulator")
     st.markdown("*Practice for your exams with timed simulations*")
     st.markdown("---")
     
     if not st.session_state.exam_mode:
-        mui_subheader("settings", "Configure Your Exam")
+        st.subheader("Configure Your Exam")
         
         col1, col2 = st.columns(2)
         with col1:
@@ -27147,7 +28464,7 @@ elif page == "Exam Simulator":
                 default=["General", "Knowledge-based"]
             )
         
-        if st.button("Start Exam", type="primary", icon=":material/play_arrow:"):
+        if st.button("🚀 Start Exam", type="primary"):
             # Generate exam questions
             selected_course = next(c for c in courses_data if c['code'] == exam_course)
             exam_questions_list = []
@@ -27191,11 +28508,11 @@ elif page == "Exam Simulator":
         
         # Timer display
         if remaining_time > 0:
-            st.warning(f"Time Remaining: {remaining_minutes:02d}:{remaining_seconds:02d}")
+            st.warning(f"⏱️ Time Remaining: {remaining_minutes:02d}:{remaining_seconds:02d}")
             progress = elapsed_time / st.session_state.exam_duration
             st.progress(progress)
         else:
-            st.error("Time's up! Your exam will be submitted automatically.")
+            st.error("⏰ Time's up! Your exam will be submitted automatically.")
             if 'exam_submitted' not in st.session_state:
                 st.session_state.exam_submitted = True
                 st.rerun()
@@ -27242,13 +28559,13 @@ elif page == "Exam Simulator":
             # Navigation
             col_nav1, col_nav2, col_nav3 = st.columns(3)
             with col_nav1:
-                if st.button("Previous", icon=":material/arrow_back:", disabled=current_idx == 0):
+                if st.button("⬅️ Previous", disabled=current_idx == 0):
                     st.session_state.current_question_idx = max(0, current_idx - 1)
                     st.rerun()
             with col_nav2:
                 st.markdown(f"**{current_idx + 1}/{len(st.session_state.exam_questions)}**")
             with col_nav3:
-                if st.button("Next", icon=":material/arrow_forward:", disabled=current_idx == len(st.session_state.exam_questions) - 1):
+                if st.button("➡️ Next", disabled=current_idx == len(st.session_state.exam_questions) - 1):
                     st.session_state.current_question_idx = min(len(st.session_state.exam_questions) - 1, current_idx + 1)
                     st.rerun()
         
@@ -27281,11 +28598,11 @@ elif page == "Exam Simulator":
         # Submit exam
         col_sub1, col_sub2 = st.columns([1, 1])
         with col_sub1:
-            if st.button("Submit Exam", type="primary", icon=":material/send:"):
+            if st.button("📤 Submit Exam", type="primary"):
                 st.session_state.exam_submitted = True
                 st.rerun()
         with col_sub2:
-            if st.button("Cancel Exam", icon=":material/cancel:"):
+            if st.button("❌ Cancel Exam"):
                 if st.checkbox("Are you sure? This will discard your progress."):
                     st.session_state.exam_mode = False
                     st.session_state.exam_questions = []
@@ -27301,7 +28618,7 @@ elif page == "Exam Simulator":
     # Show results if exam submitted
     if st.session_state.get('exam_submitted', False) and st.session_state.exam_mode:
         st.markdown("---")
-        mui_title("assessment", "Exam Results")
+        st.title("📊 Exam Results")
         
         # Evaluate answers
         results = []
@@ -27344,14 +28661,14 @@ elif page == "Exam Simulator":
         st.metric("Your Score", f"{total_score:.1f}/{len(st.session_state.exam_questions)} ({percentage:.1f}%)")
         
         if percentage >= 80:
-            st.success("Excellent work!")
+            st.success("🎉 Excellent work!")
         elif percentage >= 60:
-            st.info("Good job!")
+            st.info("👍 Good job!")
         else:
-            st.warning("Keep studying!")
+            st.warning("📚 Keep studying!")
         
         st.markdown("---")
-        mui_subheader("feedback", "Detailed Feedback")
+        st.subheader("Detailed Feedback")
         
         for idx, result in enumerate(results):
             with st.expander(f"Question {idx + 1} - Score: {result['score']}/1"):
@@ -27360,7 +28677,7 @@ elif page == "Exam Simulator":
                 st.markdown(f"**Correct Answer:** {result['correct_answer']}")
                 st.markdown(f"**Feedback:** {result['feedback']}")
         
-        if st.button("Take Another Exam"):
+        if st.button("🔄 Take Another Exam"):
             st.session_state.exam_mode = False
             st.session_state.exam_submitted = False
             st.session_state.exam_questions = []
@@ -27369,7 +28686,7 @@ elif page == "Exam Simulator":
             st.rerun()
 
 elif page == "Code Library":
-    mui_title("terminal", "Code Library")
+    st.title("💻 Code Library")
     st.markdown("*Useful code snippets and examples*")
     st.markdown("---")
     
@@ -27668,57 +28985,6 @@ print(f\"z={z_score:.2f}, p-value={p_val:.4f}\")""",
                 "language": "python",
                 "category": "Statistics",
                 "description": "Lightweight two-proportion z-test without extra deps"
-            },
-            "excel_data_validation_activity_141": {
-                "title": "Excel Activity 1.4.1 - Data Validation Dataset Script",
-                "code": """import pandas as pd
-
-# Activity 1.4.1 dataset template
-item_names = ["Pen", "Notebook", "Eraser", "Ruler", "Marker"]
-status_options = ["In Progress", "Completed", "Cancelled"]
-
-df = pd.DataFrame({
-    "Item Name": ["Pen", "Notebook", "Eraser", "Ruler", "Marker", "Pen", "Notebook", "Eraser", "Ruler", "Marker"],
-    "Quantity": [5, 3, 8, 2, 6, 4, 1, 7, 9, 2],
-    "Unit Price": [1.5, 3.2, 0.99, 2.75, 4.6, 1.5, 3.2, 0.99, 2.75, 4.6],
-    "Date": ["01/10/2026", "01/11/2026", "01/12/2026", "01/13/2026", "01/14/2026", "01/15/2026", "01/16/2026", "01/17/2026", "01/18/2026", "01/19/2026"],
-    "Status": ["In Progress", "Completed", "Cancelled", "In Progress", "Completed", "Cancelled", "In Progress", "Completed", "Cancelled", "In Progress"]
-})
-
-# Validation checks
-issues = []
-for idx, row in df.iterrows():
-    row_no = idx + 1
-    if row["Item Name"] not in item_names:
-        issues.append((row_no, "Item Name not in list"))
-    if len(str(row["Item Name"])) < 3 or len(str(row["Item Name"])) > 10:
-        issues.append((row_no, "Item Name length not in 3..10"))
-    if not float(row["Quantity"]).is_integer() or row["Quantity"] <= 0:
-        issues.append((row_no, "Quantity must be positive whole number"))
-    if row["Unit Price"] < 0.01 or row["Unit Price"] > 1000.00:
-        issues.append((row_no, "Unit Price must be in 0.01..1000.00"))
-    parsed_date = pd.to_datetime(row["Date"], format="%m/%d/%Y", errors="coerce")
-    if pd.isna(parsed_date):
-        issues.append((row_no, "Date must match mm/dd/yyyy"))
-    if row["Status"] not in status_options:
-        issues.append((row_no, "Status must be In Progress/Completed/Cancelled"))
-
-if issues:
-    print("Validation issues found:")
-    for issue in issues:
-        print(issue)
-else:
-    print("All rows valid for Activity 1.4.1")
-    df["Date"] = pd.to_datetime(df["Date"], format="%m/%d/%Y")
-    df["Line Total"] = df["Quantity"] * df["Unit Price"]
-    print(df.head())
-
-    # Save for Excel testing
-    df.to_csv("activity_141_data.csv", index=False)
-    print("Saved: activity_141_data.csv")""",
-                "language": "python",
-                "category": "Excel",
-                "description": "Creates and validates Activity 1.4.1 table data for Excel Data Validation practice"
             }
         }
         st.session_state.code_snippets = default_snippets
@@ -27731,41 +28997,18 @@ else:
     languages_available = sorted(
         set(s.get('language', 'python') for s in st.session_state.code_snippets.values())
     )
-
-    if st.session_state.get("code_library_search_prefill"):
-        st.session_state["code_library_search_input"] = st.session_state["code_library_search_prefill"]
-        st.session_state.pop("code_library_search_prefill", None)
-
-    category_options = ["All"] + categories_available
-    if st.session_state.get("code_library_category_prefill"):
-        preferred_category = st.session_state["code_library_category_prefill"]
-        st.session_state["code_library_category_filter"] = preferred_category if preferred_category in category_options else "All"
-        st.session_state.pop("code_library_category_prefill", None)
-
-    language_options = ["All"] + languages_available
-    if st.session_state.get("code_library_language_prefill"):
-        preferred_language = st.session_state["code_library_language_prefill"]
-        st.session_state["code_library_language_filter"] = preferred_language if preferred_language in language_options else "All"
-        st.session_state.pop("code_library_language_prefill", None)
-
     col_search, col_filter, col_lang = st.columns([2, 1, 1])
     with col_search:
-        search_query = st.text_input(
-            "Search snippets:",
-            placeholder="Search by title, description, or code...",
-            key="code_library_search_input"
-        )
+        search_query = st.text_input("🔍 Search snippets:", placeholder="Search by title, description, or code...")
     with col_filter:
         category_filter = st.selectbox(
             "Category:",
-            category_options,
-            key="code_library_category_filter"
+            ["All"] + categories_available
         )
     with col_lang:
         language_filter = st.selectbox(
             "Language:",
-            language_options,
-            key="code_library_language_filter"
+            ["All"] + languages_available
         )
     
     col_meta1, col_meta2 = st.columns([1, 1])
@@ -27811,11 +29054,10 @@ else:
                 # Copy button (using download button as workaround)
                 code_text = snippet.get('code', '')
                 st.download_button(
-                    "Copy Code",
+                    "📋 Copy Code",
                     data=code_text,
                     file_name=f"{snippet.get('title', 'code')}.txt",
-                    mime="text/plain",
-                    icon=":material/content_copy:"
+                    mime="text/plain"
                 )
                 
                 # Favorite toggle
@@ -27827,23 +29069,22 @@ else:
                     favorites.discard(snippet_id)
                 st.session_state.code_snippet_favorites = list(favorites)
                 
-                if st.button(f"Delete", key=f"delete_snippet_{snippet_id}"):
+                if st.button(f"🗑️ Delete", key=f"delete_snippet_{snippet_id}"):
                     del st.session_state.code_snippets[snippet_id]
                     st.rerun()
     else:
         st.info("No snippets found. Create one below!")
     
     st.markdown("---")
-    mui_subheader("folder", "Import / Export")
+    st.subheader("📁 Import / Export")
     export_payload = json.dumps(st.session_state.code_snippets, indent=2)
     col_export, col_import = st.columns(2)
     with col_export:
         st.download_button(
-            "Download Library (.json)",
+            "⬇️ Download library (.json)",
             data=export_payload,
             file_name="code_snippets.json",
-            mime="application/json",
-            icon=":material/download:"
+            mime="application/json"
         )
     with col_import:
         uploaded = st.file_uploader("Upload snippets JSON", type=["json"])
@@ -27860,7 +29101,7 @@ else:
                 st.error(f"Could not import snippets: {exc}")
     
     st.markdown("---")
-    st.subheader("Add Custom Snippet")
+    st.subheader("➕ Add Custom Snippet")
     
     col1, col2 = st.columns(2)
     with col1:
@@ -27879,7 +29120,7 @@ else:
     
     new_code = st.text_area("Code:", height=200, placeholder="Paste your code here...")
     
-    if st.button("Add Snippet", type="primary", icon=":material/add:"):
+    if st.button("➕ Add Snippet", type="primary"):
         if new_title and new_code:
             snippet_id = f"custom_{int(time.time())}"
             st.session_state.code_snippets[snippet_id] = {
@@ -27895,7 +29136,7 @@ else:
             st.warning("Please fill in title and code.")
 
 elif page == "Formula Reference":
-    mui_title("functions", "Formula Reference")
+    st.title("🔢 Formula Reference")
     st.markdown("*Quick reference for statistical formulas*")
     st.markdown("---")
     
@@ -27906,7 +29147,7 @@ elif page == "Formula Reference":
     )
     
     # Search
-    search_query = st.text_input("Search formulas:", placeholder="Search by name or description...")
+    search_query = st.text_input("🔍 Search formulas:", placeholder="Search by name or description...")
     
     # Formula database
     formulas = {
@@ -28065,7 +29306,7 @@ elif page == "Formula Reference":
         st.info("No formulas found. Try a different search or category.")
 
 elif page == "Study Timer":
-    mui_title("timer", "Study Timer")
+    st.title("⏱️ Study Timer")
     st.markdown("*Track your study time with Pomodoro technique*")
     st.markdown("---")
     
@@ -28105,7 +29346,7 @@ elif page == "Study Timer":
             col_btn1, col_btn2, col_btn3 = st.columns(3)
             
             with col_btn1:
-                if st.button("Pause", icon=":material/pause:", use_container_width=True):
+                if st.button("⏸️ Pause", use_container_width=True):
                     if not st.session_state.timer_paused:
                         st.session_state.timer_paused = True
                         st.session_state.timer_pause_time = time.time()
@@ -28116,7 +29357,7 @@ elif page == "Study Timer":
                     st.rerun()
             
             with col_btn2:
-                if st.button("Stop", use_container_width=True, type="primary", icon=":material/stop:"):
+                if st.button("⏹️ Stop", use_container_width=True, type="primary"):
                     # Save session
                     if st.session_state.current_timer_course:
                         course_code = st.session_state.current_timer_course
@@ -28143,7 +29384,7 @@ elif page == "Study Timer":
                     st.rerun()
             
             with col_btn3:
-                if st.button("Reset", icon=":material/restart_alt:", use_container_width=True):
+                if st.button("🔄 Reset", use_container_width=True):
                     st.session_state.study_timer_start = time.time()
                     st.session_state.timer_paused = False
                     st.rerun()
@@ -28151,7 +29392,7 @@ elif page == "Study Timer":
             # Auto-stop when timer reaches 0
             if remaining <= 0:
                 st.balloons()
-                st.success("Time's up! Great work!")
+                st.success("🎉 Time's up! Great work!")
                 
                 # Save session
                 if st.session_state.current_timer_course:
@@ -28200,7 +29441,7 @@ elif page == "Study Timer":
                 ["None"] + [f"{c['code']} - {c['name']}" for c in courses_data]
             )
             
-            if st.button("Start Timer", type="primary", icon=":material/play_arrow:", use_container_width=True):
+            if st.button("▶️ Start Timer", type="primary", use_container_width=True):
                 st.session_state.study_timer_active = True
                 st.session_state.study_timer_start = time.time()
                 st.session_state.study_timer_duration = duration_minutes * 60
@@ -28215,7 +29456,7 @@ elif page == "Study Timer":
                 st.rerun()
     
     with col2:
-        mui_subheader("insights", "Statistics")
+        st.subheader("📊 Statistics")
         
         # Total study time
         total_seconds = sum(s.get('duration', 0) for s in st.session_state.study_sessions)
@@ -28248,7 +29489,7 @@ elif page == "Study Timer":
                 st.caption(f"{date_str}: {duration_min} min - {course_code}")
         
         # Clear data button
-        if st.button("Clear All Data", icon=":material/delete_sweep:"):
+        if st.button("🗑️ Clear All Data"):
             if st.checkbox("Are you sure? This cannot be undone."):
                 st.session_state.study_sessions = []
                 st.session_state.study_time_by_course = {}
@@ -28257,7 +29498,7 @@ elif page == "Study Timer":
                 st.rerun()
 
 elif page == "Progress":
-    mui_title("trending_up", "My Progress")
+    st.title("📈 My Progress")
     st.markdown("---")
     
     st.subheader("Mark Completed Courses")
@@ -28292,14 +29533,14 @@ elif page == "Progress":
     st.write(f"**{completed_credits:.1f} / {total_credits:.0f} credits completed ({progress*100:.0f}%)**")
 
 elif page == "Learning Outcomes":
-    mui_title("workspace_premium", "Program Learning Outcomes")
+    st.title("🎯 Program Learning Outcomes")
     st.markdown("*Based on the Norwegian Qualifications Framework (NQF)*")
     st.markdown("---")
     
     tab1, tab2, tab3 = st.tabs(["Knowledge", "Skills", "General Competence"])
     
     with tab1:
-        st.subheader("Knowledge")
+        st.subheader("📖 Knowledge")
         st.markdown("*After graduation, the candidate has knowledge of:*")
         
         for i, outcome in enumerate(knowledge_outcomes):
@@ -28315,7 +29556,7 @@ elif page == "Learning Outcomes":
         st.caption(f"{completed} / {len(knowledge_outcomes)} learning goals achieved")
     
     with tab2:
-        st.subheader("Skills")
+        st.subheader("🛠️ Skills")
         st.markdown("*After graduation, the candidate can:*")
         
         for i, outcome in enumerate(skills_outcomes):
@@ -28331,7 +29572,7 @@ elif page == "Learning Outcomes":
         st.caption(f"{completed} / {len(skills_outcomes)} learning goals achieved")
     
     with tab3:
-        st.subheader("General Competence")
+        st.subheader("💡 General Competence")
         st.markdown("*After graduation, the candidate:*")
         
         for i, outcome in enumerate(competence_outcomes):
@@ -28347,7 +29588,7 @@ elif page == "Learning Outcomes":
         st.caption(f"{completed} / {len(competence_outcomes)} learning goals achieved")
 
 elif page == "Playground":
-    mui_title("construction", "Interactive Playground")
+    st.title("🎮 Interactive Playground")
     st.markdown("*Practice with real tools - enter data, run code, and see results instantly*")
     st.markdown("---")
     
@@ -28359,16 +29600,14 @@ elif page == "Playground":
             ],
             "FI1BBSF05 - Spreadsheet Fundamentals": [
                 "Excel Formula Simulator",
-                "Power Query Simulator",
-                "Excel Workbook Profiler"
+                "Power Query Simulator"
             ],
             "FI1BBST05 - Statistical Tools": [
                 "Statistical Analysis",
                 "Z-Score & Outlier Tool"
             ],
             "FI1BBPF20 - Programming Fundamentals": [
-                "Python Code Runner",
-                "PDF Viewer (PDF.js)"
+                "Python Code Runner"
             ]
         },
         "Semester 2 - Data & Visualization": {
@@ -28410,7 +29649,7 @@ elif page == "Playground":
         # Category filter
         available_categories = list(playground_tools.keys())
         selected_category = st.selectbox(
-            "Semester/Category:",
+            "📅 Semester/Category:",
             options=["All Categories"] + available_categories
         )
     
@@ -28427,7 +29666,7 @@ elif page == "Playground":
             available_pg_courses = list(playground_tools[selected_category].keys())
         
         selected_pg_course = st.selectbox(
-            "Course:",
+            "📚 Course:",
             options=["All Courses"] + available_pg_courses,
             key="pg_course"
         )
@@ -28448,12 +29687,12 @@ elif page == "Playground":
         st.stop()
     
     # Show tool count
-    st.caption(f"{len(filtered_tools)} tools available")
+    st.caption(f"🔧 {len(filtered_tools)} tools available")
     
     # Tool selector
     tool_options = [t[0] for t in filtered_tools]
     playground_tab = st.selectbox(
-        "Select Tool:",
+        "🎯 Select Tool:",
         options=tool_options
     )
     
@@ -28470,7 +29709,7 @@ elif page == "Playground":
     st.markdown(f"**{tool_category}** | **{tool_course}**")
     
     if playground_tab == "Python Code Runner":
-        mui_subheader("code", "Python Code Playground")
+        st.subheader("🐍 Python Code Playground")
         st.markdown("Practice pandas operations on your own data! Edit the tables below, then run exercises.")
         
         # Initialize session state for editable data
@@ -28553,7 +29792,7 @@ elif page == "Playground":
         st.markdown("### Code")
         st.code(exercises[selected_exercise]['code'], language="python")
         
-        if st.button("Run Code", type="primary", icon=":material/play_arrow:"):
+        if st.button("▶️ Run Code", type="primary"):
             st.markdown("### Output:")
             
             # Execute the selected exercise safely with pre-defined data
@@ -28619,137 +29858,9 @@ elif page == "Playground":
         st.markdown("- `df.groupby()` - Group and aggregate")
         st.markdown("- `df.sort_values()` - Sort rows")
         st.markdown("- `df[condition]` - Filter rows")
-
-    elif playground_tab == "PDF Viewer (PDF.js)":
-        mui_subheader("picture_as_pdf", "PDF Viewer (PDF.js)")
-        st.markdown("Upload a PDF and render it with PDF.js in the app.")
-
-        uploaded_pdf = st.file_uploader(
-            "Upload PDF",
-            type=["pdf"],
-            key="pdfjs_viewer_upload"
-        )
-
-        if uploaded_pdf is not None:
-            pdf_bytes = uploaded_pdf.read()
-            if not pdf_bytes:
-                st.warning("The uploaded file is empty.")
-            else:
-                st.caption(f"Loaded: {uploaded_pdf.name} ({len(pdf_bytes):,} bytes)")
-
-                col1, col2 = st.columns(2)
-                with col1:
-                    initial_page = st.number_input("Start page", min_value=1, value=1, step=1)
-                with col2:
-                    initial_zoom = st.slider("Initial zoom (%)", min_value=50, max_value=250, value=100, step=10)
-
-                pdf_base64 = base64.b64encode(pdf_bytes).decode("utf-8")
-                viewer_html = f"""
-                <!doctype html>
-                <html>
-                <head>
-                  <meta charset=\"utf-8\" />
-                  <style>
-                    body {{ margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }}
-                    .toolbar {{ display: flex; gap: 8px; align-items: center; padding: 10px; border-bottom: 1px solid #e5e7eb; background: #f8fafc; }}
-                    .toolbar button {{ border: 1px solid #cbd5e1; background: #fff; border-radius: 6px; padding: 6px 10px; cursor: pointer; }}
-                    .meta {{ margin-left: auto; color: #334155; font-size: 13px; }}
-                    #canvas-wrap {{ height: 690px; overflow: auto; background: #f1f5f9; display: flex; justify-content: center; align-items: flex-start; padding: 16px 0; }}
-                    #pdf-canvas {{ border: 1px solid #cbd5e1; box-shadow: 0 2px 10px rgba(0,0,0,0.08); background: #fff; }}
-                    #error {{ color: #b91c1c; padding: 10px; font-size: 13px; }}
-                  </style>
-                </head>
-                <body>
-                  <div class=\"toolbar\">
-                    <button id=\"prev\">Prev</button>
-                    <button id=\"next\">Next</button>
-                    <button id=\"zoom-out\">-</button>
-                    <button id=\"zoom-in\">+</button>
-                    <button id=\"reset\">Reset</button>
-                    <div class=\"meta\" id=\"meta\">Loading PDF...</div>
-                  </div>
-                  <div id=\"canvas-wrap\"><canvas id=\"pdf-canvas\"></canvas></div>
-                  <div id=\"error\"></div>
-
-                  <script type=\"module\">
-                    import * as pdfjsLib from "https://cdn.jsdelivr.net/npm/pdfjs-dist@5.4.624/build/pdf.min.mjs";
-                    pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdn.jsdelivr.net/npm/pdfjs-dist@5.4.624/build/pdf.worker.min.mjs";
-
-                    const base64 = "{pdf_base64}";
-                    const binary = atob(base64);
-                    const bytes = new Uint8Array(binary.length);
-                    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-
-                    const canvas = document.getElementById("pdf-canvas");
-                    const ctx = canvas.getContext("2d");
-                    const meta = document.getElementById("meta");
-                    const error = document.getElementById("error");
-
-                    let pdfDoc = null;
-                    let currentPage = {int(initial_page)};
-                    let scale = {float(initial_zoom) / 100.0};
-                    const baseScale = scale;
-
-                    async function renderPage(pageNum) {{
-                      if (!pdfDoc) return;
-                      const page = await pdfDoc.getPage(pageNum);
-                      const viewport = page.getViewport({{ scale }});
-                      canvas.width = viewport.width;
-                      canvas.height = viewport.height;
-                      await page.render({{ canvasContext: ctx, viewport }}).promise;
-                      meta.textContent = `Page ${{currentPage}} / ${{pdfDoc.numPages}} • Zoom ${{Math.round(scale * 100)}}%`;
-                    }}
-
-                    async function loadPdf() {{
-                      try {{
-                        const loadingTask = pdfjsLib.getDocument({{ data: bytes }});
-                        pdfDoc = await loadingTask.promise;
-                        currentPage = Math.max(1, Math.min(currentPage, pdfDoc.numPages));
-                        await renderPage(currentPage);
-                      }} catch (e) {{
-                        error.textContent = `Failed to load PDF: ${{e?.message || e}}`;
-                      }}
-                    }}
-
-                    document.getElementById("prev").addEventListener("click", async () => {{
-                      if (!pdfDoc || currentPage <= 1) return;
-                      currentPage -= 1;
-                      await renderPage(currentPage);
-                    }});
-
-                    document.getElementById("next").addEventListener("click", async () => {{
-                      if (!pdfDoc || currentPage >= pdfDoc.numPages) return;
-                      currentPage += 1;
-                      await renderPage(currentPage);
-                    }});
-
-                    document.getElementById("zoom-in").addEventListener("click", async () => {{
-                      scale = Math.min(4, scale + 0.1);
-                      await renderPage(currentPage);
-                    }});
-
-                    document.getElementById("zoom-out").addEventListener("click", async () => {{
-                      scale = Math.max(0.3, scale - 0.1);
-                      await renderPage(currentPage);
-                    }});
-
-                    document.getElementById("reset").addEventListener("click", async () => {{
-                      scale = baseScale;
-                      await renderPage(currentPage);
-                    }});
-
-                    loadPdf();
-                  </script>
-                </body>
-                </html>
-                """
-
-                html(viewer_html, height=760, scrolling=False)
-        else:
-            st.caption("Upload a PDF to start viewing pages with PDF.js.")
-
+    
     elif playground_tab == "Excel Formula Simulator":
-        mui_subheader("table_view", "Excel Formula Simulator")
+        st.subheader("📊 Excel Formula Simulator")
         st.markdown("Practice Excel formulas including VLOOKUP and INDEX/MATCH!")
         
         # Main data table
@@ -28818,7 +29929,7 @@ elif page == "Playground":
             if numeric_cols:
                 column = st.selectbox("Select column:", numeric_cols)
                 
-                if st.button("Calculate", type="primary", icon=":material/calculate:"):
+                if st.button("Calculate", type="primary"):
                     try:
                         if formula_type == "SUM":
                             result = edited_data[column].sum()
@@ -28848,7 +29959,7 @@ elif page == "Playground":
                 if numeric_cols:
                     sum_col = st.selectbox("Value column:", numeric_cols)
             
-            if st.button("Calculate", type="primary", icon=":material/calculate:"):
+            if st.button("Calculate", type="primary"):
                 try:
                     mask = edited_data[crit_col].astype(str).str.lower() == str(criteria).lower()
                     
@@ -28883,7 +29994,7 @@ elif page == "Playground":
             with col2:
                 return_col = st.selectbox("Return column from lookup table:", lookup_data.columns.tolist()[1:])
             
-            if st.button("Run VLOOKUP", type="primary", icon=":material/search:"):
+            if st.button("Run VLOOKUP", type="primary"):
                 try:
                     lookup_key_col = lookup_data.columns[0]
                     match = lookup_data[lookup_data[lookup_key_col].astype(str).str.lower() == str(actual_lookup).lower()]
@@ -28922,7 +30033,7 @@ elif page == "Playground":
                 st.markdown("**INDEX: Return the value**")
                 return_col = st.selectbox("Return from column:", lookup_data.columns.tolist())
             
-            if st.button("Run INDEX/MATCH", type="primary", icon=":material/search:"):
+            if st.button("Run INDEX/MATCH", type="primary"):
                 try:
                     match_result = lookup_data[lookup_data[match_in_col].astype(str).str.lower() == str(actual_match).lower()]
                     
@@ -28960,7 +30071,7 @@ elif page == "Playground":
                 search_col = st.selectbox("Search in:", lookup_data.columns.tolist())
                 return_col = st.selectbox("Return from:", lookup_data.columns.tolist())
             
-            if st.button("Run XLOOKUP", type="primary", icon=":material/search:"):
+            if st.button("Run XLOOKUP", type="primary"):
                 try:
                     match = lookup_data[lookup_data[search_col].astype(str).str.lower() == str(lookup_val).lower()]
                     
@@ -28996,7 +30107,7 @@ elif page == "Playground":
                     else:
                         compare_col = st.selectbox("Column:", [c for c in numeric_cols if c != check_col])
                 
-                if st.button("Apply IF Formula", type="primary", icon=":material/functions:"):
+                if st.button("Apply IF Formula", type="primary"):
                     try:
                         if compare_to == "Value":
                             if operator == ">":
@@ -29052,7 +30163,7 @@ elif page == "Playground":
                     threshold = st.number_input("Highlight values greater than:", value=float(edited_data[format_col].mean()))
                     highlight_color = st.color_picker("Highlight color:", "#90EE90")
                     
-                    if st.button("Apply Formatting", type="primary", icon=":material/format_paint:"):
+                    if st.button("Apply Formatting", type="primary"):
                         result_df = edited_data.copy()
                         
                         def highlight_above(row):
@@ -29070,7 +30181,7 @@ elif page == "Playground":
                     threshold = st.number_input("Highlight values less than:", value=float(edited_data[format_col].mean()))
                     highlight_color = st.color_picker("Highlight color:", "#FFB6C1")
                     
-                    if st.button("Apply Formatting", type="primary", icon=":material/format_paint:"):
+                    if st.button("Apply Formatting", type="primary"):
                         result_df = edited_data.copy()
                         
                         def highlight_below(row):
@@ -29087,7 +30198,7 @@ elif page == "Playground":
                 elif format_type == "Color Scale (low to high)":
                     st.markdown("Color scales show values on a gradient from low (red) to high (green).")
                     
-                    if st.button("Apply Color Scale", type="primary", icon=":material/format_color_fill:"):
+                    if st.button("Apply Color Scale", type="primary"):
                         result_df = edited_data.copy()
                         
                         styled = result_df.style.background_gradient(
@@ -29104,7 +30215,7 @@ elif page == "Playground":
                 elif format_type == "Data Bars":
                     st.markdown("Data bars show relative values as bars within cells.")
                     
-                    if st.button("Apply Data Bars", type="primary", icon=":material/bar_chart:"):
+                    if st.button("Apply Data Bars", type="primary"):
                         result_df = edited_data.copy()
                         
                         styled = result_df.style.bar(
@@ -29123,7 +30234,7 @@ elif page == "Playground":
                     n_values = st.slider("Number of values:", 1, min(10, len(edited_data)), 3)
                     top_or_bottom = st.radio("Highlight:", ["Top N", "Bottom N"], horizontal=True)
                     
-                    if st.button("Apply Formatting", type="primary", icon=":material/format_paint:"):
+                    if st.button("Apply Formatting", type="primary"):
                         result_df = edited_data.copy()
                         
                         if top_or_bottom == "Top N":
@@ -29150,7 +30261,7 @@ elif page == "Playground":
                 elif format_type == "Highlight duplicates":
                     dup_col = st.selectbox("Check for duplicates in:", edited_data.columns.tolist())
                     
-                    if st.button("Find Duplicates", type="primary", icon=":material/content_copy:"):
+                    if st.button("Find Duplicates", type="primary"):
                         result_df = edited_data.copy()
                         mask = result_df.duplicated(subset=[dup_col], keep=False)
                         
@@ -29199,7 +30310,7 @@ elif page == "Playground":
                     st.markdown("**Aggregation:**")
                     agg_func = st.selectbox("Function:", ["Sum", "Average", "Count", "Min", "Max"])
                 
-                if st.button("Create Pivot Table", type="primary", icon=":material/pivot_table_chart:"):
+                if st.button("Create Pivot Table", type="primary"):
                     try:
                         agg_map = {"Sum": "sum", "Average": "mean", "Count": "count", "Min": "min", "Max": "max"}
                         
@@ -29341,7 +30452,7 @@ elif page == "Playground":
                         st.error(f"Error: {str(e)}")
     
     elif playground_tab == "SQL Query Tester":
-        mui_subheader("database", "SQL Query Tester")
+        st.subheader("🗄️ SQL Query Tester")
         st.markdown("Write SQL queries against your data - edit the tables below to add your own!")
         
         # Initialize editable tables in session state
@@ -29404,7 +30515,7 @@ elif page == "Playground":
         
         query = st.text_area("SQL Query:", value=default_query, height=100)
         
-        if st.button("Run Query", type="primary", icon=":material/play_arrow:"):
+        if st.button("▶️ Run Query", type="primary"):
             st.markdown("### Results:")
             
             try:
@@ -29433,7 +30544,7 @@ elif page == "Playground":
         st.markdown("3. List customers who have placed more than 1 order")
     
     elif playground_tab == "Chart Builder":
-        mui_subheader("insert_chart", "Chart Builder")
+        st.subheader("📈 Chart Builder")
         st.markdown("Create visualizations from your own data! Edit the table below.")
         
         # Initialize editable chart data in session state
@@ -29506,7 +30617,7 @@ elif page == "Playground":
         st.markdown("- **Scatter plots**: Best for showing relationships between two variables")
     
     elif playground_tab == "Data Visualization Studio":
-        mui_subheader("palette", "Data Visualization Studio")
+        st.subheader("🎨 Data Visualization Studio")
         st.markdown("*Practice choosing charts, designing for accessibility, and identifying visualization problems*")
         st.markdown("---")
         
@@ -29537,7 +30648,7 @@ elif page == "Playground":
                 )
                 interactive = st.checkbox("Does it need to be interactive?")
             
-            if st.button("Get Recommendations", type="primary", icon=":material/lightbulb:"):
+            if st.button("🎯 Get Recommendations", type="primary"):
                 st.markdown("---")
                 st.markdown("### Recommended Charts")
                 
@@ -29593,7 +30704,7 @@ elif page == "Playground":
                             st.markdown(badge)
                 
                 if warnings:
-                    st.markdown("### Watch Out For:")
+                    st.markdown("### ⚠️ Watch Out For:")
                     for w in warnings:
                         st.warning(w)
         
@@ -29636,7 +30747,7 @@ elif page == "Playground":
                 )
             }
             
-            if st.button("Generate Accessibility Report", type="primary", icon=":material/summarize:"):
+            if st.button("📋 Generate Accessibility Report", type="primary"):
                 st.markdown("---")
                 st.markdown("### Accessibility Report")
                 
@@ -29645,10 +30756,10 @@ elif page == "Playground":
                 
                 for check, value in checks.items():
                     if value == "Yes":
-                        st.success(f"**{check}**: Good")
+                        st.success(f"✅ **{check}**: Good")
                         score += 2
                     elif value == "Partially":
-                        st.warning(f"**{check}**: Needs improvement")
+                        st.warning(f"⚠️ **{check}**: Needs improvement")
                         score += 1
                     else:
                         st.error(f"❌ **{check}**: Missing")
@@ -29710,7 +30821,7 @@ elif page == "Playground":
                 height=100
             )
             
-            if st.button("Show Expert Analysis", type="primary", icon=":material/psychology:"):
+            if st.button("🔍 Show Expert Analysis", type="primary"):
                 st.markdown("---")
                 st.markdown("### Problems Identified:")
                 for p in scenario["problems"]:
@@ -29718,7 +30829,7 @@ elif page == "Playground":
                 
                 st.markdown("### Recommended Fixes:")
                 for f in scenario["fixes"]:
-                    st.success(f"{f}")
+                    st.success(f"✅ {f}")
         
         elif viz_mode == "Story Builder":
             st.markdown("### Data Story Builder")
@@ -29749,7 +30860,7 @@ elif page == "Playground":
                 height=80
             )
             
-            if st.button("Generate Story Summary", type="primary", icon=":material/auto_awesome:"):
+            if st.button("📊 Generate Story Summary", type="primary"):
                 if context and insight and action:
                     st.markdown("---")
                     st.markdown("### Your Data Story")
@@ -29774,17 +30885,16 @@ elif page == "Playground":
                     st.markdown(story)
                     
                     st.download_button(
-                        "Download Story Framework",
+                        "📥 Download Story Framework",
                         data=story,
                         file_name="data_story.md",
-                        mime="text/markdown",
-                        icon=":material/download:"
+                        mime="text/markdown"
                     )
                 else:
                     st.warning("Please fill in all sections to generate your story.")
     
     elif playground_tab == "Statistical Analysis":
-        mui_subheader("query_stats", "Statistical Analysis Tool")
+        st.subheader("📊 Statistical Analysis Tool")
         st.markdown("Perform correlation, regression, ANOVA, histogram, and covariance analysis on your data!")
         
         from scipy import stats
@@ -29836,7 +30946,7 @@ elif page == "Playground":
                 with col2:
                     var2 = st.selectbox("Variable 2:", [c for c in numeric_cols if c != var1])
                 
-                if st.button("Calculate Correlation", type="primary", icon=":material/insights:"):
+                if st.button("Calculate Correlation", type="primary"):
                     try:
                         correlation, p_value = stats.pearsonr(stats_data[var1], stats_data[var2])
                         
@@ -29898,7 +31008,7 @@ elif page == "Playground":
                 with col2:
                     y_var = st.selectbox("Dependent Variable (Y):", [c for c in numeric_cols if c != x_var])
                 
-                if st.button("Run Regression", type="primary", icon=":material/show_chart:"):
+                if st.button("Run Regression", type="primary"):
                     try:
                         slope, intercept, r_value, p_value, std_err = stats.linregress(
                             stats_data[x_var], stats_data[y_var]
@@ -29957,7 +31067,7 @@ elif page == "Playground":
                 with col2:
                     value_col = st.selectbox("Value Variable (numeric):", numeric_cols)
                 
-                if st.button("Run ANOVA", type="primary", icon=":material/query_stats:"):
+                if st.button("Run ANOVA", type="primary"):
                     try:
                         groups = [group[value_col].values for name, group in stats_data.groupby(group_col)]
                         
@@ -30010,7 +31120,7 @@ elif page == "Playground":
                 hist_col = st.selectbox("Select column:", numeric_cols)
                 bins = st.slider("Number of bins:", 5, 30, 10)
                 
-                if st.button("Create Histogram", type="primary", icon=":material/bar_chart:"):
+                if st.button("Create Histogram", type="primary"):
                     try:
                         import altair as alt
                         
@@ -30055,7 +31165,7 @@ elif page == "Playground":
             st.markdown("- Unlike correlation, covariance is not standardized (affected by scale)")
             
             if len(numeric_cols) >= 2:
-                if st.button("Calculate Covariance Matrix", type="primary", icon=":material/table_chart:"):
+                if st.button("Calculate Covariance Matrix", type="primary"):
                     try:
                         cov_matrix = stats_data[numeric_cols].cov()
                         
@@ -30087,7 +31197,7 @@ elif page == "Playground":
             if numeric_cols:
                 selected_col = st.selectbox("Select column:", numeric_cols)
                 
-                if st.button("Calculate Statistics", type="primary", icon=":material/calculate:"):
+                if st.button("Calculate Statistics", type="primary"):
                     try:
                         data = stats_data[selected_col]
                         
@@ -30131,7 +31241,7 @@ elif page == "Playground":
                 st.warning("Need at least 1 numeric column.")
     
     elif playground_tab == "Power Query Simulator":
-        mui_subheader("bolt", "Power Query Simulator")
+        st.subheader("⚡ Power Query Simulator")
         st.markdown("Learn data transformation steps like Power Query in Excel!")
         
         # Sample raw data that needs cleaning
@@ -30169,7 +31279,7 @@ elif page == "Playground":
             "Sort Data": st.checkbox("Sort Data", key="pq_sort")
         }
         
-        if st.button("Apply Transformations", type="primary", icon=":material/auto_fix_high:"):
+        if st.button("Apply Transformations", type="primary"):
             transformed = raw_data.copy()
             steps_applied = []
             
@@ -30248,503 +31358,9 @@ elif page == "Playground":
         st.markdown("- **Split/Merge Columns**: Restructure data")
         st.markdown("- **Pivot/Unpivot**: Reshape tables")
         st.markdown("- **Group By**: Aggregate data")
-
-    elif playground_tab == "Excel Workbook Profiler":
-        mui_subheader("upload_file", "Excel Workbook Profiler")
-        st.markdown("Upload any Excel file to quickly profile important data by sheet.")
-
-        with st.expander("Tutor Solution: Why this solves the task and how to use it in exams", expanded=False):
-            st.markdown("""
-### Why this solves the task
-In spreadsheet and data-analysis tasks, the **first requirement** is usually to understand data quality and structure before transforming anything.
-
-This profiler solves that by giving you immediate answers to the core diagnostic questions:
-- **Scope:** How many sheets, rows, and columns are included?
-- **Quality:** Are there missing values or duplicate rows?
-- **Structure:** What are the data types, and which columns are numeric/text/date?
-- **Signal:** What are the key distributions and top categories?
-
-Because these checks are automatic and repeatable, you avoid manual mistakes and can justify each cleaning decision with evidence.
-
-### Real tutor method (exam-ready)
-Use this sequence in every exam dataset:
-1. **Profile raw input** (before changes).
-2. **Document findings** (missing values, duplicates, weak columns, candidate keys).
-3. **Export evidence** (`Summary CSV` + `JSON Profile`) for your appendix/report.
-4. **Transform data** in Excel/Power Query/Python.
-5. **Re-profile final output** and compare before vs after.
-
-### How to explain this in your report/defense
-Use a short structure:
-- **Task:** “Assess and prepare the workbook for analysis.”
-- **Method:** “I ran a standardized workbook profile to evaluate structure and data quality.”
-- **Evidence:** “Profile results showed X missing values, Y duplicates, and Z relevant numeric fields.”
-- **Action:** “Based on this, I cleaned nulls, removed duplicates, standardized types, and exported analysis-ready data.”
-- **Result:** “The final dataset is consistent, traceable, and ready for statistical/visual analysis.”
-
-### Why teachers like this approach
-- It is **systematic** (same method every time).
-- It is **auditable** (exports prove what you found).
-- It is **professional** (mirrors real ETL/data quality workflow).
-""")
-
-        uploaded_workbook = st.file_uploader(
-            "Upload workbook (.xlsx, .xlsm, .xls)",
-            type=["xlsx", "xlsm", "xls"],
-            key="excel_profiler_upload"
-        )
-
-        if uploaded_workbook:
-            try:
-                workbook = pd.ExcelFile(uploaded_workbook)
-                st.success(f"Loaded workbook with {len(workbook.sheet_names)} sheet(s)")
-
-                col1, col2 = st.columns(2)
-                with col1:
-                    selected_sheet = st.selectbox(
-                        "Sheet to profile:",
-                        options=["All sheets"] + workbook.sheet_names,
-                        key="excel_profiler_sheet"
-                    )
-                with col2:
-                    top_n = st.slider("Top values per text column:", 1, 10, 3, key="excel_profiler_topn")
-
-                if st.button("Analyze Workbook", type="primary", icon=":material/analytics:"):
-                    target_sheets = workbook.sheet_names if selected_sheet == "All sheets" else [selected_sheet]
-                    summary_rows = []
-                    sheet_profiles = []
-                    sheet_details = {}
-
-                    for sheet_name in target_sheets:
-                        df = pd.read_excel(workbook, sheet_name=sheet_name)
-
-                        row_count = int(df.shape[0])
-                        col_count = int(df.shape[1])
-                        missing_cells = int(df.isna().sum().sum()) if col_count > 0 else 0
-                        total_cells = int(row_count * col_count) if row_count > 0 and col_count > 0 else 0
-                        missing_pct = (missing_cells / total_cells * 100) if total_cells > 0 else 0.0
-                        duplicate_rows = int(df.duplicated().sum()) if row_count > 0 else 0
-                        duplicate_pct = (duplicate_rows / row_count * 100) if row_count > 0 else 0.0
-                        numeric_cols = df.select_dtypes(include=["number"]).columns.tolist()
-                        datetime_cols = df.select_dtypes(include=["datetime", "datetimetz"]).columns.tolist()
-                        object_cols = df.select_dtypes(include=["object"]).columns.tolist()
-
-                        candidate_keys = []
-                        constant_cols = []
-                        if row_count > 0:
-                            for col in df.columns:
-                                missing_count = int(df[col].isna().sum())
-                                unique_count = int(df[col].nunique(dropna=True))
-                                if missing_count == 0 and unique_count == row_count:
-                                    candidate_keys.append(col)
-                                if unique_count <= 1:
-                                    constant_cols.append(col)
-
-                        date_like_cols = []
-                        for col in object_cols:
-                            series = df[col].dropna().astype(str).str.strip()
-                            if len(series) >= 3:
-                                parsed = pd.to_datetime(series, errors="coerce")
-                                parse_ratio = float(parsed.notna().mean())
-                                if parse_ratio >= 0.80:
-                                    date_like_cols.append({
-                                        "column": col,
-                                        "parse_success_pct": round(parse_ratio * 100, 1)
-                                    })
-
-                        outlier_rows = []
-                        outlier_total = 0
-                        for col in numeric_cols:
-                            series = pd.to_numeric(df[col], errors="coerce").dropna()
-                            if len(series) < 4:
-                                continue
-                            q1 = series.quantile(0.25)
-                            q3 = series.quantile(0.75)
-                            iqr = q3 - q1
-                            if pd.isna(iqr) or iqr <= 0:
-                                continue
-                            lower_bound = q1 - 1.5 * iqr
-                            upper_bound = q3 + 1.5 * iqr
-                            outlier_count = int(((series < lower_bound) | (series > upper_bound)).sum())
-                            if outlier_count > 0:
-                                outlier_rows.append({
-                                    "Column": col,
-                                    "Outlier Count": outlier_count,
-                                    "Outlier %": round((outlier_count / len(series)) * 100, 2),
-                                    "Lower Bound": round(float(lower_bound), 4),
-                                    "Upper Bound": round(float(upper_bound), 4)
-                                })
-                            outlier_total += outlier_count
-
-                        outlier_pct = 0.0
-                        if row_count > 0 and len(numeric_cols) > 0:
-                            outlier_pct = (outlier_total / (row_count * len(numeric_cols))) * 100
-
-                        penalty_missing = min(35.0, missing_pct * 0.7)
-                        penalty_duplicates = min(20.0, duplicate_pct)
-                        penalty_constant = min(10.0, len(constant_cols) * 2.0)
-                        penalty_outliers = min(15.0, outlier_pct * 0.6)
-                        penalty_no_key = 8.0 if row_count > 0 and col_count > 1 and len(candidate_keys) == 0 else 0.0
-                        quality_score = max(
-                            0.0,
-                            round(100.0 - (penalty_missing + penalty_duplicates + penalty_constant + penalty_outliers + penalty_no_key), 1)
-                        )
-
-                        if quality_score >= 85:
-                            quality_band = "Strong"
-                        elif quality_score >= 65:
-                            quality_band = "Needs cleanup"
-                        else:
-                            quality_band = "High risk"
-
-                        issues = []
-                        recommendations = []
-
-                        if missing_pct > 0:
-                            issues.append(f"Missing values: {missing_cells} cells ({missing_pct:.2f}%).")
-                            recommendations.append("Handle missing values column-by-column (impute, fill forward, or remove where justified).")
-                        if duplicate_rows > 0:
-                            issues.append(f"Duplicate rows: {duplicate_rows} rows ({duplicate_pct:.2f}%).")
-                            recommendations.append("Remove duplicates using business keys and keep the most recent valid record.")
-                        if len(constant_cols) > 0:
-                            issues.append(f"Low-information columns: {', '.join(constant_cols[:5])}{'...' if len(constant_cols) > 5 else ''}.")
-                            recommendations.append("Drop or ignore constant columns before modeling/visualization.")
-                        if len(candidate_keys) == 0 and row_count > 0 and col_count > 1:
-                            issues.append("No single-column candidate key detected.")
-                            recommendations.append("Create or validate a composite key to prevent duplicate business records.")
-                        if len(date_like_cols) > 0:
-                            cols_txt = ", ".join([item["column"] for item in date_like_cols[:5]])
-                            issues.append(f"Date-like text columns detected: {cols_txt}{'...' if len(date_like_cols) > 5 else ''}.")
-                            recommendations.append("Convert date-like text to true datetime types before trend analysis.")
-                        if outlier_total > 0:
-                            issues.append(f"Potential numeric outliers detected: {outlier_total} values by IQR rule.")
-                            recommendations.append("Review outliers with domain context before removing or capping values.")
-                        if not issues:
-                            issues.append("No major quality issues detected by automated checks.")
-                            recommendations.append("Proceed to analysis, then re-profile after transformations to confirm consistency.")
-
-                        summary_rows.append({
-                            "Sheet": sheet_name,
-                            "Rows": row_count,
-                            "Columns": col_count,
-                            "Missing Cells": missing_cells,
-                            "Missing %": round(missing_pct, 2),
-                            "Duplicate Rows": duplicate_rows,
-                            "Duplicate %": round(duplicate_pct, 2),
-                            "Numeric Columns": len(numeric_cols),
-                            "Datetime Columns": len(datetime_cols),
-                            "Candidate Keys": len(candidate_keys),
-                            "Quality Score": quality_score,
-                            "Quality Band": quality_band
-                        })
-
-                        numeric_summary_records = []
-                        if numeric_cols:
-                            numeric_summary_records = (
-                                df[numeric_cols]
-                                .describe()
-                                .transpose()
-                                [["count", "mean", "std", "min", "max"]]
-                                .reset_index()
-                                .rename(columns={"index": "Column"})
-                                .to_dict(orient="records")
-                            )
-
-                        text_top_values = {}
-                        text_cols = [
-                            col for col in df.columns
-                            if df[col].dtype == "object" and df[col].nunique(dropna=True) <= 50
-                        ]
-                        for col in text_cols:
-                            top_values = (
-                                df[col]
-                                .dropna()
-                                .astype(str)
-                                .value_counts()
-                                .head(top_n)
-                                .reset_index()
-                            )
-                            top_values.columns = ["Value", "Count"]
-                            text_top_values[col] = top_values.to_dict(orient="records")
-
-                        column_profile_df = pd.DataFrame({
-                            "Column": df.columns,
-                            "Type": [str(df[col].dtype) for col in df.columns],
-                            "Missing": [int(df[col].isna().sum()) for col in df.columns],
-                            "Missing %": [round((df[col].isna().sum() / row_count) * 100, 2) if row_count > 0 else 0.0 for col in df.columns],
-                            "Unique": [int(df[col].nunique(dropna=True)) for col in df.columns]
-                        })
-
-                        outlier_df = pd.DataFrame(outlier_rows) if outlier_rows else pd.DataFrame(columns=["Column", "Outlier Count", "Outlier %", "Lower Bound", "Upper Bound"])
-
-                        sheet_profiles.append({
-                            "sheet": sheet_name,
-                            "rows": row_count,
-                            "columns": col_count,
-                            "missing_cells": missing_cells,
-                            "missing_pct": round(missing_pct, 2),
-                            "duplicate_rows": duplicate_rows,
-                            "duplicate_pct": round(duplicate_pct, 2),
-                            "candidate_keys": candidate_keys,
-                            "quality_score": quality_score,
-                            "quality_band": quality_band,
-                            "issues": issues,
-                            "recommendations": recommendations,
-                            "date_like_columns": date_like_cols,
-                            "column_profile": column_profile_df.to_dict(orient="records"),
-                            "numeric_summary": numeric_summary_records,
-                            "outlier_summary": outlier_rows,
-                            "text_top_values": text_top_values,
-                            "preview": df.head(10).to_dict(orient="records")
-                        })
-
-                        sheet_details[sheet_name] = {
-                            "dataframe": df,
-                            "column_profile": column_profile_df,
-                            "numeric_cols": numeric_cols,
-                            "text_cols": text_cols,
-                            "outlier_df": outlier_df,
-                            "numeric_summary_df": pd.DataFrame(numeric_summary_records),
-                            "issues": issues,
-                            "recommendations": recommendations,
-                            "candidate_keys": candidate_keys,
-                            "date_like_cols": date_like_cols,
-                            "quality_score": quality_score,
-                            "quality_band": quality_band,
-                            "missing_cells": missing_cells,
-                            "missing_pct": missing_pct,
-                            "duplicate_rows": duplicate_rows,
-                            "duplicate_pct": duplicate_pct
-                        }
-
-                    st.markdown("### Workbook Summary")
-                    summary_df = pd.DataFrame(summary_rows)
-                    st.dataframe(summary_df, use_container_width=True, hide_index=True)
-
-                    avg_quality = round(float(summary_df["Quality Score"].mean()), 1) if not summary_df.empty else 0.0
-                    high_risk_sheets = int((summary_df["Quality Band"] == "High risk").sum()) if not summary_df.empty else 0
-                    sheets_with_issues = int((summary_df["Missing Cells"] > 0).sum() + (summary_df["Duplicate Rows"] > 0).sum()) if not summary_df.empty else 0
-                    col_a, col_b, col_c = st.columns(3)
-                    with col_a:
-                        st.metric("Average Quality Score", f"{avg_quality}")
-                    with col_b:
-                        st.metric("High Risk Sheets", f"{high_risk_sheets}")
-                    with col_c:
-                        st.metric("Sheets with Data Quality Flags", f"{sheets_with_issues}")
-
-                    st.markdown("### Recommended Cleaning Plan")
-                    plan_lines = []
-                    for row in summary_rows:
-                        plan_lines.append(f"- {row['Sheet']}: {row['Quality Band']} (score {row['Quality Score']})")
-                    st.markdown("\n".join(plan_lines))
-
-                    summary_csv = summary_df.to_csv(index=False).encode("utf-8")
-                    st.download_button(
-                        "Download Summary CSV",
-                        data=summary_csv,
-                        file_name=f"{uploaded_workbook.name.rsplit('.', 1)[0]}_summary.csv",
-                        mime="text/csv",
-                        icon=":material/download:"
-                    )
-
-                    if selected_sheet != "All sheets":
-                        sheet_df = sheet_details[selected_sheet]["dataframe"]
-                        sheet_csv = sheet_df.to_csv(index=False).encode("utf-8")
-                        st.download_button(
-                            f"Download {selected_sheet} as CSV",
-                            data=sheet_csv,
-                            file_name=f"{selected_sheet}.csv",
-                            mime="text/csv",
-                            icon=":material/table_view:"
-                        )
-
-                    profile_payload = {
-                        "workbook": uploaded_workbook.name,
-                        "generated_at": datetime.utcnow().isoformat(),
-                        "sheet_mode": selected_sheet,
-                        "top_values_limit": top_n,
-                        "summary": summary_rows,
-                        "sheets": sheet_profiles
-                    }
-                    st.download_button(
-                        "Download JSON Profile",
-                        data=json.dumps(profile_payload, indent=2, default=str),
-                        file_name=f"{uploaded_workbook.name.rsplit('.', 1)[0]}_profile.json",
-                        mime="application/json",
-                        icon=":material/download:"
-                    )
-
-                    report_lines = [
-                        "# Exam Method Report",
-                        "",
-                        "## Dataset Overview",
-                        f"- Workbook: {uploaded_workbook.name}",
-                        f"- Generated at (UTC): {profile_payload['generated_at']}",
-                        f"- Sheet mode: {selected_sheet}",
-                        f"- Sheets analyzed: {len(target_sheets)}",
-                        f"- Average quality score: {avg_quality}",
-                        "",
-                        "## Method",
-                        "1. Imported dataset into workbook profiling workflow.",
-                        "2. Evaluated structure (rows, columns, data types, keys).",
-                        "3. Evaluated quality (missing values, duplicates, outliers).",
-                        "4. Generated evidence exports (CSV + JSON) for traceability.",
-                        "5. Prepared sheet-by-sheet cleaning actions before transformation.",
-                        "",
-                        "## Sheet-by-Sheet Findings"
-                    ]
-
-                    for sheet_item in sheet_profiles:
-                        report_lines.extend([
-                            "",
-                            f"### {sheet_item['sheet']}",
-                            f"- Rows: {sheet_item['rows']}",
-                            f"- Columns: {sheet_item['columns']}",
-                            f"- Missing cells: {sheet_item['missing_cells']} ({sheet_item['missing_pct']}%)",
-                            f"- Duplicate rows: {sheet_item['duplicate_rows']} ({sheet_item['duplicate_pct']}%)",
-                            f"- Quality score: {sheet_item['quality_score']} ({sheet_item['quality_band']})",
-                            f"- Candidate keys: {', '.join(sheet_item['candidate_keys']) if sheet_item['candidate_keys'] else 'None detected'}",
-                            "- Issues:"
-                        ])
-                        for issue in sheet_item["issues"]:
-                            report_lines.append(f"  - {issue}")
-                        report_lines.append("- Recommended actions:")
-                        for action in sheet_item["recommendations"]:
-                            report_lines.append(f"  - {action}")
-
-                    report_lines.extend([
-                        "",
-                        "## Assignment Mapping",
-                        "- Question 1: Use the profiling evidence to justify Power Query steps (headers, column removal, sort, index, calculated Total Bags Sold, save XLSX, export CSV).",
-                        "- Question 2: Repeat the same profiling-to-cleaning method for a self-selected dataset, then document blanks/errors handling and final schema.",
-                        "",
-                        "## Conclusion",
-                        "This method provides a repeatable, auditable workflow that supports both practical execution and exam-grade documentation.",
-                        ""
-                    ])
-
-                    exam_report_md = "\n".join(report_lines)
-                    st.download_button(
-                        "Download Exam Method Report (.md)",
-                        data=exam_report_md,
-                        file_name=f"{uploaded_workbook.name.rsplit('.', 1)[0]}_exam_method_report.md",
-                        mime="text/markdown",
-                        icon=":material/description:"
-                    )
-
-                    with st.expander("Power Query Exam Checklist", expanded=False):
-                        st.markdown("Use this checklist directly in the interface while solving Question 1 and Question 2.")
-
-                        st.markdown("**Import & Structure**")
-                        st.markdown("- Open new workbook and import source dataset")
-                        st.markdown("- Open Power Query Editor")
-                        st.markdown("- Promote first row to headers")
-                        st.markdown("- Confirm correct data types (Date, Number, Text)")
-
-                        st.markdown("**Cleaning**")
-                        st.markdown("- Remove irrelevant columns")
-                        st.markdown("- Remove blank rows")
-                        st.markdown("- Remove rows with errors")
-                        st.markdown("- Remove duplicates (if present)")
-                        st.markdown("- Standardize text formatting/casing where needed")
-
-                        st.markdown("**Required Transformations (Avocado Task)**")
-                        st.markdown("- Remove: Index, Total Volume, 4046, 4225, 4770, Total Bags, Type, Year, Region")
-                        st.markdown("- Sort by Date")
-                        st.markdown("- Add Index column starting from 1 and move to column A")
-                        st.markdown("- Add Total Bags Sold = Small Bags + Large Bags + XLarge Bags")
-
-                        st.markdown("**Output**")
-                        st.markdown("- Close & Load transformed table into Excel")
-                        st.markdown("- Save as .XLSX")
-                        st.markdown("- Export .CSV")
-                        st.markdown("- Keep evidence files (summary/profile/report) for appendix")
-
-                        st.markdown("**Defense Script (Short)**")
-                        st.markdown("- Task: What was required?")
-                        st.markdown("- Method: What transformation sequence was used?")
-                        st.markdown("- Evidence: What quality issues were found and fixed?")
-                        st.markdown("- Result: Why the final dataset is analysis-ready")
-
-                    for sheet_name in target_sheets:
-                        df = sheet_details[sheet_name]["dataframe"]
-                        details = sheet_details[sheet_name]
-                        with st.expander(f"Details: {sheet_name}", expanded=(len(target_sheets) == 1)):
-                            if df.empty and len(df.columns) == 0:
-                                st.info("This sheet is empty.")
-                                continue
-
-                            m1, m2, m3, m4 = st.columns(4)
-                            with m1:
-                                st.metric("Quality Score", f"{details['quality_score']}")
-                            with m2:
-                                st.metric("Missing Cells", f"{details['missing_cells']}")
-                            with m3:
-                                st.metric("Duplicate Rows", f"{details['duplicate_rows']}")
-                            with m4:
-                                st.metric("Quality Band", details["quality_band"])
-
-                            st.markdown("**Detected issues**")
-                            for issue in details["issues"]:
-                                if issue.startswith("No major quality issues"):
-                                    st.success(issue)
-                                else:
-                                    st.warning(issue)
-
-                            st.markdown("**Recommended next actions**")
-                            for i, action in enumerate(details["recommendations"], start=1):
-                                st.markdown(f"{i}. {action}")
-
-                            if details["candidate_keys"]:
-                                st.info(f"Candidate key columns: {', '.join(details['candidate_keys'])}")
-                            else:
-                                st.info("No single-column candidate key identified automatically.")
-
-                            if details["date_like_cols"]:
-                                date_like_df = pd.DataFrame(details["date_like_cols"])
-                                st.markdown("**Date-like text columns (convert to datetime)**")
-                                st.dataframe(date_like_df, use_container_width=True, hide_index=True)
-
-                            st.markdown("**Column profile**")
-                            col_profile = details["column_profile"]
-                            st.dataframe(col_profile, use_container_width=True, hide_index=True)
-
-                            numeric_cols = details["numeric_cols"]
-                            if numeric_cols and not details["numeric_summary_df"].empty:
-                                st.markdown("**Numeric summary**")
-                                numeric_summary = details["numeric_summary_df"]
-                                st.dataframe(numeric_summary, use_container_width=True, hide_index=True)
-
-                            if not details["outlier_df"].empty:
-                                st.markdown("**Outlier summary (IQR method)**")
-                                st.dataframe(details["outlier_df"], use_container_width=True, hide_index=True)
-
-                            text_cols = details["text_cols"]
-                            if text_cols:
-                                st.markdown("**Top values in text columns**")
-                                for col in text_cols:
-                                    top_values = (
-                                        df[col]
-                                        .dropna()
-                                        .astype(str)
-                                        .value_counts()
-                                        .head(top_n)
-                                        .reset_index()
-                                    )
-                                    top_values.columns = ["Value", "Count"]
-                                    st.markdown(f"- {col}")
-                                    st.dataframe(top_values, use_container_width=True, hide_index=True)
-
-                            st.markdown("**Preview**")
-                            st.dataframe(df.head(10), use_container_width=True)
-
-            except Exception as exc:
-                st.error(f"Could not read workbook: {str(exc)}")
-        else:
-            st.caption("Upload an Excel file to begin profiling.")
     
     elif playground_tab == "Z-Score & Outlier Tool":
-        mui_subheader("straighten", "Z-Score & Outlier Detection")
+        st.subheader("📏 Z-Score & Outlier Detection")
         st.markdown("Calculate z-scores and identify outliers in your data!")
         
         from scipy import stats
@@ -30785,7 +31401,7 @@ Use a short structure:
             with col2:
                 threshold = st.slider("Z-score threshold for outliers:", 1.0, 4.0, 2.0, 0.5)
             
-            if st.button("Calculate Z-Scores", type="primary", icon=":material/calculate:"):
+            if st.button("Calculate Z-Scores", type="primary"):
                 try:
                     data = zscore_data[selected_col]
                     mean = data.mean()
@@ -30894,7 +31510,7 @@ Use a short structure:
             st.warning("Need at least 1 numeric column.")
     
     elif playground_tab == "Ethical Analysis Critique":
-        mui_subheader("gavel", "Ethical Analysis Critique")
+        st.subheader("⚖️ Ethical Analysis Critique")
         st.markdown("*Practice assessing and critiquing analysis approaches using ethical principles*")
         st.markdown("---")
         
@@ -31060,9 +31676,9 @@ A city police department uses predictive analytics to allocate patrol resources.
         
         col1, col2 = st.columns(2)
         with col1:
-            show_critique = st.button("Show Expert Critique", type="primary", icon=":material/psychology:")
+            show_critique = st.button("📋 Show Expert Critique", type="primary")
         with col2:
-            show_alternatives = st.button("Show Recommended Alternatives")
+            show_alternatives = st.button("💡 Show Recommended Alternatives")
         
         if show_critique:
             st.markdown("### Expert Critique Points")
@@ -31100,7 +31716,7 @@ A city police department uses predictive analytics to allocate patrol resources.
                 st.caption(description)
     
     elif playground_tab == "Error Detection Workshop":
-        mui_subheader("bug_report", "Error Detection Workshop")
+        st.subheader("🔍 Error Detection Workshop")
         st.markdown("*Practice identifying erroneous data and facilitating solution discussions*")
         st.markdown("---")
         
@@ -31174,12 +31790,12 @@ A city police department uses predictive analytics to allocate patrol resources.
             if st.checkbox(error_type, key=f"err_{error_type}"):
                 identified_errors.append(error_type)
         
-        if st.button("Check My Answers", type="primary", icon=":material/task_alt:"):
+        if st.button("📊 Check My Answers", type="primary"):
             score = len(identified_errors)
             total = len(error_types)
             
             if score == total:
-                st.success(f"Excellent! You found all {total} error types!")
+                st.success(f"🎉 Excellent! You found all {total} error types!")
             elif score >= total * 0.7:
                 st.info(f"Good job! You found {score}/{total} error types.")
             else:
@@ -31306,14 +31922,14 @@ A city police department uses predictive analytics to allocate patrol resources.
         )
         
         if user_discussion and st.button("Get Feedback"):
-            st.info("**Tips for effective communication:**\n"
+            st.info("💡 **Tips for effective communication:**\n"
                    "- Lead with impact, not technical details\n"
                    "- Quantify issues when possible\n"
                    "- Always propose solutions, not just problems\n"
                    "- Be clear about what decision or action you need")
     
     elif playground_tab == "Confidence Level Planner":
-        mui_subheader("psychology", "Confidence Level Planner")
+        st.subheader("📊 Confidence Level Planner")
         st.markdown("*Develop work methods for handling data with different confidence levels*")
         st.markdown("---")
         
@@ -31501,17 +32117,16 @@ ESCALATION:
             height=400
         )
         
-        if st.button("Save Work Method (Download)", type="primary", icon=":material/save:"):
+        if st.button("💾 Save Work Method (Download)", type="primary"):
             st.download_button(
                 label="Download Work Method Document",
                 data=work_method_template,
                 file_name=f"work_method_{selected_domain.lower().replace('/', '_')}.txt",
-                mime="text/plain",
-                icon=":material/download:"
+                mime="text/plain"
             )
     
     elif playground_tab == "BI & Big Data Explorer":
-        mui_subheader("hub", "BI & Big Data Explorer")
+        st.subheader("📊 BI & Big Data Explorer")
         st.markdown("*Explore Business Intelligence concepts and identify Big Data scenarios*")
         st.markdown("---")
         
@@ -31548,7 +32163,7 @@ ESCALATION:
                     ["Report what happened", "Understand why it happened", "Predict what will happen", "Automate decisions"]
                 )
             
-            if st.button("Classify Scenario", type="primary", icon=":material/category:"):
+            if st.button("🔍 Classify Scenario", type="primary"):
                 score = 0
                 reasons = []
                 
@@ -31617,7 +32232,7 @@ ESCALATION:
                 st.metric(f"Total ({retention_years} years)", format_bytes(total_bytes))
                 
                 if total_bytes >= 1e12:
-                    st.warning("This volume may require Big Data infrastructure")
+                    st.warning("⚠️ This volume may require Big Data infrastructure")
                 else:
                     st.success("✓ This volume is manageable with traditional BI tools")
         
@@ -31633,7 +32248,7 @@ ESCALATION:
             budget = st.radio("Budget:", ["Free/Low cost", "Medium", "Enterprise"], horizontal=True)
             tech_level = st.radio("Technical level:", ["Beginner", "Intermediate", "Advanced"], horizontal=True)
             
-            if st.button("Get Recommendations", icon=":material/lightbulb:"):
+            if st.button("🎯 Get Recommendations"):
                 st.markdown("### Recommended Tools")
                 
                 recommendations = []
@@ -31661,7 +32276,7 @@ ESCALATION:
                     st.caption(reason)
     
     elif playground_tab == "KPI Dashboard Builder":
-        mui_subheader("dashboard", "KPI Dashboard Builder")
+        st.subheader("📈 KPI Dashboard Builder")
         st.markdown("*Design and visualize Key Performance Indicators for different business functions*")
         st.markdown("---")
         
@@ -31773,7 +32388,7 @@ ESCALATION:
         st.markdown("**RAG Legend:** 🟢 On track (≥100%) | 🟡 At risk (80-99%) | 🔴 Off track (<80%)")
     
     elif playground_tab == "Decision Analysis Tool":
-        mui_subheader("rule", "Decision Analysis Tool")
+        st.subheader("🎯 Decision Analysis Tool")
         st.markdown("*Practice the four analytics philosophies: Descriptive, Diagnostic, Predictive, Prescriptive*")
         st.markdown("---")
         
@@ -31803,7 +32418,7 @@ ESCALATION:
                 use_container_width=True
             )
             
-            if st.button("Generate Descriptive Summary", icon=":material/summarize:"):
+            if st.button("📊 Generate Descriptive Summary"):
                 data = st.session_state.decision_data
                 st.markdown("### Summary Statistics")
                 col1, col2, col3 = st.columns(3)
@@ -31880,7 +32495,7 @@ ESCALATION:
             option2_benefit = st.number_input("Expected benefit ($):", value=80000, key="opt2_ben")
             option2_risk = st.slider("Risk level:", 1, 10, 5, key="opt2_risk")
             
-            if st.button("Get Recommendation", icon=":material/lightbulb:"):
+            if st.button("🎯 Get Recommendation"):
                 st.markdown("### Decision Matrix")
                 
                 roi1 = ((option1_benefit - option1_cost) / option1_cost) * 100 if option1_cost > 0 else 0
@@ -31905,7 +32520,7 @@ ESCALATION:
                     st.success(f"**Recommendation:** {option2_name} (higher risk-adjusted return)")
     
     elif playground_tab == "Project Planning Workshop":
-        mui_subheader("event_note", "Project Planning Workshop")
+        st.subheader("📋 Project Planning Workshop")
         st.markdown("*Practice planning a data analysis project with proper phases and deliverables*")
         st.markdown("---")
         
@@ -31930,7 +32545,7 @@ ESCALATION:
         total = phase1 + phase2 + phase3 + phase4 + phase5 + phase6
         
         if total != 100:
-            st.warning(f"Total allocation is {total}%. Please adjust to equal 100%.")
+            st.warning(f"⚠️ Total allocation is {total}%. Please adjust to equal 100%.")
         else:
             st.success("✓ Allocation totals 100%")
         
@@ -31979,7 +32594,7 @@ ESCALATION:
                     st.checkbox(item, key=f"del_{phase_name}_{item}")
         
         st.markdown("---")
-        if st.button("Generate Project Plan Summary", type="primary", icon=":material/summarize:"):
+        if st.button("📥 Generate Project Plan Summary", type="primary"):
             plan_summary = f"""PROJECT PLAN: {project_name}
 ========================================
 Duration: {project_duration} weeks
@@ -32009,12 +32624,11 @@ DELIVERABLES:
                 "Download Project Plan",
                 data=plan_summary,
                 file_name=f"project_plan_{project_name.lower().replace(' ', '_')}.txt",
-                mime="text/plain",
-                icon=":material/download:"
+                mime="text/plain"
             )
     
     elif playground_tab == "Report Writing Workshop":
-        mui_subheader("article", "Report Writing Workshop")
+        st.subheader("📝 Report Writing Workshop")
         st.markdown("*Practice writing professional analysis reports with proper structure and clarity*")
         st.markdown("---")
         
@@ -32059,7 +32673,7 @@ DELIVERABLES:
                 ["C-Suite Executives", "Department Managers", "Technical Team", "External Clients"]
             )
             
-            if st.button("Generate Executive Summary", type="primary", icon=":material/summarize:"):
+            if st.button("📋 Generate Executive Summary", type="primary"):
                 if main_finding and recommendation:
                     st.markdown("---")
                     st.markdown("### Your Executive Summary")
@@ -32093,11 +32707,10 @@ DELIVERABLES:
                     st.markdown(summary)
                     
                     st.download_button(
-                        "Download Executive Summary",
+                        "📥 Download Executive Summary",
                         data=summary,
                         file_name="executive_summary.md",
-                        mime="text/markdown",
-                        icon=":material/download:"
+                        mime="text/markdown"
                     )
                     
                     st.markdown("### Writing Tips for Your Audience:")
@@ -32142,7 +32755,7 @@ DELIVERABLES:
                 height=100
             )
             
-            if st.button("Show Expert Rewrite", type="primary", icon=":material/psychology:") and original_text:
+            if st.button("📖 Show Expert Rewrite", type="primary") and original_text:
                 st.markdown("---")
                 
                 expert_rewrites = {
@@ -32227,7 +32840,7 @@ DELIVERABLES:
                     key=f"plan_{section}"
                 )
             
-            if st.button("Generate Report Outline", type="primary", icon=":material/summarize:"):
+            if st.button("📥 Generate Report Outline", type="primary"):
                 outline = f"""# {report_type} Outline
 
 Type: {report_type}
@@ -32250,8 +32863,7 @@ Target Length: {structure['page_range']}
                     "Download Outline",
                     data=outline,
                     file_name=f"{report_type.lower().replace(' ', '_')}_outline.md",
-                    mime="text/markdown",
-                    icon=":material/download:"
+                    mime="text/markdown"
                 )
         
         elif report_mode == "Caption Writer":
@@ -32272,7 +32884,7 @@ Target Length: {structure['page_range']}
                 key_insight = st.text_input("Key Insight:", placeholder="e.g., North region leads by 15%")
                 data_source = st.text_input("Data Source:", placeholder="e.g., Sales Database, Q4 2025")
             
-            if st.button("Generate Caption", type="primary", icon=":material/auto_awesome:"):
+            if st.button("✍️ Generate Caption", type="primary"):
                 if title:
                     st.markdown("---")
                     st.markdown("### Generated Captions")
@@ -32314,7 +32926,7 @@ Target Length: {structure['page_range']}
                     st.warning("Please enter at least a title for your visual.")
     
     elif playground_tab == "Exam Project Toolkit":
-        mui_subheader("military_tech", "Exam Project Toolkit")
+        st.subheader("🎓 Exam Project Toolkit")
         st.markdown("*Practice planning and executing your comprehensive data analysis project*")
         st.markdown("---")
         
@@ -32358,7 +32970,7 @@ Target Length: {structure['page_range']}
                 placeholder="e.g., March 15, 2026"
             )
             
-            if st.button("Generate Problem Statement", type="primary", icon=":material/description:"):
+            if st.button("📝 Generate Problem Statement", type="primary"):
                 if organization and topic and action:
                     st.markdown("---")
                     st.markdown("### Your Problem Statement")
@@ -32381,16 +32993,15 @@ This analysis will examine **{data_sources if data_sources else '[specify data s
                     
                     for check, passed in checks:
                         if passed:
-                            st.markdown(f"{check}")
+                            st.markdown(f"✅ {check}")
                         else:
-                            st.markdown(f"{check} - *add this for completeness*")
+                            st.markdown(f"⚠️ {check} - *add this for completeness*")
                     
                     st.download_button(
-                        "Download Problem Statement",
+                        "📥 Download Problem Statement",
                         data=problem_statement,
                         file_name="problem_statement.md",
-                        mime="text/markdown",
-                        icon=":material/download:"
+                        mime="text/markdown"
                     )
                 else:
                     st.warning("Please fill in organization, topic, and purpose at minimum.")
@@ -32407,13 +33018,13 @@ This analysis will examine **{data_sources if data_sources else '[specify data s
             
             col1, col2 = st.columns(2)
             with col1:
-                st.markdown("**In Scope** (what you WILL do)")
+                st.markdown("**✅ In Scope** (what you WILL do)")
                 in_scope_1 = st.text_input("Question 1:", placeholder="e.g., Analyze sales trends for 2024-2025", key="scope_in_1")
                 in_scope_2 = st.text_input("Question 2:", placeholder="e.g., Identify top-performing products", key="scope_in_2")
                 in_scope_3 = st.text_input("Question 3:", placeholder="e.g., Create visualization dashboard", key="scope_in_3")
             
             with col2:
-                st.markdown("**Out of Scope** (explicitly excluded)")
+                st.markdown("**❌ Out of Scope** (explicitly excluded)")
                 out_scope_1 = st.text_input("Excluded 1:", placeholder="e.g., Competitor analysis", key="scope_out_1")
                 out_scope_2 = st.text_input("Excluded 2:", placeholder="e.g., Predictive modeling", key="scope_out_2")
                 out_scope_3 = st.text_input("Excluded 3:", placeholder="e.g., Real-time data integration", key="scope_out_3")
@@ -32433,9 +33044,9 @@ This analysis will examine **{data_sources if data_sources else '[specify data s
             if total_pct != 100:
                 st.warning(f"Total allocation is {total_pct}%. Adjust to equal 100%.")
             else:
-                st.success("Time allocation totals 100%")
+                st.success("✅ Time allocation totals 100%")
             
-            if st.button("Generate Project Scope Document", type="primary", icon=":material/description:"):
+            if st.button("📊 Generate Project Scope Document", type="primary"):
                 st.markdown("---")
                 st.markdown("### Project Scope Document")
                 
@@ -32472,8 +33083,7 @@ This analysis will examine **{data_sources if data_sources else '[specify data s
                     "Download Scope Document",
                     data=scope_doc,
                     file_name="project_scope.md",
-                    mime="text/markdown",
-                    icon=":material/download:"
+                    mime="text/markdown"
                 )
         
         elif toolkit_mode == "Quality Self-Assessment":
@@ -32516,7 +33126,7 @@ This analysis will examine **{data_sources if data_sources else '[specify data s
                 for i, item in enumerate(items):
                     scores[item] = st.slider(item, 1, 5, 3, key=f"qa_{category}_{i}")
             
-            if st.button("Generate Assessment Report", type="primary", icon=":material/summarize:"):
+            if st.button("📋 Generate Assessment Report", type="primary"):
                 st.markdown("---")
                 st.markdown("### Your Assessment Results")
                 
@@ -32535,7 +33145,7 @@ This analysis will examine **{data_sources if data_sources else '[specify data s
                 weak_areas = [item for item, score in scores.items() if score < 3]
                 if weak_areas:
                     for area in weak_areas:
-                        st.markdown(f"- {area}")
+                        st.markdown(f"- ⚠️ {area}")
                 else:
                     st.markdown("No critical areas identified - great work!")
                 
@@ -32543,7 +33153,7 @@ This analysis will examine **{data_sources if data_sources else '[specify data s
                 strong_areas = [item for item, score in scores.items() if score >= 4]
                 if strong_areas:
                     for area in strong_areas:
-                        st.markdown(f"- {area}")
+                        st.markdown(f"- ✅ {area}")
         
         elif toolkit_mode == "Presentation Planner":
             st.markdown("### Presentation Planner")
@@ -32579,7 +33189,7 @@ This analysis will examine **{data_sources if data_sources else '[specify data s
             if allocated != total_time:
                 st.warning(f"Allocated {allocated} minutes, but total is {total_time} minutes. Adjust to match.")
             else:
-                st.success(f"Time allocation matches {total_time} minutes")
+                st.success(f"✅ Time allocation matches {total_time} minutes")
             
             st.markdown("---")
             st.markdown("### Key Points per Section")
@@ -32593,7 +33203,7 @@ This analysis will examine **{data_sources if data_sources else '[specify data s
                     key=f"kp_{section}"
                 )
             
-            if st.button("Generate Presentation Outline", type="primary", icon=":material/slideshow:"):
+            if st.button("📊 Generate Presentation Outline", type="primary"):
                 st.markdown("---")
                 st.markdown("### Your Presentation Outline")
                 
@@ -32622,12 +33232,11 @@ Total Time: {total_time} minutes
                     "Download Outline",
                     data=outline,
                     file_name="presentation_outline.md",
-                    mime="text/markdown",
-                    icon=":material/download:"
+                    mime="text/markdown"
                 )
 
 elif page == "About":
-    mui_title("info", "About the Data Analyst Program")
+    st.title("ℹ️ About the Data Analyst Program")
     st.markdown("---")
     
     st.markdown("""
@@ -32691,3 +33300,188 @@ elif page == "About":
     
     📖 [View full study catalog](https://studiekatalog.edutorium.no/voc/en/programme/PDAN/2025-autumn)
     """)
+
+elif page == "Progression Plan":
+    from datetime import date as _date, datetime as _datetime
+    st.title("📅 Progression Plan")
+    st.markdown("**OCT 2025 Full-Time Data Analyst – Year 1 Schedule**")
+    st.markdown("---")
+
+    # ── All course events for OCT 2025 FT cohort ──────────────────────────────
+    _EVENTS = [
+        # Enrollment / IC
+        {"date": "2025-10-13", "name": "Enrollment / Course Start",                   "type": "enrollment",      "course": "IC",  "course_name": "Introduction Course"},
+        {"date": "2025-10-14", "name": "Introduction Course Begins",                   "type": "module_start",    "course": "IC",  "course_name": "Introduction Course"},
+        {"date": "2025-10-19", "name": "Introduction Course Deadline",                 "type": "deadline",        "course": "IC",  "course_name": "Introduction Course"},
+        # DAF
+        {"date": "2025-10-20", "name": "DAF – Module 1 starts",                        "type": "module_start",    "course": "DAF", "course_name": "Data Analysis Fundamentals"},
+        {"date": "2025-10-27", "name": "DAF – Module 2 starts",                        "type": "module_start",    "course": "DAF", "course_name": "Data Analysis Fundamentals"},
+        {"date": "2025-11-03", "name": "DAF Assessment Week begins",                   "type": "assessment_start","course": "DAF", "course_name": "Data Analysis Fundamentals"},
+        {"date": "2025-11-09", "name": "DAF Assessment Deadline (Sun 23:59)",          "type": "deadline",        "course": "DAF", "course_name": "Data Analysis Fundamentals"},
+        # SPF
+        {"date": "2025-11-10", "name": "SPF – Module 1 starts",                        "type": "module_start",    "course": "SPF", "course_name": "Spreadsheet Fundamentals"},
+        {"date": "2025-11-17", "name": "SPF – Module 2 starts",                        "type": "module_start",    "course": "SPF", "course_name": "Spreadsheet Fundamentals"},
+        {"date": "2025-11-24", "name": "SPF Assessment Week begins",                   "type": "assessment_start","course": "SPF", "course_name": "Spreadsheet Fundamentals"},
+        {"date": "2025-11-30", "name": "SPF Assessment Deadline (Sun 23:59)",          "type": "deadline",        "course": "SPF", "course_name": "Spreadsheet Fundamentals"},
+        # DDM
+        {"date": "2025-12-01", "name": "DDM – Module 1 starts",                        "type": "module_start",    "course": "DDM", "course_name": "Data Driven Decision-Making"},
+        {"date": "2025-12-07", "name": "SPF Late/Resubmission Deadline",               "type": "deadline",        "course": "SPF", "course_name": "Spreadsheet Fundamentals"},
+        {"date": "2025-12-08", "name": "DDM – Module 2 starts",                        "type": "module_start",    "course": "DDM", "course_name": "Data Driven Decision-Making"},
+        {"date": "2025-12-15", "name": "DDM – Module 3 starts",                        "type": "module_start",    "course": "DDM", "course_name": "Data Driven Decision-Making"},
+        {"date": "2026-01-05", "name": "DDM Assessment Week begins",                   "type": "assessment_start","course": "DDM", "course_name": "Data Driven Decision-Making"},
+        {"date": "2026-01-11", "name": "DDM Assessment Deadline (Sun 23:59)",          "type": "deadline",        "course": "DDM", "course_name": "Data Driven Decision-Making"},
+        # STT
+        {"date": "2026-01-12", "name": "STT – Module 1 starts",                        "type": "module_start",    "course": "STT", "course_name": "Statistical Tools"},
+        {"date": "2026-01-19", "name": "STT – Module 2 starts",                        "type": "module_start",    "course": "STT", "course_name": "Statistical Tools"},
+        {"date": "2026-01-26", "name": "STT Assessment Week begins",                   "type": "assessment_start","course": "STT", "course_name": "Statistical Tools"},
+        {"date": "2026-02-01", "name": "STT Assessment Deadline (Sun 23:59)",          "type": "deadline",        "course": "STT", "course_name": "Statistical Tools"},
+        # SP1 – Semester Project
+        {"date": "2026-02-02", "name": "SP1 Semester Project – Week 1",                "type": "module_start",    "course": "SP1", "course_name": "Semester Project"},
+        {"date": "2026-02-09", "name": "SP1 Semester Project – Week 2",                "type": "module_start",    "course": "SP1", "course_name": "Semester Project"},
+        {"date": "2026-02-16", "name": "SP1 Semester Project – Week 3",                "type": "module_start",    "course": "SP1", "course_name": "Semester Project"},
+        {"date": "2026-02-23", "name": "SP1 Semester Project – Final Week begins",     "type": "assessment_start","course": "SP1", "course_name": "Semester Project"},
+        {"date": "2026-03-01", "name": "SP1 Semester Project Deadline (Sun 23:59)",    "type": "deadline",        "course": "SP1", "course_name": "Semester Project"},
+        # EVO
+        {"date": "2026-03-02", "name": "EVO – Module 1 starts",                        "type": "module_start",    "course": "EVO", "course_name": "Evaluation of Outcomes"},
+        {"date": "2026-03-09", "name": "EVO – Module 2 starts",                        "type": "module_start",    "course": "EVO", "course_name": "Evaluation of Outcomes"},
+        {"date": "2026-03-16", "name": "EVO – Module 3 starts",                        "type": "module_start",    "course": "EVO", "course_name": "Evaluation of Outcomes"},
+        {"date": "2026-03-23", "name": "EVO – Module 4 starts",                        "type": "module_start",    "course": "EVO", "course_name": "Evaluation of Outcomes"},
+        {"date": "2026-04-06", "name": "EVO – Module 5 starts",                        "type": "module_start",    "course": "EVO", "course_name": "Evaluation of Outcomes"},
+        {"date": "2026-04-13", "name": "EVO – Module 6 starts",                        "type": "module_start",    "course": "EVO", "course_name": "Evaluation of Outcomes"},
+        {"date": "2026-04-20", "name": "EVO – Module 7 starts",                        "type": "module_start",    "course": "EVO", "course_name": "Evaluation of Outcomes"},
+        {"date": "2026-04-27", "name": "EVO Assessment Week begins",                   "type": "assessment_start","course": "EVO", "course_name": "Evaluation of Outcomes"},
+        {"date": "2026-05-03", "name": "EVO Assessment Deadline (Sun 23:59)",          "type": "deadline",        "course": "EVO", "course_name": "Evaluation of Outcomes"},
+        # DVS
+        {"date": "2026-05-04", "name": "DVS – Module 1 starts",                        "type": "module_start",    "course": "DVS", "course_name": "Data Visualisation"},
+        {"date": "2026-05-11", "name": "DVS – Module 2 starts",                        "type": "module_start",    "course": "DVS", "course_name": "Data Visualisation"},
+        {"date": "2026-05-18", "name": "DVS – Module 3 starts",                        "type": "module_start",    "course": "DVS", "course_name": "Data Visualisation"},
+        {"date": "2026-05-25", "name": "DVS – Module 4 starts",                        "type": "module_start",    "course": "DVS", "course_name": "Data Visualisation"},
+        {"date": "2026-06-01", "name": "DVS Assessment Week begins",                   "type": "assessment_start","course": "DVS", "course_name": "Data Visualisation"},
+        {"date": "2026-06-07", "name": "DVS Assessment Deadline (Sun 23:59)",          "type": "deadline",        "course": "DVS", "course_name": "Data Visualisation"},
+        # ARP
+        {"date": "2026-08-10", "name": "ARP – Module 1 starts",                        "type": "module_start",    "course": "ARP", "course_name": "Analysis Reporting"},
+        {"date": "2026-08-17", "name": "ARP – Module 2 starts",                        "type": "module_start",    "course": "ARP", "course_name": "Analysis Reporting"},
+        {"date": "2026-08-24", "name": "ARP Assessment Week begins",                   "type": "assessment_start","course": "ARP", "course_name": "Analysis Reporting"},
+        {"date": "2026-08-30", "name": "ARP Assessment Deadline (Sun 23:59)",          "type": "deadline",        "course": "ARP", "course_name": "Analysis Reporting"},
+        # EP1 – Exam Project
+        {"date": "2026-08-31", "name": "EP1 Exam Project – Week 1",                    "type": "module_start",    "course": "EP1", "course_name": "Exam Project 1"},
+        {"date": "2026-09-07", "name": "EP1 Exam Project – Week 2",                    "type": "module_start",    "course": "EP1", "course_name": "Exam Project 1"},
+        {"date": "2026-09-14", "name": "EP1 Exam Project – Week 3",                    "type": "module_start",    "course": "EP1", "course_name": "Exam Project 1"},
+        {"date": "2026-09-21", "name": "EP1 Exam Project – Week 4",                    "type": "module_start",    "course": "EP1", "course_name": "Exam Project 1"},
+        {"date": "2026-09-28", "name": "EP1 Exam Project – Week 5",                    "type": "module_start",    "course": "EP1", "course_name": "Exam Project 1"},
+        {"date": "2026-10-05", "name": "EP1 Exam Project – Final Week begins",         "type": "assessment_start","course": "EP1", "course_name": "Exam Project 1"},
+        {"date": "2026-10-11", "name": "EP1 Exam Project 1 – FINAL DELIVERY (Sun 23:59)", "type": "deadline",    "course": "EP1", "course_name": "Exam Project 1"},
+    ]
+
+    # ── Course colour palette ─────────────────────────────────────────────────
+    _COURSE_COLOURS = {
+        "IC":  "#9b59b6", "DAF": "#3498db", "SPF": "#e67e22",
+        "DDM": "#1abc9c", "STT": "#e74c3c", "SP1": "#f39c12",
+        "EVO": "#2ecc71", "DVS": "#8e44ad", "ARP": "#16a085",
+        "EP1": "#c0392b",
+    }
+
+    _today = _date.today()
+
+    # ── Filter controls ───────────────────────────────────────────────────────
+    _col_f1, _col_f2, _col_f3 = st.columns([2, 2, 3])
+    with _col_f1:
+        _view = st.selectbox("Show", ["All Events", "Upcoming Only", "Deadlines Only", "Module Starts Only"], key="pp_view")
+    with _col_f2:
+        _courses_all = ["All Courses"] + sorted(set(e["course"] for e in _EVENTS))
+        _course_filter = st.selectbox("Course", _courses_all, key="pp_course")
+    with _col_f3:
+        st.markdown("")
+
+    # ── Summary counts ────────────────────────────────────────────────────────
+    _past   = sum(1 for e in _EVENTS if _datetime.strptime(e["date"], "%Y-%m-%d").date() < _today)
+    _soon   = sum(1 for e in _EVENTS if 0 <= (_datetime.strptime(e["date"], "%Y-%m-%d").date() - _today).days <= 14)
+    _future = sum(1 for e in _EVENTS if (_datetime.strptime(e["date"], "%Y-%m-%d").date() - _today).days > 14)
+
+    _s1, _s2, _s3, _s4 = st.columns(4)
+    _s1.metric("Total Events", len(_EVENTS))
+    _s2.metric("Completed", _past)
+    _s3.metric("Due in ≤14 days", _soon)
+    _s4.metric("Upcoming (>14 days)", _future)
+    st.markdown("---")
+
+    # ── Render each event ─────────────────────────────────────────────────────
+    _type_icons = {
+        "enrollment":      "🎓",
+        "module_start":    "📖",
+        "assessment_start":"✏️",
+        "deadline":        "⏰",
+    }
+
+    for _evt in _EVENTS:
+        _edate = _datetime.strptime(_evt["date"], "%Y-%m-%d").date()
+        _delta = (_edate - _today).days
+
+        # Apply filters
+        if _view == "Upcoming Only" and _delta < 0:
+            continue
+        if _view == "Deadlines Only" and _evt["type"] != "deadline":
+            continue
+        if _view == "Module Starts Only" and _evt["type"] not in ("module_start", "enrollment"):
+            continue
+        if _course_filter != "All Courses" and _evt["course"] != _course_filter:
+            continue
+
+        # Status colour & countdown text
+        if _delta < 0:
+            _status_emoji = "✅"
+            _countdown = f"{abs(_delta)} days ago"
+            _bg = "#1a1a2e"
+            _border = "#2d2d4e"
+        elif _delta == 0:
+            _status_emoji = "🔥"
+            _countdown = "TODAY!"
+            _bg = "#3d1a00"
+            _border = "#e74c3c"
+        elif _delta <= 3:
+            _status_emoji = "🔴"
+            _countdown = f"in {_delta} day{'s' if _delta != 1 else ''}"
+            _bg = "#3d0000"
+            _border = "#e74c3c"
+        elif _delta <= 14:
+            _status_emoji = "🟡"
+            _countdown = f"in {_delta} days"
+            _bg = "#2d2200"
+            _border = "#f39c12"
+        else:
+            _status_emoji = "🟢"
+            _countdown = f"in {_delta} days"
+            _bg = "#0d2d1a"
+            _border = "#2ecc71"
+
+        _course_colour = _COURSE_COLOURS.get(_evt["course"], "#555")
+        _icon = _type_icons.get(_evt["type"], "📌")
+
+        st.markdown(f"""
+<div style="
+    background:{_bg};
+    border-left: 5px solid {_border};
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+">
+  <div style="min-width:56px; text-align:center;">
+    <span style="background:{_course_colour}; color:#fff; font-size:11px; font-weight:700;
+                 padding:3px 7px; border-radius:12px; display:inline-block;">{_evt['course']}</span>
+  </div>
+  <div style="flex:1;">
+    <div style="font-size:15px; font-weight:600; color:#f0f0f0;">{_icon} {_evt['name']}</div>
+    <div style="font-size:12px; color:#aaa; margin-top:2px;">{_evt['course_name']}</div>
+  </div>
+  <div style="text-align:right; min-width:130px;">
+    <div style="font-size:13px; color:#ddd; font-weight:600;">{_edate.strftime('%a %d %b %Y')}</div>
+    <div style="font-size:13px; color:{_border}; font-weight:700; margin-top:2px;">{_status_emoji} {_countdown}</div>
+  </div>
+</div>
+""", unsafe_allow_html=True)
+
+    st.markdown("---")
+    st.caption("📋 Source: PROGRESSION PLAN DA1 FT (OCT 2025 cohort) · Updated 16 December 2025")
