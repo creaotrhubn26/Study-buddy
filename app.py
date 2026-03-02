@@ -7,6 +7,12 @@ import time
 import re
 from datetime import datetime, timedelta, date
 from streamlit.components.v1 import html
+from study_buddy_state import (
+    PROGRAM_DEADLINES,
+    COURSE_PROGRESSION_MAP,
+    load_persisted_state,
+    save_persisted_state,
+)
 try:
     from spellchecker import SpellChecker
     SPELLCHECK_AVAILABLE = True
@@ -25460,6 +25466,8 @@ competence_outcomes = [
     "Develop products of relevance to data analysis and optimize own work methods"
 ]
 
+load_persisted_state(st.session_state)
+
 # Initialize session state
 if 'completed_courses' not in st.session_state:
     st.session_state.completed_courses = []
@@ -25549,13 +25557,39 @@ def evaluate_answer(question, correct_answer, user_answer):
     except Exception as e:
         return f"Error evaluating answer: {str(e)}"
 
+all_pages = [
+    "Overview", "Course Plan", "Training Center", "Playground", "Learn & Practice",
+    "Study Notes", "Flashcards", "Exam Simulator", "Code Library", "Formula Reference",
+    "Study Timer", "Progress", "Learning Outcomes", "Progression Plan", "About"
+]
+
+navigation_groups = {
+    "Dashboard": ["Overview", "Progress", "Progression Plan", "Learning Outcomes"],
+    "Learning": ["Course Plan", "Training Center", "Learn & Practice", "Playground"],
+    "Study Tools": ["Study Notes", "Flashcards", "Code Library", "Formula Reference", "Study Timer"],
+    "Assessment": ["Exam Simulator"],
+    "Info": ["About"]
+}
+
+page_to_section = {page_name: section for section, pages in navigation_groups.items() for page_name in pages}
+
+if "last_page" not in st.session_state:
+    st.session_state.last_page = "Overview"
+if "nav_section" not in st.session_state:
+    st.session_state.nav_section = page_to_section.get(st.session_state.last_page, "Dashboard")
+if st.session_state.nav_section not in navigation_groups:
+    st.session_state.nav_section = "Dashboard"
+
 st.sidebar.title("📊 Navigation")
-page = st.sidebar.radio(
-    "Select page:",
-    ["Overview", "Course Plan", "Training Center", "Playground", "Learn & Practice", 
-     "Study Notes", "Flashcards", "Exam Simulator", "Code Library", "Formula Reference", 
-     "Study Timer", "Progress", "Learning Outcomes", "Progression Plan", "About"]
-)
+st.sidebar.selectbox("Section:", options=list(navigation_groups.keys()), key="nav_section")
+
+pages_in_section = navigation_groups[st.session_state.nav_section]
+if st.session_state.get("nav_page") not in pages_in_section:
+    fallback_page = st.session_state.get("last_page", "Overview")
+    st.session_state.nav_page = fallback_page if fallback_page in pages_in_section else pages_in_section[0]
+
+page = st.sidebar.radio("Select page:", pages_in_section, key="nav_page")
+st.session_state.last_page = page
 
 if page == "Overview":
     st.title("🎓 Data Analyst 2 - Study App")
@@ -25575,7 +25609,74 @@ if page == "Overview":
     with col4:
         progress_pct = (completed_credits / total_credits * 100) if total_credits > 0 else 0
         st.metric("Progress", f"{progress_pct:.0f}%")
+
+    last_page = st.session_state.get("last_page", "Training Center")
+    last_course = st.session_state.get("last_selected_course")
+    last_topic = st.session_state.get("last_selected_topic")
+    if last_page or last_course or last_topic:
+        st.subheader("▶ Continue Where You Left Off")
+        resume_page = last_page if last_page in all_pages else "Training Center"
+        details = [f"**Page:** {resume_page}"]
+        if last_course:
+            details.append(f"**Course:** {last_course}")
+        if last_topic:
+            details.append(f"**Topic:** {last_topic}")
+        st.markdown(" · ".join(details))
+
+        if st.button("Resume Study", type="primary", key="resume_study_btn"):
+            st.session_state.nav_section = page_to_section.get(resume_page, "Dashboard")
+            st.session_state.nav_page = resume_page
+            st.rerun()
     
+    st.markdown("---")
+    st.subheader("📌 Today")
+    today_col1, today_col2 = st.columns(2)
+
+    with today_col1:
+        _today = date.today()
+        _upcoming_deadlines = []
+        for _code, _name, _date_str in PROGRAM_DEADLINES:
+            _deadline_date = datetime.strptime(_date_str, "%Y-%m-%d").date()
+            _days_left = (_deadline_date - _today).days
+            if _days_left >= 0:
+                _upcoming_deadlines.append((_days_left, _code, _name, _deadline_date))
+
+        if _upcoming_deadlines:
+            _upcoming_deadlines.sort(key=lambda x: x[0])
+            _days_left, _code, _name, _deadline_date = _upcoming_deadlines[0]
+            if _days_left == 0:
+                _countdown = "Due today"
+            elif _days_left == 1:
+                _countdown = "1 day left"
+            else:
+                _countdown = f"{_days_left} days left"
+
+            st.info(
+                f"**Next deadline:** {_code} — {_name}  \n"
+                f"**Date:** {_deadline_date.strftime('%d %b %Y')} · **{_countdown}**"
+            )
+        else:
+            st.success("No upcoming deadlines in the current schedule.")
+
+    with today_col2:
+        _current_topic = st.session_state.get("last_selected_topic")
+        if _current_topic:
+            _topic_progress = st.session_state.training_progress.get(_current_topic, {})
+            _lessons_done = _topic_progress.get("lessons_completed", 0)
+            _lessons_total = len(training_modules.get(_current_topic, {}).get("lessons", []))
+            _quiz_score = _topic_progress.get("quiz_score")
+
+            _topic_lines = [
+                f"**Current topic:** {_current_topic}",
+                f"**Lessons:** {_lessons_done}/{_lessons_total if _lessons_total else 0}"
+            ]
+            if _quiz_score is not None:
+                _topic_lines.append(f"**Latest quiz score:** {_quiz_score}%")
+
+            st.info("  \n".join(_topic_lines))
+        else:
+            st.info("No active topic yet. Start from **Training Center** to set your focus.")
+
     st.markdown("---")
     st.subheader("📅 Study Path")
     
@@ -25617,19 +25718,8 @@ if page == "Overview":
         st.subheader("⏰ Upcoming Deadlines")
         from datetime import date as _ov_date, datetime as _ov_dt
         _ov_today = _ov_date.today()
-        _ov_deadlines = [
-            ("DAF", "Data Analysis Fundamentals",    "2025-11-09"),
-            ("SPF", "Spreadsheet Fundamentals",      "2025-11-30"),
-            ("DDM", "Data Driven Decision-Making",   "2026-01-11"),
-            ("STT", "Statistical Tools",             "2026-02-01"),
-            ("SP1", "Semester Project",              "2026-03-01"),
-            ("EVO", "Evaluation of Outcomes",        "2026-05-03"),
-            ("DVS", "Data Visualisation",            "2026-06-07"),
-            ("ARP", "Analysis Reporting",            "2026-08-30"),
-            ("EP1", "Exam Project 1",                "2026-10-11"),
-        ]
         _ov_shown = 0
-        for _ov_code, _ov_cname, _ov_dl_str in _ov_deadlines:
+        for _ov_code, _ov_cname, _ov_dl_str in PROGRAM_DEADLINES:
             _ov_dl = _ov_dt.strptime(_ov_dl_str, "%Y-%m-%d").date()
             _ov_days = (_ov_dl - _ov_today).days
             if _ov_days < 0:
@@ -25847,9 +25937,15 @@ elif page == "Training Center":
     with col1:
         # Semester filter
         available_semesters = sorted(organized_topics.keys())
+        semester_options = ["All Semesters"] + available_semesters
+        default_semester = st.session_state.get("tc_semester_filter", "All Semesters")
+        if default_semester not in semester_options:
+            default_semester = "All Semesters"
         selected_semester = st.selectbox(
             "📅 Semester:",
-            options=["All Semesters"] + available_semesters
+            options=semester_options,
+            index=semester_options.index(default_semester),
+            key="tc_semester_filter"
         )
     
     with col2:
@@ -25875,9 +25971,21 @@ elif page == "Training Center":
             course_display_map[display] = course
         
         course_options = ["All Courses"] + list(course_display_map.keys())
+        default_course_display = "All Courses"
+        persisted_course = st.session_state.get("last_selected_course")
+        if persisted_course:
+            for display_name, course_name in course_display_map.items():
+                if course_name == persisted_course:
+                    default_course_display = display_name
+                    break
+        if st.session_state.get("tc_course_filter") in course_options:
+            default_course_display = st.session_state.get("tc_course_filter")
+
         selected_course_display = st.selectbox(
             "📚 Course:",
-            options=course_options
+            options=course_options,
+            index=course_options.index(default_course_display),
+            key="tc_course_filter"
         )
         
         # Map back to actual course name
@@ -25918,11 +26026,14 @@ elif page == "Training Center":
     selected_display = st.selectbox(
         "🎯 Select Topic:",
         options=topic_options,
-        format_func=lambda x: x
+        format_func=lambda x: x,
+        index=topic_options.index(st.session_state.get("last_selected_topic")) if st.session_state.get("last_selected_topic") in topic_options else 0,
+        key="tc_topic"
     )
     
     # Find the actual topic
     selected_topic = selected_display
+    st.session_state.last_selected_topic = selected_topic
     
     # Find course and semester for display
     topic_course = None
@@ -25932,6 +26043,9 @@ elif page == "Training Center":
             topic_course = course
             topic_semester = semester
             break
+
+    if topic_course:
+        st.session_state.last_selected_course = topic_course
     
     module = training_modules[selected_topic]
     
@@ -25945,19 +26059,9 @@ elif page == "Training Center":
     st.markdown(f"*{module['description']}*")
 
     # ── Progression Plan reminder banner ─────────────────────────────────────
-    _pp_course_map = {
-        "Data Analysis Fundamentals":    ("DAF", "2025-11-03", "2025-11-09"),
-        "Spreadsheet Fundamentals":      ("SPF", "2025-11-24", "2025-11-30"),
-        "Data Driven Decision-Making":   ("DDM", "2026-01-05", "2026-01-11"),
-        "Statistical Tools":             ("STT", "2026-01-26", "2026-02-01"),
-        "Semester Project 1":            ("SP1", "2026-02-23", "2026-03-01"),
-        "Evaluation of Outcomes":        ("EVO", "2026-04-27", "2026-05-03"),
-        "Data Visualisation":            ("DVS", "2026-06-01", "2026-06-07"),
-        "Analysis Reporting":            ("ARP", "2026-08-24", "2026-08-30"),
-    }
-    if topic_course in _pp_course_map:
+    if topic_course in COURSE_PROGRESSION_MAP:
         from datetime import date as _pp_date, datetime as _pp_dt
-        _pp_code, _pp_start_str, _pp_dl_str = _pp_course_map[topic_course]
+        _pp_code, _pp_start_str, _pp_dl_str = COURSE_PROGRESSION_MAP[topic_course]
         _pp_today = _pp_date.today()
         _pp_start = _pp_dt.strptime(_pp_start_str, "%Y-%m-%d").date()
         _pp_dl    = _pp_dt.strptime(_pp_dl_str,    "%Y-%m-%d").date()
@@ -26312,32 +26416,33 @@ elif page == "Learn & Practice":
     
     # Note: Mermaid.js will be loaded per diagram using st.components.v1.html
     
+    _lp_course_options = [f"{c['code']} - {c['name']}" for c in courses_data]
+    _lp_default_index = 0
+    _lp_saved_course = st.session_state.get("last_selected_course")
+    if _lp_saved_course:
+        for _idx, _label in enumerate(_lp_course_options):
+            if _label.endswith(f"- {_lp_saved_course}"):
+                _lp_default_index = _idx
+                break
+
     selected_course = st.selectbox(
         "Select a course to study:",
-        options=[f"{c['code']} - {c['name']}" for c in courses_data],
-        index=0
+        options=_lp_course_options,
+        index=_lp_default_index,
+        key="lp_selected_course"
     )
     
     course_code = selected_course.split(" - ")[0]
     course = next(c for c in courses_data if c["code"] == course_code)
+    st.session_state.last_selected_course = course["name"]
     
     st.markdown("---")
     
     # ── Progression Plan reminder (Learn & Practice) ──────────────────────────
-    _lp_course_map = {
-        "Data Analysis Fundamentals":    ("DAF", "2025-11-03", "2025-11-09"),
-        "Spreadsheet Fundamentals":      ("SPF", "2025-11-24", "2025-11-30"),
-        "Data Driven Decision-Making":   ("DDM", "2026-01-05", "2026-01-11"),
-        "Statistical Tools":             ("STT", "2026-01-26", "2026-02-01"),
-        "Semester Project 1":            ("SP1", "2026-02-23", "2026-03-01"),
-        "Evaluation of Outcomes":        ("EVO", "2026-04-27", "2026-05-03"),
-        "Data Visualisation":            ("DVS", "2026-06-01", "2026-06-07"),
-        "Analysis Reporting":            ("ARP", "2026-08-24", "2026-08-30"),
-    }
     _lp_cname = course['name']
-    if _lp_cname in _lp_course_map:
+    if _lp_cname in COURSE_PROGRESSION_MAP:
         from datetime import date as _lp_date, datetime as _lp_dt
-        _lp_code, _lp_start_str, _lp_dl_str = _lp_course_map[_lp_cname]
+        _lp_code, _lp_start_str, _lp_dl_str = COURSE_PROGRESSION_MAP[_lp_cname]
         _lp_today = _lp_date.today()
         _lp_start = _lp_dt.strptime(_lp_start_str, "%Y-%m-%d").date()
         _lp_dl    = _lp_dt.strptime(_lp_dl_str,    "%Y-%m-%d").date()
@@ -33485,3 +33590,5 @@ elif page == "Progression Plan":
 
     st.markdown("---")
     st.caption("📋 Source: PROGRESSION PLAN DA1 FT (OCT 2025 cohort) · Updated 16 December 2025")
+
+save_persisted_state(st.session_state)
