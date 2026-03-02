@@ -33491,7 +33491,11 @@ elif page == "Progression Plan":
     # ── Filter controls ───────────────────────────────────────────────────────
     _col_f1, _col_f2, _col_f3 = st.columns([2, 2, 3])
     with _col_f1:
-        _view = st.selectbox("Show", ["All Events", "Upcoming Only", "Deadlines Only", "Module Starts Only"], key="pp_view")
+        _view = st.selectbox(
+            "Show",
+            ["All Events", "Upcoming Only", "Deadlines Only", "Module Starts Only", "Resit Assignments"],
+            key="pp_view"
+        )
     with _col_f2:
         _courses_all = ["All Courses"] + sorted(set(e["course"] for e in _EVENTS))
         _course_filter = st.selectbox("Course", _courses_all, key="pp_course")
@@ -33508,6 +33512,43 @@ elif page == "Progression Plan":
     _s2.metric("Completed", _past)
     _s3.metric("Due in ≤14 days", _soon)
     _s4.metric("Upcoming (>14 days)", _future)
+
+    _resit_events = [
+        e for e in _EVENTS
+        if e["type"] == "deadline" and re.search(r"resit|resubmission|late", e["name"], flags=re.IGNORECASE)
+    ]
+    _resit_upcoming = sum(
+        1 for e in _resit_events
+        if _datetime.strptime(e["date"], "%Y-%m-%d").date() >= _today
+    )
+    _resit_completed = len(_resit_events) - _resit_upcoming
+
+    st.markdown("### 🔁 Resit Assignments")
+    _r1, _r2, _r3 = st.columns(3)
+    _r1.metric("Total Resits", len(_resit_events))
+    _r2.metric("Upcoming", _resit_upcoming)
+    _r3.metric("Completed", _resit_completed)
+
+    if _resit_events:
+        _sorted_resits = sorted(_resit_events, key=lambda x: x["date"])
+        for _resit in _sorted_resits:
+            _resit_date = _datetime.strptime(_resit["date"], "%Y-%m-%d").date()
+            _resit_days = (_resit_date - _today).days
+            if _resit_days < 0:
+                _resit_status = f"✅ Completed ({abs(_resit_days)} days ago)"
+            elif _resit_days == 0:
+                _resit_status = "🔥 Due today"
+            elif _resit_days == 1:
+                _resit_status = "🟡 1 day left"
+            else:
+                _resit_status = f"🟡 {_resit_days} days left"
+
+            st.markdown(
+                f"- **{_resit['course']}** · {_resit['name']} · {_resit_date.strftime('%d %b %Y')} · {_resit_status}"
+            )
+    else:
+        st.info("No resit assignments registered in the progression plan.")
+
     st.markdown("---")
 
     # ── Render each event ─────────────────────────────────────────────────────
@@ -33528,6 +33569,10 @@ elif page == "Progression Plan":
         if _view == "Deadlines Only" and _evt["type"] != "deadline":
             continue
         if _view == "Module Starts Only" and _evt["type"] not in ("module_start", "enrollment"):
+            continue
+        if _view == "Resit Assignments" and not (
+            _evt["type"] == "deadline" and re.search(r"resit|resubmission|late", _evt["name"], flags=re.IGNORECASE)
+        ):
             continue
         if _course_filter != "All Courses" and _evt["course"] != _course_filter:
             continue
