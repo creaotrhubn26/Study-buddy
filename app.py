@@ -63,9 +63,16 @@ st.set_page_config(
     layout="wide"
 )
 
-client = OpenAI(
-    api_key=os.environ.get("AI_INTEGRATIONS_OPENAI_API_KEY"),
-    base_url=os.environ.get("AI_INTEGRATIONS_OPENAI_BASE_URL")
+OPENAI_API_KEY = os.environ.get("AI_INTEGRATIONS_OPENAI_API_KEY") or os.environ.get("OPENAI_API_KEY")
+OPENAI_BASE_URL = os.environ.get("AI_INTEGRATIONS_OPENAI_BASE_URL")
+
+if OPENAI_API_KEY:
+    client = OpenAI(api_key=OPENAI_API_KEY, base_url=OPENAI_BASE_URL)
+else:
+    client = None
+
+AI_NOT_CONFIGURED_MESSAGE = (
+    "AI features are disabled: set `AI_INTEGRATIONS_OPENAI_API_KEY` or `OPENAI_API_KEY` to enable them."
 )
 
 # Training modules with structured lessons
@@ -21748,7 +21755,7 @@ This lesson provided the following insights:
         {
             "lesson_number": "1.4",
             "title": "Calculating Distributions",
-            "content": """
+            "content": r"""
 ### Introduction
 
 The features in a data set are the fundamental building blocks in a data analyst's arsenal in providing insights regarding the state of a situation or domain. Features may be used to describe a specific outcome or represent an outcome that requires description.
@@ -21847,7 +21854,7 @@ In essence, any technique that summarizes, organizes, and describes the properti
 
 #### Example: Cross-Tabulation
 
-| Gender \ Satisfaction | Low | Medium | High | Total |
+| Gender / Satisfaction | Low | Medium | High | Total |
 |-----------------------|-----|--------|------|-------|
 | Female | 8 | 22 | 30 | 60 |
 | Male | 10 | 18 | 12 | 40 |
@@ -22484,7 +22491,7 @@ The **relative frequency** of a category is the **percentage** (or proportion) t
 **Formula**:
 $$\text{Relative Frequency} = \frac{\text{Frequency Count}}{\text{Total Observations}}$$
 
-$$\text{Relative Frequency (\%)} = \frac{\text{Frequency Count}}{\text{Total Observations}} \times 100$$
+$$\text{Relative Frequency (\\%)} = \frac{\text{Frequency Count}}{\text{Total Observations}} \times 100$$
 
 ---
 
@@ -25521,6 +25528,9 @@ if 'important_dates' not in st.session_state:
     st.session_state.important_dates = []
 
 def generate_practice_question(course, question_type="general"):
+    if client is None:
+        return AI_NOT_CONFIGURED_MESSAGE
+
     course_info = f"Course: {course['name']}\nDescription: {course['description']}\nKnowledge topics: {', '.join(course['knowledge'][:3])}\nSkills: {', '.join(course['skills'][:3])}"
     
     prompts = {
@@ -25544,6 +25554,9 @@ def generate_practice_question(course, question_type="general"):
         return f"Error generating question: {str(e)}"
 
 def evaluate_answer(question, correct_answer, user_answer):
+    if client is None:
+        return AI_NOT_CONFIGURED_MESSAGE
+
     try:
         response = client.chat.completions.create(
             model="gpt-4o-mini",
@@ -28006,8 +28019,12 @@ elif page == "Study Notes":
                 }
                 
                 with st.spinner(f"AI is processing..."):
-                    try:
-                        system_prompt = f"""You are an expert study assistant for a Data Analyst vocational program at Noroff. 
+                    if client is None:
+                        st.warning(AI_NOT_CONFIGURED_MESSAGE)
+                        st.session_state.pop('ai_pending_action', None)
+                    else:
+                        try:
+                            system_prompt = f"""You are an expert study assistant for a Data Analyst vocational program at Noroff. 
 You help students learn data analysis concepts, tools, and techniques.
 
 Context about the program:
@@ -28023,22 +28040,22 @@ Guidelines:
 - Connect concepts to real-world data analysis scenarios
 - Be clear, concise, and educational
 - When relevant, reference course learning outcomes and skills"""
-                        
-                        response = client.chat.completions.create(
-                            model="gpt-4o-mini",
-                            messages=[
-                                {"role": "system", "content": system_prompt},
-                                {"role": "user", "content": prompts[action]}
-                            ],
-                            max_tokens=2000,
-                            temperature=0.7
-                        )
-                        st.session_state.ai_result = response.choices[0].message.content
-                        st.session_state.pop('ai_pending_action', None)
-                        st.rerun()
-                    except Exception as e:
-                        st.error(f"Error: {str(e)}")
-                        st.session_state.pop('ai_pending_action', None)
+
+                            response = client.chat.completions.create(
+                                model="gpt-4o-mini",
+                                messages=[
+                                    {"role": "system", "content": system_prompt},
+                                    {"role": "user", "content": prompts[action]}
+                                ],
+                                max_tokens=2000,
+                                temperature=0.7
+                            )
+                            st.session_state.ai_result = response.choices[0].message.content
+                            st.session_state.pop('ai_pending_action', None)
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"Error: {str(e)}")
+                            st.session_state.pop('ai_pending_action', None)
             elif st.session_state.get('ai_pending_action') and not content:
                 st.warning("Write some content first.")
                 st.session_state.pop('ai_pending_action', None)
@@ -28080,25 +28097,28 @@ Guidelines:
                     }
                     
                     with st.spinner("Generating content..."):
-                        try:
-                            system_prompt = f"""You are an expert study assistant for a Data Analyst vocational program at Noroff. 
+                        if client is None:
+                            st.warning(AI_NOT_CONFIGURED_MESSAGE)
+                        else:
+                            try:
+                                system_prompt = f"""You are an expert study assistant for a Data Analyst vocational program at Noroff. 
 Format your response in clean HTML (use <h2>, <h3>, <h4>, <p>, <ul>, <ol>, <li>, <table>, <tr>, <td>, <th>, <strong>, <em>, <blockquote>, <code> tags). 
 Always respond in English.
 Be practical and focused on real-world data analysis. {full_context if include_course_context else ''}"""
-                            
-                            response = client.chat.completions.create(
-                                model="gpt-4o-mini",
-                                messages=[
-                                    {"role": "system", "content": system_prompt},
-                                    {"role": "user", "content": type_prompts[gen_type]}
-                                ],
-                                max_tokens=2000,
-                                temperature=0.7
-                            )
-                            st.session_state.ai_result = response.choices[0].message.content
-                            st.rerun()
-                        except Exception as e:
-                            st.error(f"Error: {str(e)}")
+
+                                response = client.chat.completions.create(
+                                    model="gpt-4o-mini",
+                                    messages=[
+                                        {"role": "system", "content": system_prompt},
+                                        {"role": "user", "content": type_prompts[gen_type]}
+                                    ],
+                                    max_tokens=2000,
+                                    temperature=0.7
+                                )
+                                st.session_state.ai_result = response.choices[0].message.content
+                                st.rerun()
+                            except Exception as e:
+                                st.error(f"Error: {str(e)}")
                 else:
                     st.warning("Enter a topic first.")
         
@@ -28128,25 +28148,28 @@ Be practical and focused on real-world data analysis. {full_context if include_c
                     }
                     
                     with st.spinner("Analyzing..."):
-                        try:
-                            system_prompt = f"""You are an expert study assistant for a Data Analyst vocational program. 
+                        if client is None:
+                            st.warning(AI_NOT_CONFIGURED_MESSAGE)
+                        else:
+                            try:
+                                system_prompt = f"""You are an expert study assistant for a Data Analyst vocational program. 
 Provide detailed, constructive analysis. Format responses in clean HTML with clear sections. 
 Always respond in English.
 Be specific and actionable in your recommendations. {full_context}"""
-                            
-                            response = client.chat.completions.create(
-                                model="gpt-4o-mini",
-                                messages=[
-                                    {"role": "system", "content": system_prompt},
-                                    {"role": "user", "content": analyze_prompts[analyze_type]}
-                                ],
-                                max_tokens=2000,
-                                temperature=0.7
-                            )
-                            st.session_state.ai_result = response.choices[0].message.content
-                            st.rerun()
-                        except Exception as e:
-                            st.error(f"Error: {str(e)}")
+
+                                response = client.chat.completions.create(
+                                    model="gpt-4o-mini",
+                                    messages=[
+                                        {"role": "system", "content": system_prompt},
+                                        {"role": "user", "content": analyze_prompts[analyze_type]}
+                                    ],
+                                    max_tokens=2000,
+                                    temperature=0.7
+                                )
+                                st.session_state.ai_result = response.choices[0].message.content
+                                st.rerun()
+                            except Exception as e:
+                                st.error(f"Error: {str(e)}")
                 else:
                     st.warning("Write some content first to analyze.")
         
@@ -28166,25 +28189,28 @@ Be specific and actionable in your recommendations. {full_context}"""
                         full_prompt = f"{full_prompt}\n\n{course_context}"
                     
                     with st.spinner("Processing..."):
-                        try:
-                            system_prompt = f"""You are a helpful study assistant for a Data Analyst program at Noroff. 
+                        if client is None:
+                            st.warning(AI_NOT_CONFIGURED_MESSAGE)
+                        else:
+                            try:
+                                system_prompt = f"""You are a helpful study assistant for a Data Analyst program at Noroff. 
 Format responses in HTML when appropriate. Always respond in English.
 Be helpful, educational, and practical. 
 Focus on data analysis concepts, tools, and real-world applications."""
-                            
-                            response = client.chat.completions.create(
-                                model="gpt-4o-mini",
-                                messages=[
-                                    {"role": "system", "content": system_prompt},
-                                    {"role": "user", "content": full_prompt}
-                                ],
-                                max_tokens=2000,
-                                temperature=0.7
-                            )
-                            st.session_state.ai_result = response.choices[0].message.content
-                            st.rerun()
-                        except Exception as e:
-                            st.error(f"Error: {str(e)}")
+
+                                response = client.chat.completions.create(
+                                    model="gpt-4o-mini",
+                                    messages=[
+                                        {"role": "system", "content": system_prompt},
+                                        {"role": "user", "content": full_prompt}
+                                    ],
+                                    max_tokens=2000,
+                                    temperature=0.7
+                                )
+                                st.session_state.ai_result = response.choices[0].message.content
+                                st.rerun()
+                            except Exception as e:
+                                st.error(f"Error: {str(e)}")
                 else:
                     st.warning("Enter a prompt first.")
     
