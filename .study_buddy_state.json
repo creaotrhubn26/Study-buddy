@@ -1,0 +1,76 @@
+{
+  "completed_courses": [
+    "IC",
+    "DAF",
+    "SPF"
+  ],
+  "knowledge_progress": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "skills_progress": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "competence_progress": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "training_progress": {},
+  "quiz_scores": {},
+  "quiz_answers": {},
+  "show_exercise_answer": {},
+  "study_notes": {
+    "FI1BBDF05": [],
+    "FI1BBDD75": []
+  },
+  "flashcards": {},
+  "flashcard_stats": {
+    "total_cards": 0,
+    "cards_reviewed": 0,
+    "cards_mastered": 0
+  },
+  "exam_mode": false,
+  "exam_questions": [],
+  "exam_answers": {},
+  "code_snippets": {},
+  "code_snippet_favorites": [],
+  "study_sessions": [],
+  "study_time_by_course": {},
+  "important_dates": [],
+  "last_page": "Learn & Practice",
+  "last_selected_course": "Data Driven Decision-Making",
+  "last_selected_topic": "Four Data Analysis Philosophies",
+  "nav_section": "Learning",
+  "nav_page": "Learn & Practice",
+  "tc_course_filter": "FI1BBDD75 - Data Driven Decision-Making",
+  "tc_topic": "Four Data Analysis Philosophies",
+  "lp_selected_course": "FI1BBDD75 - Data Driven Decision-Making"
+}
