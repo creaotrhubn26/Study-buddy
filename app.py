@@ -8499,6 +8499,126 @@ Keep a decision log linking KPIs to actions for:
                 "explanation": "A heuristic is a mental shortcut or rule of thumb that allows for quick decisions without analyzing every detail."
             },
             {
+                "question": "True or False: Two of the 4 common heuristic algorithms covered in the module are Genetic algorithms and the Expedient Algorithm.",
+                "options": ["True", "False"],
+                "correct": 1,
+                "explanation": "False. The four common heuristic algorithms listed in the lesson are genetic algorithms, tabu search, simulated annealing, and greedy algorithms. Expedient Algorithm is not one of the four methods covered."
+            },
+            {
+                "question": "In Genetic Algorithms, there are two genetic operators. Pick both from the list below.",
+                "options": ["Mutation", "Crossover", "Singular", "Multipoint"],
+                "correct": [0, 1],
+                "explanation": "The correct answers are Mutation and Crossover. In the lesson, crossover is described as combining two chromosomes to create a new chromosome, while mutation randomly changes part of a chromosome to explore new possibilities. Singular is not a genetic operator, and multipoint is a type of crossover rather than one of the two main operators named in the lesson."
+            },
+            {
+                "question": "True or False: To facilitate the consensus-building process, a team should consider the following five steps as part of the Consensus data quality metric: 1. Assign a leader to the group responsible for facilitating the discussion and keeping the conversation on track. 2. Examine the research data from each source and identify discrepancies. 3. Discuss each discrepancy and identify potential solutions to reconcile the differences. 4. Reach a consensus on the accuracy of the data. 5. Record the findings and report to management.",
+                "options": ["True", "False"],
+                "correct": 1,
+                "explanation": "False. The lesson explains consensus as the level of agreement and alignment among sources or teams. It says teams should define the decision objective clearly, compare the evidence from each source, identify discrepancies, and agree on which figures are most trustworthy. It does not define the Consensus metric as this exact five-step formal process, and it does not specifically include assigning a leader or reporting to management as required steps of the metric."
+            },
+            {
+                "question": "True or False: A customer service team upgrades its CRM system and reviews existing customer records. The analyst finds incomplete customer records, duplicate records, faulty spelling of names, and invalid contact details. These types of data quality issues are usually labelled as Consistency issues.",
+                "options": ["True", "False"],
+                "correct": 1,
+                "explanation": "False. These issues belong to different data quality dimensions, not only consistency. Incomplete records relate to completeness, duplicate records relate to uniqueness, faulty spelling often relates to accuracy, and invalid contact details usually relate to validity or accuracy. Consistency is specifically about using the same labels and formats across systems."
+            },
+            {
+                "question": "In a decision tree, nodes are the basic components representing various aspects of the decision-making process. Decision trees have three main types of nodes. Which option below is NOT one of those components?",
+                "options": ["Terminal Node", "Root Node", "Decision Node", "Branch Node"],
+                "correct": 3,
+                "explanation": "The correct answer is Branch Node. In the lesson, the three main types of nodes are root nodes, decision nodes, and terminal nodes, with terminal nodes also called leaf nodes. A branch is part of the tree structure that connects nodes, but it is not itself one of the three main node types."
+            },
+            {
+                "question": "True or False: Two of the most commonly used statistical techniques in data analysis are descriptive statistics and inferential statistics.",
+                "options": ["True", "False"],
+                "correct": 0,
+                "explanation": "True. The lesson presents descriptive statistics and inferential statistics as two major statistical techniques used in data analysis. Descriptive statistics summarise what is happening in the data, while inferential statistics help analysts draw conclusions, test hypotheses, and make generalisations from samples to a wider population."
+            },
+            {
+                "question": "True or False: In decision-making criteria, the criterion that assesses the quality of a decision by considering the potential losses associated with different outcomes is known as the expected loss of opportunity criterion.",
+                "options": ["True", "False"],
+                "correct": 0,
+                "explanation": "True. The lesson states that the Expected Loss of Opportunity criterion assesses the quality of a decision by considering the potential losses associated with different outcomes. In practice, those losses are expressed as regret values, and the rule selects the option with the smallest expected regret or missed opportunity."
+            },
+            {
+                "question": "A telecommunications company wants to optimise customer service by analysing customer interactions, service requests, and satisfaction ratings. Which phase of the data analysis lifecycle involves gathering data from phone calls, emails, chat logs, social media interactions, service request types, timestamps, customer profiles, and satisfaction ratings?",
+                "options": ["Data collection", "Data preprocessing", "Exploratory data analysis", "Model Development", "Model Evaluation", "Model Deployment", "Continuous improvement"],
+                "correct": 0,
+                "explanation": "The correct answer is Data collection. This phase is where raw data is gathered from the relevant sources before it is cleaned, explored, modeled, or deployed. In this scenario, collecting interaction records, service request details, customer profiles, timestamps, and satisfaction ratings is the clear first-step evidence-gathering stage of the lifecycle."
+            },
+            {
+                "question": "Which phase of the data analysis lifecycle involves cleaning the data to remove duplicates, handle missing values, standardise formats, normalise timestamps, and categorise service request types for consistency?",
+                "options": ["Data collection", "Data preprocessing", "Exploratory data analysis", "Model Development", "Model Evaluation", "Model Deployment", "Continuous improvement"],
+                "correct": 1,
+                "explanation": "The correct answer is Data preprocessing. This phase prepares raw data for analysis by cleaning errors, handling missing values, removing duplicates, standardising formats, normalising fields such as timestamps, and organising categories so the dataset becomes consistent and analysis-ready."
+            },
+            {
+                "question": "Which phase of the data analysis lifecycle involves analysing customer interactions to identify peak hours for service requests, common issues, and correlations between customer profiles and service needs?",
+                "options": ["Data collection", "Data preprocessing", "Exploratory data analysis", "Model Development", "Model Evaluation", "Model Deployment", "Continuous improvement"],
+                "correct": 2,
+                "explanation": "The correct answer is Exploratory data analysis. This phase is used to examine the prepared data, identify patterns, detect trends, compare groups, and explore relationships such as peak support hours, frequent issue categories, and correlations between customer characteristics and service needs before building formal models."
+            },
+            {
+                "question": "Which phase of the data analysis lifecycle involves developing predictive models to forecast service request volumes during different times of the day and days of the week, and creating models to categorise and prioritise service requests based on urgency and complexity?",
+                "options": ["Data collection", "Data preprocessing", "Exploratory data analysis", "Model Development", "Model Evaluation", "Model Deployment", "Continuous improvement"],
+                "correct": 3,
+                "explanation": "The correct answer is Model Development. This phase focuses on building analytical or machine learning models from the prepared data. In this scenario, forecasting service request volumes and creating prioritisation models for urgency and complexity are both clear examples of model-building activities."
+            },
+            {
+                "question": "Which phase of the data analysis lifecycle involves evaluating the accuracy of predictive models by comparing their forecasts with historical service request data, and measuring the precision and recall of categorisation models using validation datasets?",
+                "options": ["Data collection", "Data preprocessing", "Exploratory data analysis", "Model Development", "Model Evaluation", "Model Deployment", "Continuous improvement"],
+                "correct": 4,
+                "explanation": "The correct answer is Model Evaluation. This phase checks how well the developed models perform by comparing predictions against known outcomes and using performance metrics such as accuracy, precision, and recall. In this scenario, validating forecasts with historical data and testing categorisation quality on validation datasets are standard evaluation tasks."
+            },
+            {
+                "question": "Which phase of the data analysis lifecycle involves implementing predictive models in real-time systems to provide proactive notifications to customer service representatives about expected spikes in service requests?",
+                "options": ["Data collection", "Data preprocessing", "Exploratory data analysis", "Model Development", "Model Evaluation", "Model Deployment", "Continuous improvement"],
+                "correct": 5,
+                "explanation": "The correct answer is Model Deployment. This phase is where validated models are integrated into live systems so they can support real operational decisions. In this scenario, using the predictive models inside real-time customer service systems to trigger proactive notifications is a direct example of deployment into production use."
+            },
+            {
+                "question": "Which phase of the data analysis lifecycle involves monitoring the performance of deployed models, gathering feedback from customer service representatives, analysing trends in customer inquiries, and refining models based on new data and changing customer behaviours to improve response times and customer satisfaction?",
+                "options": ["Data collection", "Data preprocessing", "Exploratory data analysis", "Model Development", "Model Evaluation", "Model Deployment", "Continuous improvement"],
+                "correct": 6,
+                "explanation": "The correct answer is Continuous improvement. This phase happens after deployment and focuses on ongoing monitoring, feedback, learning, and refinement. In this scenario, tracking real-world model performance, listening to customer service staff, studying new inquiry trends, and updating the models as behaviour changes are all part of continuously improving the solution over time."
+            },
+            {
+                "question": "A suspicious external email link has been clicked. What should be the first action to reduce the risk of malware spreading?",
+                "options": ["Call a manager", "Isolate the affected computer", "Disconnect the computer from the network", "Panic"],
+                "correct": 1,
+                "explanation": "The correct answer is Isolate the affected computer. In a suspicious-link incident, the first priority is containment: separate the affected device from the rest of the environment so any malware, malicious communication, or further compromise cannot spread. This matches the risk-treatment logic in the lesson, where immediate action is taken first to control the threat before the organisation continues with actions such as scanning the device for malware, blocking the malicious sender or domain, updating email filters, and retraining employees on phishing awareness."
+            },
+            {
+                "question": "After the suspicious-link incident is contained, what should the IT department do next to ensure the device has not been compromised?",
+                "options": ["Notify your manager", "Format the drive", "Inspect the system", "Scan the system for malware"],
+                "correct": 3,
+                "explanation": "The correct answer is Scan the system for malware. The worked risk-treatment example specifically includes scanning devices for malware as one of the appropriate response actions. This helps determine whether the suspicious link caused an actual compromise."
+            },
+            {
+                "question": "What is an important longer-term action to help prevent employees from repeating this kind of suspicious-link incident?",
+                "options": ["Install a VPN", "Never open links", "Limit email usage", "Educate employees"],
+                "correct": 3,
+                "explanation": "The correct answer is Educate employees. The lesson's suspicious-link example includes retraining employees on phishing awareness as a key risk-treatment measure. The aim is not to stop all link usage, but to help staff recognise suspicious behaviour and respond more safely in the future."
+            },
+            {
+                "question": "What technical control may the organisation implement to reduce the chance of similar phishing emails reaching staff in the future?",
+                "options": ["An email filtering solution", "A VPN", "A free antivirus"],
+                "correct": 0,
+                "explanation": "The correct answer is an email filtering solution. The worked risk-treatment process explicitly mentions updating email filters and blocking malicious senders or domains. This is a preventive control that helps reduce future exposure to phishing attempts before users interact with them."
+            },
+            {
+                "question": "Employee attrition prediction uses data analysis methods to determine which employees may resign voluntarily from a company. Five main steps form part of the employee attrition prediction model process. Which option below is NOT one of those steps?",
+                "options": ["Data Collection", "Splitting the data", "Feature Selection", "Data Preprocessing", "Retention Strategies", "Data Quality Preprocessing"],
+                "correct": 5,
+                "explanation": "The correct answer is Data Quality Preprocessing. In the lesson, the five main steps listed in the employee attrition prediction process are Data Collection, Data Preprocessing, Feature Selection, Splitting the data, and Retention Strategies. Data Quality Preprocessing is not named as a separate step in that process, even though data quality work is part of preprocessing."
+            },
+            {
+                "question": "The individual components of the churn prediction model include nine original items in the module. Which 3 of the options below are part of that original list?",
+                "options": ["Selectation", "Seperation Engineering", "Feature engineering", "Individuation", "Customer segmentation", "Hypothesis testing"],
+                "correct": [2, 4, 5],
+                "explanation": "The correct answers are Feature engineering, Customer segmentation, and Hypothesis testing. In the lesson, the nine churn-model components are Data collection, Data processing, Exploratory data analysis, Cohort analysis, Customer segmentation, Trend analysis, Feature engineering, Hypothesis testing, and Visualisation. The other options here are distractors and are not part of the original module list."
+            },
+            {
                 "question": "For a medical diagnosis model, which KPI should be prioritized?",
                 "options": ["Precision", "Recall", "Accuracy", "F1 Score"],
                 "correct": 1,
@@ -8867,6 +8987,18 @@ CI: 86% ± 1.4% (based on std error)
                 "options": ["Result is not significant", "Result is statistically significant", "Sample is too small", "Data is normally distributed"],
                 "correct": 1,
                 "explanation": "Z-score magnitude greater than 1.96 indicates statistical significance at the 95% confidence level (p < 0.05)."
+            },
+            {
+                "question": "A researcher tests 50 material samples using a new manufacturing technique and finds a sample mean strength of 200 MPa with a sample standard deviation of 15 MPa. The known average strength under the conventional method is 220 MPa. At a 0.05 significance level, which conclusion is correct from the two-tailed t-test?",
+                "options": ["Fail to reject H₀ because the t-value stays between the critical values", "Reject H₀ because the calculated t-value is about -9.44, which is outside ±2.009", "Accept H₀ because the sample size is too large for a t-test", "Reject H₀ only if the sample mean had been above 220 MPa"],
+                "correct": 1,
+                "explanation": "The correct answer is to reject H₀ because the calculated t-value is about -9.44, which is far outside the two-tailed critical range of approximately ±2.009 for 49 degrees of freedom at α = 0.05. Step 5 is answered with No, not Yes, because 'within the critical range' means the t-value must lie between -2.009 and +2.009. Here the test statistic is -9.44, which is much smaller than -2.009, so it falls in the rejection region, not the acceptance region. The hypotheses are H₀: μ = 220 and H₁: μ ≠ 220 because the question asks whether the new technique impacts strength at all, not only whether it increases it. Using the t-test formula t = (x̄ - μ) / (s / √n), we get t = (200 - 220) / (15 / √50) ≈ -9.44. The logic is: inside the critical range means fail to reject H₀, outside the critical range means reject H₀. Since -9.44 is outside the range, the result is statistically significant, so the null hypothesis is rejected. This provides evidence that the new manufacturing technique changes the material's strength, and because the sample mean is lower than 220 MPa, the observed effect points toward reduced strength."
+            },
+            {
+                "question": "From the list below, which 3 are valid types of correlation analysis covered in the module?",
+                "options": ["Cramer's V", "Point-biserial correlation", "Monalor's Absolute", "Multi-Point coefficient", "Biserial correlation"],
+                "correct": [0, 1, 4],
+                "explanation": "The correct answers are Cramer's V, Point-biserial correlation, and Biserial correlation. In the lesson, the covered correlation types include Pearson, Spearman, Point-biserial, Phi coefficient, Cramer's V, Biserial, and Kendall's Tau. Point-biserial correlation is used when one variable is continuous and the other is binary. Cramer's V is used for two categorical variables. Biserial correlation is used when one variable is continuous and the other is an underlying dichotomous variable. The other two options, Monalor's Absolute and Multi-Point coefficient, are distractors and are not part of the module's list of correlation-analysis methods."
             }
         ]
     },
@@ -34747,6 +34879,196 @@ elif page == "Training Center":
     completed_items = progress['lessons_completed'] + len(progress['exercises_completed']) + (1 if progress['quiz_score'] is not None else 0)
     st.progress(completed_items / total_items)
     st.caption(f"Progress: {completed_items}/{total_items} items completed")
+
+    if selected_topic == "Statistical Result Analysis":
+        st.info("Quiz referral: This topic now includes T-test and correlation-analysis questions in the Quiz tab below. Use the Interactive Study Lab first, then open Quiz to practice the exact question style.")
+
+    def render_statistical_result_analysis_study_lab():
+        from scipy import stats as scipy_stats
+
+        st.markdown("### Interactive Study Lab")
+        st.markdown("Use this panel to see exactly which numbers you need, how the calculations are built, and how the final decision is made.")
+
+        with st.expander("T-test Solver: what data to enter and how the result is found", expanded=True):
+            st.markdown("**Enter these values from the question:** sample mean, benchmark mean, sample standard deviation, sample size, significance level, and whether the test is two-tailed, left-tailed, or right-tailed.")
+
+            input_col1, input_col2 = st.columns(2)
+            with input_col1:
+                sample_mean = st.number_input("Sample mean (x̄)", value=200.0, step=1.0, key="ttest_sample_mean")
+                benchmark_mean = st.number_input("Benchmark / hypothesised mean (μ₀)", value=220.0, step=1.0, key="ttest_benchmark_mean")
+                sample_sd = st.number_input("Sample standard deviation (s)", min_value=0.0001, value=15.0, step=0.5, key="ttest_sample_sd")
+            with input_col2:
+                sample_size = st.number_input("Sample size (n)", min_value=2, value=50, step=1, key="ttest_sample_size")
+                alpha = st.selectbox("Significance level (α)", options=[0.10, 0.05, 0.01], index=1, format_func=lambda x: f"{x:.2f}", key="ttest_alpha")
+                tail_type = st.radio(
+                    "Alternative hypothesis type",
+                    options=["Two-tailed (≠)", "Right-tailed (>)", "Left-tailed (<)"],
+                    key="ttest_tail_type"
+                )
+
+            standard_error = sample_sd / (sample_size ** 0.5)
+            t_value = (sample_mean - benchmark_mean) / standard_error
+            degrees_of_freedom = sample_size - 1
+
+            if tail_type == "Two-tailed (≠)":
+                critical_value = scipy_stats.t.ppf(1 - alpha / 2, degrees_of_freedom)
+                critical_text = f"Outside ±{critical_value:.3f}"
+                reject_null = abs(t_value) > critical_value
+                decision_text = "Reject H₀" if reject_null else "Fail to reject H₀"
+                comparison_text = f"|{t_value:.3f}| {'>' if reject_null else '<='} {critical_value:.3f}"
+                low_critical = -critical_value
+                high_critical = critical_value
+            elif tail_type == "Right-tailed (>)":
+                critical_value = scipy_stats.t.ppf(1 - alpha, degrees_of_freedom)
+                critical_text = f"Greater than {critical_value:.3f}"
+                reject_null = t_value > critical_value
+                decision_text = "Reject H₀" if reject_null else "Fail to reject H₀"
+                comparison_text = f"{t_value:.3f} {'>' if reject_null else '<='} {critical_value:.3f}"
+                low_critical = None
+                high_critical = critical_value
+            else:
+                critical_value = scipy_stats.t.ppf(alpha, degrees_of_freedom)
+                critical_text = f"Less than {critical_value:.3f}"
+                reject_null = t_value < critical_value
+                decision_text = "Reject H₀" if reject_null else "Fail to reject H₀"
+                comparison_text = f"{t_value:.3f} {'<' if reject_null else '>='} {critical_value:.3f}"
+                low_critical = critical_value
+                high_critical = None
+
+            metric_cols = st.columns(4)
+            metric_cols[0].metric("Standard error", f"{standard_error:.3f}")
+            metric_cols[1].metric("t-value", f"{t_value:.3f}")
+            metric_cols[2].metric("Degrees of freedom", f"{degrees_of_freedom}")
+            metric_cols[3].metric("Decision", decision_text)
+
+            st.markdown("**Step-by-step calculation**")
+            st.latex(rf"SE = \frac{{s}}{{\sqrt{{n}}}} = \frac{{{sample_sd:.3f}}}{{\sqrt{{{sample_size}}}}} = {standard_error:.3f}")
+            st.latex(rf"t = \frac{{\bar{{x}} - \mu_0}}{{s / \sqrt{{n}}}} = \frac{{{sample_mean:.3f} - {benchmark_mean:.3f}}}{{{sample_sd:.3f} / \sqrt{{{sample_size}}}}} = {t_value:.3f}")
+            st.markdown(f"**Critical rule:** {critical_text}")
+            st.markdown(f"**Comparison:** {comparison_text}")
+
+            axis_min = min(-1.0, t_value, low_critical if low_critical is not None else 0.0, high_critical if high_critical is not None else 0.0) * 1.25
+            axis_max = max(1.0, t_value, low_critical if low_critical is not None else 0.0, high_critical if high_critical is not None else 0.0) * 1.25
+
+            def axis_position(value):
+                return max(0.0, min(100.0, ((value - axis_min) / (axis_max - axis_min)) * 100))
+
+            t_pos = axis_position(t_value)
+            zero_pos = axis_position(0)
+            low_pos = axis_position(low_critical) if low_critical is not None else 0
+            high_pos = axis_position(high_critical) if high_critical is not None else 100
+
+            if tail_type == "Two-tailed (≠)":
+                track_bg = f"linear-gradient(to right, #f8b4b4 0%, #f8b4b4 {low_pos:.2f}%, #bfdbfe {low_pos:.2f}%, #bfdbfe {high_pos:.2f}%, #f8b4b4 {high_pos:.2f}%, #f8b4b4 100%)"
+            elif tail_type == "Right-tailed (>)":
+                track_bg = f"linear-gradient(to right, #bfdbfe 0%, #bfdbfe {high_pos:.2f}%, #f8b4b4 {high_pos:.2f}%, #f8b4b4 100%)"
+            else:
+                track_bg = f"linear-gradient(to right, #f8b4b4 0%, #f8b4b4 {low_pos:.2f}%, #bfdbfe {low_pos:.2f}%, #bfdbfe 100%)"
+
+            marker_html = [
+                f"<div style='position:absolute; left:calc({zero_pos:.2f}% - 1px); top:8px; bottom:8px; width:2px; background:#1f2937;'></div>",
+                f"<div style='position:absolute; left:calc({t_pos:.2f}% - 7px); top:0; width:14px; height:14px; border-radius:50%; background:{'#dc2626' if reject_null else '#2563eb'}; border:2px solid white;'></div>",
+                f"<div style='position:absolute; left:calc({t_pos:.2f}% - 30px); top:18px; font-size:11px; color:#111827;'>t = {t_value:.2f}</div>",
+                f"<div style='position:absolute; left:calc({zero_pos:.2f}% - 8px); top:42px; font-size:11px; color:#111827;'>0</div>"
+            ]
+            if low_critical is not None:
+                marker_html.append(f"<div style='position:absolute; left:calc({low_pos:.2f}% - 1px); top:10px; bottom:10px; width:2px; background:#7c3aed;'></div>")
+                marker_html.append(f"<div style='position:absolute; left:calc({low_pos:.2f}% - 18px); top:42px; font-size:11px; color:#111827;'>{low_critical:.2f}</div>")
+            if high_critical is not None:
+                marker_html.append(f"<div style='position:absolute; left:calc({high_pos:.2f}% - 1px); top:10px; bottom:10px; width:2px; background:#7c3aed;'></div>")
+                marker_html.append(f"<div style='position:absolute; left:calc({high_pos:.2f}% - 18px); top:42px; font-size:11px; color:#111827;'>{high_critical:.2f}</div>")
+
+            st.markdown("**Visual decision line**")
+            st.markdown(
+                f"""
+                <div style="background:#f8fafc; border:1px solid #dbeafe; border-radius:12px; padding:14px; margin:8px 0 16px 0;">
+                  <div style="font-size:12px; color:#374151; margin-bottom:8px;">Red zones reject the null hypothesis. Blue zone means fail to reject.</div>
+                  <div style="position:relative; height:62px;">
+                    <div style="position:absolute; left:0; right:0; top:24px; height:10px; border-radius:999px; background:{track_bg};"></div>
+                    {''.join(marker_html)}
+                  </div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+            flow_cols = st.columns(4)
+            flow_cols[0].info("1. Enter the sample mean, benchmark mean, standard deviation, and sample size.")
+            flow_cols[1].info("2. Compute the standard error using s / √n.")
+            flow_cols[2].info("3. Compute the t-value using (x̄ - μ₀) / SE.")
+            flow_cols[3].info("4. Compare the t-value with the critical cutoff and make the decision.")
+
+        with st.expander("Correlation Selector: what data to enter and how to choose the right method", expanded=True):
+            st.markdown("**To solve correlation questions, start by identifying the data type of each variable.** The right method depends on whether your variables are continuous, binary, categorical, ranked, or an underlying dichotomous split.")
+
+            data_type_options = [
+                "Continuous numeric",
+                "Binary observed yes/no",
+                "Categorical with 3+ groups",
+                "Ranked / ordinal",
+                "Underlying dichotomous split from a scale"
+            ]
+            corr_col1, corr_col2 = st.columns(2)
+            with corr_col1:
+                variable_one = st.selectbox("Variable 1 type", options=data_type_options, key="corr_var_one")
+            with corr_col2:
+                variable_two = st.selectbox("Variable 2 type", options=data_type_options, key="corr_var_two")
+
+            pair = {variable_one, variable_two}
+            if pair == {"Continuous numeric"}:
+                recommendation = "Pearson correlation"
+                why = "Use Pearson when both variables are continuous and you want a linear correlation."
+            elif pair == {"Ranked / ordinal"}:
+                recommendation = "Kendall's Tau or Spearman rank correlation"
+                why = "Use ranked-variable methods when both variables are ordinal or based on ranks."
+            elif pair == {"Continuous numeric", "Binary observed yes/no"}:
+                recommendation = "Point-biserial correlation"
+                why = "Point-biserial is used when one variable is continuous and the other is a true observed binary variable."
+            elif pair == {"Continuous numeric", "Underlying dichotomous split from a scale"}:
+                recommendation = "Biserial correlation"
+                why = "Biserial is used when one variable is continuous and the other is an underlying two-group split created from a scale or hidden threshold."
+            elif pair == {"Binary observed yes/no"}:
+                recommendation = "Phi coefficient"
+                why = "Phi is the right choice when both variables are binary."
+            elif pair == {"Categorical with 3+ groups"}:
+                recommendation = "Cramer's V"
+                why = "Cramer's V is used when both variables are categorical and can have more than two categories."
+            elif pair == {"Categorical with 3+ groups", "Binary observed yes/no"}:
+                recommendation = "Cramer's V"
+                why = "A binary variable is also categorical, so Cramer's V works for the association between categorical groupings."
+            elif pair == {"Categorical with 3+ groups", "Ranked / ordinal"}:
+                recommendation = "No direct match from the quiz list"
+                why = "This combination usually needs recoding or a different association method. For the quiz list, it is not one of the three highlighted answers."
+            else:
+                recommendation = "Check the exact structure of the variables"
+                why = "Some combinations need the variables to be converted or handled with a different statistic."
+
+            result_cols = st.columns([1, 2])
+            result_cols[0].metric("Recommended method", recommendation)
+            result_cols[1].markdown(f"**Why:** {why}")
+
+            st.markdown("**Visual decision guide**")
+            st.markdown(
+                """
+                <div style="display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:10px; margin:10px 0 14px 0;">
+                  <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:10px; color:#111827;">1. Identify variable 1 type</div>
+                  <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:10px; color:#111827;">2. Identify variable 2 type</div>
+                  <div style="background:#fef3c7; border:1px solid #fcd34d; border-radius:10px; padding:10px; color:#111827;">3. Match the pair to the correlation family</div>
+                  <div style="background:#ecfccb; border:1px solid #86efac; border-radius:10px; padding:10px; color:#111827;">4. Choose the method and justify it</div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+            correlation_guide = pd.DataFrame([
+                {"Method": "Pearson", "Use when": "Two continuous variables", "Example": "Distance vs delay minutes"},
+                {"Method": "Point-biserial", "Use when": "One continuous + one binary observed variable", "Example": "Delay minutes vs refunded / not refunded"},
+                {"Method": "Cramer's V", "Use when": "Two categorical variables", "Example": "Zone category vs refund reason"},
+                {"Method": "Biserial", "Use when": "One continuous + one underlying dichotomous split", "Example": "Basket value vs high / low satisfaction split"},
+                {"Method": "Kendall's Tau / Spearman", "Use when": "Ranked variables", "Example": "Manager rank vs customer rank"}
+            ])
+            st.dataframe(correlation_guide, use_container_width=True, hide_index=True)
+            st.markdown("**For the quiz you added:** the three correct named methods from that option list are Cramer's V, Point-biserial correlation, and Biserial correlation.")
     
     st.markdown("---")
     
@@ -34754,6 +35076,10 @@ elif page == "Training Center":
     
     with tab1:
         st.subheader("Step-by-Step Lessons")
+
+        if selected_topic == "Statistical Result Analysis":
+            render_statistical_result_analysis_study_lab()
+            st.markdown("---")
         
         for i, lesson in enumerate(module['lessons']):
             with st.expander(f"Lesson {i+1}: {lesson['title']}", expanded=(i == 0)):
@@ -34846,20 +35172,31 @@ elif page == "Training Center":
         else:
             for i, q in enumerate(quiz):
                 st.markdown(f"**Q{i+1}: {q['question']}**")
-                answer = st.radio(
-                    "Select your answer:",
-                    options=q['options'],
-                    key=f"quiz_{selected_topic}_{i}",
-                    index=None
-                )
-                st.session_state.quiz_answers[f"{selected_topic}_{i}"] = q['options'].index(answer) if answer else None
+                if isinstance(q['correct'], list):
+                    answers = st.multiselect(
+                        "Select all correct answers:",
+                        options=q['options'],
+                        key=f"quiz_{selected_topic}_{i}"
+                    )
+                    st.session_state.quiz_answers[f"{selected_topic}_{i}"] = [q['options'].index(answer) for answer in answers]
+                else:
+                    answer = st.radio(
+                        "Select your answer:",
+                        options=q['options'],
+                        key=f"quiz_{selected_topic}_{i}",
+                        index=None
+                    )
+                    st.session_state.quiz_answers[f"{selected_topic}_{i}"] = q['options'].index(answer) if answer else None
                 st.markdown("---")
             
             if st.button("Submit Quiz", type="primary"):
                 score = 0
                 for i, q in enumerate(quiz):
                     user_ans = st.session_state.quiz_answers.get(f"{selected_topic}_{i}")
-                    if user_ans == q['correct']:
+                    if isinstance(q['correct'], list):
+                        if sorted(user_ans or []) == sorted(q['correct']):
+                            score += 1
+                    elif user_ans == q['correct']:
                         score += 1
                 
                 st.session_state.training_progress[selected_topic]['quiz_score'] = score
@@ -34869,11 +35206,16 @@ elif page == "Training Center":
                 st.markdown("### Results:")
                 for i, q in enumerate(quiz):
                     user_ans = st.session_state.quiz_answers.get(f"{selected_topic}_{i}")
-                    correct = user_ans == q['correct']
+                    if isinstance(q['correct'], list):
+                        correct = sorted(user_ans or []) == sorted(q['correct'])
+                        correct_answer = ", ".join(q['options'][idx] for idx in q['correct'])
+                    else:
+                        correct = user_ans == q['correct']
+                        correct_answer = q['options'][q['correct']]
                     icon = "✅" if correct else "❌"
                     st.markdown(f"{icon} **Q{i+1}:** {q['question']}")
                     if not correct:
-                        st.markdown(f"   Correct answer: {q['options'][q['correct']]}")
+                        st.markdown(f"   Correct answer: {correct_answer}")
                     st.markdown(f"   *{q['explanation']}*")
 
 elif page == "Course Plan":
