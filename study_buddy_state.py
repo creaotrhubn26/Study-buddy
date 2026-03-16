@@ -35,27 +35,42 @@ PERSIST_KEYS = [
 ]
 
 PROGRAM_DEADLINES = [
-    ("DAF", "Data Analysis Fundamentals", "2025-11-09"),
-    ("SPF", "Spreadsheet Fundamentals", "2025-11-30"),
-    ("DDM", "Data Driven Decision-Making", "2026-01-11"),
-    ("STT", "Statistical Tools", "2026-02-01"),
-    ("SP1", "Semester Project", "2026-03-01"),
-    ("EVO", "Evaluation of Outcomes", "2026-05-03"),
-    ("DVS", "Data Visualisation", "2026-06-07"),
-    ("ARP", "Analysis Reporting", "2026-08-30"),
-    ("EP1", "Exam Project 1", "2026-10-11"),
+    ("IC", "Introduction Course", "2026-01-11"),
+    ("DAF", "Data Analysis Fundamentals", "2026-02-01"),
+    ("SPF", "Spreadsheet Fundamentals", "2026-02-22"),
+    ("DDM", "Data Driven Decision-Making", "2026-03-22"),
+    ("STT", "Statistical Tools", "2026-04-19"),
+    ("SP1", "Semester Project 1", "2026-05-17"),
+    ("EVO", "Evaluation of Outcomes", "2026-09-13"),
+    ("DVS", "Data Visualisation", "2026-10-18"),
+    ("ARP", "Analysis Reporting", "2026-11-08"),
+    ("EP1", "Exam Project 1", "2026-12-20"),
 ]
 
 COURSE_PROGRESSION_MAP = {
-    "Data Analysis Fundamentals": ("DAF", "2025-11-03", "2025-11-09"),
-    "Spreadsheet Fundamentals": ("SPF", "2025-11-24", "2025-11-30"),
-    "Data Driven Decision-Making": ("DDM", "2026-01-05", "2026-01-11"),
-    "Statistical Tools": ("STT", "2026-01-26", "2026-02-01"),
-    "Semester Project 1": ("SP1", "2026-02-23", "2026-03-01"),
-    "Evaluation of Outcomes": ("EVO", "2026-04-27", "2026-05-03"),
-    "Data Visualisation": ("DVS", "2026-06-01", "2026-06-07"),
-    "Analysis Reporting": ("ARP", "2026-08-24", "2026-08-30"),
+    "Data Analysis Fundamentals": ("DAF", "2026-01-26", "2026-02-01"),
+    "Spreadsheet Fundamentals": ("SPF", "2026-02-16", "2026-02-22"),
+    "Data Driven Decision-Making": ("DDM", "2026-03-16", "2026-03-22"),
+    "Statistical Tools": ("STT", "2026-04-13", "2026-04-19"),
+    "Semester Project 1": ("SP1", "2026-05-11", "2026-05-17"),
+    "Evaluation of Outcomes": ("EVO", "2026-09-07", "2026-09-13"),
+    "Data Visualisation": ("DVS", "2026-10-12", "2026-10-18"),
+    "Analysis Reporting": ("ARP", "2026-11-02", "2026-11-08"),
+    "Exam Project 1": ("EP1", "2026-12-14", "2026-12-20"),
 }
+
+STUDY_PATH_JAN2026 = [
+    ("IC", "Introduction Course", "2026-01-05", "2026-01-11"),
+    ("DAF", "Data Analysis Fundamentals", "2026-01-12", "2026-02-01"),
+    ("SPF", "Spreadsheet Fundamentals", "2026-02-02", "2026-02-22"),
+    ("DDM", "Data Driven Decision-Making", "2026-02-23", "2026-03-22"),
+    ("STT", "Statistical Tools", "2026-03-23", "2026-04-19"),
+    ("SP1", "Semester Project 1", "2026-04-20", "2026-05-17"),
+    ("EVO", "Evaluation of Outcomes", "2026-05-18", "2026-09-13"),
+    ("DVS", "Data Visualisation", "2026-09-14", "2026-10-18"),
+    ("ARP", "Analysis Reporting", "2026-10-19", "2026-11-08"),
+    ("EP1", "Exam Project 1", "2026-11-09", "2026-12-20"),
+]
 
 
 def load_persisted_state(session_state):

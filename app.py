@@ -2,195 +2,6 @@ import streamlit as st
 import pandas as pd
 from openai import OpenAI
 import os
-import json
-import time
-import re
-from datetime import datetime, timedelta, date
-from streamlit.components.v1 import html
-from study_buddy_state import (
-    PROGRAM_DEADLINES,
-    COURSE_PROGRESSION_MAP,
-    load_persisted_state,
-    save_persisted_state,
-)
-try:
-    from spellchecker import SpellChecker
-    SPELLCHECK_AVAILABLE = True
-except ImportError:
-    SPELLCHECK_AVAILABLE = False
-
-# Material Icons CSS and helper function
-MATERIAL_ICONS_CSS = """
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-<style>
-.material-icons {
-    font-family: 'Material Icons';
-    font-weight: normal;
-    font-style: normal;
-    font-size: 24px;
-    line-height: 1;
-    letter-spacing: normal;
-    text-transform: none;
-    display: inline-block;
-    white-space: nowrap;
-    word-wrap: normal;
-    direction: ltr;
-    -webkit-font-feature-settings: 'liga';
-    -webkit-font-smoothing: antialiased;
-    vertical-align: middle;
-}
-.material-icons.md-18 { font-size: 18px; }
-.material-icons.md-24 { font-size: 24px; }
-.material-icons.md-36 { font-size: 36px; }
-.material-icons.md-48 { font-size: 48px; }
-.mui-icon { 
-    font-family: 'Material Icons';
-    font-size: 20px;
-    vertical-align: middle;
-    margin-right: 4px;
-}
-</style>
-"""
-st.markdown(MATERIAL_ICONS_CSS, unsafe_allow_html=True)
-
-def mui_icon(icon_name, size=20):
-    """Helper function to render Material Icons"""
-    return f'<span class="mui-icon" style="font-size: {size}px;">{icon_name}</span>'
-
-st.set_page_config(
-    page_title="Data Analyst Study App",
-    page_icon="📊",
-    layout="wide"
-)
-
-OPENAI_API_KEY = os.environ.get("AI_INTEGRATIONS_OPENAI_API_KEY") or os.environ.get("OPENAI_API_KEY")
-OPENAI_BASE_URL = os.environ.get("AI_INTEGRATIONS_OPENAI_BASE_URL")
-
-if OPENAI_API_KEY:
-    client = OpenAI(api_key=OPENAI_API_KEY, base_url=OPENAI_BASE_URL)
-else:
-    client = None
-
-AI_NOT_CONFIGURED_MESSAGE = (
-    "AI features are disabled: set `AI_INTEGRATIONS_OPENAI_API_KEY` or `OPENAI_API_KEY` to enable them."
-)
-
-# Training modules with structured lessons
-training_modules = {
-    "Introduction to business intelligence and big data": {
-        "course": "Data Analysis Fundamentals",
-        "description": "Learn what Business Intelligence (BI) and Big Data mean, and how they help companies make better decisions.",
-        "lessons": [
-            {
-                "title": "What is Business Intelligence?",
-                "content": """
-**Business Intelligence (BI)** is the process of collecting, analyzing, and presenting business data to help companies make better decisions.
-
-**Key Components of BI:**
-- **Data Collection**: Gathering data from various sources (sales, customers, operations)
-- **Data Storage**: Storing data in databases or data warehouses
-- **Data Analysis**: Using tools to find patterns and insights
-- **Reporting**: Creating dashboards and reports to share findings
-
-**Real-World Example:**
-A retail store uses BI to analyze which products sell best during different seasons. They discover that winter jackets sell 300% more in November than in July, so they stock up accordingly.
-                """,
-                "key_points": ["BI helps companies make data-driven decisions", "It involves collecting, analyzing, and presenting data", "Dashboards and reports are key outputs"]
-            },
-            {
-                "title": "What is Big Data?",
-                "content": """
-**Big Data** refers to extremely large datasets that are too complex for traditional data processing tools.
-
-**The 3 V's of Big Data:**
-- **Volume**: Massive amounts of data (terabytes, petabytes)
-- **Velocity**: Data is generated very quickly (real-time)
-- **Variety**: Different types of data (text, images, videos, sensors)
-
-**Examples of Big Data Sources:**
-- Social media posts (millions per minute)
-- IoT sensors (temperature, location, movement)
-- Online transactions
-- Website clickstreams
-
-**Real-World Example:**
-Netflix analyzes viewing habits of 200+ million users to recommend shows. This involves processing billions of data points daily.
-                """,
-                "key_points": ["Big Data = Volume + Velocity + Variety", "Traditional tools cannot handle Big Data", "Companies like Netflix and Amazon rely on Big Data"]
-            },
-            {
-                "title": "BI vs Big Data: Key Differences",
-                "content": """
-**Business Intelligence** and **Big Data** work together but serve different purposes:
-
-| Aspect | Business Intelligence | Big Data |
-|--------|----------------------|----------|
-| **Focus** | Analyzing structured data | Processing all data types |
-| **Data Size** | Gigabytes to Terabytes | Terabytes to Petabytes |
-| **Questions** | "What happened?" | "What might happen?" |
-| **Tools** | Tableau, Power BI, Excel | Hadoop, Spark, Python |
-| **Users** | Business analysts | Data scientists |
-
-**How They Work Together:**
-1. Big Data systems collect and process massive datasets
-2. BI tools visualize and report on the processed data
-3. Decision-makers use BI dashboards to take action
-                """,
-                "key_points": ["BI focuses on structured data and reporting", "Big Data handles massive, varied datasets", "They complement each other in modern analytics"]
-            }
-        ],
-        "exercises": [
-            {
-                "title": "Identify BI Use Cases",
-                "type": "scenario",
-                "question": "A coffee shop chain wants to know which menu items are most popular at each location. They have sales data from 50 stores over 2 years. Is this a BI or Big Data problem?",
-                "answer": "This is a Business Intelligence problem. The data is structured (sales records), moderate in size (2 years × 50 stores), and the goal is to analyze 'what happened' to make business decisions. BI tools like Excel or Tableau would be appropriate.",
-                "hint": "Think about the 3 V's - is this data extremely large, fast, or varied?"
-            },
-            {
-                "title": "Big Data Scenario",
-                "type": "scenario",
-                "question": "A social media company needs to analyze 500 million posts per day, including text, images, and videos, to detect trending topics in real-time. Is this BI or Big Data?",
-                "answer": "This is a Big Data problem. It involves massive Volume (500M posts/day), high Velocity (real-time), and Variety (text, images, videos). Big Data tools like Hadoop or Spark would be needed.",
-                "hint": "Check all 3 V's: Volume, Velocity, and Variety"
-            },
-            {
-                "title": "Calculate Data Volume",
-                "type": "practical",
-                "question": "A company stores 1,000 customer transactions per day. Each transaction record is 2 KB. How much data do they generate in one year?",
-                "answer": "1,000 transactions × 2 KB × 365 days = 730,000 KB = 730 MB per year. This is manageable with traditional BI tools.",
-                "hint": "Multiply daily transactions × size × days in a year"
-            }
-        ],
-        "quiz": [
-            {
-                "question": "What does BI stand for?",
-                "options": ["Big Information", "Business Intelligence", "Binary Integration", "Basic Insights"],
-                "correct": 1,
-                "explanation": "BI stands for Business Intelligence - the process of analyzing business data to make better decisions."
-            },
-            {
-                "question": "Which is NOT one of the 3 V's of Big Data?",
-                "options": ["Volume", "Velocity", "Value", "Variety"],
-                "correct": 2,
-                "explanation": "The 3 V's are Volume, Velocity, and Variety. Value is sometimes added as a 4th V, but it's not part of the original definition."
-            },
-            {
-                "question": "Which tool is typically used for Business Intelligence?",
-                "options": ["Hadoop", "Tableau", "Spark", "TensorFlow"],
-                "correct": 1,
-                "explanation": "Tableau is a BI visualization tool. Hadoop and Spark are Big Data processing tools, and TensorFlow is for machine learning."
-            },
-            {
-                "question": "A dataset of 10 million social media posts updated every second is an example of:",
-                "options": ["Business Intelligence", "Big Data", "Traditional database", "Spreadsheet data"],
-                "correct": 1,
-                "explanation": "This exhibits Big Data characteristics: high Volume (10M posts), high Velocity (every second), and likely Variety (text, images, etc.)."
-            }
-        ]
-    },
-    "Statistical methodologies to extract KPIs": {
-        "course": "Statistical Tools",
         "description": "Learn how to use statistics to calculate and analyze Key Performance Indicators (KPIs).",
         "lessons": [
             {
@@ -6932,6 +6743,152 @@ For high-risk patients:
                 "options": ["They all used AI/machine learning", "They all measured ROI and documented improvements", "They all focused on customer acquisition", "They all had unlimited budgets"],
                 "correct": 1,
                 "explanation": "All cases defined clear metrics, measured before/after results, and documented improvements with specific numbers. This proves the value of data-driven approaches."
+            }
+        ]
+    },
+    "Qualitative vs Quantitative Decision-Making": {
+        "course": "Data Driven Decision-Making",
+        "description": "Learn when to use qualitative and quantitative evidence, and how data models and focused subsets help isolate the right business problem.",
+        "lessons": [
+            {
+                "title": "Choosing Between Qualitative and Quantitative Evidence",
+                "content": """
+**Two Evidence Types, One Goal**
+
+Strong decision-making does not rely on numbers alone. Analysts often combine:
+
+| Evidence Type | Best For | Typical Sources | Example Question |
+|--------------|----------|-----------------|------------------|
+| **Qualitative** | Understanding opinions, experiences, motives | Interviews, open-ended surveys, support tickets, observation notes | "Why are customers frustrated?" |
+| **Quantitative** | Measuring scale, frequency, change, and performance | Sales data, web analytics, KPI dashboards, experiments | "How much did conversion fall?" |
+
+**Rule of thumb:**
+- Use **quantitative evidence** to measure what changed and how large the change is.
+- Use **qualitative evidence** to understand why people behaved the way they did.
+- Use **both together** when a decision affects customers, teams, or operations.
+
+**Example - Checkout Problem:**
+- Quantitative: Conversion rate dropped from 3.8% to 2.9%
+- Qualitative: Customers report confusion about shipping costs
+- Decision: Simplify the checkout flow and show shipping earlier
+
+This is why qualitative and quantitative analysis are complementary rather than competing approaches.
+                """
+            },
+            {
+                "title": "Using Data Models and Data Subsets to Isolate Problem Domains",
+                "content": """
+**Why Analysts Use Data Models**
+
+A data model is a simplified representation of a real-world process, system, or relationship. It helps you focus on the variables that matter for a decision.
+
+**Examples of simple business data models:**
+- Sales model: date, product, region, revenue, discount
+- Churn model: tenure, usage, complaints, plan type, cancellation
+- Inventory model: SKU, demand, supplier lead time, stock level
+
+**Using subsets to isolate a problem domain** means narrowing the data to the part of the business where the issue actually lives.
+
+| Broad Dataset | Useful Subset | Why It Helps |
+|--------------|---------------|--------------|
+| All customers | New customers in first 30 days | Isolates onboarding problems |
+| All sales | Weekend sales in one region | Identifies local demand patterns |
+| All support tickets | Billing-related complaints | Narrows root-cause analysis |
+
+**Example - Low Sales Problem:**
+1. Start broad: All store sales are down 8%
+2. Subset by region: North region is down 2%, South is down 15%
+3. Subset by category: South region electronics are down 25%
+4. Subset by time: Decline started after a pricing change
+
+At each step, the analyst isolates the real problem domain. This prevents wasted analysis on unrelated data.
+
+**Key idea:** A good analyst does not analyse everything. A good analyst filters to the most relevant slice of reality.
+                """
+            },
+            {
+                "title": "Before-and-After Scenarios for Better Decisions",
+                "content": """
+**Before-and-After Thinking**
+
+This course emphasizes real-world before-and-after scenarios because they connect analysis directly to decisions.
+
+| Stage | Question |
+|------|----------|
+| **Before** | What was happening before the change? |
+| **Intervention** | What action or event changed the situation? |
+| **After** | What changed in the results? |
+| **Interpretation** | Was the change meaningful, and what should we do next? |
+
+**Example - Customer Support Improvement:**
+- Before: Average response time = 18 hours, customer satisfaction = 71%
+- Intervention: Added chat triage and FAQ routing
+- After: Response time = 6 hours, customer satisfaction = 83%
+- Interpretation: Process change improved both speed and satisfaction
+
+**Best practice:**
+- Compare like-for-like periods
+- Track at least one KPI before and after the intervention
+- Add qualitative feedback to understand customer experience
+- Avoid claiming causation too quickly if other factors changed at the same time
+
+This approach helps candidates connect analytics methods to practical decision-making in business settings.
+                """
+            }
+        ],
+        "exercises": [
+            {
+                "title": "Choose the Evidence Type",
+                "type": "scenario",
+                "question": "A company wants to understand why employee turnover increased after a policy change. Should the analyst start with qualitative data, quantitative data, or both? Explain why.",
+                "answer": "The analyst should use both. Quantitative data is needed to measure where turnover increased most, by department, tenure, or manager. Qualitative data such as exit interviews or employee comments is needed to understand why staff reacted negatively to the policy. Together, they support a stronger decision than either source alone.",
+                "hint": "Think about measuring the problem and understanding the cause."
+            },
+            {
+                "title": "Define a Useful Subset",
+                "type": "practical",
+                "question": "An online store says 'sales are down.' Propose two useful data subsets that would help isolate the problem domain.",
+                "answer": "Two strong subsets are: 1) sales by channel, such as direct, paid search, and email, to see if the decline is linked to acquisition; 2) sales by product category and time period, such as mobile accessories in the last 30 days, to see whether the drop is concentrated in one category or recent window. Useful subsets narrow the problem instead of averaging everything together.",
+                "hint": "Slice the data by a business dimension and by time, segment, or location."
+            },
+            {
+                "title": "Interpret a Before-and-After Result",
+                "type": "scenario",
+                "question": "A clinic changed its appointment reminder system. Missed appointments dropped from 14% to 9%. Patient comments also mention that reminders are easier to understand. What should the analyst conclude?",
+                "answer": "The analyst can conclude that the new reminder process is associated with a strong improvement in outcomes. Quantitative evidence shows the missed-appointment KPI improved, while qualitative comments suggest the clearer reminders contributed to that change. The next step is to continue monitoring the KPI and check whether other changes occurred at the same time before claiming full causation.",
+                "hint": "Combine the KPI result with the customer feedback."
+            }
+        ],
+        "quiz": [
+            {
+                "question": "Which type of data is best for understanding customer opinions in their own words?",
+                "options": ["Quantitative data", "Qualitative data", "Time-series data", "Ratio data"],
+                "correct": 1,
+                "explanation": "Qualitative data captures opinions, experiences, and explanations in descriptive form, such as interviews, comments, and open-ended survey responses."
+            },
+            {
+                "question": "Why do analysts use data subsets?",
+                "options": ["To make the dataset larger", "To avoid using KPIs", "To isolate a more relevant problem domain", "To remove all context from the data"],
+                "correct": 2,
+                "explanation": "Data subsets help isolate the part of the business where the problem actually exists, such as one region, one product group, or one customer segment."
+            },
+            {
+                "question": "A conversion rate dropped from 4.1% to 3.2%. This is primarily what kind of evidence?",
+                "options": ["Qualitative", "Quantitative", "Narrative", "Observational only"],
+                "correct": 1,
+                "explanation": "A conversion rate is a measurable numeric KPI, so it is quantitative evidence."
+            },
+            {
+                "question": "Which statement best describes a before-and-after analysis?",
+                "options": ["It compares outcomes before and after a change or intervention", "It only uses customer interviews", "It replaces KPI tracking", "It guarantees proof of causation"],
+                "correct": 0,
+                "explanation": "Before-and-after analysis compares results around a change, but it does not automatically prove causation if other factors also changed."
+            },
+            {
+                "question": "Which combination gives the strongest support for a business decision?",
+                "options": ["Only one KPI", "Only one interview", "Qualitative insight plus quantitative measurement", "A bigger spreadsheet with no filtering"],
+                "correct": 2,
+                "explanation": "Combining qualitative and quantitative evidence helps analysts measure what changed and understand why it changed."
             }
         ]
     },
@@ -24902,6 +24859,8092 @@ This is how data analysts use distribution analysis to understand business opera
                 "highlighted_sections": True
             }
         }
+    ],
+    "FI1BBDD75": [
+        {
+            "lesson_number": "1.1",
+            "title": "Lesson - Introduction to Data-driven Decision-making",
+            "content": """
+### Introduction
+
+This lesson will explore the fundamental concepts and principles of **data-driven decision-making**. We will look into the power of using data to inform and guide decision-making processes, enabling individuals and organisations to make more informed and effective choices.
+
+### Definition of Data-driven Decision-making
+
+Data-driven decision-making is the process of using data, analysis, and insights to make informed decisions. It involves gathering, analysing, and using data to inform decisions. The process of data-driven decision-making requires organisations to have a clear understanding of what they want to accomplish and a clear strategy for how they plan to achieve it.
+
+#### Why it matters
+
+Data-driven decision-making is becoming increasingly important for businesses in today's data-driven world. Data-driven decisions are based on facts and evidence rather than assumptions and opinions. This allows companies and individuals to make informed decisions using data analysis tools to gain insight into their dilemmas or business needs.
+
+When individuals and organisations use data well, they can:
+
+1. make more informed choices
+2. reduce guesswork and bias
+3. identify risks and opportunities earlier
+4. improve results through measurable actions
+
+#### Evidence-based foundation
+
+One key characteristic of data-driven decision-making is evidence-based decision-making, a structured approach that also focuses on Key Performance Indicators (KPIs). We will cover KPIs later in the upcoming modules. The primary foundation for decision-making is using evidence-based tools.
+
+#### Structured process and methods
+
+This approach follows a structured process to collect, analyse, and interpret data. This analysis should be done using a combination of qualitative and quantitative methods.
+
+### Benefits of Data-driven Decision-making
+
+In this section, we cover the benefits of data-driven decision-making. There are numerous benefits to implementing data-driven decision-making across individuals, teams, and organisations.
+
+#### Accuracy
+
+Relying on data allows decisions to be based on information rather than subjective opinions and biases, resulting in more accurate and reliable results.
+
+#### Objectivity
+
+Data-driven decision-making reduces the impact of personal biases and emotions, enabling organisations to make objective decisions that best fit their goals.
+
+#### Insight
+
+Analysing data provides valuable insights and patterns that may not be immediately apparent, enabling organisations to uncover hidden trends, correlations, and opportunities.
+
+#### Improved efficiency
+
+Data-driven decision-making helps organisations identify inefficiencies, streamline processes, and allocate resources more effectively, resulting in improved operational efficiency and reduced costs.
+
+#### Improved performance
+
+By utilising data to monitor Key Performance Indicators (KPIs), organisations can track progress, identify areas for improvement, and make data-driven adjustments to deliver better results.
+
+#### Risk reduction
+
+Organisations can use data analysis to recognise risks and take informed actions to minimise them. By understanding tendencies and patterns, they can tackle developing problems and lower the chances of adverse consequences.
+
+#### Customer focus
+
+Through data-driven decision-making, businesses can better understand their customers, preferences, and needs. This understanding allows for customised and focused marketing strategies, resulting in higher levels of contentment and dedication among customers.
+
+#### Innovation
+
+Data-driven decision-making fosters a culture of innovation and experimentation. Gathering data helps companies identify new opportunities, test hypotheses, evolve ideas, and drive innovation.
+
+#### Evidence-based communication
+
+This method facilitates communication within the organisation. It provides a common language and understanding of why decisions are made, facilitating collaboration and goal alignment.
+
+#### Competitive advantage
+
+Companies that use data analysis tools have a competitive advantage. Overall, data-driven decision-making enables organisations to make more informed, strategic, and successful decisions, positively impacting performance, efficiency, and competitiveness.
+
+### Data Collection
+
+Data collection is important in the decision-making process. It involves gathering relevant and reliable data that is accurate and representative of the problem or decision that needs to be made.
+
+#### Importance of relevant data
+
+Irrelevant or outdated data may lead to inaccurate conclusions and ineffective decision-making.
+
+Use the same **online grocery delivery** scenario from earlier. Imagine the company wants to reduce late deliveries, improve customer satisfaction, and lower refund costs. To inform its operational and customer-service strategy, it collects data about delivery times, driver availability, order demand, route conditions, customer complaints, and refund behaviour.
+
+If the grocery company relies on data from five years ago, it may not reflect current traffic patterns, customer expectations, app usage, fuel costs, or delivery-zone demand. The outdated data may suggest that a delivery option, route design, or staffing pattern still works well even though customer behaviour and local conditions have changed. As a result, the company could invest in the wrong delivery model, assign drivers poorly, or promote delivery slots that no longer match actual demand, causing delays and lower profit.
+
+Irrelevant data creates a similar problem. For example, if the grocery company includes delivery behaviour from a different city, a different customer segment, or a region with very different traffic patterns, the conclusions may not apply to the target delivery area at all. In that case, route changes or staffing decisions could be based on misleading evidence rather than the real needs of the current market.
+
+In both cases, relying on irrelevant or outdated data can lead to misguided assumptions, poor market positioning, ineffective operational strategies, wasted resources, and lost profits.
+
+#### Data sources
+
+Sources of data can be classified into **internal** and **external** sources.
+
+- **Internal sources** include internal databases, company records, transactional data, Customer Relationship Management (CRM) systems, and other proprietary data sources specific to an organisation.
+- **External sources** include public datasets, third-party data providers, online platforms, social media, surveys, interviews, and sensor data gathered from outside the organisation.
+
+#### Global view of linked data sources
+
+```text
+                    +----------------------+
+                    |  Public datasets     |
+                    |  Government / market |
+                    +----------+-----------+
+                               |
+                    +----------v-----------+
+                    | Third-party providers|
+                    | Demographics / trends|
+                    +----------+-----------+
+                               |
+ +-------------------+         |         +----------------------+
+ | Social media /    +---------+---------+ Surveys / interviews |
+ | online platforms  |                   | Opinions / feedback  |
+ +---------+---------+                   +----------+-----------+
+           |                                        |
+           +-------------------+--------------------+
+                               |
+                    +----------v-----------+
+                    |  External data layer |
+                    +----------+-----------+
+                               |
+                    +----------v-----------+
+                    | Grocery decision hub |
+                    | DDM analysis         |
+                    +----------+-----------+
+                               |
+           +-------------------+--------------------+
+           |                                        |
+ +---------v---------+                   +----------v-----------+
+ | Internal databases|                   | CRM / company records|
+ | Orders / refunds  |                   | Customers / service  |
+ +---------+---------+                   +----------+-----------+
+           |                                        |
+           +-------------------+--------------------+
+                               |
+                    +----------v-----------+
+                    | Transactional data   |
+                    | Sales / routes / ops |
+                    +----------+-----------+
+                               |
+                    +----------v-----------+
+                    | Sensor / IoT data    |
+                    | GPS / traffic / temp |
+                    +----------------------+
+```
+
+This diagram shows a global view of how different data sources connect to the same decision-making process. In the grocery scenario, internal operational data and external environmental or market data are combined to support a stronger recommendation.
+
+#### Internal databases
+
+Internal databases are valuable because they contain information unique to the organisation. These sources often provide insights into operations, customer behaviour, sales trends, route performance, refund patterns, and other business-specific data. By using internal databases, organisations can gain insights into their own processes and make informed decisions based on the data collected.
+
+In the grocery-delivery scenario, useful internal data could include:
+
+- order timestamps and delivery-slot demand
+- late-delivery rates by zone
+- refund amounts by order type
+- driver schedules and availability
+- complaint history from customer support
+
+#### External datasets
+
+External datasets offer a bigger perspective by incorporating information beyond an organisation's own resources. These sources can include publicly available data from government agencies, research institutions, weather services, map providers, and other public sources. The organisation can also hire third-party data providers offering insights across market research, demographics, competitor conditions, and industry-specific data.
+
+For the grocery scenario, external data might include traffic feeds, local event schedules, weather forecasts, census demographics, fuel-price trends, or competitor delivery pricing.
+
+#### Surveys and interviews
+
+Surveys and interviews are valuable sources for collecting data directly from individuals. These methods enable organisations to gather specific information that is relevant to them.
+
+Surveys provide a structured approach to collecting data from many individuals, while interviews offer a more in-depth understanding by allowing direct interaction with individuals. Both methods are useful when exploring subjective experiences, opinions, and preferences or gathering qualitative data.
+
+In the grocery scenario, surveys and interviews can reveal why customers are dissatisfied, which delivery windows feel unreliable, and what service changes would improve trust.
+
+#### Sensor data
+
+Sensor data is crucial in many domains, including the Internet of Things (IoT), manufacturing, healthcare, transportation, and environmental monitoring. Sensors gather real-time data from physical devices, machinery, equipment, or the environment. These sensors usually collect measurements such as temperature, pressure, humidity, motion, and location. Sensor data enables organisations to monitor and control physical processes, detect anomalies, optimise operations, and improve decision-making based on real-time information.
+
+In the grocery-delivery scenario, sensor data may include GPS location, vehicle speed, cold-chain temperature, traffic flow, or route congestion. This allows the company to monitor deliveries in real time, detect service risks earlier, and react before failures spread across the operation.
+
+### Data Quality
+
+Data quality is a critical part of data-driven decision-making. Even when an organisation collects a large amount of data, poor data quality can still lead to weak analysis and poor decisions. Key dimensions of data quality include accuracy, completeness, consistency, timeliness, and relevance.
+
+#### Accuracy
+
+Accuracy refers to the precision of data. Data accuracy is crucial in ensuring reliability by eliminating errors, inconsistencies, or mistakes in recorded information, such as spelling errors or incorrect contact details.
+
+**Example: Grocery-delivery data accuracy**
+
+An online grocery-delivery company wants to reduce late deliveries and refund costs. To support that decision, a data analyst reviews operational records such as customer addresses, delivery timestamps, route assignments, driver IDs, and complaint logs.
+
+To validate accuracy, the analyst cross-checks order records against driver logs, GPS data, and customer feedback. This process exposes several inaccuracies, including incorrect addresses, wrong delivery times, duplicated orders, and customer complaints linked to the wrong delivery zone. If these errors are not corrected, the company may misjudge where service failures are really happening and make poor routing or staffing decisions.
+
+#### Completeness
+
+Data completeness refers to the extent to which all necessary fields are populated without missing or null values that result from gaps during data recording.
+
+**Example: Grocery-delivery data completeness**
+
+In the grocery-delivery scenario, the company needs complete data for each order, including delivery slot, assigned driver, zone, route duration, delivery outcome, refund status, and customer feedback where available. If important fields are missing, the analyst cannot reliably measure what caused delays or whether a corrective action worked.
+
+A strong way to improve completeness is to audit the delivery dataset and check whether required fields are populated across all recent orders. For example, if many delayed orders are missing driver IDs or zone labels, the company may fail to see whether the main issue is staffing, geography, or route design.
+
+#### Consistency
+
+Consistency examines the uniformity and coherence of data across different sources, systems, and time periods. Consistent data should use the same values, labels, and formats.
+
+**Example: Grocery-delivery data consistency**
+
+A grocery-delivery company compares data from its ordering platform, driver app, support system, and refund dashboard. The goal is to identify discrepancies in delivery status, delay length, refund reason, and customer complaint categories across the different systems.
+
+When analysing these different data sources, proper organisation matters. The analyst must standardise labels and formats so that, for example, `late`, `delayed`, and `missed slot` are treated consistently if they describe the same operational issue. Once the data is aligned, the company can compare results fairly and investigate why inconsistencies occurred between systems.
+
+#### Timeliness
+
+Timeliness relates to how current the data is. Timely data is relevant because it reflects the most recent information available.
+
+**Example: Grocery-delivery data timeliness**
+
+A grocery-delivery company should update key operational data frequently enough to support the decisions it needs to make. If managers need to rebalance drivers during the day, then route, traffic, and order-volume data must update in near real time. If they review refund trends weekly, then the reporting cycle should support that need.
+
+The system should also notify staff when operational data is out of date. For example, if GPS updates stop, demand forecasts are stale, or route-status feeds are delayed, the business should receive an alert before service quality drops further. Timeliness reports can help the company monitor how quickly data arrives and whether stale data is affecting decisions.
+
+#### Relevance
+
+Relevance assesses the appropriateness and usefulness of data for a specific purpose or task. Relevant data is aligned with the intended use and supports accurate analysis and decision-making.
+
+**Example: Grocery-delivery data relevance**
+
+A grocery-delivery team is trying to reduce late deliveries in one city zone during evening peak hours. To do this effectively, it must evaluate whether the available data is relevant to that exact problem.
+
+The team should focus on data such as evening order volume, driver coverage, route congestion, late-delivery rates, and customer complaints from that zone. Data from another city, a different time window, or unrelated product categories may not be useful for this decision. By assessing relevance carefully, the team can focus on the data that actually supports the operational problem and avoid weak or misleading conclusions.
+
+#### Validity
+
+Validity examines whether the data conforms to defined rules, constraints, and standards. Valid data satisfies the predefined criteria and is fit for the intended purpose.
+
+**Example: Grocery-delivery data validity**
+
+One use case for validity in the grocery-delivery scenario is ensuring that data entry and data handling follow the company's operational rules and security standards. For example, delivery status values should only use approved categories, refund amounts should stay within allowed limits, and customer contact information should be stored in the correct format.
+
+Another use case is making sure customer and order data is handled securely. The grocery company should use protected storage, appropriate encryption, and access controls so that only authorised staff can view or edit sensitive customer, payment, or address information. If the data breaks these rules or security controls, it is not fully valid for trusted decision-making.
+
+#### Precision
+
+Precision refers to the level of detail and specificity in the data. Precise data is granular enough to support the decision without being overly vague or ambiguous.
+
+**Example: Grocery-delivery data precision**
+
+In the grocery scenario, the analyst first decides what level of detail is required. For example, delivery time may need to be recorded to the minute, route distance may need a consistent unit such as kilometres, and temperature readings for chilled products may need exact decimal measurements.
+
+The next step is to collect the data with the right tools and level of detail. GPS devices, route logs, and temperature sensors must produce reliable measurements. Once collected, the data should be reviewed for errors or inconsistencies and compared with expected results. Precise data then makes it easier to identify patterns such as which routes create small but repeated delays or which products are most at risk during transport.
+
+#### Integrity
+
+Integrity ensures that data remains unchanged and unaltered throughout its lifecycle. Data integrity includes protection against unauthorised modifications, corruption, or unauthorised access.
+
+**Example: Grocery-delivery data integrity**
+
+The grocery-delivery company handles sensitive operational and customer data, so integrity matters throughout the full workflow. Encryption helps protect order and payment information, while access controls ensure that only authorised personnel can change delivery records, refund decisions, or driver schedules.
+
+An audit trail should record who changed a delivery status, refund amount, or route assignment and when the change happened. This makes it easier to investigate suspicious edits, detect corruption, and confirm that later analysis is based on trustworthy records.
+
+#### Uniqueness
+
+Uniqueness measures the occurrence of duplicate or redundant data. Unique data ensures that each record is distinct and repetition is removed.
+
+**Example: Grocery-delivery duplicate record identification**
+
+In the grocery-delivery scenario, duplicate order or customer records can distort analysis and operations. A single order might appear twice because of a retry in the mobile app, a duplicate import from a partner platform, or small variations in customer name or address formatting.
+
+To fix this, the company can apply a uniqueness check that uses key attributes such as order ID, customer ID, delivery address, timestamp, and payment reference. Fuzzy matching can also help detect near-duplicates, such as slightly different address spellings. Removing duplicate records ensures that KPIs, delay rates, complaint counts, and refund totals are not artificially inflated.
+
+#### Consensus
+
+Consensus refers to the level of agreement and alignment among different sources or datasets. Consensus data minimises discrepancies and improves reliability.
+
+**Example: Consensus in grocery-delivery operational data**
+
+The grocery-delivery company may have several teams reviewing the same business problem, including operations, customer support, finance, and logistics. Each team may bring different data sources and different interpretations of why late deliveries and refund costs are rising.
+
+To build consensus, the teams should define the decision objective clearly, compare the evidence from each source, identify discrepancies, and agree on which figures are most trustworthy for the final decision. For example, operations may trust route logs, support may focus on complaint patterns, and finance may focus on refund values. A shared review process helps the teams reconcile differences and agree on the most reliable picture of the problem.
+
+#### Data quality comparison table
+
+| Dimension | What it checks | Grocery-delivery example |
+|----------|----------------|--------------------------|
+| Accuracy | Whether recorded values are correct | Wrong delivery time or address creates false conclusions about delays |
+| Completeness | Whether required fields are filled in | Missing driver ID or zone makes root-cause analysis weaker |
+| Consistency | Whether systems use the same labels and formats | `late`, `delayed`, and `missed slot` should be standardised |
+| Timeliness | Whether the data is current enough for the decision | Stale GPS or route feeds prevent fast operational response |
+| Relevance | Whether the data fits the business question | Data from another city may not explain one local delivery-zone problem |
+| Validity | Whether the data follows rules and constraints | Refund values, status codes, and secure handling must meet business rules |
+| Precision | Whether the level of detail is sufficient | Delivery time to the minute is more useful than a vague morning/afternoon label |
+| Integrity | Whether the data stays protected and unchanged | Audit trails and access controls protect route and refund records |
+| Uniqueness | Whether each record appears only once | Duplicate orders can inflate KPI counts and refund totals |
+| Consensus | Whether sources and teams align on the trusted figures | Operations, support, and finance agree on the most reliable delay metrics |
+
+### Data Analysis Techniques
+
+Data analysis is the process of transforming data into meaningful insights that inform decision-making. It involves applying analytical methods to show patterns, relationships, and trends within the data.
+
+#### Statistical analysis
+
+Statistical analysis involves applying different techniques to analyse data and draw meaningful insights from it. In the grocery-delivery scenario, these techniques help the company understand delivery performance, identify operational patterns, and make better decisions about staffing, routing, and customer service.
+
+#### Descriptive statistics
+
+In Data Analysis Fundamentals, measures of central tendency and measures of relative location and variation were covered. This is called **descriptive statistics**. They include mean, median, mode, standard deviation, range, and percentiles.
+
+In the grocery scenario, descriptive statistics can be used to summarise delivery performance:
+
+- **Mean delivery delay** shows the average number of minutes orders arrive late.
+- **Median delivery delay** shows the middle delay value and reduces the effect of extreme outliers.
+- **Mode** can show the most common refund reason or most frequent delivery slot.
+- **Range** shows the gap between the smallest and largest delay values.
+- **Standard deviation** shows whether delays are tightly grouped or highly variable.
+- **Percentiles** can show, for example, the delay threshold below which 90% of deliveries are completed.
+
+These measures help the business understand what is happening in the delivery operation before moving to deeper analysis.
+
+#### Inferential statistics
+
+Inferential statistics involve making inferences and drawing conclusions about a population based on a sample. These techniques use probability theory and sampling distributions to estimate population parameters and test hypotheses.
+
+By analysing a subset of data, inferential statistics allow analysts to make careful generalisations about the entire population. In the grocery-delivery scenario, the company may not need to inspect every order manually. Instead, it might analyse a representative sample of evening deliveries from one high-risk zone and use that subset to understand the broader delivery operation.
+
+This helps the business understand relationships, make predictions, and test hypotheses about the data.
+
+Inferential statistics are often divided into two categories:
+
+1. Hypothesis testing
+2. Regression analysis
+
+#### Using a subset of grocery-delivery data
+
+Suppose the company selects a subset of recent evening deliveries from one busy zone where delays appear to be worst.
+
+- With **descriptive statistics**, the analyst can summarise that subset by calculating the average delay, the median refund amount, the spread of delivery times, and the percentile for on-time performance.
+- With **inferential statistics**, the analyst can use that subset to test whether delays in that zone are significantly worse than the company average, or whether a change in staffing has improved performance.
+
+#### Hypothesis testing in the grocery scenario
+
+Hypothesis testing can help answer questions such as:
+
+- Are evening deliveries in Zone North significantly later than deliveries in other zones?
+- Did adding extra drivers reduce average delay times?
+- Did a new route policy improve on-time delivery performance?
+
+A hypothesis test can be **two-tailed**, **left-tailed**, or **right-tailed**. In this section, we examine one of the most common tools for hypothesis testing: the **Z-test**.
+
+#### Z-test
+
+The **Z-test** is used when the sample size is greater than or equal to 30, the data is approximately normally distributed, and the population variance is known to the researcher.
+
+In the grocery-delivery scenario, suppose the company already knows from long-term historical records that the population standard deviation of late-delivery minutes in evening deliveries is about 6 minutes. Management also has a benchmark that the average late-delivery time should be no more than 12 minutes.
+
+The company takes a new sample of 36 evening deliveries from Zone North after a route change. The sample mean delay is 14 minutes. Management now wants to know whether the true average delay is actually higher than the 12-minute benchmark.
+
+#### Null and alternative hypotheses
+
+When doing hypothesis testing, we usually start with a null hypothesis ($H_0$) and an alternative hypothesis ($H_1$). These two hypotheses present different claims about a population parameter such as a mean or proportion.
+
+- The **null hypothesis ($H_0$)** is the default assumption. It says there is no significant difference or effect.
+- The **alternative hypothesis ($H_1$)** is the competing claim. It says there is a significant difference or effect.
+
+For the grocery case:
+
+- **Null hypothesis:** $H_0: \mu = 12$
+- **Alternative hypothesis:** $H_1: \mu > 12$
+
+This is a **right-tailed test** because the company is specifically checking whether the true mean delay is greater than the benchmark.
+
+#### Z-test formula
+
+The test statistic is:
+
+$$
+Z = \frac{\bar{x} - \mu}{\sigma / \sqrt{n}}
+$$
+
+Where:
+
+- $\bar{x}$ = sample mean
+- $\mu$ = population mean under the null hypothesis
+- $\sigma$ = population standard deviation
+- $n$ = sample size
+
+For the grocery sample:
+
+- $\bar{x} = 14$
+- $\mu = 12$
+- $\sigma = 6$
+- $n = 36$
+
+$$
+Z = \frac{14 - 12}{6 / \sqrt{36}} = \frac{2}{6/6} = \frac{2}{1} = 2.0
+$$
+
+So the test statistic is **$Z = 2.0$**.
+
+#### How to interpret the result
+
+If the company uses a 5% significance level in a right-tailed test, the critical Z-value is about **1.645**.
+
+- If $Z > 1.645$, reject $H_0$
+- If $Z \leq 1.645$, fail to reject $H_0$
+
+Since $2.0 > 1.645$, the company would reject the null hypothesis and conclude that the average late-delivery time is significantly greater than 12 minutes.
+
+That gives management evidence that the current evening-delivery process in Zone North is underperforming and needs intervention.
+
+#### Visual tail diagrams
+
+**Two-tailed test**: checks whether the mean is simply different
+
+```text
+   reject H0        keep H0         reject H0
+------|---------------|---------------|------
+    left tail        center         right tail
+```
+
+**Left-tailed test**: checks whether the mean is lower than expected
+
+```text
+   reject H0            keep H0
+------|--------------------|------------------
+    left tail             center/right
+```
+
+**Right-tailed test**: checks whether the mean is higher than expected
+
+```text
+   keep H0              reject H0
+------|--------------------|------------------
+    left/center           right tail
+```
+
+The grocery example above uses a **right-tailed test** because the concern is whether average delays are **higher** than the target.
+
+#### Normal distribution explained with the grocery scenario
+
+A **normal distribution**, often called a **Gaussian distribution** or **bell curve**, is a probability distribution that forms a symmetrical bell-shaped curve when plotted on a graph.
+
+In a normal distribution:
+
+- most values cluster around the **mean**
+- fewer values appear as you move farther away from the mean
+- the left and right sides of the curve are symmetrical
+
+In the grocery-delivery scenario, imagine plotting the delivery times for a large number of evening orders in one zone. If the data is approximately normal, most deliveries will be close to the average delivery time, while only a smaller number will be much faster or much slower than average.
+
+```text
+                                 Normal distribution of delivery times
+
+                                              mean
+                                                |
+                                  .         |         .
+                              .    .       |      .    .
+                          .        .      |    .        .
+                      .            .     |  .            .
+--------------.-----------------.---|---.-----------------.--------------
+          much faster          slightly faster   slightly slower      much slower
+```
+
+This matters because the Z-test assumes that the data is approximately normal when the sample is large enough and the population standard deviation is known.
+
+#### Six-step two-tailed grocery example
+
+To mirror the cereal-box example in the grocery-delivery case, suppose the company claims that the **average delivery time is 30 minutes** for evening orders in Zone North.
+
+The analyst takes a sample and finds:
+
+- sample mean = 25 minutes
+- hypothesised mean = 30 minutes
+- population standard deviation = 10 minutes
+- sample size = 36
+
+##### Step 1: Stating hypotheses
+
+We start by articulating the null and alternative hypotheses.
+
+- **Null hypothesis ($H_0$):** the average delivery time is 30 minutes.
+- **Alternative hypothesis ($H_1$):** the average delivery time is not 30 minutes.
+
+So:
+
+- $H_0: \mu = 30$
+- $H_1: \mu \ne 30$
+
+This is a **two-tailed test** because we are checking whether the average is either higher or lower than the claimed value.
+
+##### Step 2: Setting significance level
+
+The chosen significance level is $\alpha = 0.05$. This is the probability of incorrectly rejecting the null hypothesis.
+
+##### Step 3: Calculating the test statistic
+
+Because the population standard deviation is known and the sample size is 36, the analyst can use the **Z-test**:
+
+$$
+Z = \frac{\bar{x} - \mu}{\sigma / \sqrt{n}}
+$$
+
+Substituting the grocery values:
+
+$$
+Z = \frac{25 - 30}{10 / \sqrt{36}} = \frac{-5}{10/6} = -3
+$$
+
+So the test statistic is **$Z = -3$**.
+
+##### Step 4: Determining the critical values
+
+Since this is a two-tailed test, the significance level is split into two tails:
+
+$$
+\alpha / 2 = 0.05 / 2 = 0.025
+$$
+
+The corresponding critical values from the standard normal distribution are approximately:
+
+- **-1.96**
+- **1.96**
+
+```text
+ reject H0         fail to reject H0         reject H0
+-----|-------------------|-------------------|-----
+    -1.96                0                  1.96
+                                ^
+                            z = -3
+```
+
+##### Step 5: Decision
+
+If the calculated Z-value falls outside the range from **-1.96 to 1.96**, we reject the null hypothesis.
+
+Since $Z = -3$, it falls outside the accepted range, so we **reject $H_0$**.
+
+##### Step 6: Drawing conclusions
+
+Based on this result, there is strong evidence that the average delivery time is **not** 30 minutes.
+
+In this case, the sample mean is lower than the claimed value, so the practical conclusion is that average delivery time appears to be significantly faster than 30 minutes.
+
+That could mean the grocery company's new routing process or staffing setup is improving performance beyond the old benchmark.
+
+#### T-test
+
+When dealing with a sample size smaller than 30, and the data follows a **Student t-distribution**, we usually use a **T-test** instead of a Z-test. The t-distribution has fatter tails than the normal distribution, which makes it better suited to the extra uncertainty that comes from working with smaller samples.
+
+The T-test is especially useful when:
+
+1. the sample size is small
+2. the population variance is unknown
+3. the analyst wants to compare a sample mean with a benchmark or target
+
+In practice, the T-test is used for the same kind of business question as the Z-test, but in a more realistic situation where the company does **not** know the true population standard deviation.
+
+#### What is the T-test for?
+
+The T-test helps answer questions like:
+
+- Is the average delivery delay in this small sample higher than the target?
+- Did a small pilot change improve average performance?
+- Is the observed difference likely to be real or just random variation?
+
+In the grocery-delivery scenario, suppose managers pilot a new dispatch rule in one zone and collect only **16** evening deliveries at first. That is a small sample, so a T-test is more appropriate than a Z-test.
+
+#### T-test hypotheses
+
+The inferential hypothesis structure is:
+
+- **Null hypothesis:** $H_0: \mu = \mu_0$
+- **Alternative hypothesis:** $H_1: \mu > \mu_0$
+
+For the grocery case, suppose management wants average late-delivery time to be no more than **12 minutes**.
+
+- $H_0: \mu = 12$
+- $H_1: \mu > 12$
+
+This is a **right-tailed T-test** because the company is testing whether the true mean delay is greater than the target.
+
+#### T-test formula
+
+The test statistic is:
+
+$$
+t = \frac{\bar{x} - \mu}{s / \sqrt{n}}
+$$
+
+Where:
+
+- $\bar{x}$ = sample mean
+- $\mu$ = hypothesised population mean
+- $s$ = sample standard deviation
+- $n$ = sample size
+
+The symbols $\bar{x}$, $\mu$, and $n$ are the same as in the Z-test. The difference is that the T-test uses the **sample standard deviation $s$** because the true population standard deviation is unknown.
+
+#### Grocery-delivery T-test example
+
+Suppose the company samples **16 evening deliveries** in Zone North after a small dispatch change.
+
+- sample mean delay = 14 minutes
+- target mean delay = 12 minutes
+- sample standard deviation = 4 minutes
+- sample size = 16
+
+Using the formula:
+
+$$
+t = \frac{14 - 12}{4 / \sqrt{16}} = \frac{2}{4/4} = \frac{2}{1} = 2.0
+$$
+
+So the test statistic is **$t = 2.0$**.
+
+#### Decision criteria
+
+To make the decision, compare the calculated t statistic with the **critical t value** from the t-distribution table using:
+
+- the chosen significance level
+- the type of tail test
+- the degrees of freedom, which are $n - 1$
+
+For this sample:
+
+- $n = 16$
+- degrees of freedom = $16 - 1 = 15$
+
+If the company uses a 5% significance level in a right-tailed test, the critical t value for 15 degrees of freedom is approximately **1.753**.
+
+- If $t > t_{critical}$, reject $H_0$
+- If $t \leq t_{critical}$, fail to reject $H_0$
+
+Since $2.0 > 1.753$, the company would **reject the null hypothesis**.
+
+#### What does that mean in practice?
+
+This result suggests that average late-delivery time in the small pilot sample is significantly greater than 12 minutes. In other words, even after the dispatch change, performance still appears worse than the target.
+
+That tells management the problem may not be solved yet. They may need to:
+
+1. add more drivers
+2. redesign route priorities
+3. improve dispatch timing
+4. collect a larger sample and test again
+
+#### Z-test vs T-test
+
+| Test | Use when | Standard deviation used | Typical situation |
+|------|----------|-------------------------|-------------------|
+| Z-test | Sample is large and population variance is known | Population standard deviation $\sigma$ | Mature process with strong historical data |
+| T-test | Sample is small and population variance is unknown | Sample standard deviation $s$ | Pilot test, small operational trial, or early investigation |
+
+#### How to do a T-test step by step
+
+1. Define the business question and choose the target or benchmark mean.
+2. Write the null hypothesis and alternative hypothesis.
+3. Choose the significance level, such as $\alpha = 0.05$.
+4. Collect the sample and calculate the sample mean and sample standard deviation.
+5. Compute the t statistic using the formula.
+6. Find the critical t value using degrees of freedom $n-1$.
+7. Compare the t statistic to the critical value.
+8. Decide whether to reject or fail to reject the null hypothesis.
+9. Translate the result into a business decision.
+
+#### Why hypothesis testing helps in the grocery case
+
+Without hypothesis testing, the company might see a sample mean of 14 minutes and immediately assume the system is failing. Hypothesis testing adds discipline by asking whether that observed difference is large enough to be considered statistically meaningful rather than random noise.
+
+This helps managers decide whether to:
+
+1. add drivers
+2. redesign routes
+3. limit delivery slots
+4. investigate a specific zone further
+
+#### Worked statistical analysis example
+
+Suppose the analyst selects a subset of 10 evening deliveries from Zone North before a staffing change. The late-delivery minutes are:
+
+`12, 15, 18, 20, 14, 16, 19, 22, 17, 21`
+
+Using **descriptive statistics**:
+
+- **Mean** delay = 17.4 minutes
+- **Median** delay = 17.5 minutes
+- **Minimum / Maximum** = 12 and 22 minutes
+- **Range** = 10 minutes
+- **Standard deviation** is moderate, which suggests delays are consistently high rather than caused by only one extreme outlier
+
+This descriptive summary shows that evening deliveries in this zone are regularly late and not just occasionally disrupted.
+
+Now suppose the company adds two extra drivers and then samples 10 similar deliveries afterward:
+
+`9, 11, 13, 12, 10, 14, 8, 12, 11, 13`
+
+Using **descriptive statistics** again:
+
+- **Mean** delay after the change = 11.3 minutes
+- **Median** delay after the change = 11.5 minutes
+- **Range** = 6 minutes
+
+This suggests the delays are both lower and less spread out after the staffing change.
+
+Using **inferential statistics**, the analyst can then test the hypothesis:
+
+- **Null hypothesis ($H_0$):** the extra drivers did not reduce average delay
+- **Alternative hypothesis ($H_1$):** the extra drivers reduced average delay
+
+If a statistical test on the two samples shows that the difference is unlikely to be caused by random variation alone, the analyst can conclude that the staffing change probably improved delivery performance in the wider population of evening deliveries, not just in this sample.
+
+This is the practical value of combining descriptive and inferential statistics:
+
+- descriptive statistics explain **what the sample looks like**
+- inferential statistics help decide **whether the result is strong enough to act on**
+
+#### 2. Regression analysis
+
+Regression analysis illustrates the relationships between variables, whether they are independent or dependent. This analytical method helps explain how changes in independent variables influence the dependent variable.
+
+This process provides insight into the nature of relationships, identifies significant predictors, and supports prediction and forecasting. By quantifying associations, regression analysis reveals patterns and connections among variables.
+
+#### Independent and dependent variables
+
+An **independent variable** is a factor that is changed, observed, or used to explain another outcome.
+
+A **dependent variable** is the outcome being measured. It depends on changes in the independent variable.
+
+In the grocery-delivery scenario:
+
+- **Independent variables** could include traffic level, route distance, order volume, number of available drivers, weather severity, and delivery-slot demand.
+- **Dependent variables** could include late-delivery minutes, refund cost, on-time delivery probability, or customer complaint rate.
+
+So if traffic level rises and delivery delay rises with it, traffic level is acting as an independent variable and delivery delay is the dependent variable.
+
+#### Visualising the relationship between variables
+
+```text
+Independent variables                        Dependent variables
+
+Traffic level          ───────┐
+Route distance         ───────┤
+Order volume           ───────┤
+Available drivers      ───────┼──────>  Late-delivery minutes
+Weather severity       ───────┤
+Delivery-slot demand   ───────┘
+
+Traffic level          ───────┐
+Order size             ───────┤
+Driver workload        ───────┼──────>  Refund cost
+Cold-chain temperature ───────┘
+
+Order volume           ───────┐
+Route congestion       ───────┤
+Driver availability    ───────┼──────>  Probability order is late
+Weather severity       ───────┘
+```
+
+This diagram shows the main regression idea: the **independent variables** are the inputs or predictors, and the **dependent variable** is the outcome we want to explain or predict.
+
+You can also think of the relationship like this:
+
+```text
+Change in predictor  ->  change in outcome
+
+More traffic         ->  more late-delivery minutes
+Longer route         ->  higher chance of delay
+More available drivers -> lower average delay
+Higher order volume  ->  higher refund risk if capacity is limited
+```
+
+Regression analysis measures these relationships instead of relying on guesswork. It helps the analyst estimate whether the relationship is weak, strong, positive, negative, linear, or more complex.
+
+#### Why regression is useful in the grocery case
+
+The grocery company does not just want to describe what already happened. It wants to understand which factors drive delays, predict future problems, and test which levers are most likely to improve performance. Regression is useful for that because it turns operational data into a model of how the business behaves.
+
+#### Simple linear regression
+
+Simple linear regression uses **one dependent variable** and **one independent variable**.
+
+In the grocery-delivery scenario, suppose the analyst wants to forecast **late-delivery minutes** based only on **route distance**. That is a simple linear regression problem because one predictor is being used to explain one outcome.
+
+This helps the company understand a basic relationship such as: as route distance increases, do delays increase as well?
+
+#### Multiple linear regression
+
+Multiple linear regression uses **one dependent variable** and **several independent variables** at the same time.
+
+In the grocery scenario, the company may want to predict **late-delivery minutes** using:
+
+- route distance
+- traffic level
+- order volume
+- number of available drivers
+- weather conditions
+
+This is more realistic than simple linear regression because delivery performance is usually affected by several factors at once. Multiple linear regression helps the analyst estimate how strongly each factor contributes while the others are also present.
+
+#### Polynomial regression
+
+Polynomial regression is used when the relationship between the dependent and independent variables is **non-linear** rather than a straight line.
+
+In the grocery-delivery scenario, order volume may not increase delays at a constant rate. For example, delays may rise slowly at first, then sharply once the delivery system becomes overloaded. That curved relationship can be modelled more effectively with polynomial regression.
+
+Polynomial regression works by adding higher-order terms such as squared or cubed versions of the independent variable so the model can capture more complex patterns.
+
+#### Logistic regression
+
+Logistic regression is used when the dependent variable is **categorical or binary**, meaning it has two possible outcomes.
+
+In the grocery case, the company may want to predict whether an order will be:
+
+- **on time** or **late**
+- **refunded** or **not refunded**
+- **complaint triggered** or **no complaint**
+
+Logistic regression estimates the probability of one of these outcomes based on independent variables such as order size, driver workload, weather, and route congestion.
+
+This is useful when the company cares about risk classification rather than predicting an exact numeric value.
+
+#### Ridge regression
+
+Ridge regression is helpful when **multicollinearity** exists, meaning some independent variables are strongly correlated with each other.
+
+In the grocery-delivery scenario, traffic level, route duration, and order density may all move together. That can make an ordinary regression model unstable. Ridge regression introduces a penalty term that reduces this instability and helps prevent overfitting.
+
+This is useful when the company wants a more stable model that performs better on new delivery data rather than one that is overly tuned to the current sample.
+
+#### Time series regression
+
+Time series regression analyses data collected over time to identify trends, seasonal patterns, and changes.
+
+In the grocery scenario, the company may want to forecast future late-delivery rates using historical daily or hourly data. For example, it might use past weeks of evening-delivery performance to predict what will happen next Friday before a holiday weekend.
+
+This helps managers anticipate staffing needs, likely demand spikes, and service risks before they happen.
+
+#### Nonlinear regression
+
+Nonlinear regression is used when the relationship between dependent and independent variables is more complex than a straight line or a simple polynomial curve.
+
+In the grocery-delivery scenario, the effect of driver availability on delay might flatten after a certain point, or the effect of temperature on food-quality complaints may accelerate sharply beyond a threshold. Nonlinear regression helps model these kinds of complex interactions more accurately.
+
+This is useful when operational behaviour follows real-world limits, thresholds, or saturation effects that linear models cannot capture well.
+
+#### Comparing regression types in the grocery scenario
+
+| Regression type | Grocery-delivery use case | Dependent variable example |
+|----------------|---------------------------|----------------------------|
+| Simple linear regression | Predict delay from route distance | Late-delivery minutes |
+| Multiple linear regression | Predict delay from several operational factors | Late-delivery minutes |
+| Polynomial regression | Model curved relationship between order volume and delay | Late-delivery minutes |
+| Logistic regression | Predict whether an order will be late or refunded | Late/on-time or refund/no refund |
+| Ridge regression | Build a stable model when predictors are strongly correlated | Late-delivery minutes |
+| Time series regression | Forecast delay rates over coming days or weeks | Future delay rate |
+| Nonlinear regression | Model threshold or saturation effects in operations | Delay, complaints, or refund cost |
+
+#### How to use each regression in practice
+
+**Simple linear regression**
+
+Use simple linear regression when you want to test one clear relationship at a time.
+
+In the grocery case:
+
+1. Choose one predictor, such as route distance.
+2. Choose one outcome, such as late-delivery minutes.
+3. Fit a line to see whether longer routes are associated with longer delays.
+4. Use the slope to explain how much delay tends to change when distance increases.
+
+This is useful for a first-pass analysis when the business wants one straightforward explanation.
+
+**Multiple linear regression**
+
+Use multiple linear regression when several factors affect the same outcome.
+
+In the grocery case:
+
+1. Set late-delivery minutes as the dependent variable.
+2. Include predictors such as traffic, route distance, order volume, weather, and available drivers.
+3. Fit the model to estimate the effect of each variable while the others are also present.
+4. Use the coefficients to identify the strongest drivers of delay.
+
+This is useful when management wants a more realistic model of operations.
+
+**Polynomial regression**
+
+Use polynomial regression when the relationship is curved rather than straight.
+
+In the grocery case:
+
+1. Start with a variable such as order volume.
+2. Check whether delays rise slowly at first and then sharply after a threshold.
+3. Add squared or higher-order terms to capture that curve.
+4. Use the fitted curve to identify overload points in the delivery system.
+
+This is useful when business performance changes accelerate or flatten rather than move in a straight line.
+
+**Logistic regression**
+
+Use logistic regression when the outcome is binary or categorical.
+
+In the grocery case:
+
+1. Define a binary outcome such as `late` versus `on time`.
+2. Use predictors such as route congestion, driver workload, and weather severity.
+3. Fit the model to estimate the probability that an order will be late.
+4. Use those probabilities to flag high-risk deliveries before failure occurs.
+
+This is useful for operational risk scoring and proactive intervention.
+
+**Ridge regression**
+
+Use ridge regression when predictors are strongly correlated and the ordinary regression becomes unstable.
+
+In the grocery case:
+
+1. Build a model with several related predictors such as traffic level, route duration, and order density.
+2. Detect multicollinearity if these variables move together strongly.
+3. Apply ridge regression to shrink unstable coefficients.
+4. Use the model for more reliable prediction on new weeks of delivery data.
+
+This is useful when the business wants stable prediction rather than noisy coefficient estimates.
+
+**Time series regression**
+
+Use time series regression when the main question is about change over time.
+
+In the grocery case:
+
+1. Organise delay rate or refund cost by hour, day, or week.
+2. Identify trend, seasonality, and recurring peaks.
+3. Fit the model using historical time-based data.
+4. Forecast future demand pressure, likely delay spikes, or weekend service risk.
+
+This is useful for staffing plans, shift design, and forecasting future operational strain.
+
+**Nonlinear regression**
+
+Use nonlinear regression when the relationship is complex and cannot be captured well by a straight line.
+
+In the grocery case:
+
+1. Select a relationship that appears to have thresholds, saturation, or diminishing returns.
+2. For example, test whether adding drivers reduces delays strongly at first and then levels off.
+3. Fit a nonlinear model that matches the operational behaviour more closely.
+4. Use the model to estimate where extra investment stops producing large improvements.
+
+This is useful when the business needs realistic modelling of operational limits.
+
+### More Data Analysis Techniques
+
+#### Correlation analysis
+
+Correlation analysis is a method used to measure the strength of linear relationships between two or more variables. Correlation coefficients, such as Pearson's correlation coefficient, indicate the strength and direction of the relationship, usually ranging from **-1 to +1**.
+
+- **+1** means a strong positive relationship
+- **0** means no clear linear relationship
+- **-1** means a strong negative relationship
+
+Correlation analysis helps identify dependencies between variables. This is useful for prediction, investigation, and understanding patterns in data.
+
+In the grocery-delivery scenario, correlation analysis helps answer questions like:
+
+- Do longer routes tend to create more delays?
+- Do higher traffic levels tend to increase refund costs?
+- Do more available drivers tend to reduce the probability of late deliveries?
+
+#### How to use correlation analysis in practice
+
+Use correlation analysis as an early exploration tool before building a more complex predictive model.
+
+In the grocery case:
+
+1. Choose the two variables you want to compare.
+2. Check the type of each variable: continuous, ranked, binary, or categorical.
+3. Choose the correct correlation coefficient.
+4. Measure the strength and direction of the relationship.
+5. Use the result to guide further analysis, feature selection, or operational investigation.
+
+Correlation does **not** prove causation. It only shows whether variables move together in a meaningful pattern.
+
+#### Pearson's correlation coefficient
+
+Pearson's correlation coefficient is a common measure of **linear** correlation between two continuous variables.
+
+In the grocery-delivery scenario, Pearson correlation can be used to measure the relationship between:
+
+- route distance and late-delivery minutes
+- traffic score and refund cost
+- order volume and average delivery time
+
+If the Pearson correlation between route distance and delay is strongly positive, that suggests longer routes are associated with more delay.
+
+#### Spearman's rank correlation
+
+Spearman's rank correlation is useful when the relationship is not necessarily linear but is still **monotonic**, meaning one variable tends to increase as the other increases, even if not in a straight line.
+
+In the grocery scenario, Spearman correlation could be used when ranking delivery zones by congestion level and ranking the same zones by complaint volume. If the rankings move together, Spearman helps confirm that more congested zones also tend to rank worse on complaints.
+
+#### Point-biserial correlation
+
+Point-biserial correlation measures the relationship between one **continuous** variable and one **binary** variable.
+
+In the grocery case, the analyst could study the relationship between:
+
+- delivery delay minutes (continuous)
+- whether the order was refunded or not refunded (binary)
+
+This helps test whether higher delays are associated with a greater chance of refund.
+
+#### Phi coefficient
+
+The Phi coefficient measures the association between **two binary variables**.
+
+In the grocery-delivery scenario, this could be used to examine whether:
+
+- `late` versus `on time`
+- `complaint submitted` versus `no complaint`
+
+are related. If Phi is strong and positive, late deliveries and complaints may often occur together.
+
+#### Cramer's V
+
+Cramer's V measures the association between **two categorical variables** and extends the Phi coefficient beyond simple binary categories.
+
+In the grocery case, it could be used to examine the relationship between:
+
+- delivery zone category (`North`, `Central`, `East`)
+- refund reason category (`late`, `damaged`, `missing item`, `other`)
+
+This helps the company understand whether certain zones are linked to certain types of operational problems.
+
+#### Biserial correlation
+
+Biserial correlation measures the relationship between a **continuous** variable and an underlying **dichotomous** variable.
+
+In the grocery scenario, an analyst might use it when studying the relationship between customer age or basket value and an underlying two-part outcome such as whether satisfaction is effectively high or low, even if that satisfaction originated from a score scale that has been reduced into two groups.
+
+This helps when the business wants to connect a continuous factor to a split customer outcome.
+
+#### Kendall's Tau
+
+Kendall's Tau measures the association between **two ranked variables** by checking whether rankings move together or against each other.
+
+In the grocery-delivery scenario, Kendall's Tau could be used to compare:
+
+- manager rankings of the most problematic delivery zones
+- customer rankings of the same zones based on service satisfaction
+
+If the rankings agree closely, Kendall's Tau will be high, showing strong alignment between operational judgment and customer experience.
+
+#### Which correlation should you use?
+
+| Correlation type | Use when | Grocery-delivery example |
+|------------------|----------|--------------------------|
+| Pearson | Two continuous variables with linear relationship | Route distance vs late-delivery minutes |
+| Spearman | Two ranked variables or monotonic relationship | Zone congestion rank vs complaint rank |
+| Point-biserial | One continuous and one binary variable | Delay minutes vs refunded/not refunded |
+| Phi coefficient | Two binary variables | Late/on-time vs complaint/no complaint |
+| Cramer's V | Two categorical variables | Zone category vs refund reason category |
+| Biserial | One continuous and one dichotomous variable | Basket value vs high/low satisfaction group |
+| Kendall's Tau | Two ranked variables with rank agreement focus | Operations rank vs customer rank of bad zones |
+
+#### How this helps decision-making
+
+In the grocery-delivery business, correlation analysis helps the team identify which variables move together strongly enough to deserve attention. That can guide:
+
+1. which variables should enter a regression model
+2. which KPIs may be linked operationally
+3. which problems deserve deeper causal investigation
+4. which service risks should be monitored proactively
+
+### Data Visualisation
+
+Data visualisation is the graphical representation of information and data. Data visualisation tools provide an accessible way to find and understand trends, outliers, and patterns in your data using visual elements like charts, graphs, and maps. Another major benefit is being able to present the data clearly to non-technical peers.
+
+In the grocery-delivery scenario, visualisation helps the company explain operational problems such as delay trends, refund patterns, zone performance, demand spikes, and route risk in a way that managers can understand quickly.
+
+#### How visualisation fits the grocery scenario
+
+The grocery company could collect data such as:
+
+- daily late-delivery rate
+- refund cost by week
+- number of delayed orders by zone
+- average delay by route distance
+- complaint type by city zone
+- GPS congestion intensity by neighbourhood
+
+That data can then be turned into different chart types depending on the question being asked.
+
+#### Line chart
+
+A **line chart** displays data points connected by lines. It is commonly used to show trends or changes over time.
+
+**Grocery use case:** show late-delivery rate across 14 days.
+
+```text
+Late-delivery rate over time
+
+18% |                          *
+16% |                     *       *
+14% |                *
+12% |          *  *
+10% |     *
+ 8% | *
+    +---------------------------------
+     D1 D3 D5 D7 D9 D11 D13 D14
+```
+
+**How to make it:**
+
+1. Put time on the x-axis, such as day or week.
+2. Put the KPI on the y-axis, such as late-delivery rate.
+3. Plot the values in order.
+4. Connect the points with a line.
+
+Use this when you want to show trend, seasonality, or change over time.
+
+#### Bar graph
+
+A **bar graph** uses rectangular bars to compare categorical values.
+
+**Grocery use case:** compare the number of delayed orders by zone.
+
+```text
+Delayed orders by zone
+
+North    | ██████████████ 42
+Central  | █████████ 27
+East     | ██████ 18
+West     | ███████████ 33
+```
+
+**How to make it:**
+
+1. Put categories on one axis, such as delivery zones.
+2. Put the measure on the other axis, such as delayed order count.
+3. Draw one bar per category.
+4. Compare bar length or height.
+
+Use this when you want to compare groups directly.
+
+#### Pie chart
+
+A **pie chart** shows how a whole is split into parts.
+
+**Grocery use case:** show refund reasons as shares of all refunds.
+
+```text
+Refund reasons
+
+Late delivery     45%
+Damaged items     25%
+Missing items     20%
+Other             10%
+
+        _______
+     .-'   |   '-.
+    .' 45%  |25%   '.
+   /--------+--------\
+   \ 20%    | 10%    /
+    '.      |      .'
+     '-.___|__.-'
+```
+
+**How to make it:**
+
+1. Calculate each category as a percentage of the total.
+2. Draw a circle.
+3. Split it into slices proportional to the percentages.
+4. Label each slice clearly.
+
+Use this when you want to show part-to-whole composition and there are only a few categories.
+
+#### Scatterplot
+
+A **scatterplot** displays individual data points on a two-dimensional plane to show the relationship between two variables.
+
+**Grocery use case:** compare route distance and late-delivery minutes.
+
+```text
+Late-delivery minutes
+
+25 |                           *
+22 |                      *
+19 |                 *
+16 |            *
+13 |       *
+10 |  *
+   +--------------------------------
+    2    4    6    8    10   12
+          Route distance (km)
+```
+
+**How to make it:**
+
+1. Put one continuous variable on the x-axis.
+2. Put another continuous variable on the y-axis.
+3. Plot one dot for each order or route.
+4. Look for upward, downward, or clustered patterns.
+
+Use this when you want to inspect correlation or outliers.
+
+#### Histogram
+
+A **histogram** shows the distribution of continuous data by grouping values into bins.
+
+**Grocery use case:** show the distribution of delivery delays.
+
+```text
+Distribution of delay minutes
+
+0-5    | ███
+6-10   | ███████
+11-15  | ███████████
+16-20  | ██████
+21-25  | ██
+```
+
+**How to make it:**
+
+1. Choose a continuous variable, such as delay minutes.
+2. Divide the values into intervals or bins.
+3. Count how many observations fall in each bin.
+4. Draw bars for those frequencies.
+
+Use this when you want to understand spread, skewness, or unusual values.
+
+#### Heatmap
+
+A **heatmap** uses colour intensity to represent values in a matrix or grid.
+
+**Grocery use case:** show delivery intensity by day of week and hour.
+
+```text
+Orders by day and hour
+
+        16:00  17:00  18:00  19:00
+Mon         .      :      *      *
+Tue         .      *      *      #
+Wed         :      *      #      #
+Thu         :      *      #      @
+Fri         *      #      @      @
+
+. = low   : = medium   * = high   # = very high   @ = peak
+```
+
+**How to make it:**
+
+1. Put one category on rows, such as weekday.
+2. Put another category on columns, such as hour.
+3. Fill each cell with the measured value, such as order count.
+4. Apply colour intensity from low to high.
+
+Use this when you want to spot concentration, peaks, or patterns across a grid.
+
+#### Treemap
+
+A **treemap** shows hierarchical data as nested rectangles.
+
+**Grocery use case:** show refund cost by region and then by refund reason.
+
+```text
++---------------------------------------+
+| North region                          |
+|  +---------------+  +---------------+ |
+|  | Late          |  | Damaged       | |
+|  +---------------+  +-------+-------+ |
+|                          |Missing|    |
++---------------------+-----------------+
+| Central region      | East region     |
+| [smaller blocks]    | [smaller blocks]|
++---------------------------------------+
+```
+
+**How to make it:**
+
+1. Choose a hierarchy, such as region then refund reason.
+2. Size each rectangle by value, such as refund cost.
+3. Nest child categories inside parent categories.
+4. Optionally colour by another metric, such as complaint severity.
+
+Use this when you want to show both hierarchy and relative size.
+
+#### Network diagram
+
+A **network diagram** shows relationships and connections between entities using nodes and links.
+
+**Grocery use case:** show how warehouses, drivers, and zones connect.
+
+```text
+        [Warehouse A]
+         /   |    \
+        /    |     \
+    [Driver1][Driver2][Driver3]
+       |         |        |
+    [North]   [Central] [East]
+```
+
+**How to make it:**
+
+1. Define the entities as nodes, such as warehouse, driver, or zone.
+2. Define the relationships as links.
+3. Draw nodes and connect them with lines.
+4. Add colour or thickness if some links are busier or riskier than others.
+
+Use this when you want to show structure, connections, or operational dependency.
+
+#### Geographic data maps
+
+A **geographic map** displays data across real locations.
+
+**Grocery use case:** show average delay minutes by delivery zone on a city map.
+
+```text
+City delivery map
+
+    [North: 18 min]
+
+[West: 11 min]   [Central: 15 min]   [East: 9 min]
+
+    [South: 13 min]
+```
+
+**How to make it:**
+
+1. Start with a city or region map.
+2. Add zone or coordinate data.
+3. Colour each area by the KPI, such as average delay or refund cost.
+4. Add labels or markers for key hotspots.
+
+Use this when location matters to the decision.
+
+#### Dashboard
+
+A **dashboard** combines several visualisations in one place to support data analysis and presentation.
+
+**Grocery use case:** build one operations dashboard for daily management.
+
+```text
++------------------------------------------------------+
+| On-time KPI  | Refund Cost | Complaints | Drivers    |
+|    88%       |   $4,200    |    61      |   42       |
++------------------------------------------------------+
+| Line chart: delay trend over 14 days                 |
++--------------------------+---------------------------+
+| Bar chart: delays by zone| Heatmap: day x hour load |
++--------------------------+---------------------------+
+| Map: city hotspots       | Scatterplot: distance vs |
+|                          | delay                    |
++------------------------------------------------------+
+```
+
+**How to make it:**
+
+1. Choose the key KPIs managers need every day.
+2. Select the chart types that answer the most important questions.
+3. Put summary metrics at the top.
+4. Place trend, comparison, location, and relationship views underneath.
+5. Keep the layout clear enough for non-technical users.
+
+Use this when decision-makers need one shared view of operations.
+
+#### Which chart should you choose?
+
+| Visualisation | Best for | Grocery example |
+|---------------|----------|-----------------|
+| Line chart | Trend over time | Daily late-delivery rate |
+| Bar graph | Compare categories | Delays by zone |
+| Pie chart | Part-to-whole composition | Refund reasons share |
+| Scatterplot | Relationship between two variables | Distance vs delay |
+| Histogram | Distribution of one continuous variable | Delay-minute distribution |
+| Heatmap | Intensity across a matrix | Hour-by-day demand load |
+| Treemap | Hierarchical proportions | Region -> refund reason |
+| Network diagram | Connections and dependency | Warehouse-driver-zone links |
+| Geographic map | Location-based distribution | Delay hotspots by zone |
+| Dashboard | Combined operational view | Daily grocery operations board |
+
+#### How this would be shown visually to non-technical stakeholders
+
+For a grocery operations manager, the full visual story could look like this:
+
+1. Start with a **dashboard** that shows the top KPIs.
+2. Use a **line chart** to show whether delay is improving or worsening.
+3. Use a **bar graph** to show which zone is underperforming.
+4. Use a **heatmap** to show when demand pressure peaks.
+5. Use a **scatterplot** to show whether long routes drive delay.
+6. Use a **map** to show where operational hotspots are located.
+7. Use a **pie chart** or **treemap** to explain refund composition.
+
+That combination makes the data easier to understand for both technical and non-technical decision-makers.
+
+### Exploratory data analysis
+
+Exploratory data analysis refers to the process of exploring and summarising data through data profiling, aggregations, and summarisation techniques. Its purpose is to help the analyst understand the characteristics, structure, quality, and distribution of the data before deeper modelling or decision-making begins.
+
+In the grocery-delivery scenario, exploratory analysis helps the company answer questions such as:
+
+- What does the delivery dataset look like?
+- Are there missing values or obvious quality problems?
+- Which zones, time periods, or routes look most problematic?
+- How are delays, refunds, and complaints distributed?
+
+Exploratory analysis plays an important role because it helps the analyst understand the data before drawing conclusions. It gives an early picture of central tendencies, spread, unusual values, missing data, and group-level differences.
+
+#### Data profiling
+
+Data profiling is the collection of descriptive statistics and structural information about a dataset.
+
+In the grocery-delivery case, profiling might include:
+
+- number of observations, such as the total number of orders
+- number of variables, such as route distance, delay minutes, zone, refund status, and complaint type
+- missing values in driver IDs, timestamps, or refund reasons
+- data types, such as numeric, categorical, datetime, or binary
+- summary statistics such as mean, median, minimum, maximum, and standard deviation
+
+**How to use profiling in the grocery case:**
+
+1. Start by listing all columns in the delivery dataset.
+2. Count the number of records and note the data type of each variable.
+3. Measure missing values and duplicate records.
+4. Calculate quick summary statistics for continuous fields like delay minutes and refund cost.
+5. Flag any suspicious values such as negative delays, missing zones, or impossible timestamps.
+
+This helps the analyst get a fast overview of the data and identify issues before deeper analysis begins.
+
+#### Grocery example of data profiling
+
+```text
+Dataset overview: Evening grocery deliveries
+
+Observations: 12,480 orders
+Variables: 11
+
+Key fields:
+- zone
+- route_distance_km
+- delay_minutes
+- refund_cost
+- driver_id
+- order_timestamp
+- complaint_flag
+
+Quick profile:
+- Missing driver_id: 3.1%
+- Missing refund_reason: 1.4%
+- Mean delay: 12.6 minutes
+- Median delay: 10.0 minutes
+- Max delay: 57 minutes
+- Duplicate order_id records: 18
+```
+
+That kind of profile immediately tells the business that the dataset is large enough to analyse, but also that some quality checks are needed.
+
+#### Data aggregation
+
+Data aggregation is the process of grouping data according to specific criteria to generate useful insight. Aggregation can be applied to both categorical and numeric data.
+
+In the grocery-delivery scenario, aggregation helps the analyst compare groups such as:
+
+- delivery zone
+- weekday
+- hour of day
+- driver team
+- refund reason
+
+For example, the analyst may compute:
+
+- average delay by zone
+- total refund cost by week
+- count of complaints by delivery slot
+- number of late deliveries by weekday
+
+**How to use aggregation in the grocery case:**
+
+1. Choose a grouping variable, such as zone.
+2. Choose a measure, such as average delay.
+3. Summarise the data using count, mean, sum, or percentage.
+4. Compare the groups to identify which ones stand out.
+
+#### Grocery example of data aggregation
+
+```text
+Average delay by zone
+
+North    : 18.2 min
+Central  : 14.1 min
+East     :  9.4 min
+West     : 12.7 min
+
+Refund cost by weekday
+
+Mon      : $1,240
+Tue      : $1,380
+Wed      : $1,510
+Thu      : $1,960
+Fri      : $2,740
+```
+
+This helps the analyst see that North has the highest average delay and Friday has the highest refund cost, which points to likely operational pressure areas.
+
+#### Data summary
+
+Data summarisation techniques create concise and informative summaries of data. These summaries can be shown through charts, tables, and compact descriptive views.
+
+In the grocery-delivery scenario, useful summarisation techniques include:
+
+- **histograms** to show the distribution of delay minutes
+- **boxplots** to compare delay spread across zones
+- **scatterplots** to inspect the relationship between route distance and delay
+- **summary tables** to compare KPIs across categories
+
+These techniques help the analyst understand the shape of the data, identify outliers, and detect underlying patterns.
+
+#### Grocery example of data summarisation
+
+```text
+Summary table: Grocery delivery performance
+
+Zone      Avg Delay   Median Delay   Refund Rate   Complaint Rate
+North       18.2          16.0          12.4%          9.1%
+Central     14.1          12.0           8.3%          6.2%
+East         9.4           8.0           4.1%          3.5%
+West        12.7          11.0           6.8%          5.0%
+```
+
+From this summary alone, the company can see that North is clearly underperforming compared with the other zones.
+
+#### Exploratory analysis workflow in the grocery case
+
+The process can be followed in this order:
+
+1. **Profile the data** to understand its size, structure, missing values, and quality.
+2. **Aggregate the data** to compare key groups such as zones, weekdays, or driver teams.
+3. **Summarise the data** with tables and visuals to understand distributions, outliers, and patterns.
+4. **Use the findings** to decide which variables, zones, or time periods need deeper investigation.
+
+#### Why exploratory analysis matters
+
+In the grocery-delivery scenario, exploratory analysis helps the company avoid jumping straight into modelling without first understanding the dataset. It reveals:
+
+- whether the data is trustworthy enough to use
+- where the most serious operational issues appear
+- which variables deserve correlation or regression analysis
+- how delays, refunds, and complaints are distributed across the business
+
+Without exploratory analysis, the company could build models on weak data or miss obvious operational patterns that are already visible in simple summaries.
+
+### Importance of Analytical Thinking
+
+Critical thinking skills are vital for effective analytical thinking in data-driven decision-making. In the grocery-delivery scenario, analytical thinking helps the team move beyond surface observations and make decisions based on logic, evidence, and structured reasoning.
+
+The key critical-thinking skills include:
+
+- logical reasoning
+- pattern recognition
+- problem-solving
+- scepticism
+- curiosity
+- asking the right questions
+
+#### Logical reasoning
+
+Logical reasoning is the ability to think in a structured and rational way. It helps analysts identify relationships between data points and draw conclusions that follow from the evidence.
+
+In the grocery case, logical reasoning helps the analyst avoid jumping from "refund costs are high" directly to "we need more drivers." Instead, the analyst checks whether high refund cost is actually linked to delay length, specific zones, damaged goods, or poor cold-chain performance before making a recommendation.
+
+**Why it matters in the grocery case:**
+
+Logical reasoning prevents weak conclusions and ensures that delivery decisions are based on evidence rather than instinct alone.
+
+#### Pattern recognition
+
+Pattern recognition is the ability to identify meaningful trends, similarities, and differences in data.
+
+In the grocery scenario, pattern recognition might reveal that:
+
+- delays peak on Friday evenings
+- complaints rise in the same zones where route congestion is highest
+- refund costs increase when temperature control failures occur during longer trips
+
+**Why it matters in the grocery case:**
+
+Recognising these patterns helps the company detect recurring service issues, predict where problems are likely to appear, and focus on the parts of the operation that matter most.
+
+#### Problem-solving
+
+Problem-solving is the ability to identify, analyse, and resolve complex issues in a structured way.
+
+In the grocery-delivery scenario, the analyst may be faced with a broad problem such as "customer satisfaction is falling." Good problem-solving breaks that into smaller questions:
+
+1. Are delays rising?
+2. Are complaints linked to one zone or several?
+3. Is the problem operational, technical, or customer-service related?
+4. Which intervention is most likely to improve results?
+
+**Why it matters in the grocery case:**
+
+Problem-solving helps the team turn a vague business concern into specific analytical tasks and practical next steps.
+
+#### Scepticism
+
+Scepticism is a healthy habit of questioning assumptions, claims, and data quality instead of accepting them too quickly.
+
+In the grocery case, if a manager says "the new route design solved the delay problem," a sceptical analyst checks the data first. They ask:
+
+- Did delays actually drop?
+- Was the improvement seen across all zones or just one?
+- Could another factor, such as lighter demand or better weather, explain the change?
+
+**Why it matters in the grocery case:**
+
+Scepticism protects the business from acting on flawed assumptions or misleading conclusions.
+
+#### Curiosity
+
+Curiosity drives analysts to dig deeper into the data and its context rather than stopping at the first answer.
+
+In the grocery scenario, curiosity might lead the analyst to ask why one zone has unusually low complaints despite moderate delays, or why refund costs spike only on certain days even when delay averages look similar.
+
+**Why it matters in the grocery case:**
+
+Curiosity helps the analyst uncover hidden causes, secondary effects, and opportunities that may not be obvious in the first summary table or chart.
+
+#### Asking the right questions
+
+Asking the right questions is one of the most important skills in data analysis. Good questions focus the work, clarify the objective, and guide the analyst toward the most useful evidence.
+
+In the grocery-delivery scenario, strong questions might include:
+
+- Which zones contribute the most to late-delivery cost?
+- Are delays caused more by traffic, staffing, or route design?
+- Which KPI should improve if we add drivers?
+- Is the issue concentrated at specific hours or spread across the whole day?
+- What evidence would prove that the intervention worked?
+
+**Why it matters in the grocery case:**
+
+The quality of the final decision depends heavily on the quality of the questions asked at the start.
+
+#### How analytical thinking applies in the grocery scenario
+
+In the grocery-delivery case, analytical thinking supports the full decision-making process:
+
+1. **Logical reasoning** links the evidence to the conclusion.
+2. **Pattern recognition** identifies recurring problems in zones, routes, and time periods.
+3. **Problem-solving** turns business issues into manageable analytical tasks.
+4. **Scepticism** checks whether the evidence is reliable enough to trust.
+5. **Curiosity** pushes the analyst to investigate deeper causes and hidden patterns.
+6. **Asking the right questions** ensures the analysis stays focused on the real business problem.
+
+Together, these skills help the grocery company make better decisions about staffing, routing, delivery slots, customer service, and future operational improvement.
+
+### The Task
+
+#### Question 1
+
+In a summary of around **500 words**, explain the importance of data-driven decision-making in business and the benefits of using data-driven decision-making tools for your business.
+
+**What a strong answer should include:**
+
+1. Why businesses need evidence rather than guesswork.
+2. How data improves decision quality, efficiency, risk management, and customer understanding.
+3. Why formal methods such as data collection, data quality checks, exploratory analysis, statistics, regression, correlation analysis, and visualisation matter.
+4. How these tools help a business move from description to prediction and action.
+5. A short real-world or grocery-delivery style example to show practical application.
+
+**Student should expand on these benefits in the answer:**
+
+- **Objectivity:** decisions are guided by evidence instead of opinion or emotion.
+- **Insight:** data reveals trends, patterns, and relationships that may not be obvious at first.
+- **Improved efficiency:** businesses can identify waste, streamline work, and allocate resources better.
+- **Improved performance:** KPIs can be monitored and improved over time.
+- **Risk reduction:** data helps detect emerging problems earlier and supports preventive action.
+- **Customer focus:** businesses can understand customer behaviour, preferences, and needs more clearly.
+- **Innovation:** data supports experimentation, new ideas, and better product or service development.
+- **Evidence-based communication:** decisions can be explained clearly to stakeholders using shared evidence.
+- **Competitive advantage:** firms using DDDM tools can respond faster and make stronger strategic choices.
+
+**Suggested structure for the 500-word summary:**
+
+1. Start by defining data-driven decision-making in business.
+2. Explain why formal methods are necessary for useful analysis.
+3. Expand on the main business benefits listed above.
+4. Show how DDDM tools help move from raw data to action.
+5. End with a short applied example that links analytics to better business decisions.
+
+#### Question 2
+
+Below is a list of data quality dimensions:
+
+- Validity
+- Uniqueness
+- Integrity
+- Timeliness
+- Consistency
+- Relevance
+- Completeness
+- Accuracy
+
+Allocate the correct dimension to the correct scenario.
+
+| Scenario | Correct dimension | Why |
+|----------|-------------------|-----|
+| Scenario 1: A student is conducting a research project and realises that some of the data collected are incomplete, with missing values for certain variables. | **Completeness** | The issue is missing values and incomplete fields. |
+| Scenario 2: A student is analysing a dataset and notices that there are duplicate records present, causing discrepancies in the analysis. | **Uniqueness** | The issue is duplicate records rather than distinct entries. |
+| Scenario 3: A student is working with a dataset and discovers that some values are inaccurate or outdated, leading to incorrect conclusions. | **Accuracy** | The problem is that the values are wrong or not correct. |
+| Scenario 4: A student is analysing a dataset and realises that there are inconsistencies in the way certain variables are formatted or recorded. | **Consistency** | The data is not recorded in a uniform format across the dataset. |
+| Scenario 5: A student is working with a dataset and notices that some values are out of the expected range or violate predefined constraints. | **Validity** | The values break rules, expected limits, or predefined constraints. |
+| Scenario 6: A student is using a dataset and finds that some data entries are irrelevant to the research question or analysis. | **Relevance** | The data does not match the purpose of the analysis. |
+| Scenario 7: A student is analysing a dataset and discovers that some values are not up-to-date, leading to potential biases in the analysis. | **Timeliness** | The issue is that the data is outdated rather than current. |
+| Scenario 8: A student is working with a dataset and realises that some data entries have been entered in the wrong field, resulting in misinterpretation of the data. | **Integrity** | The data has been mishandled or misplaced, affecting trust in the record structure. |
+
+#### Quick answer guide for Question 2
+
+1. Completeness
+2. Uniqueness
+3. Accuracy
+4. Consistency
+5. Validity
+6. Relevance
+7. Timeliness
+8. Integrity
+
+#### Question 3
+
+A hardware manufacturing company has an idea to create a sensor that measures the humidity in a room. Currently, this is only an idea from the team. At this stage, no market research or data has been collected to start the project's discovery. Write a summary of how you would approach the start of the discovery phase and how to initiate market research using the concept of data-driven decision-making.
+
+**Model summary answer:**
+
+To start the discovery phase, I would use a **data-driven decision-making** approach instead of relying only on the team's enthusiasm for the idea. The first step would be to clearly define the business problem and the objective of the product. For example, the company must ask what problem the humidity sensor is solving, who the target users are, and what business value the product is expected to create. Without that clarity, the team may collect the wrong data or build a product that does not fit a real market need.
+
+The next step would be to begin **data collection** from both internal and external sources. Because no previous data exists for this product idea, the team should gather external market information such as competitor products, customer reviews, industry reports, public market data, and environmental-monitoring trends. At the same time, the team should collect direct evidence through **surveys, interviews, and observation**. Potential users may include homeowners, offices, schools, hospitals, warehouses, or smart-building operators. These early interviews would help identify real pain points, expected sensor features, preferred price range, and likely use cases.
+
+To make that market research practical, I would divide it into two tracks. The first track would be **primary research**, where the company directly gathers evidence through surveys, interviews, short discovery calls, and observation sessions with likely customers. The second track would be **secondary research**, where the company collects existing evidence from competitor websites, product reviews, market reports, smart-building trends, and public environmental-monitoring studies. Together, these two tracks give both direct customer feedback and broader market context.
+
+The actual data collection process should be structured. First, the team should decide which questions must be answered, such as who needs the sensor, what problem it solves, how often humidity monitoring matters, and what price customers may accept. Next, the team should design surveys and interview guides, identify sample groups, collect the responses, and store the results in a consistent format for later analysis. This ensures that the discovery phase is based on organised evidence rather than random opinions.
+
+Once the first data is collected, I would apply **data quality principles**. The team must check whether the data is relevant to the humidity-sensor problem, whether it is current, complete, and consistent, and whether duplicate or weak responses are removed. Good decisions depend on trustworthy evidence, so poor-quality data should not guide the discovery process.
+
+After that, I would perform **exploratory data analysis**. This would begin with data profiling to understand how much data has been collected and what types of variables are available. Then I would use aggregation and summary methods to compare groups, for example by customer segment, industry, or building type. Visualisations such as bar charts, pie charts, and scatterplots could help reveal which industries show the strongest need, which features matter most, and whether certain customer groups are more price-sensitive than others.
+
+I would also apply **analytical thinking** during the discovery phase. This means using logical reasoning, curiosity, scepticism, pattern recognition, and asking the right questions. For example, the team should ask whether the need is frequent enough to justify the product, whether the market is already saturated, and whether customers would value measurement accuracy, integration with smart-home systems, alerts, or long battery life. Correlation or regression analysis could later be used if enough survey and pilot data becomes available to test which features most influence purchase interest.
+
+The overall goal is to move from an idea to an evidence-based decision. At the end of the discovery phase, the company should know whether there is a real market need, which customer segment to target first, what product features matter most, and whether the project should move forward into prototyping and validation.
+
+**What a strong answer should show:**
+
+1. Clear problem framing before product development starts.
+2. How market research would be conducted, for example through surveys, interviews, observation, competitor analysis, and desk research.
+3. How data would be collected in a structured way, including question design, target groups, response capture, and organised storage.
+4. Which data sources would be used, including both primary and secondary sources.
+5. Data quality checks before drawing conclusions.
+6. Exploratory analysis and visualisation to find patterns.
+7. Critical thinking and evidence-based reasoning before committing resources.
+
+**Important factors to mention in the answer:**
+
+1. How market research would be conducted: via surveys, interviews, and supporting research.
+2. How data would be collected: through a structured discovery and evidence-gathering process.
+3. Which data sources would be used: primary sources and secondary sources.
+
+### What Did I Learn in This Lesson?
+
+This lesson provided the following insights:
+
+- We use **formal methods** to effectively support the decision-making process.
+- For data analysis to make sense, it must be carried out using **formal methods** rather than guesswork alone.
+
+In the grocery-delivery scenario, that means the company should not make major decisions about staffing, route design, delivery slots, or refunds based only on instinct. It should use structured methods such as data collection, data-quality checks, descriptive statistics, hypothesis testing, regression, correlation analysis, visualisation, and exploratory analysis.
+
+#### Important takeaways
+
+1. Data-driven decision-making works best when the business problem is clearly defined before analysis begins.
+2. Good decisions depend on relevant, current, complete, and trustworthy data.
+3. Formal methods help analysts describe what is happening, test whether patterns are meaningful, and predict what may happen next.
+4. Visualisations, summaries, and exploratory analysis help both technical and non-technical stakeholders understand the evidence.
+5. Analytical thinking is essential because data does not explain itself; analysts must reason carefully, question assumptions, and ask the right questions.
+6. In the grocery case, the same methods can be used to improve routing, staffing, on-time delivery, refund control, and customer satisfaction.
+
+#### Annotated reading guide
+
+If you want to revisit specific parts of this lesson, read more here:
+
+- [Definition of Data-driven Decision-making](#definition-of-data-driven-decision-making): explains what DDM is and why it matters.
+- [Benefits of Data-driven Decision-making](#benefits-of-data-driven-decision-making): shows why organisations use formal analytics rather than opinion alone.
+- [Data Collection](#data-collection): explains how relevant internal and external data is gathered in the grocery scenario.
+- [Data Quality](#data-quality): covers accuracy, completeness, consistency, timeliness, relevance, validity, precision, integrity, uniqueness, and consensus.
+- [Data Analysis Techniques](#data-analysis-techniques): introduces descriptive statistics, inferential statistics, hypothesis testing, and regression.
+- [More Data Analysis Techniques](#more-data-analysis-techniques): explains correlation analysis and how variable relationships are explored.
+- [Data Visualisation](#data-visualisation): shows how charts, maps, and dashboards communicate patterns clearly.
+- [Exploratory data analysis](#exploratory-data-analysis): explains profiling, aggregation, and summarisation before modelling.
+- [Importance of Analytical Thinking](#importance-of-analytical-thinking): links logical reasoning, scepticism, curiosity, and questioning to stronger decisions.
+
+#### Annotation summary
+
+- **Formal methods:** structured analytical tools that make decisions more reliable.
+- **Evidence-based thinking:** using observed data rather than assumption as the basis for action.
+- **Exploration before modelling:** understanding the dataset first so later conclusions are more trustworthy.
+- **Business translation:** turning analysis into actions the grocery company can actually take.
+
+#### How to use this in an exam
+
+If you have an exam in DDM, Lesson 1.1 gives you the foundation for answering both theory questions and applied case questions.
+
+The most important rule is this: do not answer only with definitions. In an exam, you usually need to do three things:
+
+1. define the concept clearly
+2. explain why it matters
+3. apply it to a scenario
+
+That means if you are asked about data quality, regression, visualisation, or analytical thinking, you should explain the concept and then show how it helps a business make a better decision.
+
+#### What kinds of exam questions can appear?
+
+You may get questions like these:
+
+- Explain what data-driven decision-making means and why it matters in business.
+- Describe the difference between qualitative and quantitative data.
+- Explain why data quality matters and identify the correct quality dimension in a scenario.
+- Describe the data analysis lifecycle and explain how it supports business decisions.
+- Explain the difference between descriptive, diagnostic, predictive, and prescriptive analysis.
+- Describe how exploratory data analysis helps before modelling begins.
+- Explain when to use a Z-test or a T-test.
+- Explain the difference between independent and dependent variables.
+- Describe how regression analysis or correlation analysis can support decisions.
+- Choose the most suitable chart or dashboard for a given dataset.
+- Explain why analytical thinking is important in data analysis.
+- Apply the full DDM process to a short business case.
+
+#### How to answer exam questions using Lesson 1.1
+
+When you see an exam question, use this structure:
+
+1. **Name the concept**
+    Example: "Completeness is a data quality dimension that checks whether required values are missing."
+2. **Explain the purpose**
+    Example: "It matters because missing values make analysis less reliable and can hide the real cause of a problem."
+3. **Apply it to a case**
+    Example: "In the grocery-delivery scenario, missing driver IDs or zone labels would make it harder to identify where delays come from."
+4. **Link it to decision-making**
+    Example: "That means managers could make the wrong staffing or routing decision if the data is incomplete."
+
+This structure works for almost every topic in Lesson 1.1.
+
+#### How Lesson 1.1 knowledge helps in the exam
+
+Lesson 1.1 gives you the building blocks for exam answers:
+
+- **DDM definition and benefits** help you answer broad theory questions.
+- **Data collection and data sources** help you answer discovery-phase or market-research questions.
+- **Data quality dimensions** help you classify scenario mistakes correctly.
+- **Descriptive and inferential statistics** help you explain how evidence is analysed.
+- **Hypothesis testing** helps you answer questions about Z-tests, T-tests, null hypotheses, and decision rules.
+- **Regression and correlation analysis** help you explain relationships between variables and prediction.
+- **Visualisation** helps you justify which chart best communicates a pattern.
+- **Exploratory analysis** helps you explain what to do before building deeper models.
+- **Analytical thinking** helps you show why logical reasoning, scepticism, and asking the right questions matter.
+
+#### Exam strategy for DDM Lesson 1.1
+
+If you are revising for an exam, use the lesson like this:
+
+1. Memorise the key definitions.
+2. Learn the purpose of each method or concept.
+3. Practice applying each idea to a case scenario.
+4. Use the grocery-delivery example as a model if the exam gives you a different business case.
+5. Always connect your answer back to how the concept improves decision-making.
+
+#### Quick exam examples
+
+**Example 1:**
+"Why is data quality important in data-driven decision-making?"
+
+Strong answer approach:
+
+- define data quality
+- mention dimensions such as accuracy, completeness, consistency, and relevance
+- explain that poor-quality data leads to weak conclusions
+- apply it to a case where wrong or missing delivery records lead to poor business decisions
+
+**Example 2:**
+"When would you use a scatterplot?"
+
+Strong answer approach:
+
+- explain that it shows the relationship between two continuous variables
+- mention correlation or outlier detection
+- apply it to route distance versus delay minutes in a business case
+
+**Example 3:**
+"How would you begin analysing a new business dataset?"
+
+Strong answer approach:
+
+- begin with data profiling
+- check quality and missing values
+- aggregate by useful business groups
+- summarise with tables and visuals
+- explain that exploratory analysis should come before deeper modelling
+
+#### Practical takeaway
+
+Exploratory analysis helps the grocery company understand the dataset before deeper modelling begins. It reveals data quality issues, group-level patterns, distributions, outliers, and early operational signals that guide better decisions.
+
+#### Core principle
+
+The purpose of data-driven decision-making is not simply to collect more data. The purpose is to use relevant, reliable, and well-interpreted data to support better decisions and stronger outcomes.
+            """,
+            "key_points": [
+                "Data-driven decision-making uses data, analysis, and insights to make informed choices",
+                "Evidence-based decision-making is a core characteristic of the approach",
+                "Clear goals and strategy are required before data can support decisions well",
+                "Structured analysis should combine qualitative and quantitative methods",
+                "The main benefits include accuracy, objectivity, insight, efficiency, risk reduction, and competitive advantage",
+                "Relevant, current, and representative data sources are essential for strong decisions",
+                "Strong data quality depends on accuracy, completeness, consistency, timeliness, relevance, validity, precision, integrity, uniqueness, and consensus",
+                "Descriptive statistics summarise grocery-delivery performance, while inferential statistics use subsets of data to test hypotheses and support prediction",
+                "Exploratory analysis uses profiling, aggregation, and summarisation to understand grocery-delivery data before deeper modelling",
+                "Formal analytical methods are necessary for data-driven decision-making to make sense and support reliable decisions"
+            ],
+            "visual_elements": {
+                "diagrams": true,
+                "tables": true,
+                "highlighted_sections": true
+            }
+        },
+        {
+            "lesson_number": "1.2",
+            "title": "Lesson - Decision-making Techniques",
+            "content": """
+### Introduction
+
+This lesson covers **decision trees, heuristics, algorithms, optimisation techniques**, and their relevance to **data-driven decision-making**. We also introduce a range of real-world problems that are solved by data-driven methods.
+
+This lesson does **not** focus on the detailed mathematics or programming behind every method. Instead, the goal is to show the wide range of areas where data-driven techniques are used and why it is important for a data analyst to recognise them.
+
+As a data analyst, it is not enough to know how to analyse data. You must also understand how data-driven techniques are used in real industries to support decisions, improve outcomes, and solve operational problems.
+
+#### Why this lesson matters
+
+Different business problems require different kinds of decision tools.
+
+- some problems need a quick rule of thumb
+- some need a structured sequence of decisions
+- some need a predictive model
+- some need the best possible answer under limits such as cost, time, or capacity
+
+Understanding the differences helps the analyst choose or recommend the right method for the right situation.
+
+### 1. Decision trees
+
+A **decision tree** is a structure in the form of a flowchart that can be used to represent decision variants, scenarios, resources, and possible outcomes. Decision trees are very useful for presenting a decision-making problem and analysing it in a structured way.
+
+Decision trees have become one of the most popular tools in business analysis because they graphically represent the decision-making process and help organisations make more informed decisions. They allow analysts and managers to see the available options, the conditions that affect each path, and the outcomes that may result from each choice.
+
+#### Why decision trees are useful
+
+Decision trees are useful because they:
+
+1. break a complex decision into smaller and easier steps
+2. show all major options visually in one structure
+3. make the decision process easier to explain to others
+4. help compare likely consequences before acting
+5. support consistent reasoning rather than guesswork
+
+In data-driven decision-making, this is important because a business rarely has only one possible action. A decision tree helps the team organise data, conditions, and choices into a form that can be analysed clearly.
+
+#### Visual example: grocery-delivery decision tree
+
+```text
+                                                             [Root Node]
+                                        Demand spike detected for evening deliveries
+                                                                            |
+                                                         [Decision Node]
+                                         Is order demand above safe capacity?
+                                                     /                         \
+                                                Yes                           No
+                                                |                             |
+                             [Decision Node]                   [Leaf Node]
+                         Is driver capacity low?         Keep standard routing
+                                    /            \             and continue monitoring
+                                Yes             No
+                                |               |
+                     [Leaf Node]      [Leaf Node]
+                Add temporary     Optimise current routes
+                     drivers         and rebalance deliveries
+```
+
+This diagram shows how a single business problem can be broken into a structured sequence of questions and actions.
+
+#### Visual example: studying abroad or studying at home
+
+Decision trees are also useful for personal and educational decisions.
+
+In this example, the decision starts with the question of whether a student should **study abroad** or **study at home**.
+
+```text
+                                                                  [Root Node]
+                                              Should I study abroad or study at home?
+                                                                                    |
+                                                                     [Decision Node]
+                                              Is good financial aid available for studying abroad?
+                                                                  /                               \
+                                                              Yes                                 No
+                                                              |                                   |
+                                                [Decision Node]                        [Leaf Node]
+                                        Is there strong support?                    Study at home
+                                              /                \
+                                          Yes                  No
+                                          |                    |
+                                 [Leaf Node]            [Leaf Node]
+                                Study abroad           Study at home
+```
+
+In this decision tree, we start with the initial question of whether to study abroad or at home. From there, we consider different factors that influence the decision.
+
+The first factor is the availability of good financial aid. If strong financial aid is available for studying abroad, then the decision can continue toward that option. If financial support is not strong enough, the decision may lean toward studying at home.
+
+The next factor is the level of support. If there is strong support from family, friends, or institutions for studying abroad, then the decision would favour studying abroad. If the support is weak, the decision would lean toward studying at home.
+
+This example shows that decision trees are not only for business operations. They can also organise personal, academic, and career choices in a structured way.
+
+#### Parts of a decision tree
+
+In a decision tree, **nodes** are the basic components representing different parts of the decision-making process. Decision trees have three main types of nodes:
+
+- root nodes
+- decision nodes (also known as internal nodes)
+- terminal nodes (also known as leaf nodes)
+
+##### Root node
+
+The **root node** is the top node of the decision tree and represents the starting point of the decision-making process. It has **no incoming branch**. The root node usually corresponds to the first decision, condition, or trigger that starts the construction of the decision tree.
+
+In the grocery example, the root node is:
+
+- **Demand spike detected for evening deliveries**
+
+This is the point where the company first recognises that a decision must be made.
+
+In the study example, the root node is:
+
+- **Should I study abroad or study at home?**
+
+##### Decision node
+
+A **decision node** is an intermediate node in a decision tree that represents a decision point or condition. It usually has **one incoming branch** and **two or more outgoing branches**. Each outgoing branch represents a different possible condition, outcome, or path based on the choice made at that point.
+
+In the grocery example, the decision nodes are:
+
+- **Is order demand above safe capacity?**
+- **Is driver capacity low?**
+
+These nodes divide the decision tree into different branches. Depending on the answer, the business follows a different path.
+
+In the study example, the decision nodes are:
+
+- **Is good financial aid available for studying abroad?**
+- **Is there strong support?**
+
+##### Terminal nodes or leaf nodes
+
+**Terminal nodes**, also called **leaf nodes**, are the end points of a decision tree. They represent the final result, conclusion, class, or decision produced by the earlier choices and conditions. Terminal nodes have **no outgoing branch**.
+
+In the grocery example, the leaf nodes are:
+
+- **Keep standard routing and continue monitoring**
+- **Add temporary drivers**
+- **Optimise current routes and rebalance deliveries**
+
+These are the final decision outcomes after the earlier conditions have been evaluated.
+
+In the study example, the terminal or leaf nodes are:
+
+- **Study abroad**
+- **Study at home**
+
+#### Summary of node types
+
+In summary:
+
+- **Root nodes** represent starting points.
+- **Decision nodes** represent choice points or conditions.
+- **Terminal nodes** represent final outcomes or decisions.
+
+The structure and arrangement of these nodes enable decision trees to illustrate and analyse complex decision-making processes and their possible outcomes.
+
+#### How to read a decision tree
+
+To read a decision tree:
+
+1. start at the root node
+2. follow the condition or question at the decision node
+3. choose the branch that matches the situation
+4. continue until you reach a leaf node
+5. use the leaf node as the final action or recommendation
+
+This makes decision trees especially useful for explaining business logic to managers, operations teams, or non-technical stakeholders.
+
+#### How decision trees help in DDM
+
+In data-driven decision-making, decision trees help connect evidence to action. For example, if demand, driver availability, route conditions, and KPI thresholds are all known, the tree helps the business decide what to do next in a structured and visible way.
+
+That is why decision trees are useful: they do not just show data, they show how data can guide a practical decision.
+
+#### Decision tree examples in business
+
+Decision trees can be used in many business areas because they help organisations move from raw information to a visible, structured decision.
+
+Below are several common business topics where decision trees are useful and the kind of impact they can have.
+
+##### 1. Customer credit approval
+
+A bank or lender can use a decision tree to decide whether to approve, review, or reject a loan application.
+
+Typical factors may include:
+
+- income level
+- employment status
+- debt-to-income ratio
+- credit history
+- missed payment history
+
+**Business impact:**
+
+- faster and more consistent loan decisions
+- lower risk of approving high-risk customers
+- clearer explanation of why an application was approved or rejected
+- better control of credit losses
+
+##### 2. Customer churn and retention
+
+A telecom, streaming company, or subscription business can use a decision tree to identify customers who are likely to leave.
+
+Typical factors may include:
+
+- reduced usage
+- repeated complaints
+- late payments
+- plan downgrades
+- long wait times in customer support
+
+**Business impact:**
+
+- earlier intervention before customers cancel
+- more targeted retention offers
+- lower customer loss rate
+- stronger customer lifetime value
+
+##### 3. Fraud detection
+
+Banks, insurers, and e-commerce businesses can use decision trees to flag suspicious transactions or claims.
+
+Typical factors may include:
+
+- unusually large transaction value
+- sudden location change
+- repeated failed login attempts
+- unusual purchasing pattern
+- mismatch between customer profile and behaviour
+
+**Business impact:**
+
+- faster fraud screening
+- reduced financial losses
+- better protection for customers and the brand
+- improved efficiency by focusing investigators on the most suspicious cases
+
+##### 4. Marketing and customer targeting
+
+A retailer or digital business can use decision trees to decide which customers should receive a promotion, recommendation, or campaign message.
+
+Typical factors may include:
+
+- previous purchases
+- browsing behaviour
+- age group or location
+- response to earlier campaigns
+- average spend level
+
+**Business impact:**
+
+- more relevant marketing campaigns
+- higher conversion rates
+- less wasted advertising spend
+- better customer segmentation
+
+##### 5. Inventory and stock decisions
+
+Retailers and supply-chain teams can use decision trees to decide when to reorder stock, increase safety stock, or reduce exposure to slow-moving products.
+
+Typical factors may include:
+
+- sales trend
+- seasonality
+- supplier lead time
+- stockout history
+- current warehouse level
+
+**Business impact:**
+
+- fewer stockouts
+- lower overstock cost
+- better product availability for customers
+- more stable planning across the supply chain
+
+##### 6. Hiring and recruitment screening
+
+HR teams can use decision trees to support early-stage screening of job applicants.
+
+Typical factors may include:
+
+- required qualifications
+- years of experience
+- relevant technical skills
+- interview score
+- availability or location fit
+
+**Business impact:**
+
+- faster shortlisting
+- more consistent initial screening
+- reduced time spent on unsuitable candidates
+- clearer hiring criteria for managers
+
+##### 7. Operational response and service recovery
+
+Service businesses can use decision trees to decide what action to take when performance problems appear.
+
+In the grocery-delivery example, factors may include:
+
+- demand spike level
+- driver availability
+- route congestion
+- complaint rate
+- on-time delivery KPI
+
+**Business impact:**
+
+- faster response to service problems
+- better use of limited staff and resources
+- improved customer satisfaction
+- stronger control over KPI performance
+
+#### Why these examples matter
+
+These examples show that decision trees are not limited to one department. They can support decisions in:
+
+- finance
+- operations
+- marketing
+- HR
+- customer service
+- risk management
+
+The main business value is that decision trees help organisations:
+
+1. make decisions faster
+2. apply decisions more consistently
+3. explain reasoning more clearly
+4. reduce avoidable risk
+5. connect data directly to action
+
+That is why decision trees are widely used in business. They do not just describe a problem. They help businesses choose what to do next and understand the likely impact of that choice.
+
+#### Decision matrices in games
+
+Decision trees are also useful for visualising the outcomes of **decision matrices in games**.
+
+A **decision matrix**, also called a **payoff matrix**, is a table showing the possible choices available to players and the outcomes linked to each combination of choices.
+
+This idea is closely related to **game theory**.
+
+**Game theory** is a branch of mathematics that studies strategic decision-making in situations where the result of one person's choice depends on the choices, preferences, or actions of others. It is used to analyse competition, cooperation, negotiation, pricing, bidding, and many other strategic interactions.
+
+In a game setting, the matrix gives a compact overview of strategy combinations, while the decision tree shows how those combinations unfold step by step.
+
+By using a decision tree, the outcomes in the matrix can be illustrated and analysed in a more visual and hierarchical way.
+
+**Simple payoff matrix example**
+
+Imagine two grocery-delivery platforms competing during a busy weekend.
+
+- **Player A** chooses either **Discount prices** or **Keep prices stable**
+- **Player B** chooses either **Discount prices** or **Keep prices stable**
+
+| Player A / Player B | Discount prices | Keep prices stable |
+|---------------------|-----------------|--------------------|
+| Discount prices | A: 4, B: 4 | A: 8, B: 3 |
+| Keep prices stable | A: 3, B: 8 | A: 6, B: 6 |
+
+The numbers represent payoffs or utility values. Higher values mean better outcomes for that player.
+
+This matrix tells us:
+
+- if both companies discount, both gain moderate benefit but reduce margins
+- if one discounts while the other keeps prices stable, the discounter may gain more customers
+- if both keep prices stable, both may keep healthier margins
+
+#### Understanding trade-offs between options
+
+One of the main benefits of a decision matrix is that it helps us compare the **trade-offs** between different strategic options.
+
+A **trade-off** means that choosing one option usually gives an advantage in one area while creating a cost, weakness, or risk in another.
+
+In this example:
+
+- **Discount prices** may attract more customers, but it can reduce profit margins
+- **Keep prices stable** may protect profits, but it could lose price-sensitive customers to a competitor
+- **Matching a rival's discount** may protect market share, but it can also trigger a price war
+- **Refusing to discount** may preserve value, but only if enough customers remain loyal
+
+This is why game theory matters in business. A decision is not judged only by its direct reward. It must also be judged by how other players are likely to react.
+
+#### Identifying optimal strategies
+
+The matrix also helps analysts identify **optimal strategies**.
+
+An **optimal strategy** is the choice that gives the best result according to the objective being used, such as:
+
+- highest payoff
+- lowest risk
+- strongest worst-case result
+- best expected value
+
+In some games, one option may clearly dominate another. In other games, the best choice depends on what the other player is likely to do.
+
+In this pricing example, Player A can reason as follows:
+
+- if Player B discounts, Player A gets **4** by discounting and **3** by keeping prices stable, so discounting is better
+- if Player B keeps prices stable, Player A gets **8** by discounting and **6** by keeping prices stable, so discounting is again better
+
+That means **Discount prices** is the stronger strategy for Player A in this simplified matrix.
+
+The same logic applies to Player B, so both players may conclude that discounting is the safest strategic response.
+
+#### Anticipating likely outcomes of the game
+
+Because both players can examine the same structure, the matrix helps them **anticipate likely outcomes**.
+
+If both players act rationally and choose the strategy that protects them best against the other player's move, the likely result in this example is:
+
+- **both players discount**
+- the outcome becomes **A: 4, B: 4**
+
+This outcome is interesting because it is not the highest joint outcome. If both players kept prices stable, they would each receive **6**. However, each player has an incentive to discount in order to avoid being left behind if the other moves first.
+
+This shows an important lesson from game theory:
+
+- the **individually rational** choice is not always the **collectively best** choice
+- strategic interaction can push players toward a weaker shared outcome
+- analysts must look beyond the single best-looking number and consider likely reactions
+
+In business terms, this means a data analyst should not only ask, "Which option has the highest payoff?" but also:
+
+- what is the risk if the competitor responds aggressively?
+- which option is most robust under different rival actions?
+- what outcome is most likely once both sides adapt?
+
+#### Using a decision tree to visualise a decision matrix
+
+To turn a decision matrix into a decision tree, the following process can be used.
+
+##### Step 1: Define the decision matrix
+
+Identify the available strategies for each player and assign utilities or payoffs to each outcome combination.
+
+##### Step 2: Identify the root node
+
+The **root node** is the starting point of the game. It represents the first player's decision.
+
+##### Step 3: Create decision nodes
+
+Each decision point becomes a **decision node** in the tree. These nodes represent the strategic choices available at that stage.
+
+##### Step 4: Assign branches and probabilities
+
+From each decision node, draw branches for the possible responses or outcomes. If the situation includes uncertainty, probabilities can be assigned to those branches to show likelihood.
+
+##### Step 5: Continue expanding the tree
+
+Repeat the process for each later decision point. The tree expands as new responses and consequences are added.
+
+##### Step 6: Assign utilities to terminal nodes
+
+The **terminal nodes** or **leaf nodes** show the final outcomes. Each leaf node is labelled with the payoff or utility for the players.
+
+##### Step 7: Analyse the decision tree
+
+Once complete, the tree helps analysts compare paths, understand strategic consequences, and estimate expected payoffs where probabilities are known.
+
+**Visual example: matrix shown as a decision tree**
+
+```text
+Root node: Player A chooses pricing strategy
+
+                                                     [Player A]
+                                                 /             \
+                                Discount prices     Keep prices stable
+                                     /        \            /          \
+                         [Player B]   [Player B] [Player B]   [Player B]
+                            /     \      /     \    /     \      /     \
+                 Discount  Stable Discount Stable Discount Stable Discount Stable
+                    A4,B4    A8,B3   A4,B4   A8,B3   A3,B8   A6,B6   A3,B8   A6,B6
+```
+
+This tree makes the sequence clearer:
+
+1. Player A makes the first move.
+2. Player B responds.
+3. The final branch shows the payoff for both players.
+
+The same idea can be used in business cases such as price competition, supplier negotiation, ad bidding, or market entry decisions.
+
+#### Why this matters in DDM
+
+In data-driven decision-making, decision matrices and decision trees can work together.
+
+- the **matrix** summarises the strategic options and outcomes
+- the **tree** shows the sequence of decisions and responses
+- probabilities can be added when outcomes are uncertain
+- payoffs can be compared to choose the most rational strategy
+
+This helps players, analysts, and managers understand the likely consequences of their choices and make more informed strategic decisions.
+
+### 2. Heuristics
+
+**Heuristics** are practical rules of thumb used to make faster decisions when time, information, or resources are limited.
+
+Heuristics are not guaranteed to produce the perfect answer, but they are often useful in real operations when a quick, reasonable decision is better than no decision.
+
+#### Heuristic algorithms
+
+**Heuristic algorithms** are problem-solving techniques used to find practical or approximate solutions to complex problems.
+
+They represent a simplified approach to problem-solving that relies on prior experience, intuition, learned patterns, or available information to make decisions.
+
+Instead of searching for the perfect answer in every case, heuristic algorithms aim for a solution that is **good enough**, fast enough, and useful enough for the situation.
+
+This is especially important in business because decision-makers often face:
+
+- incomplete information
+- time pressure
+- limited computational resources
+- uncertainty about what competitors, customers, or suppliers will do next
+
+In these situations, a heuristic algorithm can provide direction quickly, even if it does not guarantee the mathematically optimal outcome.
+
+#### Characteristics of heuristic algorithms
+
+Below are some common characteristics of heuristic algorithms.
+
+##### Rule based
+
+Heuristics are usually based on predefined rules, guidelines, or shortcuts that help people make decisions. These rules are often drawn from practical experience, empirical observation, expert knowledge, or common business practice.
+
+##### Approximate solution
+
+Heuristics aim to find a **good enough** solution rather than the best possible one. The focus is on usefulness, speed, and practicality rather than complete optimisation.
+
+##### Simplification
+
+Heuristics simplify complex problems by breaking them into smaller parts or by making assumptions that reduce complexity. This makes the problem easier to handle when a full analysis would take too long or require too much data.
+
+##### Biases and limitations
+
+Heuristics can introduce bias because they rely on shortcuts and incomplete information. Oversimplification may cause a business to ignore important exceptions, miss hidden risks, or make weaker decisions than a fuller analysis would produce.
+
+##### Speed and efficiency
+
+One of the main strengths of heuristics is speed. They are designed to provide a practical answer quickly and efficiently, which is valuable when decisions must be made in real time.
+
+##### Adaptability
+
+Heuristics are flexible and can be adjusted as conditions change. As a business gathers feedback and learns from results, a heuristic can be refined and improved over time.
+
+##### Domain specific
+
+Heuristics are often tailored to a particular domain or context. A heuristic that works well in delivery routing may not work well in hiring, fraud detection, or investment decisions.
+
+##### A compromise
+
+Heuristics involve trade-offs between solution quality, time, and computational effort. The aim is to balance required accuracy against the resources available.
+
+##### Troubleshooting tools
+
+Heuristics also act as practical thinking tools. They help decision-makers navigate complicated problems, identify a likely next step, and focus attention on the most relevant part of the issue.
+
+##### Iterative improvement
+
+Heuristic methods can be improved through feedback, experimentation, and optimisation. Over time, businesses can test whether a heuristic works well and refine it when the results are weak.
+
+#### Heuristics vs metaheuristics
+
+A **heuristic** is usually a **problem-specific** approach that helps find a suitable solution to an optimisation problem.
+
+Heuristics are often simple to implement and efficient in the specific situations they were designed for. However, they can also get trapped in **local optima**, where a solution is better than nearby alternatives but still not the best possible overall result.
+
+A **metaheuristic** is a broader, more **problem-independent** search strategy that can be adapted to solve many different optimisation problems.
+
+Metaheuristics are often useful alternatives to traditional optimisation approaches when exact methods are too slow or too rigid. They are typically more flexible than simple heuristics, but they are also often more complex and may take longer to converge.
+
+In practice, the word **heuristic** is often used as a broad umbrella term. Under that broader meaning, metaheuristics are advanced heuristic approaches.
+
+In this lesson, that means:
+
+- a **greedy algorithm** is a classic example of a more problem-specific heuristic
+- **genetic algorithms**, **tabu search**, and **simulated annealing** are common metaheuristics
+
+#### Key differences between heuristics and metaheuristics
+
+| Aspect | Heuristic | Metaheuristic |
+|--------|-----------|---------------|
+| Scope | Usually problem specific | Usually problem independent or adaptable across problems |
+| Goal | Find a suitable practical solution quickly | Guide search across many possible solutions more broadly |
+| Complexity | Often simpler to design and implement | Often more complex and computationally heavier |
+| Speed | Often faster for the target problem | Can be slower to converge |
+| Flexibility | Limited to a narrower context | More flexible across different optimisation problems |
+| Risk | Can get stuck in local optima quickly | Designed to reduce the risk of local optima |
+| Example | Greedy route choice | Genetic algorithm, tabu search, simulated annealing |
+
+#### Common heuristic algorithms
+
+Many different heuristic algorithms are used in industry. In this section, we focus on four common ones:
+
+1. genetic algorithms
+2. tabu search
+3. simulated annealing
+4. greedy algorithms
+
+These methods are especially useful when the problem is too large, too complex, or too constrained for an exact optimisation method to solve quickly.
+
+##### Genetic algorithms
+
+**Genetic algorithms**, also called **GAs**, are metaheuristic optimisation algorithms inspired by natural selection and evolution.
+
+They work with candidate solutions often called **chromosomes**. Each chromosome represents one possible solution to the problem. The algorithm evaluates each chromosome using a **fitness function** or **objective function**, and the stronger solutions are more likely to be selected to create the next generation.
+
+Two important genetic operators are used in GAs:
+
+**Crossover**
+
+Crossover combines two chromosomes to create a new chromosome. A common version is **single-point crossover**, where one position is chosen and the remaining parts of the parent chromosomes are swapped.
+
+**Mutation**
+
+Mutation randomly changes part of a chromosome. A common version is **bit mutation**, where a bit is randomly flipped. Mutation helps the algorithm explore new possibilities and avoid becoming too predictable.
+
+Genetic algorithms can solve many optimisation problems, including:
+
+- the travelling salesperson problem
+- the knapsack problem
+- the bin packing problem
+
+They can converge slowly, but they are often effective at finding strong approximate solutions and can be robust to noise and outliers in the data.
+
+**Business impact:**
+
+- useful for difficult scheduling and routing problems
+- can search many possible solutions without testing every option directly
+- helpful when the solution space is too large for simple methods
+
+##### Tabu search
+
+**Tabu search** is a metaheuristic optimisation algorithm that uses a **tabu list** to avoid revisiting solutions that have already been explored.
+
+This is useful because some search methods get trapped in a **local optimum**, which is a solution that is better than nearby alternatives but still not the best overall solution.
+
+Tabu search deals with this by keeping track of recently visited solutions and temporarily banning them. This pushes the search toward new parts of the solution space and improves the chance of finding a better solution.
+
+**Business impact:**
+
+- helps avoid repeating weak or already-tested options
+- useful in timetabling, logistics, and resource allocation problems
+- can produce better solutions when simple local search gets stuck
+
+##### Simulated annealing
+
+**Simulated annealing** is an optimisation algorithm inspired by the annealing process in metallurgy.
+
+In metallurgy, a material is heated and then slowly cooled so that it can settle into a more stable state with fewer defects. Simulated annealing uses the same idea in decision-making.
+
+The algorithm starts with an initial solution and explores neighbouring solutions.
+
+- if a new solution is better, it is accepted
+- if a new solution is worse, it may still be accepted with a probability that depends on the current **temperature**
+
+The temperature represents how willing the algorithm is to accept worse solutions.
+
+- when the temperature is high, the algorithm explores more freely
+- as the temperature falls, the algorithm becomes more conservative
+
+This helps the method escape local optima early on and focus on stronger solutions later.
+
+Simulated annealing is often used for problems such as:
+
+- the travelling salesperson problem
+- the knapsack problem
+- the bin packing problem
+
+It is often treated as an alternative to other optimisation approaches such as hill climbing and genetic algorithms.
+
+**Business impact:**
+
+- useful when a business needs a strong approximate solution rather than a guaranteed exact one
+- effective for complex allocation and routing decisions
+- reduces the risk of getting stuck too early in a weak solution
+
+##### Greedy algorithms
+
+A **greedy algorithm** makes the best available local choice at each step without fully considering the overall global optimum.
+
+The method assumes that if each step is good, the final result may also be good. This makes greedy algorithms simple, fast, and often effective for the right kind of problem.
+
+However, greedy methods can also get trapped in local optima because the best short-term choice is not always the best long-term path.
+
+For example, to find the shortest route between cities, a greedy method might:
+
+1. start at the current city
+2. look at neighbouring cities
+3. choose the closest neighbouring city
+4. repeat until the destination is reached
+
+This is fast, but it may lead to a detour that looks good in the moment while producing a weaker overall route.
+
+**Business impact:**
+
+- easy to implement and explain
+- useful as a starting point for optimisation problems
+- can provide quick answers in pricing, routing, and allocation tasks
+- should be used carefully when local choices may damage the global result
+
+#### Comparing the four methods
+
+| Method | Main idea | Strength | Limitation |
+|--------|-----------|----------|------------|
+| Genetic algorithms | Evolve populations of candidate solutions | Explores many combinations and handles complex spaces | Can be slow to converge |
+| Tabu search | Avoid revisiting recent solutions | Escapes repeated local traps | Depends on good tabu rules and tuning |
+| Simulated annealing | Sometimes accept worse solutions early | Escapes local optima and explores widely | Sensitive to cooling schedule |
+| Greedy algorithm | Choose the best local option each step | Fast and simple | May miss the best overall solution |
+
+These four methods show that heuristic algorithms are not random guesses. They are structured approaches for dealing with difficult optimisation problems when exact methods are too expensive, too slow, or too rigid.
+
+#### Examples of heuristics
+
+To understand why heuristics matter, it helps to look at classic optimisation problems where exact solutions become expensive as the problem grows.
+
+Two important examples are the **Travelling Salesman Problem (TSP)** and the **Vehicle Routing Problem (VRP)**.
+
+##### Travelling Salesman Problem (TSP)
+
+The **travelling salesman problem** involves finding the shortest possible route that allows a salesperson to visit a set of cities exactly once and then return to the starting city.
+
+This is one of the most famous optimisation problems because it is simple to describe but becomes very difficult to solve exactly when the number of cities increases.
+
+Heuristic algorithms such as the **nearest neighbour algorithm**, **2-opt**, and **genetic algorithms** are commonly used to find approximate solutions.
+
+These methods are useful because they can produce strong solutions in a reasonable time, which is important in industries such as:
+
+- logistics
+- transportation
+- supply chain management
+- delivery planning
+
+**Visual example: TSP with four cities**
+
+```text
+                 A
+            10/ \12
+             /   \
+            /     \
+         B---8---C
+            \      /
+         15\    /9
+                \  /
+                    D
+
+Extra connection: B to C = 8, A to D = 14
+```
+
+Another way to visualise the same four-city network is to list the route choices more directly:
+
+```text
+Cities: A, B, C, D
+
+Possible heuristic idea:
+Start at A
+-> go to nearest city
+-> repeat until all cities are visited
+-> return to A
+```
+
+For example, a nearest neighbour heuristic might choose:
+
+```text
+A -> B -> C -> D -> A
+```
+
+This may give a good route quickly, but it does not guarantee the absolute shortest possible route.
+
+That is why approximation algorithms are often used in practice. As the number of cities grows, the computational complexity of finding the exact optimal solution increases sharply.
+
+**Business impact of TSP heuristics:**
+
+- reduce travel distance and fuel cost
+- improve route planning speed
+- support same-day and next-day delivery operations
+- help businesses scale route planning when the network becomes large
+
+##### Vehicle Routing Problem (VRP)
+
+The **vehicle routing problem** is closely related to TSP, but it is more realistic for business operations.
+
+Instead of one salesperson or one vehicle, VRP asks how to determine the best routes for a **fleet of vehicles** serving a set of customers.
+
+The problem usually includes extra constraints such as:
+
+- delivery capacity
+- time windows
+- maximum route length
+- driver availability
+- priority customers
+
+Heuristic algorithms such as the **Clarke-Wright savings algorithm** and the **sweep algorithm** are often used for VRP because they can find near-optimal solutions quickly.
+
+This matters in real operations because companies involved in logistics want to:
+
+- reduce cost
+- deliver to as many customers as possible
+- travel the shortest possible total distance
+- improve service quality
+- speed up all related operations
+
+The difficulty of VRP comes not only from the number of stops, but also from the fact that the constraints are often changing.
+
+For example:
+
+- new customer orders arrive
+- traffic conditions change
+- drivers become unavailable
+- vehicle capacity limits are reached
+
+##### Examples of common constraints
+
+In vehicle routing and other optimisation problems, **constraints** are the rules or limits that the solution must respect.
+
+These constraints are one reason routing is difficult in practice. A route may look short on paper, but it may still be impossible if it breaks a capacity rule, misses a delivery window, or overloads a driver.
+
+Below are some common examples.
+
+**Capacity constraints**
+
+Each vehicle can carry only a limited amount of goods, weight, or volume.
+
+Example:
+
+- a van can carry 120 grocery boxes
+- if the planned route needs space for 150 boxes, the route is not feasible
+
+**Time window constraints**
+
+Customers may need deliveries within specific time periods.
+
+Example:
+
+- Customer A must receive the order between 09:00 and 10:00
+- Customer B must receive the order between 11:00 and 13:00
+
+Even if the distance is short, the route may fail if the vehicle arrives outside the allowed time window.
+
+**Maximum route length constraints**
+
+A route may have a limit on total travel distance or total working time.
+
+Example:
+
+- a driver may only work 8 hours
+- a vehicle route may be capped at 180 kilometres
+
+This prevents a business from creating routes that are too long to complete safely or legally.
+
+**Driver availability constraints**
+
+The number of available drivers can limit how many routes can be created.
+
+Example:
+
+- 10 routes may be needed, but only 7 drivers are available
+
+The business must then combine deliveries differently or delay some work.
+
+**Vehicle type constraints**
+
+Not every vehicle is suitable for every delivery.
+
+Example:
+
+- refrigerated products must go in chilled vehicles
+- large furniture orders may need larger vans or trucks
+
+This means customer assignments must match the capabilities of the vehicle.
+
+**Priority customer constraints**
+
+Some customers or deliveries may have higher importance than others.
+
+Example:
+
+- hospital deliveries may take priority over routine office deliveries
+- premium same-day customers may be prioritised over standard delivery customers
+
+This affects which stops are scheduled first and which service levels must be protected.
+
+**Depot constraints**
+
+The depot itself may impose limits.
+
+Example:
+
+- loading bays may only be available at certain times
+- vehicles may have staggered departure windows
+
+This can restrict when routes can begin and how many vehicles can leave at once.
+
+**Traffic and road constraints**
+
+Real transport networks include congestion, road closures, toll roads, and restricted access areas.
+
+Example:
+
+- a city centre may block large vehicles during peak hours
+- a road closure may force a longer alternative route
+
+This means the shortest straight-line route is not always feasible in reality.
+
+**Service time constraints**
+
+Each customer stop may require a minimum service time.
+
+Example:
+
+- unloading, signing, and setup may take 15 to 20 minutes per stop
+
+If service time is ignored, the route may look efficient in theory but fail in practice.
+
+**Return-to-depot or shift-end constraints**
+
+Vehicles may need to return to the depot before the end of a shift or before a cut-off time.
+
+Example:
+
+- all vans must return by 18:00 for restocking and next-day preparation
+
+This limits how late or how far the last deliveries can be scheduled.
+
+#### Why constraints matter
+
+These constraints show why route optimisation is not just about finding the shortest path.
+
+Businesses must often balance:
+
+- distance
+- cost
+- timing
+- service quality
+- legal rules
+- customer promises
+
+That is why heuristic algorithms are valuable. They help businesses find workable and efficient solutions even when many constraints must be satisfied at the same time.
+
+**Visual example: simple VRP layout**
+
+```text
+                                         Customer 1
+                                                 *
+                                                / \
+                                             /   \
+                    Customer 2 *       * Customer 3
+                                         \       /
+                                            \     /
+                                             \   /
+                                         [Depot]
+                                             /   \
+                                            /     \
+                    Customer 4 *       * Customer 5
+```
+
+In a real routing problem, the business must decide not just one loop, but which vehicle should serve which customers and in what order.
+
+**Visual example: two-vehicle routing idea**
+
+```text
+Vehicle 1: Depot -> Customer 1 -> Customer 3 -> Depot
+Vehicle 2: Depot -> Customer 2 -> Customer 4 -> Customer 5 -> Depot
+```
+
+This is where heuristics are useful. They help the business produce workable route plans quickly, even when the full optimisation problem is too complex to solve exactly in daily operations.
+
+**Business impact of VRP heuristics:**
+
+- lower transport and labour cost
+- better use of fleet capacity
+- faster delivery planning
+- improved service quality and on-time performance
+- greater operational flexibility when conditions change
+
+##### Clarke-Wright savings algorithm
+
+The **Clarke-Wright savings algorithm** is a well-known heuristic for the vehicle routing problem.
+
+The main idea is simple:
+
+1. start by assuming that every customer is served by a separate route
+2. calculate how much distance is **saved** if two customers are placed on the same vehicle route instead of being served separately
+3. combine the pair with the greatest savings if the merged route is still feasible
+4. continue merging routes while it remains beneficial and possible
+
+The word **savings** means the reduction in travel distance when two customers are linked into one route rather than both being served directly from the depot by separate trips.
+
+In plain words, the algorithm asks:
+
+"Which pair of customers should be combined first so that the business saves the most distance or cost?"
+
+This makes it useful for distribution and delivery companies because it gives a fast way to reduce unnecessary repeated travel back to the depot.
+
+**Visual example: separate routes first**
+
+```text
+Initial idea:
+
+Depot -> Customer A -> Depot
+Depot -> Customer B -> Depot
+Depot -> Customer C -> Depot
+```
+
+If Customers A and B are close to each other, the algorithm may find that it is cheaper to combine them:
+
+```text
+Merged route after savings calculation:
+
+Depot -> Customer A -> Customer B -> Depot
+Depot -> Customer C -> Depot
+```
+
+**Visual logic of Clarke-Wright**
+
+```text
+Step 1: Create one simple route per customer
+Step 2: Measure savings for combining customer pairs
+Step 3: Sort pairs from highest savings to lowest savings
+Step 4: Merge routes where capacity and route rules allow it
+Step 5: Stop when no useful merge remains
+```
+
+**Why businesses use it:**
+
+- reduces repeated travel to and from the depot
+- helps lower fuel and driver costs
+- produces strong route plans quickly
+- works well when many deliveries must be grouped efficiently
+
+##### Sweep algorithm
+
+The **sweep algorithm** is another heuristic for the vehicle routing problem.
+
+It usually begins at the depot and looks at customers by their angle or position around the depot. Customers are then grouped into routes in a circular or sweeping order.
+
+In plain words, the algorithm works like this:
+
+1. place the depot at the centre
+2. move around the map in one direction, like the hand of a clock
+3. assign nearby customers to the same route while capacity or route limits allow it
+4. once the route is full, start a new route and continue sweeping
+
+This method is useful because geographically close customers often end up on the same route.
+
+**Visual example: sweep idea**
+
+```text
+                                        Customer 1
+                                                *
+                                            /   \
+                 Customer 2 *       * Customer 3
+                                        \       /
+                                         \     /
+                                            [Depot]
+                                         /     \
+                                        /       \
+                 Customer 5 *       * Customer 4
+
+Sweep direction: clockwise
+```
+
+The algorithm may assign customers like this:
+
+```text
+Route 1: Depot -> Customer 1 -> Customer 3 -> Depot
+Route 2: Depot -> Customer 4 -> Customer 5 -> Customer 2 -> Depot
+```
+
+Or, if the route limit is reached earlier:
+
+```text
+Route 1: Depot -> Customer 1 -> Customer 3 -> Depot
+Route 2: Depot -> Customer 4 -> Customer 5 -> Depot
+Route 3: Depot -> Customer 2 -> Depot
+```
+
+**Visual logic of Sweep**
+
+```text
+Step 1: Put depot at the centre
+Step 2: Order customers by angle around the depot
+Step 3: Add customers to the current route in sweep order
+Step 4: Start a new route when capacity or time limit is reached
+Step 5: Continue until all customers are assigned
+```
+
+**Why businesses use it:**
+
+- easy to understand and implement
+- groups geographically close customers together
+- useful for daily delivery planning and service zoning
+- gives quick practical solutions when route decisions must be made fast
+
+#### Comparing Clarke-Wright and Sweep
+
+| Algorithm | Main idea | Strength | Limitation |
+|-----------|-----------|----------|------------|
+| Clarke-Wright savings | Merge customer routes based on highest travel savings | Good at reducing unnecessary depot trips | Quality depends on merge order and constraints |
+| Sweep algorithm | Group customers by position around the depot | Simple and fast for geographical clustering | May be weaker if distance patterns are irregular |
+
+##### Job scheduling
+
+**Job scheduling** aims to assign tasks to resources in an efficient way while considering factors such as deadlines, resource availability, and task dependencies.
+
+This is a common optimisation problem in:
+
+- manufacturing
+- project management
+- healthcare
+- production planning
+- IT operations
+
+Heuristic algorithms are often used for job scheduling because they can provide good solutions within a reasonable time, even when the full scheduling problem becomes large or complicated.
+
+Examples include:
+
+- **priority rule algorithms**
+- **tabu search algorithms**
+
+Many scheduling algorithms exist, but here we focus only on the basic process of the most common ones.
+
+##### Priority rule algorithm
+
+One of the simplest and most popular scheduling heuristics is the **priority rule algorithm**.
+
+An example is the **Highest Priority First (HPF)** algorithm.
+
+HPF is a **non-pre-emptive scheduling algorithm**, which means that once a job starts, it continues until it finishes. Jobs are assigned to available resources according to their priority level.
+
+- jobs with higher priority are executed first
+- jobs with lower priority wait until the higher-priority jobs are complete
+
+The priority level can be based on different business rules, such as:
+
+- job importance
+- urgency
+- deadline proximity
+- customer priority
+- resource requirement
+
+**Worked example: three jobs**
+
+Consider three jobs labelled A, B, and C.
+
+- Job A: Priority = High
+- Job B: Priority = Medium
+- Job C: Priority = Low
+
+Using the HPF algorithm, the scheduling process is:
+
+**Step 1: Determine the priorities of the jobs**
+
+- Job A: High
+- Job B: Medium
+- Job C: Low
+
+**Step 2: Sort the jobs in descending order of priority**
+
+Sorted order:
+
+```text
+A -> B -> C
+```
+
+**Step 3: Execute the jobs in that order**
+
+- Job A is assigned first
+- Job B is assigned second
+- Job C is assigned third
+
+**Visual example: HPF schedule**
+
+```text
+Time --->
+
+Resource 1: [ Job A ] [ Job B ] [ Job C ]
+Priority :    High      Medium     Low
+```
+
+This means the most important or urgent job is handled first, followed by the next most important one.
+
+**Why businesses use HPF:**
+
+- simple to understand and implement
+- useful when some jobs are clearly more important than others
+- helps ensure urgent or high-value work is completed first
+- works well in environments where decisions must be made quickly
+
+**Limitation of HPF:**
+
+If high-priority jobs keep arriving, lower-priority jobs may wait too long. This is one reason why simple priority rules are useful, but not always perfect.
+
+##### First-Come, First-Served (FCFS) algorithm
+
+Another simple job scheduling heuristic is the **First-Come, First-Served (FCFS)** algorithm.
+
+FCFS is a **non-pre-emptive scheduling algorithm** that assigns jobs to available resources in the order they arrive.
+
+The basic idea is:
+
+1. consider the set of jobs that need to be executed
+2. assign the first arriving job to an available resource
+3. if another job arrives while the resource is busy, place it in a **waiting queue**
+4. when the current job finishes, assign the next job from the waiting queue
+5. repeat until all jobs are processed
+
+The FCFS rule is based on **fairness and simplicity**. Jobs are handled in arrival order, without any priority or deadline adjustment.
+
+**Worked example: three jobs with arrival and execution times**
+
+Consider these three jobs:
+
+- Job A: Arrival time = 0, Execution time = 5
+- Job B: Arrival time = 2, Execution time = 3
+- Job C: Arrival time = 4, Execution time = 2
+
+Using the FCFS algorithm, the scheduling process is:
+
+- Time 0: Job A arrives and is assigned to the available resource
+- Time 5: Job A finishes
+- Time 5: Job B is next in the waiting queue and is assigned to the resource
+- Time 8: Job B finishes
+- Time 8: Job C is next in the waiting queue and is assigned to the resource
+- Time 10: Job C finishes
+
+**Visual example: FCFS queue and schedule**
+
+```text
+Arrival order: A -> B -> C
+
+Time --->
+0         5         8        10
+
+Resource 1: [   Job A   ][ Job B ][Job C]
+Queue flow :     A          B       C
+```
+
+**Plain-language interpretation:**
+
+FCFS does not ask which job is most important or which deadline is closest. It simply says: whoever arrives first is handled first.
+
+**Why businesses use FCFS:**
+
+- very easy to understand and implement
+- perceived as fair because arrival order is respected
+- useful in simple service or queue-based systems
+- suitable when job differences are small or priority is not critical
+
+**Limitation of FCFS:**
+
+If one long job arrives early, shorter jobs behind it may wait a long time. This can reduce performance in terms of waiting time and turnaround time.
+
+##### Deadline-based scheduling example
+
+Another common scheduling rule is a **deadline-driven** heuristic.
+
+One of the most widely used examples is **Earliest Deadline First (EDF)**. The main idea is simple: the job with the nearest deadline is scheduled before jobs whose deadlines are later.
+
+This rule is useful when the business objective is to reduce late work, missed commitments, or overdue tasks.
+
+**Worked example: three jobs with deadlines**
+
+Consider these three jobs:
+
+- Job A: Deadline = 16:00
+- Job B: Deadline = 12:00
+- Job C: Deadline = 14:00
+
+Using an earliest-deadline approach, the process is:
+
+**Step 1: Identify each deadline**
+
+- Job A: 16:00
+- Job B: 12:00
+- Job C: 14:00
+
+**Step 2: Sort the jobs from earliest deadline to latest deadline**
+
+Sorted order:
+
+```text
+B -> C -> A
+```
+
+**Step 3: Execute the jobs in that order**
+
+- Job B is completed first because its deadline is closest
+- Job C is completed second
+- Job A is completed last
+
+**Visual example: deadline-based schedule**
+
+```text
+Time --->
+
+Resource 1: [ Job B ] [ Job C ] [ Job A ]
+Deadline :    12:00     14:00     16:00
+```
+
+This rule does not ask which job is most important overall. It asks which job must be completed soonest.
+
+**Why businesses use deadline-based scheduling:**
+
+- helps reduce late jobs and missed delivery dates
+- useful when service-level agreements or due dates matter most
+- easy to explain to managers and teams
+
+**Limitation of deadline-based scheduling:**
+
+A job with an early deadline may be scheduled first even if it is less valuable or less important than another job. This means EDF is useful when timing matters most, but less suitable when business priority matters more than deadline order.
+
+#### HPF versus deadline-based scheduling
+
+These two heuristics can lead to different schedules because they optimise different things.
+
+- **HPF** focuses on importance or urgency
+- **EDF** focuses on due date pressure
+
+For example, a hospital may use priority-based logic for emergency cases, while a production plant may use deadline-based logic to reduce late orders.
+
+##### Tabu search for job scheduling
+
+For more complex scheduling problems, businesses may use **tabu search**.
+
+As mentioned earlier, tabu search is a **metaheuristic algorithm** that can be applied to job scheduling problems.
+
+In scheduling, tabu search explores the solution space by iteratively moving from one schedule to another in order to find an optimal or near-optimal solution. It keeps track of recently visited solutions using a **tabu list** so that the search does not keep returning to the same weak patterns.
+
+This is useful when the schedule must balance many constraints at once, such as:
+
+- machine availability
+- setup times
+- staff availability
+- deadlines
+- task dependencies
+
+#### How tabu search works in job scheduling
+
+The basic process can be explained step by step.
+
+**Step 1: Initialise the initial solution**
+
+Generate an initial job schedule. This may be done randomly or by using a simple rule such as FCFS or a priority rule.
+
+**Step 2: Evaluate the initial solution**
+
+Measure how good the schedule is using an **objective function**.
+
+Common objective measures include:
+
+- total completion time
+- makespan
+- lateness
+- total waiting time
+
+**Step 3: Set up the tabu list**
+
+Create an empty tabu list. This list stores recently visited solutions or moves so the algorithm avoids cycling back to them too quickly.
+
+**Step 4: Start the tabu search iterations**
+
+Repeat the search until a stopping condition is reached, such as:
+
+- a maximum number of iterations
+- a time limit
+- no further improvement after many steps
+
+During each iteration:
+
+1. generate a set of **neighbouring solutions** by making small changes to the current schedule
+2. evaluate the objective function value for each neighbour
+3. choose the best neighbour that is not forbidden by the tabu list
+4. update the current solution to that best neighbour
+5. add the recent move or schedule to the tabu list
+6. remove the oldest tabu entry if the list becomes too long
+
+**Step 5: Return the best solution found**
+
+When the search ends, return the best schedule discovered during the process.
+
+The important idea is that tabu search does not only follow immediate improvements. It also uses memory to avoid repeating the same weak paths. That helps the algorithm explore more widely and reduces the risk of becoming trapped in a local optimum.
+
+**Plain-language idea:**
+
+```text
+Current schedule
+-> test a small change
+-> keep good improvements
+-> avoid recently visited weak schedules
+-> continue searching for a better timetable
+```
+
+**Visual example: tabu search workflow**
+
+```text
+Initial schedule
+    ->
+Evaluate objective value
+    ->
+Generate neighbour schedules
+    ->
+Reject tabu moves
+    ->
+Choose best allowed neighbour
+    ->
+Update tabu list
+    ->
+Repeat until stop condition
+    ->
+Return best schedule found
+```
+
+**Simple job-scheduling example**
+
+Suppose the current schedule is:
+
+```text
+A -> B -> C -> D
+```
+
+Neighbouring schedules might include:
+
+```text
+B -> A -> C -> D
+A -> C -> B -> D
+A -> B -> D -> C
+```
+
+The algorithm evaluates each one using the objective function. If one recently tested arrangement is on the tabu list, it is skipped even if it looks familiar or tempting. This forces the search to examine new combinations rather than looping repeatedly through the same schedules.
+
+**Why businesses use tabu search in scheduling:**
+
+- handles harder scheduling problems than simple priority rules
+- can escape local optima
+- useful when many jobs and constraints interact at once
+
+**Limitation of tabu search:**
+
+It is more complex than simple scheduling rules and depends on good parameter choices, such as tabu-list length, stopping rules, and how neighbour schedules are generated.
+
+##### Business impact of job scheduling heuristics
+
+When job scheduling is done well, the business can achieve:
+
+- better use of staff and machines
+- fewer delays and missed deadlines
+- improved workflow efficiency
+- lower idle time
+- stronger service quality and operational control
+
+In manufacturing, this may improve machine utilisation. In project management, it may help teams meet deadlines. In healthcare, it may improve how appointments, staff, or treatment resources are assigned.
+
+#### Comparing scheduling heuristics
+
+| Scheduling method | Main idea | Strength | Limitation |
+|-------------------|-----------|----------|------------|
+| Priority rule / HPF | Execute highest-priority job first | Simple, fast, easy to apply | Lower-priority jobs may wait too long |
+| First-Come, First-Served | Execute jobs in arrival order | Fair, simple, easy to implement | Long early jobs can delay everything behind them |
+| Earliest Deadline First | Execute the job with the nearest deadline first | Helps reduce overdue jobs and deadline misses | May ignore broader business importance |
+| Tabu search | Search for better schedules while avoiding recent weak solutions | Handles more complex scheduling problems | More complex to design and tune |
+
+#### Why these examples matter
+
+TSP and VRP show why heuristics are so valuable in business.
+
+- exact optimisation may be too slow for real operations
+- heuristic methods can give strong approximate solutions quickly
+- the goal is often not perfect theory, but practical performance under real constraints
+
+This is especially relevant in data-driven decision-making because businesses must often choose the best action they can compute in time, not the perfect action they could compute with unlimited time and resources.
+
+#### Why businesses use heuristic algorithms
+
+Businesses use heuristic algorithms because many real-world decisions cannot wait for a perfect analysis.
+
+For example, a company may need to:
+
+- respond immediately to a delivery disruption
+- flag suspicious behaviour before a transaction completes
+- prioritise the most urgent customer complaint
+- decide which market signal matters most during a fast-moving competitor response
+
+In all of these situations, a heuristic algorithm helps the business act quickly while still using structured reasoning.
+
+In strategic settings, heuristics are often used when a player or business does not have enough time to calculate every possible outcome in full detail.
+
+For example, in a competitive game or market situation, a manager may use a shortcut such as:
+
+- copy the rival's last successful move
+- protect the most profitable segment first
+- avoid the riskiest option unless the payoff is clearly much higher
+
+**Examples in the grocery scenario:**
+
+- fix the zone with the highest delay first
+- focus on the 20% of routes causing 80% of complaints
+- assign the nearest available driver first
+
+**Game-style example: heuristic decision**
+
+Imagine two companies competing for evening delivery customers.
+
+- one firm can spend time calculating every possible competitor response
+- or it can use a heuristic such as: **if the rival discounts, respond only in the highest-value zone first**
+
+That heuristic may not be mathematically perfect, but it is fast, practical, and often good enough in a live market.
+
+**Visual example: heuristic logic**
+
+```text
+Problem: Too many late deliveries
+
+Quick heuristic:
+1. Find the worst-performing zone
+2. Focus resources there first
+3. Recheck KPI after intervention
+```
+
+**Visual example: heuristic in competition**
+
+```text
+Competitor cuts price
+    ->
+Ask: Is our premium zone at risk?
+    ->
+If yes: react in that zone first
+If no: keep current pricing and monitor
+```
+
+Heuristics are valuable because they reduce decision time, but they can also miss better options if the shortcut is too simplistic.
+
+### 3. Algorithms
+
+An **algorithm** is a step-by-step procedure for solving a problem or producing a decision.
+
+Algorithms are more systematic than heuristics. They are useful when the business needs repeatable decisions that can be applied consistently across many cases.
+
+In a strategic environment, an algorithm can be used to evaluate rules, rank options, or automate repeated responses to patterns in data.
+
+**Examples in the grocery scenario:**
+
+- route assignment algorithm
+- delivery-time prediction algorithm
+- demand forecasting algorithm for staffing
+
+**Game-style example: algorithmic decision**
+
+Suppose a platform wants to decide whether to offer a discount, free delivery, or no promotion at all.
+
+An algorithm could use the following inputs:
+
+- current demand level
+- competitor price level
+- customer churn risk
+- expected delivery capacity
+
+The algorithm then applies rules or a predictive model and recommends the action with the strongest expected result.
+
+**Visual example: algorithm flow**
+
+```text
+Input data -> Clean data -> Apply rules/model -> Produce recommendation -> Take action
+```
+
+Algorithms are important because they allow the company to scale decision-making across many orders, zones, and time periods.
+
+**Visual example: pricing-response algorithm**
+
+```text
+Input:
+- competitor discount
+- order volume
+- driver capacity
+- customer churn score
+
+Process:
+- estimate revenue impact
+- estimate service risk
+- score each option
+
+Output:
+- choose: discount / no discount / limited promotion
+```
+
+Unlike a heuristic, an algorithm is designed to follow the same logic every time similar conditions appear.
+
+### 4. Optimisation techniques
+
+**Optimisation** techniques are used to find the best possible solution under constraints.
+
+Typical business constraints include:
+
+- limited drivers
+- limited delivery slots
+- fuel cost
+- time windows
+- service-level expectations
+
+In the grocery-delivery case, optimisation could be used to:
+
+- minimise total delivery delay
+- minimise refund cost
+- maximise on-time delivery rate
+- balance cost against customer satisfaction
+
+In a strategic game or market situation, optimisation can also help a business decide how to allocate limited resources when several good options compete with one another.
+
+For example, a company may need to decide how much budget to place into:
+
+- discounts
+- driver overtime
+- marketing visibility
+- customer service support
+
+The aim is not simply to pick one action, but to find the best combination of actions within the available limits.
+
+**Visual example: optimisation view**
+
+```text
+Goal: Minimise delivery delay
+
+Constraints:
+- 42 drivers available
+- peak demand between 17:00 and 20:00
+- fixed budget for overtime
+- delivery windows already sold
+
+Best solution = routing and staffing plan that gives lowest delay within limits
+```
+
+**Game-style example: optimisation in competition**
+
+Imagine the business has a fixed weekend response budget and must decide how to split it after a rival launches a campaign.
+
+```text
+Goal: Maximise net customer gain
+
+Constraints:
+- discount budget is limited
+- driver overtime is limited
+- service quality must stay above KPI target
+- competitor response is uncertain
+
+Possible allocation:
+- 40% to targeted discounts
+- 35% to extra delivery capacity
+- 25% to retention messages for loyal customers
+```
+
+Optimisation matters because it helps the business search for the strongest overall solution rather than improving only one measure at the expense of everything else.
+
+#### Other optimisation techniques used in decision-making
+
+There are many optimisation-related techniques used in business decision-making. Some are direct optimisation methods, while others support optimisation by finding patterns, making forecasts, comparing scenarios, or testing which alternative performs best.
+
+We have already touched on methods such as regression analysis and decision trees elsewhere in the course. Below are several other important techniques.
+
+##### 1. Clustering algorithms
+
+**Clustering algorithms** group similar data points based on shared characteristics.
+
+Examples include:
+
+- **K-means clustering**
+- **Hierarchical clustering**
+
+These methods help businesses identify natural segments in data, which can then guide better decisions.
+
+Typical business uses:
+
+- identify customer segments
+- detect unusual or outlier behaviour
+- group stores, regions, or products with similar patterns
+- support targeted marketing or service strategies
+
+**Simulation-style example: customer segmentation solution**
+
+```text
+Input data:
+- order frequency
+- average basket size
+- refund rate
+- delivery time sensitivity
+
+Clustering result:
+
+Cluster 1: High-value loyal customers
+- frequent orders
+- high basket value
+- low refund rate
+
+Cluster 2: Price-sensitive customers
+- medium order frequency
+- smaller baskets
+- high response to discounts
+
+Cluster 3: At-risk customers
+- declining orders
+- rising complaints
+- high churn probability
+
+Decision use:
+- Cluster 1 -> loyalty rewards
+- Cluster 2 -> targeted promotions
+- Cluster 3 -> retention intervention
+```
+
+This is valuable because the business is not treating all customers the same way. It is optimising decisions by acting differently across segments.
+
+##### 2. Time series analysis
+
+**Time series analysis** focuses on analysing and predicting data over time.
+
+Examples include:
+
+- **ARIMA**
+- **Exponential smoothing**
+
+These methods are used to identify:
+
+- trends
+- seasonal patterns
+- cyclical behaviour
+- future expected values
+
+Typical business uses:
+
+- forecast demand
+- predict staffing needs
+- estimate future sales
+- detect abnormal changes over time
+
+**Simulation-style example: delivery demand forecast**
+
+```text
+Historical weekly order pattern:
+
+Week 1: 1,200 orders
+Week 2: 1,260 orders
+Week 3: 1,240 orders
+Week 4: 1,410 orders
+Week 5: 1,520 orders
+
+Detected pattern:
+- upward trend
+- weekend spike
+- monthly pay-day effect
+
+Forecast output:
+Next Friday expected orders: 1,680
+Recommended driver count: 54
+Expected risk window: 17:00-20:00
+```
+
+This helps the business make proactive decisions before demand pressure creates failures.
+
+##### 3. Optimisation algorithms
+
+Direct **optimisation algorithms** are used to solve complex decision problems where the goal is to minimise or maximise something under constraints.
+
+Examples include:
+
+- **linear programming**
+- **integer programming**
+- **dynamic programming**
+
+These methods help identify the best resource allocation or decision structure when the rules and objective can be expressed mathematically.
+
+Typical business uses:
+
+- assign budgets
+- allocate staff
+- optimise production plans
+- balance cost and service level
+
+**Simulation-style example: resource allocation model**
+
+```text
+Objective:
+Maximise on-time deliveries
+
+Decision variables:
+- x1 = number of overtime driver hours
+- x2 = number of temporary drivers
+- x3 = number of premium slots capped
+
+Constraints:
+- overtime budget <= 25,000 NOK
+- temporary drivers <= 12
+- service level >= 95%
+- total labour hours <= available capacity
+
+Model result:
+- x1 = 38 overtime hours
+- x2 = 6 temporary drivers
+- x3 = cap 18 premium slots
+
+Expected outcome:
+- on-time rate rises from 89% to 96%
+```
+
+##### 4. Simulation modelling
+
+**Simulation modelling** allows decision-makers to test different scenarios and evaluate possible outcomes before acting in the real world.
+
+Instead of immediately changing the business, the organisation builds a virtual version of the situation and studies what may happen under different assumptions.
+
+Typical business uses:
+
+- test policy changes
+- estimate risk
+- examine bottlenecks
+- compare multiple operating strategies
+
+**Simulation-style example: warehouse and delivery scenario**
+
+```text
+Scenario A: No extra drivers
+- expected late deliveries: 210
+- expected refunds: 38,000 NOK
+- expected customer satisfaction: 72%
+
+Scenario B: Add 5 temporary drivers
+- expected late deliveries: 120
+- expected refunds: 21,000 NOK
+- expected customer satisfaction: 84%
+
+Scenario C: Add 5 temporary drivers + route rebalancing
+- expected late deliveries: 75
+- expected refunds: 12,000 NOK
+- expected customer satisfaction: 90%
+
+Decision:
+Scenario C gives the strongest overall operational result.
+```
+
+This is more than a simple diagram. It is a simulated decision solution comparing realistic outcomes across alternatives.
+
+##### 5. Machine learning techniques
+
+**Machine learning techniques** can discover patterns and relationships in large data sets that may be too complex for manual analysis.
+
+Examples include:
+
+- **random forests**
+- **support vector machines**
+- **neural networks**
+
+These models are often used for:
+
+- prediction
+- classification
+- anomaly detection
+- risk scoring
+
+**Simulation-style example: late-delivery risk model**
+
+```text
+Model inputs:
+- order size
+- time of day
+- distance
+- driver load
+- weather severity
+
+Model output for Order 78421:
+- probability of late delivery: 0.81
+- main drivers of risk:
+    1. heavy rain
+    2. peak-hour congestion
+    3. overloaded route
+
+Recommended action:
+- reassign order to relief driver
+- notify customer early
+```
+
+This helps the company optimise action before the problem becomes visible in KPI reports.
+
+##### 6. A/B testing
+
+**A/B testing** compares two or more versions of a variable to determine which performs better.
+
+Typical examples include:
+
+- website design
+- advertising message
+- pricing strategy
+- delivery-offer wording
+
+The idea is to run a controlled experiment and compare results using evidence rather than guesswork.
+
+**Simulation-style example: delivery-offer test**
+
+```text
+Version A: "Free delivery over 500 NOK"
+Version B: "10% off your next grocery order"
+
+Observed outcome after 10,000 users each:
+
+Version A:
+- conversion rate: 7.8%
+- average order value: 620 NOK
+
+Version B:
+- conversion rate: 8.9%
+- average order value: 540 NOK
+
+Decision view:
+- Version B drives more conversions
+- Version A drives higher basket value
+- final choice depends on whether the business wants volume or order value
+```
+
+##### 7. Sensitivity analysis
+
+**Sensitivity analysis** checks how much the output of a model changes when its inputs are changed.
+
+This helps decision-makers understand whether a chosen solution is robust or fragile.
+
+Typical business uses:
+
+- test risk around forecasts
+- understand which assumptions matter most
+- compare stable versus unstable strategies
+
+**Simulation-style example: staffing plan sensitivity test**
+
+```text
+Base model assumption:
+- demand forecast = 1,600 orders
+- expected on-time rate = 96%
+
+If demand rises by 5%:
+- on-time rate falls to 93%
+
+If demand rises by 10%:
+- on-time rate falls to 89%
+
+If driver absenteeism rises from 3% to 7%:
+- on-time rate falls to 90%
+
+Interpretation:
+- the plan is highly sensitive to absenteeism and peak-demand growth
+- contingency staffing is needed
+```
+
+##### 8. Optimisation frameworks
+
+Businesses and analysts often use **optimisation frameworks** to implement models and solve difficult decision problems efficiently.
+
+Examples include:
+
+- **PuLP**
+- **Gurobi**
+- **CPLEX**
+- **Pyomo**
+- **AMPL**
+
+These frameworks help define:
+
+- variables
+- constraints
+- objective functions
+- solution methods
+
+They are useful because they turn a business problem into a formal model that can be solved and tested repeatedly.
+
+**Simulation-style example: optimisation framework workflow**
+
+```text
+Business problem:
+How should drivers, routes, and delivery slots be assigned?
+
+Model setup:
+- define variables for routes and staffing
+- define budget, capacity, and service constraints
+- define objective: minimise delay cost
+
+Solver output:
+- recommended staffing plan
+- route assignment plan
+- expected cost and service result
+
+Decision use:
+- compare this solution with current operations
+- rerun model when conditions change
+```
+
+#### Choosing the right optimisation technique
+
+Different techniques are useful for different decision problems.
+
+| Technique | Best for | Main value |
+|-----------|----------|------------|
+| Clustering | Segmentation and pattern discovery | Helps group similar cases for targeted decisions |
+| Time series analysis | Forecasting over time | Supports proactive planning |
+| Optimisation algorithms | Resource allocation under constraints | Finds mathematically strong solutions |
+| Simulation modelling | Scenario comparison | Tests consequences before acting |
+| Machine learning | Complex prediction and classification | Detects patterns too complex for simple rules |
+| A/B testing | Comparing alternatives experimentally | Shows which option performs better in practice |
+| Sensitivity analysis | Robustness testing | Reveals which assumptions matter most |
+| Optimisation frameworks | Implementing formal models | Makes complex optimisation repeatable and scalable |
+
+#### Why these techniques matter in business
+
+These methods help organisations do more than describe data. They help decision-makers:
+
+1. segment and understand customers
+2. forecast what is likely to happen next
+3. allocate resources more effectively
+4. compare scenarios before taking action
+5. test alternatives using evidence
+6. understand how robust a decision really is
+
+Together, these techniques strengthen data-driven decision-making because they connect analysis, prediction, experimentation, and optimisation into a practical decision process.
+
+#### Comparing the techniques
+
+| Technique | Main purpose | Speed | Strength | Limitation |
+|-----------|--------------|-------|----------|------------|
+| Heuristic | Make a quick practical choice | Fast | Simple and useful under pressure | May ignore better solutions |
+| Algorithm | Apply a repeatable decision process | Medium to fast once built | Consistent and scalable | Depends on data quality and logic design |
+| Optimisation | Find the best solution under constraints | Slower and more computational | Balances trade-offs systematically | Can be harder to explain and build |
+
+### Relevance to data-driven decision-making
+
+These methods are relevant to data-driven decision-making because they help turn data into action.
+
+- **Decision trees** make reasoning visible.
+- **Heuristics** support fast operational decisions.
+- **Algorithms** produce repeatable and scalable decisions.
+- **Optimisation** finds the best option under business limits.
+
+Together, they show that DDM is not only about analysing data after the fact. It is also about using data to guide actions, compare options, and improve outcomes.
+
+### Real-world use across industries
+
+Data-driven methods appear in many industries, even when the exact technical method differs.
+
+| Industry | Problem | Typical data-driven technique |
+|---------|---------|-------------------------------|
+| Retail | Recommend products or adjust stock levels | Algorithms, heuristics, forecasting |
+| Healthcare | Triage patients or predict readmission risk | Decision trees, predictive models |
+| Manufacturing | Reduce downtime and schedule maintenance | Algorithms, optimisation |
+| Transport and logistics | Route planning and pricing | Heuristics, algorithms, optimisation |
+| Energy | Detect risk and improve efficiency | Predictive models, optimisation |
+| Finance | Fraud detection and credit risk | Decision trees, classification algorithms |
+| Marketing | Target the right customer segment | Algorithms, correlation, predictive models |
+
+### Grocery-delivery use case: all methods together
+
+The grocery-delivery company can use these techniques at different levels:
+
+- a **heuristic** to focus first on the worst-performing zone
+- an **algorithm** to assign drivers and estimate delivery time
+- a **decision tree** to decide which intervention to apply under different demand conditions
+- an **optimisation model** to find the best staffing and routing plan for peak hours
+
+**Visual summary**
+
+```text
+Data -> Analysis -> Decision technique -> Action
+
+Demand and route data -> heuristic -> focus worst zone first
+Delivery history -> algorithm -> predict late orders
+Operational conditions -> decision tree -> choose response path
+All constraints together -> optimisation -> find best overall plan
+```
+
+### The Task
+
+#### Question 1
+
+You recently started a new business and want to host a launch event. Depending on the weather conditions, you must decide whether the event should be held **inside** or **outside**.
+
+Create a decision tree based on this decision.
+
+**Model decision tree:**
+
+```text
+                                                                  [Root Node]
+                                            Should the business launch event be held outside?
+                                                                                        |
+                                                                         [Decision Node]
+                                                         Is the weather forecast dry and stable?
+                                                                        /                         \
+                                                                    Yes                           No
+                                                                    |                             |
+                                                     [Decision Node]                 [Leaf Node]
+                                      Is temperature comfortable for guests?      Hold event indoors
+                                                        /              \
+                                                    Yes                No
+                                                    |                  |
+                                        [Leaf Node]          [Decision Node]
+                                     Hold event outside    Is a covered outdoor setup available?
+                                                                            /                    \
+                                                                        Yes                      No
+                                                                        |                        |
+                                                              [Leaf Node]               [Leaf Node]
+                                                     Hold event outside with        Hold event indoors
+                                                        covered contingency
+```
+
+**Why this works:**
+
+- the **root node** identifies the main business decision
+- the **decision nodes** test the important conditions that affect the choice
+- the **leaf nodes** show the final action the business should take
+
+This is a good example of a decision tree because it turns an uncertain real-world choice into a visible sequence of questions and outcomes.
+
+#### Question 2
+
+In this lesson, you learned about the **travelling salesman problem**. Create your own illustration that depicts the same problem.
+
+**Model illustration:**
+
+```text
+                                 City A
+                              /   |    \
+                          6 /    | 9   \ 7
+                            /     |      \
+                     City B-----+------City C
+                         | \     |     / |
+                      5 |  \    |   /   | 4
+                         |   \   | /     |
+                     City D---- City E---
+                            \       |     /
+                          8 \      | 3  / 6
+                              \     |   /
+                                ----Depot
+```
+
+**Possible route idea:**
+
+```text
+Depot -> City E -> City C -> City A -> City B -> City D -> Depot
+```
+
+**What this illustrates:**
+
+- one route must visit each city exactly once
+- the route should return to the starting point
+- the goal is to find the shortest possible complete route
+
+In a real answer, you can draw your own cities and distance values. The important point is to show the network and explain that the objective is to minimise total travel distance.
+
+#### Question 3
+
+Create a diagram that depicts **time window constraints for Uber Eats**.
+
+Time window constraints can be interpreted in multiple ways.
+
+##### 1. Multiple drivers collecting orders from one location
+
+```text
+Restaurant pickup window: 18:00-18:20
+
+Restaurant Hub
+    |
+    |-- Driver 1 picks up Order A at 18:03 -> Deliver by 18:20-18:35
+    |-- Driver 2 picks up Order B at 18:07 -> Deliver by 18:25-18:40
+    |-- Driver 3 picks up Order C at 18:15 -> Deliver by 18:30-18:45
+
+Timeline:
+18:00      18:05      18:10      18:15      18:20      18:25      18:30      18:35      18:40      18:45
+Restaurant [================ Pickup Window ================]
+Driver 1         [Pick up]----------[Travel]---------[Deliver A]
+Driver 2                    [Pick up]----------[Travel]---------[Deliver B]
+Driver 3                                  [Pick up]---------[Travel]---------[Deliver C]
+```
+
+**Interpretation:**
+
+The same restaurant has several orders, but each driver must pick up within a valid restaurant-preparation window and deliver within the promised customer window.
+
+##### 2. One driver delivering to multiple locations
+
+```text
+Driver Route: Restaurant -> Customer A -> Customer B -> Customer C
+
+Required delivery windows:
+- Customer A: 18:20-18:30
+- Customer B: 18:28-18:40
+- Customer C: 18:35-18:50
+
+Simulated route:
+
+18:10 Pick up all ready orders
+18:22 Deliver to Customer A  -> within window
+18:34 Deliver to Customer B  -> within window
+18:47 Deliver to Customer C  -> within window
+
+Timeline:
+18:10      18:20      18:30      18:40      18:50
+Driver     [Pickup]-[Travel]-[A]-[Travel]-[B]-[Travel]-[C]
+Cust A              [===== valid window =====]
+Cust B                        [======= valid window =======]
+Cust C                                 [========== valid window ==========]
+```
+
+**Interpretation:**
+
+This shows that a single driver can only serve multiple customers successfully if the route order still fits all delivery windows.
+
+##### 3. Multiple drivers collecting orders from multiple locations
+
+```text
+Restaurant X pickup window: 17:55-18:10
+Restaurant Y pickup window: 18:05-18:20
+
+Driver 1:
+Restaurant X -> Customer A -> Customer B
+
+Driver 2:
+Restaurant Y -> Customer C
+
+Driver 3:
+Restaurant X -> Customer D
+
+Coordinated solution view:
+
+17:55      18:00      18:05      18:10      18:15      18:20      18:25      18:30      18:35      18:40
+Rest X   [======= pickup window =======]
+Rest Y              [======= pickup window =======]
+Drv 1         [Pickup X]-[Travel]-[Cust A]-[Travel]-[Cust B]
+Drv 2                    [Pickup Y]-[Travel]---------[Cust C]
+Drv 3              [Pickup X]-[Travel]---------[Cust D]
+```
+
+**Interpretation:**
+
+This scenario is more complex because each driver must match both the pickup time window at the restaurant and the delivery time window at the customer end.
+
+**Why this is important:**
+
+Time window constraints are critical in Uber Eats because even if a route is short, it may still fail if:
+
+- food is collected too early or too late
+- customer delivery promises are missed
+- one route delays another route in the system
+
+#### Question 4
+
+In a short summary of around **500 words**, explain the **FCFS algorithm**.
+
+**Model summary answer:**
+
+The abbreviation **FCFS** stands for **First-Come, First-Served**. It is one of the simplest job scheduling algorithms and is based on the idea of fairness. The rule is easy to understand: the first job that arrives is the first job that gets processed. No special priority is given to urgency, value, or deadline. Instead, jobs are handled in the order they enter the system. Because of this, FCFS is often used to explain the foundations of scheduling before moving to more advanced methods.
+
+FCFS is also a **non-pre-emptive** scheduling algorithm. This means that once a job starts using a resource, it continues until it is complete. The job is not interrupted just because another job arrives. This makes the algorithm straightforward to manage, because the system simply follows the waiting line in arrival order.
+
+The steps of FCFS are simple. First, we consider a set of jobs that need to be executed. Second, we assign the first job that arrives to an available resource. Third, if another job arrives while that resource is still busy, the new job is placed in a queue, also called a **waiting queue**. Fourth, as soon as the current job finishes, the next job in the waiting queue is assigned to the resource. Finally, the process continues in the same way until all jobs have been processed.
+
+To illustrate this, imagine three jobs: **Job A**, **Job B**, and **Job C**. Job A arrives at time 0 and needs 5 units of execution time. Job B arrives at time 2 and needs 3 units. Job C arrives at time 4 and needs 2 units. Under FCFS, Job A is processed first because it arrived first. While Job A is running, Jobs B and C must wait in the queue. When Job A finishes at time 5, Job B is processed next because it has been waiting longer than Job C. When Job B finishes at time 8, Job C is finally processed and completes at time 10.
+
+The main advantage of FCFS is that it is simple and fair. Every job is treated according to arrival order, which makes the process transparent and easy to explain. It also requires very little decision logic, so it is easy to implement in basic queueing and service systems.
+
+However, FCFS also has weaknesses. If a very long job arrives early, shorter jobs behind it may wait a long time even if they could have been completed quickly. This can lead to poor waiting time and poor turnaround time. For that reason, FCFS is useful as a basic scheduling method, but it may not be the best choice when businesses need to optimise speed, urgency, or deadlines.
+
+**What a strong answer should mention:**
+
+1. FCFS stands for **First-Come, First-Served**.
+2. It is a simple and fairness-based scheduling rule.
+3. Jobs are processed in arrival order.
+4. New jobs wait in a queue if the resource is busy.
+5. The next job starts when the current job finishes.
+6. The process continues until all jobs are completed.
+7. The method is easy to implement, but long early jobs can increase waiting time for later jobs.
+
+### What Did I Learn in This Lesson?
+
+This lesson provided the following insights:
+
+- an explanation of what a **decision tree** is, including root nodes, decision nodes, terminal nodes, and how branches guide different outcomes
+- how **game theory** and **decision matrices** can be used to visualise practical outcomes and compare strategic choices
+- examples of different **decision tree uses in business**, such as credit approval, churn, fraud detection, marketing, inventory, hiring, and service recovery
+- how **heuristic algorithms** support problem-solving when businesses need practical answers quickly rather than perfect answers slowly
+- common types of **heuristic algorithms**, including genetic algorithms, tabu search, simulated annealing, and greedy algorithms, and how they are used
+- worked examples of heuristic applications such as the **travelling salesman problem (TSP)**, the **vehicle routing problem (VRP)**, route-merging and sweep methods, and **job scheduling**
+- how different scheduling rules such as **HPF**, **FCFS**, and **EDF** can produce different job orders depending on whether the business focuses on priority, fairness, or deadlines
+- an overview of **optimisation techniques**, including clustering, time series analysis, optimisation algorithms, simulation modelling, machine learning, A/B testing, sensitivity analysis, and optimisation frameworks
+
+#### Lesson takeaway
+
+The main lesson is that decision-making techniques are not all designed for the same purpose.
+
+- **Decision trees** help visualise choices and outcomes.
+- **Heuristics** help businesses act quickly under pressure.
+- **Algorithms** provide repeatable decision logic.
+- **Optimisation techniques** help compare alternatives and search for the best solution under constraints.
+
+Together, these methods show how data can be turned into structured action across many business problems.
+
+### How to use this in an exam
+
+If you get an exam question from Lesson `1.2`, do not answer by listing definitions only. A strong answer usually needs three parts:
+
+1. define the technique clearly
+2. explain what business problem it helps solve
+3. apply it to a realistic scenario
+
+That means if you are asked about decision trees, heuristics, job scheduling, routing, or optimisation techniques, you should show both **understanding** and **application**.
+
+#### What exam answers should usually include
+
+- the name and meaning of the technique
+- how the method works in basic steps
+- what type of problem it is used for
+- one strength and one limitation
+- a short business example showing practical use
+
+#### Examples of likely exam questions
+
+You may get questions such as:
+
+- Explain what a **decision tree** is and show how it supports business decision-making.
+- Describe the role of **game theory** and **decision matrices** in strategic decision-making.
+- Compare **heuristics** and **metaheuristics**.
+- Explain the **travelling salesman problem** or the **vehicle routing problem** and why heuristics are used.
+- Describe how **FCFS**, **HPF**, or **EDF** can be used in job scheduling.
+- Explain how **tabu search** can improve a scheduling solution.
+- Discuss different **optimisation techniques** and how they support data-driven decision-making.
+
+#### Good exam strategy for this lesson
+
+When answering:
+
+1. start with a precise definition
+2. show the process or logic of the method
+3. add a business scenario
+4. mention trade-offs, such as speed versus optimality, or simplicity versus flexibility
+5. end by explaining how the method improves decision-making
+
+For example, if asked about FCFS, do not only say that it means First-Come, First-Served. You should also explain that it is fairness-based, describe the waiting queue process, and discuss when it works well and when it performs poorly.
+
+If asked about optimisation techniques, do not only name them. You should connect them to business goals such as forecasting demand, grouping customers, testing scenarios, allocating resources, or evaluating alternative strategies.
+
+#### Quick revision focus
+
+Before an exam, make sure you can:
+
+- draw and explain a simple decision tree
+- explain how a payoff matrix relates to strategic choices
+- distinguish heuristics from metaheuristics
+- describe at least two heuristic examples such as TSP, VRP, or scheduling
+- compare FCFS, HPF, EDF, and tabu search at a basic level
+- explain what optimisation techniques do and when they are useful
+
+### What this means for a data analyst
+
+As a data analyst, you do not always have to build every method yourself. But you do need to:
+
+1. recognise what kind of problem the business is trying to solve
+2. understand which decision-making technique is appropriate
+3. explain the strengths and limits of the method
+4. translate analytical results into a form decision-makers can use
+
+That is why this lesson matters. It connects analysis skills to how decisions are really made in organisations.
+            """,
+            "key_points": [
+                "Decision trees, heuristics, algorithms, and optimisation each support different kinds of decisions",
+                "Data-driven methods are used across industries, not just inside one technical field",
+                "In the grocery case, different techniques can be combined for routing, staffing, and service improvement",
+                "A data analyst must understand where each technique fits even when not building every method directly"
+            ],
+            "visual_elements": {
+                "diagrams": true,
+                "tables": true,
+                "highlighted_sections": true
+            }
+        },
+        {
+            "lesson_number": "1.3",
+            "title": "Lesson - Decision-making Criteria",
+            "content": """
+### Introduction
+
+In this lesson, we cover the basic rules that can be used to analyse a decision problem and help us solve it in a structured way.
+
+When the future is uncertain, we need a set of decision rules that help us compare alternatives logically instead of relying only on instinct.
+
+This lesson introduces the main **decision-making criteria under uncertainty**:
+
+- the **Maximax optimistic rule**
+- the **Maximin rule of Savage**
+- the **Realistic rule of Hurwicz**
+- the **Minimax regret rule of Savage**
+- the **Average payoff rule of Laplace**
+- the **Expected payoff rule**
+- the **Expected loss of opportunity rule**
+
+Each rule looks at the same decision matrix in a different way. Some focus on the best possible outcome, some protect against the worst, and some balance opportunity and risk.
+
+#### Why this lesson matters
+
+Decision-makers often face situations where they must act before they know exactly what will happen next.
+
+That means a good analyst should not only ask, "Which option has the highest number?" The analyst should also ask:
+
+- what happens if the future turns out badly?
+- how much regret could this choice create?
+- what if all future states are equally possible?
+- what if we do have probabilities?
+
+Decision-making criteria help answer those questions.
+
+### Decision criteria under uncertainty
+
+We now use a new example that will guide the whole lesson.
+
+### Farmer crop scenario
+
+A farmer must decide which crop type to plant. The future weather is uncertain, so the profit depends on what weather condition occurs after the planting decision is made.
+
+The farmer must choose between:
+
+- **Corn**
+- **Rice**
+- **Wheat**
+
+The possible weather conditions are:
+
+- **Good**
+- **Average**
+- **Poor**
+
+So the decision variables relate to the crop choice and the profit each crop can generate under different weather conditions.
+
+#### Decision structure
+
+```text
+                                                 Farmer must choose crop type
+                                                                         |
+                         -------------------------------------------------
+                         |                     |                         |
+                     Corn                  Rice                      Wheat
+                         |                     |                         |
+            ----------------     ----------------         ----------------
+            |      |      |     |      |      |         |      |      |
+        Good   Average Poor  Good   Average Poor      Good   Average Poor
+     10000    6000   2000  7000   15000   1000     12000   4000   8000
+```
+
+This is the same problem seen as a decision tree: the farmer chooses first, and nature reveals the weather afterwards.
+
+#### Payoff matrix in the scenario
+
+After investigation, the farmer prepares the following payoff table. The values are profits in **NOK**.
+
+| Crop type | Good weather | Average weather | Poor weather |
+|-----------|--------------|-----------------|--------------|
+| Corn | 10 000 | 6 000 | 2 000 |
+| Rice | 7 000 | 15 000 | 1 000 |
+| Wheat | 12 000 | 4 000 | 8 000 |
+
+This table will guide the discussion for the rest of the lesson.
+
+#### Visual matrix view
+
+```text
+                                        WEATHER CONDITIONS
+                            ---------------------------------
+                                Good       Average        Poor
+                            ---------------------------------
+Corn          10 000        6 000        2 000
+Rice           7 000       15 000        1 000
+Wheat         12 000        4 000        8 000
+```
+
+#### Interactive-style reading guide
+
+Read the table like this:
+
+1. choose one crop row
+2. move across the different weather states
+3. compare how stable or risky the profits look
+4. apply a rule to decide which crop should be selected
+
+Each decision criterion below will use the same table, but each rule will look at it differently.
+
+### 1. The Maximax optimistic rule
+
+The first criterion we will look at is the **Maximax criterion**, also called the **optimistic criterion**.
+
+Using this criterion, we choose the scenario that generates the **best possible outcome**. This means we only look at which action can create the largest profit.
+
+With this rule, the decision-maker does **not** focus on possible negative consequences. The main question is simply:
+
+"Which choice gives me the highest payoff if everything goes well?"
+
+The Maximax criterion therefore represents a **best-case approach**. It suits a decision-maker who is highly optimistic and willing to ignore much of the downside risk.
+
+The best possible outcomes for each crop are summarised below.
+
+| Crop type | Good | Average | Poor | Best payoff |
+|-----------|------|---------|------|-------------|
+| Corn | 10 000 | 6 000 | 2 000 | 10 000 |
+| Rice | 7 000 | 15 000 | 1 000 | 15 000 |
+| Wheat | 12 000 | 4 000 | 8 000 | 12 000 |
+
+From this table:
+
+- the best payoff for planting **corn** is **10 000**, which occurs in **good weather**
+- the best payoff for planting **rice** is **15 000**, which occurs in **average weather**
+- the best payoff for planting **wheat** is **12 000**, which occurs in **good weather**
+
+The **best of the best** is therefore **rice**, because **15 000** is the highest single payoff in the entire table.
+
+**Choice:** Rice
+
+**Why?** The Maximax rule recommends rice because it has the largest maximum payoff, even though the decision-maker is ignoring the risks attached to weaker weather outcomes.
+
+#### Explain why Rice is the solution
+
+Rice is the solution under the Maximax rule because this criterion compares only the **largest value in each row** and then picks the highest one overall.
+
+```text
+Best payoff by crop:
+
+Corn  -> 10 000
+Rice  -> 15 000
+Wheat -> 12 000
+
+Highest value overall -> 15 000
+Decision -> Rice
+```
+
+This means that if the farmer is optimistic and wants to chase the highest possible profit, rice is the preferred choice.
+
+**Interactive walkthrough:**
+
+```text
+Step 1: Find the largest value in each row
+Corn  -> 10 000
+Rice  -> 15 000
+Wheat -> 12 000
+
+Step 2: Compare those row maximums
+Largest maximum = 15 000
+
+Decision: Choose Rice
+```
+
+### 2. The Maximin rule of Savage
+
+The next rule we cover is **Wald's Maximin criterion**. It is also called the **pessimistic criterion**, the **worst-case scenario criterion**, or sometimes simply the **minimax criterion** in introductory decision analysis.
+
+With this decision rule, we choose the action that gives the **best outcome in the worst-case scenario**.
+
+So, for every possible action:
+
+1. find the **minimum payoff**
+2. compare those minimum values
+3. choose the **largest** among them
+
+Unlike the Maximax criterion, which focuses on the best possible result, the Maximin criterion focuses on protection against the worst possible result.
+
+The decision-maker using this rule is cautious and gives the greatest weight to downside risk.
+
+The worst possible outcomes for each crop are summarised below.
+
+| Crop type | Good | Average | Poor | Worst payoff |
+|-----------|------|---------|------|--------------|
+| Corn | 10 000 | 6 000 | 2 000 | 2 000 |
+| Rice | 7 000 | 15 000 | 1 000 | 1 000 |
+| Wheat | 12 000 | 4 000 | 8 000 | 4 000 |
+
+Using the same payoff table as before, we now focus only on the smallest value in each row.
+
+- the worst payoff for planting **corn** is **2 000**, which is associated with **poor weather**
+- the worst payoff for planting **rice** is **1 000**, which is associated with **poor weather**
+- the worst payoff for planting **wheat** is **4 000**, which is associated with **average weather**
+
+From these values, the **best out of the worst** is **wheat**, because **4 000** is the highest minimum payoff.
+
+**Choice:** Wheat
+
+**Why?** Maximin is pessimistic or cautious because it assumes the worst outcome might happen and then chooses the option that performs best under that worst-case condition.
+
+#### Explain why Wheat is the solution
+
+Wheat is the solution under the Maximin rule because this criterion compares only the **lowest payoff in each row** and then selects the largest of those low values.
+
+```text
+Worst payoff by crop:
+
+Corn  -> 2 000
+Rice  -> 1 000
+Wheat -> 4 000
+
+Highest minimum value -> 4 000
+Decision -> Wheat
+```
+
+This means that if the farmer wants the safest protection against poor outcomes, wheat is the preferred choice.
+
+**Interactive walkthrough:**
+
+```text
+Step 1: Find the smallest value in each row
+Corn  -> 2 000
+Rice  -> 1 000
+Wheat -> 4 000
+
+Step 2: Compare those row minimums
+Largest minimum = 4 000
+
+Decision: Choose Wheat
+```
+
+### 3. The Realistic rule of Hurwicz
+
+The previous two rules focused on the extremes.
+
+- **Maximax** assumes the decision-maker is fully optimistic.
+- **Wald's Maximin** assumes the decision-maker is fully pessimistic.
+
+But many real decision-makers are somewhere in between. They want a rule that balances **risk** and **reward**.
+
+That is exactly what **Hurwicz's criterion** does.
+
+Hurwicz introduces a parameter called **$\alpha$ (alpha)**, which measures the decision-maker's level of optimism.
+
+- if $\alpha = 0\%$, the rule reduces to **Wald's Maximin criterion**
+- if $\alpha = 100\%$, the rule reduces to the **Maximax criterion**
+- if $\alpha$ is somewhere between those values, the rule mixes optimism and caution
+
+This makes Hurwicz a more realistic and level-headed decision rule than either pure optimism or pure pessimism.
+
+#### Hurwicz formula
+
+For each action, we calculate a weighted average of:
+
+- the **minimum payoff**
+- the **maximum payoff**
+
+using the formula:
+
+$$
+    ext{Hurwicz score} = \alpha \cdot \text{maximum payoff} + (1-\alpha) \cdot \text{minimum payoff}
+$$
+
+#### Visual intuition: optimism scale
+
+```text
+0% optimism ------------------------------------------------------ 100% optimism
+|                                                                    |
+Fully pessimistic                                                    Fully optimistic
+Use only worst-case result                                           Use only best-case result
+Equivalent to Wald                                                   Equivalent to Maximax
+
+Hurwicz lives between these extremes.
+```
+
+#### Best and worst values for each crop
+
+| Crop type | Minimum payoff | Maximum payoff |
+|-----------|----------------|----------------|
+| Corn | 2 000 | 10 000 |
+| Rice | 1 000 | 15 000 |
+| Wheat | 4 000 | 12 000 |
+
+This means:
+
+- Corn ranges from **2 000** to **10 000**
+- Rice ranges from **1 000** to **15 000**
+- Wheat ranges from **4 000** to **12 000**
+
+#### Hurwicz table across several alpha values
+
+| Crop type | Good | Average | Poor | Maximin 0% | 25% | 50% | 75% | Maximax 100% |
+|-----------|------|---------|------|------------|-----|-----|-----|--------------|
+| Corn | 10 000 | 6 000 | 2 000 | 2 000 | 4 000 | 6 000 | 8 000 | 10 000 |
+| Rice | 7 000 | 15 000 | 1 000 | 1 000 | 4 500 | 8 000 | 11 500 | 15 000 |
+| Wheat | 12 000 | 4 000 | 8 000 | 4 000 | 6 000 | 8 000 | 10 000 | 12 000 |
+
+This table shows how the decision changes as the decision-maker becomes more optimistic.
+
+#### Case 1: $\alpha = 25\%$
+
+At $\alpha = 25\%$, the decision-maker is still mostly cautious. The formula gives 25% weight to the best payoff and 75% weight to the worst payoff.
+
+- Corn: $0.25 \cdot 10\,000 + 0.75 \cdot 2\,000 = 4\,000$
+- Rice: $0.25 \cdot 15\,000 + 0.75 \cdot 1\,000 = 4\,500$
+- Wheat: $0.25 \cdot 12\,000 + 0.75 \cdot 4\,000 = 6\,000$
+
+**Decision at 25% optimism:** Wheat
+
+**Why?** The decision-maker is still giving most of the weight to the worst-case outcome, so wheat remains strongest.
+
+**Visual calculation view:**
+
+```text
+alpha = 25%
+
+Corn  -> 25% of 10 000 + 75% of 2 000 = 4 000
+Rice  -> 25% of 15 000 + 75% of 1 000 = 4 500
+Wheat -> 25% of 12 000 + 75% of 4 000 = 6 000
+
+Highest Hurwicz score -> Wheat
+```
+
+#### Case 2: $\alpha = 50\%$
+
+At $\alpha = 50\%$, the decision-maker gives equal weight to optimism and pessimism.
+
+- Corn: $0.50 \cdot 10\,000 + 0.50 \cdot 2\,000 = 6\,000$
+- Rice: $0.50 \cdot 15\,000 + 0.50 \cdot 1\,000 = 8\,000$
+- Wheat: $0.50 \cdot 12\,000 + 0.50 \cdot 4\,000 = 8\,000$
+
+**Decision at 50% optimism:** Rice and Wheat tie
+
+**Why?** At this balanced level, both rice and wheat produce the same Hurwicz score of **8 000**.
+
+**Interactive interpretation:**
+
+```text
+alpha = 50%
+
+Corn  -> 6 000
+Rice  -> 8 000
+Wheat -> 8 000
+
+Result: tie between Rice and Wheat
+```
+
+This is useful to show that Hurwicz does not always give one unique answer. Sometimes two options can look equally attractive at a certain level of optimism.
+
+#### Case 3: $\alpha = 75\%$
+
+At $\alpha = 75\%$, the decision-maker is much more optimistic. The formula gives 75% weight to the maximum payoff and only 25% weight to the minimum payoff.
+
+- Corn: $0.75 \cdot 10\,000 + 0.25 \cdot 2\,000 = 8\,000$
+- Rice: $0.75 \cdot 15\,000 + 0.25 \cdot 1\,000 = 11\,500$
+- Wheat: $0.75 \cdot 12\,000 + 0.25 \cdot 4\,000 = 10\,000$
+
+**Decision at 75% optimism:** Rice
+
+**Why?** As optimism increases, the very high best-case payoff of rice becomes more influential than its poor worst-case payoff.
+
+**Visual calculation view:**
+
+```text
+alpha = 75%
+
+Corn  -> 8 000
+Rice  -> 11 500
+Wheat -> 10 000
+
+Highest Hurwicz score -> Rice
+```
+
+#### Interactive-style summary
+
+You can think of Hurwicz like an adjustable dial:
+
+```text
+If optimism is low   -> the rule behaves more like Wald -> safer option wins
+If optimism is medium-> the rule balances both extremes -> tie or balanced choice may appear
+If optimism is high  -> the rule behaves more like Maximax -> high-upside option wins
+```
+
+For this farmer example:
+
+- low optimism points toward **Wheat**
+- medium optimism creates a tie between **Rice** and **Wheat**
+- high optimism points toward **Rice**
+
+#### Why Hurwicz is a practical rule
+
+Hurwicz's decision rule takes more of a balance between risk and reward and is therefore a more practical approach than always being fully optimistic or fully pessimistic.
+
+It is useful because it lets the decision-maker express a real attitude toward uncertainty rather than pretending the future is either always best or always worst.
+
+#### Simple explanation of the advanced-looking table
+
+If the large table looks advanced, read it one column at a time:
+
+1. `0%` means use only the **worst payoff**
+2. `25%` means use 25% of the **best payoff** and 75% of the **worst payoff**
+3. `50%` means give equal weight to both
+4. `75%` means mostly trust the **best payoff**
+5. `100%` means use only the **best payoff**
+
+So the table is really showing how the preferred crop changes as the farmer becomes more optimistic.
+
+### 4. The Minimax regret rule of Savage
+
+This decision rule identifies the **greatest regret for each action** and then recommends the final decision that is the **least regretful of those greatest regrets**.
+
+In other words, the decision-maker wants to **minimise the maximum regret**.
+
+This rule is useful when there is limited information available and the decision-maker wants to be cautious about how bad it might feel to discover later that a better choice could have been made.
+
+We use the same payoff table as in the earlier rules.
+
+#### Original payoff table
+
+| Crop type | Good | Average | Poor |
+|-----------|------|---------|------|
+| Corn | 10 000 | 6 000 | 2 000 |
+| Rice | 7 000 | 15 000 | 1 000 |
+| Wheat | 12 000 | 4 000 | 8 000 |
+
+#### Step 1: Find the best payoff in each weather state
+
+For each column, identify the best possible payoff:
+
+- Good weather -> **12 000** from Wheat
+- Average weather -> **15 000** from Rice
+- Poor weather -> **8 000** from Wheat
+
+These column maximums are the reference points used to calculate regret.
+
+#### Step 2: Construct the regret matrix
+
+To calculate regret, subtract each payoff from the **maximum payoff in that weather state**.
+
+So:
+
+$$
+	ext{Regret} = \text{best payoff in the column} - \text{actual payoff}
+$$
+
+That gives us the regret matrix below.
+
+| Crop type | Good regret | Average regret | Poor regret |
+|-----------|-------------|----------------|-------------|
+| Corn | 2 000 | 9 000 | 6 000 |
+| Rice | 5 000 | 0 | 7 000 |
+| Wheat | 0 | 11 000 | 0 |
+
+#### Visual regret construction
+
+```text
+Best by column:
+Good    -> 12 000
+Average -> 15 000
+Poor    -> 8 000
+
+Regret = column best - actual payoff
+
+Corn  : 12 000-10 000 = 2 000   | 15 000-6 000  = 9 000  | 8 000-2 000 = 6 000
+Rice  : 12 000-7 000  = 5 000   | 15 000-15 000 = 0      | 8 000-1 000 = 7 000
+Wheat : 12 000-12 000 = 0       | 15 000-4 000  = 11 000 | 8 000-8 000 = 0
+```
+
+#### Step 3: Find the maximum regret in each row
+
+Now take the **largest regret** from each crop row.
+
+| Crop type | Good regret | Average regret | Poor regret | Maximum regret |
+|-----------|-------------|----------------|-------------|----------------|
+| Corn | 2 000 | 9 000 | 6 000 | 9 000 |
+| Rice | 5 000 | 0 | 7 000 | 7 000 |
+| Wheat | 0 | 11 000 | 0 | 11 000 |
+
+#### Step 4: Apply the minimax regret rule
+
+The minimax regret rule says:
+
+1. take the maximum regret for each action
+2. choose the action with the **smallest** of those maximum regrets
+
+So we compare:
+
+- Corn -> 9 000
+- Rice -> 7 000
+- Wheat -> 11 000
+
+The smallest maximum regret is **7 000**, which belongs to **Rice**.
+
+**Choice:** Rice
+
+#### Why is Rice the solution and associated with 7 000?
+
+Rice is the solution because the largest regret the farmer could suffer by choosing rice is **7 000**, and that is smaller than the largest regret for corn or wheat.
+
+That means:
+
+- if the farmer chooses **corn**, the worst regret is **9 000**
+- if the farmer chooses **rice**, the worst regret is **7 000**
+- if the farmer chooses **wheat**, the worst regret is **11 000**
+
+The minimax regret rule therefore picks **rice**, because it gives the most protection against the biggest possible missed opportunity.
+
+**Interactive walkthrough:**
+
+```text
+Step 1: Build the regret matrix
+Step 2: Find the largest regret in each row
+
+Corn  -> max regret = 9 000
+Rice  -> max regret = 7 000
+Wheat -> max regret = 11 000
+
+Step 3: Choose the smallest of these values
+
+Smallest maximum regret = 7 000
+Decision -> Rice
+```
+
+This is why rice is associated with **7 000**. The number is not a profit. It is the **largest regret value** for the rice decision, and it is lower than the largest regret values for the other crops.
+
+### 5. The Average payoff rule of Laplace
+
+The **Laplace criterion**, also known as the **principle of insufficient reason** or the **principle of insufficient knowledge**, is used when the decision-maker has limited information about the probabilities of the different future outcomes.
+
+This rule assumes that all outcomes should be treated as **equally likely**.
+
+If there are $n$ possible future conditions, then the Laplace rule gives each one a probability of:
+
+$$
+\frac{1}{n}
+$$
+
+In this crop example, there are three weather conditions:
+
+- Good
+- Average
+- Poor
+
+So under the Laplace criterion, each weather condition gets the same probability:
+
+$$
+\frac{1}{3}
+$$
+
+This is a **risk-neutral** approach, because the decision-maker does not assume that one weather state is more important or more likely than another.
+
+#### Crop profit payoff table
+
+| Crop type | Good | Average | Poor |
+|-----------|------|---------|------|
+| Corn | 10 000 | 6 000 | 2 000 |
+| Rice | 7 000 | 15 000 | 1 000 |
+| Wheat | 12 000 | 4 000 | 8 000 |
+
+#### Step 1: Add the payoffs in each row
+
+For each crop, add the three possible profit values.
+
+- Corn: $10\,000 + 6\,000 + 2\,000 = 18\,000$
+- Rice: $7\,000 + 15\,000 + 1\,000 = 23\,000$
+- Wheat: $12\,000 + 4\,000 + 8\,000 = 24\,000$
+
+#### Step 2: Divide by the number of weather conditions
+
+Because there are three equally likely weather states, divide each total by 3.
+
+- Corn: $18\,000 / 3 = 6\,000$
+- Rice: $23\,000 / 3 = 7\,667$
+- Wheat: $24\,000 / 3 = 8\,000$
+
+#### Laplace summary table
+
+| Crop type | Good | Average | Poor | Laplace average |
+|-----------|------|---------|------|-----------------|
+| Corn | 10 000 | 6 000 | 2 000 | 6 000 |
+| Rice | 7 000 | 15 000 | 1 000 | 7 667 |
+| Wheat | 12 000 | 4 000 | 8 000 | 8 000 |
+
+**Choice:** Wheat
+
+#### Why is Wheat the solution according to the Laplace criterion?
+
+Wheat is the solution because its **average payoff** is the highest when all weather conditions are treated equally.
+
+The Laplace rule does not look only at the best payoff or only at the worst payoff. Instead, it asks:
+
+"If all weather conditions are equally possible, which crop gives the best average result?"
+
+The results are:
+
+- Corn -> **6 000**
+- Rice -> **7 667**
+- Wheat -> **8 000**
+
+Since **8 000** is the largest average payoff, the Laplace criterion recommends **Wheat**.
+
+#### Interactive walkthrough
+
+```text
+Step 1: Treat all weather states as equally likely
+
+Good    = 1/3
+Average = 1/3
+Poor    = 1/3
+
+Step 2: Average each crop row
+
+Corn  -> (10 000 + 6 000 + 2 000) / 3 = 6 000
+Rice  -> ( 7 000 + 15 000 + 1 000) / 3 = 7 667
+Wheat -> (12 000 + 4 000 + 8 000) / 3 = 8 000
+
+Step 3: Choose the highest average
+
+Highest Laplace value = 8 000
+Decision -> Wheat
+```
+
+#### Why Laplace is useful
+
+Laplace is useful when the decision-maker cannot justify using different probabilities for the future states.
+
+Instead of guessing which weather condition is more likely, the rule applies equal treatment to all of them. This makes the decision more objective when reliable probability data is missing.
+
+### 6. The Expected payoff rule
+
+The **Expected Payoff criterion** calculates the expected value of each decision outcome and selects the option with the **highest expected value**.
+
+The expected value is calculated by:
+
+1. multiplying the probability of each outcome by its associated payoff
+2. summing those weighted values for each decision alternative
+
+This rule allows the decision-maker to compare decision alternatives while explicitly incorporating probabilities into the decision process.
+
+Let us assume the following weather probabilities:
+
+- Good weather = **0.2** or **20%**
+- Average weather = **0.5** or **50%**
+- Poor weather = **0.3** or **30%**
+
+#### Original payoff table
+
+| Crop type | Good | Average | Poor |
+|-----------|------|---------|------|
+| Corn | 10 000 | 6 000 | 2 000 |
+| Rice | 7 000 | 15 000 | 1 000 |
+| Wheat | 12 000 | 4 000 | 8 000 |
+
+#### Expected payoff table
+
+| Crop type | Good | Average | Poor | Expected payoff |
+|-----------|------|---------|------|-----------------|
+| Corn | 10 000 | 6 000 | 2 000 | 5 600 |
+| Rice | 7 000 | 15 000 | 1 000 | 9 200 |
+| Wheat | 12 000 | 4 000 | 8 000 | 6 800 |
+| Probability | 0.2 | 0.5 | 0.3 |  |
+
+#### Step-by-step calculations
+
+The expected payoff for planting **corn** is:
+
+$$
+0.2 \cdot 10\,000 + 0.5 \cdot 6\,000 + 0.3 \cdot 2\,000 = 5\,600
+$$
+
+The expected payoff for planting **rice** is:
+
+$$
+0.2 \cdot 7\,000 + 0.5 \cdot 15\,000 + 0.3 \cdot 1\,000 = 9\,200
+$$
+
+The expected payoff for planting **wheat** is:
+
+$$
+0.2 \cdot 12\,000 + 0.5 \cdot 4\,000 + 0.3 \cdot 8\,000 = 6\,800
+$$
+
+**Choice:** Rice
+
+#### Why is Rice the decision variant that maximises the expected payoff?
+
+Rice is the recommended decision because its expected payoff, **9 200**, is higher than the expected payoff for both corn and wheat.
+
+The expected payoff rule does not only look at the highest profit or the worst-case result. Instead, it asks:
+
+"When the probabilities of the weather conditions are taken into account, which crop gives the highest weighted average payoff?"
+
+The results are:
+
+- Corn -> **5 600**
+- Rice -> **9 200**
+- Wheat -> **6 800**
+
+Since **9 200** is the highest of these three values, **rice** is the decision variant that maximises the expected payoff.
+
+#### Interactive walkthrough
+
+```text
+Step 1: Use the probability model
+
+Good    = 0.2
+Average = 0.5
+Poor    = 0.3
+
+Step 2: Multiply each payoff by its probability
+
+Corn  -> 0.2(10 000) + 0.5(6 000) + 0.3(2 000) = 5 600
+Rice  -> 0.2(7 000)  + 0.5(15 000) + 0.3(1 000) = 9 200
+Wheat -> 0.2(12 000) + 0.5(4 000)  + 0.3(8 000) = 6 800
+
+Step 3: Choose the highest expected payoff
+
+Highest expected payoff = 9 200
+Decision -> Rice
+```
+
+#### Simulation-style probability view
+
+```text
+Weather model:
+Good weather    -> 20%
+Average weather -> 50%
+Poor weather    -> 30%
+
+Weighted payoff scores:
+Corn  -> 5 600
+Rice  -> 9 200
+Wheat -> 6 800
+
+Decision dashboard result:
+Rice performs best once the probabilities are included.
+```
+
+This is why the expected payoff criterion recommends planting **rice**.
+
+### 7. The Expected loss of opportunity rule
+
+The last rule we cover in this lesson is the **Expected Loss of Opportunity criterion**.
+
+This criterion assesses the quality of a decision by considering the potential **losses** associated with different outcomes. In practice, these losses are expressed through the **regret values** from Savage's minimax regret approach.
+
+The rule helps evaluate a decision by combining:
+
+- the probability of each outcome
+- the regret attached to that outcome
+
+As with the previous rule, we use the same probability values:
+
+- Good weather = **0.2**
+- Average weather = **0.5**
+- Poor weather = **0.3**
+
+#### Regret table
+
+We use the regret values calculated from the minimax regret section.
+
+| Crop type | Good regret | Average regret | Poor regret | Maximum regret |
+|-----------|-------------|----------------|-------------|----------------|
+| Corn | 2 000 | 9 000 | 6 000 | 9 000 |
+| Rice | 5 000 | 0 | 7 000 | 7 000 |
+| Wheat | 0 | 11 000 | 0 | 11 000 |
+
+#### Expected loss of opportunity table
+
+| Crop type | Good | Average | Poor | Expected regret |
+|-----------|------|---------|------|-----------------|
+| Corn | 400 | 4 500 | 1 800 | 6 700 |
+| Rice | 1 000 | 0 | 2 100 | 3 100 |
+| Wheat | 0 | 5 500 | 0 | 5 500 |
+| Probability | 0.2 | 0.5 | 0.3 |  |
+
+#### Step-by-step calculations
+
+The expected regret for planting **corn** is:
+
+$$
+0.2 \cdot 2\,000 + 0.5 \cdot 9\,000 + 0.3 \cdot 6\,000 = 6\,700
+$$
+
+The expected regret for planting **rice** is:
+
+$$
+0.2 \cdot 5\,000 + 0.5 \cdot 0 + 0.3 \cdot 7\,000 = 3\,100
+$$
+
+The expected regret for planting **wheat** is:
+
+$$
+0.2 \cdot 0 + 0.5 \cdot 11\,000 + 0.3 \cdot 0 = 5\,500
+$$
+
+**Choice:** Rice
+
+#### Explain why the decision variant which minimises the expected regret is to plant Rice
+
+Rice is the recommended decision because its expected regret, **3 100**, is lower than the expected regret for both corn and wheat.
+
+The expected loss of opportunity rule does not try to maximise profit directly. Instead, it asks:
+
+"Which crop minimises the average regret of not having chosen the best crop for the weather that eventually occurs?"
+
+The results are:
+
+- Corn -> **6 700**
+- Rice -> **3 100**
+- Wheat -> **5 500**
+
+Since **3 100** is the smallest of the three values, the expected loss of opportunity criterion recommends **Rice**.
+
+This means rice is the crop that gives the smallest expected missed opportunity once the probabilities of the weather conditions are taken into account.
+
+#### Interactive regret-weighting walkthrough
+
+```text
+Step 1: Start with the regret matrix
+
+Corn  -> 2 000, 9 000, 6 000
+Rice  -> 5 000, 0, 7 000
+Wheat -> 0, 11 000, 0
+
+Step 2: Apply the probabilities 0.2, 0.5, 0.3
+
+Corn  -> 0.2(2 000) + 0.5(9 000) + 0.3(6 000) = 6 700
+Rice  -> 0.2(5 000) + 0.5(0)     + 0.3(7 000) = 3 100
+Wheat -> 0.2(0)     + 0.5(11 000)+ 0.3(0)     = 5 500
+
+Step 3: Choose the smallest expected regret
+
+Smallest expected regret = 3 100
+Decision -> Rice
+```
+
+#### Why this criterion is useful
+
+This rule is useful when the decision-maker wants to reduce the expected cost of choosing the wrong option.
+
+Rather than focusing on direct payoff, it focuses on avoiding future disappointment and lost opportunity. That is why it is closely connected to regret analysis.
+
+### Comparing the criteria
+
+| Criterion | Main idea | Decision attitude | Best crop |
+|-----------|-----------|-------------------|-----------|
+| Maximax | Choose the highest possible payoff | Optimistic | Rice |
+| Maximin | Choose the best worst-case payoff | Very cautious | Wheat |
+| Hurwicz | Balance best and worst outcomes | Realistic / balanced | Wheat |
+| Minimax regret | Minimise the largest regret | Regret-avoiding | Rice |
+| Laplace | Average all payoffs equally | Neutral under uncertainty | Wheat |
+| Expected payoff | Use weighted payoffs by probability | Probability-based | Rice |
+| Expected loss of opportunity | Minimise weighted regret | Probability-based regret focus | Rice |
+
+### Decision dashboard view
+
+```text
+FARM DECISION DASHBOARD
+
+Payoff matrix loaded: Corn / Rice / Wheat
+Weather states loaded: Good / Average / Poor
+
+Rule results:
+- Maximax                  -> Rice
+- Maximin                  -> Wheat
+- Hurwicz (alpha = 0.6)    -> Wheat
+- Minimax regret           -> Rice
+- Laplace average payoff   -> Wheat
+- Expected payoff          -> Rice
+- Expected loss opportunity-> Rice
+
+Interpretation:
+- Rice wins under optimistic and probability-based thinking
+- Wheat wins under cautious and average-based thinking
+- The final choice depends on risk attitude and belief about weather probabilities
+```
+
+### The Task
+
+#### Question
+
+You have recently acquired a new business, and your business requires the services of a courier company to deliver goods promptly during different weather conditions.
+
+The table below shows what each delivery company will charge under **good**, **average**, and **poor** weather conditions.
+
+#### Courier cost table
+
+| Delivery company | Good | Average | Poor |
+|------------------|------|---------|------|
+| UberFreight | 19 000 | 9 000 | 5 000 |
+| CourierIT | 7 000 | 15 000 | 8 000 |
+| Deliver-MAN | 4 000 | 6 000 | 11 000 |
+
+#### Important interpretation
+
+This is a **cost table**, not a profit table.
+
+That means a better outcome means a **lower charge**, not a higher one.
+
+So when applying the decision criteria, we interpret them in a **cost-minimisation** form:
+
+- optimistic thinking looks for the **lowest best-case cost**
+- pessimistic thinking protects against the **highest worst-case cost**
+- regret means the extra cost paid compared with the cheapest option in each weather state
+
+### Worked solution using all criteria
+
+#### 1. Maximax criterion interpreted for costs
+
+For a cost table, the optimistic idea is to choose the option with the **lowest possible cost** in the best case.
+
+Best-case cost for each courier:
+
+- UberFreight -> 5 000
+- CourierIT -> 7 000
+- Deliver-MAN -> 4 000
+
+**Decision:** Deliver-MAN
+
+**Why?** Deliver-MAN offers the lowest best-case charge, so it suits a decision-maker who is optimistic and focuses on the most favourable possible outcome.
+
+#### 2. Wald's criterion
+
+For a cost table, Wald's pessimistic rule chooses the option with the **smallest worst-case cost**.
+
+Worst-case cost for each courier:
+
+- UberFreight -> 19 000
+- CourierIT -> 15 000
+- Deliver-MAN -> 11 000
+
+**Decision:** Deliver-MAN
+
+**Why?** Deliver-MAN protects the business best in the worst weather-related cost scenario because its maximum cost is the smallest.
+
+#### 3. Savage's minimax regret criterion
+
+First, find the **lowest cost** in each weather condition:
+
+- Good -> 4 000
+- Average -> 6 000
+- Poor -> 5 000
+
+Now calculate regret as:
+
+$$
+	ext{Regret} = \text{actual cost} - \text{lowest cost in the column}
+$$
+
+| Delivery company | Good regret | Average regret | Poor regret | Maximum regret |
+|------------------|-------------|----------------|-------------|----------------|
+| UberFreight | 15 000 | 3 000 | 0 | 15 000 |
+| CourierIT | 3 000 | 9 000 | 3 000 | 9 000 |
+| Deliver-MAN | 0 | 0 | 6 000 | 6 000 |
+
+**Decision:** Deliver-MAN
+
+**Why?** Deliver-MAN has the smallest maximum regret, so it minimises the biggest possible missed opportunity in cost terms.
+
+#### 4. Laplace criterion
+
+Treat all weather conditions as equally likely and calculate the average cost.
+
+- UberFreight -> $(19\,000 + 9\,000 + 5\,000) / 3 = 11\,000$
+- CourierIT -> $(7\,000 + 15\,000 + 8\,000) / 3 = 10\,000$
+- Deliver-MAN -> $(4\,000 + 6\,000 + 11\,000) / 3 = 7\,000$
+
+**Decision:** Deliver-MAN
+
+**Why?** Deliver-MAN has the lowest average cost when all weather states are treated equally.
+
+#### 5. Hurwicz criterion with $\alpha = 0\%, 25\%, 50\%, 75\%, 100\%$
+
+For a cost table, Hurwicz balances the **minimum cost** and the **maximum cost**.
+
+We use:
+
+$$
+	ext{Hurwicz cost score} = \alpha \cdot \text{minimum cost} + (1-\alpha) \cdot \text{maximum cost}
+$$
+
+Choose the company with the **smallest** Hurwicz score.
+
+| Delivery company | Min cost | Max cost | 0% | 25% | 50% | 75% | 100% |
+|------------------|----------|----------|----|-----|-----|-----|------|
+| UberFreight | 5 000 | 19 000 | 19 000 | 15 500 | 12 000 | 8 500 | 5 000 |
+| CourierIT | 7 000 | 15 000 | 15 000 | 13 000 | 11 000 | 9 000 | 7 000 |
+| Deliver-MAN | 4 000 | 11 000 | 11 000 | 9 250 | 7 500 | 5 750 | 4 000 |
+
+**Decisions by alpha:**
+
+- $\alpha = 0\%$ -> Deliver-MAN
+- $\alpha = 25\%$ -> Deliver-MAN
+- $\alpha = 50\%$ -> Deliver-MAN
+- $\alpha = 75\%$ -> Deliver-MAN
+- $\alpha = 100\%$ -> Deliver-MAN
+
+**Why?** Deliver-MAN remains the strongest option across all optimism levels because it combines the lowest minimum cost with the lowest maximum cost among the three companies.
+
+#### 6. Expected payoff criterion interpreted as expected cost
+
+Use probabilities:
+
+- Good = 0.2
+- Average = 0.5
+- Poor = 0.3
+
+Calculate the expected cost for each company:
+
+- UberFreight -> $0.2 \cdot 19\,000 + 0.5 \cdot 9\,000 + 0.3 \cdot 5\,000 = 9\,800$
+- CourierIT -> $0.2 \cdot 7\,000 + 0.5 \cdot 15\,000 + 0.3 \cdot 8\,000 = 11\,300$
+- Deliver-MAN -> $0.2 \cdot 4\,000 + 0.5 \cdot 6\,000 + 0.3 \cdot 11\,000 = 7\,100$
+
+**Decision:** Deliver-MAN
+
+**Why?** Once the weather probabilities are included, Deliver-MAN gives the lowest expected cost.
+
+#### 7. Expected loss of opportunity criterion
+
+Use the regret table from Savage's criterion and apply the same probabilities:
+
+- UberFreight -> $0.2 \cdot 15\,000 + 0.5 \cdot 3\,000 + 0.3 \cdot 0 = 4\,500$
+- CourierIT -> $0.2 \cdot 3\,000 + 0.5 \cdot 9\,000 + 0.3 \cdot 3\,000 = 6\,000$
+- Deliver-MAN -> $0.2 \cdot 0 + 0.5 \cdot 0 + 0.3 \cdot 6\,000 = 1\,800$
+
+**Decision:** Deliver-MAN
+
+**Why?** Deliver-MAN minimises the expected regret, meaning it gives the smallest expected extra cost compared with the cheapest courier under each weather condition.
+
+### Final insight summary
+
+| Criterion | Recommended company | Insight |
+|-----------|---------------------|---------|
+| Maximax | Deliver-MAN | Best if the business focuses on the lowest possible best-case cost |
+| Wald | Deliver-MAN | Best if the business wants the strongest worst-case protection |
+| Savage | Deliver-MAN | Best if the business wants to minimise maximum regret |
+| Laplace | Deliver-MAN | Best if all weather conditions are treated equally |
+| Hurwicz | Deliver-MAN | Best across all optimism levels in this case |
+| Expected cost | Deliver-MAN | Best when probabilities 20%, 50%, 30% are included |
+| Expected loss of opportunity | Deliver-MAN | Best when the business wants to minimise expected regret |
+
+### Final recommendation
+
+Using all of the decision criteria, the strongest overall recommendation is **Deliver-MAN**.
+
+#### Why Deliver-MAN is the best overall choice
+
+Deliver-MAN is recommended because:
+
+- it has the **lowest best-case cost**
+- it has the **lowest worst-case cost**
+- it gives the **lowest average cost**
+- it gives the **lowest expected cost** under the stated probabilities
+- it also gives the **lowest regret-based scores**
+
+This makes Deliver-MAN the most consistently attractive option across optimistic, cautious, balanced, probability-based, and regret-based decision criteria.
+
+### What Did I Learn in This Lesson?
+
+This lesson provided the following insights:
+
+- the **Maximax optimistic rule** is used when the decision-maker is extremely optimistic and wants to maximise the potential payoff without focusing on probabilities or potential losses
+- the **Maximin rule of Wald** is used when the decision-maker wants to protect against the worst-case scenario and maximise the minimum payoff
+- the **realistic rule of Hurwicz** is used when the decision-maker wants to balance optimistic and pessimistic scenarios by considering both possible gains and possible losses
+- the **minimax regret rule of Savage** is used when the decision-maker wants to minimise the maximum possible regret
+- the **average payoff rule of Laplace** is used when the decision-maker wants to treat all outcomes equally and make a decision based on average payoff
+- the **expected payoff rule** is used when the decision-maker wants to include both the probabilities of different outcomes and their associated payoffs
+- the **expected loss of opportunity rule** is used when the decision-maker wants to decide based on expected regret, taking into account both probabilities and missed opportunities
+
+#### Lesson takeaway
+
+The main lesson is that the same payoff table can lead to different decisions depending on the rule that is applied.
+
+- some rules focus on the **best possible outcome**
+- some focus on the **worst possible outcome**
+- some balance **risk and reward**
+- some use **probabilities**
+- some use **regret** instead of direct payoff
+
+That is why decision-making criteria are important. They help analysts explain not only which option is selected, but also why that option is preferred under a specific view of uncertainty.
+
+### How to use this in an exam
+
+If you get an exam question from Lesson `1.3`, do not only name the criterion. A strong answer usually needs four parts:
+
+1. define the criterion clearly
+2. explain what type of decision-maker it suits
+3. show how the calculation or logic works
+4. apply it to the payoff table or scenario
+
+That means if you are asked about Maximax, Wald, Hurwicz, Savage, Laplace, expected payoff, or expected loss of opportunity, you should show both the **meaning of the rule** and the **decision it produces**.
+
+#### What exam answers should include
+
+- the name of the criterion
+- the logic behind the rule
+- whether it focuses on payoff, average, regret, or probability
+- whether it reflects optimism, caution, balance, neutrality, or regret avoidance
+- a short example showing why a specific option is chosen
+
+#### Examples of likely exam questions
+
+You may get questions such as:
+
+- Explain the difference between the **Maximax** and **Maximin** criteria.
+- Why is **Hurwicz's criterion** more realistic than using only optimistic or pessimistic rules?
+- How do you construct a **regret matrix** for Savage's criterion?
+- Why does the **Laplace criterion** assume equal probabilities?
+- How is the **expected payoff** calculated from a payoff table and a probability distribution?
+- What is the difference between **expected payoff** and **expected loss of opportunity**?
+- Why can the same payoff table lead to different final recommendations?
+
+#### Good exam strategy for decision-criteria questions
+
+When answering:
+
+1. start with the rule definition
+2. identify what values the rule uses from the table
+3. calculate or describe the result step by step
+4. state the recommended decision clearly
+5. explain why that recommendation fits the rule
+
+For example, if you are asked about the Laplace criterion, do not just say that Wheat is the answer. You should explain that Laplace treats all weather conditions as equally likely, calculates the average payoff for each crop, and then selects Wheat because it has the highest average payoff.
+
+If you are asked about Savage's minimax regret rule, do not just list the final regret values. You should explain how the regret table is formed, how the maximum regret for each option is found, and why the smallest of those values gives the final choice.
+
+#### Quick revision checklist
+
+Before an exam, make sure you can:
+
+- explain what each decision criterion is trying to optimise or minimise
+- distinguish between optimistic, pessimistic, balanced, probability-based, and regret-based rules
+- read a payoff table correctly
+- convert a payoff table into a regret table
+- calculate averages, weighted payoffs, and weighted regrets
+- explain why two different criteria can recommend different actions from the same table
+
+### What this shows in practice
+
+In the farmer scenario, different criteria give different recommended decisions:
+
+- a very optimistic farmer may choose **Rice** because it has the highest possible payoff
+- a cautious farmer may choose **Wheat** because it gives the strongest worst-case result
+- a probability-based farmer may choose **Rice** if average weather is considered likely
+
+This shows why decision criteria matter. The best choice is not only about the table values. It also depends on:
+
+- the decision-maker's risk attitude
+- the level of uncertainty
+- whether probabilities are known
+- the cost of making the wrong choice
+
+### Why this matters for data-driven decision-making
+
+Decision-making criteria are important in DDM because they help analysts move from raw numbers to justified recommendations.
+
+Instead of saying only "this crop looks best," the analyst can explain:
+
+- under which rule it is best
+- what assumptions the rule makes
+- what type of decision-maker the rule suits
+- how uncertainty changes the recommendation
+
+That is the real value of these criteria: they provide a structured and defensible way to choose under uncertainty.
+            """,
+            "key_points": [
+                                "Decision-making criteria help analyse the same payoff matrix from different perspectives under uncertainty",
+                                "Some criteria are optimistic, some are cautious, and some rely on regret or probability",
+                                "The farmer crop example shows that different rules can recommend different decisions from the same data",
+                                "Analysts should explain both the recommended choice and the logic behind the criterion used"
+            ],
+            "visual_elements": {
+                                "diagrams": true,
+                "tables": true,
+                "highlighted_sections": true
+            }
+        },
+        {
+            "lesson_number": "1.4",
+            "title": "Lesson - Other Examples of Data-driven Decision-making Problems",
+            "content": r"""
+### Introduction
+
+In this lesson, we explore various **data-driven decision-making problems** within society.
+
+We cover each topic with examples and show how ideas from earlier lessons connect in practical decision problems. Some of the components will already be familiar, but here the goal is to show how those components work together inside real business and social use cases.
+
+This matters because data-driven decision-making is not only about learning individual methods in isolation. It is also about recognising how different methods combine when organisations try to solve real problems.
+
+### 1. Churn prediction
+
+**Churn prediction** refers to identifying which customers are likely to cancel their contract, subscription, or service with a company.
+
+Analysts use:
+
+- historical data
+- customer behaviour patterns
+- service usage information
+- predictive analytics
+
+to identify which customers may stop using the company's service.
+
+#### Why churn prediction matters
+
+Companies need to predict churn because they can then take action **before** losing the customer.
+
+Possible actions include:
+
+- contacting the customer directly
+- offering support or problem resolution
+- sending targeted retention campaigns
+- renegotiating contracts or subscription terms
+- providing discounts, upgrades, or loyalty incentives
+
+This is important because customer retention and churn prediction are closely connected. In many industries, it is often more cost-effective to **retain existing customers** than to acquire new ones.
+
+#### What analysts look for in churn prediction
+
+When building a churn prediction process, analysts often look for patterns such as:
+
+- reduced service usage
+- repeated complaints
+- late payments
+- plan downgrades
+- inactivity over time
+- changes in buying behaviour
+
+These signals can be used to create a churn-risk score or a predictive model.
+
+#### Visual decision flow for churn prediction
+
+```text
+Historical customer data
+        ->
+Identify churn patterns
+        ->
+Build churn-risk indicators or predictive model
+        ->
+Flag high-risk customers
+        ->
+Take proactive retention action
+        ->
+Reduce customer loss
+```
+
+#### Example: churn prediction in practice
+
+Imagine a subscription company notices that customers who:
+
+- have logged in less often during the last 30 days
+- contacted support multiple times
+- downgraded their subscription
+- and missed a payment
+
+are much more likely to leave.
+
+The business can then use this information to identify at-risk customers earlier and intervene before cancellation happens.
+
+#### Churn rate
+
+Another important concept for a business is the **churn rate**.
+
+The churn rate measures the percentage of customers who discontinued their service during a given time period.
+
+The formula is:
+
+```text
+Churn Rate = (Customers lost during the period / Customers at the beginning of the period) x 100
+```
+
+#### Worked churn-rate example
+
+Suppose:
+
+- 50 customers discontinued their service in a six-month period
+- the company had 1 000 customers at the beginning of that period
+
+Then:
+
+```text
+Churn Rate = (50 / 1 000) x 100 = 5%
+```
+
+So the company's churn rate for that six-month period is **5%**.
+
+#### Visual churn-rate explanation
+
+```text
+Start of period: 1 000 customers
+Customers lost :    50 customers
+
+Calculation:
+50 / 1 000 = 0.05
+0.05 x 100 = 5%
+
+Churn rate = 5%
+```
+
+#### Simulation-style churn dashboard
+
+```text
+CHURN MONITORING DASHBOARD
+
+Customers at start of period:      1 000
+Customers lost during period:         50
+Churn rate:                           5%
+
+High-risk indicators detected:
+- low recent activity
+- repeated support contact
+- recent downgrade
+- missed payment
+
+Recommended actions:
+- contact high-risk customers
+- offer support intervention
+- send retention campaign
+- review contract flexibility
+```
+
+#### Churn Prediction Model
+
+There are many tools available to create a **churn prediction model**. These include machine-learning algorithms, templates, and software that a company can purchase or implement to determine churn prediction.
+
+A churn prediction model has various components, and the terminology may differ across organisations. However, the results generated and the overall goal are the same: identify which customers are most likely to churn and support earlier retention decisions.
+
+Let us now look at the churn prediction model as a set of connected decision-making stages.
+
+#### Explain the churn prediction model
+
+The individual components of the churn prediction model are as follows.
+
+#### 1. Data collection
+
+In the previous lessons, we covered the topic of **data collection**. Data collection plays a big part in all decision-making problems.
+
+The first step to creating a model is to collect data from available resources such as:
+
+- CRM systems
+- transaction records
+- subscription databases
+- usage logs
+- customer service systems
+- survey responses
+
+This gives the business the raw information needed to start analysing churn.
+
+#### 2. Data processing
+
+**Data processing** includes data cleaning and data sorting.
+
+In our previous lessons, we covered data cleaning and how to handle missing values or inconsistencies in data. This step is important because the churn model depends on reliable data.
+
+Typical activities here include:
+
+- correcting errors
+- handling missing values
+- sorting records
+- standardising formats
+- removing duplicates
+
+#### 3. Exploratory data analysis
+
+In this step, you need to understand the characteristics and distributions of the data.
+
+Additionally, you need to calculate measures such as:
+
+- mean
+- median
+- standard deviation
+
+The data can then be visualised using:
+
+- histograms
+- plots
+- charts
+
+The purpose of this step is to understand how the customer data behaves and which variables may be related to churn.
+
+#### 4. Cohort analysis
+
+With **cohort analysis**, customers are grouped according to certain criteria so that they can be categorised into cohorts.
+
+After that, trends and patterns are identified within these groups. A **cohort** is a group of people who share a common characteristic and are tracked over time.
+
+Examples include:
+
+- customers who joined in the same month
+- customers who came from the same campaign
+- customers on the same subscription plan
+
+Within this analysis, relevant **KPIs** should also be identified and calculated.
+
+#### 5. Customer segmentation
+
+Customers should then be sorted into **segments** based on attributes such as:
+
+- demographics
+- behaviour
+- purchase history
+- usage activity
+
+The churn rates and behaviour identified in each segment should then be analysed.
+
+After this analysis, the company should be able to identify its **high-risk customers** more clearly.
+
+#### 6. Trend analysis
+
+In **trend analysis**, the organisation analyses and identifies trends in customer behaviour and churn rates over time.
+
+For example, when running an ad campaign, the insights can be used to see how that campaign impacts churn rates.
+
+This helps decision-makers understand whether business actions are improving retention or making churn worse.
+
+#### 7. Feature engineering
+
+As we have learned, **feature engineering** transforms raw data into more relevant and valuable features for machine-learning models.
+
+In the context of churn prediction, feature engineering can create features that capture customer behaviour, such as:
+
+- how recently a customer made a purchase
+- how often they use the product
+- how much money they spend
+
+These features can then be used to train a machine-learning model to predict which customers are most likely to churn.
+
+Useful examples include:
+
+- **RFM analysis**: Recency, Frequency, and Monetary value
+- engagement scores
+- customer satisfaction ratings
+
+#### 8. Hypothesis testing
+
+The company should be able to formulate hypotheses based on the trends, patterns, and insights gained from the previous steps.
+
+It is then important to test those hypotheses using statistical tests such as the **Z-test**.
+
+This step helps move the company from guesswork to evidence-based conclusions.
+
+#### 9. Visualisation
+
+As we know, **data visualisation** is essential when presenting results to users who are less technically inclined.
+
+Visualisation tools such as:
+
+- charts
+- dashboards
+- reports
+
+summarise insights and findings and provide a strong presentation format for decision-makers.
+
+#### Also explain it visually
+
+```text
+DATA COLLECTION
+Collect customer data from available sources
+    ->
+DATA PROCESSING
+Clean, sort, and standardise the data
+    ->
+EXPLORATORY DATA ANALYSIS
+Understand distributions, averages, and variation
+    ->
+COHORT ANALYSIS
+Track groups of similar customers over time
+    ->
+CUSTOMER SEGMENTATION
+Identify meaningful customer groups and high-risk segments
+    ->
+TREND ANALYSIS
+Observe changes in behaviour and churn rates over time
+    ->
+FEATURE ENGINEERING
+Create useful predictive features such as RFM and engagement scores
+    ->
+HYPOTHESIS TESTING
+Test whether identified churn patterns are statistically supported
+    ->
+VISUALISATION
+Present findings in charts, dashboards, and reports
+    ->
+RETENTION DECISIONS
+Target high-risk customers with retention actions
+```
+
+#### Visual summary table of the churn prediction model
+
+| Model component | Main role in the model | Example output |
+|----------------|------------------------|----------------|
+| Data collection | Gather customer information | usage logs, payment data, CRM records |
+| Data processing | Improve quality and consistency | cleaned dataset |
+| Exploratory data analysis | Understand data characteristics | mean, median, histograms |
+| Cohort analysis | Compare customer groups over time | churn by signup month |
+| Customer segmentation | Separate meaningful customer groups | high-risk segment list |
+| Trend analysis | Track churn over time | churn before and after campaign |
+| Feature engineering | Create stronger predictive variables | RFM score, engagement score |
+| Hypothesis testing | Check whether insights are statistically supported | accepted or rejected hypothesis |
+| Visualisation | Communicate results clearly | dashboard or report |
+
+#### What this model is really doing
+
+The churn prediction model is not only about generating a final prediction score. It is a full decision-making process that helps the company:
+
+1. gather evidence
+2. improve data quality
+3. understand customer patterns
+4. identify high-risk groups
+5. create predictive features
+6. test ideas statistically
+7. present insights clearly
+8. take action early
+
+#### Why this is a data-driven decision problem
+
+Churn prediction is a strong example of a data-driven decision problem because it combines:
+
+- historical data
+- behaviour analysis
+- predictive modelling
+- KPI monitoring
+- proactive business response
+
+The business is not waiting until customers are already gone. Instead, it uses data to predict risk and act early.
+
+### 2. Fraud detection
+
+Another major example of a data-driven decision problem is **fraud detection**.
+
+Fraud detection means identifying transactions, claims, applications, or behaviours that may be dishonest, suspicious, or deliberately misleading.
+
+This is common in:
+
+- banking
+- insurance
+- e-commerce
+- telecommunications
+- public services
+
+#### Why fraud detection matters
+
+If fraud is not detected early, organisations can lose money, damage customer trust, and spend large amounts of time investigating problems after the damage has already happened.
+
+That is why many organisations use data to decide:
+
+- which transactions should be approved immediately
+- which should be flagged for review
+- which should be blocked
+
+#### Common fraud indicators
+
+Analysts often look for patterns such as:
+
+- unusual transaction size
+- unusual transaction timing
+- repeated failed login attempts
+- many purchases from different locations in a short time
+- new accounts behaving like known fraud cases
+- mismatches between customer profile and buying behaviour
+
+These patterns can be converted into rules, scores, or machine-learning models.
+
+#### Fraud detection decision flow
+
+```text
+Transaction or claim arrives
+        ->
+Compare with normal behaviour patterns
+        ->
+Check fraud indicators and risk score
+        ->
+Classify as low, medium, or high risk
+        ->
+Approve, review, or block
+```
+
+#### Example: card transaction monitoring
+
+Imagine a bank customer normally spends modest amounts in Oslo during daytime. Suddenly, the same account is used for:
+
+- a high-value purchase
+- in another country
+- late at night
+- shortly after several failed login attempts
+
+That combination of signals may lead the system to flag the transaction as high risk.
+
+The bank can then make a better decision by:
+
+1. pausing the payment
+2. asking for extra verification
+3. contacting the customer
+4. allowing analysts to review the case
+
+#### Simple fraud-risk dashboard
+
+```text
+FRAUD RISK SCREEN
+
+Transaction amount:           High
+Location change:             Yes
+Failed logins detected:      4
+Customer pattern mismatch:   Yes
+
+Fraud risk score:            89 / 100
+Recommended action:          Block and verify
+```
+
+#### Why this is a data-driven decision problem
+
+Fraud detection is data-driven because the decision is based on observed evidence rather than guesswork.
+
+The organisation uses:
+
+- historical fraud cases
+- behavioural baselines
+- real-time transaction data
+- predictive scoring
+
+to support fast and defensible decisions.
+
+#### Key business insight
+
+Fraud detection shows that data-driven decision-making is not only about improving profit. It is also about reducing loss, limiting risk, protecting customers, and deciding when human review is necessary.
+
+### 3. Demand forecasting
+
+**Demand forecasting** means predicting how much of a product or service customers are likely to want in a future period.
+
+This is one of the most common data-driven decision problems because organisations need to make decisions before actual demand is visible.
+
+Businesses use demand forecasts to decide:
+
+- how much stock to order
+- how many staff to schedule
+- how much production capacity to allocate
+- when to run promotions
+- how to plan distribution and delivery
+
+#### Why demand forecasting matters
+
+If a company underestimates demand, it may run out of stock, lose sales, frustrate customers, and damage its reputation.
+
+If it overestimates demand, it may hold too much stock, waste money, increase storage costs, or produce more than it can sell.
+
+That means demand forecasting supports decisions about both **service level** and **cost control**.
+
+#### What analysts look for in demand forecasting
+
+Analysts often look for patterns such as:
+
+- seasonality
+- historical sales levels
+- long-term trends
+- holiday effects
+- campaign effects
+- weather-related changes in demand
+
+These patterns are often analysed using time-series methods, moving averages, regression, or machine-learning models.
+
+#### Demand forecasting decision flow
+
+```text
+Historical sales data
+    ->
+Identify trend, seasonality, and demand drivers
+    ->
+Generate forecast for future period
+    ->
+Translate forecast into stock, staffing, and production decisions
+    ->
+Monitor forecast accuracy and adjust
+```
+
+#### Example: supermarket demand planning
+
+Imagine a supermarket chain sees that demand for drinks, fruit, and barbecue products rises sharply before warm weekends.
+
+If weather data suggests high temperatures for the coming weekend, the company can use that information together with historical sales data to:
+
+1. increase stock orders
+2. schedule more staff
+3. prepare more local deliveries
+4. reduce the risk of empty shelves
+
+#### Simple demand dashboard
+
+```text
+DEMAND FORECAST DASHBOARD
+
+Last 4 weekends:          Rising sales
+Weather forecast:         Warm and sunny
+Expected demand change:   +18%
+Products affected:        Drinks, fruit, grill items
+
+Recommended action:
+- increase order volume
+- schedule extra staff
+- prepare replenishment earlier
+```
+
+#### Why this is a data-driven decision problem
+
+Demand forecasting is data-driven because the organisation uses historical data and predictive patterns to make decisions before demand is fully known.
+
+Instead of reacting after shortages happen, the business uses data to prepare earlier and allocate resources more effectively.
+
+### 4. Credit scoring
+
+**Credit scoring** means evaluating how risky it may be to lend money to a person or business.
+
+It is a data-driven decision problem because the lender must decide under uncertainty whether an applicant is likely to repay the loan.
+
+Credit scoring helps organisations decide:
+
+- whether to approve or reject an application
+- what interest rate to offer
+- what credit limit to set
+- whether more documentation is needed
+
+#### Why credit scoring matters
+
+If a lender approves too many high-risk applications, it can suffer major financial losses.
+
+If it rejects too many low-risk applicants, it loses good customers and future revenue.
+
+So the decision problem is not only about saying yes or no. It is also about balancing:
+
+- risk
+- profitability
+- fairness
+- consistency
+
+#### Common credit-scoring indicators
+
+Analysts often consider factors such as:
+
+- income level
+- debt level
+- repayment history
+- employment stability
+- number of missed payments
+- existing credit usage
+
+These variables can be combined into a score or classification model.
+
+#### Credit scoring decision flow
+
+```text
+Loan application arrives
+    ->
+Collect applicant financial and behavioural data
+    ->
+Calculate risk score
+    ->
+Compare score with approval thresholds
+    ->
+Approve, reject, or request more review
+```
+
+#### Example: loan application decision
+
+Imagine a bank receives two applications.
+
+- Applicant A has stable income, low debt, and a strong repayment history.
+- Applicant B has irregular income, high debt, and several missed payments.
+
+Using historical repayment data, the bank can estimate which applicant is more likely to repay.
+
+That makes the final decision more structured and defensible than relying on personal judgment alone.
+
+#### Simple credit-risk dashboard
+
+```text
+CREDIT SCORING SCREEN
+
+Income stability:          High
+Debt ratio:                Low
+Repayment history:         Strong
+Missed payments:           0
+
+Credit risk score:         Low
+Recommended action:        Approve application
+```
+
+#### Why this is a data-driven decision problem
+
+Credit scoring is data-driven because it turns applicant information and historical lending outcomes into a measurable decision process.
+
+It helps lenders make faster, more consistent, and more transparent decisions under uncertainty.
+
+### 5. Inventory optimisation
+
+**Inventory optimisation** means deciding how much stock to keep, when to reorder it, and where it should be placed.
+
+This is a data-driven decision problem because businesses must balance product availability against the cost of holding inventory.
+
+Inventory decisions affect:
+
+- service quality
+- storage cost
+- cash flow
+- waste levels
+- delivery performance
+
+#### Why inventory optimisation matters
+
+Too little inventory can lead to stockouts, lost sales, production delays, and unhappy customers.
+
+Too much inventory can create waste, high storage costs, tied-up capital, and reduced efficiency.
+
+So the core decision problem is to find a better balance between **availability** and **cost**.
+
+#### What analysts look for in inventory optimisation
+
+Analysts often use:
+
+- demand forecasts
+- supplier lead times
+- reorder levels
+- safety stock requirements
+- product turnover rates
+- seasonal patterns
+
+These inputs help decide when stock should be reordered and how much should be held.
+
+#### Inventory optimisation decision flow
+
+```text
+Demand and supplier data collected
+    ->
+Estimate expected demand and lead time risk
+    ->
+Set reorder point and safety stock
+    ->
+Trigger replenishment decision
+    ->
+Review stock performance and adjust rules
+```
+
+#### Example: pharmacy stock planning
+
+Imagine a pharmacy must keep essential medicine available while avoiding unnecessary waste from products with expiry dates.
+
+Using historical demand, supplier delivery times, and seasonal illness patterns, the pharmacy can decide:
+
+1. which items need higher safety stock
+2. which items can be ordered less frequently
+3. when to reorder before shortages occur
+4. how to reduce expired stock losses
+
+#### Simple inventory dashboard
+
+```text
+INVENTORY CONTROL DASHBOARD
+
+Current stock:             220 units
+Average weekly demand:     70 units
+Supplier lead time:        2 weeks
+Safety stock:              80 units
+Reorder point:             220 units
+
+Recommended action:        Reorder now
+```
+
+#### Why this is a data-driven decision problem
+
+Inventory optimisation is data-driven because the business combines demand data, supplier data, and operational constraints to make better replenishment decisions.
+
+The goal is to avoid both shortage and waste by using evidence rather than intuition alone.
+
+### 6. Pricing optimisation
+
+**Pricing optimisation** in data analysis means using the methods we have learned to determine the prices of a company's products or services.
+
+The purpose is not simply to pick a random price. The goal is to use data to decide what price level best supports the company's objective.
+
+That objective might be:
+
+- maximising profit
+- increasing revenue
+- protecting market share
+- improving customer retention
+- supporting a premium brand position
+
+#### Explain the pricing optimisation model
+
+As with churn prediction, we can use a similar model to assist with pricing decisions. However, additional components must be added because pricing decisions directly affect demand, revenue, margin, and customer response.
+
+The first step is to identify the **objective** of the pricing model.
+
+For example, the business must decide:
+
+- Is the goal to maximise profit?
+- Is the goal to increase sales volume?
+- Is the goal to improve market share?
+- Is the goal to position the product as premium?
+
+After the objective has been determined, the process can continue with:
+
+- data collection
+- data processing
+- customer segmentation
+
+which we covered in the previous section.
+
+#### Pricing optimisation model flow
+
+```text
+DEFINE OBJECTIVE
+Decide whether the goal is profit, revenue, market share, or another target
+    ->
+DATA COLLECTION
+Gather sales, pricing, cost, competitor, and customer data
+    ->
+DATA PROCESSING
+Clean and structure the data for analysis
+    ->
+CUSTOMER SEGMENTATION
+Group customers by willingness to pay, behaviour, or value
+    ->
+DEMAND ELASTICITY ANALYSIS
+Measure how demand changes when price changes
+    ->
+PRICE TESTING AND ANALYSIS
+Compare possible price points and expected outcomes
+    ->
+VISUALISATION AND DECISION
+Present the recommendation and choose the pricing action
+```
+
+#### Key components in the pricing optimisation model
+
+The main components often include:
+
+1. objective definition
+2. data collection
+3. data processing
+4. customer segmentation
+5. demand elasticity analysis
+6. price testing
+7. visualisation and communication
+
+This makes pricing optimisation a strong example of data-driven decision-making because the company must balance demand behaviour with business goals.
+
+#### Demand elasticity
+
+We will start with **demand elasticity** for this section.
+
+Demand elasticity refers to calculating the **price elasticity** of your products or services.
+
+As we know, price changes can have a knock-on effect on the demand for products or services. If the price goes up, demand may fall. If the price goes down, demand may rise.
+
+Analysing historical sales data can help identify these trends.
+
+#### Price Elasticity of Demand (PED)
+
+There are many ways to calculate demand elasticity, but one of the most common formulas is the **Price Elasticity of Demand (PED)**.
+
+The formula is:
+
+```text
+PED = (% Change in Quantity Demanded) / (% Change in Price)
+```
+
+#### What PED tells us
+
+The PED value helps explain how sensitive customers are to price changes.
+
+- If demand changes a lot when price changes, demand is **elastic**.
+- If demand changes only a little when price changes, demand is **inelastic**.
+
+This matters because pricing decisions should not be made without understanding how customers are likely to react.
+
+#### Worked PED example
+
+Suppose a company increases the price of a product by **10%**.
+
+After the increase, the quantity demanded falls by **20%**.
+
+Then:
+
+```text
+PED = -20% / 10% = -2.0
+```
+
+This means demand is **elastic**, because the quantity demanded changed more strongly than the price.
+
+In practical terms, this suggests that customers are price-sensitive, so large price increases may reduce demand significantly.
+
+#### Visual explanation of demand elasticity
+
+```text
+Price rises by 10%
+    ->
+Customers react strongly
+    ->
+Quantity demanded falls by 20%
+    ->
+PED = -2.0
+    ->
+Demand is elastic
+```
+
+#### Simple elasticity intuition table
+
+| PED result | Interpretation | Business meaning |
+|-----------|----------------|------------------|
+| PED < -1 | Elastic demand | Customers are sensitive to price changes |
+| PED = -1 | Unit elastic demand | Revenue effect is balanced |
+| -1 < PED < 0 | Inelastic demand | Customers are less sensitive to price changes |
+
+#### Why demand elasticity matters in pricing optimisation
+
+Demand elasticity helps a company understand whether a price change is likely to:
+
+- increase revenue
+- reduce demand too much
+- improve margin
+- hurt customer retention
+
+Without elasticity analysis, a company may increase prices and accidentally reduce sales too much, or lower prices without gaining enough extra demand.
+
+#### Example: pricing decision in practice
+
+Imagine a streaming company is considering increasing the monthly subscription price.
+
+If earlier data shows that a small increase causes many customers to cancel or downgrade, then demand is relatively elastic and the company should be cautious.
+
+If earlier data shows that most customers stay even after a moderate price rise, then demand is more inelastic and the company may have room to increase price without losing too much demand.
+
+#### Pricing decision dashboard
+
+```text
+PRICING OPTIMISATION DASHBOARD
+
+Objective:                  Maximise profit
+Current price:              199 NOK
+Proposed price:             219 NOK
+Expected price change:      +10%
+Expected quantity change:   -20%
+PED estimate:               -2.0
+Demand sensitivity:         Elastic
+
+Recommended action:
+- test the increase carefully
+- monitor cancellations and sales volume
+- consider segment-specific pricing
+```
+
+#### Also explain it visually for understanding
+
+```text
+BUSINESS OBJECTIVE
+Choose whether the goal is profit, revenue, or market share
+    ->
+COLLECT PRICING DATA
+Gather sales, cost, competitor, and customer-response data
+    ->
+PROCESS THE DATA
+Clean and structure the information
+    ->
+SEGMENT CUSTOMERS
+Separate groups by value and willingness to pay
+    ->
+MEASURE DEMAND ELASTICITY
+See how quantity changes when price changes
+    ->
+COMPARE PRICE OPTIONS
+Estimate profit, revenue, and churn effects
+    ->
+VISUALISE RESULTS
+Show decision-makers the likely outcomes
+    ->
+SET OR TEST THE PRICE
+Choose the most suitable pricing action
+```
+
+#### Market research
+
+In a previous lesson, we discussed **data collection**. **Market research** forms part of data collection.
+
+Surveys can be distributed to customers to gather their opinions on:
+
+- pricing
+- product value
+- willingness to pay
+- competitor comparisons
+- perceived fairness of the price
+
+This matters because pricing optimisation should not rely only on internal company data. It should also consider how customers perceive the value of the product or service.
+
+#### Determine costs
+
+A structure will need to be created to determine the cost of delivering the product or service.
+
+This may include:
+
+- development cost
+- delivery cost
+- support cost
+- licensing cost
+- marketing cost
+
+Without understanding costs, the company could choose a price that increases sales volume but still damages profitability.
+
+#### Pricing constraints
+
+The company must also identify any **pricing constraints** that need to be considered.
+
+Examples include:
+
+- minimum pricing requirements
+- pricing regulations
+- pricing agreements with suppliers
+- discount restrictions
+- competitor pressure
+- contract-based price limitations
+
+These constraints matter because the mathematically best price may not always be legally, operationally, or commercially possible.
+
+#### Linear regression in pricing optimisation
+
+**Linear regression** is a statistical method that finds a straight line that best fits a data set.
+
+The line can be used to predict the value of one variable, called the **dependent variable**, based on the value of another variable, called the **independent variable**.
+
+In a pricing example:
+
+- **Price** can be treated as the independent variable
+- **Quantity sold** can be treated as the dependent variable
+
+This means linear regression can help us estimate how quantity sold changes when price changes.
+
+The equation of a straight line is:
+
+```text
+Quantity = a * Price + b
+```
+
+Where:
+
+- `a` is the slope of the line, meaning the change in quantity for each change in price
+- `b` is the intercept, meaning the estimated quantity when price is 0
+
+#### Worked pricing model using historical data
+
+Let us create a price model using historical data from a company that sells software subscriptions and, theoretically, a simple linear regression to estimate the relationship between **price** and **quantity sold**.
+
+#### Historical data
+
+| Price (NOK) | Quantity sold |
+|-------------|---------------|
+| 10 | 100 |
+| 8 | 150 |
+| 6 | 200 |
+| 4 | 250 |
+| 2 | 300 |
+
+### Step 1: Plot the data points
+
+The first step is to plot the price and quantity data points.
+
+This helps us see the relationship visually.
+
+From the table, we can already observe a clear pattern:
+
+- when price is high, quantity sold is lower
+- when price is lower, quantity sold is higher
+
+#### Visual view of the data points
+
+```text
+Price (x)   Quantity (y)
+
+10          100
+ 8          150
+ 6          200
+ 4          250
+ 2          300
+```
+
+#### Simple interpretation
+
+This looks like a downward-sloping relationship. That means quantity sold appears to decrease as price increases.
+
+### Step 2: Fit a line to the data points
+
+Using linear regression, we fit a line to the data points.
+
+The regression line gives us an equation that best describes the relationship between price and quantity sold.
+
+In this case, the estimated regression line is:
+
+```text
+Quantity = -25 * Price + 350
+```
+
+#### Explain the regression equation
+
+This equation tells us two important things:
+
+1. The slope is **-25**.
+   This means that for every increase of 1 NOK in price, the quantity sold decreases by about 25 units.
+
+2. The intercept is **350**.
+   This is the theoretical quantity sold if the price were 0 NOK.
+
+#### Visual explanation of the fitted line
+
+```text
+Higher price
+    ->
+Lower quantity sold
+
+Regression line:
+Quantity = -25 * Price + 350
+
+Slope = -25  -> each +1 NOK reduces quantity by about 25
+Intercept = 350 -> predicted quantity if price were 0
+```
+
+### Step 3: Calculate revenue for different price points
+
+We can calculate the revenue for different price points using the equation:
+
+```text
+Revenue = Price * Quantity
+```
+
+Since quantity is estimated by the price model, we substitute:
+
+```text
+Quantity = -25 * Price + 350
+```
+
+So the revenue calculation becomes:
+
+```text
+Revenue = Price * (-25 * Price + 350)
+```
+
+Let us consider a range of prices from 1 to 12 NOK.
+
+| Price | Quantity = -25 * Price + 350 | Revenue |
+|-------|-------------------------------|---------|
+| 1 | 325 | 325 |
+| 2 | 300 | 600 |
+| 3 | 275 | 825 |
+| 4 | 250 | 1000 |
+| 5 | 225 | 1125 |
+| 6 | 200 | 1200 |
+| 7 | 175 | 1225 |
+| 8 | 150 | 1200 |
+| 9 | 125 | 1125 |
+| 10 | 100 | 1000 |
+| 11 | 75 | 825 |
+| 12 | 50 | 600 |
+
+#### Visual understanding of revenue behaviour
+
+```text
+Low price     -> quantity is high, but price per sale is low
+High price    -> price per sale is high, but quantity is low
+
+Revenue rises at first, reaches a peak, and then starts to fall.
+```
+
+### Step 4: Identify the optimal price
+
+From the calculated revenue values, we identify the price point that maximises revenue.
+
+In this case, the highest revenue is:
+
+```text
+Revenue = 1225 NOK at Price = 7 NOK
+```
+
+So the **optimal price for revenue maximisation** is **7 NOK**.
+
+#### Why 7 NOK is the best price in this example
+
+At prices below 7 NOK, the company sells more units, but the price is too low to generate the highest possible revenue.
+
+At prices above 7 NOK, the company earns more per unit, but the quantity sold falls too much.
+
+The balance between those two effects is strongest at **7 NOK**.
+
+### Step 5: Visualisation
+
+Showcasing price models with a visualisation tool is an excellent way to show how prices, demand, and revenue change together.
+
+For example, a chart could show:
+
+- the downward-sloping quantity line
+- the curved revenue pattern
+- the optimal revenue point
+
+#### Visual explanation of the full pricing example
+
+```text
+PRICE INCREASES
+    ->
+QUANTITY SOLD FALLS
+    ->
+REVENUE CHANGES
+    ->
+ONE PRICE POINT CREATES THE HIGHEST REVENUE
+
+In this example:
+Best revenue = 1225 NOK
+Best price   = 7 NOK
+```
+
+#### Summary of the pricing model example
+
+```text
+Historical data -> fit regression line -> estimate quantity at each price
+        ->
+calculate revenue at each price
+        ->
+compare results
+        ->
+choose price with highest revenue
+```
+
+#### Why this example matters
+
+This example shows how pricing optimisation can combine:
+
+- historical data
+- regression modelling
+- revenue calculations
+- business objectives
+
+to support a real pricing decision.
+
+#### Why this is a data-driven decision problem
+
+Pricing optimisation is data-driven because the company must combine:
+
+- business objectives
+- historical sales data
+- market research
+- cost structure
+- customer behaviour
+- segmentation insights
+- pricing constraints
+- elasticity analysis
+- regression modelling
+
+to make a defensible pricing decision.
+
+Instead of guessing what customers will accept, the company uses evidence to decide what pricing strategy is most likely to achieve its goal.
+
+### 7. Risk assessment
+
+The role of **risk assessment** is to identify and mitigate risks that could negatively impact the accuracy, validity, or ethical use of data and to provide decision-makers with a clear understanding of the potential risks involved.
+
+This is another strong example of data-driven decision-making because organisations often need to make decisions before a risk becomes a real problem.
+
+#### Explain the risk assessment model
+
+In risk assessment, we may see different terminology from what we covered previously. However, when we explain these sections, there are many similarities.
+
+This is important because it helps you identify the **context** and connect the model back to previous lessons.
+
+For example:
+
+- **risk identification** is closely related to **data collection**
+- **risk analysis** connects to **qualitative and quantitative analysis**
+- **risk evaluation** connects to **prioritisation and resource allocation**
+- **risk monitoring and review** connects to **continuous measurement and KPI tracking**
+- **documentation** supports transparency, consistency, and later review
+
+So even though the terminology looks different, the logic is very similar to what we have already learned.
+
+#### 1. Risk identification
+
+The purpose of **risk identification** is to systematically identify and document potential risks that may affect the organisation or specific activities being assessed.
+
+Risks can be identified through methods such as:
+
+- brainstorming sessions
+- historical data analysis
+- expert interviews
+- industry research
+
+Initially, this would be treated as a form of **data collection**, because the organisation is gathering information about possible threats, failures, weaknesses, or uncertainties.
+
+#### 2. Risk analysis
+
+Once risks are identified, they must be analysed to understand their potential impact and likelihood.
+
+This step involves:
+
+- assessing the severity of the consequences if a risk event occurs
+- estimating the probability of the risk event happening
+
+Different **qualitative** or **quantitative** techniques can be used, such as:
+
+- risk matrices
+- probability distributions
+- scenario analysis
+
+Qualitative data is descriptive and expressed in words or images.
+
+Quantitative data is numerical and expressed in numbers.
+
+This step therefore links directly to earlier lessons about qualitative and quantitative analysis.
+
+#### 3. Risk evaluation
+
+In this step, the identified risks are evaluated so they can be prioritised based on significance.
+
+The purpose is to determine which risks require immediate attention.
+
+This can be done by assigning **risk ratings** or **risk scores** that consider both:
+
+- impact
+- likelihood
+
+The evaluation process helps the organisation allocate resources effectively and focus on the most critical risks.
+
+#### 4. Risk treatment
+
+Once risks are prioritised, appropriate **risk treatment strategies** are developed.
+
+These strategies aim to:
+
+- mitigate the risk
+- transfer the risk
+- avoid the risk
+- accept the risk
+
+Risk treatment options may include:
+
+- implementing controls
+- implementing security measures
+- establishing contingency plans
+- purchasing insurance
+- revising processes and procedures
+
+This stage is where analysis becomes action.
+
+#### 5. Risk monitoring and review
+
+After implementing risk treatment measures, it is important to monitor and review the effectiveness of those measures continuously.
+
+This involves:
+
+- regularly assessing the status of the risks
+- tracking changes in the risk environment
+- evaluating the effectiveness of risk controls
+
+This is an **iterative process** that helps ensure risks remain within acceptable levels and that new risks are promptly identified and addressed.
+
+#### 6. Documentation
+
+Throughout the risk assessment process, it is crucial to document all findings, analyses, and decisions made.
+
+This includes documenting:
+
+- identified risks
+- the assessment methodology
+- risk treatment strategies
+- monitoring and review activities
+
+Documentation helps maintain a record of the risk assessment process and provides a reference for future assessments and audits.
+
+#### Visual explanation of the risk assessment model
+
+```text
+RISK IDENTIFICATION
+Gather information about possible risks
+    ->
+RISK ANALYSIS
+Assess impact and likelihood
+    ->
+RISK EVALUATION
+Prioritise the most significant risks
+    ->
+RISK TREATMENT
+Mitigate, transfer, avoid, or accept the risk
+    ->
+RISK MONITORING AND REVIEW
+Track changes and test whether controls are working
+    ->
+DOCUMENTATION
+Record findings, decisions, and review outcomes
+```
+
+#### Also explain it with previous lesson links
+
+```text
+Risk identification    -> similar to data collection
+Risk analysis          -> similar to qualitative and quantitative analysis
+Risk evaluation        -> similar to prioritisation and scoring
+Risk treatment         -> similar to decision implementation
+Monitoring and review  -> similar to KPI tracking and iteration
+Documentation          -> similar to keeping evidence and audit trails
+```
+
+#### Simple risk matrix explanation
+
+One common tool in risk analysis is a **risk matrix**.
+
+It compares:
+
+- the **likelihood** of a risk happening
+- the **impact** if it happens
+
+#### Visual risk matrix
+
+```text
+        IMPACT
+        Low   Medium   High
+
+Low         Low    Low     Medium
+LIKELIHOOD
+Medium      Low   Medium   High
+High       Medium  High    Very High
+```
+
+This helps the organisation quickly see which risks need the most attention.
+
+#### Example: risk assessment in a data project
+
+Imagine a company is launching a new analytics dashboard.
+
+Possible risks could include:
+
+- poor data quality
+- missing customer records
+- privacy breaches
+- incorrect KPI calculations
+- dashboard downtime
+
+The company would first identify these risks, then analyse their impact and likelihood, prioritise the most serious ones, decide how to respond, and monitor whether the controls are working.
+
+#### Simple risk assessment dashboard
+
+```text
+RISK ASSESSMENT DASHBOARD
+
+Risk:                     Customer data missing
+Likelihood:               Medium
+Impact:                   High
+Risk rating:              High
+Treatment:                Improve validation rules
+Review status:            In progress
+```
+
+#### Why this is a data-driven decision problem
+
+Risk assessment is data-driven because the organisation must gather evidence, analyse both descriptive and numerical information, prioritise risks logically, and track whether risk controls are working.
+
+The organisation is not only reacting to problems after they happen. It is using evidence to anticipate them, reduce their effect, and guide safer decisions.
+
+### 8. Employee attrition prediction
+
+**Employee attrition prediction** is a process that uses data analysis methods to determine which employees are likely to resign voluntarily from a company.
+
+This method uses historical employee data, performance metrics, demographics, job satisfaction, and many other factors.
+
+This process is important for an organisation because it can identify **high-risk employees**, and the organisation can then make better retention decisions based on the analysis.
+
+#### Explain the employee attrition prediction model
+
+The employee attrition prediction model is a structured process that helps the company move from raw employee data to a practical retention decision.
+
+The goal is not just to predict who may leave. The goal is also to understand which employees are most at risk and what actions may reduce that risk.
+
+#### 1. Data collection
+
+The first stage is **data collection**.
+
+At this stage, the organisation gathers historical employee data that includes employee attributes and their attrition status, meaning whether they stayed or left.
+
+Examples of useful data include:
+
+- performance metrics
+- demographics
+- job satisfaction
+- compensation data
+- promotion history
+- absenteeism
+- training participation
+- attrition status
+
+This step matters because the quality of the prediction model depends heavily on the quality and relevance of the employee data collected.
+
+#### 2. Data preprocessing
+
+The next stage is **data preprocessing**.
+
+This means cleaning and preparing the data for analysis.
+
+This may involve:
+
+- handling missing values
+- encoding categorical variables
+- scaling numerical variables
+- correcting inconsistent records
+- removing duplicate rows
+
+This stage is important because employee data often comes from different HR systems and may not be immediately ready for analysis.
+
+#### 3. Feature selection
+
+The next stage is **feature selection**.
+
+This means choosing the variables that are most likely to influence employee attrition.
+
+This step often involves:
+
+- analysing the data
+- conducting exploratory data analysis
+- using expert knowledge from HR or managers
+
+It is important to choose features that are both:
+
+- informative
+- practical to collect in real-world scenarios
+
+Examples of useful features might include:
+
+- job satisfaction score
+- salary level
+- time since last promotion
+- overtime frequency
+- engagement level
+- manager feedback score
+
+#### 4. Splitting the data
+
+After the features are chosen, the dataset is divided into:
+
+- a **training set**
+- a **test set**
+
+The training set is used to train the prediction model.
+
+The test set is used to evaluate how well the model performs on data it has not already seen.
+
+This matters because a model should not only work well on past data. It should also perform reasonably on new cases.
+
+#### 5. Retention strategies
+
+After the organisation has attrition predictions, it can use them to prioritise and implement appropriate **retention strategies** for employees who are at higher risk of leaving.
+
+These strategies may include:
+
+- personalised interventions
+- career development opportunities
+- mentorship programs
+- salary reviews
+- workload adjustments
+- engagement initiatives
+
+The model is therefore not only about prediction. It is also about helping the organisation decide what action should be taken.
+
+#### Why this process is important for an organisation
+
+This process is important because it allows the organisation to identify high-risk employees earlier.
+
+That gives the organisation a chance to:
+
+- reduce unwanted resignations
+- protect important skills and experience
+- lower recruitment and training costs
+- improve workforce stability
+- increase employee satisfaction and engagement
+
+Without this process, the company may only realise there is a retention problem after valuable employees have already decided to leave.
+
+#### Visual explanation of the employee attrition prediction model
+
+```text
+DATA COLLECTION
+Gather historical employee data and attrition outcomes
+    ->
+DATA PREPROCESSING
+Clean, encode, and prepare the data
+    ->
+FEATURE SELECTION
+Choose the variables most linked to attrition
+    ->
+SPLIT THE DATA
+Create training and test datasets
+    ->
+TRAIN AND EVALUATE MODEL
+Estimate which employees are more likely to resign
+    ->
+RETENTION STRATEGIES
+Take targeted action for high-risk employees
+```
+
+#### Also explain it in simple words
+
+```text
+Collect employee information
+    ->
+prepare the data properly
+    ->
+pick the most useful employee features
+    ->
+train the prediction model
+    ->
+find high-risk employees
+    ->
+act early with retention strategies
+```
+
+#### Example: attrition prediction in practice
+
+Imagine a company notices that employees with:
+
+- low job satisfaction
+- no promotion for several years
+- frequent overtime
+- weak engagement survey results
+
+are more likely to resign.
+
+If the model flags a group of employees with similar characteristics, the organisation can intervene earlier with support, development, or workload changes.
+
+#### Simple employee attrition dashboard
+
+```text
+EMPLOYEE ATTRITION DASHBOARD
+
+Employee risk level:         High
+Job satisfaction:            Low
+Overtime frequency:          High
+Years since promotion:       4
+Engagement score:            Low
+
+Recommended action:
+- schedule retention discussion
+- review development plan
+- assess workload and manager support
+```
+
+#### Why this is a data-driven decision problem
+
+Employee attrition prediction is data-driven because the organisation uses historical employee data, feature analysis, model evaluation, and targeted follow-up actions to make better workforce decisions.
+
+The organisation is not simply waiting for resignations to happen. It is using evidence to detect early warning signs and act before attrition becomes a bigger organisational problem.
+
+### The Task
+
+#### Question 1
+
+Starbucks has changed the price of regular coffee from **5 NOK** to **2 NOK**. As a result of this decrease, the total demand increases each day from **50 coffees** to **100 coffees**.
+
+Use the **PED formula** to determine the demand elasticity.
+
+#### Worked solution
+
+We use the formula:
+
+```text
+PED = (% Change in Quantity Demanded) / (% Change in Price)
+```
+
+##### Step 1: Calculate the change in quantity demanded
+
+```text
+(100 - 50) / 50 = 50 / 50 = 1 = 100%
+```
+
+So the **percentage change in quantity demanded** is **100%**.
+
+##### Step 2: Calculate the change in price
+
+```text
+(2 - 5) / 5 = -3 / 5 = -0.6 = -60%
+```
+
+So the **percentage change in price** is **-60%**.
+
+##### Step 3: Apply the PED formula
+
+```text
+PED = 100% / -60% = -1.67
+```
+
+#### Final answer
+
+The **Price Elasticity of Demand** is **-1.67**.
+
+#### What this means
+
+Because the PED value is less than `-1`, demand is **elastic**.
+
+That means customers are quite sensitive to the change in price. In this example, lowering the coffee price caused demand to increase strongly.
+
+#### Visual explanation
+
+```text
+Old price      = 5 NOK
+New price      = 2 NOK
+Price change   = -60%
+
+Old demand     = 50 coffees
+New demand     = 100 coffees
+Demand change  = +100%
+
+PED = 100% / -60% = -1.67
+
+Conclusion: Demand is elastic
+```
+
+#### Interactive-style walkthrough
+
+```text
+Step 1: Did quantity go up or down?
+-> Up, from 50 to 100
+
+Step 2: Did price go up or down?
+-> Down, from 5 NOK to 2 NOK
+
+Step 3: Which changed more strongly?
+-> Quantity changed more strongly than price
+
+Decision:
+-> PED = -1.67, so demand is elastic
+```
+
+#### Question 2
+
+An employee has clicked on an external link in an email that looks suspicious. According to the **risk assessment** section, what would the process be to mitigate risks in the future?
+
+#### Worked solution
+
+The key components in this summary should include:
+
+- risk analysis
+- risk evaluation
+- risk treatment
+- risk monitoring and review
+- documentation
+
+##### Step 1: Risk analysis
+
+The organisation must analyse the incident to understand:
+
+- what happened
+- how serious the threat is
+- whether any systems or data were exposed
+- how likely a larger security event is
+
+This is where the organisation studies the **impact** and **likelihood** of the risk.
+
+##### Step 2: Risk evaluation
+
+The next step is to evaluate the significance of the risk.
+
+For example, if the suspicious link could lead to credential theft or malware installation, then the risk may be rated as **high**.
+
+This helps the organisation decide whether the incident needs immediate action.
+
+##### Step 3: Risk treatment
+
+Once the risk has been prioritised, the organisation decides how to treat it.
+
+Possible actions may include:
+
+- resetting passwords
+- scanning devices for malware
+- blocking the malicious sender or domain
+- updating email filters
+- retraining employees on phishing awareness
+
+##### Step 4: Risk monitoring and review
+
+After treatment, the organisation should monitor whether the controls are working.
+
+This may include:
+
+- watching for similar phishing attempts
+- checking whether users still click suspicious links
+- reviewing whether the new controls reduced the risk
+
+##### Step 5: Documentation
+
+Finally, the organisation should document:
+
+- the incident itself
+- the assessment of the risk
+- the actions taken
+- the review of whether the controls were effective
+
+This creates a useful record for future audits and future risk assessments.
+
+#### Final answer
+
+The correct process is:
+
+```text
+Risk analysis
+    ->
+Risk evaluation
+    ->
+Risk treatment
+    ->
+Risk monitoring and review
+    ->
+Documentation
+```
+
+#### Visual explanation
+
+```text
+Suspicious link clicked
+    ->
+Assess the threat and possible damage
+    ->
+Prioritise the seriousness of the risk
+    ->
+Apply controls and response measures
+    ->
+Monitor whether the controls work
+    ->
+Document the whole process
+```
+
+#### Interactive-style walkthrough
+
+```text
+Question: What is the first thing the company should do?
+-> Analyse the risk
+
+Question: What comes after understanding the threat?
+-> Evaluate how serious it is
+
+Question: What happens next?
+-> Apply treatment such as resets, filters, and awareness training
+
+Question: Is the process finished after treatment?
+-> No, the company must monitor, review, and document
+```
+
+#### Question 3
+
+Provide a model with a scenario of the **employee attrition prediction** decision-making problem.
+
+#### Worked solution
+
+##### Scenario
+
+A company notices that some experienced employees are resigning within a short period of time. HR wants to identify which employees are at higher risk of leaving so that the company can take action earlier.
+
+The company decides to build an **employee attrition prediction model**.
+
+##### Step 1: Data collection
+
+The company gathers historical employee data such as:
+
+- performance metrics
+- job satisfaction
+- salary level
+- years since last promotion
+- overtime frequency
+- engagement survey results
+- whether the employee stayed or left
+
+##### Step 2: Data preprocessing
+
+The company cleans the data by:
+
+- handling missing values
+- encoding categories such as department or job role
+- standardising numeric variables
+
+##### Step 3: Feature selection
+
+The company selects the most useful predictors, for example:
+
+- job satisfaction
+- overtime frequency
+- years since promotion
+- engagement score
+
+##### Step 4: Splitting the data
+
+The data is divided into:
+
+- a training set
+- a test set
+
+The training set is used to train the model, and the test set is used to check how well it performs.
+
+##### Step 5: Retention strategies
+
+If the model flags employees as high-risk, the company can take action such as:
+
+- offering career development plans
+- arranging mentorship
+- reviewing workload
+- improving manager support
+- discussing progression opportunities
+
+#### Final model summary
+
+```text
+Historical employee data
+    ->
+Clean and prepare the data
+    ->
+Choose useful attrition features
+    ->
+Split into training and test data
+    ->
+Predict high-risk employees
+    ->
+Apply retention strategies
+```
+
+#### Visual explanation
+
+```text
+EMPLOYEE DATA
+performance, satisfaction, promotion history, overtime, engagement
+    ->
+ATTRITION MODEL
+learn patterns from past employees who stayed or left
+    ->
+HIGH-RISK EMPLOYEE FLAG
+identify employees with similar warning signs
+    ->
+RETENTION ACTION
+career support, mentorship, workload review, manager intervention
+```
+
+#### Interactive-style walkthrough
+
+```text
+Question: What is the model trying to predict?
+-> Which employees are likely to resign voluntarily
+
+Question: What kind of data helps predict that?
+-> Satisfaction, promotion history, overtime, engagement, performance
+
+Question: Why split the data?
+-> To train the model on one part and test it on another
+
+Question: What is the final business value?
+-> The company can identify high-risk employees and act early
+```
+
+### What Did I Learn in This Lesson?
+
+This lesson provided the following insights:
+
+- with **churn prediction**, we can determine the percentage of customers who discontinued their services with a company and use prediction models to identify customers at high risk of leaving
+- **pricing optimisation** is used to determine what the prices should be for a company's products or services
+- **risk assessment** helps identify and mitigate risks within a company
+- **employee attrition prediction** helps identify high-risk employees who may resign voluntarily
+
+#### Lesson takeaway
+
+The overall lesson is that data-driven decision-making is used across many different business contexts.
+
+Even though the terminology changes from one model to another, the underlying logic remains familiar:
+
+1. collect relevant data
+2. prepare and analyse it properly
+3. identify patterns, risks, or opportunities
+4. support a better decision with evidence
+
+That is why these examples matter. They show how the same analytical mindset can be used for customer retention, pricing, risk reduction, and workforce planning.
+
+### How to use this in an exam
+
+For the semester exam, you should think of Lessons **1.1 to 1.4** as one connected knowledge area rather than as isolated topics.
+
+The exam will often test whether you can:
+
+1. identify the business problem clearly
+2. explain which type of data is relevant
+3. connect the problem to a suitable DDM model or technique
+4. justify the recommendation with evidence
+5. explain the likely business impact of the decision
+
+#### Key takeaways for the semester exam
+
+The most important idea from Lessons **1.1 to 1.4** is this:
+
+**Data-driven decision-making means using evidence, structured analysis, and measurable outcomes to make a better decision than intuition alone would provide.**
+
+You should be ready to explain the following in an exam answer:
+
+- **Lesson 1.1 relevance:** what DDM is, why it matters, how data improves accuracy, objectivity, efficiency, and decision quality
+- **Lesson 1.2 relevance:** which techniques can be used, such as decision trees, heuristics, optimisation, matrices, scheduling, routing, and analytical approaches
+- **Lesson 1.3 relevance:** how decision criteria help choose between alternatives under uncertainty, especially when outcomes, risk attitudes, or probabilities differ
+- **Lesson 1.4 relevance:** how those ideas appear inside real organisational problems such as churn, pricing, risk assessment, and employee attrition
+
+#### What examiners usually want to see
+
+A strong exam answer usually includes:
+
+- a clear definition of the problem
+- the relevant data sources or variables
+- the method or model being used
+- a short explanation of how the model works
+- the reason that method fits the problem
+- the business action or recommendation
+- the expected effect on the organisation
+
+#### Real semester-style scenario
+
+Imagine the exam gives you a case like this:
+
+> A subscription-based digital learning company has four problems at the same time:
+> 
+> - customer churn is increasing
+> - managers are unsure whether prices should be changed
+> - the company is worried about phishing and data-security risks
+> - experienced employees are leaving the company
+
+The exam question asks:
+
+> Explain how the company could use data-driven decision-making to respond to these challenges.
+
+#### How to use all knowledge from Lesson 1.1 to 1.4 in that case
+
+##### Part 1: Start with Lesson 1.1
+
+You would begin by explaining the **foundation of DDM**.
+
+**Highlighted exam relevance:** The company should not rely on guesswork. It should collect evidence, analyse the problem, and use measurable outcomes to guide decisions.
+
+At this stage, you could mention:
+
+- the need for accurate and relevant data
+- the role of KPIs
+- the value of evidence-based decisions
+- the importance of linking data to action
+
+##### Part 2: Bring in Lesson 1.2
+
+Next, you would explain which **decision-making techniques** may help.
+
+**Highlighted exam relevance:** Lesson 1.2 helps you explain the tools that support the decision, not just the business problem itself.
+
+Examples in this scenario:
+
+- for **churn**, the company can use predictive models and segmentation logic
+- for **pricing**, the company can use elasticity analysis, regression, and optimisation thinking
+- for **risk assessment**, the company can use structured evaluation tools such as matrices and scenario analysis
+- for **operations or staffing**, the company may use heuristics, forecasting, or optimisation methods
+
+This is where you show that you understand how techniques are chosen to fit the problem.
+
+##### Part 3: Bring in Lesson 1.3
+
+Then you would explain how **decision criteria** matter when there is uncertainty.
+
+**Highlighted exam relevance:** Lesson 1.3 is useful when the exam asks how to choose between alternatives or justify one action over another.
+
+For example:
+
+- if the company is unsure whether to raise or lower prices, different criteria may produce different recommendations depending on risk attitude
+- if retention actions have different possible outcomes, the company may need to compare best-case, worst-case, average, regret-based, or probability-based results
+
+This part of the answer shows that a data analyst does not only analyse data. The analyst must also justify how a final decision is selected.
+
+##### Part 4: Bring in Lesson 1.4
+
+Now you apply the knowledge to the real company problems.
+
+**Highlighted exam relevance:** Lesson 1.4 is where you show that you can move from theory to real-world use cases.
+
+You could structure the answer like this:
+
+- **Churn prediction:** analyse customer usage, support tickets, and subscription behaviour to identify customers at high risk of leaving
+- **Pricing optimisation:** use objective-setting, historical sales data, elasticity analysis, and regression to decide whether a new price point improves revenue or profit
+- **Risk assessment:** identify security threats, analyse impact and likelihood, evaluate priorities, apply treatment, and monitor controls
+- **Employee attrition prediction:** use employee data, preprocessing, feature selection, and retention strategies to identify high-risk employees earlier
+
+#### Visual integrated case explanation
+
+```text
+BUSINESS PROBLEM
+Customer churn + pricing uncertainty + security risks + employee resignations
+    ->
+LESSON 1.1 FOUNDATION
+Use DDM principles, evidence, and KPIs
+    ->
+LESSON 1.2 TECHNIQUES
+Choose models, heuristics, optimisation tools, or predictive approaches
+    ->
+LESSON 1.3 DECISION CRITERIA
+Compare alternatives under uncertainty and justify the final decision
+    ->
+LESSON 1.4 USE CASES
+Apply churn prediction, pricing optimisation, risk assessment, and attrition prediction
+    ->
+BUSINESS ACTION
+Retain customers, set better prices, reduce risk, and keep key employees
+```
+
+#### Interactive-style exam walkthrough
+
+```text
+Question 1: What is the business problem?
+-> Multiple risks affecting revenue, safety, and workforce stability
+
+Question 2: What data is needed?
+-> Customer, pricing, security, and employee data
+
+Question 3: What DDM methods apply?
+-> Predictive models, optimisation logic, risk analysis, and decision criteria
+
+Question 4: What should the company do with the results?
+-> Use the results to take earlier, evidence-based action
+```
+
+#### Strong answer structure for the semester exam
+
+If you get a broad case question, a strong structure is:
+
+1. define the problem clearly
+2. identify the relevant data and KPIs
+3. connect the case to the correct model or decision technique
+4. explain how uncertainty affects the decision
+5. recommend an action and justify it with business reasoning
+
+#### Final revision focus
+
+Before the semester exam, make sure you can confidently explain:
+
+- what DDM is and why it matters
+- how to choose a suitable decision-making technique
+- how decision criteria affect final recommendations under uncertainty
+- how real business cases such as churn, pricing, risk, and attrition use the same analytical logic
+- how to connect data, method, decision, and business impact in one coherent answer
+            """,
+            "key_points": [
+                "Lesson 1.4 connects earlier methods to real data-driven decision problems in society and business",
+                "Churn prediction now includes a full model pipeline covering data collection, processing, EDA, cohorts, segmentation, trend analysis, feature engineering, hypothesis testing, and visualisation",
+                "Fraud detection uses risk indicators, historical cases, and real-time data to support approve-review-block decisions",
+                "Demand forecasting, credit scoring, inventory optimisation, pricing optimisation, risk assessment, and employee attrition prediction show how prediction and structured analysis support planning, lending, operations, commercial strategy, safer decision-making, and workforce retention",
+                "Pricing optimisation now includes market research, cost structure, pricing constraints, demand elasticity, and a linear-regression revenue example to connect price decisions to profit, revenue, and customer response",
+                "Risk assessment maps closely to earlier lessons through data collection, qualitative and quantitative analysis, prioritisation, monitoring, and documentation",
+                "Employee attrition prediction uses employee data, preprocessing, feature selection, training and test splits, and retention strategies to identify high-risk employees earlier",
+                "These examples show that DDM is used to reduce loss, improve service, allocate resources, and make faster decisions under uncertainty"
+            ],
+            "visual_elements": {
+                "diagrams": true,
+                "tables": true,
+                "highlighted_sections": true
+            }
+        },
+        {
+            "lesson_number": "2.0",
+            "title": "Module 1 Overview and Learning Outcomes",
+            "content": """
+### Module 1: Lessons and Tasks
+
+In this module, students build a foundational understanding of the principles and importance of **data-driven decision-making (DDM)**. The role of data is central: when organisations use data well, they make stronger decisions, react earlier to risk, and improve outcomes more consistently.
+
+#### Module goal
+
+The goal of this course is to help candidates use data to make informed decisions, respond proactively to predictions, explore real-world industry use cases, and justify actions with appropriate decision-making techniques and criteria.
+
+#### Module overview
+
+| Focus area | What this means in practice |
+|-----------|------------------------------|
+| Role of data | Data is used as evidence rather than intuition alone |
+| Decision impact | Better decisions improve revenue, efficiency, service, and risk management |
+| Real-world scenarios | Students work with industry use cases, before-and-after changes, and business examples |
+| Criteria and techniques | Students learn how to choose methods, compare criteria, and justify decisions |
+| Predictive action | Students learn how forecasts can trigger earlier, proactive responses |
+
+#### Learning outcomes
+
+In this module, we are covering the following **knowledge learning outcomes**:
+
+- The candidate has knowledge of real-world use case stories and how it has impacted companies outside the data analysis field.
+- The candidate has knowledge of Key Performance Indicators (KPI), data types (qualitative vs. quantitative) and the data analysis lifecycle.
+
+In this module, we are covering the following **skill learning outcomes**:
+
+- The candidate can apply knowledge of the data lifecycle to proposed scenarios to create an iterative solution and analyse key performance indicators.
+- The candidate masters relevant theoretical models to proxy real-world data.
+- The candidate can apply knowledge to practical problems, such as market price prediction and using data-driven decision-making techniques.
+
+In this module, we are covering the following **general competence learning outcomes**:
+
+- The candidate understands the fidelity of data within a project and its owners.
+- The candidate can develop work methods using KPIs to guide the decision-making process.
+
+#### Module 1 tasks
+
+1. Review one real-world industry use case and identify how data changed the final decision.
+2. Separate qualitative and quantitative evidence from a shared case scenario.
+3. Map a business problem through the data lifecycle from definition to action.
+4. Select KPIs that can monitor whether the recommendation worked.
+5. Explain how a prediction or model could support earlier, proactive action.
+
+#### Why this matters for business
+
+Businesses rarely fail because they have no data. They often fail because they do not use the right data, in the right format, with the right decision criteria. Data-driven decision-making helps teams:
+
+1. define the problem more clearly
+2. reduce guesswork
+3. compare options more objectively
+4. monitor whether actions actually worked
+
+#### Core idea
+
+Data-driven decision-making means using relevant evidence, structured analysis, and measurable outcomes to choose between actions. It does not remove human judgment, but it improves judgment by grounding decisions in evidence and helping teams act before predicted problems become real losses.
+            """,
+            "key_points": [
+                "Module 1 links real-world use cases to KPI, data types, and the full data lifecycle",
+                "Candidates practice applying theoretical models to proxy real-world data and practical prediction scenarios",
+                "General competence focuses on data fidelity, ownership, and KPI-guided decision processes",
+                "The business value of DDM is better decisions, proactive response to predictions, and more consistent results"
+            ],
+            "visual_elements": {
+                "diagrams": false,
+                "tables": true,
+                "highlighted_sections": true
+            }
+        },
+        {
+            "lesson_number": "2.1",
+            "title": "Decision-Making with Relevant Data Models",
+            "content": """
+### Course Focus
+
+Data Driven Decision-Making is about selecting the right analytical approach for the problem in front of you. The goal is not to analyse all available data, but to apply relevant data models that help you make better decisions, anticipate likely outcomes, and react proactively when predictions point to upcoming risk or opportunity.
+
+#### What this course emphasizes
+
+| Area | What candidates learn |
+|------|------------------------|
+| Relevant data models | How to match a model to a business problem |
+| Use cases and scenarios | How real organisations move from problem to decision |
+| Before-and-after comparisons | How to evaluate whether a change improved outcomes |
+| Analytical mindset | How to ask the right questions before choosing a method |
+
+#### Practical framing questions
+
+1. What business problem are we solving?
+2. What data model best represents that problem?
+3. What subset of the data is most relevant?
+4. What method will give the clearest answer?
+5. How will we measure whether the decision worked?
+
+Strong candidates also ask: what predictions can we trust enough to act on before the problem gets worse?
+
+The strongest decision-makers are disciplined about problem framing before they start calculating.
+            """,
+            "key_points": [
+                "The course focuses on choosing the right method for the right problem",
+                "Relevant data models should reflect the business context, not just available data",
+                "Before-and-after scenarios help connect analysis to decisions",
+                "Problem framing comes before method selection"
+            ],
+            "visual_elements": {
+                "diagrams": false,
+                "tables": true,
+                "highlighted_sections": true
+            }
+        },
+        {
+            "lesson_number": "2.2",
+            "title": "The Data Analysis Lifecycle and the Four Methods",
+            "content": """
+### From Problem to Action
+
+This course teaches the full data analysis lifecycle from start to finish:
+
+1. **Define** the problem and success criteria
+2. **Collect** relevant data
+3. **Clean** and validate the data
+4. **Analyse** using the right method
+5. **Interpret** the results in business terms
+6. **Act** on the findings and monitor impact
+
+#### Four core analytical methods
+
+| Method | Main question | Typical outcome |
+|--------|---------------|-----------------|
+| Descriptive | What happened? | Summary of past performance |
+| Diagnostic | Why did it happen? | Root-cause insight |
+| Predictive | What is likely to happen next? | Forecast or probability |
+| Prescriptive | What should we do? | Recommended action |
+
+These methods are complementary. A team may begin with descriptive analytics, move into diagnostic work to explain a change, use predictive modelling to estimate the next outcome, and finish with a prescriptive recommendation.
+
+The lifecycle matters because decisions improve when analysis is structured, repeatable, and tied to real business actions.
+            """,
+            "key_points": [
+                "The lifecycle runs from definition to action and monitoring",
+                "Descriptive, diagnostic, predictive, and prescriptive methods answer different questions",
+                "Good analysis is iterative rather than strictly linear",
+                "Structured analysis leads to stronger business decisions"
+            ],
+            "visual_elements": {
+                "diagrams": false,
+                "tables": true,
+                "highlighted_sections": true
+            }
+        },
+        {
+            "lesson_number": "2.3",
+            "title": "Qualitative, Quantitative, and Focused Data Subsets",
+            "content": """
+### Isolating the Right Problem Domain
+
+Candidates need to understand both **qualitative** and **quantitative** analysis.
+
+- **Qualitative data** explains experiences, opinions, and context
+- **Quantitative data** measures scale, change, frequency, and performance
+
+In practice, good decisions often use both.
+
+#### Example
+
+- Quantitative: Returns increased from 6% to 11%
+- Qualitative: Customer comments say sizing information is unclear
+- Decision: Review sizing guide, product descriptions, and return messaging
+
+This course also teaches the use of **data subsets** to isolate problem domains for deeper analysis.
+
+| Broad problem | Better subset |
+|---------------|---------------|
+| "Sales are down" | Sales for one region, one product family, and one time window |
+| "Support quality is worse" | First-response data for one channel and one queue |
+| "Customers are leaving" | Churn among new customers in their first 90 days |
+
+Analysts who choose the right subset can find clearer signals, avoid noisy averages, and make better recommendations.
+            """,
+            "key_points": [
+                "Qualitative data explains why people think or behave in a certain way",
+                "Quantitative data measures how much, how often, or how strongly something changed",
+                "Data subsets help isolate the real problem domain",
+                "Combining focused subsets with mixed evidence produces stronger analysis"
+            ],
+            "visual_elements": {
+                "diagrams": false,
+                "tables": true,
+                "highlighted_sections": true
+            }
+        },
+        {
+            "lesson_number": "2.4",
+            "title": "KPIs, Use Cases, and Evaluating Results",
+            "content": """
+### Measuring Whether a Decision Worked
+
+This is the part of the course where **Key Performance Indicators (KPIs)** become essential. KPIs act as practical heuristics for tracking data behaviour over time.
+
+#### KPI examples by use case
+
+| Use case | Useful KPI |
+|----------|------------|
+| Marketing campaign | Conversion rate, cost per lead |
+| Customer retention | Churn rate, renewal rate |
+| Operations improvement | Cycle time, defect rate |
+| Revenue growth | Monthly revenue, average order value |
+
+Candidates should be able to:
+
+1. Choose KPIs that match the business goal
+2. Measure results before and after a change
+3. Interpret whether the change was meaningful
+4. Recommend the next action based on evidence
+
+The course uses real-world use case studies because business decisions are rarely abstract. The value of analytics comes from applying methods to practical problems and measuring whether outcomes improved.
+            """,
+            "key_points": [
+                "KPIs translate business goals into measurable signals",
+                "Before-and-after comparisons help evaluate interventions",
+                "Use case studies help candidates connect theory to practice",
+                "Strong recommendations depend on measurable outcomes"
+            ],
+            "visual_elements": {
+                "diagrams": false,
+                "tables": true,
+                "highlighted_sections": true
+            }
+        },
+        {
+            "lesson_number": "2.5",
+            "title": "What Is Data-Driven Decision-Making? Techniques in One Shared Case Scenario",
+            "content": """
+### What is data-driven decision-making?
+
+**Data-driven decision-making** is the process of using relevant data, structured analysis, and clear decision criteria to choose between actions.
+
+Instead of asking only, "What do we think is happening?", a data-driven team asks:
+
+- What does the data show?
+- What patterns or signals matter?
+- What are the possible actions?
+- Which action best fits our goals and constraints?
+
+#### Simple examples
+
+| Scenario | Data used | Decision |
+|----------|-----------|----------|
+| Retail store | Daily sales by product and region | Increase inventory for high-demand products |
+| Hospital | Missed appointments and reminder response rates | Change reminder process |
+| Marketing team | Conversion rate, CAC, and campaign channel data | Reallocate campaign budget |
+
+### Shared case scenario: online grocery delivery company
+
+Use the same scenario for the rest of this lesson:
+
+**Problem:** A grocery delivery company has rising late deliveries, falling customer satisfaction, and increasing refund costs.
+
+**Relevant data:**
+- On-time delivery KPI
+- Route length and traffic data
+- Driver availability
+- Order volume by time of day
+- Customer complaints and feedback
+
+### How DDM is used in this case
+
+1. **Descriptive:** Late deliveries increased from 8% to 17%
+2. **Diagnostic:** Delays are concentrated in one city zone during evening demand peaks
+3. **Predictive:** Forecasts show delays will rise further on Fridays unless routes change
+4. **Prescriptive:** Recommend route redesign, staggered delivery slots, and extra drivers during peak windows
+
+### What decision-making techniques are there?
+
+#### 1. Rules and decision criteria
+
+Rules are simple decision structures such as:
+- if late deliveries exceed 12%, trigger intervention
+- if refund cost per order exceeds target, review route performance
+
+These are useful when the business needs fast, repeatable decisions.
+
+#### 2. Heuristics
+
+Heuristics are fast, practical rules of thumb used when time, information, or resources are limited.
+
+**Examples in the grocery scenario:**
+- **Priority heuristic:** fix the zone with the highest delay first
+- **80/20 heuristic:** focus on the 20% of routes causing 80% of complaints
+- **Nearest-driver heuristic:** assign the closest available driver first
+
+Heuristics are not perfect, but they are often useful for fast operational decisions.
+
+#### 3. Algorithms
+
+Algorithms are step-by-step procedures used to produce a decision or recommendation more systematically.
+
+**Examples in the grocery scenario:**
+- route assignment algorithm
+- delivery time prediction model
+- demand forecasting algorithm for staffing needs
+
+Algorithms are especially valuable when the number of variables becomes too large for manual decision-making.
+
+#### 4. Optimization techniques
+
+Optimization techniques search for the best possible solution under constraints.
+
+**Common optimization ideas:**
+- minimize total delivery time
+- minimize refund cost
+- maximize on-time delivery rate
+- balance staffing cost against service quality
+
+**Examples in the grocery scenario:**
+- route optimization to reduce travel time
+- delivery-slot optimization to reduce demand spikes
+- workforce scheduling optimization for peak hours
+
+### Relevance to decision-making
+
+| Technique | Best use | Limitation |
+|-----------|----------|------------|
+| Heuristics | Fast, practical action | Can oversimplify |
+| Algorithms | Repeatable, scalable decisions | Depends on data quality and logic |
+| Optimization | Best outcome under constraints | Can be more complex to build and explain |
+
+### Key takeaway from the case
+
+The same business problem can use different decision techniques at different levels. A manager may begin with heuristics for immediate action, apply algorithms for more consistent decisions, and then use optimization to improve long-term performance.
+            """,
+            "key_points": [
+                "DDM means using evidence, analysis, and explicit decision criteria to choose actions",
+                "Heuristics are fast rules of thumb, while algorithms are systematic procedures",
+                "Optimization techniques search for the best solution under business constraints",
+                "In real cases, teams often combine descriptive, predictive, heuristic, algorithmic, and optimization approaches"
+            ],
+            "visual_elements": {
+                "diagrams": false,
+                "tables": true,
+                "highlighted_sections": true
+            }
+        },
+        {
+            "lesson_number": "2.6",
+            "title": "Decision Criteria Under Uncertainty in the Grocery-Delivery Scenario",
+            "content": """
+### Decision criteria under uncertainty
+
+Sometimes a team must choose an action before it knows exactly what future conditions will occur. In those cases, analysts use **decision criteria under uncertainty**.
+
+We will keep using the same grocery-delivery scenario:
+
+**Problem:** late deliveries are increasing, satisfaction is falling, and refund costs are rising.
+
+**Decision options:**
+- Hire temporary drivers
+- Buy route-optimization software
+- Introduce staggered delivery windows
+
+**Possible future conditions:**
+- High demand and heavy traffic
+- Normal demand
+- Low demand
+
+#### Payoff matrix in the scenario
+
+Assume the values below are estimated net payoffs in thousands of dollars:
+
+| Strategy | High demand + traffic | Normal demand | Low demand |
+|----------|------------------------|---------------|------------|
+| Hire temporary drivers | 90 | 40 | -10 |
+| Route-optimization software | 75 | 55 | 15 |
+| Staggered delivery windows | 50 | 45 | 30 |
+
+### 1. The Maximax Optimistic rule
+
+This rule chooses the alternative with the **highest possible payoff**.
+
+- Best payoff for temporary drivers = 90
+- Best payoff for route optimization = 75
+- Best payoff for staggered windows = 50
+
+**Choice:** Hire temporary drivers
+
+**Why?** This rule is optimistic because it focuses on the most favorable possible outcome.
+
+### 2. The Maximin rule of savage
+
+This rule chooses the option with the **best worst-case payoff**.
+
+- Worst payoff for temporary drivers = -10
+- Worst payoff for route optimization = 15
+- Worst payoff for staggered windows = 30
+
+**Choice:** Staggered delivery windows
+
+**Why?** This rule is cautious. It protects the business against the worst likely outcome.
+
+### 3. The Realistic rule of Hurwicz
+
+Hurwicz combines optimism and caution using an optimism coefficient $\alpha$.
+
+If $\alpha = 0.6$, then:
+
+$$
+	ext{Hurwicz score} = \alpha \cdot \text{best payoff} + (1-\alpha) \cdot \text{worst payoff}
+$$
+
+- Temporary drivers: $0.6 \cdot 90 + 0.4 \cdot (-10) = 50$
+- Route optimization: $0.6 \cdot 75 + 0.4 \cdot 15 = 51$
+- Staggered windows: $0.6 \cdot 50 + 0.4 \cdot 30 = 42$
+
+**Choice:** Route-optimization software
+
+**Why?** Hurwicz is realistic because it balances upside potential with downside protection.
+
+### 4. The Minimax regret of savage
+
+This rule builds a **regret table** and chooses the option with the **smallest maximum regret**.
+
+Best payoff by state:
+- High demand + traffic = 90
+- Normal demand = 55
+- Low demand = 30
+
+Regrets:
+
+| Strategy | High demand regret | Normal demand regret | Low demand regret | Max regret |
+|----------|--------------------|----------------------|-------------------|------------|
+| Hire temporary drivers | 0 | 15 | 40 | 40 |
+| Route-optimization software | 15 | 0 | 15 | 15 |
+| Staggered delivery windows | 40 | 10 | 0 | 40 |
+
+**Choice:** Route-optimization software
+
+**Why?** This rule tries to avoid the biggest feeling of having chosen the wrong option.
+
+### 5. The average payoff rule of Laplace
+
+Laplace assumes all future states are equally likely and averages the payoffs.
+
+- Temporary drivers: $(90 + 40 - 10)/3 = 40$
+- Route optimization: $(75 + 55 + 15)/3 = 48.3$
+- Staggered windows: $(50 + 45 + 30)/3 = 41.7$
+
+**Choice:** Route-optimization software
+
+**Why?** Laplace is useful when there is no strong reason to prefer one future state over another.
+
+### 6. The Expected payoff rule
+
+This rule uses probabilities for each state. Suppose the business estimates:
+
+- High demand + traffic = 0.30
+- Normal demand = 0.50
+- Low demand = 0.20
+
+Then:
+
+- Temporary drivers: $0.30 \cdot 90 + 0.50 \cdot 40 + 0.20 \cdot (-10) = 45$
+- Route optimization: $0.30 \cdot 75 + 0.50 \cdot 55 + 0.20 \cdot 15 = 53$
+- Staggered windows: $0.30 \cdot 50 + 0.50 \cdot 45 + 0.20 \cdot 30 = 43.5$
+
+**Choice:** Route-optimization software
+
+**Why?** This rule is useful when management has reasonable probability estimates for each state.
+
+### 7. The Expected loss of opportunity rule
+
+This rule uses the regret table and applies probabilities to regret instead of payoff.
+
+- Temporary drivers: $0.30 \cdot 0 + 0.50 \cdot 15 + 0.20 \cdot 40 = 15.5$
+- Route optimization: $0.30 \cdot 15 + 0.50 \cdot 0 + 0.20 \cdot 15 = 7.5$
+- Staggered windows: $0.30 \cdot 40 + 0.50 \cdot 10 + 0.20 \cdot 0 = 17$
+
+**Choice:** Route-optimization software
+
+**Why?** It minimizes the expected cost of making the wrong choice.
+
+### How these criteria are used in the real case
+
+In the grocery-delivery scenario, different decision criteria can produce different answers:
+
+- A very optimistic manager may choose temporary drivers
+- A very cautious manager may choose staggered delivery windows
+- A balanced or probability-based manager will likely choose route-optimization software
+
+This shows why decision criteria matter. The best choice is not only about data, but also about risk attitude, uncertainty, and business priorities.
+            """,
+            "key_points": [
+                "Different decision criteria can recommend different actions from the same payoff matrix",
+                "Maximax is optimistic, maximin is cautious, and Hurwicz balances optimism with realism",
+                "Savage-based regret criteria focus on minimizing the cost of choosing badly",
+                "Expected payoff and expected loss of opportunity are strongest when probabilities are available"
+            ],
+            "visual_elements": {
+                "diagrams": false,
+                "tables": true,
+                "highlighted_sections": true
+            }
+        }
     ]
 }
 
@@ -24977,26 +33020,59 @@ courses_data = [
         "semester": "2025 Spring",
         "weeks": 4,
         "hours": 168,
-        "description": "This course establishes core concepts of decision-making techniques applied to data models. Learn the data analysis lifecycle, techniques (Descriptive, Predictive, Prescriptive, Diagnostic), and qualitative vs quantitative data.",
+        "description": "This course establishes the core concepts of decision-making techniques applied to relevant data models. It prepares candidates to use data for informed decisions, act proactively on predictions, explore real-world industry use cases, and apply decision-making techniques and criteria through the full data lifecycle.",
         "knowledge": [
-            "Data structure models and where to apply applicable data sets",
-            "Concepts and processes for data cleaning using real world data",
-            "Real-world use case stories and company impacts",
-            "Key Performance Indicators (KPI) and data types",
-            "Four data analysis philosophies: descriptive, diagnostic, predictive, prescriptive",
-            "Error detection, elimination, and correction"
+            "Decision-making techniques applied to relevant data models",
+            "The full data analysis lifecycle from problem definition to action",
+            "Real-world before-and-after scenarios and practical industry use case studies",
+            "Key Performance Indicators (KPI) as heuristics for tracking data behaviour",
+            "Qualitative versus quantitative data and when each is appropriate",
+            "How data subsets are used to isolate problem domains for further analysis",
+            "How predictions support proactive business responses and earlier intervention"
         ],
         "skills": [
-            "Apply data driven decision making to problems like market price prediction",
-            "Strategically select appropriate data models to solve scenarios",
-            "Apply data lifecycle to create iterative solutions and analyze KPIs",
-            "Identify erroneous data and eliminate/correct them",
-            "Master theoretical models to real world data"
+            "Apply data-driven decision-making to realistic business scenarios",
+            "Select the analytical method that best matches the problem and desired outcome",
+            "Apply the data lifecycle to build iterative, evidence-based solutions",
+            "Use data subsets to isolate relevant problem domains for deeper analysis",
+            "Compare qualitative and quantitative evidence to improve recommendations",
+            "Use predictions and decision criteria to justify proactive action"
         ],
         "competence": [
             "Understand the fidelity of data within a project",
             "Develop work methods using KPIs to guide decision-making",
-            "Deliver insights to gauge if models are accurate for intended use"
+            "Deliver insights that show whether a model or intervention is fit for its intended use",
+            "Explain why a chosen criterion, forecast, or recommendation fits the business context"
+        ],
+        "learning_outcomes": [
+            {
+                "category": "Knowledge",
+                "items": [
+                    "Has knowledge of data structures models and where to apply applicable data sets to the correct scenario",
+                    "Has knowledge of concepts and processes used for data cleaning using proxy real world data",
+                    "Has knowledge of real-world use case stories and how it has impacted companies outside the data analysis field",
+                    "Has knowledge of key performance indicators (KPI), data types (qualitative vs quantitative) and the data analysis lifecycle",
+                    "Has knowledge of the four data analysis philosophies: descriptive, diagnostic, predictive, prescriptive; as well as surface error detection, elimination, and correction"
+                ]
+            },
+            {
+                "category": "Skills",
+                "items": [
+                    "Can apply knowledge to practical problems, such as market price prediction, using data driven decision making techniques",
+                    "Can apply knowledge to strategically select appropriate data models to solve problem scenarios",
+                    "Can apply knowledge of the data lifecycle to proposed scenarios to create an iterative solution and analyse key performance indicators",
+                    "Can identify incorrect erroneous data and use insights on how to eliminate and correct them",
+                    "Masters relevant theoretical models to proxy real world data"
+                ]
+            },
+            {
+                "category": "Competence",
+                "items": [
+                    "Understands the fidelity of data within a project and its owners",
+                    "Can develop work methods using KPIs as a guide the decision-making process",
+                    "Can deliver insights to entire data sets to gauge if the model is accurate for the intended use"
+                ]
+            }
         ]
     },
     {
@@ -25431,6 +33507,271 @@ courses_data = [
     },
 ]
 
+CURATED_FLASHCARD_SETS = {
+    "FI1BBDD75": [
+        {
+            "front": "What question does descriptive analytics answer?",
+            "back": "Descriptive analytics answers 'What happened?' It summarizes historical data using reports, dashboards, counts, averages, and trends.",
+            "tags": ["analytics", "descriptive", "ddm"]
+        },
+        {
+            "front": "What is the main purpose of diagnostic analytics?",
+            "back": "Diagnostic analytics explains why something happened. It uses drill-down analysis, correlation, segmentation, and root-cause investigation.",
+            "tags": ["analytics", "diagnostic", "ddm"]
+        },
+        {
+            "front": "How is predictive analytics different from prescriptive analytics?",
+            "back": "Predictive analytics forecasts what is likely to happen next, while prescriptive analytics recommends what action should be taken based on those forecasts.",
+            "tags": ["analytics", "predictive", "prescriptive"]
+        },
+        {
+            "front": "List the six stages of the data analysis lifecycle.",
+            "back": "Define, Collect, Clean, Analyze, Interpret, and Act. The lifecycle is iterative, so analysts may return to earlier stages when needed.",
+            "tags": ["lifecycle", "process", "ddm"]
+        },
+        {
+            "front": "Why are KPIs important in decision-making?",
+            "back": "KPIs translate business goals into measurable signals. They help teams track performance, compare before-and-after results, and decide whether an intervention is working.",
+            "tags": ["kpi", "metrics", "ddm"]
+        },
+        {
+            "front": "What is the difference between qualitative and quantitative data?",
+            "back": "Qualitative data describes experiences, opinions, and categories. Quantitative data measures counts, amounts, frequencies, or changes using numbers.",
+            "tags": ["data types", "qualitative", "quantitative"]
+        },
+        {
+            "front": "Why do analysts use data subsets?",
+            "back": "Analysts use data subsets to isolate a relevant problem domain, such as a specific region, product line, or customer segment, instead of averaging unrelated data together.",
+            "tags": ["subsets", "problem framing", "ddm"]
+        },
+        {
+            "front": "Give one example of proxy real-world data.",
+            "back": "Proxy real-world data is practice data that simulates realistic business conditions, such as anonymized sales data, sample churn records, or mock support tickets used for training and analysis.",
+            "tags": ["proxy data", "data cleaning", "ddm"]
+        },
+        {
+            "front": "What does 'data fidelity' mean in a project?",
+            "back": "Data fidelity refers to how trustworthy, accurate, complete, and fit-for-purpose the data is for the analysis being performed.",
+            "tags": ["data quality", "fidelity", "ddm"]
+        },
+        {
+            "front": "How can before-and-after analysis support business decisions?",
+            "back": "Before-and-after analysis compares KPI performance around a change or intervention. It helps teams assess whether results improved and whether the change should be expanded, revised, or reversed.",
+            "tags": ["before-after", "evaluation", "ddm"]
+        },
+        {
+            "front": "What is surface error detection in data analysis?",
+            "back": "Surface error detection is the initial identification of obvious issues such as missing values, duplicates, impossible values, wrong formats, or inconsistent labels before deeper analysis begins.",
+            "tags": ["errors", "data cleaning", "ddm"]
+        },
+        {
+            "front": "Why must the analytical method match the scenario?",
+            "back": "Different problems require different methods. A summary report, root-cause investigation, forecast, and action recommendation are not the same task, so the wrong method can lead to weak decisions.",
+            "tags": ["method selection", "scenarios", "ddm"]
+        }
+    ]
+}
+
+CURATED_EXAM_QUESTION_BANK = {
+    "FI1BBDD75": [
+        {
+            "type": "knowledge",
+            "question": "A retailer sees a 12% drop in weekend sales. Explain which analytical method should be used first and why.",
+            "answer": "The first method should usually be descriptive analytics because the team must first confirm what happened, when it happened, and how large the drop is. This means checking sales by date, store, product, and region before moving into diagnostic analysis to explain the cause."
+        },
+        {
+            "type": "knowledge",
+            "question": "Describe the difference between qualitative and quantitative data, and give one realistic business example of each.",
+            "answer": "Qualitative data captures descriptive or categorical information such as comments, interview responses, or support themes. Quantitative data captures measurable numeric values such as revenue, conversion rate, or number of complaints. For example, customer comments about confusing checkout are qualitative, while a drop in conversion rate from 4.2% to 3.1% is quantitative."
+        },
+        {
+            "type": "skills",
+            "question": "A company wants to predict housing prices in a local market. Explain how data-driven decision-making could be applied to this scenario.",
+            "answer": "The analyst would define the prediction goal, collect relevant data such as size, location, age, and recent sale prices, clean the dataset, and choose an appropriate predictive model. After evaluating model accuracy, the analyst would interpret the results, check whether the model is fit for the intended use, and communicate any limitations before it is used for pricing decisions."
+        },
+        {
+            "type": "skills",
+            "question": "Explain how you would use a data subset to investigate a churn problem more effectively.",
+            "answer": "Instead of analyzing the full customer base at once, I would isolate a relevant subset such as new customers in their first 90 days or customers on one pricing plan. This reduces noise, makes patterns easier to spot, and helps identify whether the churn issue is concentrated in a particular segment rather than across the entire business."
+        },
+        {
+            "type": "case_study",
+            "question": "A hospital introduces a new appointment reminder system. Missed appointments fall from 14% to 9%, and patient comments say reminders are now easier to understand. What should the analyst conclude, and what should happen next?",
+            "answer": "The analyst can conclude that the intervention is associated with an improvement because both KPI performance and qualitative feedback moved in a positive direction. The next step is to continue monitoring the missed-appointment KPI, compare results across patient groups, and confirm no other major process changes caused the improvement before expanding the system."
+        },
+        {
+            "type": "knowledge",
+            "question": "Why are KPIs described as heuristics in data-driven decision-making?",
+            "answer": "KPIs are heuristics because they give practical, simplified signals about performance that help guide decisions. They do not capture everything about a business situation, but they help teams monitor behavior, compare outcomes, and decide where to investigate further."
+        },
+        {
+            "type": "skills",
+            "question": "Name two common forms of erroneous data and explain how you would correct them.",
+            "answer": "Two common forms are duplicate records and inconsistent labels. Duplicates can be removed using unique identifiers or deduplication rules, while inconsistent labels such as 'USA', 'U.S.A.', and 'United States' can be standardized into one format before analysis."
+        },
+        {
+            "type": "case_study",
+            "question": "A support team says customer satisfaction has declined. Build a short analytical plan using the data lifecycle.",
+            "answer": "Define the problem by agreeing on the KPI and timeframe. Collect support scores, ticket data, and customer comments. Clean the data by standardizing categories and checking for missing values. Analyze patterns by channel, queue, and issue type. Interpret the main causes, then recommend actions such as staffing changes, training, or process improvements and monitor whether satisfaction improves afterward."
+        },
+        {
+            "type": "knowledge",
+            "question": "What does it mean to understand the fidelity of data and its owners within a project?",
+            "answer": "It means understanding how trustworthy and fit-for-purpose the data is, who is responsible for collecting or maintaining it, and what limitations or permissions apply. This matters because poor-quality or poorly governed data can lead to weak models and bad decisions."
+        },
+        {
+            "type": "general",
+            "question": "Explain why real-world use case stories are important in a decision-making course.",
+            "answer": "Use case stories show how analytical methods affect real businesses, operations, and customers outside the classroom. They help candidates connect theory to action by seeing how data models, KPIs, and decisions produce measurable impact in practical settings."
+        },
+        {
+            "type": "skills",
+            "question": "How would you decide whether a descriptive, diagnostic, predictive, or prescriptive approach is most appropriate for a scenario?",
+            "answer": "I would start by identifying the business question. If the team needs a summary of what happened, use descriptive analytics. If they need the cause, use diagnostic analytics. If they want a forecast, use predictive analytics. If they need the best action to take, use prescriptive analytics."
+        },
+        {
+            "type": "case_study",
+            "question": "An e-commerce business sees more product returns after changing its sizing guide. Describe how qualitative and quantitative evidence should be combined before making a recommendation.",
+            "answer": "Quantitative data should be used to measure return rate changes, affected product groups, and time periods. Qualitative evidence such as customer comments and support messages should be used to understand confusion or friction in the sizing guide. A recommendation should combine both by linking the KPI increase to the customer feedback before redesigning the guide and testing results afterward."
+        }
+    ]
+}
+
+CURATED_PRACTICE_QUESTION_BANK = {
+    "FI1BBDD75": [
+        {
+            "type": "knowledge",
+            "question": "In the grocery-delivery scenario, what is the difference between the Maximax and Maximin criteria?",
+            "answer": "Maximax chooses the option with the best possible payoff, so it suits an optimistic decision maker. Maximin chooses the option with the strongest worst-case payoff, so it suits a cautious decision maker who wants to limit downside risk."
+        },
+        {
+            "type": "knowledge",
+            "question": "What does the Hurwicz criterion add that Maximax and Maximin do not?",
+            "answer": "Hurwicz blends optimism and caution by weighting each strategy's best and worst outcomes using an optimism factor. This makes it useful when a decision maker is neither fully risk-seeking nor fully risk-averse."
+        },
+        {
+            "type": "knowledge",
+            "question": "Why is the Laplace rule useful when you do not trust any single market scenario more than the others?",
+            "answer": "The Laplace rule assumes all scenarios are equally likely and compares average payoffs. It is useful when no reliable probability estimates are available, so the analyst needs a neutral starting point."
+        },
+        {
+            "type": "skills",
+            "question": "A delivery team can choose between hiring more drivers, optimizing routes, or outsourcing overflow orders. How would you calculate minimax regret for these three options?",
+            "answer": "List the payoff for each option under every demand scenario, then find the best payoff in each scenario. Subtract each option's payoff from that scenario's best payoff to build the regret matrix, then choose the option with the smallest maximum regret."
+        },
+        {
+            "type": "skills",
+            "question": "You estimate probabilities of 0.2, 0.5, and 0.3 for low, medium, and high demand. Explain how to compute expected payoff for each grocery-delivery strategy.",
+            "answer": "Multiply each scenario payoff by its probability and add the three weighted values for each strategy. The strategy with the highest total expected payoff is preferred when those probabilities are considered trustworthy."
+        },
+        {
+            "type": "skills",
+            "question": "How would you explain expected loss of opportunity to a manager who is unfamiliar with decision theory?",
+            "answer": "Expected loss of opportunity is the average cost of not picking the best strategy for each scenario. You calculate it from the regret matrix, weight regrets by scenario probability, and prefer the strategy with the lowest expected missed opportunity."
+        },
+        {
+            "type": "case_study",
+            "question": "A grocery platform expects demand to rise before a holiday weekend, but the forecast is uncertain. Which criterion would you use if management wants a balanced decision rather than a fully optimistic or pessimistic one, and why?",
+            "answer": "The Hurwicz criterion is a strong choice because it balances the best-case and worst-case outcomes using an explicit optimism factor. That lets management state its risk attitude directly instead of pretending to be fully optimistic or fully defensive."
+        },
+        {
+            "type": "case_study",
+            "question": "In the grocery-delivery scenario, management says: 'We care most about avoiding the embarrassment of making the visibly wrong decision after the fact.' Which decision criterion best fits that mindset?",
+            "answer": "Minimax regret fits that mindset because it focuses on limiting the largest possible regret. It is designed for teams that want to avoid looking back and seeing that another choice would clearly have been much better in a given scenario."
+        },
+        {
+            "type": "general",
+            "question": "Why should an analyst compare several decision criteria instead of relying on only one rule in uncertain business situations?",
+            "answer": "Different criteria reflect different assumptions about uncertainty, probabilities, and risk tolerance. Comparing them helps the analyst explain tradeoffs clearly and show whether a recommendation is robust or sensitive to managerial preferences."
+        }
+    ]
+}
+
+
+def load_curated_flashcards(course_code):
+    deck = CURATED_FLASHCARD_SETS.get(course_code, [])
+    if not deck:
+        return 0
+
+    if 'flashcard_counter' not in st.session_state:
+        st.session_state.flashcard_counter = len(st.session_state.flashcards)
+
+    existing_cards = {
+        (card.get('course'), card.get('front'), card.get('back'))
+        for card in st.session_state.flashcards.values()
+    }
+
+    added = 0
+    now_iso = datetime.now().isoformat()
+    for card in deck:
+        signature = (course_code, card['front'], card['back'])
+        if signature in existing_cards:
+            continue
+
+        card_id = f"card_{st.session_state.flashcard_counter}"
+        st.session_state.flashcard_counter += 1
+        st.session_state.flashcards[card_id] = {
+            'front': card['front'],
+            'back': card['back'],
+            'course': course_code,
+            'tags': card.get('tags', []),
+            'interval': 1,
+            'repetitions': 0,
+            'ease_factor': 2.5,
+            'next_review': now_iso,
+            'created': now_iso
+        }
+        existing_cards.add(signature)
+        added += 1
+
+    st.session_state.flashcard_stats['total_cards'] = len(st.session_state.flashcards)
+    return added
+
+
+def build_curated_exam_questions(course_code, question_type_labels, num_questions):
+    bank = CURATED_EXAM_QUESTION_BANK.get(course_code, [])
+    if not bank:
+        return []
+
+    type_map = {
+        "General": "general",
+        "Knowledge-based": "knowledge",
+        "Skills-based": "skills",
+        "Case Study": "case_study"
+    }
+    allowed_types = {type_map[label] for label in question_type_labels if label in type_map}
+    filtered_bank = [question for question in bank if question['type'] in allowed_types] if allowed_types else bank[:]
+    if not filtered_bank:
+        filtered_bank = bank[:]
+
+    shuffled_bank = filtered_bank[:]
+    random.shuffle(shuffled_bank)
+
+    selected_questions = []
+    for idx in range(num_questions):
+        item = shuffled_bank[idx % len(shuffled_bank)]
+        selected_questions.append({
+            'id': idx,
+            'question': f"{item['question']}\n\nANSWER: {item['answer']}",
+            'type': item['type'],
+            'user_answer': ''
+        })
+
+    return selected_questions
+
+
+def build_curated_practice_question(course_code, question_type="general"):
+    bank = CURATED_PRACTICE_QUESTION_BANK.get(course_code, [])
+    if not bank:
+        return None
+
+    filtered_bank = [item for item in bank if item['type'] == question_type]
+    if not filtered_bank:
+        filtered_bank = bank[:]
+
+    selected_item = random.choice(filtered_bank)
+    return f"{selected_item['question']}\n\nANSWER: {selected_item['answer']}"
+
 knowledge_outcomes = [
     "Concepts and theories used in data analysis",
     "Processes and tools used for data analysis",
@@ -25528,6 +33869,10 @@ if 'important_dates' not in st.session_state:
     st.session_state.important_dates = []
 
 def generate_practice_question(course, question_type="general"):
+    curated_question = build_curated_practice_question(course.get('code'), question_type)
+    if curated_question:
+        return curated_question
+
     if client is None:
         return AI_NOT_CONFIGURED_MESSAGE
 
@@ -25692,21 +34037,282 @@ if page == "Overview":
 
     st.markdown("---")
     st.subheader("📅 Study Path")
-    
-    semesters = ["2025 Spring", "2025 Fall", "2026 Spring", "2026 Fall"]
-    
-    cols = st.columns(4)
-    for i, sem in enumerate(semesters):
-        with cols[i]:
-            st.markdown(f"**{sem}**")
-            sem_courses = [c for c in courses_data if c["semester"] == sem]
-            sem_credits = sum(c["credits"] for c in sem_courses)
-            st.caption(f"{sem_credits:.0f} credits")
-            
-            for course in sem_courses:
-                is_completed = course["code"] in st.session_state.completed_courses
-                status = "✅" if is_completed else "📚"
-                st.markdown(f"{status} {course['name']}")
+    st.caption("Aligned with JAN 2026 FT progression plan (Updated 16 Dec 2025)")
+
+    _today = date.today()
+    _deadline_by_code = {
+        _code: datetime.strptime(_deadline_s, "%Y-%m-%d").date()
+        for _code, _course_name, _deadline_s in PROGRAM_DEADLINES
+    }
+    _timeline = []
+    for _code, _name, _start_s, _end_s in STUDY_PATH_JAN2026:
+        _start = datetime.strptime(_start_s, "%Y-%m-%d").date()
+        _end = datetime.strptime(_end_s, "%Y-%m-%d").date()
+        _duration_days = (_end - _start).days + 1
+
+        _assessment_start = None
+        _assessment_deadline = None
+        if _name in COURSE_PROGRESSION_MAP:
+            _map_code, _assessment_start_s, _assessment_deadline_s = COURSE_PROGRESSION_MAP[_name]
+            _assessment_start = datetime.strptime(_assessment_start_s, "%Y-%m-%d").date()
+            _assessment_deadline = datetime.strptime(_assessment_deadline_s, "%Y-%m-%d").date()
+        elif _code in _deadline_by_code:
+            _assessment_deadline = _deadline_by_code[_code]
+        if _code in st.session_state.completed_courses:
+            _status = "completed"
+            _status_label = "Fullført"
+            _status_icon = "✅"
+        elif _start <= _today <= _end:
+            _status = "active"
+            _status_label = "Pågår"
+            _status_icon = "🟢"
+        elif _start > _today:
+            _status = "upcoming"
+            _status_label = "Kommer snart"
+            _status_icon = "🟡"
+        else:
+            _status = "past"
+            _status_label = "Frist passert"
+            _status_icon = "🔴"
+
+        _timeline.append({
+            "code": _code,
+            "name": _name,
+            "start": _start,
+            "end": _end,
+            "duration_days": _duration_days,
+            "status": _status,
+            "status_label": _status_label,
+            "status_icon": _status_icon,
+            "days_to_start": (_start - _today).days,
+            "days_to_end": (_end - _today).days,
+            "assessment_start": _assessment_start,
+            "assessment_deadline": _assessment_deadline,
+        })
+
+    _active_now = [item for item in _timeline if item["status"] == "active"]
+    _next_upcoming = sorted([item for item in _timeline if item["status"] == "upcoming"], key=lambda x: x["start"])
+
+    _next_30_days = [item for item in _next_upcoming if item["days_to_start"] <= 30]
+    _next_start_text = _next_upcoming[0]["start"].strftime("%d %b %Y") if _next_upcoming else "-"
+    _assessment_upcoming = sorted(
+        [
+            item for item in _timeline
+            if item["assessment_deadline"] and item["assessment_deadline"] >= _today
+        ],
+        key=lambda x: x["assessment_deadline"]
+    )
+    _assessment_critical = [item for item in _assessment_upcoming if (item["assessment_deadline"] - _today).days <= 14]
+
+    def _assessment_text(item):
+        if not item["assessment_deadline"]:
+            return ""
+        _days_left = (item["assessment_deadline"] - _today).days
+        if _days_left == 0:
+            _countdown = "🔥 DUE TODAY"
+        elif _days_left <= 7:
+            _countdown = f"🔴 {_days_left} dager igjen"
+        elif _days_left <= 14:
+            _countdown = f"🟡 {_days_left} dager igjen"
+        else:
+            _countdown = f"🟢 {_days_left} dager igjen"
+
+        if item["assessment_start"]:
+            return (
+                f"**ASSESSMENT:** {item['assessment_start'].strftime('%d %b')} → "
+                f"{item['assessment_deadline'].strftime('%d %b %Y')} · {_countdown}"
+            )
+        return f"**ASSESSMENT DEADLINE:** {item['assessment_deadline'].strftime('%d %b %Y')} · {_countdown}"
+
+    _m1, _m2, _m3, _m4 = st.columns(4)
+    _m1.metric("Pågår nå", len(_active_now))
+    _m2.metric("Neste start", _next_start_text)
+    _m3.metric("Kommende (30 dager)", len(_next_30_days))
+    _m4.metric("KRITISK assessment ≤14d", len(_assessment_critical))
+
+    if _assessment_upcoming:
+        _next_assessment = _assessment_upcoming[0]
+        _next_deadline = _next_assessment["assessment_deadline"]
+        _next_days_left = (_next_deadline - _today).days
+        _next_deadline_dt = datetime(
+            _next_deadline.year,
+            _next_deadline.month,
+            _next_deadline.day,
+            23,
+            59,
+            0,
+        )
+        _next_deadline_iso = _next_deadline_dt.strftime("%Y-%m-%dT%H:%M:%S")
+
+        st.markdown("#### ⏳ Countdown til neste assessment")
+        st.caption(
+            f"{_next_assessment['code']} — {_next_assessment['name']} · "
+            f"frist {_next_deadline.strftime('%d %b %Y')} kl. 23:59"
+        )
+
+        _top_message = f"**Neste assessment:** {_next_assessment['code']} — {_next_assessment['name']}  \n{_assessment_text(_next_assessment)}"
+        if _next_days_left <= 7:
+            st.error(_top_message)
+        elif _next_days_left <= 14:
+            st.warning(_top_message)
+        else:
+            st.info(_top_message)
+
+        html(f"""
+        <div style="
+            background:#111827;
+            border:1px solid #374151;
+            border-radius:10px;
+            padding:12px 16px;
+            color:#f9fafb;
+            font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:10px;
+        ">
+            <span style="font-size:13px; color:#d1d5db;">Tid igjen</span>
+            <span id="assessment-countdown-value" style="font-size:20px; font-weight:700; letter-spacing:0.5px;">--d : --h : --m : --s</span>
+        </div>
+        <script>
+            const target = new Date("{_next_deadline_iso}").getTime();
+            const valueNode = document.getElementById("assessment-countdown-value");
+
+            function pad(n) {{
+                return String(n).padStart(2, "0");
+            }}
+
+            function updateCountdown() {{
+                const now = new Date().getTime();
+                let diff = Math.floor((target - now) / 1000);
+
+                if (diff <= 0) {{
+                    valueNode.textContent = "00d : 00h : 00m : 00s";
+                    return;
+                }}
+
+                const days = Math.floor(diff / 86400);
+                diff = diff % 86400;
+                const hours = Math.floor(diff / 3600);
+                diff = diff % 3600;
+                const minutes = Math.floor(diff / 60);
+                const seconds = diff % 60;
+
+                valueNode.textContent = `${{pad(days)}}d : ${{pad(hours)}}h : ${{pad(minutes)}}m : ${{pad(seconds)}}s`;
+            }}
+
+            updateCountdown();
+            setInterval(updateCountdown, 1000);
+        </script>
+        """, height=95)
+
+        _assessment_rows = []
+        for item in _assessment_upcoming:
+            _days_left = (item["assessment_deadline"] - _today).days
+            if _days_left <= 7:
+                _priority = "KRITISK"
+            elif _days_left <= 14:
+                _priority = "SNART"
+            else:
+                _priority = "PLANLEGG"
+            _assessment_rows.append(
+                {
+                    "Prioritet": _priority,
+                    "Emne": f"{item['code']} — {item['name']}",
+                    "Assessment start": item["assessment_start"].strftime("%d %b %Y") if item["assessment_start"] else "-",
+                    "Deadline": item["assessment_deadline"].strftime("%d %b %Y"),
+                    "Dager igjen": _days_left,
+                }
+            )
+
+        st.markdown("#### 📋 Assessment-oversikt")
+        st.dataframe(pd.DataFrame(_assessment_rows), use_container_width=True, hide_index=True)
+
+    _tab_now, _tab_assessment, _tab_next, _tab_all = st.tabs(["Nå", "Assessment", "Neste 30 dager", "Hele planen"])
+
+    with _tab_now:
+        st.markdown("#### 📌 Denne uken")
+        if _active_now:
+            _current = sorted(_active_now, key=lambda x: x["start"])[0]
+            st.success(
+                f"**Nå:** {_current['code']} — {_current['name']} ({_current['status_label']})  \n"
+                f"Periode: {_current['start'].strftime('%d %b %Y')} → {_current['end'].strftime('%d %b %Y')}  \n"
+                f"Dager igjen: **{max(0, _current['days_to_end'])}**"
+            )
+            if _current["assessment_deadline"]:
+                st.warning(_assessment_text(_current))
+        else:
+            st.info("Ingen aktiv modul akkurat nå.")
+
+        if _next_upcoming:
+            _next = _next_upcoming[0]
+            st.caption(
+                f"Neste: {_next['code']} — {_next['name']} starter {_next['start'].strftime('%d %b %Y')} "
+                f"(om {_next['days_to_start']} dager)."
+            )
+
+    with _tab_assessment:
+        st.markdown("#### 🚨 Assessment-fokus")
+        if _assessment_upcoming:
+            for item in _assessment_upcoming[:5]:
+                _days_left = (item["assessment_deadline"] - _today).days
+                _message = f"**{item['code']} — {item['name']}**  \n{_assessment_text(item)}"
+                if _days_left <= 7:
+                    st.error(_message)
+                elif _days_left <= 14:
+                    st.warning(_message)
+                else:
+                    st.info(_message)
+        else:
+            st.success("Ingen kommende assessments registrert.")
+
+    with _tab_next:
+        st.markdown("#### ⏭️ Neste 30 dager")
+        if _next_30_days:
+            for item in _next_30_days:
+                _assessment_line = ""
+                if item["assessment_deadline"]:
+                    _assessment_line = f"  \n{_assessment_text(item)}"
+                st.markdown(
+                    f"🟡 **{item['code']} — {item['name']}**  \n"
+                    f"Starter: {item['start'].strftime('%d %b %Y')} · om {item['days_to_start']} dager"
+                    f"{_assessment_line}"
+                )
+        else:
+            st.info("Ingen kurs starter de neste 30 dagene.")
+
+    with _tab_all:
+        st.markdown("#### 🗂️ Hele tidslinjen")
+        _active_upcoming = [item for item in _timeline if item["status"] in ("active", "upcoming")]
+        _history = [item for item in _timeline if item["status"] in ("past", "completed")]
+
+        for item in sorted(_active_upcoming, key=lambda x: x["start"]):
+            _days_text = (
+                f"{item['days_to_end']} dager igjen"
+                if item["status"] == "active"
+                else f"Starter om {item['days_to_start']} dager"
+            )
+            _assessment_line = ""
+            if item["assessment_deadline"]:
+                _assessment_line = f"  \n{_assessment_text(item)}"
+            st.markdown(
+                f"{item['status_icon']} **{item['code']} — {item['name']}** · *{item['status_label']}*  \n"
+                f"{item['start'].strftime('%d %b %Y')} → {item['end'].strftime('%d %b %Y')} "
+                f"· {item['duration_days']} dager · {_days_text}"
+                f"{_assessment_line}"
+            )
+
+        if _history:
+            with st.expander(f"Vis historikk ({len(_history)})", expanded=False):
+                for item in sorted(_history, key=lambda x: x["start"]):
+                    _assessment_line = ""
+                    if item["assessment_deadline"]:
+                        _assessment_line = f"  \n{_assessment_text(item)}"
+                    st.markdown(
+                        f"{item['status_icon']} **{item['code']} — {item['name']}** · *{item['status_label']}*  \n"
+                        f"{item['start'].strftime('%d %b %Y')} → {item['end'].strftime('%d %b %Y')}"
+                        f"{_assessment_line}"
+                    )
     
     st.markdown("---")
     col1, col2 = st.columns(2)
@@ -26273,6 +34879,16 @@ elif page == "Training Center":
 elif page == "Course Plan":
     st.title("📚 Course Plan")
     st.markdown("---")
+
+    _study_path_by_name = {
+        _name: (_code, _start_s, _end_s)
+        for _code, _name, _start_s, _end_s in STUDY_PATH_JAN2026
+    }
+
+    _assessment_by_name = {
+        _name: (_assess_start_s, _assess_deadline_s)
+        for _name, (_code, _assess_start_s, _assess_deadline_s) in COURSE_PROGRESSION_MAP.items()
+    }
     
     df = pd.DataFrame([{
         "Code": c["code"],
@@ -26280,14 +34896,21 @@ elif page == "Course Plan":
         "Credits": c["credits"],
         "Weeks": c["weeks"],
         "Hours": c["hours"],
-        "Semester": c["semester"]
+        "Semester": c["semester"],
+        "Start Date": (_study_path_by_name.get(c["name"], (None, None, None))[1] or "-"),
+        "End Date": (_study_path_by_name.get(c["name"], (None, None, None))[2] or "-"),
+        "Assessment Start": (_assessment_by_name.get(c["name"], (None, None))[0] or "-"),
+        "Assessment Deadline": (_assessment_by_name.get(c["name"], (None, None))[1] or "-"),
     } for c in courses_data])
+
+    st.caption("Date fields are aligned with JAN 2026 FT progression plan.")
     
     col1, col2 = st.columns(2)
     with col1:
+        _semester_options = sorted(df["Semester"].dropna().unique().tolist())
         semester_filter = st.multiselect(
             "Filter by semester:",
-            options=["2025 Spring", "2025 Fall", "2026 Spring", "2026 Fall"],
+            options=_semester_options,
             default=[]
         )
     with col2:
@@ -26310,16 +34933,16 @@ elif page == "Course Plan":
     from datetime import date as _cp_date, datetime as _cp_dt
     _cp_today = _cp_date.today()
     _cp_schedule = [
-        ('IC',  'Introduction Course',         None,           '2025-10-19'),
-        ('DAF', 'Data Analysis Fundamentals',  '2025-11-03',   '2025-11-09'),
-        ('SPF', 'Spreadsheet Fundamentals',    '2025-11-24',   '2025-11-30'),
-        ('DDM', 'Data Driven Decision-Making', '2026-01-05',   '2026-01-11'),
-        ('STT', 'Statistical Tools',           '2026-01-26',   '2026-02-01'),
-        ('SP1', 'Semester Project',            '2026-02-23',   '2026-03-01'),
-        ('EVO', 'Evaluation of Outcomes',      '2026-04-27',   '2026-05-03'),
-        ('DVS', 'Data Visualisation',          '2026-06-01',   '2026-06-07'),
-        ('ARP', 'Analysis Reporting',          '2026-08-24',   '2026-08-30'),
-        ('EP1', 'Exam Project 1',              '2026-10-05',   '2026-10-11'),
+        ('IC',  'Introduction Course',         None,           '2026-01-11'),
+        ('DAF', 'Data Analysis Fundamentals',  '2026-01-26',   '2026-02-01'),
+        ('SPF', 'Spreadsheet Fundamentals',    '2026-02-16',   '2026-02-22'),
+        ('DDM', 'Data Driven Decision-Making', '2026-03-16',   '2026-03-22'),
+        ('STT', 'Statistical Tools',           '2026-04-13',   '2026-04-19'),
+        ('SP1', 'Semester Project 1',          '2026-05-11',   '2026-05-17'),
+        ('EVO', 'Evaluation of Outcomes',      '2026-09-07',   '2026-09-13'),
+        ('DVS', 'Data Visualisation',          '2026-10-12',   '2026-10-18'),
+        ('ARP', 'Analysis Reporting',          '2026-11-02',   '2026-11-08'),
+        ('EP1', 'Exam Project 1',              '2026-12-14',   '2026-12-20'),
     ]
     _cp_cols = st.columns(2)
     for _cp_i, (_cp_code, _cp_cname, _cp_start_s, _cp_dl_s) in enumerate(_cp_schedule):
@@ -26366,8 +34989,12 @@ elif page == "Course Plan":
     st.subheader("📊 Credits per Semester")
     
     semester_credits = df.groupby("Semester")["Credits"].sum().reset_index()
-    semester_order = ["2025 Spring", "2025 Fall", "2026 Spring", "2026 Fall"]
-    semester_credits["Semester"] = pd.Categorical(semester_credits["Semester"], categories=semester_order, ordered=True)
+    semester_order = _semester_options
+    semester_credits["Semester"] = pd.Categorical(
+        semester_credits["Semester"],
+        categories=semester_order,
+        ordered=True
+    )
     semester_credits = semester_credits.sort_values("Semester")
     
     st.bar_chart(semester_credits.set_index("Semester"))
@@ -27376,6 +36003,167 @@ elif page == "Study Notes":
 <li>[Lenke til delt dokument eller ressurs]</li>
 <li>[Lenke til delt dokument eller ressurs]</li>
 </ul>"""},
+        "ddm_module_overview": {"name": "DDM: Module Overview", "icon": "insights", "content": """<h1 style="color: #1a1a1a; border-bottom: 3px solid #1565c0; padding-bottom: 12px;">DDM Module Overview</h1>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #1565c0; padding-left: 12px; margin-top: 30px;">📘 Module Introduction</h2>
+<blockquote style="border-left: 4px solid #1565c0; background: #f4f8fc; padding: 15px 20px; margin: 15px 0; border-radius: 4px;">
+<p><strong>What is this module about?</strong> [Summarize the role of data in decision-making and why it matters for business success]</p>
+    <p><strong>Module goal:</strong> [Explain how data will be used to make informed decisions and respond proactively to predictions]</p>
+<p><strong>Why does it matter?</strong> [Explain the impact of using relevant data rather than intuition alone]</p>
+</blockquote>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #2e7d32; padding-left: 12px; margin-top: 30px;">🎯 Learning Outcomes Linked to This Note</h2>
+<ul style="line-height: 1.8;">
+<li>Knowledge of KPI, data types, and the data analysis lifecycle</li>
+<li>Knowledge of real-world use cases and decision-making criteria</li>
+<li>Ability to use data-driven techniques in practical scenarios</li>
+</ul>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #f9a825; padding-left: 12px; margin-top: 30px;">🧩 Core Concepts</h2>
+<ul style="line-height: 1.8;">
+<li><strong>Role of data:</strong> [How data supports decisions]</li>
+<li><strong>Prediction to action:</strong> [How forecasts or early signals should trigger proactive decisions]</li>
+<li><strong>Decision criteria:</strong> [What makes one option better than another]</li>
+<li><strong>Industry use case:</strong> [Which real-world scenario best shows the business impact]</li>
+<li><strong>Business impact:</strong> [Revenue, efficiency, quality, risk, customer experience]</li>
+</ul>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #6a1b9a; padding-left: 12px; margin-top: 30px;">📝 My Summary</h2>
+<p><em>[Write your own short explanation of what data-driven decision-making means]</em></p>
+"""},
+        "ddm_case_scenario": {"name": "DDM: Case Scenario Analysis", "icon": "analytics", "content": """<h1 style="color: #1a1a1a; border-bottom: 3px solid #00897b; padding-bottom: 12px;">DDM Case Scenario</h1>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #00897b; padding-left: 12px; margin-top: 30px;">🏢 Scenario</h2>
+<p><strong>Business:</strong> [Example: online grocery delivery company]</p>
+<p><strong>Problem:</strong> [Describe the business issue]</p>
+<p><strong>Why it matters:</strong> [Customer impact, cost impact, operational impact]</p>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #3949ab; padding-left: 12px; margin-top: 30px;">📊 Available Data</h2>
+<ul>
+<li>KPI 1: [e.g. on-time delivery rate]</li>
+<li>KPI 2: [e.g. refund cost]</li>
+<li>Qualitative evidence: [complaints, interviews, comments]</li>
+<li>Quantitative evidence: [counts, percentages, trends]</li>
+</ul>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #f4511e; padding-left: 12px; margin-top: 30px;">🔄 Lifecycle Walkthrough</h2>
+<ol>
+<li><strong>Define:</strong> [What problem are we solving?]</li>
+<li><strong>Collect:</strong> [What data is needed?]</li>
+<li><strong>Clean:</strong> [What quality issues exist?]</li>
+<li><strong>Analyze:</strong> [What method is appropriate?]</li>
+<li><strong>Interpret:</strong> [What does the evidence mean?]</li>
+<li><strong>Act:</strong> [What should the business do next?]</li>
+</ol>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #7cb342; padding-left: 12px; margin-top: 30px;">✅ Recommendation</h2>
+<p><strong>Recommended action:</strong> [Best next step]</p>
+<p><strong>Expected impact:</strong> [What KPI should improve?]</p>
+"""},
+        "ddm_techniques": {"name": "DDM: Techniques and Criteria", "icon": "rule", "content": """<h1 style="color: #1a1a1a; border-bottom: 3px solid #6d4c41; padding-bottom: 12px;">Decision-Making Techniques</h1>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #6d4c41; padding-left: 12px; margin-top: 30px;">🎯 Linked Learning Outcomes</h2>
+<ul>
+<li>Select appropriate data models for problem scenarios</li>
+<li>Apply data-driven decision-making to practical problems</li>
+<li>Use KPI-guided work methods in decision processes</li>
+</ul>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #5e35b1; padding-left: 12px; margin-top: 30px;">🧠 Heuristics</h2>
+<p><strong>Definition:</strong> [Fast rule of thumb]</p>
+<ul>
+<li>Example heuristic 1: [e.g. fix the highest-risk segment first]</li>
+<li>Example heuristic 2: [e.g. use the 80/20 rule]</li>
+<li>Business value: [Why this is useful for fast decisions]</li>
+</ul>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #1e88e5; padding-left: 12px; margin-top: 30px;">⚙️ Algorithms</h2>
+<p><strong>Definition:</strong> [Step-by-step decision procedure]</p>
+<ul>
+<li>Algorithm example: [e.g. demand forecast or route assignment]</li>
+<li>Inputs needed: [What data is required?]</li>
+<li>Decision relevance: [How it improves consistency or scale]</li>
+</ul>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #43a047; padding-left: 12px; margin-top: 30px;">📈 Optimization Techniques</h2>
+<p><strong>Objective:</strong> [What should be minimized or maximized?]</p>
+<ul>
+<li>Optimization goal 1: [e.g. minimize late deliveries]</li>
+<li>Optimization goal 2: [e.g. maximize service level]</li>
+<li>Constraints: [staff, time, cost, capacity]</li>
+</ul>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #fb8c00; padding-left: 12px; margin-top: 30px;">📋 Decision Criteria</h2>
+<ul>
+<li>Which KPI matters most?</li>
+<li>What trade-offs exist?</li>
+<li>Which criterion best supports acting on forecasts or predictions?</li>
+<li>What is realistic to implement?</li>
+<li>How will success be measured afterward?</li>
+</ul>
+"""},
+        "ddm_outcome_tracker": {"name": "DDM: Learning Outcome Tracker", "icon": "fact_check", "content": """<h1 style="color: #1a1a1a; border-bottom: 3px solid #c62828; padding-bottom: 12px;">DDM Learning Outcome Tracker</h1>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #c62828; padding-left: 12px; margin-top: 30px;">📖 Knowledge</h2>
+<ul>
+<li>☐ Data structure models and suitable scenarios</li>
+<li>☐ Data cleaning with proxy real-world data</li>
+<li>☐ Real-world use cases and business impact</li>
+<li>☐ KPI, qualitative vs quantitative data, and lifecycle</li>
+<li>☐ Descriptive, diagnostic, predictive, prescriptive, and error correction</li>
+</ul>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #1565c0; padding-left: 12px; margin-top: 30px;">🛠️ Skills</h2>
+<ul>
+<li>☐ Apply DDM to practical problems such as market price prediction</li>
+<li>☐ Select appropriate data models for scenarios</li>
+<li>☐ Apply the data lifecycle and analyze KPIs</li>
+<li>☐ Identify, eliminate, and correct erroneous data</li>
+<li>☐ Transfer theoretical models into proxy real-world situations</li>
+</ul>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #2e7d32; padding-left: 12px; margin-top: 30px;">💡 Competence</h2>
+<ul>
+<li>☐ Understand data fidelity and ownership</li>
+<li>☐ Develop KPI-guided work methods</li>
+<li>☐ Judge whether a model is accurate for its intended use</li>
+</ul>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #6a1b9a; padding-left: 12px; margin-top: 30px;">📝 Reflection</h2>
+<p><strong>What do I understand well?</strong> [Write here]</p>
+<p><strong>What needs more practice?</strong> [Write here]</p>
+<p><strong>Which outcome will I focus on next?</strong> [Write here]</p>
+"""},
+    "ddm_decision_matrix": {"name": "DDM: Decision Criteria Matrix", "icon": "table_chart", "content": """<h1 style="color: #1a1a1a; border-bottom: 3px solid #37474f; padding-bottom: 12px;">DDM Decision Criteria Matrix</h1>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #37474f; padding-left: 12px; margin-top: 30px;">🏢 Scenario</h2>
+<p><strong>Business problem:</strong> [Describe the decision problem]</p>
+<p><strong>Alternatives:</strong> [List the actions being compared]</p>
+<p><strong>States of nature:</strong> [List uncertain future conditions]</p>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #5c6bc0; padding-left: 12px; margin-top: 30px;">📊 Payoff Matrix</h2>
+<table>
+<tr><th>Alternative</th><th>State 1</th><th>State 2</th><th>State 3</th></tr>
+<tr><td>[Option A]</td><td>[Payoff]</td><td>[Payoff]</td><td>[Payoff]</td></tr>
+<tr><td>[Option B]</td><td>[Payoff]</td><td>[Payoff]</td><td>[Payoff]</td></tr>
+<tr><td>[Option C]</td><td>[Payoff]</td><td>[Payoff]</td><td>[Payoff]</td></tr>
+</table>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #2e7d32; padding-left: 12px; margin-top: 30px;">📋 Criteria Results</h2>
+<ul>
+<li><strong>Maximax:</strong> [Best option and why]</li>
+<li><strong>Maximin:</strong> [Best option and why]</li>
+<li><strong>Hurwicz:</strong> [Best option, alpha, and why]</li>
+<li><strong>Minimax regret:</strong> [Best option and why]</li>
+<li><strong>Laplace average payoff:</strong> [Best option and why]</li>
+<li><strong>Expected payoff:</strong> [Best option and why]</li>
+<li><strong>Expected loss of opportunity:</strong> [Best option and why]</li>
+</ul>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #f9a825; padding-left: 12px; margin-top: 30px;">💡 Interpretation</h2>
+<p><strong>Which criterion fits this business best?</strong> [Explain based on risk attitude, uncertainty, and available probabilities]</p>
+<p><strong>Final recommendation:</strong> [Write your final decision and why]</p>
+"""},
         "exam_prep": {"name": "Exam Prep", "icon": "quiz", "content": """<h1>Eksamen Forberedelse: [Fag/Kursnavn]</h1>
 
 <h2>📚 Eksamen Informasjon</h2>
@@ -27749,22 +36537,41 @@ elif page == "Study Notes":
                 key="word_importance"
             )
         with prop_col4:
+            recommended_template_keys_by_course = {
+                "FI1BBDD75": [
+                    "ddm_module_overview",
+                    "ddm_case_scenario",
+                    "ddm_techniques",
+                    "ddm_decision_matrix",
+                    "ddm_outcome_tracker"
+                ]
+            }
+            recommended_template_keys = recommended_template_keys_by_course.get(selected_course_code, [])
+            ordered_template_keys = recommended_template_keys + [
+                key for key in NOTE_TEMPLATES.keys() if key not in recommended_template_keys
+            ]
+            template_display_map = {}
+            for template_key_option in ordered_template_keys:
+                template_label = NOTE_TEMPLATES[template_key_option]['name']
+                if template_key_option in recommended_template_keys:
+                    template_label = f"Recommended: {template_label}"
+                template_display_map[template_label] = template_key_option
+
             template_choice = st.selectbox(
                 "Template:",
-                options=["(None)"] + [t['name'] for t in NOTE_TEMPLATES.values()],
+                options=["(None)"] + list(template_display_map.keys()),
                 key="word_template"
             )
+            if recommended_template_keys:
+                st.caption("Recommended DDM templates are shown first for this course.")
             if template_choice != "(None)":
-                for k, v in NOTE_TEMPLATES.items():
-                    if v['name'] == template_choice:
-                        template_key = k
-                        if not st.session_state.get('editing_note_idx'):
-                            if st.session_state.get('last_applied_template') != template_choice:
-                                st.session_state.current_note_content = NOTE_TEMPLATES[template_key]['content']
-                                st.session_state.last_applied_template = template_choice
-                                st.session_state.quill_key_counter = st.session_state.get('quill_key_counter', 0) + 1
-                                st.rerun()
-                        break
+                template_key = template_display_map[template_choice]
+                if not st.session_state.get('editing_note_idx'):
+                    if st.session_state.get('last_applied_template') != template_choice:
+                        st.session_state.current_note_content = NOTE_TEMPLATES[template_key]['content']
+                        st.session_state.last_applied_template = template_choice
+                        st.session_state.quill_key_counter = st.session_state.get('quill_key_counter', 0) + 1
+                        st.rerun()
         
         st.markdown("---")
         
@@ -28485,6 +37292,17 @@ elif page == "Flashcards":
         with col2:
             card_back = st.text_area("Back:", height=150, placeholder="Answer or definition...")
             card_tags = st.text_input("Tags (optional):", placeholder="comma-separated")
+
+        curated_count = len(CURATED_FLASHCARD_SETS.get(card_course, []))
+        if curated_count:
+            st.caption(f"Recommended deck available for {card_course}: {curated_count} curated cards aligned to course outcomes.")
+            if st.button("📥 Load Recommended Deck", use_container_width=True):
+                added_cards = load_curated_flashcards(card_course)
+                if added_cards:
+                    st.success(f"Loaded {added_cards} recommended flashcards.")
+                else:
+                    st.info("Recommended flashcards were already loaded.")
+                st.rerun()
         
         if st.button("➕ Create Card", type="primary"):
             if card_front and card_back:
@@ -28594,6 +37412,12 @@ elif page == "Exam Simulator":
                 ["General", "Knowledge-based", "Skills-based", "Case Study"],
                 default=["General", "Knowledge-based"]
             )
+
+        curated_exam_count = len(CURATED_EXAM_QUESTION_BANK.get(exam_course, []))
+        if curated_exam_count:
+            st.info(f"Curated exam bank available for {exam_course}: {curated_exam_count} questions aligned to the course learning outcomes.")
+        elif client is None:
+            st.warning("No curated bank is available for this course, and AI question generation is disabled.")
         
         if st.button("🚀 Start Exam", type="primary"):
             # Generate exam questions
@@ -28606,18 +37430,21 @@ elif page == "Exam Simulator":
                 "Skills-based": "skills",
                 "Case Study": "case_study"
             }
-            
-            with st.spinner("Generating exam questions..."):
-                for i in range(num_questions):
-                    q_type = type_map.get(question_types[i % len(question_types)], "general")
-                    question = generate_practice_question(selected_course, q_type)
-                    if question and "Error" not in question:
-                        exam_questions_list.append({
-                            'id': i,
-                            'question': question,
-                            'type': q_type,
-                            'user_answer': ''
-                        })
+
+            if exam_course in CURATED_EXAM_QUESTION_BANK:
+                exam_questions_list = build_curated_exam_questions(exam_course, question_types, num_questions)
+            else:
+                with st.spinner("Generating exam questions..."):
+                    for i in range(num_questions):
+                        q_type = type_map.get(question_types[i % len(question_types)], "general")
+                        question = generate_practice_question(selected_course, q_type)
+                        if question and "Error" not in question:
+                            exam_questions_list.append({
+                                'id': i,
+                                'question': question,
+                                'type': q_type,
+                                'user_answer': ''
+                            })
             
             if exam_questions_list:
                 st.session_state.exam_questions = exam_questions_list
@@ -29632,36 +38459,55 @@ elif page == "Progress":
     st.title("📈 My Progress")
     st.markdown("---")
     
-    st.subheader("Mark Completed Courses")
-    
-    semesters = ["2025 Spring", "2025 Fall", "2026 Spring", "2026 Fall"]
-    
-    for sem in semesters:
-        st.markdown(f"**{sem}**")
-        sem_courses = [c for c in courses_data if c["semester"] == sem]
-        
-        cols = st.columns(2)
-        for i, course in enumerate(sem_courses):
-            with cols[i % 2]:
-                is_checked = st.checkbox(
-                    f"{course['name']} ({course['credits']} cr)",
-                    value=course["code"] in st.session_state.completed_courses,
-                    key=f"course_{course['code']}"
-                )
-                if is_checked and course["code"] not in st.session_state.completed_courses:
-                    st.session_state.completed_courses.append(course["code"])
-                elif not is_checked and course["code"] in st.session_state.completed_courses:
-                    st.session_state.completed_courses.remove(course["code"])
-        
-        st.markdown("---")
+    st.subheader("Mark Completed Courses (JAN 2026 Progression)")
+
+    _deadline_by_code = {
+        _code: datetime.strptime(_deadline_s, "%Y-%m-%d").date()
+        for _code, _course_name, _deadline_s in PROGRAM_DEADLINES
+    }
+
+    for _code, _name, _start_s, _end_s in STUDY_PATH_JAN2026:
+        _start = datetime.strptime(_start_s, "%Y-%m-%d").date()
+        _end = datetime.strptime(_end_s, "%Y-%m-%d").date()
+
+        _course_row = next((c for c in courses_data if c["code"] == _code), None)
+        _credits = _course_row["credits"] if _course_row else 0
+
+        _assessment_deadline = _deadline_by_code.get(_code)
+        _assessment_text = (
+            f" · Assessment: {_assessment_deadline.strftime('%d %b %Y')}"
+            if _assessment_deadline
+            else ""
+        )
+
+        _label = (
+            f"{_code} — {_name} ({_credits} cr)\n"
+            f"{_start.strftime('%d %b %Y')} → {_end.strftime('%d %b %Y')}{_assessment_text}"
+        )
+
+        _checked = st.checkbox(
+            _label,
+            value=_code in st.session_state.completed_courses,
+            key=f"course_{_code}"
+        )
+
+        if _checked and _code not in st.session_state.completed_courses:
+            st.session_state.completed_courses.append(_code)
+        elif not _checked and _code in st.session_state.completed_courses:
+            st.session_state.completed_courses.remove(_code)
+
+    st.markdown("---")
     
     total_credits = sum(c["credits"] for c in courses_data)
     completed_credits = sum(c["credits"] for c in courses_data if c["code"] in st.session_state.completed_courses)
     progress = completed_credits / total_credits if total_credits > 0 else 0
+    _modules_total = len(STUDY_PATH_JAN2026)
+    _modules_done = sum(1 for _code, *_rest in STUDY_PATH_JAN2026 if _code in st.session_state.completed_courses)
     
     st.subheader("Summary")
     st.progress(progress)
     st.write(f"**{completed_credits:.1f} / {total_credits:.0f} credits completed ({progress*100:.0f}%)**")
+    st.caption(f"Modules completed: {_modules_done}/{_modules_total}")
 
 elif page == "Learning Outcomes":
     st.title("🎯 Program Learning Outcomes")
@@ -32520,135 +41366,238 @@ ESCALATION:
     
     elif playground_tab == "Decision Analysis Tool":
         st.subheader("🎯 Decision Analysis Tool")
-        st.markdown("*Practice the four analytics philosophies: Descriptive, Diagnostic, Predictive, Prescriptive*")
+        st.markdown("*Practice decision-making in the grocery-delivery scenario using analytics, formal criteria, heuristics, algorithms, and optimization.*")
         st.markdown("---")
-        
-        analysis_type = st.radio(
-            "Select analysis type:",
-            ["Descriptive (What happened?)", "Diagnostic (Why did it happen?)", 
-             "Predictive (What will happen?)", "Prescriptive (What should we do?)"],
-            horizontal=False
-        )
-        
-        if "Descriptive" in analysis_type:
-            st.markdown("### Descriptive Analysis: What Happened?")
-            st.markdown("*Summarize historical data to understand past performance*")
-            
-            if 'decision_data' not in st.session_state:
-                st.session_state.decision_data = pd.DataFrame({
-                    'Month': ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                    'Sales': [45000, 52000, 48000, 61000, 55000, 67000],
-                    'Customers': [120, 135, 128, 152, 145, 168],
-                    'Returns': [12, 8, 15, 9, 11, 7]
-                })
-            
-            st.markdown("**Your Data:**")
-            st.session_state.decision_data = st.data_editor(
-                st.session_state.decision_data,
-                num_rows="dynamic",
-                use_container_width=True
+        st.info("Scenario: an online grocery delivery company has rising late deliveries, falling customer satisfaction, and increasing refund costs.")
+
+        if 'grocery_payoff_matrix' not in st.session_state:
+            st.session_state.grocery_payoff_matrix = pd.DataFrame({
+                'Strategy': ['Hire temporary drivers', 'Route-optimization software', 'Staggered delivery windows'],
+                'High demand + traffic': [90, 75, 50],
+                'Normal demand': [40, 55, 45],
+                'Low demand': [-10, 15, 30]
+            })
+
+        decision_tabs = st.tabs(["Analytics Flow", "Decision Criteria", "Technique Explorer"])
+
+        with decision_tabs[0]:
+            st.markdown("### Analytics Flow in the Grocery-Delivery Scenario")
+            metric_col1, metric_col2, metric_col3 = st.columns(3)
+            with metric_col1:
+                late_before = st.slider("Late deliveries before change (%)", 0, 40, 8)
+                late_after = st.slider("Late deliveries after change (%)", 0, 40, 17)
+            with metric_col2:
+                satisfaction_before = st.slider("Customer satisfaction before (%)", 40, 100, 82)
+                satisfaction_after = st.slider("Customer satisfaction after (%)", 40, 100, 71)
+            with metric_col3:
+                refund_before = st.number_input("Refund cost before ($)", min_value=0, value=12000, step=1000)
+                refund_after = st.number_input("Refund cost after ($)", min_value=0, value=24500, step=1000)
+
+            worst_zone = st.selectbox("Which zone is worst affected?", ["North", "Central", "East", "West"], index=1)
+            peak_window = st.selectbox("When is the main bottleneck?", ["Morning", "Midday", "Evening peak", "Late night"], index=2)
+
+            if st.button("Generate Grocery Scenario Analysis", type="primary"):
+                st.markdown("### Four Analytics Views")
+                st.markdown(f"**Descriptive:** Late deliveries rose from {late_before}% to {late_after}%, satisfaction fell from {satisfaction_before}% to {satisfaction_after}%, and refund cost increased from ${refund_before:,} to ${refund_after:,}.")
+                st.markdown(f"**Diagnostic:** The strongest operational problem appears in the {worst_zone} zone during the {peak_window} window, suggesting a concentrated capacity or routing issue rather than a company-wide failure.")
+                projected_late = round(late_after * 1.12, 1)
+                st.markdown(f"**Predictive:** If the same pattern continues, late deliveries could reach about {projected_late}% in the next comparable period.")
+                st.markdown("**Prescriptive:** Evaluate temporary drivers, route-optimization software, and staggered delivery windows using decision criteria under uncertainty and then monitor on-time delivery rate, refund cost, and customer satisfaction after implementation.")
+
+        with decision_tabs[1]:
+            st.markdown("### Decision Criteria Under Uncertainty")
+            st.markdown("Edit the payoff matrix if you want to test different business assumptions. Values represent estimated net payoff in thousands of dollars.")
+
+            payoff_input = st.data_editor(
+                st.session_state.grocery_payoff_matrix,
+                num_rows="fixed",
+                use_container_width=True,
+                key="grocery_payoff_editor"
             )
-            
-            if st.button("📊 Generate Descriptive Summary"):
-                data = st.session_state.decision_data
-                st.markdown("### Summary Statistics")
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    st.metric("Total Sales", f"${data['Sales'].sum():,}")
-                    st.metric("Avg Monthly Sales", f"${data['Sales'].mean():,.0f}")
-                with col2:
-                    st.metric("Total Customers", f"{data['Customers'].sum():,}")
-                    st.metric("Avg Monthly Customers", f"{data['Customers'].mean():.0f}")
-                with col3:
-                    st.metric("Total Returns", f"{data['Returns'].sum()}")
-                    st.metric("Return Rate", f"{(data['Returns'].sum() / data['Sales'].sum()) * 100:.2f}%")
-        
-        elif "Diagnostic" in analysis_type:
-            st.markdown("### Diagnostic Analysis: Why Did It Happen?")
-            st.markdown("*Investigate root causes using the 5 Whys technique*")
-            
-            problem = st.text_input("What problem are you investigating?", "Sales dropped 20% in March")
-            
-            st.markdown("**Apply the 5 Whys:**")
-            why1 = st.text_input("Why #1:", placeholder="Enter first why...")
-            why2 = st.text_input("Why #2:", placeholder="Enter second why...")
-            why3 = st.text_input("Why #3:", placeholder="Enter third why...")
-            why4 = st.text_input("Why #4:", placeholder="Enter fourth why...")
-            why5 = st.text_input("Why #5:", placeholder="Enter fifth why (root cause)...")
-            
-            if why5:
-                st.markdown("---")
-                st.success(f"**Root Cause Identified:** {why5}")
-                st.markdown("**Next Steps:**")
-                st.markdown("1. Validate this root cause with data")
-                st.markdown("2. Develop action plan to address it")
-                st.markdown("3. Implement preventive measures")
-        
-        elif "Predictive" in analysis_type:
-            st.markdown("### Predictive Analysis: What Will Happen?")
-            st.markdown("*Use trends to forecast future outcomes*")
-            
-            col1, col2 = st.columns(2)
-            with col1:
-                current_value = st.number_input("Current month value:", value=50000)
-                growth_rate = st.slider("Expected monthly growth rate (%):", -20, 50, 5)
-                months_ahead = st.slider("Months to forecast:", 1, 12, 6)
-            
-            with col2:
-                st.markdown("### Forecast")
-                forecast = []
-                value = current_value
-                for m in range(1, months_ahead + 1):
-                    value = value * (1 + growth_rate / 100)
-                    forecast.append({"Month": f"M+{m}", "Forecast": value})
-                
-                df_forecast = pd.DataFrame(forecast)
-                st.dataframe(df_forecast.style.format({"Forecast": "${:,.0f}"}), use_container_width=True)
-                
-                st.metric(f"Predicted value in {months_ahead} months", f"${value:,.0f}")
-                st.metric("Total growth", f"{((value - current_value) / current_value) * 100:.1f}%")
-        
-        elif "Prescriptive" in analysis_type:
-            st.markdown("### Prescriptive Analysis: What Should We Do?")
-            st.markdown("*Evaluate options and recommend actions*")
-            
-            st.markdown("**Define Your Decision Options:**")
-            
-            option1_name = st.text_input("Option 1:", "Increase marketing spend")
-            option1_cost = st.number_input("Cost ($):", value=10000, key="opt1_cost")
-            option1_benefit = st.number_input("Expected benefit ($):", value=25000, key="opt1_ben")
-            option1_risk = st.slider("Risk level:", 1, 10, 3, key="opt1_risk")
-            
-            st.markdown("---")
-            
-            option2_name = st.text_input("Option 2:", "Hire more sales staff")
-            option2_cost = st.number_input("Cost ($):", value=50000, key="opt2_cost")
-            option2_benefit = st.number_input("Expected benefit ($):", value=80000, key="opt2_ben")
-            option2_risk = st.slider("Risk level:", 1, 10, 5, key="opt2_risk")
-            
-            if st.button("🎯 Get Recommendation"):
-                st.markdown("### Decision Matrix")
-                
-                roi1 = ((option1_benefit - option1_cost) / option1_cost) * 100 if option1_cost > 0 else 0
-                roi2 = ((option2_benefit - option2_cost) / option2_cost) * 100 if option2_cost > 0 else 0
-                
-                score1 = roi1 / (option1_risk + 1)
-                score2 = roi2 / (option2_risk + 1)
-                
-                comparison = pd.DataFrame({
-                    'Option': [option1_name, option2_name],
-                    'Cost': [f"${option1_cost:,}", f"${option2_cost:,}"],
-                    'Benefit': [f"${option1_benefit:,}", f"${option2_benefit:,}"],
-                    'ROI': [f"{roi1:.0f}%", f"{roi2:.0f}%"],
-                    'Risk': [option1_risk, option2_risk],
-                    'Score': [f"{score1:.1f}", f"{score2:.1f}"]
+            st.session_state.grocery_payoff_matrix = payoff_input
+
+            probability_cols = st.columns(3)
+            with probability_cols[0]:
+                prob_high = st.number_input("P(High demand + traffic)", min_value=0.0, max_value=1.0, value=0.30, step=0.05)
+            with probability_cols[1]:
+                prob_normal = st.number_input("P(Normal demand)", min_value=0.0, max_value=1.0, value=0.50, step=0.05)
+            with probability_cols[2]:
+                prob_low = st.number_input("P(Low demand)", min_value=0.0, max_value=1.0, value=0.20, step=0.05)
+
+            hurwicz_alpha = st.slider("Hurwicz optimism coefficient (alpha)", 0.0, 1.0, 0.6, 0.05)
+
+            matrix_df = payoff_input.set_index('Strategy')
+            state_columns = [column for column in matrix_df.columns]
+            probability_sum = prob_high + prob_normal + prob_low
+            if probability_sum <= 0:
+                normalized_probs = [1/3, 1/3, 1/3]
+                st.warning("Probabilities must sum to more than 0. Using equal weights instead.")
+            else:
+                normalized_probs = [prob_high / probability_sum, prob_normal / probability_sum, prob_low / probability_sum]
+                if abs(probability_sum - 1.0) > 0.001:
+                    st.caption(f"Probabilities normalized from total {probability_sum:.2f}.")
+
+            row_max = matrix_df.max(axis=1)
+            row_min = matrix_df.min(axis=1)
+            row_avg = matrix_df.mean(axis=1)
+            hurwicz_score = hurwicz_alpha * row_max + (1 - hurwicz_alpha) * row_min
+            expected_payoff = sum(matrix_df[state] * normalized_probs[idx] for idx, state in enumerate(state_columns))
+            best_by_state = matrix_df.max(axis=0)
+            regret_df = best_by_state - matrix_df
+            max_regret = regret_df.max(axis=1)
+            expected_regret = sum(regret_df[state] * normalized_probs[idx] for idx, state in enumerate(state_columns))
+
+            criteria_summary = pd.DataFrame({
+                'Criterion': [
+                    'The Maximax Optimistic rule',
+                    'The Maximin rule of savage',
+                    'The Realistic rule of Hurwicz',
+                    'The Minimax regret of savage',
+                    'The average payoff rule of Laplace',
+                    'The Expected payoff rule',
+                    'The Expected loss of opportunity rule'
+                ],
+                'Recommended strategy': [
+                    row_max.idxmax(),
+                    row_min.idxmax(),
+                    hurwicz_score.idxmax(),
+                    max_regret.idxmin(),
+                    row_avg.idxmax(),
+                    expected_payoff.idxmax(),
+                    expected_regret.idxmin()
+                ],
+                'Decision value': [
+                    round(row_max.max(), 2),
+                    round(row_min.max(), 2),
+                    round(hurwicz_score.max(), 2),
+                    round(max_regret.min(), 2),
+                    round(row_avg.max(), 2),
+                    round(expected_payoff.max(), 2),
+                    round(expected_regret.min(), 2)
+                ]
+            })
+            st.dataframe(criteria_summary, use_container_width=True)
+
+            chart_col1, chart_col2 = st.columns(2)
+            with chart_col1:
+                st.markdown("**Payoff comparison by demand state**")
+                st.bar_chart(matrix_df)
+
+            with chart_col2:
+                st.markdown("**Regret comparison by demand state**")
+                st.bar_chart(regret_df)
+
+            st.caption("Use the payoff chart to compare upside across demand scenarios and the regret chart to see how costly each strategy becomes when a better choice was available.")
+
+            explanation_map = {
+                'The Maximax Optimistic rule': "Chooses the strategy with the single highest upside. In this grocery case it fits a strongly optimistic manager who wants the biggest possible payoff if demand and traffic pressure hit hard.",
+                'The Maximin rule of savage': "Chooses the strategy with the best worst-case payoff. It suits a cautious manager who wants protection if the delivery environment turns unfavorable.",
+                'The Realistic rule of Hurwicz': "Balances optimism and caution using alpha. In this scenario it is useful when management wants both upside potential and downside protection.",
+                'The Minimax regret of savage': "Chooses the strategy with the smallest maximum regret. This is useful when leadership wants to avoid the pain of realizing it picked the wrong action after the fact.",
+                'The average payoff rule of Laplace': "Treats all future states as equally likely and chooses the highest average payoff. It is useful when the team has no strong basis for assigning probabilities.",
+                'The Expected payoff rule': "Uses probabilities and chooses the highest weighted payoff. It is best when the operations team has credible estimates for demand and traffic states.",
+                'The Expected loss of opportunity rule': "Uses expected regret rather than payoff and chooses the option with the lowest expected missed opportunity. It is helpful when managers think more naturally about avoidable lost value than total payoff."
+            }
+
+            selected_criterion = st.selectbox("Explain criterion:", criteria_summary['Criterion'].tolist())
+            selected_row = criteria_summary[criteria_summary['Criterion'] == selected_criterion].iloc[0]
+            st.markdown(f"**Recommended strategy:** {selected_row['Recommended strategy']}")
+            st.markdown(f"**Why it fits the grocery scenario:** {explanation_map[selected_criterion]}")
+
+            with st.expander("View regret matrix"):
+                st.dataframe(regret_df.round(2), use_container_width=True)
+
+        with decision_tabs[2]:
+            st.markdown("### Technique Explorer: Heuristics vs Algorithms vs Optimization")
+
+            if 'grocery_zone_data' not in st.session_state:
+                st.session_state.grocery_zone_data = pd.DataFrame({
+                    'Zone': ['North', 'Central', 'East'],
+                    'Late delivery rate %': [11, 19, 14],
+                    'Complaints': [24, 61, 33],
+                    'Driver shortage score': [3, 8, 5],
+                    'Avg route minutes': [28, 44, 35]
                 })
-                st.dataframe(comparison, use_container_width=True)
-                
-                if score1 > score2:
-                    st.success(f"**Recommendation:** {option1_name} (higher risk-adjusted return)")
+
+            zone_data = st.data_editor(
+                st.session_state.grocery_zone_data,
+                num_rows="fixed",
+                use_container_width=True,
+                key="grocery_zone_editor"
+            )
+            st.session_state.grocery_zone_data = zone_data
+
+            technique_mode = st.radio(
+                "Choose technique family:",
+                ["Heuristic", "Algorithm", "Optimization"],
+                horizontal=True
+            )
+
+            if technique_mode == "Heuristic":
+                heuristic_choice = st.selectbox(
+                    "Heuristic rule:",
+                    ["Priority heuristic", "80/20 heuristic", "Nearest-driver heuristic"]
+                )
+
+                if st.button("Apply Heuristic", type="primary"):
+                    if heuristic_choice == "Priority heuristic":
+                        top_zone = zone_data.loc[zone_data['Late delivery rate %'].idxmax(), 'Zone']
+                        st.success(f"Priority heuristic recommends fixing {top_zone} first because it has the highest late-delivery rate.")
+                    elif heuristic_choice == "80/20 heuristic":
+                        ranked = zone_data.sort_values('Complaints', ascending=False)
+                        cumulative = ranked['Complaints'].cumsum() / ranked['Complaints'].sum()
+                        focus_zones = ranked.loc[cumulative <= 0.8, 'Zone'].tolist()
+                        if not focus_zones:
+                            focus_zones = [ranked.iloc[0]['Zone']]
+                        st.success(f"80/20 heuristic recommends focusing on: {', '.join(focus_zones)} because they drive most complaint volume.")
+                    else:
+                        top_zone = zone_data.loc[zone_data['Avg route minutes'].idxmin(), 'Zone']
+                        st.success(f"Nearest-driver heuristic prioritizes {top_zone} for rapid reassignment because its routes are shortest on average.")
+
+            elif technique_mode == "Algorithm":
+                st.markdown("Build a simple weighted scoring algorithm to rank which zone should receive operational attention first.")
+                weight_col1, weight_col2, weight_col3 = st.columns(3)
+                with weight_col1:
+                    weight_delay = st.slider("Weight: late delivery rate", 0.0, 1.0, 0.5, 0.05)
+                with weight_col2:
+                    weight_complaints = st.slider("Weight: complaints", 0.0, 1.0, 0.3, 0.05)
+                with weight_col3:
+                    weight_shortage = st.slider("Weight: driver shortage", 0.0, 1.0, 0.2, 0.05)
+
+                if st.button("Run Scoring Algorithm", type="primary"):
+                    scored = zone_data.copy()
+                    scored['Priority score'] = (
+                        scored['Late delivery rate %'] * weight_delay +
+                        scored['Complaints'] * weight_complaints +
+                        scored['Driver shortage score'] * 10 * weight_shortage
+                    )
+                    scored = scored.sort_values('Priority score', ascending=False)
+                    st.dataframe(scored, use_container_width=True)
+                    st.success(f"Algorithmic recommendation: prioritize {scored.iloc[0]['Zone']} first based on the weighted score.")
+
+            else:
+                st.markdown("Compare actions under budget and service priorities.")
+                budget = st.number_input("Available budget ($000)", min_value=10, max_value=200, value=80, step=5)
+                service_weight = st.slider("Weight on service quality", 0.0, 1.0, 0.7, 0.05)
+                cost_weight = 1 - service_weight
+
+                options_df = pd.DataFrame({
+                    'Action': ['Hire temporary drivers', 'Route-optimization software', 'Staggered delivery windows'],
+                    'Cost ($000)': [60, 80, 25],
+                    'On-time improvement score': [9, 8, 6],
+                    'Refund reduction score': [7, 8, 5]
+                })
+                feasible = options_df[options_df['Cost ($000)'] <= budget].copy()
+                if feasible.empty:
+                    st.warning("No actions fit within the selected budget.")
                 else:
-                    st.success(f"**Recommendation:** {option2_name} (higher risk-adjusted return)")
+                    feasible['Utility score'] = (
+                        (feasible['On-time improvement score'] + feasible['Refund reduction score']) * service_weight -
+                        feasible['Cost ($000)'] / 20 * cost_weight
+                    )
+                    feasible = feasible.sort_values('Utility score', ascending=False)
+                    st.dataframe(feasible, use_container_width=True)
+                    st.success(f"Optimization-style recommendation: choose {feasible.iloc[0]['Action']} because it gives the strongest service-vs-cost trade-off within budget.")
     
     elif playground_tab == "Project Planning Workshop":
         st.subheader("📋 Project Planning Workshop")
@@ -33435,73 +42384,72 @@ elif page == "About":
 elif page == "Progression Plan":
     from datetime import date as _date, datetime as _datetime
     st.title("📅 Progression Plan")
-    st.markdown("**OCT 2025 Full-Time Data Analyst – Year 1 Schedule**")
+    st.markdown("**JAN 2026 Full-Time Data Analyst – Year 1 Schedule**")
     st.markdown("---")
 
-    # ── All course events for OCT 2025 FT cohort ──────────────────────────────
+    # ── All course events for JAN 2026 FT cohort ──────────────────────────────
     _EVENTS = [
         # Enrollment / IC
-        {"date": "2025-10-13", "name": "Enrollment / Course Start",                   "type": "enrollment",      "course": "IC",  "course_name": "Introduction Course"},
-        {"date": "2025-10-14", "name": "Introduction Course Begins",                   "type": "module_start",    "course": "IC",  "course_name": "Introduction Course"},
-        {"date": "2025-10-19", "name": "Introduction Course Deadline",                 "type": "deadline",        "course": "IC",  "course_name": "Introduction Course"},
+        {"date": "2026-01-05", "name": "Enrollment / Course Start",                   "type": "enrollment",      "course": "IC",  "course_name": "Introduction Course"},
+        {"date": "2026-01-06", "name": "Introduction Course Begins",                   "type": "module_start",    "course": "IC",  "course_name": "Introduction Course"},
+        {"date": "2026-01-11", "name": "Introduction Course Deadline",                 "type": "deadline",        "course": "IC",  "course_name": "Introduction Course"},
         # DAF
-        {"date": "2025-10-20", "name": "DAF – Module 1 starts",                        "type": "module_start",    "course": "DAF", "course_name": "Data Analysis Fundamentals"},
-        {"date": "2025-10-27", "name": "DAF – Module 2 starts",                        "type": "module_start",    "course": "DAF", "course_name": "Data Analysis Fundamentals"},
-        {"date": "2025-11-03", "name": "DAF Assessment Week begins",                   "type": "assessment_start","course": "DAF", "course_name": "Data Analysis Fundamentals"},
-        {"date": "2025-11-09", "name": "DAF Assessment Deadline (Sun 23:59)",          "type": "deadline",        "course": "DAF", "course_name": "Data Analysis Fundamentals"},
+        {"date": "2026-01-12", "name": "DAF – Module 1 starts",                        "type": "module_start",    "course": "DAF", "course_name": "Data Analysis Fundamentals"},
+        {"date": "2026-01-19", "name": "DAF – Module 2 starts",                        "type": "module_start",    "course": "DAF", "course_name": "Data Analysis Fundamentals"},
+        {"date": "2026-01-26", "name": "DAF Assessment Week begins",                   "type": "assessment_start","course": "DAF", "course_name": "Data Analysis Fundamentals"},
+        {"date": "2026-02-01", "name": "DAF Assessment Deadline (Sun 23:59)",          "type": "deadline",        "course": "DAF", "course_name": "Data Analysis Fundamentals"},
         # SPF
-        {"date": "2025-11-10", "name": "SPF – Module 1 starts",                        "type": "module_start",    "course": "SPF", "course_name": "Spreadsheet Fundamentals"},
-        {"date": "2025-11-17", "name": "SPF – Module 2 starts",                        "type": "module_start",    "course": "SPF", "course_name": "Spreadsheet Fundamentals"},
-        {"date": "2025-11-24", "name": "SPF Assessment Week begins",                   "type": "assessment_start","course": "SPF", "course_name": "Spreadsheet Fundamentals"},
-        {"date": "2025-11-30", "name": "SPF Assessment Deadline (Sun 23:59)",          "type": "deadline",        "course": "SPF", "course_name": "Spreadsheet Fundamentals"},
+        {"date": "2026-02-02", "name": "SPF – Module 1 starts",                        "type": "module_start",    "course": "SPF", "course_name": "Spreadsheet Fundamentals"},
+        {"date": "2026-02-09", "name": "SPF – Module 2 starts",                        "type": "module_start",    "course": "SPF", "course_name": "Spreadsheet Fundamentals"},
+        {"date": "2026-02-16", "name": "SPF Assessment Week begins",                   "type": "assessment_start","course": "SPF", "course_name": "Spreadsheet Fundamentals"},
+        {"date": "2026-02-22", "name": "SPF Assessment Deadline (Sun 23:59)",          "type": "deadline",        "course": "SPF", "course_name": "Spreadsheet Fundamentals"},
         # DDM
-        {"date": "2025-12-01", "name": "DDM – Module 1 starts",                        "type": "module_start",    "course": "DDM", "course_name": "Data Driven Decision-Making"},
-        {"date": "2025-12-07", "name": "SPF Late/Resubmission Deadline",               "type": "deadline",        "course": "SPF", "course_name": "Spreadsheet Fundamentals"},
-        {"date": "2025-12-08", "name": "DDM – Module 2 starts",                        "type": "module_start",    "course": "DDM", "course_name": "Data Driven Decision-Making"},
-        {"date": "2025-12-15", "name": "DDM – Module 3 starts",                        "type": "module_start",    "course": "DDM", "course_name": "Data Driven Decision-Making"},
-        {"date": "2026-01-05", "name": "DDM Assessment Week begins",                   "type": "assessment_start","course": "DDM", "course_name": "Data Driven Decision-Making"},
-        {"date": "2026-01-11", "name": "DDM Assessment Deadline (Sun 23:59)",          "type": "deadline",        "course": "DDM", "course_name": "Data Driven Decision-Making"},
+        {"date": "2026-02-23", "name": "DDM – Module 1 starts",                        "type": "module_start",    "course": "DDM", "course_name": "Data Driven Decision-Making"},
+        {"date": "2026-03-02", "name": "DDM – Module 2 starts",                        "type": "module_start",    "course": "DDM", "course_name": "Data Driven Decision-Making"},
+        {"date": "2026-03-09", "name": "DDM – Module 3 starts",                        "type": "module_start",    "course": "DDM", "course_name": "Data Driven Decision-Making"},
+        {"date": "2026-03-16", "name": "DDM Assessment Week begins",                   "type": "assessment_start","course": "DDM", "course_name": "Data Driven Decision-Making"},
+        {"date": "2026-03-22", "name": "DDM Assessment Deadline (Sun 23:59)",          "type": "deadline",        "course": "DDM", "course_name": "Data Driven Decision-Making"},
         # STT
-        {"date": "2026-01-12", "name": "STT – Module 1 starts",                        "type": "module_start",    "course": "STT", "course_name": "Statistical Tools"},
-        {"date": "2026-01-19", "name": "STT – Module 2 starts",                        "type": "module_start",    "course": "STT", "course_name": "Statistical Tools"},
-        {"date": "2026-01-26", "name": "STT Assessment Week begins",                   "type": "assessment_start","course": "STT", "course_name": "Statistical Tools"},
-        {"date": "2026-02-01", "name": "STT Assessment Deadline (Sun 23:59)",          "type": "deadline",        "course": "STT", "course_name": "Statistical Tools"},
+        {"date": "2026-03-23", "name": "STT – Module 1 starts",                        "type": "module_start",    "course": "STT", "course_name": "Statistical Tools"},
+        {"date": "2026-04-06", "name": "STT – Module 2 starts",                        "type": "module_start",    "course": "STT", "course_name": "Statistical Tools"},
+        {"date": "2026-04-13", "name": "STT Assessment Week begins",                   "type": "assessment_start","course": "STT", "course_name": "Statistical Tools"},
+        {"date": "2026-04-19", "name": "STT Assessment Deadline (Sun 23:59)",          "type": "deadline",        "course": "STT", "course_name": "Statistical Tools"},
         # SP1 – Semester Project
-        {"date": "2026-02-02", "name": "SP1 Semester Project – Week 1",                "type": "module_start",    "course": "SP1", "course_name": "Semester Project"},
-        {"date": "2026-02-09", "name": "SP1 Semester Project – Week 2",                "type": "module_start",    "course": "SP1", "course_name": "Semester Project"},
-        {"date": "2026-02-16", "name": "SP1 Semester Project – Week 3",                "type": "module_start",    "course": "SP1", "course_name": "Semester Project"},
-        {"date": "2026-02-23", "name": "SP1 Semester Project – Final Week begins",     "type": "assessment_start","course": "SP1", "course_name": "Semester Project"},
-        {"date": "2026-03-01", "name": "SP1 Semester Project Deadline (Sun 23:59)",    "type": "deadline",        "course": "SP1", "course_name": "Semester Project"},
+        {"date": "2026-04-20", "name": "SP1 Semester Project – Week 1",                "type": "module_start",    "course": "SP1", "course_name": "Semester Project 1"},
+        {"date": "2026-04-27", "name": "SP1 Semester Project – Week 2",                "type": "module_start",    "course": "SP1", "course_name": "Semester Project 1"},
+        {"date": "2026-05-04", "name": "SP1 Semester Project – Week 3",                "type": "module_start",    "course": "SP1", "course_name": "Semester Project 1"},
+        {"date": "2026-05-11", "name": "SP1 Semester Project – Final Week begins",     "type": "assessment_start","course": "SP1", "course_name": "Semester Project 1"},
+        {"date": "2026-05-17", "name": "SP1 Semester Project Deadline (Sun 23:59)",    "type": "deadline",        "course": "SP1", "course_name": "Semester Project 1"},
         # EVO
-        {"date": "2026-03-02", "name": "EVO – Module 1 starts",                        "type": "module_start",    "course": "EVO", "course_name": "Evaluation of Outcomes"},
-        {"date": "2026-03-09", "name": "EVO – Module 2 starts",                        "type": "module_start",    "course": "EVO", "course_name": "Evaluation of Outcomes"},
-        {"date": "2026-03-16", "name": "EVO – Module 3 starts",                        "type": "module_start",    "course": "EVO", "course_name": "Evaluation of Outcomes"},
-        {"date": "2026-03-23", "name": "EVO – Module 4 starts",                        "type": "module_start",    "course": "EVO", "course_name": "Evaluation of Outcomes"},
-        {"date": "2026-04-06", "name": "EVO – Module 5 starts",                        "type": "module_start",    "course": "EVO", "course_name": "Evaluation of Outcomes"},
-        {"date": "2026-04-13", "name": "EVO – Module 6 starts",                        "type": "module_start",    "course": "EVO", "course_name": "Evaluation of Outcomes"},
-        {"date": "2026-04-20", "name": "EVO – Module 7 starts",                        "type": "module_start",    "course": "EVO", "course_name": "Evaluation of Outcomes"},
-        {"date": "2026-04-27", "name": "EVO Assessment Week begins",                   "type": "assessment_start","course": "EVO", "course_name": "Evaluation of Outcomes"},
-        {"date": "2026-05-03", "name": "EVO Assessment Deadline (Sun 23:59)",          "type": "deadline",        "course": "EVO", "course_name": "Evaluation of Outcomes"},
+        {"date": "2026-05-18", "name": "EVO – Module 1 starts",                        "type": "module_start",    "course": "EVO", "course_name": "Evaluation of Outcomes"},
+        {"date": "2026-05-25", "name": "EVO – Module 2 starts",                        "type": "module_start",    "course": "EVO", "course_name": "Evaluation of Outcomes"},
+        {"date": "2026-06-01", "name": "EVO – Module 3 starts",                        "type": "module_start",    "course": "EVO", "course_name": "Evaluation of Outcomes"},
+        {"date": "2026-08-10", "name": "EVO – Module 4 starts",                        "type": "module_start",    "course": "EVO", "course_name": "Evaluation of Outcomes"},
+        {"date": "2026-08-17", "name": "EVO – Module 5 starts",                        "type": "module_start",    "course": "EVO", "course_name": "Evaluation of Outcomes"},
+        {"date": "2026-08-24", "name": "EVO – Module 6 starts",                        "type": "module_start",    "course": "EVO", "course_name": "Evaluation of Outcomes"},
+        {"date": "2026-08-31", "name": "EVO – Module 7 starts",                        "type": "module_start",    "course": "EVO", "course_name": "Evaluation of Outcomes"},
+        {"date": "2026-09-07", "name": "EVO Assessment Week begins",                   "type": "assessment_start","course": "EVO", "course_name": "Evaluation of Outcomes"},
+        {"date": "2026-09-13", "name": "EVO Assessment Deadline (Sun 23:59)",          "type": "deadline",        "course": "EVO", "course_name": "Evaluation of Outcomes"},
         # DVS
-        {"date": "2026-05-04", "name": "DVS – Module 1 starts",                        "type": "module_start",    "course": "DVS", "course_name": "Data Visualisation"},
-        {"date": "2026-05-11", "name": "DVS – Module 2 starts",                        "type": "module_start",    "course": "DVS", "course_name": "Data Visualisation"},
-        {"date": "2026-05-18", "name": "DVS – Module 3 starts",                        "type": "module_start",    "course": "DVS", "course_name": "Data Visualisation"},
-        {"date": "2026-05-25", "name": "DVS – Module 4 starts",                        "type": "module_start",    "course": "DVS", "course_name": "Data Visualisation"},
-        {"date": "2026-06-01", "name": "DVS Assessment Week begins",                   "type": "assessment_start","course": "DVS", "course_name": "Data Visualisation"},
-        {"date": "2026-06-07", "name": "DVS Assessment Deadline (Sun 23:59)",          "type": "deadline",        "course": "DVS", "course_name": "Data Visualisation"},
+        {"date": "2026-09-14", "name": "DVS – Module 1 starts",                        "type": "module_start",    "course": "DVS", "course_name": "Data Visualisation"},
+        {"date": "2026-09-21", "name": "DVS – Module 2 starts",                        "type": "module_start",    "course": "DVS", "course_name": "Data Visualisation"},
+        {"date": "2026-09-28", "name": "DVS – Module 3 starts",                        "type": "module_start",    "course": "DVS", "course_name": "Data Visualisation"},
+        {"date": "2026-10-05", "name": "DVS – Module 4 starts",                        "type": "module_start",    "course": "DVS", "course_name": "Data Visualisation"},
+        {"date": "2026-10-12", "name": "DVS Assessment Week begins",                   "type": "assessment_start","course": "DVS", "course_name": "Data Visualisation"},
+        {"date": "2026-10-18", "name": "DVS Assessment Deadline (Sun 23:59)",          "type": "deadline",        "course": "DVS", "course_name": "Data Visualisation"},
         # ARP
-        {"date": "2026-08-10", "name": "ARP – Module 1 starts",                        "type": "module_start",    "course": "ARP", "course_name": "Analysis Reporting"},
-        {"date": "2026-08-17", "name": "ARP – Module 2 starts",                        "type": "module_start",    "course": "ARP", "course_name": "Analysis Reporting"},
-        {"date": "2026-08-24", "name": "ARP Assessment Week begins",                   "type": "assessment_start","course": "ARP", "course_name": "Analysis Reporting"},
-        {"date": "2026-08-30", "name": "ARP Assessment Deadline (Sun 23:59)",          "type": "deadline",        "course": "ARP", "course_name": "Analysis Reporting"},
+        {"date": "2026-10-19", "name": "ARP – Module 1 starts",                        "type": "module_start",    "course": "ARP", "course_name": "Analysis Reporting"},
+        {"date": "2026-10-26", "name": "ARP – Module 2 starts",                        "type": "module_start",    "course": "ARP", "course_name": "Analysis Reporting"},
+        {"date": "2026-11-02", "name": "ARP Assessment Week begins",                   "type": "assessment_start","course": "ARP", "course_name": "Analysis Reporting"},
+        {"date": "2026-11-08", "name": "ARP Assessment Deadline (Sun 23:59)",          "type": "deadline",        "course": "ARP", "course_name": "Analysis Reporting"},
         # EP1 – Exam Project
-        {"date": "2026-08-31", "name": "EP1 Exam Project – Week 1",                    "type": "module_start",    "course": "EP1", "course_name": "Exam Project 1"},
-        {"date": "2026-09-07", "name": "EP1 Exam Project – Week 2",                    "type": "module_start",    "course": "EP1", "course_name": "Exam Project 1"},
-        {"date": "2026-09-14", "name": "EP1 Exam Project – Week 3",                    "type": "module_start",    "course": "EP1", "course_name": "Exam Project 1"},
-        {"date": "2026-09-21", "name": "EP1 Exam Project – Week 4",                    "type": "module_start",    "course": "EP1", "course_name": "Exam Project 1"},
-        {"date": "2026-09-28", "name": "EP1 Exam Project – Week 5",                    "type": "module_start",    "course": "EP1", "course_name": "Exam Project 1"},
-        {"date": "2026-10-05", "name": "EP1 Exam Project – Final Week begins",         "type": "assessment_start","course": "EP1", "course_name": "Exam Project 1"},
-        {"date": "2026-10-11", "name": "EP1 Exam Project 1 – FINAL DELIVERY (Sun 23:59)", "type": "deadline",    "course": "EP1", "course_name": "Exam Project 1"},
+        {"date": "2026-11-09", "name": "EP1 Exam Project – Week 1",                    "type": "module_start",    "course": "EP1", "course_name": "Exam Project 1"},
+        {"date": "2026-11-16", "name": "EP1 Exam Project – Week 2",                    "type": "module_start",    "course": "EP1", "course_name": "Exam Project 1"},
+        {"date": "2026-11-23", "name": "EP1 Exam Project – Week 3",                    "type": "module_start",    "course": "EP1", "course_name": "Exam Project 1"},
+        {"date": "2026-11-30", "name": "EP1 Exam Project – Week 4",                    "type": "module_start",    "course": "EP1", "course_name": "Exam Project 1"},
+        {"date": "2026-12-07", "name": "EP1 Exam Project – Week 5",                    "type": "module_start",    "course": "EP1", "course_name": "Exam Project 1"},
+        {"date": "2026-12-14", "name": "EP1 Exam Project – Final Week begins",         "type": "assessment_start","course": "EP1", "course_name": "Exam Project 1"},
+        {"date": "2026-12-20", "name": "EP1 Exam Project 1 – FINAL DELIVERY (Sun 23:59)", "type": "deadline",    "course": "EP1", "course_name": "Exam Project 1"},
     ]
 
     # ── Course colour palette ─────────────────────────────────────────────────
@@ -33660,6 +42608,40 @@ elif page == "Progression Plan":
 """, unsafe_allow_html=True)
 
     st.markdown("---")
-    st.caption("📋 Source: PROGRESSION PLAN DA1 FT (OCT 2025 cohort) · Updated 16 December 2025")
+    st.caption("📋 Source: PROGRESSION PLAN DA1 FT (JAN 2026 cohort) · Updated 16 December 2025")
+
+save_persisted_state(st.session_state)
+
+        _course_colour = _COURSE_COLOURS.get(_evt["course"], "#555")
+        _icon = _type_icons.get(_evt["type"], "📌")
+
+        st.markdown(f"""
+<div style="
+    background:{_bg};
+    border-left: 5px solid {_border};
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+">
+  <div style="min-width:56px; text-align:center;">
+    <span style="background:{_course_colour}; color:#fff; font-size:11px; font-weight:700;
+                 padding:3px 7px; border-radius:12px; display:inline-block;">{_evt['course']}</span>
+  </div>
+  <div style="flex:1;">
+    <div style="font-size:15px; font-weight:600; color:#f0f0f0;">{_icon} {_evt['name']}</div>
+    <div style="font-size:12px; color:#aaa; margin-top:2px;">{_evt['course_name']}</div>
+  </div>
+  <div style="text-align:right; min-width:130px;">
+    <div style="font-size:13px; color:#ddd; font-weight:600;">{_edate.strftime('%a %d %b %Y')}</div>
+    <div style="font-size:13px; color:{_border}; font-weight:700; margin-top:2px;">{_status_emoji} {_countdown}</div>
+  </div>
+</div>
+""", unsafe_allow_html=True)
+
+    st.markdown("---")
+    st.caption("📋 Source: PROGRESSION PLAN DA1 FT (JAN 2026 cohort) · Updated 16 December 2025")
 
 save_persisted_state(st.session_state)
