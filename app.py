@@ -1,7 +1,31 @@
-import streamlit as st
-import pandas as pd
-from openai import OpenAI
+import json
 import os
+import random
+import re
+from datetime import datetime, timedelta
+
+import numpy as np
+import pandas as pd
+import streamlit as st
+from openai import OpenAI
+from streamlit.components.v1 import html
+
+from study_buddy_state import (
+    COURSE_PROGRESSION_MAP,
+    PROGRAM_DEADLINES,
+    STUDY_PATH_JAN2026,
+    load_persisted_state,
+    save_persisted_state,
+)
+
+AI_NOT_CONFIGURED_MESSAGE = "OpenAI API is not configured. Add `OPENAI_API_KEY` to use AI-powered features."
+
+_openai_api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=_openai_api_key) if _openai_api_key else None
+
+training_modules = {
+    "Key Performance Indicators (KPIs)": {
+        "course": "Statistical Tools",
         "description": "Learn how to use statistics to calculate and analyze Key Performance Indicators (KPIs).",
         "lessons": [
             {
@@ -6496,25 +6520,134 @@ Convert insights into decisions and monitor results.
                 "question": "Which stage typically takes the most time in the data analysis lifecycle?",
                 "options": ["Define", "Collect", "Clean", "Analyze"],
                 "correct": 2,
-                "explanation": "Data cleaning typically takes 40-60% of project time. Real-world data is messy and requires significant effort to prepare for analysis."
+                "explanation": "Data cleaning typically takes 40-60% of project time. Real-world data is messy and requires significant effort to prepare for analysis.",
+                "visual_explanation": "**Visual why:**\n\n| Lifecycle stage | Typical effort |\n|---|---|\n| Define | Lower |\n| Collect | Moderate |\n| Clean | Highest |\n| Analyze | Moderate |\n\n`raw messy data -> cleaning work grows fast`\n\nThat is why **Clean** is the correct answer."
             },
             {
                 "question": "Which SMART criterion is missing? 'Increase sales next year'",
                 "options": ["Specific", "Measurable", "Achievable", "All of the above"],
                 "correct": 3,
-                "explanation": "This goal is vague. It should be: Specific (which product line?), Measurable (by how much?), Achievable (based on what?), and more Time-bound (Q1? Q4?)."
+                "explanation": "This goal is vague. It should be: Specific (which product line?), Measurable (by how much?), Achievable (based on what?), and more Time-bound (Q1? Q4?).",
+                "visual_explanation": "**Visual why:**\n\n| SMART check | Present in 'Increase sales next year'? |\n|---|---|\n| Specific | No |\n| Measurable | No |\n| Achievable | No evidence |\n| Time-bound | Weak / vague |\n\nSeveral parts are missing, so **All of the above** is correct."
             },
             {
                 "question": "You find that 'correlation between ice cream sales and drowning deaths is 0.95.' The correct interpretation is:",
                 "options": ["Ice cream causes drowning", "We should ban ice cream sales", "Both are likely caused by a third factor (summer heat)", "This is statistically impossible"],
                 "correct": 2,
-                "explanation": "Correlation does not imply causation. Both ice cream sales and drowning increase in summer due to hot weather - a confounding variable."
+                "explanation": "Correlation does not imply causation. Both ice cream sales and drowning increase in summer due to hot weather - a confounding variable.",
+                "visual_explanation": "**Visual why:**\n\n`summer heat -> more swimming -> more drowning risk`\n`summer heat -> more ice cream sales`\n\n| Variable | Direct cause? |\n|---|---|\n| Ice cream sales -> drowning | No evidence |\n| Summer heat -> both increase | Yes, plausible confounder |\n\nSo the third-factor explanation is correct."
             },
             {
                 "question": "When should you return to an earlier stage in the lifecycle?",
                 "options": ["Never - the lifecycle is strictly linear", "Only if the project fails", "Whenever new information suggests it's needed", "Only at management request"],
                 "correct": 2,
-                "explanation": "The lifecycle is iterative. You might return to Clean if analysis reveals data issues, or to Define if interpretation raises new questions."
+                "explanation": "The lifecycle is iterative. You might return to Clean if analysis reveals data issues, or to Define if interpretation raises new questions.",
+                "visual_explanation": "**Visual why:**\n\n`Define -> Collect -> Clean -> Analyze -> Interpret -> Act`\n`                ^-------------------------------|`\n\n| If new issue appears | Go back? |\n|---|---|\n| Data problem found during analysis | Yes |\n| New question appears during interpretation | Yes |\n\nThe lifecycle loops back when needed, so the correct answer is **Whenever new information suggests it's needed**."
+            },
+            {
+                "question": "In batch processing, data is collected and processed in:",
+                "options": ["Random batches", "Small batches", "Real-time batches", "Large batches"],
+                "correct": 3,
+                "explanation": "The correct answer is Large batches. Batch processing groups data together and processes it at scheduled intervals rather than record by record as it arrives. A typical example is a company running a nightly job at 2am to process all of yesterday's sales transactions at once.",
+                "visual_explanation": "**Visual why:**\n\n| Pattern | Batch processing | Real-time processing |\n|---|---|---|\n| Data first accumulates | Yes | No |\n| Process one event immediately | No | Yes |\n| Typical size | Large collected set | Single event / tiny stream unit |\n\n`collect many records -> scheduled run -> output`"
+            },
+            {
+                "question": "Batch processing is generally suitable for scenarios where:",
+                "options": ["Small-scale processing is essential", "Large-scale real-time processing is essential", "Real-time processing is essential", "Real-time processing is not essential"],
+                "correct": 3,
+                "explanation": "The correct answer is Real-time processing is not essential. Batch methods are useful when the business can wait until a scheduled run, such as daily payroll, overnight reporting, or end-of-day sales aggregation. If the decision must happen instantly, streaming or real-time processing is more suitable.",
+                "visual_explanation": "**Visual why:**\n\n| Question to ask | If answer is yes | Processing choice |\n|---|---|---|\n| Must the result happen immediately? | Yes | Real-time |\n| Can the business wait for a scheduled run? | Yes | Batch |\n\n`can wait -> batch`\n\n`cannot wait -> real-time`"
+            },
+            {
+                "question": "Processing time in batch processing is:",
+                "options": ["Designed for small-scale processing", "Not designed for immediate or real-time processing", "Only designed for real-time processing", "Designed for immediate or real-time processing"],
+                "correct": 1,
+                "explanation": "The correct answer is Not designed for immediate or real-time processing. Batch jobs usually wait for a scheduled time or for enough data to accumulate before processing begins. For example, a bank may process account reconciliation after business hours rather than updating all summaries instantly after every transaction.",
+                "visual_explanation": "**Visual why:**\n\n| Timeline | Batch | Real-time |\n|---|---|---|\n| Event happens | 10:00 | 10:00 |\n| System processes | Later | Now |\n| User gets result | After queue/schedule | Immediately |\n\n`event -> wait -> process` = batch"
+            },
+            {
+                "question": "In terms of processing volume, batch processing typically handles:",
+                "options": ["Real-time volumes of data", "Small volumes of data", "Random volumes of data", "Large volumes of data"],
+                "correct": 3,
+                "explanation": "The correct answer is Large volumes of data. Because batch processing works on a full collected set, it is well suited for high-volume workloads such as processing all transactions from a full business day, generating monthly billing for all customers, or recalculating large historical datasets.",
+                "visual_explanation": "**Visual why:**\n\n| Volume pattern | Batch | Real-time |\n|---|---|---|\n| Full day / full period of records | Yes | Less typical |\n| One event at a time | No | Yes |\n| Heavy aggregation over many records | Yes | Sometimes, but harder instantly |\n\n`many records together = batch`"
+            },
+            {
+                "question": "One of the benefits of batch processing is:",
+                "options": ["Real-time responsiveness", "Resource optimisation", "Small-scale operations", "Resource limitation"],
+                "correct": 1,
+                "explanation": "The correct answer is Resource optimisation. Batch jobs can be scheduled during off-peak hours when systems are less busy, which helps maximise resource utilisation and reduce pressure on live systems. A common example is running heavy reporting or ETL jobs overnight instead of during peak customer traffic.",
+                "visual_explanation": "**Visual why:**\n\n| Time of day | Live customer traffic | Best workload |\n|---|---|---|\n| Busy hours | High | Light / interactive work |\n| Off-peak hours | Low | Heavy batch jobs |\n\n`off-peak window -> run batch -> better resource use`"
+            },
+            {
+                "question": "Batch processing is capable of handling:",
+                "options": ["Limited operations", "Simple operations", "Real-time operations", "Complex operations"],
+                "correct": 3,
+                "explanation": "The correct answer is Complex operations. Because the full batch of data is available at processing time, the system can run larger transformations, aggregations, joins, validations, and business rules than would be practical in an immediate-response flow. For example, a company can combine sales, returns, and inventory data overnight to produce a full operational summary.",
+                "visual_explanation": "**Visual why:**\n\n`collect all sources -> join -> validate -> aggregate -> report`\n\n| Work type | Batch fit |\n|---|---|\n| Multi-step transformation | Strong |\n| Big join across many records | Strong |\n| Immediate single-event response | Weak |"
+            },
+            {
+                "question": "Scenario: A social media platform analyses user engagement metrics, such as likes, comments, and shares, to recommend relevant content to users in their feeds. Which processing type is most appropriate?",
+                "options": ["Batch Processing", "Real-time processing"],
+                "correct": 1,
+                "explanation": "The correct answer is Real-time processing. Feed recommendations work best when the platform reacts quickly to current user behaviour, such as a post suddenly gaining likes or comments. If the system waited for a later batch run, recommendations would feel stale and less relevant.",
+                "visual_explanation": "**Visual why:**\n\n`user likes post -> engagement changes now -> feed should adapt now`\n\n| Scenario clue | Meaning | Choice |\n|---|---|---|\n| Recommendations must stay current | Immediate response needed | Real-time |"
+            },
+            {
+                "question": "Scenario: An online retail store processes customer orders and updates inventory levels every night. Which processing type is most appropriate?",
+                "options": ["Batch Processing", "Real-time processing"],
+                "correct": 0,
+                "explanation": "The correct answer is Batch Processing. The key clue is that updates happen every night, which means the data is collected during the day and processed together on a schedule rather than immediately after each order.",
+                "visual_explanation": "**Visual why:**\n\n`orders during day -> nightly update run -> inventory refreshed`\n\n| Scenario clue | Meaning | Choice |\n|---|---|---|\n| Every night | Scheduled run | Batch |"
+            },
+            {
+                "question": "Scenario: A weather forecasting system gathers data from multiple weather stations and provides hourly weather predictions for the next week. Which processing type is most appropriate?",
+                "options": ["Batch Processing", "Real-time processing"],
+                "correct": 1,
+                "explanation": "The correct answer is Real-time processing. The key clue is that the system must use fresh data from multiple weather stations to produce timely hourly predictions. While forecasts may be published on an hourly cycle, the underlying processing needs to respond quickly to changing conditions so the predictions remain accurate and current.",
+                "visual_explanation": "**Visual why:**\n\n`station data changes -> forecast engine updates -> hourly prediction stays current`\n\n| Scenario clue | Meaning | Choice |\n|---|---|---|\n| Fresh incoming sensor/station data matters | Low latency needed | Real-time |"
+            },
+            {
+                "question": "Scenario: A marketing analytics company analyses website traffic data at the end of each day to assess the effectiveness of different online ad campaigns. Which processing type is most appropriate?",
+                "options": ["Batch Processing", "Real-time processing"],
+                "correct": 0,
+                "explanation": "The correct answer is Batch Processing. The analysis is performed at the end of the day, so the data is accumulated first and then processed as a group. This is a classic batch-processing pattern used for daily reporting and campaign review.",
+                "visual_explanation": "**Visual why:**\n\n`all day traffic data -> end-of-day analysis -> campaign report`\n\n| Scenario clue | Meaning | Choice |\n|---|---|---|\n| End of each day | Delayed scheduled analysis | Batch |"
+            },
+            {
+                "question": "Scenario: A stock trading platform processes buy and sell orders from users in real time and executes trades based on current market conditions. Which processing type is most appropriate?",
+                "options": ["Batch Processing", "Real-time processing"],
+                "correct": 1,
+                "explanation": "The correct answer is Real-time processing. Trade execution depends on live market prices and must happen immediately. Delaying orders into a batch could cause the wrong price, missed opportunities, or major financial loss.",
+                "visual_explanation": "**Visual why:**\n\n`order arrives -> check live market price -> execute now`\n\n| Scenario clue | Meaning | Choice |\n|---|---|---|\n| Current market conditions | Instant action required | Real-time |"
+            },
+            {
+                "question": "Scenario: A university analyses student enrollment data at the end of each semester to determine course popularity and plan for future semesters. Which processing type is most appropriate?",
+                "options": ["Batch Processing", "Real-time processing"],
+                "correct": 0,
+                "explanation": "The correct answer is Batch Processing. The university waits until the semester ends, then reviews the enrollment data in one larger analysis. This does not require immediate action for each individual enrollment event.",
+                "visual_explanation": "**Visual why:**\n\n`enrollments accumulate through semester -> semester-end analysis -> planning`\n\n| Scenario clue | Meaning | Choice |\n|---|---|---|\n| End of each semester | Periodic review | Batch |"
+            },
+            {
+                "question": "Scenario: A ride-sharing app calculates passenger fare estimates based on distance and traffic conditions during the ride. Which processing type is most appropriate?",
+                "options": ["Batch Processing", "Real-time processing"],
+                "correct": 1,
+                "explanation": "The correct answer is Real-time processing. Fare estimates depend on live trip conditions such as current traffic and distance traveled, so the system must update continuously while the ride is happening.",
+                "visual_explanation": "**Visual why:**\n\n`traffic changes + distance changes -> fare estimate updates during ride`\n\n| Scenario clue | Meaning | Choice |\n|---|---|---|\n| During the ride | Continuous update needed | Real-time |"
+            },
+            {
+                "question": "Scenario: A manufacturing company analyses sensor data from its production line to detect anomalies and potential defects in manufactured products. Which processing type is most appropriate?",
+                "options": ["Batch Processing", "Real-time processing"],
+                "correct": 1,
+                "explanation": "The correct answer is Real-time processing. Detecting anomalies early lets the company intervene quickly, reduce waste, and stop defective products from continuing through the production line. Waiting for a later batch would reduce the value of the monitoring system.",
+                "visual_explanation": "**Visual why:**\n\n`machine sensor spike -> anomaly detected now -> stop or adjust line now`\n\n| Scenario clue | Meaning | Choice |\n|---|---|---|\n| Defects must be caught quickly | Immediate detection needed | Real-time |"
+            },
+            {
+                "question": "The module covers important reasons why an end-to-end data life cycle is essential. Which 2 of the options below are valid reasons?",
+                "options": ["Structure and organisation", "Automated Task Completion", "Customer Engagement", "Improved decision-making"],
+                "correct": [0, 3],
+                "explanation": "The correct answers are Structure and organisation, and Improved decision-making. A data lifecycle creates an organised, consistent, and systematic process for handling data from start to finish, which makes gaps easier to spot and improves reliability. It also supports better decision-making because decisions are based on structured data collection, preparation, and analysis rather than guesswork. The other options are distractors: the lifecycle itself does not automatically complete business tasks, and customer engagement may benefit indirectly from insights, but it is not a core reason the lifecycle exists. A practical example is a company using a structured lifecycle to collect customer data, clean duplicates and missing values, analyse churn patterns, and then make better retention decisions from trustworthy evidence.",
+                "visual_explanation": "**Visual why:**\n\n| Option | Core lifecycle reason? |\n|---|---|\n| Structure and organisation | Yes |\n| Automated Task Completion | No |\n| Customer Engagement | Not a core lifecycle reason |\n| Improved decision-making | Yes |\n\n`structured process -> reliable data -> better decisions`"
             }
         ]
     },
@@ -7423,7 +7556,8 @@ DECISIONS MADE:
                 "question": "What percentage of a data project is typically spent on data cleaning?",
                 "options": ["5-10%", "15-20%", "30-40%", "60-70%"],
                 "correct": 2,
-                "explanation": "Data cleaning typically takes 30-40% of project time. Real-world data is messy, and underestimating cleaning time is a common mistake."
+                "explanation": "Data cleaning typically takes 30-40% of project time. Real-world data is messy, and underestimating cleaning time is a common mistake.",
+                "visual_explanation": "**Visual why:**\n\n| Project work area | Typical share |\n|---|---|\n| Planning | Smaller |\n| Collection | Moderate |\n| Cleaning | 30-40% |\n| Analysis + reporting | Remaining share |\n\n`messy raw data -> cleaning consumes a large chunk of time`"
             },
             {
                 "question": "What is 'scope creep'?",
@@ -7441,7 +7575,8 @@ DECISIONS MADE:
                 "question": "When should you document decisions made during data cleaning?",
                 "options": ["At the end of the project", "During the cleaning process", "Only if asked", "Never - it's not important"],
                 "correct": 1,
-                "explanation": "Document decisions as you make them. This ensures reproducibility, helps explain your methodology, and protects you if questions arise later."
+                "explanation": "Document decisions as you make them. This ensures reproducibility, helps explain your methodology, and protects you if questions arise later.",
+                "visual_explanation": "**Visual why:**\n\n`clean step happens -> record what changed -> analysis stays explainable`\n\n| Timing | Risk |\n|---|---|\n| During cleaning | Low risk of forgetting |\n| End of project | High risk of missing details |\n\nSo the correct answer is **During the cleaning process**."
             }
         ]
     },
@@ -10621,6 +10756,34 @@ CHANGELOG ENTRY
                 "options": ["It doesn't transform data", "It loads raw data first, then transforms in the warehouse", "It only works with streaming", "It requires no configuration"],
                 "correct": 1,
                 "explanation": "ELT loads raw data to the data warehouse first, then uses the warehouse's computing power to transform it. ETL transforms before loading."
+            },
+            {
+                "question": "State whether the following is True or False: Data pipelines do not play a role in long-term archival of data; they are mainly concerned with immediate processing and delivery of data.",
+                "options": ["True", "False"],
+                "correct": 1,
+                "explanation": "The correct answer is False. Data pipelines are not limited to immediate processing and delivery. They can also move data into long-term archival storage for compliance, governance, historical analysis, and disaster recovery.",
+                "visual_explanation": "**Visual why:**\n\n`source -> pipeline -> dashboard`\n`source -> pipeline -> archive storage`\n\n| Pipeline role | Exists? |\n|---|---|\n| Immediate delivery | Yes |\n| Long-term archival | Yes |\n\nBecause both paths exist, the statement is False."
+            },
+            {
+                "question": "State whether the following is True or False: Automated monitoring in the operationalising phase only serves the purpose of updating customer data, and does not involve retraining of models or real-time evaluation of performance.",
+                "options": ["True", "False"],
+                "correct": 1,
+                "explanation": "The correct answer is False. Automated monitoring in an operationalised analytics system can include performance tracking, alerting, data-drift checks, retraining triggers, and real-time evaluation, not just updates to customer data.",
+                "visual_explanation": "**Visual why:**\n\n`live model -> monitor accuracy -> detect drift -> trigger alert/retrain`\n\n| Monitoring task | Included in operationalising? |\n|---|---|\n| Update customer data only | No, too narrow |\n| Check performance | Yes |\n| Trigger retraining | Yes |\n| Real-time evaluation | Yes |\n\nThe statement leaves out major monitoring tasks, so it is False."
+            },
+            {
+                "question": "State whether the following is True or False: Apache Spark is an open-source platform primarily designed for building visual data analytics pipelines using a drag-and-drop interface.",
+                "options": ["True", "False"],
+                "correct": 1,
+                "explanation": "The correct answer is False. Apache Spark is a distributed data-processing framework used for large-scale computation and analytics. A drag-and-drop visual workflow description fits tools like KNIME, not Spark itself.",
+                "visual_explanation": "**Visual why:**\n\n| Tool | Main style |\n|---|---|\n| Apache Spark | Code-based distributed processing |\n| KNIME-like tools | Visual drag-and-drop workflows |\n\n`Spark != drag-and-drop workflow builder`\n\nSo the statement is False."
+            },
+            {
+                "question": "State whether the following is True or False: A retail company can integrate its data analysis pipeline with its data analysis lifecycle to make data-driven decisions more efficiently and gain a competitive edge.",
+                "options": ["True", "False"],
+                "correct": 0,
+                "explanation": "The correct answer is True. When a company connects its pipeline to the wider lifecycle, data moves more reliably from collection and preparation into analysis, reporting, and action. That improves decision speed, consistency, and business responsiveness.",
+                "visual_explanation": "**Visual why:**\n\n`pipeline: collect -> clean -> store`\n`lifecycle: analyze -> interpret -> act`\n`connected together -> faster decisions`\n\n| If connected | Business effect |\n|---|---|\n| Reliable flow into analysis | Faster insight |\n| Consistent data preparation | Better decisions |\n| Reusable reporting/action loop | Competitive advantage |\n\nThat makes the statement True."
             }
         ]
     },
@@ -26922,9 +27085,9 @@ The purpose of data-driven decision-making is not simply to collect more data. T
                 "Formal analytical methods are necessary for data-driven decision-making to make sense and support reliable decisions"
             ],
             "visual_elements": {
-                "diagrams": true,
-                "tables": true,
-                "highlighted_sections": true
+                "diagrams": True,
+                "tables": True,
+                "highlighted_sections": True
             }
         },
         {
@@ -29301,9 +29464,9 @@ That is why this lesson matters. It connects analysis skills to how decisions ar
                 "A data analyst must understand where each technique fits even when not building every method directly"
             ],
             "visual_elements": {
-                "diagrams": true,
-                "tables": true,
-                "highlighted_sections": true
+                "diagrams": True,
+                "tables": True,
+                "highlighted_sections": True
             }
         },
         {
@@ -30487,9 +30650,9 @@ That is the real value of these criteria: they provide a structured and defensib
                                 "Analysts should explain both the recommended choice and the logic behind the criterion used"
             ],
             "visual_elements": {
-                                "diagrams": true,
-                "tables": true,
-                "highlighted_sections": true
+                                "diagrams": True,
+                "tables": True,
+                "highlighted_sections": True
             }
         },
         {
@@ -32566,204 +32729,3335 @@ Before the semester exam, make sure you can confidently explain:
                 "These examples show that DDM is used to reduce loss, improve service, allocate resources, and make faster decisions under uncertainty"
             ],
             "visual_elements": {
-                "diagrams": true,
-                "tables": true,
-                "highlighted_sections": true
+                "diagrams": True,
+                "tables": True,
+                "highlighted_sections": True
             }
         },
         {
             "lesson_number": "2.0",
-            "title": "Module 1 Overview and Learning Outcomes",
+            "title": "Module 2 Overview and Learning Outcomes",
             "content": """
-### Module 1: Lessons and Tasks
+### Module 2: Lessons and Tasks
 
-In this module, students build a foundational understanding of the principles and importance of **data-driven decision-making (DDM)**. The role of data is central: when organisations use data well, they make stronger decisions, react earlier to risk, and improve outcomes more consistently.
+### Module Overview
 
-#### Module goal
+#### Introduction
 
-The goal of this course is to help candidates use data to make informed decisions, respond proactively to predictions, explore real-world industry use cases, and justify actions with appropriate decision-making techniques and criteria.
+This module encompasses key concepts and techniques related to the data analysis lifecycle, data analysis pipelines, data types, and data structures. It serves as a foundational course for individuals looking to gain a comprehensive understanding of data analytics. In this module, students will be provided with techniques and information on different types of processing. The knowledge gained can be used to allocate these techniques to specific scenarios.
 
-#### Module overview
+#### Why this module matters
 
-| Focus area | What this means in practice |
-|-----------|------------------------------|
-| Role of data | Data is used as evidence rather than intuition alone |
-| Decision impact | Better decisions improve revenue, efficiency, service, and risk management |
-| Real-world scenarios | Students work with industry use cases, before-and-after changes, and business examples |
-| Criteria and techniques | Students learn how to choose methods, compare criteria, and justify decisions |
-| Predictive action | Students learn how forecasts can trigger earlier, proactive responses |
+In real projects, analysts do not only ask *what the data says*. They must also understand:
 
-#### Learning outcomes
+- where the data comes from
+- how it moves through systems
+- what structure it has
+- which processing method fits the scenario
+- how the full lifecycle supports a stronger decision
+
+This is what makes Module 2 important. It helps candidates move from general ideas about data-driven decision-making into the practical mechanics of how analytical work is actually organised.
+
+#### Module focus areas
+
+| Focus area | What candidates should understand |
+|-----------|------------------------------------|
+| Data lifecycle | How analysis moves from problem definition to action |
+| Data pipelines | How data is collected, moved, transformed, and delivered |
+| Data types | How qualitative and quantitative data differ in use |
+| Data structures | How structured, semi-structured, and unstructured data affect analysis |
+| Processing choices | When batch or real-time processing is more suitable |
+| Scenario matching | How to allocate the right approach to the right business problem |
+
+<div class="mermaid">
+flowchart LR
+    A[Business Problem] --> B[Data Lifecycle]
+    B --> C[Pipeline and Processing]
+    C --> D[Data Type and Structure]
+    D --> E[Analysis and Interpretation]
+    E --> F[Decision and Action]
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style D fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style E fill:#FFD700,stroke:#B8860B,stroke-width:2px,color:#000
+    style F fill:#FF6B6B,stroke:#C0392B,stroke-width:2px,color:#fff
+</div>
+
+#### Learning Outcomes
 
 In this module, we are covering the following **knowledge learning outcomes**:
 
-- The candidate has knowledge of real-world use case stories and how it has impacted companies outside the data analysis field.
-- The candidate has knowledge of Key Performance Indicators (KPI), data types (qualitative vs. quantitative) and the data analysis lifecycle.
+- The candidate can apply knowledge of the data lifecycle to proposed scenarios to create an iterative solution and analyse key performance indicators.
+- The candidate has knowledge of Key Performance Indicators (KPIs), data types (qualitative vs quantitative) and the data analysis lifecycle.
+- The candidate has knowledge of data structures, models and where to apply applicable data sets to the correct scenario.
 
 In this module, we are covering the following **skill learning outcomes**:
 
-- The candidate can apply knowledge of the data lifecycle to proposed scenarios to create an iterative solution and analyse key performance indicators.
-- The candidate masters relevant theoretical models to proxy real-world data.
-- The candidate can apply knowledge to practical problems, such as market price prediction and using data-driven decision-making techniques.
+- The candidate can understand the difference between data types and the way they are analysed, and how the data is collected.
+- The candidate can identify terminology used within the industry.
 
-In this module, we are covering the following **general competence learning outcomes**:
+In this module, we are covering the following **general competence learning outcome**:
 
-- The candidate understands the fidelity of data within a project and its owners.
-- The candidate can develop work methods using KPIs to guide the decision-making process.
+- The candidate can select appropriate methods to solve scenarios.
 
-#### Module 1 tasks
+#### Module 2 tasks
 
-1. Review one real-world industry use case and identify how data changed the final decision.
-2. Separate qualitative and quantitative evidence from a shared case scenario.
-3. Map a business problem through the data lifecycle from definition to action.
-4. Select KPIs that can monitor whether the recommendation worked.
-5. Explain how a prediction or model could support earlier, proactive action.
+1. Map a business problem through the stages of the data analysis lifecycle.
+2. Explain the role of a data pipeline in moving data from source to decision.
+3. Distinguish between qualitative and quantitative data in realistic scenarios.
+4. Classify data as structured, semi-structured, or unstructured and explain why it matters.
+5. Decide whether batch or real-time processing is more suitable for a given business case.
 
-#### Why this matters for business
+#### Real-world case framing
 
-Businesses rarely fail because they have no data. They often fail because they do not use the right data, in the right format, with the right decision criteria. Data-driven decision-making helps teams:
+Use the same type of thinking in scenarios such as:
 
-1. define the problem more clearly
-2. reduce guesswork
-3. compare options more objectively
-4. monitor whether actions actually worked
+| Scenario | Key question |
+|---------|---------------|
+| Online grocery delivery | Should delivery data be processed in real time or in scheduled batches? |
+| E-commerce reporting | Which KPIs can wait until end-of-day processing, and which need live updates? |
+| Hospital triage | Which patient signals require immediate processing and rapid action? |
+| Marketing campaign analysis | Which data belongs in dashboard reporting, and which data supports later deeper analysis? |
+
+#### Important takeaways
+
+1. The **data lifecycle** gives structure to the work from problem definition to action.
+2. A **data pipeline** explains how data is moved and prepared so it can actually be analysed.
+3. **Data types and data structures** affect which tools, storage methods, and analyses are appropriate.
+4. **Processing type** matters because not every business situation needs immediate results.
+5. Strong analysts do not just analyse data; they also choose the right technical path for the scenario.
+
+#### Semester exam highlight
+
+For the semester exam, do not describe these topics as isolated definitions. The examiner usually wants you to:
+
+1. name the concept clearly
+2. explain what it does
+3. connect it to a business scenario
+4. show why it improves decision-making
+
+#### Visual exam example
+
+```text
+Question: A retail company updates inventory every night, but fraud alerts must be raised immediately.
+
+Strong answer logic:
+-> inventory summary = batch processing
+-> fraud alerting = real-time processing
+-> both still belong to the wider data lifecycle
+-> the pipeline must support each need differently
+```
+
+#### Exam-relevant note with highlight
+
+**High-yield rule:** if the scenario depends on an immediate response, current conditions, or low-latency action, explain why **real-time processing** is needed. If the scenario can wait for scheduled reporting, aggregation, or large-volume transformation, explain why **batch processing** is more suitable.
 
 #### Core idea
 
-Data-driven decision-making means using relevant evidence, structured analysis, and measurable outcomes to choose between actions. It does not remove human judgment, but it improves judgment by grounding decisions in evidence and helping teams act before predicted problems become real losses.
+Module 2 teaches that good decisions do not come only from having data. They come from understanding how data is structured, how it moves through a pipeline, how it is processed, and how those choices support the full lifecycle from analysis to action.
             """,
             "key_points": [
-                "Module 1 links real-world use cases to KPI, data types, and the full data lifecycle",
-                "Candidates practice applying theoretical models to proxy real-world data and practical prediction scenarios",
-                "General competence focuses on data fidelity, ownership, and KPI-guided decision processes",
-                "The business value of DDM is better decisions, proactive response to predictions, and more consistent results"
+                "Module 2 connects the data lifecycle, pipelines, data types, data structures, and processing choices",
+                "Candidates should be able to match batch or real-time processing to the business scenario",
+                "A strong answer explains both the technical concept and why it matters for decision-making",
+                "Semester exam answers should connect lifecycle, pipeline, and scenario rather than only define terms"
             ],
             "visual_elements": {
-                "diagrams": false,
-                "tables": true,
-                "highlighted_sections": true
+                "diagrams": True,
+                "tables": True,
+                "highlighted_sections": True
             }
         },
         {
             "lesson_number": "2.1",
-            "title": "Decision-Making with Relevant Data Models",
+            "title": "Lesson - Data Analysis Life Cycle",
             "content": """
-### Course Focus
+### 2.1. Lesson - Data Analysis Life Cycle
 
-Data Driven Decision-Making is about selecting the right analytical approach for the problem in front of you. The goal is not to analyse all available data, but to apply relevant data models that help you make better decisions, anticipate likely outcomes, and react proactively when predictions point to upcoming risk or opportunity.
+#### Introduction
 
-#### What this course emphasizes
+The data analysis life cycle is a systematic and iterative process to extract meaningful insights and knowledge from raw data. It encompasses well-defined stages that guide data analysts and scientists in transforming data into actionable information.
 
-| Area | What candidates learn |
-|------|------------------------|
-| Relevant data models | How to match a model to a business problem |
-| Use cases and scenarios | How real organisations move from problem to decision |
-| Before-and-after comparisons | How to evaluate whether a change improved outcomes |
-| Analytical mindset | How to ask the right questions before choosing a method |
+The life cycle typically begins with data collection, where relevant data gets acquired from various sources. Once collected, the data undergoes a pre-processing phase involving cleaning, formatting, and handling missing values and outliers.
 
-#### Practical framing questions
+Following this, Exploratory Data Analysis (EDA) gets conducted to understand the data's characteristics and patterns. Subsequently, data modelling and analysis get performed using statistical methods, machine learning algorithms, or other analytical techniques.
 
-1. What business problem are we solving?
-2. What data model best represents that problem?
-3. What subset of the data is most relevant?
-4. What method will give the clearest answer?
-5. How will we measure whether the decision worked?
+The final stage involves communicating the findings and insights through visualisations, reports, or presentations.
 
-Strong candidates also ask: what predictions can we trust enough to act on before the problem gets worse?
+The data analysis life cycle is a vital framework that ensures a structured approach to harnessing the full potential of data for making informed decisions and solving complex problems.
 
-The strongest decision-makers are disciplined about problem framing before they start calculating.
+In this lesson and those that follow, we will learn about the fundamentals and cement our knowledge base.
+
+#### What is the Data Analysis Lifecycle?
+
+The data analysis lifecycle is a systematic approach that guides analysts in extracting valuable insights from data. It involves data collection, pre-processing, exploratory data analysis, and modelling. Each phase transforms raw data into actionable knowledge, enabling informed decision-making and problem-solving. Through this iterative process, data analysts can gain a deeper understanding of the data and expose meaningful patterns and relationships that drive valuable insights.
+
+#### Phases of the life cycle
+
+There are six stages to a data analysis lifecycle:
+
+| Phase | What happens in this stage |
+|------|-----------------------------|
+| Discovery | Analysts define objectives, explore data sources, and formulate questions to guide the analysis |
+| Data preparation | Analysts clean, transform, and organise the data to ensure its quality and suitability for analysis |
+| Model planning | Analysts select the appropriate techniques and tools for analysis and establish a roadmap for modelling |
+| Model building | Analysts apply statistical and machine learning algorithms to the trained data to extract insights and make predictions |
+| Communicating results | Analysts interpret the results, visualise findings, and communicate the outcomes to stakeholders effectively |
+| Operationalising | Analysts implement insights and models into practical applications or business processes for real-world impact |
+
+#### Visual figure illustration
+
+<div class="mermaid">
+flowchart TD
+    A[Discovery] --> B[Data Preparation]
+    B --> C[Model Planning]
+    C --> D[Model Building]
+    D --> E[Communicating Results]
+    E --> F[Operationalising]
+    F --> G[Monitoring and New Questions]
+    G --> A
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style D fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style E fill:#FFD700,stroke:#B8860B,stroke-width:2px,color:#000
+    style F fill:#FF6B6B,stroke:#C0392B,stroke-width:2px,color:#fff
+    style G fill:#26A69A,stroke:#00695C,stroke-width:2px,color:#fff
+</div>
+
+#### Why this end-to-end cycle is crucial
+
+Before delving much deeper into each phase, let's quickly examine why this end-to-end cycle is crucial and the benefits resulting from it.
+
+| Benefit | Why it matters |
+|--------|-----------------|
+| Improved decision-making | Using the phases within the data analysis lifecycle contributes to us being able to make more informed decisions. This cycle ensures that decisions are made based on proper data collection, preparation, and analysis. |
+| Ensure data quality | The entire lifecycle ensures detailed data quality by validating, cleaning, and transforming data to ensure accuracy and completeness. |
+| Structure and organisation | Using the phases within the cycle ensures that the process is organised, consistent and systematic. It creates a structure within the organisation, making it easier to identify gaps. |
+| Continuous improvement | As the lifecycle approach is an iterative method, it is easier to spot and improve on gaps in the process. |
+| Effective communication | By using the phases, we enable team members within an organisation to communicate at each stage. Additionally, visualising reports, charts, and presentations is a huge benefit. |
+
+This is important because teams that skip parts of the lifecycle often make weak decisions from incomplete, messy, or poorly interpreted data.
+
+#### Module case example
+
+In this module, we will use an example of a fast-food restaurant that would like to add a children's menu as an option. We will discuss how this simple example can apply to each phase.
+
+#### Discovery
+
+In the Discovery phase, data analysts must develop a plan highlighting the objective, deliverables, scope, hypotheses, and information gathering. Within this phase, a decent amount of investigation needs to happen. Below, we will take a closer look at what an example data analysis plan could look like.
+
+A data analysis plan serves as a blueprint to validate the research hypothesis, tailored to the unique goals of the project or company.
+
+#### Essential components of a data analysis plan
+
+| Component | What it means in practice |
+|----------|----------------------------|
+| Identifying objectives | Clearly define the research hypothesis and project goals to guide the analysis process and align stakeholders |
+| Data description | Detail the data type, structure, format, and sources to understand the information to be analysed |
+| Data cleaning process | Outline the pre-processing steps, handling missing values, addressing outliers, and data transformation techniques |
+| Statistical techniques | Select appropriate methods like descriptive and inferential statistics, regression analysis, and hypothesis testing for data analysis |
+| Data visualisation | Plan visualisations and exploratory analysis techniques, such as scatterplots and charts, to present findings effectively |
+| Potential issues | Ensure robust analysis by addressing potential risks that may influence the hypothesis results |
+| Timelines and resource allocation | Set estimated timelines, KPIs, and deadlines, while identifying required resources like personnel, computing, and data storage |
+
+<div class="mermaid">
+flowchart LR
+    A[Objective and Hypothesis] --> B[Data Description]
+    B --> C[Cleaning Plan]
+    C --> D[Statistical Techniques]
+    D --> E[Visualisation Plan]
+    E --> F[Potential Issues]
+    F --> G[Timeline and Resources]
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style D fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style E fill:#FFD700,stroke:#B8860B,stroke-width:2px,color:#000
+    style F fill:#FF6B6B,stroke:#C0392B,stroke-width:2px,color:#fff
+    style G fill:#26A69A,stroke:#00695C,stroke-width:2px,color:#fff
+</div>
+
+Let's explore this with our example of a restaurant wanting to add a children's menu. We'll explore how our data analysis plan could look later in this lesson.
+
+#### Example - Restaurant Adding a Children's Menu
+
+##### Setting our objectives and goals
+
+Increasing target market range and revenue when adding a kids' menu to the fast-food restaurant menu.
+
+##### Types of data
+
+| Data area | Format | Structure | Data sources |
+|----------|--------|-----------|--------------|
+| Customer demographics | Tabular data in Excel format | Columns representing customer attributes such as age, gender, family size, and allergies | Customer surveys, loyalty program databases, point-of-sale systems |
+| Competitor analysis | Unstructured data such as text and PDFs | Information about competing fast food restaurants, their children's menu offerings, and pricing | Competitors' websites, market research reports, online reviews |
+| Parental purchase behaviour | Tabular data in Excel format | Information on parental purchase habits related to children's menu items | Surveys, customer purchase records, market research studies |
+| Kids market research | Unstructured or structured data | Research findings related to children's food preferences, dietary restrictions, and meal choices | Market research reports, academic studies, focus groups |
+
+<div class="mermaid">
+flowchart TD
+    A[Objective: Grow target market and revenue] --> B[Customer demographics]
+    A --> C[Competitor analysis]
+    A --> D[Parental purchase behaviour]
+    A --> E[Kids market research]
+    B --> F[Discovery plan for children's menu]
+    C --> F
+    D --> F
+    E --> F
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style D fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style E fill:#FFD700,stroke:#B8860B,stroke-width:2px,color:#000
+    style F fill:#FF6B6B,stroke:#C0392B,stroke-width:2px,color:#fff
+</div>
+
+This example shows that even in the Discovery phase, analysts need to think carefully about the types of data available, how that data is structured, and whether the data sources are suitable for the business question being asked.
+
+##### Data cleaning process
+
+| Data area | Example | Scenario | Approach |
+|----------|---------|----------|----------|
+| Customer demographics | Age data | Some customers may not have provided their age in the survey or loyalty program registration | For missing age values, we can calculate the age with the median or mode age of the customers within the same family size group |
+| Competitor analysis | Pricing data | Some competitor data for children's menu items may be incomplete or outdated | For missing pricing information, we will use web scraping tools to collect up-to-date prices from competitors' websites. We can treat certain items as outliers and exclude them from the analysis if they are no longer available |
+| Parental purchase behaviour | Purchase frequency | Some parents may not have provided information on their purchase frequency of children's menu items | We can insert the values based on the average or median purchase frequency of other parents within the same age group or family size category for missing purchase frequency |
+| Kids market research | Dietary preferences | In children's market research, some dietary preference data may have been recorded in unstructured formats, and specific preferences may not have been captured | Use techniques to analyse the unstructured data and extract vital dietary preferences. We can use sentiment analysis to identify the most likely preferences for missing choices based on related keywords or sentiments expressed in the text |
+
+##### Handling outliers
+
+We can use visualisation techniques like box plots and histograms to identify outliers for all data types, such as customer demographics, competitor analysis, parental purchase behaviour, and children's market research.
+
+We will consider the context and domain knowledge to determine whether outliers are genuine data points or potential data entry errors. True outliers will get retained, while erroneous outliers will be corrected or removed based on further investigation.
+
+##### Data transformation
+
+- For customer demographics, we will transform continuous age data into age groups.
+- We may transform qualitative data, such as menu item descriptions, for competitor analysis into numerical sentiment scores.
+- For parental purchase behaviour, we can create a new binary variable indicating whether a parent has previously purchased a children's menu item, simplifying the analysis.
+- For children's market research, we can create aggregate scores or indices for dietary preferences, such as a "healthiness score", to aid in comparison and decision-making.
+
+<div class="mermaid">
+flowchart LR
+    A[Raw restaurant data] --> B[Missing values handled]
+    B --> C[Outliers reviewed]
+    C --> D[Variables transformed]
+    D --> E[Analysis-ready data]
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style D fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style E fill:#26A69A,stroke:#00695C,stroke-width:2px,color:#fff
+</div>
+
+This cleaning plan shows that data preparation is not only about removing bad data. It is also about making the data more reliable, comparable, and useful for the later modelling and decision-making stages.
+
+##### Statistical techniques
+
+| Technique | What it is used for | Restaurant example |
+|----------|----------------------|--------------------|
+| Descriptive statistics | Used to summarise and describe the main features of the data, including mean, median, mode, standard deviation, range, and percentages | Summarise family visit frequency, average order value, and the percentage of customers who say they would buy from a kids' menu |
+| Inferential statistics | Involves making predictions or assumptions about a population based on a sample of data | Use a customer sample to estimate whether family customers in the full market are likely to respond positively to a children's menu |
+| Regression analysis | Helps understand the relationships between variables | Determine how customer demographics, such as age and family size, impact the sales of kids' menu items and identify which factors influence customer choices |
+| Hypothesis testing | Used to evaluate the significance of relationships or differences in the data | Test whether there is a significant difference in kids' menu sales before and after adding a new item, or compare preferences across demographic groups |
+| Sentiment analysis | Used on unstructured text to understand customer opinions, key themes, and emotional tone | Analyse customer feedback and children's market research to identify the most common positive and negative themes around children's menu options |
+
+##### Why these techniques matter in the plan
+
+These techniques help move the restaurant example from simple description into evidence-based decision-making.
+
+- Descriptive statistics help explain what the current customer base looks like.
+- Inferential statistics help estimate what may be true beyond the collected sample.
+- Regression analysis helps explain which factors are linked to stronger demand.
+- Hypothesis testing helps determine whether observed differences are meaningful.
+- Sentiment analysis helps extract useful insight from comments, reviews, and other unstructured text.
+
+#### Visual technique illustration
+
+<div class="mermaid">
+flowchart LR
+    A[Prepared restaurant data] --> B[Descriptive statistics]
+    A --> C[Inferential statistics]
+    A --> D[Regression analysis]
+    A --> E[Hypothesis testing]
+    A --> F[Sentiment analysis]
+    B --> G[Decision insight]
+    C --> G
+    D --> G
+    E --> G
+    F --> G
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style D fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style E fill:#FFD700,stroke:#B8860B,stroke-width:2px,color:#000
+    style F fill:#FF6B6B,stroke:#C0392B,stroke-width:2px,color:#fff
+    style G fill:#26A69A,stroke:#00695C,stroke-width:2px,color:#fff
+</div>
+
+##### Data visualisation
+
+Data will be presented in a well-organised format, such as tables or charts, to facilitate easy understanding. Descriptive statistics will be included, such as mean sales, standard deviation, and sample size.
+
+Visualisations like bar charts, pie charts, and scatterplots get used to present information on customer demographics, preferences, and sales performance.
+
+| Visual format | What it can show in the restaurant example |
+|--------------|---------------------------------------------|
+| Tables | Organised descriptive statistics such as mean sales, standard deviation, sample size, and category summaries |
+| Bar charts | Comparisons between customer groups, menu-item popularity, or competitor pricing |
+| Pie charts | Share of customer preferences or category proportions when only a few categories are being compared |
+| Scatterplots | Relationships between variables such as family size and spending or age group and purchase frequency |
+
+##### Why visualisation matters
+
+Good visualisation helps analysts:
+
+- present findings in a way that stakeholders can understand quickly
+- compare groups, trends, and relationships more clearly
+- support recommendations with visible evidence
+- turn descriptive and analytical results into decision-ready communication
+
+#### Visual presentation illustration
+
+<div class="mermaid">
+flowchart LR
+    A[Descriptive statistics] --> B[Tables]
+    A --> C[Bar charts]
+    A --> D[Pie charts]
+    A --> E[Scatterplots]
+    B --> F[Stakeholder understanding]
+    C --> F
+    D --> F
+    E --> F
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style D fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style E fill:#FFD700,stroke:#B8860B,stroke-width:2px,color:#000
+    style F fill:#26A69A,stroke:#00695C,stroke-width:2px,color:#fff
+</div>
+
+##### Potential issues
+
+**Sampling bias**
+
+The data used for the analysis may not represent the entire customer base. If the sample is biased towards specific demographics or customer groups, the results may not accurately reflect the preferences and behaviours of all customers.
+
+**Restaurant example**
+
+If most survey responses come from families who already visit on weekends, the restaurant may overestimate demand for a children's menu and miss the preferences of weekday customers, teenagers, or adults without children who still influence group ordering decisions.
+
+**Why this matters**
+
+- biased samples can lead to weak forecasts and misleading conclusions
+- the business may invest in a new menu based on incomplete evidence
+- the recommendation may work for one customer segment but fail for the wider market
+
+**External factors**
+
+External factors such as economic changes, competitor strategies, or public health concerns may influence customer behaviour and sales. Considering and controlling for these factors is essential when analysing the impact of adding children's menu items.
+
+**Restaurant example**
+
+If a competing fast-food chain launches a discounted family bundle at the same time, the restaurant's sales data may shift for reasons unrelated to the new children's menu. In the same way, inflation, local school holidays, or a public health concern could change visit patterns and make the menu change look more or less successful than it really is.
+
+**Why this matters**
+
+- external conditions can affect customer demand even when the menu itself has not changed
+- analysts may incorrectly assign a sales increase or decrease to the children's menu
+- stronger analysis compares timing, context, and other market influences before claiming impact
+
+##### Timelines and resources
+
+| Phase | Timeline | Main activity | KPI |
+|------|----------|---------------|-----|
+| Data collection | Week 1-2 | Identify the necessary data sources, including customer demographics, sales data, competitor information, parental purchase behaviour, and children's market research. Set up data collection mechanisms, surveys, or data extraction tools | Data collection completion by the end of Week 2 |
+| Data pre-processing | Week 3-4 | Clean the collected data, handle missing values, deal with outliers, and perform necessary data transformations | Clean and pre-process all data by the end of Week 4 |
+| Exploratory data analysis | Week 5-6 | Conduct exploratory analysis using visualisations and statistical summaries. Identify patterns, correlations, and potential insights | Completion of exploratory data analysis by the end of Week 6 |
+| Hypothesis formulation | Week 7-8 | Based on the exploratory analysis, formulate clear and testable hypotheses about adding children's menu items | Finalised hypotheses by the end of Week 8 |
+| Data analysis and model building | Week 9-12 | Perform statistical tests, regression analysis, and other relevant techniques. Build predictive models, if applicable, to forecast the potential impact of new menu items | Data analysis and model building completed by the end of Week 12 |
+| Interpretation and recommendations | Week 13-14 | Interpret the results of the data analysis and model outputs. Provide actionable recommendations based on the findings | Final report with recommendations by the end of Week 14 |
+| Decision-making and implementation | Week 15-16 | Collaborate with stakeholders to make informed decisions about adding kids' menu items to the menu. Plan and implement the new menu additions based on the analysis and recommendations | Decision and implementation completed by the end of Week 16 |
+
+##### Timeline illustration
+
+<div class="mermaid">
+flowchart LR
+    A[Week 1-2<br/>Data collection] --> B[Week 3-4<br/>Data pre-processing]
+    B --> C[Week 5-6<br/>EDA]
+    C --> D[Week 7-8<br/>Hypothesis formulation]
+    D --> E[Week 9-12<br/>Analysis and model building]
+    E --> F[Week 13-14<br/>Interpretation and recommendations]
+    F --> G[Week 15-16<br/>Decision and implementation]
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style D fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style E fill:#FFD700,stroke:#B8860B,stroke-width:2px,color:#000
+    style F fill:#FF6B6B,stroke:#C0392B,stroke-width:2px,color:#fff
+    style G fill:#26A69A,stroke:#00695C,stroke-width:2px,color:#fff
+</div>
+
+This timeline turns the Discovery plan into a practical roadmap. It also shows that KPIs are not only business metrics later in the project; they can also be used as milestone checks during the analysis process itself.
+
+#### Transfer example - Farmer Planting a New Crop Type
+
+A farmer wants to decide whether planting a new crop type is likely to improve profitability, land use, and long-term farm resilience. Using the same planning logic as the children's menu example, the farmer can build a structured data analysis plan before committing land, labour, and budget.
+
+##### Setting objectives and goals
+
+Evaluate whether the new crop type is commercially viable, agronomically suitable, and financially beneficial compared with the current crop mix.
+
+##### Types of data
+
+| Data area | Format | Structure | Data sources |
+|----------|--------|-----------|--------------|
+| Soil and field conditions | Tabular or sensor data | Soil pH, moisture, nutrient levels, drainage, field location | Soil tests, farm records, sensor systems |
+| Weather and climate history | Time-series tabular data | Rainfall, temperature, frost dates, drought patterns, growing season length | Weather services, local farm stations, historical climate databases |
+| Market demand and crop prices | Tabular data plus reports/PDFs | Historical prices, buyer demand, seasonal trends, competitor supply | Market reports, cooperatives, commodity exchanges, agricultural bulletins |
+| Input costs and resources | Tabular data | Seed cost, fertiliser, water use, machinery needs, labour requirements | Supplier records, farm accounts, previous seasonal budgets |
+| Agronomic research | Structured or unstructured data | Yield expectations, disease risk, pest exposure, crop suitability studies | Research institutions, extension services, academic studies |
+
+##### Data cleaning process
+
+| Data area | Example | Scenario | Approach |
+|----------|---------|----------|----------|
+| Soil and field conditions | Missing soil nutrient values | Some field samples may be incomplete or not collected for every plot | Impute carefully using nearby plots with similar field characteristics or repeat sampling where critical |
+| Weather and climate history | Missing rainfall observations | Local weather records may have gaps during some periods | Use validated external weather datasets to fill missing periods and flag uncertainty where estimates are used |
+| Market demand and crop prices | Outdated buyer-price data | Some market prices may be from earlier seasons and no longer represent the current market | Update with the latest reports and remove obsolete records that no longer reflect actual buyer conditions |
+| Input costs and resources | Inconsistent labour-cost entries | Labour costs may be recorded differently across seasons or suppliers | Standardise units, currency, and time basis before comparison |
+| Agronomic research | Unstructured disease-risk notes | Research findings may be text-heavy and difficult to compare directly | Extract key variables such as yield potential, pest risk, and water demand into structured categories |
+
+##### Statistical techniques
+
+| Technique | What it is used for | Farming example |
+|----------|----------------------|-----------------|
+| Descriptive statistics | Summarise the main features of the data | Compare average yields, rainfall patterns, average prices, and production costs |
+| Inferential statistics | Estimate what may be true for the wider farming context from sampled evidence | Use trial-plot data to estimate likely full-field performance |
+| Regression analysis | Understand relationships between variables | Test how rainfall, soil quality, or fertiliser levels affect expected crop yield |
+| Hypothesis testing | Evaluate whether differences are statistically meaningful | Test whether the new crop produces significantly higher profit than the current crop under similar field conditions |
+| Scenario or sensitivity analysis | Assess uncertainty in changing conditions | Compare outcomes under high-price, low-price, drought, and normal-season scenarios |
+
+##### Data visualisation
+
+Data should be presented through tables and charts so the farmer and stakeholders can compare economic and agronomic outcomes clearly.
+
+| Visual format | What it can show in the farming example |
+|--------------|------------------------------------------|
+| Tables | Yield estimates, average price, input costs, and projected margins |
+| Line charts | Price trends or rainfall patterns over time |
+| Bar charts | Crop comparison across yield, cost, and profitability |
+| Scatterplots | Relationship between rainfall and yield or soil score and output |
+| Maps | Field-level variation in soil quality or crop suitability |
+
+##### Potential issues
+
+**Sampling bias**
+
+If test plots are located only in the farm's best-performing fields, the results may overestimate the likely success of the new crop across the whole farm.
+
+**External factors**
+
+External factors such as drought, changes in fertiliser prices, new trade restrictions, pest outbreaks, or competitor planting decisions may strongly influence the viability of the crop.
+
+##### Timelines and resources
+
+| Phase | Timeline | Main activity | KPI |
+|------|----------|---------------|-----|
+| Data collection | Week 1-2 | Gather soil, climate, market, cost, and agronomic data | Required datasets collected by the end of Week 2 |
+| Data pre-processing | Week 3-4 | Clean and standardise farm, weather, and market data | Analysis-ready data by the end of Week 4 |
+| Exploratory data analysis | Week 5-6 | Explore trends in yield, cost, rainfall, and price patterns | EDA completed by the end of Week 6 |
+| Hypothesis formulation | Week 7-8 | Define testable questions about profit, yield, and suitability | Final hypotheses by the end of Week 8 |
+| Data analysis and model building | Week 9-12 | Run regression, profitability comparisons, and scenario analysis | Analysis completed by the end of Week 12 |
+| Interpretation and recommendations | Week 13-14 | Translate findings into planting recommendations | Final recommendation report by the end of Week 14 |
+| Decision-making and implementation | Week 15-16 | Decide whether to plant the crop and prepare the operational plan | Planting decision completed by the end of Week 16 |
+
+##### Why this transfer example matters
+
+This farming example shows that a data analysis plan is not limited to retail or hospitality. The same analytical structure can be reused in agriculture, healthcare, logistics, and other industries by changing the business objective, data sources, risks, and methods to fit the scenario.
+
+#### Data Preparation
+
+The data preparation phase, also known as data pre-processing, is a crucial step in data analysis, transforming raw data into a usable form for analysis.
+
+##### Critical tasks in this phase
+
+| Task | What it means in practice |
+|------|----------------------------|
+| Data collection | Gathering appropriate data from various sources in different formats |
+| Data cleaning | Addressing data errors and inconsistencies according to the data analysis plan |
+| Data integration | Combining data from numerous sources into a unified dataset through merging or joins |
+| Data transformation | Converting data into a suitable format, normalising, encoding, scaling, or creating derived features |
+| Feature selection/extraction | Identifying essential features to enhance model performance and reduce complexity |
+| Data formatting | Organising data into rows and columns or aggregating at different granularities for analysis |
+| Data splitting | Dividing the prepared data into training, validation, and test sets for model assessment |
+| Analytic sandbox | Creating a safe environment to test, adapt, and refine processes using a copy of the latest data sources |
+
+#### Visual figure illustration - Data Preparation
+
+<div class="mermaid">
+flowchart LR
+    A[Collect data] --> B[Clean data]
+    B --> C[Integrate sources]
+    C --> D[Transform data]
+    D --> E[Select features]
+    E --> F[Format for analysis]
+    F --> G[Split data]
+    G --> H[Analytic sandbox]
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style D fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style E fill:#FFD700,stroke:#B8860B,stroke-width:2px,color:#000
+    style F fill:#FF6B6B,stroke:#C0392B,stroke-width:2px,color:#fff
+    style G fill:#26A69A,stroke:#00695C,stroke-width:2px,color:#fff
+    style H fill:#5C6BC0,stroke:#283593,stroke-width:2px,color:#fff
+</div>
+
+##### Why Data Preparation matters
+
+Data preparation is often the stage where weak projects either improve or fail.
+
+- If data is not cleaned properly, later results may be misleading.
+- If sources are not integrated consistently, the dataset may not reflect reality.
+- If features are poorly selected, the model may become noisy or overly complex.
+- If no analytic sandbox exists, analysts may accidentally damage live data or test processes unsafely.
+
+For the semester exam, this phase is often a good place to show that you understand the difference between raw data and analysis-ready data.
+
+##### Example - Retail analysis project
+
+In a retail analysis project, data preparation involves collecting sales data from different stores, cleaning it to handle missing values and outliers, integrating customer data to link purchases, transforming currency values to a standard format, selecting relevant features like product categories, formatting data into a consistent structure, and dividing it into training and test sets to build and evaluate sales prediction models in an analytic sandbox.
+
+##### Using the data preparation phases in the retail example
+
+| Data preparation phase | Retail example application |
+|------------------------|----------------------------|
+| Data collection | Gather sales data from different stores and bring in customer data from loyalty or CRM systems |
+| Data cleaning | Handle missing values, remove duplicates, and review unusual sales spikes or outliers |
+| Data integration | Link customer data to transaction data so purchases can be analysed together |
+| Data transformation | Convert currency values into a standard format and prepare variables for analysis |
+| Feature selection/extraction | Select relevant features such as product category, store, promotion flag, or customer segment |
+| Data formatting | Organise the data into a consistent row-and-column structure for analysis and modelling |
+| Data splitting | Divide the dataset into training and test sets to build and evaluate sales prediction models |
+| Analytic sandbox | Test, refine, and compare the prediction workflow in a safe environment using copied data rather than live systems |
+
+##### Why this example is useful
+
+This retail case shows the full logic of data preparation clearly:
+
+- multiple raw sources are collected
+- errors and outliers are handled
+- records are joined into one usable dataset
+- variables are transformed and selected
+- the final dataset is prepared for safe model building and evaluation
+
+##### Example - Telecommunications churn prediction
+
+You work for a telecommunications company, and the management is concerned about the increasing customer churn rate. They want to identify factors contributing to customer churn and build a predictive model to anticipate potential churners. Your task is to prepare the data for analysis to support the development of the churn prediction model.
+
+Churn in a telecom company refers to the phenomenon where customers stop using the company's services or cancel their subscriptions. It indicates the rate at which customers discontinue their relationship with the telecom provider.
+
+Churn is a critical metric for telecom companies, as retaining existing customers is often more cost-effective than acquiring new ones. Monitoring and managing churn helps companies identify problems, improve service quality, and implement strategies to keep customers and maintain business sustainability.
+
+##### Using the data preparation phases in the churn example
+
+| Data preparation phase | Churn example application |
+|------------------------|---------------------------|
+| Data collection | Gather customer account records, usage logs, billing history, support tickets, contract details, and cancellation history |
+| Data cleaning | Handle missing values in customer profiles, remove duplicate accounts, and review unusual usage spikes or impossible dates |
+| Data integration | Join billing, usage, support, and customer-service records into one customer-level dataset |
+| Data transformation | Standardise date formats, convert contract durations into comparable units, encode churn status, and create consistent numeric representations |
+| Feature selection/extraction | Select useful variables such as tenure, monthly charges, complaint count, contract type, payment behaviour, and service usage patterns |
+| Data formatting | Organise the final dataset so each row represents one customer and each column represents a relevant feature for modelling |
+| Data splitting | Divide the prepared customer dataset into training, validation, and test sets for churn-model development and evaluation |
+| Analytic sandbox | Build and test the churn prediction workflow in a safe environment using a copy of the latest customer data rather than live operational systems |
+
+##### What potential data analysis for this example could look like
+
+Once the data is prepared, the company could:
+
+- calculate descriptive statistics to compare churners and non-churners
+- visualise churn by contract type, tenure band, or support-ticket volume
+- use correlation and feature analysis to identify which variables are most strongly linked to churn
+- build a predictive model to estimate which current customers are at highest risk of leaving
+- use the results to guide retention actions such as targeted offers, contract reviews, or service improvements
+
+##### Why this example is useful
+
+This churn example is especially helpful because it shows how data preparation supports predictive modelling directly.
+
+- raw operational data must be organised at customer level
+- multiple business systems must be integrated consistently
+- useful churn features must be selected before modelling
+- model evaluation only makes sense after the dataset has been split properly
+- the analytic sandbox protects live customer systems while testing the model
+
+#### Model Planning
+
+Once the objectives are established and the necessary data is collected, we can embark on our next phase - model design. Loading data into the analytic sandbox and commencing the analysis can be achieved through various methods.
+
+##### ETL, ELT, and ETLT
+
+| Approach | What it means |
+|----------|----------------|
+| ETL (Extract, Transform, Load) | This traditional approach involves extracting data from sources like databases, files, or APIs. The extracted data is then transformed which includes cleaning, filtering, aggregating, and applying business rules or data quality checks. Transformed data is then loaded into a specific system, often a data warehouse, for analysis. Dedicated ETL tools or scripts typically get used for the transformation step before loading the data. |
+| ELT (Extract, Load, Transform) | Data gets extracted from diverse sources and then directly loaded into a system, like a data warehouse. The transformation occurs within the system using data warehouse processing capabilities. SQL queries, data manipulation languages, or distributed computing frameworks are leveraged for the transformation during querying or analysis. This approach capitalises on the processing power and scalability of modern data platforms. |
+| ETLT (Extract, Transform, Load, Transform) | ETLT combines ETL and ELT methods. This approach enables pre-loading transformations, enhancing data cleaning and standardisation, and modifications within the system for more flexible analysis and reporting. |
+
+##### Supporting systems: CRM and ERP
+
+**CRM** stands for Customer Relationship Management. It is a form of technology and strategy that businesses use to manage connections with current and potential customers. CRM systems help companies track customer interactions, drive leads and sales opportunities, and improve customer service.
+
+**ERP** is a software solution that integrates various business processes and functions across an organisation into a single system. It enables efficient management of core business activities such as finance, human resources, supply chain, manufacturing, procurement, and more. ERP systems provide a centralised database, allowing different departments to access and share information in real time, improving collaboration, data accuracy, and operational efficiency. ERP systems help optimise workflows, reduce manual tasks, and facilitate data-driven decision-making by providing a holistic view of an organisation's resources and processes.
+
+#### Visual figure illustration - Model Planning
+
+<div class="mermaid">
+flowchart LR
+    A[Source data] --> B1[ETL]
+    A --> B2[ELT]
+    A --> B3[ETLT]
+    B1 --> C[Analytic sandbox / warehouse]
+    B2 --> C
+    B3 --> C
+    C --> D[Model planning and analysis]
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B1 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style B2 fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style B3 fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style C fill:#FFD700,stroke:#B8860B,stroke-width:2px,color:#000
+    style D fill:#26A69A,stroke:#00695C,stroke-width:2px,color:#fff
+</div>
+
+#### Illustrating ETL vs ELT
+
+<div class="mermaid">
+flowchart TB
+    subgraph ETL[ETL]
+        A1[Extract from CRM / ERP / APIs] --> B1[Transform before loading]
+        B1 --> C1[Load into warehouse]
+    end
+
+    subgraph ELT[ELT]
+        A2[Extract from CRM / ERP / APIs] --> B2[Load into warehouse]
+        B2 --> C2[Transform inside warehouse]
+    end
+
+    style A1 fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B1 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C1 fill:#FFD700,stroke:#B8860B,stroke-width:2px,color:#000
+    style A2 fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B2 fill:#FFD700,stroke:#B8860B,stroke-width:2px,color:#000
+    style C2 fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+</div>
+
+| Workflow | Key idea |
+|---------|----------|
+| ETL | Transform first, then load |
+| ELT | Load first, then transform |
+
+This difference matters because it affects where processing happens, which tools are used, and how scalable the workflow is.
+
+##### Retail company example - ETL vs ELT
+
+Suppose a retail company wants to analyse sales data from multiple stores to identify trends and make data-driven decisions.
+
+**ETL process**
+
+- **Extract:** Data is extracted from various sources, including databases, point-of-sale systems, and online sales platforms, to collect sales data from different stores.
+- **Transform:** The extracted sales data gets transformed, which includes cleaning the data to handle any missing values or outliers, aggregating sales data by product categories or periods, and standardising the data format.
+- **Load:** After the data transformation is complete, the cleaned and structured sales data gets loaded into a data warehouse or a dedicated analytical database, which gets used for further analysis.
+
+**ELT process in the same retail scenario**
+
+- **Extract:** Similar to the ETL process, data is extracted from various sources to collect sales data from different stores.
+- **Load:** Instead of transforming the data before loading it into the data warehouse, the raw sales data gets directly loaded into the data warehouse.
+- **Transform:** The data transformation occurs within the data warehouse. The retail company can perform the necessary modifications using SQL queries or data manipulation languages. The data can now be cleaned, sales data can be aggregated, and derived features can be created during querying or analysis.
+
+##### Why this retail example is useful
+
+This retail scenario helps show the practical difference clearly:
+
+- in **ETL**, the sales data is cleaned and structured before it enters the warehouse
+- in **ELT**, the warehouse receives the data earlier and performs more of the transformation work internally
+- both approaches can support trend analysis, but they differ in where the work happens
+
+| Retail workflow | Where the main transformation happens |
+|----------------|----------------------------------------|
+| ETL | Before loading into the warehouse |
+| ELT | Inside the warehouse after loading |
+
+##### Telecommunications company example - ETL vs ELT
+
+Suppose a telecommunications company wants to analyse customer churn data to understand why customers leave and to support churn prediction.
+
+**ETL process**
+
+- **Extract:** Data is extracted from multiple business systems such as CRM platforms, billing systems, customer service logs, contract databases, and network usage records.
+- **Transform:** Before loading, the telecom data is cleaned and standardised. Missing customer fields are handled, duplicate records are removed, contract types are coded consistently, and usage measures such as call volume, data usage, complaint count, and late-payment history are prepared into a structured customer-level dataset.
+- **Load:** The transformed and organised churn dataset is loaded into a data warehouse or analytic database where it can be used for reporting, churn analysis, and predictive modelling.
+
+**ELT process in the same telecommunications scenario**
+
+- **Extract:** Customer, billing, service, and network usage data is extracted from the same operational systems.
+- **Load:** Instead of transforming the data first, the raw telecom data gets loaded directly into the data warehouse.
+- **Transform:** The transformation happens inside the warehouse using SQL or data manipulation tools. Analysts can clean the data, join customer records across systems, calculate churn indicators, aggregate usage behaviour, and create features such as average monthly data use, number of complaints, or payment delay frequency during analysis.
+
+##### Why this telecommunications example is useful
+
+This telecom scenario makes ETL and ELT easier to compare in a predictive analytics setting:
+
+- in **ETL**, churn-related variables are prepared before the data reaches the warehouse
+- in **ELT**, raw operational data is loaded first and then shaped into churn features inside the warehouse
+- both workflows support churn analysis, but they differ in where cleaning, joining, and feature creation take place
+
+| Telecommunications workflow | Where the main transformation happens |
+|----------------------------|----------------------------------------|
+| ETL | Before loading into the warehouse |
+| ELT | Inside the warehouse after loading |
+
+##### Why model planning matters
+
+Model planning is not just about choosing a predictive algorithm. It is also about deciding:
+
+- how the data should be moved into the analytic environment
+- where transformation should happen
+- which architecture best fits the data platform
+- how flexible and scalable the later analysis needs to be
+
+For the semester exam, this phase is useful because it helps you show that analysis depends not only on statistical methods but also on the technical workflow used to prepare and move the data.
+
+##### Example - Marketing campaign analysis using ETLT
+
+In a marketing campaign analysis, data is extracted from various sources, including customer databases and online platforms. It is then transformed, removing duplicate entries and filtering out inactive customers.
+
+Afterwards, the transformed data gets loaded into a data warehouse for analysis. Additionally, further transformations are applied within the data warehouse to segment customers based on behaviour, helping identify target audiences for specific campaigns. The ETLT approach facilitates effective campaign planning and performance evaluation.
+
+##### Using the model design workflow in this example
+
+| Stage | Marketing campaign example |
+|-------|----------------------------|
+| Extract | Pull customer records, campaign interactions, website activity, and platform engagement data from multiple sources |
+| Transform before loading | Remove duplicate entries, filter out inactive customers, and standardise key fields |
+| Load | Store the prepared data in a data warehouse or analytic environment |
+| Transform after loading | Segment customers by behaviour, engagement, or response history inside the warehouse |
+| Planning and analysis | Use the segmented data to identify target audiences, support campaign design, and evaluate campaign performance |
+
+##### Why this example is useful
+
+This example shows why ETLT can be valuable in modern analysis:
+
+- important cleaning and standardisation can happen before loading
+- additional flexible transformations can happen after loading
+- segmentation and reporting become easier inside the warehouse
+- campaign planning benefits from both cleaner source data and richer in-system analysis
+
+#### Communicating Results
+
+In this phase, the model's outcomes are presented and communicated, aligning with the initial goals set in the Discovery phase. Communicating the results of an analysis involves several essential components:
+
+| Component | What it means in practice |
+|----------|----------------------------|
+| Summary | A brief overview of the essential findings and insights from the analysis, focused on the original objectives and goals |
+| Visualisation | Presenting results with charts, graphs, dashboards, or tables so the findings are easier to understand quickly |
+| Interpretation | Explaining what the results mean and how they relate to the original hypothesis or business question |
+| Impact | Showing how the findings support decision-making by identifying benefits, risks, or opportunities |
+| Documentation | Recording the results in reports, presentations, dashboards, and supporting material for transparency and later reference |
+
+Communicating results is important because even a strong model has limited value if decision-makers cannot understand what was found, why it matters, and what action should follow.
+
+#### Visual figure illustration - Communicating Results
+
+<div class="mermaid">
+flowchart LR
+    A[Analysis output] --> B[Summary]
+    B --> C[Visualisation]
+    C --> D[Interpretation]
+    D --> E[Business impact]
+    E --> F[Documentation]
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style D fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style E fill:#FFD700,stroke:#B8860B,stroke-width:2px,color:#000
+    style F fill:#26A69A,stroke:#00695C,stroke-width:2px,color:#fff
+</div>
+
+##### Example - Restaurant children's menu results communication
+
+Again, let us use a real-world style example to show how the process comes together.
+
+| Communication element | Restaurant example |
+|-----------------------|--------------------|
+| Summary | The analysis suggests that families with children are an underserved segment and that a children's menu could increase weekend sales and broaden the restaurant's target market |
+| Visualisation | Bar charts can compare family orders versus non-family orders, pie charts can show preferred menu choices, and line charts can show changes in weekend sales trends |
+| Interpretation | The strongest demand appears among customers visiting in family groups, which supports the idea that adding a children's menu could match customer needs more effectively |
+| Impact | Management can use the findings to decide whether to pilot the children's menu, estimate possible revenue growth, and monitor risks such as low uptake or increased preparation costs |
+| Documentation | The team can prepare a report, slide presentation, and dashboard summary so the results are recorded clearly and can be reviewed later |
+
+##### Example - Retail sales analysis and seasonal trends
+
+In a retail sales analysis project, the data analysis may reveal that certain product categories experience a significant sales increase during specific seasons.
+
+| Communication element | Retail sales example |
+|-----------------------|----------------------|
+| Summary | The analysis shows that selected product categories perform much better during specific seasonal periods than during the rest of the year |
+| Visualisation | Line charts can show how sales rise and fall over time, while bar graphs can compare the strength of seasonal demand across product categories |
+| Interpretation | The team can explain that seasonality is influencing sales performance, which means demand is not evenly distributed across the year |
+| Impact | The marketing department can use the findings to plan targeted campaigns, promotions, and stock decisions during peak seasons to improve sales and revenue |
+| Documentation | The results can be documented in reports, dashboards, and presentations so managers can refer back to the seasonal pattern when planning future campaigns |
+
+Clear and effective communication of the analysis results empowers stakeholders to make well-informed decisions, which increases the practical value gained from the data analysis process.
+
+##### Example - Telecommunications company churn analysis
+
+In a telecommunications company, the analysis team may be trying to understand why customer churn is increasing and which customers are most at risk of leaving.
+
+| What the team would find | How the team would interpret it | What would be communicated to stakeholders |
+|--------------------------|----------------------------------|--------------------------------------------|
+| Churn is highest among customers on short-term contracts | Customers with weaker commitment may be more likely to switch providers | Contract type is a major churn driver and should be reviewed in retention planning |
+| Customers with many complaints or repeated support calls churn more often | Poor service experience is likely influencing customer dissatisfaction and attrition | Customer service quality is directly linked to retention and needs improvement |
+| High churn appears in areas with weaker network performance | Technical service quality may be contributing to customer loss in certain regions | Network issues in specific locations should be prioritised for operational action |
+| Late payments and billing disputes are more common among churned customers | Billing friction may be damaging trust and increasing cancellation risk | Billing clarity and issue-resolution processes should be reviewed |
+| A predictive model identifies a high-risk customer segment | Some customers can be flagged before they leave, allowing earlier intervention | The company can target retention offers, outreach, or service improvements toward customers with the highest predicted churn risk |
+
+The information communicated to stakeholders would usually include:
+
+- overall churn rate and whether it is rising or falling
+- the customer groups with the highest churn
+- the main factors associated with churn, such as complaints, contract type, network quality, or billing issues
+- charts or dashboards that make the churn patterns easy to understand
+- recommended business actions, such as retention campaigns, network improvements, or service-quality changes
+
+This type of communication helps managers move from raw churn data to practical decisions that can reduce customer loss and protect revenue.
+
+##### Exam relevance
+
+For the semester exam, a strong answer should not stop at saying that results must be "presented". It is stronger to explain that communication includes a clear summary, suitable visuals, interpretation of meaning, business impact, and proper documentation.
+
+#### Operationalising
+
+The operationalising or deployment phase focuses on effectively integrating data analysis results into operational systems and decision-making workflows. This critical phase ensures that the insights and models generated during analysis become actionable and drive tangible outcomes.
+
+| Component | What it means in practice |
+|----------|----------------------------|
+| Infrastructure setup | Creating the required software, hardware, databases, cloud services, or tools needed to run the deployed solution |
+| Model deployment | Moving the selected analytical model or algorithm into a live production environment and integrating it with existing systems |
+| Data integration | Connecting the data sources needed for deployment and ensuring consistency, quality, and reliable pipelines |
+| Automation | Setting up regular execution, data refreshes, model retraining, or event-triggered analysis so the results stay current |
+| Monitoring | Tracking performance measures such as prediction accuracy, response time, resource use, and data quality after deployment |
+| User interface | Designing dashboards, tools, or screens that allow users to access and act on the analysis results easily |
+| Training | Helping staff, managers, or end-users understand how to use the deployed insights in daily work |
+| Integration with decision-making processes | Embedding the results into existing workflows, planning routines, and business decision structures |
+| Evaluation | Reviewing whether the deployed model or solution is useful, effective, and producing the intended business impact |
+| Documentation | Recording deployment settings, workflows, data connections, and supporting notes for transparency and future reference |
+
+Operationalising matters because a model only creates business value when it is actually used in a working environment and supports real decisions over time.
+
+#### Visual figure illustration - Operationalising
+
+<div class="mermaid">
+flowchart LR
+    A[Analysis result or model] --> B[Deployment setup]
+    B --> C[Data integration and automation]
+    C --> D[User access and decision workflows]
+    D --> E[Monitoring and evaluation]
+    E --> F[Continuous improvement]
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style D fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style E fill:#FFD700,stroke:#B8860B,stroke-width:2px,color:#000
+    style F fill:#26A69A,stroke:#00695C,stroke-width:2px,color:#fff
+</div>
+
+##### Example - Telecommunications churn model operationalising
+
+Suppose a telecommunications company has built a churn prediction model and now wants to use it in daily operations.
+
+| Operationalising element | Telecommunications example |
+|--------------------------|----------------------------|
+| Infrastructure setup | The company prepares cloud storage, databases, model-serving tools, and secure access controls so the churn model can run reliably |
+| Model deployment | The churn model is connected to the CRM or retention platform so customer risk scores can be generated automatically |
+| Data integration | Billing, complaints, contract details, support interactions, and network-usage data are linked into a steady production pipeline |
+| Automation | Customer risk scores are refreshed daily or weekly, and retraining can be scheduled when new churn patterns appear |
+| Monitoring | The team checks prediction accuracy, model drift, processing time, and whether the input data is still complete and reliable |
+| User interface | Managers and retention teams use dashboards that show high-risk customers, churn drivers, and priority actions |
+| Training | Staff are trained to understand churn scores and use them when deciding who should receive retention offers or proactive support |
+| Decision-making integration | The churn output becomes part of existing customer-retention workflows, campaign planning, and service-improvement decisions |
+| Evaluation | The business measures whether churn actually decreases, whether interventions are effective, and whether the model remains useful over time |
+| Documentation | The company records deployment details, data sources, update schedules, monitoring rules, and model limitations |
+
+##### Real-world example - Churn model inside a CRM system
+
+In a customer churn prediction project for a telecommunications company, the operationalising phase can involve deploying the predictive churn model directly into the company's **Customer Relationship Management (CRM)** system.
+
+Automated monitoring ensures that customer data is updated regularly, the churn model is retrained when needed, and the model's performance is evaluated in near real time.
+
+Customer service representatives can access a user-friendly dashboard inside the CRM system. The dashboard displays churn risk scores for individual customers, which allows timely intervention and more personalised retention strategies.
+
+This type of deployment helps the company reduce churn rates, strengthen customer loyalty, and support more data-driven retention decisions.
+
+##### Exam relevance - Operationalising
+
+For the semester exam, operationalising answers are stronger when they go beyond saying "the model is deployed". A high-quality answer explains how deployment, automation, monitoring, user access, training, and evaluation help the analysis create real business value.
+
+#### Real-world Use Cases
+
+Lastly, let us look at two more real-world use cases where the data analysis lifecycle can be used and discuss what can be done in each phase. Each industry may have a different approach to operating and implementing these phases, but fundamentally it is the same process.
+
+The examples we will cover are **sales and marketing analysis** and **healthcare analytics**. Both have very different perspectives on how to use the data analysis lifecycle.
+
+##### Sales and marketing analysis
+
+A company wants to understand customer behaviour, optimise marketing campaigns, and improve sales performance. They collect data from various sources, such as customer interactions, website traffic, social media, and sales transactions.
+
+The data analysis lifecycle helps them explore patterns, segment customers, identify target markets, measure campaign effectiveness, and make data-driven decisions to enhance their sales and marketing strategies.
+
+##### How this use case ties into each phase
+
+| Lifecycle phase | Sales and marketing analysis example |
+|-----------------|--------------------------------------|
+| Discovery | The company defines the objectives of the analysis, such as understanding customer behaviour, improving campaign performance, and increasing sales. Meetings with stakeholders help clarify goals, scope, and expectations. |
+| Data preparation | Data is collected from customer interactions, website traffic, social media, and sales transactions. The company cleans the data, handles missing values, removes outliers, integrates the sources, and formats the data for analysis. |
+| Model planning | The team identifies the relevant variables, such as customer demographics, purchase history, and website behaviour, and then chooses suitable analytical techniques, algorithms, and statistical methods. |
+| Model building | The company applies the selected models to explore patterns, segment customers, identify target markets, and measure campaign effectiveness using historical and current data. |
+| Communicating results | Findings are summarised and visualised through reports, dashboards, and presentations so executives, marketing teams, and sales teams can understand and use the insights. |
+| Operationalising | The company applies the recommendations in practice by adjusting campaigns, targeting key customer segments, and improving sales processes using the analysis results. |
+
+#### Visual figure illustration - Sales and marketing use case
+
+<div class="mermaid">
+flowchart LR
+    A[Discovery: define behaviour, campaign, and sales goals] --> B[Data preparation: collect and clean customer, web, social, and sales data]
+    B --> C[Model planning: choose variables and methods]
+    C --> D[Model building: segment customers and measure campaigns]
+    D --> E[Communicating results: reports, dashboards, presentations]
+    E --> F[Operationalising: improve campaigns and sales actions]
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style D fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style E fill:#FFD700,stroke:#B8860B,stroke-width:2px,color:#000
+    style F fill:#26A69A,stroke:#00695C,stroke-width:2px,color:#fff
+</div>
+
+##### Why this use case matters
+
+This example is useful because it shows that the lifecycle is not limited to technical modelling tasks. In sales and marketing, the same phases can be used to move from customer and campaign data to segmentation, targeted action, and measurable business improvement.
+
+##### Healthcare analytics
+
+Hospitals and healthcare providers use the data analysis life cycle to improve patient outcomes, optimise resource allocation, and enhance operational efficiency. They collect data from electronic health records, medical devices, clinical trials, and patient feedback.
+
+Through data analysis, they can identify disease patterns, predict patient readmissions, optimise treatment plans, and identify areas for quality improvement.
+
+##### How this healthcare use case ties into each phase
+
+| Lifecycle phase | Healthcare analytics example |
+|-----------------|------------------------------|
+| Discovery | Hospitals and healthcare providers define their objectives, such as improving patient outcomes, resource allocation, and operational efficiency. They identify questions around disease patterns, patient readmissions, treatment optimisation, and quality improvement while aligning clinicians, administrators, and analysts. |
+| Data preparation | Data is collected from EHRs, medical devices, clinical trials, and patient feedback. The organisation cleans the data, handles missing values, anonymises patient information, protects privacy, and integrates sources into an analysis-ready format. |
+| Model planning | The team chooses variables such as patient demographics, medical history, clinical measurements, and treatment protocols, then selects suitable analytical methods such as predictive modelling or machine learning. |
+| Model building | Hospitals and healthcare providers train models on historical data to predict patient outcomes, identify disease patterns, optimise treatment plans, or highlight areas for quality improvement. |
+| Communicating results | Findings are summarised and visualised through reports, dashboards, and presentations so clinicians, administrators, and other stakeholders can understand and use the results in practice. |
+| Operationalising | The organisation implements the insights by adjusting treatment protocols, improving staff scheduling, supporting quality-improvement initiatives, and ensuring that the necessary resources, protocols, and training are in place. |
+
+#### Visual figure illustration - Healthcare analytics use case
+
+<div class="mermaid">
+flowchart LR
+    A[Discovery: define patient, quality, and resource goals] --> B[Data preparation: collect and protect EHR, device, trial, and feedback data]
+    B --> C[Model planning: choose clinical variables and methods]
+    C --> D[Model building: predict outcomes and identify patterns]
+    D --> E[Communicating results: reports, dashboards, presentations]
+    E --> F[Operationalising: improve treatment, scheduling, and quality initiatives]
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style D fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style E fill:#FFD700,stroke:#B8860B,stroke-width:2px,color:#000
+    style F fill:#26A69A,stroke:#00695C,stroke-width:2px,color:#fff
+</div>
+
+##### Why this healthcare use case matters
+
+This example shows that the same lifecycle can support high-stakes decision-making in healthcare. The phases are still the same, but the data is more sensitive, privacy matters more, and the results can influence patient care, staffing, and service quality.
+
+##### Similarities across industries
+
+Now that we have covered very different industries, we can see many similarities between how they use the lifecycle phases:
+
+- each industry begins by defining clear objectives and questions
+- each one prepares data carefully before analysis
+- each chooses methods that fit the business or clinical problem
+- each must communicate results clearly to stakeholders
+- each must turn findings into practical action through operationalising
+
+#### What Did I Learn in This Lesson?
+
+This lesson provided the following insights:
+
+- what the data analysis lifecycle is
+- what the benefits of using it are
+- the phases of the lifecycle:
+  Discovery, Data preparation, Model planning, Model building, Communicating results, and Operationalising
+- a few real-world scenarios to understand how the lifecycle is used within different industries
+
+#### The Task
+
+##### Question 1
+
+What is the purpose of the data preprocessing phase in the data analysis lifecycle?
+
+##### Question 2
+
+Describe the purpose of model evaluation in the data analysis lifecycle.
+
+##### Question 3
+
+What is the significance of model deployment in the data analysis lifecycle?
+
+##### Question 4
+
+Why are iteration and improvement important aspects of the data analysis lifecycle?
+
+##### Question 5
+
+In a short summary, explain the multiple phases within the data analysis lifecycle.
+
+##### Question 6
+
+Look at this use case and explain what should be done in each phase of the data analysis lifecycle to optimise supply chain management.
+
+Companies involved in manufacturing and distribution rely on the data analysis life cycle to optimise their supply chain operations. They gather data on inventory levels, transportation routes, production rates, and customer demand. By analysing this data, they can identify bottlenecks, improve forecasting accuracy, optimise inventory levels, reduce costs, and enhance overall supply chain performance.
+
+#### Lesson Tasks - Suggested Solutions
+
+##### Solution 1
+
+The purpose of the data preprocessing phase is to clean, transform, and prepare the collected data for analysis. This includes handling missing values, removing duplicates, fixing inconsistencies, reducing noise, and performing transformations so the data is accurate, usable, and compatible with the analysis methods.
+
+##### Solution 2
+
+The purpose of model evaluation is to assess how well a model performs and whether it is suitable for use. Analysts apply evaluation measures such as accuracy, precision, recall, F1 score, error rates, or other relevant metrics to test the model on unseen data. This helps compare models, select the strongest one, and understand its strengths and limitations.
+
+##### Solution 3
+
+Model deployment is significant because it moves the model from testing into real-world use. It involves preparing the model for production, connecting it to systems or user interfaces, and monitoring how it performs after release. This phase is what allows the insights from analysis to create practical business value.
+
+##### Solution 4
+
+Iteration and improvement are important because data analysis is not a one-time task. New data arrives, business conditions change, and better ideas may emerge after the first round of analysis. Iteration allows analysts to refine methods, retrain models, improve accuracy, respond to feedback, and keep the analysis relevant over time.
+
+##### Solution 5
+
+The data analysis lifecycle has six main phases:
+
+1. **Discovery**: define the problem, objectives, scope, and required data.
+2. **Data preparation**: collect, clean, transform, integrate, and organise the data for analysis.
+3. **Model planning**: choose the techniques, workflows, variables, and validation approach that fit the problem.
+4. **Model building**: apply the selected methods or models to generate insights, patterns, or predictions.
+5. **Communicating results**: explain the findings clearly using summaries, visualisations, interpretation, and business impact.
+6. **Operationalising**: deploy the results or model into real use, monitor performance, and improve the process over time.
+
+##### Solution 6 - Supply chain management use case
+
+The data analysis lifecycle can be applied to supply chain optimisation as follows:
+
+| Lifecycle phase | What should be done in the supply chain use case |
+|-----------------|---------------------------------------------------|
+| Discovery | Define the business goals, such as reducing costs, improving forecasting accuracy, optimising inventory, and identifying bottlenecks. Clarify the questions to answer and identify the main data sources, including inventory levels, routes, production rates, and customer demand. |
+| Data preparation | Collect the relevant supply chain data, clean errors and missing values, combine data from different systems, standardise formats, and handle outliers so the data is accurate and consistent for analysis. |
+| Model planning | Decide which methods fit the problem, such as demand forecasting, inventory optimisation, route analysis, or bottleneck analysis. Select useful variables like lead times, sales trends, production capacity, and transportation times, and define how the models will be validated. |
+| Model building | Build and test the selected models using appropriate techniques such as time-series forecasting, regression, or optimisation methods. Tune parameters, compare alternatives, and generate insights about where the supply chain can be improved. |
+| Communicating results | Present the findings through dashboards, reports, charts, and recommendations. Explain where bottlenecks exist, how forecasting can improve, where inventory can be reduced or increased, and which actions are likely to reduce cost or improve performance. |
+| Operationalising | Put the recommendations into practice by adjusting reorder levels, changing transport plans, improving scheduling, or updating forecasting workflows. Monitor KPIs such as stockouts, delivery time, forecast accuracy, and logistics cost, then refine the process based on new data and feedback. |
+
+##### Exam tip - Task 6
+
+For scenario questions like this, the best answers move phase by phase. Do not jump straight to modelling. Start with the business objective, then explain preparation, planning, modelling, communication, and operational use in order.
+
+#### Real case scenario
+
+```text
+Business problem:
+The restaurant wants to know whether adding a children's menu is likely to improve revenue and customer satisfaction
+
+Lifecycle application:
+-> Discovery: define the business objective, such as increasing family visits or average order value, and identify relevant data sources
+-> Data preparation: clean sales records, customer feedback, and survey responses so the data is consistent and usable
+-> Model planning: decide whether descriptive summaries, survey analysis, or simple forecasting is the best fit
+-> Model building: analyse family-order patterns, customer preferences, and expected demand for children's items
+-> Communicating results: present whether a children's menu is likely to support the restaurant's goals
+-> Operationalising: launch the menu, monitor the KPIs, and adjust the offering if the results are weaker than expected
+```
+
+This shows how the lifecycle moves a team from an initial business idea to an evidence-based decision and then into real implementation.
+
+#### Important takeaways
+
+1. The data analysis life cycle is both **systematic** and **iterative**.
+2. The six stages are **Discovery, Data preparation, Model planning, Model building, Communicating results, and Operationalising**.
+3. Data preparation is essential because poor-quality data leads to weak results.
+4. The lifecycle improves decision-making, data quality, structure, communication, and continuous improvement.
+5. Model planning and model building are separate because choosing a method is not the same as applying it.
+6. Communication and operationalising matter because insights only create value when they influence real decisions and actions.
+7. In the Discovery phase, the analyst creates the analysis blueprint by defining objectives, data needs, methods, risks, and resources before deeper work begins.
+8. A strong Discovery phase also identifies which data sources are structured, unstructured, internal, or external before deeper analysis begins.
+9. Data preparation includes handling missing values, identifying outliers, and transforming variables into forms that support stronger analysis.
+10. The analysis plan should also explain which statistical techniques will be used and why they fit the scenario.
+11. Visualisation planning is part of strong analysis because results must be presented clearly through tables, charts, and other accessible formats.
+12. Potential issues such as sampling bias should be identified early because weak samples can distort the final recommendation.
+13. External factors such as competitor action, economic shifts, or public health events should also be considered before attributing results to one business change.
+14. Timelines, milestone KPIs, and resource planning help keep the lifecycle realistic, measurable, and manageable.
+15. The same data analysis plan structure can be transferred to other scenarios, such as farming, by adapting the objective, data sources, risks, techniques, and KPIs.
+16. Data preparation transforms raw data into analysis-ready data through cleaning, integration, transformation, feature work, formatting, splitting, and safe testing.
+17. The retail example shows how the data preparation phases are applied in practice before prediction models are built and evaluated.
+18. The churn example shows how the same preparation phases support predictive modelling by turning raw telecom records into a customer-level churn dataset.
+19. Model planning includes deciding how data should be loaded and transformed in the analytic environment, for example through ETL, ELT, or ETLT.
+20. The marketing example shows how ETLT supports campaign planning by combining pre-load cleaning with in-warehouse transformation and segmentation.
+21. CRM and ERP are common business source systems that feed later ETL, ELT, and ETLT workflows.
+22. The retail example makes ETL and ELT easier to compare by showing exactly where cleaning, aggregation, and standardisation take place.
+23. Communicating results means turning model output into stakeholder understanding through summary, visualisation, interpretation, business impact, and documentation.
+24. Strong communication links the findings back to the Discovery-phase objectives so decision-makers can judge whether the analysis answered the original problem.
+25. Operationalising means moving analysis into real use through deployment, data integration, automation, monitoring, user access, training, evaluation, and documentation.
+26. A deployed model should be monitored and reviewed continuously because business conditions, data quality, and model performance can change over time.
+27. Real-world use cases show that the same six lifecycle phases can be applied across industries even when the goals, data sources, and actions are different.
+28. In sales and marketing analysis, the lifecycle supports customer understanding, campaign optimisation, target-market identification, and stronger sales decisions.
+29. In healthcare analytics, the lifecycle supports patient-outcome improvement, readmission prediction, treatment optimisation, privacy-aware data use, and quality improvement.
+30. Comparing industries is exam useful because it shows that the phases stay consistent even when the data sources, stakeholders, and decisions are very different.
+31. A strong end-of-lesson summary should help you recall the lifecycle definition, its benefits, its six phases, and how it appears in real-world industry scenarios.
+32. Task questions often test whether you can explain preprocessing, evaluation, deployment, iteration, and the six lifecycle phases in plain language.
+33. For scenario-based questions, strong answers usually apply all six phases in order rather than describing only modelling.
+
+#### Semester exam highlight
+
+In the semester exam, lifecycle questions are often not asking for definitions only. A strong answer usually does four things:
+
+1. defines the lifecycle clearly
+2. names the six stages in the correct order
+3. applies them to a realistic scenario
+4. explains how the lifecycle improves decision-making
+
+#### Visual exam example
+
+```text
+Question:
+Explain how a hospital could use the data analysis life cycle to reduce readmissions.
+
+Strong answer structure:
+-> Discovery: define readmission as the main problem and select the relevant KPI
+-> Data preparation: clean patient history, discharge, and follow-up records
+-> Model planning: choose a suitable analytical or predictive method
+-> Model building: identify which factors are linked to readmission risk
+-> Communicating results: present findings to clinicians and managers
+-> Operationalising: use the results to trigger earlier follow-up for high-risk patients
+```
+
+#### Exam-relevant note with highlight
+
+**High-yield rule:** if you are asked about the lifecycle in an exam, always connect the six phases to one scenario. Examiners usually reward answers that move from **problem -> prepared data -> chosen method -> result -> action**.
+
+#### Core lesson idea
+
+The data analysis life cycle gives analysts a structured path from raw data to informed action. It helps ensure that analysis is organised, evidence-based, and useful in practical decision-making.
             """,
             "key_points": [
-                "The course focuses on choosing the right method for the right problem",
-                "Relevant data models should reflect the business context, not just available data",
-                "Before-and-after scenarios help connect analysis to decisions",
-                "Problem framing comes before method selection"
+                "The data analysis lifecycle is a systematic approach for turning data into insight and action",
+                "The six lifecycle phases are Discovery, Data preparation, Model planning, Model building, Communicating results, and Operationalising",
+                "A strong analyst does not jump straight to modelling but follows the stages in a structured way",
+                "Discovery requires a data analysis plan covering objectives, data description, cleaning, methods, risks, timelines, and resources",
+                "The children's menu example shows how analysts match objectives to the right data types and sources in the Discovery phase",
+                "A strong cleaning plan explains how missing values, outliers, and transformed variables will be handled before modelling",
+                "A strong analysis plan also links the scenario to techniques such as descriptive statistics, inferential statistics, regression, hypothesis testing, and sentiment analysis",
+                "Visualisation planning helps translate analysis into stakeholder-ready evidence using tables, bar charts, pie charts, and scatterplots",
+                "Potential issues such as sampling bias and external factors should be considered early because they can distort the final decision",
+                "Timeline and resource planning should include milestone KPIs so the project can be monitored from data collection through implementation",
+                "The same planning structure can be transferred across industries, such as from a restaurant menu decision to a farmer evaluating a new crop type",
+                "Data preparation includes collection, cleaning, integration, transformation, feature work, formatting, splitting, and analytic sandbox testing",
+                "The retail example shows how the data preparation phases are applied step by step before sales prediction models are built",
+                "The churn example shows how the same phases support predictive modelling by preparing a customer-level dataset for churn prediction",
+                "In telecom, churn means customers stop using the service or cancel subscriptions, and it matters because retention is often more cost-effective than new customer acquisition",
+                "Model planning includes choosing an appropriate technical workflow such as ETL, ELT, or ETLT before deeper analysis begins",
+                "CRM and ERP are important source systems because they often supply the customer and operational data used in ETL and ELT workflows",
+                "The marketing example shows how ETLT can support campaign planning by cleaning data before loading and segmenting customers after loading",
+                "The retail example helps clarify ETL vs ELT by showing whether sales data is transformed before loading or inside the warehouse",
+                "The telecommunications example applies ETL and ELT to churn analysis by comparing whether customer and usage data is prepared before loading or inside the warehouse",
+                "Communicating results includes summary, visualisation, interpretation, business impact, and documentation aligned to the original objective",
+                "A strong analyst does not leave results as raw output but turns them into clear evidence that supports decisions",
+                "The retail seasonality example shows how line charts and bar graphs can communicate trends clearly enough to support campaign and promotion planning",
+                "The telecommunications example shows that churn findings should be interpreted into stakeholder-ready messages about customer risk, service quality, and retention action",
+                "Operationalising is the deployment phase where analysis becomes part of real systems, workflows, dashboards, and decision-making processes",
+                "The telecommunications deployment example shows how churn prediction can be automated, monitored, and integrated into retention work",
+                "A strong operationalising example can show a churn model deployed inside a CRM system where staff use dashboards and risk scores for retention action",
+                "Real-world use cases reinforce that the lifecycle is transferable across industries such as sales, marketing, telecommunications, farming, and healthcare",
+                "The sales and marketing example shows how the six phases move from business questions and customer data to campaign actions and sales improvements",
+                "The healthcare analytics example shows how the same six phases support patient outcomes, treatment planning, resource allocation, and quality improvement",
+                "Comparing industries helps show that the lifecycle is consistent even when the data is more sensitive or the decisions are higher stakes",
+                "The lesson summary reinforces the four big revision ideas: definition, benefits, six phases, and real-world use cases",
+                "The lesson task section reinforces how to answer theory questions on preprocessing, evaluation, deployment, iteration, and lifecycle summaries",
+                "The supply chain task shows how to apply the lifecycle phase by phase in an operations-focused business scenario",
+                "Semester exam answers should name the six phases, explain them briefly, and apply them to a scenario"
             ],
             "visual_elements": {
-                "diagrams": false,
-                "tables": true,
-                "highlighted_sections": true
+                "diagrams": True,
+                "tables": True,
+                "highlighted_sections": True
             }
         },
         {
             "lesson_number": "2.2",
-            "title": "The Data Analysis Lifecycle and the Four Methods",
+            "title": "Lesson - Data Analysis Pipelines",
             "content": """
-### From Problem to Action
+### Introduction
 
-This course teaches the full data analysis lifecycle from start to finish:
+In this lesson, we will delve into the intricacies of data analysis pipelines and explore their various components. We will also see how these pipelines are closely intertwined with the data analysis lifecycle. While we may notice some similarities with what we have previously covered, this lesson offers a more comprehensive view, providing us with a broader perspective.
 
-1. **Define** the problem and success criteria
-2. **Collect** relevant data
-3. **Clean** and validate the data
-4. **Analyse** using the right method
-5. **Interpret** the results in business terms
-6. **Act** on the findings and monitor impact
+Let us dive in and uncover the essential aspects that make up an efficient data analysis pipeline and understand how it fits seamlessly into the more extensive data analysis process.
 
-#### Four core analytical methods
+#### Exploring Data Analysis Pipelines
 
-| Method | Main question | Typical outcome |
-|--------|---------------|-----------------|
-| Descriptive | What happened? | Summary of past performance |
-| Diagnostic | Why did it happen? | Root-cause insight |
-| Predictive | What is likely to happen next? | Forecast or probability |
-| Prescriptive | What should we do? | Recommended action |
+Data analysis pipelines are crucial in our workflow because they transform raw data into valuable insights. These pipelines are systematic arrangements of tasks executed in a predefined order, automating the data analysis process. Each stage within the pipeline handles specific operations or data transformations.
 
-These methods are complementary. A team may begin with descriptive analytics, move into diagnostic work to explain a change, use predictive modelling to estimate the next outcome, and finish with a prescriptive recommendation.
+#### What is a data analysis pipeline?
 
-The lifecycle matters because decisions improve when analysis is structured, repeatable, and tied to real business actions.
+A data analysis pipeline is a structured flow of activities that moves data from its raw state to a form where it can be analysed, interpreted, and used for decision-making. In practice, a pipeline helps teams organise how data is collected, cleaned, transformed, analysed, and delivered to users or systems.
+
+Pipelines matter because they make analysis more repeatable, more efficient, and easier to scale. Instead of treating each analysis task as a disconnected one-off process, a pipeline creates a more consistent route from raw data to useful insight.
+
+#### Why data analysis pipelines matter
+
+| Benefit | Why it matters |
+|---------|----------------|
+| Efficiency | Pipelines streamline the process by automating repetitive tasks, freeing analysts and data scientists to focus on higher-level and more complex work |
+| Reproducibility | Pipelines provide a framework for documenting and repeating analyses so that others can reproduce results and verify findings |
+| Scalability | As data volumes grow, pipelines make it easier to process and analyse large datasets effectively |
+| Consistency | Standardising the process through pipelines helps ensure more consistent results across datasets and repeated analysis runs |
+
+These benefits are one reason pipelines are so important in modern analytics: they support both day-to-day productivity and long-term reliability.
+
+#### Data analysis pipeline and data analysis lifecycle
+
+The data analysis lifecycle explains the wider analytical journey from problem definition to operational use. A data analysis pipeline focuses more specifically on how data moves through the technical and analytical steps inside that journey.
+
+| Lifecycle idea | Pipeline perspective |
+|----------------|----------------------|
+| Discovery | Clarify what data is needed and what the pipeline must support |
+| Data preparation | Collect, clean, combine, and transform the data inside the pipeline |
+| Model planning | Decide how data should be structured and processed for analysis |
+| Model building | Use the pipeline outputs as the basis for modelling or deeper analysis |
+| Communicating results | Deliver outputs such as reports, dashboards, or analysis-ready datasets |
+| Operationalising | Keep the pipeline running reliably so results continue to support decision-making |
+
+This is why pipelines and lifecycles are closely connected: the lifecycle gives the strategic structure, while the pipeline helps execute the data flow that makes the analysis possible.
+
+#### The Data Analysis Lifecycle vs Data Analysis Pipelines
+
+In the previous lesson, we explored the data analysis lifecycle. In this lesson, we are looking more closely at data analysis pipelines. These two ideas share similarities, and when we compare them together, we get a broader perspective on how analysis moves from problem definition to usable output.
+
+The **data analysis lifecycle** represents the wider stages involved in conducting data analysis, from defining objectives to using the results. The **data analysis pipeline** focuses more directly on the extraction, movement, transformation, processing, and monitoring of data inside that wider process.
+
+##### The data analysis lifecycle
+
+Although the exact stages may vary slightly depending on context, the lifecycle generally includes:
+
+| Lifecycle phase | What it means |
+|-----------------|---------------|
+| Discovery | Clearly defining the research question, business problem, or analytical objective |
+| Data preparation | Gathering relevant data from different sources and cleaning, transforming, and preparing it for analysis |
+| Model planning | Selecting appropriate methods, techniques, or approaches for analysing the data |
+| Model building | Applying the chosen methods and drawing conclusions, patterns, or predictions from the data |
+| Communicating results | Sharing findings through reports, dashboards, or visualisations |
+| Operationalising | Using the insights to support decision-making, actions, or real-world implementation |
+
+##### Typical architecture of a data analysis pipeline
+
+On the other hand, data analysis pipelines are usually described through technical components such as the following:
+
+| Pipeline component | What it means |
+|--------------------|---------------|
+| Source | The place where the pipeline extracts or receives data from one or more systems |
+| Transformation | Cleaning, reshaping, standardising, or moving data into a more useful format |
+| Processing | Implementing data flow through batch processing or real-time processing |
+| Workflow | The ordered sequence of steps that controls how data moves through the pipeline |
+| Monitoring | Observing pipeline performance, data flow, timing, and quality to ensure the process works as expected |
+
+By understanding the differences between the lifecycle and the pipeline, we can better explain how data is both analysed and moved through systems to generate meaningful insight.
+
+#### Visual figure illustration - Lifecycle vs pipeline
+
+<div class="mermaid">
+flowchart TB
+    subgraph L[Data Analysis Lifecycle]
+        L1[Discovery]
+        L2[Data preparation]
+        L3[Model planning]
+        L4[Model building]
+        L5[Communicating results]
+        L6[Operationalising]
+        L1 --> L2 --> L3 --> L4 --> L5 --> L6
+    end
+
+    subgraph P[Data Analysis Pipeline]
+        P1[Source]
+        P2[Transformation]
+        P3[Processing]
+        P4[Workflow]
+        P5[Monitoring]
+        P1 --> P2 --> P3 --> P4 --> P5
+    end
+
+    style L1 fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style L2 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style L3 fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style L4 fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style L5 fill:#FFD700,stroke:#B8860B,stroke-width:2px,color:#000
+    style L6 fill:#26A69A,stroke:#00695C,stroke-width:2px,color:#fff
+    style P1 fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style P2 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style P3 fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style P4 fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style P5 fill:#FFD700,stroke:#B8860B,stroke-width:2px,color:#000
+</div>
+
+#### Visual figure illustration - Data analysis pipeline
+
+<div class="mermaid">
+flowchart LR
+    A[Raw data sources] --> B[Collection and ingestion]
+    B --> C[Cleaning and preparation]
+    C --> D[Transformation and integration]
+    D --> E[Analysis or modelling]
+    E --> F[Reports dashboards or operational use]
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style D fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style E fill:#FFD700,stroke:#B8860B,stroke-width:2px,color:#000
+    style F fill:#26A69A,stroke:#00695C,stroke-width:2px,color:#fff
+</div>
+
+#### Industry tools and frameworks for data analysis pipelines
+
+Various industry tools and frameworks are available for building data analysis pipelines. The right choice depends on the type of workflow, the size of the data, the technical environment, and whether the team prefers code-based or visual tooling.
+
+| Tool or framework | Main use in a pipeline |
+|------------------|------------------------|
+| Apache Airflow | Orchestrates complex workflows by defining, scheduling, and monitoring pipeline tasks |
+| Apache Spark | Provides distributed processing for large-scale data transformation, querying, and analytics |
+| Luigi | Simplifies task and dependency management in Python-based pipelines |
+| KNIME | Supports visual pipeline design with drag-and-drop components for preprocessing, modelling, and reporting |
+| TensorFlow Extended (TFX) | Supports scalable and production-ready machine learning pipelines, especially for ML-focused workflows |
+
+By leveraging these frameworks and tools, teams can strengthen their analytical capabilities and build pipelines that better support data-driven decision-making.
+
+#### A Data Analysis Pipeline Within the Data Analysis Lifecycle
+
+The data analysis pipeline integrates seamlessly with the data analysis lifecycle. The main idea is that the lifecycle gives the broader analytical structure, while the pipeline adds the practical data-flow components that help the work happen inside those stages.
+
+This means the earlier lifecycle phases are supported by technical pipeline steps such as ingestion, storage, transformation, and integration, while later lifecycle phases are supported by analysis delivery, deployment, and retention.
+
+##### Main pipeline components within the lifecycle
+
+| Pipeline component | Primary purpose |
+|--------------------|-----------------|
+| Data ingestion | Connect to data sources, extract data, and automate, schedule, or scale acquisition |
+| Data storage | Store ingested data in a format that supports later analysis and retrieval |
+| Data processing and transformation | Clean, validate, aggregate, enrich, filter, and reshape data through approaches such as ETL or ELT |
+| Data integration | Combine data from multiple systems or formats into a more complete and consistent view |
+| Data analysis and exploration | Move processed data into analytical platforms, BI tools, or exploration environments for insight generation |
+| Data delivery and deployment | Deliver results to end-users through reports, dashboards, or downstream systems such as models or operational tools |
+| Data archiving and retention | Preserve relevant data for long-term storage, compliance, historical analysis, and future use |
+
+Integrating the data analysis pipeline within the lifecycle helps organisations streamline processing, analysis, and delivery so that they can work more efficiently, scale more effectively, and make stronger data-driven decisions.
+
+#### Visual figure illustration - Pipeline within the lifecycle
+
+<div class="mermaid">
+flowchart LR
+    A[Discovery] --> B[Data preparation]
+    B --> C[Model planning]
+    C --> D[Model building]
+    D --> E[Communicating results]
+    E --> F[Operationalising]
+
+    B -. supports .-> G[Data ingestion]
+    B -. supports .-> H[Data storage]
+    B -. supports .-> I[Data processing and transformation]
+    B -. supports .-> J[Data integration]
+    C -. supports .-> K[Data analysis and exploration]
+    E -. supports .-> L[Data delivery]
+    F -. supports .-> M[Data deployment]
+    F -. supports .-> N[Data archiving and retention]
+
+    style A fill:#A8D637,stroke:#6E9C1C,stroke-width:2px,color:#fff
+    style B fill:#42C7A5,stroke:#1C8B74,stroke-width:2px,color:#fff
+    style C fill:#33C2D9,stroke:#1D7F90,stroke-width:2px,color:#fff
+    style D fill:#3498DB,stroke:#1F5F8B,stroke-width:2px,color:#fff
+    style E fill:#3F7AD8,stroke:#254C8D,stroke-width:2px,color:#fff
+    style F fill:#6C2BFF,stroke:#3B1499,stroke-width:2px,color:#fff
+    style G fill:#FFE9B5,stroke:#E0AE3B,stroke-width:2px,color:#000
+    style H fill:#FFE9B5,stroke:#E0AE3B,stroke-width:2px,color:#000
+    style I fill:#FFE9B5,stroke:#E0AE3B,stroke-width:2px,color:#000
+    style J fill:#FFE9B5,stroke:#E0AE3B,stroke-width:2px,color:#000
+    style K fill:#FFE9B5,stroke:#E0AE3B,stroke-width:2px,color:#000
+    style L fill:#FFD2B5,stroke:#F28C28,stroke-width:2px,color:#000
+    style M fill:#FFC2C9,stroke:#FF5A5F,stroke-width:2px,color:#000
+    style N fill:#FFC2C9,stroke:#FF5A5F,stroke-width:2px,color:#000
+</div>
+
+##### Real-world example - Retail company using a pipeline within the lifecycle
+
+Imagine a retail company operating both physical stores and an online e-commerce platform. The company collects large amounts of data, including sales transactions, customer information, website interactions, and inventory levels. To gain useful insight and support better decisions, the company uses a data analysis pipeline inside its broader data analysis lifecycle.
+
+| Pipeline component | Retail company example |
+|--------------------|------------------------|
+| Data ingestion | The pipeline connects to point-of-sale systems, the e-commerce website, customer databases, and inventory systems, then extracts fresh data regularly |
+| Data storage | The collected data is stored in a data warehouse that acts as a central repository for analysis and reporting |
+| Data processing and transformation | The pipeline cleans, validates, standardises, and reshapes the data so that errors, inconsistencies, and format differences are reduced |
+| Data integration | Sales, customer, and inventory data from different systems are merged to create a more complete operational view |
+| Data analysis and exploration | Processed data is sent to BI and analytics platforms where analysts can study sales trends, customer behaviour, and stock movement |
+| Data delivery and deployment | Reports, dashboards, and analytical outputs are shared with managers, marketers, and operations staff to support decisions |
+| Data archiving and retention | Relevant data is archived for long-term storage so it can be used for historical trends, compliance needs, and future planning |
+
+##### Why this retail example is useful
+
+This retail example makes the lifecycle-pipeline relationship easier to see:
+
+- the **lifecycle** explains why the company is analysing the data and what business actions should follow
+- the **pipeline** explains how the data is collected, stored, prepared, analysed, delivered, and retained
+- together, they support efficient processing, clearer insight, and more practical decision-making
+
+#### Data Ingestion and Data Integration in Data Analysis Pipelines
+
+Now it is time to dive deeper into two essential pipeline concepts: **data ingestion** and **data integration**. These are especially important because later analysis depends on how successfully data is extracted, combined, and prepared.
+
+##### Data ingestion
+
+Data ingestion is the process of extracting data from several sources, such as databases, files, or APIs. Inside this extraction stage, different methods can be used depending on where the data is stored and how it is accessed.
+
+| Ingestion method | What it involves |
+|------------------|------------------|
+| Database extraction | Using query languages such as SQL to connect to relational databases, retrieve selected rows or columns, apply filters, join tables, and aggregate results |
+| API extraction | Sending requests to APIs, processing responses, and extracting structured data returned in formats such as JSON or XML |
+| File extraction | Reading and parsing files such as CSV, Excel, JSON, or XML so the required values can be loaded into the pipeline |
+
+##### Database extraction
+
+Database extraction often uses **SQL (Structured Query Language)** to retrieve data from relational databases. This may involve:
+
+- connecting to the database
+- writing queries to select the desired data
+- filtering or sorting the results
+- joining several tables
+- using aggregate functions such as `SUM`, `COUNT`, or `AVG`
+
+The extracted data can then move forward for cleaning, transformation, and analysis.
+
+##### API extraction
+
+API extraction involves sending requests to data services and processing their responses. APIs often return data in formats such as **JSON (JavaScript Object Notation)** or **XML (Extensible Markup Language)**.
+
+An **API (Application Programming Interface)** is a set of rules and protocols that allow different software applications to communicate and interact with each other. APIs define how software components can exchange data or request actions without needing to understand each other's internal workings. This makes it easier to build integrated and efficient systems.
+
+**JSON (JavaScript Object Notation)** is a lightweight data-interchange format commonly used for transmitting data between systems, especially between servers, web applications, and APIs. JSON represents data using structured key-value pairs, making it easy for both humans and machines to read and use. Because it is simple and widely supported, JSON is one of the most common formats used in API-based data extraction.
+
+To extract data from an API, analysts typically:
+
+- send HTTP requests to specific endpoints
+- include parameters, headers, or authentication when required
+- receive structured data in the response
+- parse and extract the required values from that response
+
+Depending on the API, actions may be supported through methods such as `GET`, `POST`, `PUT`, or `DELETE`.
+
+##### File extraction
+
+File extraction means reading and parsing data stored in files such as **CSV**, **Excel**, **JSON**, or **XML**. For example:
+
+- CSV files can be read line by line and split into columns
+- Excel files can be read from specific sheets or ranges
+- JSON and XML files require parsing so the required elements can be extracted
+
+This makes file-based data sources usable in the same broader analysis pipeline as database or API sources.
+
+##### Data integration techniques
+
+After data has been ingested, it often needs to be combined into a more complete and useful dataset. Three common integration techniques are:
+
+| Integration technique | What it means |
+|-----------------------|---------------|
+| Merging | Combining datasets that share a common key or identifier |
+| Joining | Matching rows from related tables based on a condition, usually in relational databases |
+| Concatenating | Appending datasets together to create a larger dataset when the structure is similar |
+
+##### Merging
+
+Merging is useful when multiple datasets share a common identifier. For example, a customer table and a transaction table may both include a customer ID. By merging them on that key, the pipeline can create a unified dataset that includes both customer details and purchase behaviour.
+
+Depending on the goal, merging may use operations such as:
+
+- inner join
+- outer join
+- left join
+- right join
+
+##### Joining
+
+Joining is a form of merging commonly used in relational databases. It combines related tables by matching rows according to a condition. Joining helps retrieve related data from different tables so that analysis can be done on a broader, more complete dataset.
+
+##### Concatenating
+
+Concatenating means appending datasets together rather than matching them on a key. This is useful when several datasets have similar structures but contain different rows, such as sales data from separate regions or separate time periods.
+
+Concatenation can happen:
+
+- row-wise, by stacking datasets on top of each other
+- column-wise, by adding more columns side by side
+
+#### Visual figure illustration - Ingestion and integration
+
+<div class="mermaid">
+flowchart LR
+    A[Databases] --> D[Data ingestion]
+    B[APIs] --> D
+    C[Files] --> D
+    D --> E[Cleaning and transformation]
+    E --> F[Merging]
+    E --> G[Joining]
+    E --> H[Concatenating]
+    F --> I[Integrated dataset]
+    G --> I
+    H --> I
+    I --> J[Analysis and decision-making]
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style C fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style D fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style E fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style F fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style G fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style H fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style I fill:#FFD700,stroke:#B8860B,stroke-width:2px,color:#000
+    style J fill:#26A69A,stroke:#00695C,stroke-width:2px,color:#fff
+</div>
+
+##### Real-life example - E-commerce company ingestion and integration
+
+Let us explore these concepts in the context of an e-commerce company.
+
+##### Data ingestion in the e-commerce example
+
+The company collects data from several sources, such as:
+
+- its website
+- its mobile app
+- social media channels
+- customer service interactions
+
+To ingest this data, the company may use:
+
+- web scraping
+- API calls to external platforms
+- data logging from the mobile app
+
+These methods allow the business to gather information such as customer behaviour, product views, purchases, reviews, and feedback.
+
+##### Data integration in the e-commerce example
+
+Once this data is collected, it needs to be integrated into a more complete view of the customer and the business. The company can:
+
+- merge customer data with purchase history
+- join order details with product information
+- connect customer IDs across service, website, and transaction systems
+- concatenate data from different sales regions to study broader market trends
+
+This creates a more centralised, clean, and enriched dataset that helps the company:
+
+- understand customer preferences
+- identify popular products
+- evaluate marketing effectiveness
+- analyse global or cross-region sales trends
+
+With effective ingestion and integration, the company can access a stronger analytical foundation for business insight, customer improvement, and growth decisions.
+
+##### Real-life example - Medical insurance company ingestion and integration
+
+Let us also explore these concepts in the context of a medical insurance company.
+
+##### Data ingestion in the medical insurance example
+
+The insurance company may collect data from several sources, such as:
+
+- policyholder records
+- claims systems
+- hospital or clinic billing feeds
+- customer service interactions
+- mobile or web portals used by members
+
+To ingest this data, the company may use:
+
+- database extraction from internal policy and claims systems
+- API extraction from healthcare providers, partner services, or customer-facing platforms
+- file extraction from claim submissions, billing files, spreadsheets, or structured reports
+
+These ingestion methods allow the company to gather data such as claim amounts, treatment codes, policy details, customer contact history, payment status, and service usage.
+
+##### Data integration in the medical insurance example
+
+Once the data is collected, the company needs to integrate it to create a broader and more accurate view of each customer, claim, and policy.
+
+The company can:
+
+- merge policyholder data with claims history using policy or customer IDs
+- join claim records with provider or treatment data to analyse cost patterns and service use
+- connect customer service interactions with policy and claim records to understand complaint drivers
+- concatenate regional or monthly claim datasets to analyse wider trends across time and geography
+
+This integrated dataset helps the company:
+
+- detect unusual claim patterns
+- understand customer service issues more clearly
+- analyse healthcare cost trends
+- support fraud detection, risk analysis, and service improvement
+
+With strong ingestion and integration, the medical insurance company can create a more centralised, organised, and analysis-ready dataset that supports better operational decisions and better customer outcomes.
+
+#### Batch Processing vs Real-time Processing
+
+Batch processing and real-time processing are two distinct approaches to data processing. Each has its own advantages and is suitable for different scenarios depending on how quickly the data needs to be handled and acted upon.
+
+| Processing approach | Main idea |
+|--------------------|-----------|
+| Batch processing | Data is collected over a period of time and processed later in groups or batches |
+| Real-time processing | Data is processed immediately or almost immediately as it is generated |
+
+##### Batch processing
+
+Batch processing is useful when immediate processing is not essential. It is often used for periodic reports, large-scale transformations, and scheduled analytical tasks.
+
+| Characteristic | Batch processing |
+|----------------|------------------|
+| Processing time | Data is processed later at scheduled intervals rather than instantly |
+| Processing volume | Typically handles large accumulated volumes of data |
+| Resource optimisation | Can be scheduled for off-peak hours to make better use of computing resources |
+| Complexity | Can support extensive computations because the full batch is available for processing |
+
+##### Real-world examples of batch processing
+
+| Example | Why batch processing fits |
+|---------|---------------------------|
+| End-of-day financial reports | Transactions collected during the day are processed together to generate the next day's reports |
+| ETL processes | Data is extracted, transformed, and loaded into a warehouse on a regular schedule such as hourly or daily |
+| Billing and invoicing | Transactions are collected over a period and then processed together to generate invoices and update accounts |
+
+##### Real-time processing
+
+Real-time processing is important when data needs to be acted on quickly. It supports rapid monitoring, alerts, and immediate responses to incoming events.
+
+| Characteristic | Real-time processing |
+|----------------|---------------------|
+| Processing time | Data is processed as soon as it is generated or within a very short delay |
+| Processing volume | Can handle small or large volumes, but the focus is on continuous incoming data |
+| Responsiveness | Supports quick decisions and immediate action based on fresh data |
+| Stream processing | Often relies on stream-processing technologies that handle continuous flows of data in motion |
+
+##### Real-world examples of real-time processing
+
+| Example | Why real-time processing fits |
+|---------|-------------------------------|
+| Fraud detection | Suspicious transactions must be analysed immediately so action can be taken at once |
+| Internet of Things (IoT) data processing | Sensor data is processed in real time to trigger alerts or automated responses |
+| Online gaming | Player actions must be processed instantly to keep the game interactive and synchronised |
+
+#### Visual figure illustration - Batch vs real-time
+
+<div class="mermaid">
+flowchart LR
+    A[Incoming data] --> B1[Batch processing]
+    A --> B2[Real-time processing]
+    B1 --> C1[Collected over time]
+    C1 --> D1[Scheduled processing]
+    D1 --> E1[Reports billing ETL]
+    B2 --> C2[Continuous stream]
+    C2 --> D2[Immediate analysis]
+    D2 --> E2[Alerts fraud detection live actions]
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B1 fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C1 fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style D1 fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style E1 fill:#FFD700,stroke:#B8860B,stroke-width:2px,color:#000
+    style B2 fill:#26A69A,stroke:#00695C,stroke-width:2px,color:#fff
+    style C2 fill:#3F7AD8,stroke:#254C8D,stroke-width:2px,color:#fff
+    style D2 fill:#FF7043,stroke:#D84315,stroke-width:2px,color:#fff
+    style E2 fill:#EF5350,stroke:#B71C1C,stroke-width:2px,color:#fff
+</div>
+
+##### Why this comparison matters
+
+By understanding the differences between batch and real-time processing, data analysts and engineers can choose the most appropriate approach for a project. Some systems need periodic, resource-efficient processing, while others depend on immediate responses and live monitoring.
+
+#### Handling Large Volumes of Data
+
+When handling very large amounts of data in distributed systems, analysts and engineers must consider how the data is stored, shared, and processed across multiple machines. Three especially important techniques are **data partitioning**, **data replication**, and **data compression**.
+
+Using these techniques helps distributed systems manage large datasets more efficiently, process them faster, and remain more reliable.
+
+| Technique | Main purpose |
+|-----------|--------------|
+| Data partitioning | Split large datasets into smaller parts so they can be processed across multiple nodes |
+| Data replication | Copy data across multiple nodes to improve availability and fault tolerance |
+| Data compression | Reduce data size to save storage space and improve transfer efficiency |
+
+##### Data partitioning
+
+Data partitioning means breaking a dataset into smaller, more manageable subsets that can be processed independently across different nodes. Each subset is assigned to a particular node, which allows more parallel processing.
+
+Good partitioning matters because it helps:
+
+- distribute data more evenly across the cluster
+- reduce workload imbalance between nodes
+- prevent severe data skew
+- improve processing speed by allowing parallel execution
+
+##### Data replication
+
+Data replication means storing copies of the same data on multiple nodes. This improves fault tolerance and availability because if one node fails, the data can still be accessed from another node.
+
+Replication also helps with **data locality**, because copies of the data can be kept closer to the nodes performing the computation. This can reduce network delays during processing.
+
+##### Data compression
+
+Large-scale systems often use compression to reduce storage needs and improve the efficiency of transferring data between systems or nodes. Compression algorithms reduce the size of the data while trying to preserve its integrity and usability.
+
+Common examples include:
+
+- `gzip`
+- `Snappy`
+
+| Compression algorithm | Main strength | Typical trade-off | Common use |
+|-----------------------|---------------|-------------------|------------|
+| `gzip` | Higher compression ratio | Slower compression and decompression than very fast alternatives | Long-term storage or internet transfer where stronger size reduction matters |
+| `Snappy` | Very fast compression and decompression | Lower compression ratio than `gzip` | Real-time processing, streaming, and big-data systems where speed matters most |
+
+`gzip` is a widely used compression algorithm based on the DEFLATE method and is commonly used to compress files on UNIX-like systems. It reduces file size by replacing repeated occurrences of data with shorter references, which gives it a strong compression ratio. This makes `gzip` especially useful when long-term storage efficiency or internet-based data transfer matters more than raw speed. The trade-off is that compression may take longer than faster alternatives, especially on larger files.
+
+`Snappy`, developed by Google, is designed to be fast and efficient for real-time compression and decompression. Unlike `gzip`, `Snappy` focuses more on speed than on maximum size reduction. Its compression ratio is lower, but it performs very well in low-latency settings such as streaming pipelines, big-data systems, and processing data on the fly. This makes it a strong choice when fast access and quick movement of data are more important than achieving the smallest possible file size.
+
+In summary, `gzip` offers higher compression ratios but at the cost of longer processing times, while `Snappy` sacrifices some compression efficiency for faster compression and decompression speeds. The choice between them depends on whether the application values maximum compression or lower-latency processing.
+
+These techniques are widely used in distributed systems and big-data environments because they help manage scale more effectively.
+
+#### Visual figure illustration - Handling large volumes of data
+
+<div class="mermaid">
+flowchart LR
+    A[Large dataset] --> B[Partitioning]
+    A --> C[Replication]
+    A --> D[Compression]
+    B --> E[Faster parallel processing]
+    C --> F[Fault tolerance and availability]
+    D --> G[Lower storage and transfer cost]
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style D fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style E fill:#26A69A,stroke:#00695C,stroke-width:2px,color:#fff
+    style F fill:#FFD700,stroke:#B8860B,stroke-width:2px,color:#000
+    style G fill:#3F7AD8,stroke:#254C8D,stroke-width:2px,color:#fff
+</div>
+
+##### Real-world examples
+
+| Technique | Real-world example | Why it matters |
+|-----------|--------------------|----------------|
+| Data partitioning | **E-commerce website:** An e-commerce website handles millions of product transactions daily. By partitioning product data into categories such as electronics, fashion, and home appliances, the website can process customer queries in parallel. | Faster and more efficient search and retrieval across large volumes of product data |
+| Data replication | **Cloud storage:** Cloud storage providers replicate user data across multiple data centres. If one data centre fails, the data is still available from another replica. | Improves availability, fault tolerance, and service continuity |
+| Data compression | **Video streaming service:** A streaming platform uses compression such as Snappy to reduce the size of video data for transmission. | Helps deliver smoother content with lower bandwidth usage and faster transfer |
+
+##### Companies that need to handle very large volumes of data
+
+Below is a practical list of companies that would likely need strong large-scale data handling. The final architecture can vary, but these are reasonable ways they should approach the problem.
+
+| Company | Why data volume is high | One reasonable way they should handle it |
+|---------|-------------------------|-------------------------------------------|
+| Amazon | Massive order traffic, clickstream data, inventory updates, and logistics events across regions | Partition data by region, product family, and time; use real-time processing for inventory and order events; replicate critical operational data; compress long-term logs and historical datasets |
+| Netflix | Huge viewing-event streams, recommendation data, content-delivery metrics, and user-behaviour logs | Partition by user and region; use compression for event logs and media-related metadata; combine real-time pipelines for monitoring with batch analytics for trend and recommendation work; replicate important datasets for availability |
+| Walmart | Large in-store and online transaction volumes, supplier feeds, stock updates, and distribution data | Partition by store, region, and date; use batch processing for large reporting jobs and real-time updates for stock alerts; replicate core operational data across sites; compress historical sales and logistics records |
+| Uber | Continuous GPS streams, trip events, pricing signals, and driver-rider interaction data | Use real-time stream processing for dispatch and tracking; partition by geography and time; replicate operational data for resilience; compress large trip-history logs for long-term analysis |
+| JPMorgan Chase | Very large payment, account, risk, and fraud-monitoring data volumes | Use real-time processing for fraud and risk alerts; partition transactional data by account, region, and time; replicate sensitive core data for fault tolerance; compress archived transaction history while maintaining governance controls |
+| UnitedHealth Group | Large claims, policy, provider, treatment, and customer-service datasets | Integrate claims and provider data into central analytical stores; partition by plan, region, or claim period; use batch processing for large reporting and modelling jobs; replicate important operational data; compress long-term claim archives |
+| Telenor | Large mobile-network events, customer usage records, billing data, and service-performance logs | Partition by region, customer segment, and time; use real-time processing for network monitoring and incident alerts; replicate key operational data; compress long-term telecom logs |
+| Equinor | Large sensor streams, production data, maintenance records, and operational monitoring data from energy assets | Use partitioning by site, asset, and time window; apply real-time monitoring for critical operational signals; replicate essential data for resilience; compress historical sensor and production records |
+| DNB | Large banking transactions, payment events, fraud signals, customer records, and compliance data | Use real-time processing for fraud detection and transaction monitoring; partition by account, region, and time; replicate high-priority banking data; compress archived transaction and reporting datasets |
+
+##### Why this company list is useful
+
+This list helps show that large-data techniques are not limited to one industry:
+
+- retail and e-commerce need scale for transactions and inventory
+- streaming platforms need scale for events and delivery metrics
+- transport platforms need low-latency processing for live operations
+- finance and insurance need both scale and resilience because the data is operationally critical
+- Norwegian telecom, energy, and banking companies also face large-data challenges through network events, sensor streams, and financial transactions
+- the right design usually combines partitioning, replication, compression, and a mix of batch and real-time processing
+
+##### Why this section matters
+
+These techniques are vital in big-data and distributed environments because pipelines are not only about moving data correctly, but also about handling scale, reducing failure risk, and using infrastructure efficiently.
+
+#### Scalable Data Storage and Processing Techniques
+
+In today's data-driven world, scalable data storage and processing techniques are critical for handling the growing volumes of data generated by sources such as sensors, social media, and customer interactions. As datasets continue to increase in size and complexity, organisations need strategies and technologies that can store data efficiently and process it in ways that still produce useful insight.
+
+To support scalability, several techniques are especially important:
+
+| Technique | Main purpose |
+|-----------|--------------|
+| Distributed file systems | Store and manage large data volumes across multiple machines with fault tolerance and parallel access |
+| Columnar storage | Improve analytical query performance by storing and retrieving data by column instead of by row |
+| Data partitioning and sharding | Break datasets into smaller subsets that can be stored and processed independently |
+
+##### Distributed file systems
+
+Distributed file systems, such as **HDFS** in Hadoop or the **Alluxio** file system, help store and manage large amounts of data across many machines. Because the data is distributed across the cluster, these systems support:
+
+- parallel access to data
+- fault tolerance across nodes
+- faster large-scale processing
+- more efficient handling of analytics workloads
+
+This makes them valuable when organisations need to process and analyse large datasets in parallel.
+
+**HDFS (Hadoop Distributed File System)** is the primary storage system used in the Hadoop ecosystem. It is designed to store and manage large datasets across clusters of commodity hardware. HDFS breaks files into blocks and replicates those blocks across multiple nodes, which improves reliability and availability even when nodes fail. It is optimised for high-throughput data access, which makes it especially suitable for big-data and batch-processing workloads.
+
+**Alluxio** acts more like a data orchestration and acceleration layer between computation frameworks and storage systems such as HDFS or cloud-based storage. It provides a unified data access layer that can abstract the underlying storage systems. By caching frequently accessed data in memory, Alluxio can reduce the delay caused by fetching data from remote storage. This helps improve data locality and makes analytics, machine learning, and interactive querying workloads faster and more efficient.
+
+| System | Main strength | Typical use |
+|--------|---------------|-------------|
+| HDFS | Reliable distributed storage for very large datasets | Batch-oriented big-data storage and processing in Hadoop environments |
+| Alluxio | Faster and more flexible data access across storage systems | Data acceleration, caching, and improved data sharing across computation frameworks |
+
+##### Columnar storage
+
+Columnar storage stores data by columns rather than by rows. This can improve query performance because analytical queries often need only a small subset of columns instead of every field in a row.
+
+Columnar storage is especially useful for:
+
+- aggregation-heavy analytics
+- scanning selected fields only
+- reducing the amount of unnecessary data read during queries
+- improving performance in reporting and BI workloads
+
+##### Data partitioning and sharding
+
+Data partitioning and sharding both break data into smaller subsets so that the system can handle large datasets more efficiently.
+
+- **Partitioning** usually divides data based on a specific attribute such as date, region, or category
+- **Sharding** distributes data according to predefined rules such as ranges, keys, or hash functions
+
+These techniques help by:
+
+- improving data organisation
+- allowing more parallel processing
+- reducing bottlenecks when datasets become very large
+- making distributed storage and retrieval more manageable
+
+#### Visual figure illustration - Scalable storage and processing
+
+<div class="mermaid">
+flowchart LR
+    A[Growing data volumes] --> B[Distributed file systems]
+    A --> C[Columnar storage]
+    A --> D[Partitioning and sharding]
+    B --> E[Parallel access and fault tolerance]
+    C --> F[Faster analytical queries]
+    D --> G[Smaller manageable subsets]
+    E --> H[Scalable analytics]
+    F --> H
+    G --> H
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style D fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style E fill:#26A69A,stroke:#00695C,stroke-width:2px,color:#fff
+    style F fill:#FFD700,stroke:#B8860B,stroke-width:2px,color:#000
+    style G fill:#3F7AD8,stroke:#254C8D,stroke-width:2px,color:#fff
+    style H fill:#6C2BFF,stroke:#3B1499,stroke-width:2px,color:#fff
+</div>
+
+##### Real-world relevance
+
+These scalable techniques are important for organisations dealing with very large datasets. For example:
+
+- an **e-commerce platform** can benefit from columnar storage to speed up inventory and sales queries
+- a **healthcare organisation** can use distributed file systems to manage large patient and analytics datasets securely across systems
+- large platforms can combine partitioning and sharding to organise customer, event, or transaction data more efficiently
+
+By adopting these strategies, organisations can prepare their infrastructure for growth, improve performance, and remain more competitive in large-scale data environments.
+
+#### Data Pipeline Visualisation
+
+Data pipeline visualisation is a crucial part of understanding how data flows and changes within a system. By visualising a pipeline, users can more easily see the movement of data, the transformations applied to it, and the dependencies between different steps.
+
+A clear visualisation helps stakeholders understand complex data processes and supports better decision-making, communication, and data-management efficiency.
+
+##### Main elements shown in a pipeline visualisation
+
+| Element | What it shows |
+|---------|---------------|
+| Data sources | Where the data enters the pipeline, such as databases, files, APIs, sensors, or application logs |
+| Transformation steps | How the data is cleaned, filtered, joined, aggregated, enriched, or otherwise changed |
+| Data flow | The movement of data between stages, usually shown with arrows or connectors |
+| Dependencies | Which steps rely on the outputs of earlier steps and in what sequence operations must happen |
+| Outputs or destinations | Where the processed data ends up, such as dashboards, data warehouses, reports, machine learning models, or analytical tools |
+
+Various tools and platforms can be used to create these visualisations, depending on the organisation's goals and technical environment. The purpose is not only to make the pipeline look clearer, but also to help people understand how it operates in practice.
+
+##### How this visual model connects to the lesson
+
+The visual model of a pipeline often reflects many of the topics discussed in this lesson:
+
+- the **data sources** show where ingestion begins
+- the pipeline may split into **real-time/stream processing** or **batch processing**
+- the data may pass through **cleansing, filtering, and transformation**
+- the results may go directly to **analysis** or first into a **data warehouse**
+- the final outputs support **analytics and reporting**
+
+This makes pipeline visualisation especially useful because it ties together ingestion, transformation, processing type, storage, and analysis in one model.
+
+#### Visual figure illustration - Data pipeline visualisation
+
+<div class="mermaid">
+flowchart LR
+    A[Data sources] --> B1[Real-time data ingestion]
+    A --> B2[ETL data ingestion]
+    B1 --> C1[Stream processing]
+    B2 --> C2[Batch processing]
+    C1 --> D[Data cleansing and filtering]
+    C2 --> D
+    D --> E[Data warehouse]
+    C1 --> F[Analytics and reporting]
+    C2 --> F
+    E --> F
+
+    style A fill:#9BB89D,stroke:#6F8F71,stroke-width:2px,color:#000
+    style B1 fill:#9BB89D,stroke:#6F8F71,stroke-width:2px,color:#000
+    style B2 fill:#9BB89D,stroke:#6F8F71,stroke-width:2px,color:#000
+    style C1 fill:#9BB89D,stroke:#6F8F71,stroke-width:2px,color:#000
+    style C2 fill:#9BB89D,stroke:#6F8F71,stroke-width:2px,color:#000
+    style D fill:#9BB89D,stroke:#6F8F71,stroke-width:2px,color:#000
+    style E fill:#9BB89D,stroke:#6F8F71,stroke-width:2px,color:#000
+    style F fill:#9BB89D,stroke:#6F8F71,stroke-width:2px,color:#000
+</div>
+
+##### Why this model is useful
+
+This type of visualisation makes it easier to understand that organisations do not always follow one identical route. Depending on their goals, they may:
+
+- use stream processing for fast or event-driven analysis
+- use batch processing for larger scheduled workloads
+- send cleaned data into a warehouse before deeper analysis
+- move some processed data directly into reporting or analytical outputs
+
+This flexibility is one of the reasons data pipelines can be tailored to different organisational needs.
+
+##### Real-world examples of data pipeline visualisation
+
+| Industry example | What the visualisation would typically show |
+|------------------|---------------------------------------------|
+| E-commerce sales pipeline | Data from online sales platforms, customer databases, and payment gateways flowing through order processing, stock updates, and transformation stages into a warehouse for reporting |
+| Social media analytics pipeline | Data from social media APIs and web scraping flowing through sentiment analysis, profiling, and content categorisation before reaching dashboards or insight tools |
+| Internet of Things (IoT) data pipeline | Sensor, camera, and weather-station data flowing through real-time stream processing to produce traffic, energy, or air-quality insights |
+| Financial analytics pipeline | Transaction records, market feeds, and economic indicators moving through enrichment, risk analysis, and fraud-detection steps before storage and analysis |
+| Healthcare data pipeline | Electronic health records, medical devices, and monitoring systems flowing through cleaning and anonymisation before being used for research or patient-outcome analysis |
+
+##### Why these visualisations matter in practice
+
+These examples show how visualisation helps organisations:
+
+- understand complex data movement more clearly
+- communicate pipeline design to technical and non-technical stakeholders
+- identify where transformation, storage, and analysis happen
+- improve decision-making and pipeline management
+
+#### Real-world example - E-commerce company
+
+Let us consider a real-world example of a data analysis pipeline in the context of an e-commerce company. The company wants to improve customer satisfaction and increase sales.
+
+##### How the lifecycle appears in this scenario
+
+| Lifecycle phase | E-commerce example |
+|-----------------|-------------------|
+| Discovery | The company defines the research question: what factors influence customer satisfaction and purchase behaviour? |
+| Data preparation | Relevant data is gathered from customer profiles, purchase history, website interactions, and customer feedback. The data is cleaned and transformed to remove errors and inconsistencies. |
+| Model planning | Statistical techniques are selected to analyse customer behaviour, identify patterns, and understand factors influencing customer satisfaction. |
+| Model building | The company draws conclusions about customer preferences and identifies factors that influence satisfaction and purchase decisions. |
+| Communicating results | Findings are shared through reports and visualisations to support decision-making and strategy planning. |
+| Operationalising | The company applies the insights by improving product recommendations, website usability, customer support, and marketing strategies. |
+
+##### How the pipeline appears in the same scenario
+
+| Pipeline component | E-commerce example |
+|--------------------|-------------------|
+| Source | The pipeline extracts data from the customer database, website analytics platform, and customer feedback forms |
+| Transformation | Cleaning removes duplicates, missing values, and errors, while the data is reshaped into formats such as customer-level purchase summaries or customer satisfaction scores |
+| Processing | The company may use real-time processing for new customer interactions and purchases, while batch processing handles large volumes of historical data |
+| Workflow | The pipeline follows a sequence such as extraction, cleaning, transformation, and statistical analysis |
+| Monitoring | The process is monitored using measures such as processing time, data quality, and pipeline reliability to detect issues early |
+
+##### Why this example is useful
+
+This e-commerce example makes the distinction easier to understand:
+
+- the **lifecycle** explains the full analytical journey from question to business action
+- the **pipeline** explains how the data technically moves and gets processed inside that journey
+- both are needed if the company wants repeatable, decision-ready analysis
+
+#### Our own real-world example - Hotel booking company
+
+Let us develop our own example to compare a data analysis lifecycle with a data analysis pipeline more clearly.
+
+##### Company goals
+
+Suppose a hotel booking company wants to:
+
+- reduce booking cancellations by 15% over the next quarter
+- improve occupancy during low-demand weekday periods
+- increase repeat-customer satisfaction by improving the booking experience
+
+These company goals matter because the lifecycle should always begin with clear business objectives before the pipeline is designed.
+
+##### How the lifecycle appears in this scenario
+
+| Lifecycle phase | Hotel booking company example |
+|-----------------|-------------------------------|
+| Discovery | The company defines the main questions: what factors drive booking cancellations, what affects weekday occupancy, and which parts of the booking journey influence repeat-customer satisfaction? |
+| Data preparation | Data is collected from booking systems, website activity, pricing records, CRM data, cancellation history, and customer feedback. The data is cleaned, matched across systems, and prepared for analysis. |
+| Model planning | The team selects methods such as cancellation-risk analysis, demand forecasting, customer segmentation, and satisfaction analysis. They identify variables such as booking lead time, channel, room type, price, season, and customer rating. |
+| Model building | The analysts build models and run analyses to identify the strongest drivers of cancellations, forecast occupancy patterns, and understand what influences customer satisfaction and repeat bookings. |
+| Communicating results | Findings are presented through dashboards and reports for operations, marketing, and revenue teams, showing where cancellation risk is high, when occupancy is weak, and what changes could improve customer experience. |
+| Operationalising | The company uses the results to improve pricing strategy, target customers with retention offers, adjust room promotions during low-demand periods, and improve website or booking-service processes. |
+
+##### How the pipeline appears in the same scenario
+
+| Pipeline component | Hotel booking company example |
+|--------------------|-------------------------------|
+| Source | The pipeline extracts data from the booking platform, website analytics, CRM system, customer reviews, and pricing or occupancy databases |
+| Transformation | The data is cleaned by removing duplicates, fixing date or room-category inconsistencies, handling missing values, and creating useful features such as booking lead time, cancellation flags, and satisfaction scores |
+| Processing | Real-time processing can update new bookings or cancellations as they happen, while batch processing can analyse larger historical booking and occupancy data |
+| Workflow | The pipeline follows an ordered sequence: data extraction, cleaning, feature creation, analysis or scoring, and then delivery to dashboards or reporting systems |
+| Monitoring | The company tracks pipeline timing, missing data, failed jobs, data-quality issues, and whether the outputs remain reliable for decision-making |
+
+##### Why this custom example is useful
+
+This example shows an important exam idea:
+
+- the **company goals** belong to the lifecycle because they shape the overall purpose of the analysis
+- the **pipeline** supports those goals by moving and preparing the data in a reliable way
+- both are necessary if the company wants to turn booking data into practical business action
+
+#### Our own real-world example of data analysis within a lifecycle
+
+To make the lifecycle itself clearer, let us develop a separate example focused directly on data analysis within the lifecycle.
+
+##### Company goals
+
+Suppose a meal-kit delivery company wants to:
+
+- reduce late deliveries by 20% over the next six months
+- lower weekly food waste by improving demand forecasting
+- increase repeat-order rates by improving customer satisfaction
+
+These goals should be defined first because they shape the entire lifecycle, from the questions the company asks to the actions it finally takes.
+
+##### How the data analysis lifecycle appears in this scenario
+
+| Lifecycle phase | Meal-kit delivery company example |
+|-----------------|-----------------------------------|
+| Discovery | The company defines its main questions: why are deliveries late, which factors lead to wasted ingredients, and what influences repeat-order behaviour? Stakeholders from logistics, purchasing, customer service, and management agree on the business goals and KPIs. |
+| Data preparation | Data is collected from order systems, delivery tracking, warehouse records, inventory levels, customer complaints, ratings, and repeat-purchase history. The data is cleaned, matched across systems, and prepared for analysis. |
+| Model planning | The team chooses methods such as delay analysis, demand forecasting, customer segmentation, and satisfaction analysis. Relevant variables may include route distance, time of day, weather, ingredient demand, complaint type, and customer order frequency. |
+| Model building | Analysts build models and run analysis to identify causes of delays, forecast ingredient demand more accurately, and detect the patterns linked to customer loyalty and repeat purchases. |
+| Communicating results | Findings are presented through dashboards, reports, and visual summaries for logistics managers, operations teams, and executives. The results highlight where delays happen, which products are frequently overstocked, and what customer issues reduce repeat orders. |
+| Operationalising | The company uses the results to improve route planning, adjust purchasing and stock levels, redesign delivery scheduling, and introduce customer-retention actions such as service recovery or loyalty offers. |
+
+##### Why this lifecycle example is useful
+
+This example focuses on the lifecycle itself:
+
+- the **goals** define what success looks like
+- the **middle phases** turn raw operational data into insight
+- the **final phases** ensure the insights lead to actions that improve delivery performance, reduce waste, and increase customer retention
+
+#### What Did I Learn in This Lesson?
+
+This lesson provided the following insights:
+
+- the importance of data pipelines within industry
+- the difference between the data analysis lifecycle and data analysis pipelines
+- how the lifecycle and pipeline tie together
+- the difference between real-time processing and batch processing
+- how to handle large amounts of data and which techniques support scalability and processing
+- the main elements included in data pipeline visualisation
+
+#### The Task
+
+##### Question 1
+
+Look at the scenarios and identify which are examples of **batch processing** or **real-time processing**:
+
+| Scenario | Type |
+|----------|------|
+| A credit card company monitors transactions in real time to detect suspicious activity and immediately block suspicious transactions | ? |
+| A company collects customer feedback through an online survey and analyses the data at the end of each month to identify trends and patterns | ? |
+| An e-commerce website calculates customer recommendations based on browsing and purchase history, updating them every hour | ? |
+| An intelligent home system processes data from sensors throughout the house to adjust temperature, lighting, and security settings in real time | ? |
+| A hospital collects patient data throughout the day and generates reports summarising patient statistics and trends at the end of each week | ? |
+| An online streaming service analyses user preferences and viewing habits in real time to provide personalised recommendations and dynamically adjust the content catalogue | ? |
+| A manufacturing company collects production data from various machines and processes it overnight to generate performance reports and identify areas for improvement | ? |
+| A traffic management system processes data from traffic sensors on roads to adjust signal timings and optimise traffic flow in real time | ? |
+
+##### Question 2
+
+What is the purpose of merging in data integration?
+
+##### Question 3
+
+Explain what data pipeline visualisation is and why it is important.
+
+##### Question 4
+
+What common visualisation techniques are used for data pipelines, and what information should be included in a data pipeline visualisation?
+
+##### Question 5
+
+What are the benefits of data pipeline visualisation in data-driven organisations?
+
+#### Lesson Tasks - Suggested Solutions
+
+##### Solution 1
+
+| Scenario | Correct answer |
+|----------|----------------|
+| Credit card fraud monitoring in real time | Real-time processing |
+| Monthly customer-feedback analysis | Batch processing |
+| E-commerce recommendations updated every hour | Batch processing |
+| Smart home sensor-based adjustments in real time | Real-time processing |
+| Weekly hospital summary reports | Batch processing |
+| Streaming-service recommendations updated in real time | Real-time processing |
+| Overnight manufacturing performance reporting | Batch processing |
+| Traffic-sensor-based signal adjustment in real time | Real-time processing |
+
+##### Solution 2
+
+The purpose of **merging** in data integration is to combine datasets that share a common key or column. This allows analysts to create one unified dataset by matching related rows, such as linking customer details with transaction history through a customer ID.
+
+##### Solution 3
+
+Data pipeline visualisation is a graphical representation of the steps, flow, and transformations inside a data pipeline. It shows how data moves from sources to destinations and how it changes along the way.
+
+It is important because it:
+
+- makes complex pipelines easier to understand
+- helps identify dependencies and bottlenecks
+- improves communication between engineers, analysts, and stakeholders
+- supports troubleshooting, optimisation, and documentation
+
+##### Solution 4
+
+Common visualisation techniques for data pipelines include:
+
+- flowcharts
+- diagrams
+- graphs
+- Gantt charts
+
+A good pipeline visualisation should usually include:
+
+- data sources
+- transformation steps
+- data flow between stages
+- dependencies between steps
+- outputs or final destinations
+
+##### Solution 5
+
+Data pipeline visualisation benefits data-driven organisations because it promotes transparency, collaboration, and shared understanding. By visualising the pipeline, teams can communicate more clearly, improve data operations, spot issues earlier, support better data quality, and make data processing and analysis more efficient.
+
+##### Exam tip - Lesson 2.2 tasks
+
+For processing questions, focus on **timing**:
+
+- if the system reacts immediately or near-immediately, it is usually **real-time processing**
+- if the system collects data and processes it later on a schedule, it is usually **batch processing**
+
+For visualisation questions, remember the five core ideas: **sources, transformations, flow, dependencies, and outputs**.
+
+#### Real case scenario
+
+```text
+Business problem:
+A retail company wants to understand sales performance across stores and product categories
+
+Pipeline application:
+-> Collect data from point-of-sale systems, online orders, and inventory records
+-> Clean missing values, duplicates, and inconsistent category names
+-> Transform and combine the sources into one analysis-ready dataset
+-> Analyse store and product trends to identify stronger and weaker performers
+-> Deliver the results through dashboards and reports for management
+-> Keep the pipeline updated so decisions can be based on current data
+```
+
+This example shows how a pipeline supports the broader lifecycle by moving data through repeatable steps until it becomes useful for decision-making.
+
+#### Important takeaways
+
+1. A data analysis pipeline is a structured flow that moves data from raw input to usable analytical output.
+2. Pipelines and the data analysis lifecycle are related, but they are not identical.
+3. The lifecycle explains the wider analytical process, while the pipeline explains how data flows through that process.
+4. Strong pipelines improve structure, consistency, efficiency, quality control, and scalability.
+5. Pipelines help make data analysis repeatable rather than treating every analysis task as a one-time activity.
+6. A pipeline often includes collection, cleaning, transformation, integration, analysis, and delivery of results.
+7. Pipelines support both technical work and business decision-making because they help move data into usable outputs.
+8. Reproducibility matters because a pipeline should allow other analysts or team members to repeat the process and verify the results.
+9. Pipeline tools such as Airflow, Spark, Luigi, KNIME, and TFX support different types of workflow automation and scaling needs.
+10. The lifecycle focuses on the wider analytical stages, while the pipeline focuses more on source, transformation, processing, workflow, and monitoring.
+11. The e-commerce example shows how the same business problem can be described through both lifecycle phases and pipeline components.
+12. In a strong lifecycle example, company goals should be defined first because they guide the later data, methods, and actions.
+13. The hotel booking example shows how lifecycle thinking and pipeline thinking can be applied to the same business case without confusing their roles.
+14. A pipeline can sit inside the lifecycle by supporting preparation, analysis, delivery, deployment, and retention with more specific technical steps.
+15. Key pipeline components include data ingestion, storage, processing and transformation, integration, analysis and exploration, delivery and deployment, and archiving and retention.
+16. The retail example shows how a company can connect multiple data sources, centralise them in a warehouse, analyse them, and deliver results to different stakeholders.
+17. A strong lifecycle example should begin with explicit company goals before moving into questions, data, methods, results, and actions.
+18. The meal-kit delivery example shows how a lifecycle can connect operational data to goals such as fewer delays, lower waste, and higher repeat orders.
+19. Data ingestion is the process of extracting data from sources such as databases, APIs, and files before the later pipeline stages can use it.
+20. Common ingestion methods include database extraction with SQL, API extraction through HTTP requests, and file extraction from formats such as CSV, Excel, JSON, and XML.
+21. Common integration techniques include merging, joining, and concatenating, each used for different ways of combining datasets.
+22. The e-commerce ingestion and integration example shows how multiple customer and sales sources can be unified into one analysis-ready dataset.
+23. APIs allow software systems to communicate with each other, and JSON is one of the most common structured formats used when APIs return data.
+24. The medical insurance example shows how policy, claims, provider, and customer-service data can be ingested and integrated into one broader analytical view.
+25. Batch processing handles data in scheduled groups, while real-time processing handles data immediately or almost immediately as it arrives.
+26. Batch processing is often used for ETL, billing, and periodic reports, while real-time processing is often used for fraud detection, IoT, and online gaming.
+27. Large-scale distributed systems often rely on partitioning, replication, and compression to manage data volume, improve reliability, and increase efficiency.
+28. Partitioning supports parallel processing, replication supports fault tolerance and availability, and compression supports lower storage and transfer costs.
+29. `gzip` is stronger when higher compression is needed, while `Snappy` is stronger when fast compression and decompression are more important.
+30. The choice between `gzip` and `Snappy` depends on whether the system prioritises stronger compression or faster low-latency processing.
+31. Real-world examples such as e-commerce search, cloud storage, and video streaming make partitioning, replication, and compression easier to understand.
+32. Companies such as Amazon, Netflix, Walmart, Uber, JPMorgan Chase, UnitedHealth Group, Telenor, Equinor, and DNB all face large-data challenges but may need different mixes of partitioning, replication, compression, batch processing, and real-time processing.
+33. Strong exam answers can show that large-data handling depends on both the industry context and the type of decisions the business needs to support.
+34. Scalable data storage and processing often rely on distributed file systems, columnar storage, and partitioning or sharding to keep performance high as data grows.
+35. Distributed file systems improve parallel access and fault tolerance, columnar storage improves analytical query speed, and sharding or partitioning improves scalability and organisation.
+36. HDFS is a Hadoop storage system designed for reliable large-scale batch data storage, while Alluxio improves data access speed and locality across storage systems.
+37. Data pipeline visualisation helps users understand sources, transformations, data flow, dependencies, and outputs in one readable model.
+38. Good visualisations can show how ingestion, stream processing, batch processing, cleansing, warehousing, and analytics connect in one pipeline.
+39. Visual pipeline models are useful across industries such as e-commerce, social media, IoT, finance, and healthcare.
+40. A strong end-of-lesson summary should help you recall pipelines, lifecycle differences, processing types, large-data handling, and visualisation elements together.
+41. Lesson tasks for this topic often test whether you can distinguish batch from real-time processing and explain why pipeline visualisation supports understanding and collaboration.
+42. A strong task answer should classify the scenario correctly, define the concept clearly, and mention the practical benefit to analysis or operations.
+
+#### Semester exam highlight
+
+In the semester exam, pipeline questions may ask you to explain the difference between a pipeline and the full lifecycle. A strong answer should show that:
+
+1. the lifecycle is the end-to-end analytical process
+2. the pipeline is the step-by-step data flow inside that process
+3. both are connected and support structured decision-making
+4. pipeline benefits such as efficiency, reproducibility, scalability, and consistency should be explained clearly
+5. lifecycle phases and pipeline components should not be confused because they describe different levels of the same analytical process
+
+#### Visual exam example
+
+```text
+Question:
+Explain how a data analysis pipeline supports the data analysis lifecycle in a company that tracks customer purchases.
+
+Strong answer structure:
+-> state that the pipeline moves customer data from raw records to analysis-ready outputs
+-> explain that collection, cleaning, transformation, and integration happen inside the pipeline
+-> connect the pipeline to lifecycle phases such as preparation, modelling, reporting, and operational use
+-> show that the pipeline makes the lifecycle more consistent and repeatable
+```
+
+#### Exam-relevant note with highlight
+
+**High-yield rule:** if you are asked about pipelines in an exam, do not define them in isolation. Link them to the lifecycle and explain how they help raw data become analysis-ready and decision-ready.
+
+#### Core lesson idea
+
+Data analysis pipelines give practical structure to the movement of data inside the broader data analysis lifecycle. They help transform raw data into reliable outputs that can support analysis, reporting, and decision-making.
             """,
             "key_points": [
-                "The lifecycle runs from definition to action and monitoring",
-                "Descriptive, diagnostic, predictive, and prescriptive methods answer different questions",
-                "Good analysis is iterative rather than strictly linear",
-                "Structured analysis leads to stronger business decisions"
+                "A data analysis pipeline is a structured flow that moves data from raw input to usable output",
+                "Pipelines are closely connected to the data analysis lifecycle but focus more specifically on data flow and processing steps",
+                "A strong pipeline improves efficiency, reproducibility, scalability, and consistency",
+                "Pipelines often include collection, cleaning, transformation, integration, analysis, and delivery of results",
+                "The lifecycle gives the wider analytical structure, while the pipeline supports execution inside that structure",
+                "The lifecycle can be described through phases such as Discovery and Operationalising, while the pipeline can be described through components such as Source, Transformation, Processing, Workflow, and Monitoring",
+                "A more detailed pipeline view can also include ingestion, storage, processing and transformation, integration, analysis and exploration, delivery and deployment, and archiving and retention",
+                "Tools such as Apache Airflow, Apache Spark, Luigi, KNIME, and TFX are used to build and manage different kinds of data analysis pipelines",
+                "Reproducibility is a major benefit because pipelines help analysts document and repeat the same analytical process reliably",
+                "The retail example shows how a pipeline fits inside the lifecycle by connecting collection, storage, transformation, analysis, delivery, and long-term retention",
+                "Data ingestion includes extracting data from databases, APIs, and files so that it can enter the pipeline in a usable way",
+                "APIs let different software systems communicate, and JSON is a common lightweight format used to exchange structured data through APIs",
+                "Data integration techniques such as merging, joining, and concatenating help combine multiple sources into one richer dataset",
+                "The e-commerce ingestion example shows how customer, sales, and feedback sources can be centralised for stronger analysis",
+                "The medical insurance example shows how policyholder, claims, provider, and service data can be combined to support cost analysis, fraud detection, and service improvement",
+                "Batch processing works on accumulated data at scheduled times, while real-time processing acts on incoming data with minimal delay",
+                "Choosing between batch and real-time processing depends on whether the business needs periodic efficiency or immediate responsiveness",
+                "Handling large-scale data often depends on partitioning, replication, and compression inside distributed systems",
+                "Partitioning improves parallel workload distribution, replication improves availability and fault tolerance, and compression reduces storage and transfer overhead",
+                "gzip offers stronger size reduction while Snappy offers faster compression and decompression for low-latency environments",
+                "Compression choices should match the system goal: better size reduction with gzip or faster low-latency performance with Snappy",
+                "Examples such as e-commerce websites, cloud storage, and video streaming show where these large-scale data techniques are used in practice",
+                "Different companies may need different large-data strategies depending on whether they prioritize live operations, reporting, resilience, storage efficiency, or regulatory control",
+                "Examples such as Amazon, Netflix, Walmart, Uber, JPMorgan Chase, UnitedHealth Group, Telenor, Equinor, and DNB help show how industry context shapes large-data design choices",
+                "Scalable storage and processing can be improved through distributed file systems, columnar storage, partitioning, and sharding",
+                "These techniques matter because they support parallelism, faster query performance, and more manageable data growth",
+                "HDFS is useful for reliable distributed storage in Hadoop environments, while Alluxio improves access speed and data locality across different storage layers",
+                "Data pipeline visualisation shows how sources, transformations, dependencies, and outputs connect across a full data flow",
+                "A useful visual model can combine ingestion, stream or batch processing, cleansing, warehousing, and analytics in one view",
+                "Visualisation examples from e-commerce, social media, IoT, finance, and healthcare show how the same idea applies across industries",
+                "Lesson tasks often ask you to classify scenarios as batch or real-time processing and explain why pipeline visualisation matters",
+                "Strong task answers should mention sources, transformations, data flow, dependencies, and outputs when describing visualisation",
+                "The e-commerce example shows how lifecycle stages and pipeline components can be applied to the same customer-satisfaction scenario",
+                "A strong real-world lifecycle example should begin with clear company goals before moving into data preparation and later phases",
+                "The hotel booking company example shows how goals, lifecycle phases, and pipeline components can be connected in one coherent scenario",
+                "The meal-kit delivery company example shows how company goals should guide the six lifecycle phases from Discovery to Operationalising",
+                "Lifecycle answers are stronger when they connect goals, data, methods, findings, and business action in one scenario",
+                "The lesson summary reinforces the main revision themes: pipelines, lifecycle comparison, processing types, scalable handling, and visualisation",
+                "Exam answers should connect pipelines to the lifecycle instead of defining them as isolated technical steps"
             ],
             "visual_elements": {
-                "diagrams": false,
-                "tables": true,
-                "highlighted_sections": true
+                "diagrams": True,
+                "tables": True,
+                "highlighted_sections": True
             }
         },
         {
             "lesson_number": "2.3",
-            "title": "Qualitative, Quantitative, and Focused Data Subsets",
+            "title": "Lesson - Data Types",
             "content": """
-### Isolating the Right Problem Domain
+### Introduction
 
-Candidates need to understand both **qualitative** and **quantitative** analysis.
+This lesson will explore the nuances between qualitative and quantitative data types, their distinctive characteristics, and their pivotal role in data collection and analysis. We will dive into the fascinating realm of data type conversion and selection, equipping us with the skills to handle diverse data formats effectively.
 
-- **Qualitative data** explains experiences, opinions, and context
-- **Quantitative data** measures scale, change, frequency, and performance
+As we progress, we will unravel real-world use cases from various industries, shedding light on how data types serve as the bedrock for extracting meaningful insights and driving informed decision-making. Let us embark on this enriching exploration of data types and harness their potential to unlock the actual value of data.
 
-In practice, good decisions often use both.
+#### Introduction to Data Types
 
-#### Example
+Data holds immense significance in analysis and decision-making, but not all data is equal. It can be classified into different types based on its characteristics. Understanding these data types is essential because it helps analysts interpret information correctly, choose suitable analytical techniques, and extract more meaningful insights.
 
-- Quantitative: Returns increased from 6% to 11%
-- Qualitative: Customer comments say sizing information is unclear
-- Decision: Review sizing guide, product descriptions, and return messaging
+##### Why data types matter in analysis
 
-This course also teaches the use of **data subsets** to isolate problem domains for deeper analysis.
+| Importance area | Why it matters |
+|-----------------|----------------|
+| Data interpretation | Understanding the data type helps explain the nature of the information and how it should be processed |
+| Analysis techniques | Different data types require different methods, such as thematic analysis for qualitative data or statistical analysis for quantitative data |
+| Decision-making | Choosing and analysing the correct data type improves the quality, depth, and usefulness of the final insight |
 
-| Broad problem | Better subset |
-|---------------|---------------|
-| "Sales are down" | Sales for one region, one product family, and one time window |
-| "Support quality is worse" | First-response data for one channel and one queue |
-| "Customers are leaving" | Churn among new customers in their first 90 days |
+An overview of two fundamental data types helps guide this lesson:
 
-Analysts who choose the right subset can find clearer signals, avoid noisy averages, and make better recommendations.
+- **Qualitative data**: non-numerical data based on observations, opinions, experiences, interviews, text, or open-ended responses
+- **Quantitative data**: numerical data that can be measured, counted, compared, and analysed statistically
+
+In some scenarios, data includes both qualitative and quantitative components. This is often called **mixed data**, and it usually requires a combination of qualitative and quantitative analysis techniques.
+
+#### What are data types?
+
+In data analysis, a data type describes the kind of information a variable contains and how that information can be collected, organised, and analysed. Understanding data types is important because the correct analytical method depends on the kind of data being used.
+
+Two of the most important categories are **qualitative** and **quantitative** data.
+
+| Data type | Main idea | Typical question it answers |
+|-----------|-----------|-----------------------------|
+| Qualitative | Describes qualities, categories, labels, or characteristics | What kind? Which category? How do people describe it? |
+| Quantitative | Describes numerical values, counts, or measurable amounts | How much? How many? How often? |
+
+#### Qualitative vs quantitative data
+
+| Type | Description | Examples |
+|------|-------------|----------|
+| Qualitative data | Non-numerical data that describes categories, labels, experiences, or attributes | Customer feedback, colour, department name, satisfaction category, product type |
+| Quantitative data | Numerical data that can be counted or measured | Revenue, age, number of customers, temperature, number of defects |
+
+Both types are important in practice. Many strong analyses combine them so the analyst can see both measurable patterns and the context or meaning behind those patterns.
+
+#### Key characteristics of data types
+
+| Characteristic | Qualitative data | Quantitative data |
+|----------------|------------------|-------------------|
+| Format | Text, labels, or categories | Numbers or measurable values |
+| Focus | Meaning, grouping, or description | Size, amount, change, or frequency |
+| Common analysis | Categorisation, themes, patterns, interpretation | Counting, averages, trends, comparisons, statistical analysis |
+| Example output | Customer themes, grouped segments, category counts | Mean, median, percentage change, charts, forecasts |
+
+#### Data type conversion and selection
+
+Sometimes data may need to be converted into a more useful form before analysis. For example:
+
+- customer comments can be grouped into qualitative themes
+- age values can be converted into age groups
+- yes/no responses can be encoded into binary numeric values
+- categories can be counted so that they can also be analysed quantitatively
+
+Choosing the right data type matters because:
+
+- the wrong method can lead to weak conclusions
+- some techniques only work well with numerical data
+- some business problems need descriptive categories, while others need measurable values
+- many real-world problems require a combination of both
+
+#### Qualitative Data
+
+Qualitative data offers a deeper view into human experiences, perceptions, and behaviour. Unlike quantitative data, which focuses on measurable values, qualitative data explores the meaning behind what people think, feel, experience, or describe. It helps analysts understand the **why** and **how** behind a phenomenon.
+
+##### Characteristics of qualitative data
+
+| Characteristic | What it means |
+|----------------|---------------|
+| Non-numerical | Qualitative data usually appears as text, interviews, observations, images, videos, or descriptive categories rather than numerical values |
+| Subjectivity | It reflects people's interpretations, viewpoints, lived experiences, and personal perspectives |
+| Detail | It is rich and in-depth, helping analysts explore complexity and uncover subtle patterns |
+| Open-ended | It is often collected through open-ended questions or prompts that allow participants to answer freely |
+| Contextual understanding | It helps explain social, cultural, and environmental factors that shape the data and its meaning |
+
+##### Role of qualitative data
+
+Qualitative data is widely used because it supports several important analytical purposes:
+
+| Role | Why it matters |
+|------|----------------|
+| Exploring motivations | Helps uncover beliefs, attitudes, values, and reasons behind people's actions or decisions |
+| Uncovering complex phenomena | Helps study issues that are difficult to reduce to numbers alone, such as social behaviour, emotions, or cultural patterns |
+| Generating hypotheses and theory development | Helps identify themes and relationships that can inspire further research or model development |
+| Complementing quantitative data | Adds human meaning and context to numerical findings |
+| Informing decision-making | Helps guide action in fields such as market research, healthcare, public policy, and social science |
+
+##### Why qualitative data matters in practice
+
+Qualitative data is especially useful when analysts want to understand:
+
+- customer experiences
+- patient perspectives
+- employee attitudes
+- user behaviour and motivations
+- social and cultural influences
+
+This is why qualitative data often plays a central role in interviews, focus groups, observations, case studies, and open-ended surveys.
+
+##### Real-world example - Patient experiences with a new treatment
+
+Suppose a pharmaceutical company has developed a new medication to manage a chronic condition. Before launching it to market, the company wants to understand how patients perceive the treatment's effectiveness and how it affects their daily lives.
+
+In this kind of study, qualitative data is highly valuable because the company is not only asking whether the treatment works in numerical terms, but also how patients experience it in practice.
+
+##### Qualitative data collection in this example
+
+Researchers conduct in-depth interviews with selected patients who are using the new medication. During these interviews, patients are encouraged to describe:
+
+- their experiences with the treatment
+- their thoughts about its effectiveness
+- their emotional responses to using it
+- how it affects their symptoms, well-being, and quality of life
+
+Because the questions are open-ended, patients can provide detailed and personal responses. This gives the researchers valuable qualitative insight into the motivations, attitudes, feelings, and lived experiences connected to the new treatment.
+
+##### Why this example matters
+
+This example shows why qualitative data is useful in healthcare and pharmaceutical research:
+
+- it reveals the human side of treatment outcomes
+- it helps explain how patients interpret effectiveness
+- it captures concerns or benefits that may not appear in numerical scores alone
+- it supports better patient-focused decisions before a treatment is launched more widely
+
+##### Our own scenario - Collecting qualitative data toward a specific goal
+
+Suppose a university wants to reduce first-year student dropout rates.
+
+##### Specific goal
+
+The university's goal is to understand why first-year students feel disconnected, overwhelmed, or unsupported during their first semester so that it can improve the student experience and reduce dropout risk.
+
+##### Steps to collect qualitative data
+
+| Step | What should be done |
+|------|---------------------|
+| 1. Define the research focus | Clarify the goal and turn it into qualitative questions such as: what challenges are students facing, what support do they feel is missing, and what experiences make them consider leaving? |
+| 2. Select participants | Choose a diverse group of first-year students, including students from different study programmes, backgrounds, and engagement levels, so multiple perspectives are represented |
+| 3. Choose collection methods | Use in-depth interviews, focus groups, and open-ended survey questions to gather rich descriptive responses |
+| 4. Prepare open-ended questions | Ask questions such as: "What has been the hardest part of your first semester?" and "What would have helped you feel more supported?" |
+| 5. Create a safe setting | Make sure students know their responses are confidential and that the purpose is to improve support rather than judge them |
+| 6. Collect the data | Conduct the interviews or focus groups, record key observations, and capture detailed responses in a structured way |
+| 7. Organise the responses | Transcribe or summarise the responses so they can be reviewed consistently |
+| 8. Analyse the data qualitatively | Use coding or thematic analysis to identify repeated themes such as loneliness, academic pressure, unclear expectations, or lack of communication |
+| 9. Interpret findings against the goal | Connect the themes back to the university's original goal of reducing dropout and identify which issues seem most important |
+| 10. Use the findings for action | Recommend practical changes such as stronger onboarding, improved student advising, peer mentoring, or earlier wellbeing support |
+
+##### Why this scenario is useful
+
+This example shows that qualitative data collection should always begin with a clear goal. The steps are not just about asking questions, but about collecting rich information that helps explain people's experiences and supports better decisions.
+
+#### Quantitative Data
+
+Quantitative data focuses on objective measurements and numerical insight. Unlike qualitative data, which explores meaning and subjective experience, quantitative data uses values that can be counted, measured, compared, and analysed statistically.
+
+##### Characteristics of quantitative data
+
+| Characteristic | What it means |
+|----------------|---------------|
+| Numerical values | Quantitative data consists of measurable or countable numbers such as age, income, sales, ratings, or experimental results |
+| Objectivity | It aims to minimise personal interpretation by focusing on observable and measurable information |
+| Precision and accuracy | It supports precise calculations, comparisons, and measurement-based analysis |
+| Generalisability | With appropriate sampling, findings can often be used to make inferences about a broader population |
+| Statistical analysis | It is well suited for techniques such as descriptive statistics, inferential statistics, regression analysis, and hypothesis testing |
+
+##### Role of quantitative data
+
+Quantitative data is important because it supports several major analytical uses:
+
+| Role | Why it matters |
+|------|----------------|
+| Measurement and comparison | Enables clear comparison between groups, variables, or time periods |
+| Statistical inference | Supports evidence-based conclusions from sample data to broader populations |
+| Predictive modelling | Provides structured numerical input for forecasting and predictive analytics |
+| Evidence-based decision-making | Helps organisations make decisions using objective data rather than intuition alone |
+| Data visualisation | Works well with charts, graphs, and dashboards that communicate measurable trends and outcomes |
+
+##### Real-world examples of quantitative data application
+
+| Industry example | How quantitative data is used |
+|------------------|-------------------------------|
+| Market research | A consumer electronics company uses rating-scale survey responses to compare customer satisfaction with smartphone features such as battery life, camera quality, and display size |
+| Health study | Researchers analyse blood pressure readings from different age groups to calculate averages, prevalence rates, and possible risk factors |
+| Education assessment | Schools use standardised test scores to measure academic performance and identify learning gaps |
+| Financial analysis | Investment firms compare companies using metrics such as ROI and debt-to-equity ratio |
+| Opinion polling | Political researchers use numerical survey responses to estimate public opinion and calculate margins of error |
+| Climate change research | Environmental scientists analyse long-term temperature, precipitation, and greenhouse gas data to identify climate trends |
+| Retail sales analysis | Retail chains study daily sales, inventory levels, and customer footfall to optimise operations and staffing |
+
+##### Why quantitative data matters in practice
+
+Quantitative data is especially useful when the goal is to:
+
+- measure change
+- compare outcomes
+- test significance
+- identify trends
+- build forecasts
+- support objective business or policy decisions
+
+This is why quantitative data plays a central role in dashboards, reporting, experiments, surveys with rating scales, business KPIs, and statistical models.
+
+##### Our own scenario - Collecting quantitative data toward a specific goal
+
+Suppose a fitness app company wants to increase user retention over the next three months.
+
+##### Specific goal
+
+The company's goal is to measure which user behaviours are most strongly linked to users continuing to use the app after the first 30 days.
+
+##### Steps to collect quantitative data
+
+| Step | What should be done |
+|------|---------------------|
+| 1. Define the measurable goal | Turn the goal into measurable questions such as: how many users stay active after 30 days, how often do they log in, and which app features are used most often? |
+| 2. Identify the variables | Decide which numerical variables to collect, such as login frequency, workout completions, session duration, feature usage count, and 30-day retention status |
+| 3. Define the population and sample | Decide whether to analyse all users or a defined sample, such as new users who joined during one month |
+| 4. Choose collection tools | Use app analytics, event tracking, and structured user records to capture measurable behaviour consistently |
+| 5. Set the measurement period | Define the observation window clearly, for example collecting user behaviour during the first 30 days after signup |
+| 6. Collect the data | Record the selected metrics in a structured dataset so each user has comparable numerical values |
+| 7. Clean and validate the data | Check for missing values, duplicated users, inconsistent timestamps, or invalid event counts before analysis |
+| 8. Analyse the data quantitatively | Use descriptive statistics, comparisons, correlations, or regression analysis to see which behaviours are linked to retention |
+| 9. Interpret the findings against the goal | Identify which measurable behaviours appear most strongly connected to retention, such as completing a first workout or using the app several times per week |
+| 10. Use the findings for action | Recommend changes such as onboarding prompts, reminders, or feature improvements that encourage the behaviours linked to stronger retention |
+
+##### Why this scenario is useful
+
+This example shows that quantitative data collection should begin with a clear measurable goal. The process focuses on structured numerical variables, consistent measurement, and analysis that can support evidence-based business decisions.
+
+##### How to do this in Google Sheets
+
+You can also organise this quantitative data collection process in **Google Sheets**.
+
+##### Suggested sheet structure
+
+| Column | What it stores |
+|--------|----------------|
+| A: User ID | Unique identifier for each user |
+| B: Signup Date | Date the user joined the app |
+| C: Logins in First 30 Days | Total number of logins during the first 30 days |
+| D: Workouts Completed | Total workouts completed in the first 30 days |
+| E: Average Session Minutes | Average time spent per session |
+| F: Feature Usage Count | Number of times key features were used |
+| G: Active After 30 Days | `Yes` or `No` retention result |
+| H: Retention Flag | Numeric version of retention such as `1` for Yes and `0` for No |
+
+##### Simple Google Sheets steps
+
+| Step | What to do in Google Sheets |
+|------|------------------------------|
+| 1. Create your table | Add clear headers for each variable so each row represents one user |
+| 2. Enter structured numeric data | Record values consistently, using numbers for counts, durations, and ratings |
+| 3. Convert retention into a number | Use a formula such as `=IF(G2="Yes",1,0)` in column H so retention can be analysed numerically |
+| 4. Check for blanks or duplicates | Use filters or conditional formatting to identify missing entries or repeated user IDs |
+| 5. Calculate averages | Use formulas such as `=AVERAGE(C2:C101)` to find the average number of logins |
+| 6. Count retained users | Use `=COUNTIF(G2:G101,"Yes")` to count how many users remained active after 30 days |
+| 7. Compare groups | Use pivot tables or filtered summaries to compare retained versus non-retained users |
+| 8. Visualise the data | Create bar charts or column charts to compare logins, workouts, or feature use between groups |
+
+##### Example formulas
+
+| Goal | Example formula |
+|------|-----------------|
+| Turn Yes/No into numeric value | `=IF(G2="Yes",1,0)` |
+| Average logins | `=AVERAGE(C2:C101)` |
+| Count retained users | `=COUNTIF(G2:G101,"Yes")` |
+| Average workouts for retained users | `=AVERAGEIF(G2:G101,"Yes",D2:D101)` |
+| Average workouts for non-retained users | `=AVERAGEIF(G2:G101,"No",D2:D101)` |
+
+##### Why Google Sheets is useful here
+
+Google Sheets is useful for simple quantitative projects because it helps you:
+
+- organise structured numerical data clearly
+- apply formulas quickly
+- use charts and pivot tables for fast comparisons
+- clean and review small-to-medium datasets without advanced tools
+
+#### Data Type Selection
+
+Using the appropriate data type is critical to conducting practical analysis and deriving meaningful insights. We must consider the specific information we aim to capture and our analysis objectives. These strategies and factors help us select the most suitable data type for a given scenario.
+
+##### Factors that help with data type selection
+
+| Factor | What to consider |
+|--------|------------------|
+| Research objectives | Define the questions you want to answer and whether you are exploring experiences, measuring change, testing relationships, or predicting outcomes |
+| Nature of information | Decide whether the information is better captured as opinions, motivations, and descriptions, or as counts, measurements, and comparisons |
+| Data precision and objectivity | Consider whether the analysis requires precise numerical measurement or a more interpretive understanding of human experience |
+| Feasibility and resources | Check time, budget, participant access, tools, and practical limits of data collection |
+| Data availability | Determine whether useful data already exists and whether it is accessible and relevant |
+| Data integration | Consider whether combining qualitative and quantitative data could provide a fuller understanding |
+| Analysis techniques | Match the data type to the methods you intend to use, such as thematic analysis or statistical testing |
+| Ethical considerations | Make sure the chosen approach respects privacy, informed consent, confidentiality, and responsible handling of the data |
+
+##### Why this choice matters
+
+Selecting the correct data type helps ensure that:
+
+- the data fits the goal of the study or analysis
+- the analysis method is appropriate for the information collected
+- the results are more accurate, useful, and meaningful
+- ethical and practical constraints are handled more carefully
+
+##### Mixed methods as a selection strategy
+
+In some cases, the strongest choice is not only qualitative or only quantitative. A **mixed-methods** approach can be useful when:
+
+- numbers are needed to show scale or trends
+- qualitative responses are needed to explain why those numbers look the way they do
+- a single type of data would leave important gaps in understanding
+
+By thoughtfully considering these strategies and factors, we can select the most suitable data type that aligns with our research objectives and analysis goals. This thoughtful approach contributes to stronger analysis, more accurate results, and more meaningful decision-making.
+
+#### Collection of Quantitative Data vs Qualitative Data
+
+Data collection methods should match the type of data we want to gather. Quantitative collection usually focuses on structured measurements and numerical values, while qualitative collection focuses more on experiences, opinions, meanings, and context. In this part of the lesson, we focus on how qualitative data is commonly collected.
+
+##### Collecting qualitative data
+
+In our quest to gather qualitative data, we employ various techniques and methods to capture valuable experiences, opinions, and contextual information. Let’s explore some commonly used methods for collecting qualitative data.
+
+##### Common methods for collecting qualitative data
+
+###### Interviews
+
+Conducting interviews involves interacting with participants to explore their experiences. Structured interviews follow a predetermined set of questions, while semi-structured and unstructured interviews allow for open-ended discussions and exploring relevant topics.
+
+###### Focus groups
+
+Creating a focus group entails assembling a small group of participants and facilitating guided discussions led by a moderator. This method fosters the exploration of shared experiences, group dynamics, and diverse perspectives on a particular topic.
+
+###### Observations
+
+Employing observational methods, we systematically observe and document behaviours, interactions, and activities in natural or controlled settings. This approach provides rich contextual information and allows us to capture non-verbal cues.
+
+###### Document analysis
+
+Another technique involves analysing documents, such as texts, reports, diaries, or archival records. This approach offers valuable insights into historical, cultural, or organisational aspects. By examining existing materials, we can extract relevant information.
+
+###### Ethnography
+
+To deeply understand the perspectives, behaviours, and practices of a group or community, we immerse ourselves in a specific social or cultural setting through ethnography. As researchers actively participate in the setting, we collect data through observations, interviews, and document analysis.
+
+###### Narrative inquiry
+
+In pursuing narrative inquiry, we focus on gathering and analysing individuals’ personal stories and narratives. This method emphasises the subjective experiences and meanings attributed to events, fostering a deeper understanding of human experiences.
+
+###### Online research
+
+Online platforms provide exciting opportunities for collecting qualitative data. We can utilise online surveys, interviews, and virtual focus groups or analyse online discussions and social media content to glean valuable insights.
+
+##### Why these methods matter
+
+By employing these diverse data collection methods, we gain a comprehensive understanding of the human experience, enabling us to derive meaningful insights from the qualitative data we gather.
+
+##### Collecting quantitative data
+
+When gathering quantitative data, our approach employs systematic techniques and specific tools to collect numerical information for analysis. Here are several commonly used methods and tools for quantitative data collection.
+
+###### Surveys
+
+Surveys entail administering structured questionnaires to gather data from a sample of participants. We can conduct surveys in various formats, including face-to-face interviews, online surveys, or paper-based questionnaires. Surveys allow for standardised data collection, paving the way for statistical analysis.
+
+###### Experiments
+
+In experimental research, we manipulate independent variables to observe their impact on dependent variables. We create controlled environments to test hypotheses and establish cause-and-effect relationships. Experimental data collection requires meticulous design, random assignment, and control groups to ensure accuracy.
+
+###### Measurements and assessments
+
+Quantitative data can be obtained through direct measurements using instruments, devices, or sensors. For instance, we might measure height, weight, blood pressure, or response times in psychological experiments. Additionally, assessments like cognitive tests or personality inventories provide valuable quantitative data for analysis.
+
+###### Secondary data analysis
+
+We also consider the option of secondary data analysis, where we utilise existing data collected for other purposes. We can efficiently answer research questions using publicly available datasets, official statistics, or previously collected data. This approach proves to be both cost-effective and time-efficient.
+
+###### Social media and web analytics
+
+To gain insights into user behaviour, website traffic, or social media engagement, we rely on online platforms and web analytics tools. These tools generate quantitative data on clicks, views, shares, and other digital interactions, offering valuable insights into online phenomena.
+
+###### Sampling techniques
+
+Collecting quantitative data demands careful consideration of sampling techniques. Whether it is random, stratified, or convenient, these techniques ensure that the data collected is representative of the target population.
+
+##### Why these quantitative methods matter
+
+By employing these diverse approaches and utilising specialised tools, we can effectively gather and analyse quantitative data, enabling us to draw meaningful conclusions and make data-driven decisions.
+
+##### Real-world examples of collecting quantitative data
+
+###### Customer feedback
+
+A retail chain sends customer satisfaction surveys to collect quantitative data on various aspects of the shopping experience. The surveys include rating scales to measure satisfaction levels with store cleanliness, staff friendliness, product availability, and related service factors. The quantitative data collected enables the chain to identify areas for improvement and track customer sentiment over time.
+
+###### Clinical trials
+
+Researchers conducting a clinical trial to test a new drug measure quantitative data, such as changes in a patient’s blood pressure, heart rate, and other physiological parameters. The quantitative data obtained from the trial allows them to assess the drug’s efficacy and safety, supporting regulatory approval and medical decision-making.
+
+###### Educational assessment
+
+A school district administers standardised tests to students to collect quantitative data on their academic performance in mathematics, language arts, and science. The quantitative data aids educators in evaluating the effectiveness of the curriculum, identifying struggling students, and implementing targeted interventions.
+
+###### Market analysis
+
+A marketing agency uses web analytics tools to collect quantitative data on website traffic, user engagement, and conversion rates. The quantitative data helps the agency track the performance of online marketing campaigns, optimise website design, and identify areas for improving user experience.
+
+###### Environmental monitoring
+
+Scientists collect quantitative data on air quality, water pollution, and biodiversity to monitor ecological changes. The data helps assess the impact of human activities on the environment, identify ecological trends, and inform conservation efforts.
+
+###### Opinion polling
+
+A polling agency conducts a nationwide survey using quantitative data collection techniques to measure public opinion on political issues and candidates. The quantitative data obtained from the study allows them to estimate voting preferences, predict election outcomes, and inform political campaigns.
+
+##### Why these examples matter
+
+By employing quantitative data collection methods in real-world scenarios, organisations and researchers can gain valuable insights, make informed decisions, and improve their products, services, policies, and strategies to better meet the needs of their target audiences.
+
+#### Analysing Qualitative Data vs Quantitative Data
+
+Analysing data should match the kind of information that has been collected. Qualitative analysis focuses more on meaning, interpretation, themes, and lived experience, while quantitative analysis focuses more on statistical patterns, measurement, relationships, and prediction.
+
+##### Analysing qualitative data
+
+Analysing qualitative data is a systematic process that involves organising, interpreting, and deriving meaning from the collected information. In our qualitative data analysis, we employ several standard techniques.
+
+###### Coding
+
+Our first step is coding, where we categorise and label segments of qualitative data to identify themes, patterns, or concepts. By assigning descriptive codes to specific data segments, we create a coding framework that captures the central ideas or concepts represented in the data.
+
+###### Thematic analysis
+
+Thematic analysis is another essential technique we use. It involves identifying and analysing patterns or themes within the qualitative data. Researchers look for recurring ideas, concepts, or patterns of meaning across the data. These themes can emerge through inductive coding, which is data-driven, or deductive coding, which is theory-driven.
+
+###### Narrative analysis
+
+We also delve into narrative analysis, which examines the structure, content, and meaning of the narratives or stories participants share. This method analyses the plot, characters, language, and discourse elements to understand how individuals construct and communicate their experiences.
+
+###### Content analysis
+
+Our qualitative data analysis may involve content analysis, where we systematically analyse textual or visual data to identify patterns, themes, or specific characteristics. To achieve this, we define categories or codes based on predefined criteria and apply them to the data to quantify and summarise the content.
+
+###### Grounded theory
+
+We also use the grounded theory approach, which is an inductive method, to develop theories or explanations based on the data. Through iterative analysis and data comparison, we refine concepts and generate theories that emerge from the data.
+
+###### Interpretative Phenomenological Analysis (IPA)
+
+This analysis focuses on understanding individuals’ lived experiences and subjective interpretations using the IPA approach. By immersing ourselves in the data, we identify key themes and interpret their meaning within participants’ experiences.
+
+###### Matrix analysis
+
+Lastly, we employ matrix analysis to organise qualitative data into a matrix structure, facilitating systematic comparison and exploration of relationships between data points. With rows and columns representing codes, themes, or participants, we populate the matrix with relevant data for deeper insights.
+
+##### Why qualitative analysis matters
+
+By applying these qualitative data analysis techniques, we develop a richer understanding of the data, uncover meaningful insights, and support informed decision-making and research outcomes.
+
+##### Analysing quantitative data
+
+Analysing quantitative data involves utilising statistical techniques and visualisation methods to extract insights, identify patterns, and draw meaningful conclusions. Let’s explore some commonly used ways of analysing quantitative data.
+
+###### Descriptive statistics
+
+Descriptive statistics summarise and depict the key characteristics of a dataset. Measures like mean, median, mode, standard deviation, and range offer valuable information about the data’s central tendency, variability, and distribution.
+
+###### Inferential statistics
+
+Inferential statistics involve drawing conclusions or making inferences about a population based on a sample of data. These statistics employ techniques like hypothesis testing, t-tests, chi-square tests, Analysis Of Variance (ANOVA), and regression analysis. These methods help researchers evaluate relationships, differences, and significance within the data.
+
+###### Data visualisation
+
+Transforming quantitative data into visual representations, such as graphs, charts, and diagrams, data visualisation techniques enhance the communication of data patterns, trends, and relationships. Standard visualisations include bar graphs, line charts, scatter plots, histograms, and heat maps.
+
+###### Correlation and regression analysis
+
+Correlation analysis explores the connection between two or more variables, measuring the strength and direction of the association. On the other hand, regression analysis investigates the association between a dependent variable and one or more independent variables, enabling prediction and modelling.
+
+###### Principal Component Analysis (PCA) and factor analysis
+
+Used to identify underlying factors or components within a dataset, factor analysis examines relationships among observed variables. At the same time, PCA reduces data dimensionality by identifying the most critical components.
+
+###### Survival analysis
+
+Survival analysis delves into the study of time-to-event data, such as survival rates, failure times, or event occurrences. Researchers employ this technique to examine factors influencing the probability of an event happening over time.
+
+###### Data mining and machine learning
+
+Leveraging data mining and machine learning techniques, researchers discover patterns, classify data, or make predictions. These methods include clustering, decision trees, random forests, support vector machines, and neural networks.
+
+##### Why quantitative analysis matters
+
+By applying these quantitative data analysis methods, we can unlock valuable insights from the data, facilitate evidence-based decision-making, and contribute to advancements in various fields.
+
+##### Real-world examples of analysing qualitative data
+
+###### Market research
+
+A market research firm conducts in-depth interviews with customers to explore their experiences and perceptions of a new product. Using thematic analysis, they identify recurring themes such as product satisfaction, pricing concerns, and feature preferences, providing valuable insights for product improvements and marketing strategies.
+
+###### Psychological study
+
+Researchers conduct narrative analysis on written accounts of trauma survivors’ experiences to understand their coping mechanisms and emotional journeys. Examining the narratives’ structure, language, and discourse elements gives them deeper insights into the participants’ psychological responses and healing processes.
+
+###### Social science research
+
+An anthropological study involving ethnography immerses researchers in a remote village to understand the community’s customs and rituals. Through Interpretative Phenomenological Analysis (IPA), researchers uncover the villagers’ subjective interpretations of their cultural practices, shedding light on their social dynamics and belief systems.
+
+###### Content analysis of online reviews
+
+A company performs content analysis on customer reviews of its products on e-commerce platforms. By categorising reviews based on positive or negative sentiments and identifying common themes, they gain insights into product strengths and areas for improvement.
+
+###### Educational research
+
+Researchers use grounded theory to develop an approach to student motivation in the classroom. Through iterative analysis of interviews with students and teachers, they generate a theory that identifies factors influencing student engagement and learning outcomes.
+
+##### Real-world examples of analysing quantitative data
+
+###### Business analytics
+
+An e-commerce company analyses sales data using descriptive statistics to calculate average order values, identify popular products, and assess sales trends over time. Data visualisation techniques create interactive dashboards to monitor key performance indicators easily.
+
+###### Medical research
+
+Researchers analyse data from a clinical trial using inferential statistics to determine the efficiency of a new drug compared to a placebo. They apply t-tests and regression analysis to assess the drug’s impact on patient outcomes, such as symptom improvement and side effects.
+
+###### Market analysis
+
+A marketing agency uses correlation analysis to identify relationships between advertising spending and sales for a client’s products. Understanding the correlation allows the agency to optimise the client’s advertising budget for maximum ROI.
+
+###### Environmental study
+
+Scientists analyse data on air pollution levels using factor analysis to identify underlying factors contributing to pollution. PCA helps reduce the data dimensionality, allowing for a clearer understanding of the primary pollution sources.
+
+###### Predictive modelling in finance
+
+A financial institution employs machine learning algorithms like support vector machines and neural networks to predict stock price movements based on historical market data. The models provide insights for investment decisions and risk management.
+
+###### Survival analysis in healthcare
+
+Researchers analyse patient data to study survival rates and time-to-event outcomes for specific medical treatments. Survival analysis helps identify factors influencing patient survival, aiding medical professionals in making informed treatment choices.
+
+##### Why this analysis comparison matters
+
+By understanding both qualitative and quantitative analysis methods, researchers, businesses, and professionals can choose the most suitable technique for the data they have collected and the decision they need to support.
+
+##### Applying analysis techniques to our first two activities
+
+Using the information from our first two activities in this lesson, we can now identify which analysis techniques would be most suitable and explain why.
+
+##### Activity 1 - University dropout scenario
+
+In the first activity, the university wanted to understand why first-year students feel disconnected, overwhelmed, or unsupported during their first semester.
+
+Because this activity collected **qualitative data** such as interview responses, focus-group comments, and open-ended feedback, the most suitable analysis techniques would be:
+
+| Technique | Why it fits this activity |
+|-----------|---------------------------|
+| Coding | Helps label important parts of student responses, such as loneliness, academic pressure, confusion, or lack of support |
+| Thematic analysis | Helps identify repeated themes across multiple students so the university can see the main causes of dropout risk |
+| Matrix analysis | Helps compare themes across different student groups, programmes, or backgrounds in a structured way |
+| Narrative analysis | Can be useful if the university wants to understand how students describe their personal first-semester journey in story form |
+
+The strongest core techniques here would usually be **coding** and **thematic analysis**, because the goal is to organise student experiences into meaningful patterns that can guide better support strategies.
+
+##### Activity 2 - Fitness app retention scenario
+
+In the second activity, the fitness app company wanted to measure which user behaviours are most strongly linked to users continuing to use the app after the first 30 days.
+
+Because this activity collected **quantitative data** such as login frequency, workout completions, session duration, feature usage count, and retention status, the most suitable analysis techniques would be:
+
+| Technique | Why it fits this activity |
+|-----------|---------------------------|
+| Descriptive statistics | Helps summarise averages, counts, and distributions for user behaviour and retention outcomes |
+| Data visualisation | Helps compare retained and non-retained users using charts, dashboards, or trend visuals |
+| Correlation analysis | Helps explore whether behaviours such as frequent logins or more completed workouts are associated with stronger retention |
+| Regression analysis | Helps test which behaviours are the strongest predictors of 30-day retention when several variables are considered together |
+| Inferential statistics | Helps check whether observed differences between retained and non-retained users are statistically meaningful rather than random |
+
+The strongest core techniques here would usually be **descriptive statistics**, **data visualisation**, and **correlation or regression analysis**, because the goal is to measure patterns and identify which behaviours best predict retention.
+
+##### What this shows us
+
+These two activities show an important exam rule:
+
+- qualitative activities usually need coding, themes, interpretation, and comparison of meaning
+- quantitative activities usually need statistics, visualisation, comparison, and relationship testing
+- the chosen technique should always match the type of data collected and the business or research goal
+
+#### Data Type Conversion
+
+Data type conversion plays a significant role in preparing data for analysis and integrating diverse data sources. Here are some common examples of data type conversion techniques.
+
+##### Qualitative to quantitative
+
+This conversion entails assigning numerical values or codes to qualitative data, making it suitable for quantitative analysis. For instance, researchers may convert responses from open-ended survey questions into numerical ratings using Likert scales. Similarly, interview transcripts can be coded based on predefined categories, enabling quantitative comparison and structured analysis.
+
+##### Quantitative to qualitative
+
+Researchers may aggregate or summarise numerical data to create qualitative categories or themes. This transformation allows for a deeper understanding of the data. For example, grouping numerical survey data into thematic categories can provide qualitative insight, or researchers may create narrative summaries based on statistical findings. This can offer a richer interpretation than numbers alone.
+
+##### Integration of qualitative and quantitative data
+
+Integrating data from qualitative and quantitative sources is known as mixed-methods analysis. Researchers may use qualitative data to complement or explain quantitative findings, and they may also use quantitative findings to support or test qualitative observations. This integration enhances understanding of the research topic and allows for a more robust analysis.
+
+##### Why data type conversion matters
+
+When performing data type conversion, it is crucial to consider the specific purpose of the transformation and its implications for analysis and interpretation. Ensuring data compatibility and preserving the validity and reliability of the converted data is essential. A thoughtful approach to data type conversion improves the accuracy, flexibility, and depth of insight derived from the data.
+
+#### Likert Scale
+
+A **Likert scale** is a commonly used rating scale that measures individuals’ attitudes, opinions, or perceptions towards a particular statement or question. It consists of a series of statements or items, each accompanied by a range of response options, typically ranging from **Strongly agree** to **Strongly disagree**, with neutral options in between.
+
+The Likert scale allows researchers to quantify subjective data and measure the intensity of individuals’ feelings or opinions on a topic. The scale’s numerical values support statistical analysis and help researchers identify patterns and trends within the data.
+
+##### Visual explanation of a Likert scale
+
+| Response option | Typical score |
+|-----------------|---------------|
+| Strongly disagree | 1 |
+| Disagree | 2 |
+| Neither agree nor disagree | 3 |
+| Agree | 4 |
+| Strongly agree | 5 |
+
+```text
+Statement:
+"The discharge process was clearly explained to me."
+
+1        2        3        4        5
+SD       D      Neutral    A       SA
+```
+
+This kind of scale gives a structured way to turn opinions into ordered numerical responses that can later be counted, compared, summarised, and visualised.
+
+##### How to use a Likert scale
+
+| Step | What to do |
+|------|------------|
+| 1. Write a clear statement | Make sure the respondent is reacting to one specific idea only |
+| 2. Choose a balanced response scale | Use a consistent set such as 1 to 5 from Strongly disagree to Strongly agree |
+| 3. Keep wording simple | Avoid double questions or confusing language |
+| 4. Use the same scale across related questions | This makes comparison easier across multiple items |
+| 5. Assign values consistently | For example, 1 = Strongly disagree and 5 = Strongly agree |
+| 6. Analyse the results | Use counts, percentages, averages, charts, or group comparisons to interpret the responses |
+
+##### Why to use a Likert scale
+
+Likert scales are useful because they:
+
+- turn attitudes and perceptions into structured data
+- make it easier to compare responses across people or groups
+- support descriptive statistics, charts, and trend analysis
+- are simple for respondents to understand and complete
+- work well in surveys where experiences, satisfaction, agreement, or confidence must be measured
+
+##### When to use a Likert scale
+
+Likert scales are most useful when you want to measure:
+
+- satisfaction
+- agreement or disagreement
+- confidence levels
+- perceived quality
+- attitudes towards a service, product, policy, or experience
+
+They are especially common in:
+
+- customer satisfaction surveys
+- employee engagement surveys
+- healthcare experience studies
+- education feedback forms
+- market research
+
+##### Real case scenario - Hospital patient satisfaction survey
+
+Suppose a hospital wants to understand whether patients feel well informed during discharge.
+
+The hospital could include Likert-scale questions such as:
+
+- "The nurse explained my discharge instructions clearly."
+- "I understood what medication I needed to take at home."
+- "I felt confident about what to do if my symptoms changed."
+
+Patients could answer each statement on a 1 to 5 scale from **Strongly disagree** to **Strongly agree**.
+
+##### Why the hospital should use a Likert scale in this case
+
+The hospital should use a Likert scale because:
+
+- it turns patient opinions into measurable survey data
+- it helps compare responses across wards, age groups, or time periods
+- it makes it easier to identify weak parts of the discharge process
+- it supports charts, averages, and trend tracking over time
+
+For example, if one ward consistently receives lower scores on discharge clarity, the hospital can investigate that process further and provide better communication training or discharge support.
+
+##### High-yield exam note
+
+In exam answers, it is often strong to explain that a Likert scale is useful when researchers need to measure **subjective opinions in a structured quantitative way**. It is especially suitable for surveys about satisfaction, agreement, attitudes, and perceived quality.
+
+#### Visual figure illustration - Data types
+
+<div class="mermaid">
+flowchart TB
+    A[Data types] --> B[Qualitative]
+    A --> C[Quantitative]
+    B --> D[Categories labels opinions]
+    C --> E[Counts measurements values]
+    D --> F[Themes grouping interpretation]
+    E --> G[Statistics charts trends]
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style D fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style E fill:#FFD700,stroke:#B8860B,stroke-width:2px,color:#000
+    style F fill:#26A69A,stroke:#00695C,stroke-width:2px,color:#fff
+    style G fill:#3F7AD8,stroke:#254C8D,stroke-width:2px,color:#fff
+</div>
+
+#### Real case scenario
+
+```text
+Business problem:
+A retail company wants to understand why product returns are increasing
+
+How data types help:
+-> Quantitative data: return rate, number of returns, order value, product category frequency
+-> Qualitative data: customer comments, complaint descriptions, support-chat feedback
+-> Combined insight: the analyst sees both the size of the problem and the reasons behind it
+```
+
+This example shows why data types matter: quantitative data shows the scale of the issue, while qualitative data helps explain the cause.
+
+#### Real-world example - HealthCare Plus
+
+Imagine a healthcare organisation called **HealthCare Plus** that wants to improve patient care and patient outcomes. The organisation launches a research project to better understand patient experiences and hospital satisfaction.
+
+To do this, HealthCare Plus collects both qualitative and quantitative data.
+
+##### Qualitative data in the example
+
+The organisation conducts in-depth interviews with a diverse group of patients. In these interviews, patients describe:
+
+- their healthcare experiences
+- their perceptions of the medical staff
+- how they felt about the quality of care they received
+
+This qualitative data gives insight into emotions, perceptions, and the aspects of care that matter most to patients.
+
+##### Quantitative data in the example
+
+HealthCare Plus also distributes a survey to patients admitted during a specific period. The survey includes rating-scale questions about:
+
+- waiting time
+- communication with healthcare professionals
+- overall satisfaction
+
+Patients rate these aspects numerically, for example on a scale from 1 to 10.
+
+##### How the analysis works
+
+| Data type | Example analysis |
+|-----------|------------------|
+| Qualitative | The team uses thematic analysis to identify common themes and patterns in patient experiences |
+| Quantitative | The team calculates mean satisfaction scores and uses statistics to compare satisfaction across patient groups |
+
+Through qualitative analysis, the team may discover that clear and empathetic communication strongly influences patient satisfaction.
+
+Through quantitative analysis, the team can calculate satisfaction levels and test whether differences appear by age, gender, or type of medical condition.
+
+##### Why this mixed-data example matters
+
+By combining qualitative and quantitative data, HealthCare Plus develops a more complete understanding of patient experiences.
+
+- quantitative data shows measurable satisfaction levels
+- qualitative data explains why patients feel the way they do
+- together, the data supports stronger decision-making
+
+As a result, the organisation can introduce communication training for medical staff, reduce waiting times, and improve patient experience more effectively.
+
+#### Important takeaways
+
+1. Data types describe the kind of information a variable contains and influence how it should be analysed.
+2. Qualitative data focuses on categories, labels, descriptions, and meaning.
+3. Quantitative data focuses on counts, measurements, amounts, and numerical comparison.
+4. The right data type helps analysts choose the right collection method and analysis method.
+5. Some datasets need conversion before they can be used effectively in analysis.
+6. Many real-world decisions are strongest when qualitative and quantitative evidence are combined.
+7. Mixed data combines qualitative and quantitative information and often gives a more complete analytical picture than using only one type.
+8. The HealthCare Plus example shows how interviews and surveys can be combined to improve healthcare decisions and patient outcomes.
+9. Qualitative data is especially strong for exploring motivations, meanings, lived experience, and contextual understanding.
+10. Open-ended and subjective data can be a strength because it reveals insights that structured numerical data may miss.
+11. The pharmaceutical example shows how interviews can reveal patient perceptions, emotions, and quality-of-life impacts that may not be visible in numbers alone.
+12. Quantitative data is especially strong when analysts need objective measurement, comparison, trend analysis, prediction, and statistical testing.
+13. Real-world examples such as market research, health studies, education assessment, finance, polling, climate analysis, and retail show how widely quantitative data is used.
+14. A strong quantitative-data scenario should begin with a measurable goal, defined variables, structured collection, and numerical analysis linked back to that goal.
+15. The fitness app example shows how retention questions can be turned into measurable variables such as login frequency, workout completions, and 30-day activity.
+16. Google Sheets can support simple quantitative projects through structured tables, formulas, filters, pivot tables, and charts.
+17. Data type selection should be based on research objectives, the nature of the information, precision needs, available resources, and ethical considerations.
+18. Mixed methods can be the strongest choice when numerical trends need to be combined with explanation, context, or human experience.
+19. Qualitative data can be collected through interviews, focus groups, observations, document analysis, ethnography, narrative inquiry, and online research.
+20. The collection method should match the goal of the study, such as depth, shared perspectives, behaviour, context, or personal stories.
+21. Quantitative data can be collected through surveys, experiments, measurements and assessments, secondary data analysis, social media and web analytics, and suitable sampling techniques.
+22. Strong quantitative collection depends on structured tools, clear measurement rules, and a sampling approach that supports reliable analysis.
+23. Real-world quantitative collection examples include customer feedback surveys, clinical trials, educational assessment, market analysis, environmental monitoring, and opinion polling.
+24. Qualitative data is analysed through methods such as coding, thematic analysis, narrative analysis, content analysis, grounded theory, IPA, and matrix analysis.
+25. Quantitative data is analysed through methods such as descriptive statistics, inferential statistics, data visualisation, correlation and regression, PCA and factor analysis, survival analysis, and machine learning.
+26. The analysis method should always match the type of data collected and the kind of question being answered.
+27. Real-world qualitative analysis examples include market research interviews, psychological narrative studies, ethnography, online review analysis, and educational research.
+28. Real-world quantitative analysis examples include business analytics, medical research, market analysis, environmental studies, finance, and survival analysis in healthcare.
+29. A strong exam answer should not only define qualitative and quantitative data, but also explain how each type is analysed.
+30. When asked about data analysis in an exam, link the technique to the scenario and explain what kind of insight it produces.
+31. In transfer questions, match qualitative scenarios to techniques such as coding and thematic analysis, and match quantitative scenarios to techniques such as descriptive statistics, visualisation, correlation, and regression.
+32. Data type conversion can move qualitative data into coded numerical form, quantitative data into grouped or narrative categories, or combine both through mixed-methods integration.
+33. Conversion should always preserve validity, reliability, and the purpose of the original data.
+34. A Likert scale is a structured way to measure subjective attitudes, agreement, or satisfaction using ordered response categories that can be analysed quantitatively.
+35. Likert scales are useful when opinions need to be collected in a form that supports counts, comparisons, charts, and trend analysis.
+36. Likert scales are commonly used in customer surveys, employee engagement studies, healthcare feedback, education, and market research.
+
+#### Semester exam highlight
+
+In the semester exam, questions about data types are often not only asking for simple definitions. A stronger answer usually:
+
+1. defines qualitative and quantitative data clearly
+2. gives one or two realistic examples of each
+3. explains how the data type affects the analysis method
+4. shows why both may be useful in one scenario
+
+#### Visual exam example
+
+```text
+Question:
+Explain the difference between qualitative and quantitative data in a hospital setting.
+
+Strong answer structure:
+-> Qualitative data: patient comments, satisfaction feedback, symptom descriptions
+-> Quantitative data: waiting time, number of admissions, temperature, readmission rate
+-> Explain that qualitative data gives meaning and context, while quantitative data shows measurable scale and trends
+```
+
+#### Exam-relevant note with highlight
+
+**High-yield rule:** if you are asked about data types in an exam, do not stop at definitions. Connect each type to an example and explain what kind of analysis it supports.
+
+#### Core lesson idea
+
+Data types are a foundation of data analysis because they determine how information is collected, interpreted, and transformed into useful insight for decision-making.
             """,
             "key_points": [
-                "Qualitative data explains why people think or behave in a certain way",
-                "Quantitative data measures how much, how often, or how strongly something changed",
-                "Data subsets help isolate the real problem domain",
-                "Combining focused subsets with mixed evidence produces stronger analysis"
+                "Data types describe the kind of information being collected and help determine how it should be analysed",
+                "Qualitative data includes categories, labels, opinions, and descriptive characteristics",
+                "Quantitative data includes counts, measurements, amounts, and numerical values",
+                "The correct data type helps analysts choose better collection and analysis methods",
+                "Data can sometimes be converted into a more useful form, such as grouping ages or encoding yes/no responses",
+                "Many real-world analyses are stronger when qualitative and quantitative data are combined in one scenario",
+                "Mixed data includes both qualitative and quantitative components and often supports stronger decision-making",
+                "Qualitative data is useful for understanding motivations, attitudes, experiences, and complex contextual factors",
+                "Qualitative methods often rely on open-ended responses, thematic analysis, and interpretation of meaning",
+                "The pharmaceutical treatment example shows how qualitative interviews can uncover patient perceptions of effectiveness and daily-life impact",
+                "The HealthCare Plus example shows how interviews and rating-scale surveys can be combined for a fuller view of patient experience",
+                "Quantitative data is useful for objective measurement, comparison, statistical inference, predictive modelling, and visualisation",
+                "Examples such as market research, health studies, education, finance, polling, climate research, and retail show how quantitative data supports evidence-based decisions",
+                "A strong quantitative collection plan starts with a measurable goal and then defines variables, collection tools, and analysis steps clearly",
+                "The fitness app example shows how structured quantitative data can be collected to study which behaviours are linked to user retention",
+                "Google Sheets can be used for simple quantitative data collection and analysis by organising variables into columns and applying formulas, charts, and pivot tables",
+                "Data type selection should consider research objectives, the nature of the information, precision, resources, data availability, analysis techniques, and ethics",
+                "Mixed methods can provide a more complete view when numbers alone or descriptions alone would leave gaps in understanding",
+                "Qualitative data can be collected through methods such as interviews, focus groups, observations, document analysis, ethnography, narrative inquiry, and online research",
+                "Choosing a qualitative collection method depends on the goal, such as exploring experiences, group views, behaviour, context, or personal stories",
+                "Quantitative data can be collected through surveys, experiments, measurements and assessments, secondary data analysis, social media and web analytics, and appropriate sampling techniques",
+                "Strong quantitative collection plans should define structured tools, measurement rules, and a sampling approach that supports dependable statistical analysis",
+                "Examples such as customer feedback, clinical trials, educational testing, web analytics, environmental monitoring, and opinion polling show how quantitative collection methods are used across different industries",
+                "Qualitative analysis methods include coding, thematic analysis, narrative analysis, content analysis, grounded theory, IPA, and matrix analysis",
+                "Quantitative analysis methods include descriptive statistics, inferential statistics, visualisation, regression, PCA, survival analysis, and machine learning",
+                "Strong answers should connect the type of data to the correct type of analysis and the kind of insight it produces",
+                "A university-style qualitative scenario is best analysed with techniques such as coding and thematic analysis, while a retention-style quantitative scenario is better analysed with descriptive statistics, charts, and regression or correlation analysis",
+                "Data type conversion includes turning qualitative responses into codes or scales, turning numerical patterns into categories or summaries, and integrating both through mixed-methods analysis",
+                "Good conversion preserves the meaning, validity, and usefulness of the original data",
+                "A Likert scale measures agreement, satisfaction, or perception using ordered response options such as strongly disagree to strongly agree",
+                "Likert scales are especially useful when subjective opinions need to be collected in a structured quantitative form for comparison and analysis",
+                "Exam answers should define each type clearly, give examples, and explain how the type affects analysis"
             ],
             "visual_elements": {
-                "diagrams": false,
-                "tables": true,
-                "highlighted_sections": true
+                "diagrams": True,
+                "tables": True,
+                "highlighted_sections": True
             }
         },
         {
@@ -32799,9 +36093,9 @@ The course uses real-world use case studies because business decisions are rarel
                 "Strong recommendations depend on measurable outcomes"
             ],
             "visual_elements": {
-                "diagrams": false,
-                "tables": true,
-                "highlighted_sections": true
+                "diagrams": False,
+                "tables": True,
+                "highlighted_sections": True
             }
         },
         {
@@ -32913,9 +36207,9 @@ The same business problem can use different decision techniques at different lev
                 "In real cases, teams often combine descriptive, predictive, heuristic, algorithmic, and optimization approaches"
             ],
             "visual_elements": {
-                "diagrams": false,
-                "tables": true,
-                "highlighted_sections": true
+                "diagrams": False,
+                "tables": True,
+                "highlighted_sections": True
             }
         },
         {
@@ -33072,9 +36366,9 @@ This shows why decision criteria matter. The best choice is not only about data,
                 "Expected payoff and expected loss of opportunity are strongest when probabilities are available"
             ],
             "visual_elements": {
-                "diagrams": false,
-                "tables": true,
-                "highlighted_sections": true
+                "diagrams": False,
+                "tables": True,
+                "highlighted_sections": True
             }
         }
     ]
@@ -34046,6 +37340,1384 @@ def evaluate_answer(question, correct_answer, user_answer):
         return response.choices[0].message.content
     except Exception as e:
         return f"Error evaluating answer: {str(e)}"
+
+
+def render_quantitative_collection_wizard():
+    base_key = "m2_l23_company_data_wizard"
+    step_key = f"{base_key}_step"
+    approach_key = f"{base_key}_approach"
+    selected_approach_key = f"{base_key}_selected_approach"
+    stored_values_key = f"{base_key}_stored_values"
+
+    def get_saved_value(key, default=""):
+        return st.session_state.get(stored_values_key, {}).get(
+            key,
+            st.session_state.get(key, default),
+        )
+
+    field_presets = {
+        "Quantitative": [
+            {
+                "Field name": "record_id",
+                "Business meaning": "Unique identifier for each record",
+                "Variable role": "Identifier",
+                "Capture format": "Text / ID",
+                "Source": "",
+                "Required": True,
+                "Sensitive": False,
+            },
+            {
+                "Field name": "event_date",
+                "Business meaning": "Date or timestamp for the observation",
+                "Variable role": "Time",
+                "Capture format": "Date / Time",
+                "Source": "",
+                "Required": True,
+                "Sensitive": False,
+            },
+            {
+                "Field name": "target_metric",
+                "Business meaning": "Main numeric outcome to analyse",
+                "Variable role": "Outcome",
+                "Capture format": "Number",
+                "Source": "",
+                "Required": True,
+                "Sensitive": False,
+            },
+        ],
+        "Qualitative": [
+            {
+                "Field name": "participant_id",
+                "Business meaning": "Unique identifier for each participant or source",
+                "Variable role": "Identifier",
+                "Capture format": "Text / ID",
+                "Source": "",
+                "Required": True,
+                "Sensitive": False,
+            },
+            {
+                "Field name": "collection_date",
+                "Business meaning": "Date the interview, focus group, observation, or document review took place",
+                "Variable role": "Context",
+                "Capture format": "Date / Time",
+                "Source": "",
+                "Required": True,
+                "Sensitive": False,
+            },
+            {
+                "Field name": "raw_response_or_notes",
+                "Business meaning": "Interview transcript, observation notes, or document extract",
+                "Variable role": "Primary evidence",
+                "Capture format": "Text",
+                "Source": "",
+                "Required": True,
+                "Sensitive": True,
+            },
+        ],
+        "Mixed methods": [
+            {
+                "Field name": "record_id",
+                "Business meaning": "Shared identifier across quantitative and qualitative evidence",
+                "Variable role": "Identifier",
+                "Capture format": "Text / ID",
+                "Source": "",
+                "Required": True,
+                "Sensitive": False,
+            },
+            {
+                "Field name": "event_date",
+                "Business meaning": "Date of interaction, response, or observation",
+                "Variable role": "Time",
+                "Capture format": "Date / Time",
+                "Source": "",
+                "Required": True,
+                "Sensitive": False,
+            },
+            {
+                "Field name": "target_metric",
+                "Business meaning": "Main quantitative measure",
+                "Variable role": "Outcome",
+                "Capture format": "Number",
+                "Source": "",
+                "Required": True,
+                "Sensitive": False,
+            },
+            {
+                "Field name": "raw_response_or_notes",
+                "Business meaning": "Text comments, interview notes, or other qualitative evidence",
+                "Variable role": "Primary evidence",
+                "Capture format": "Text",
+                "Source": "",
+                "Required": True,
+                "Sensitive": True,
+            },
+        ],
+    }
+
+    field_key_map = {
+        mode: f"{base_key}_{mode.lower().replace(' ', '_')}_fields"
+        for mode in field_presets
+    }
+
+    persistent_defaults = {
+        f"{base_key}_company_name": "",
+        f"{base_key}_industry": "",
+        f"{base_key}_department": "",
+        f"{base_key}_decision_owner": "",
+        f"{base_key}_primary_goal": "",
+        f"{base_key}_unit_of_analysis": "",
+        f"{base_key}_business_goal": "",
+        f"{base_key}_decision_question": "",
+        f"{base_key}_quant_objective": "Monitor trends over time",
+        f"{base_key}_quant_metric_type": "Continuous measurement",
+        f"{base_key}_quant_target_variable": "",
+        f"{base_key}_quant_granularity": "Per record",
+        f"{base_key}_quant_baseline_period": "",
+        f"{base_key}_quant_seasonality": "",
+        f"{base_key}_quant_comparison_groups": "",
+        f"{base_key}_quant_group_variable": "",
+        f"{base_key}_quant_intervention_name": "",
+        f"{base_key}_quant_intervention_start": "",
+        f"{base_key}_quant_control_group": "Yes",
+        f"{base_key}_quant_prediction_horizon": "",
+        f"{base_key}_quant_history_window": "",
+        f"{base_key}_quant_measurement_unit": "",
+        f"{base_key}_quant_count_definition": "",
+        f"{base_key}_quant_positive_case_definition": "",
+        f"{base_key}_quant_scale_definition": "",
+        f"{base_key}_qual_purpose": "Explore experiences",
+        f"{base_key}_qual_participant_group": "",
+        f"{base_key}_qual_output": "Themes",
+        f"{base_key}_qual_context": "",
+        f"{base_key}_qual_topics": "",
+        f"{base_key}_population": "",
+        f"{base_key}_data_owner": "",
+        f"{base_key}_quant_collection_method": "Existing business systems",
+        f"{base_key}_quant_refresh_frequency": "Real-time",
+        f"{base_key}_quant_sampling_approach": "All available records",
+        f"{base_key}_quant_source_systems": [],
+        f"{base_key}_quant_system_export": "",
+        f"{base_key}_quant_join_key": "",
+        f"{base_key}_quant_survey_sample_size": 100,
+        f"{base_key}_quant_survey_scale": "",
+        f"{base_key}_quant_survey_channel": "",
+        f"{base_key}_quant_experiment_independent": "",
+        f"{base_key}_quant_experiment_dependent": "",
+        f"{base_key}_quant_experiment_control": "Yes",
+        f"{base_key}_quant_measurement_tool": "",
+        f"{base_key}_quant_measurement_rule": "",
+        f"{base_key}_quant_secondary_source": "",
+        f"{base_key}_quant_secondary_period": "",
+        f"{base_key}_quant_tracking_tool": "",
+        f"{base_key}_quant_event_list": "",
+        f"{base_key}_qual_collection_method": "Interviews",
+        f"{base_key}_qual_sampling_approach": "Purposive sampling",
+        f"{base_key}_qual_sample_size_note": "",
+        f"{base_key}_qual_sources": [],
+        f"{base_key}_qual_interview_style": "Structured",
+        f"{base_key}_qual_interview_mode": "",
+        f"{base_key}_qual_interview_recorded": "Yes",
+        f"{base_key}_qual_focus_group_count": "",
+        f"{base_key}_qual_focus_group_size": "",
+        f"{base_key}_qual_focus_group_moderator": "",
+        f"{base_key}_qual_observation_setting": "",
+        f"{base_key}_qual_observation_duration": "",
+        f"{base_key}_qual_observation_protocol": "",
+        f"{base_key}_qual_document_types": "",
+        f"{base_key}_qual_document_range": "",
+        f"{base_key}_qual_ethnography_site": "",
+        f"{base_key}_qual_ethnography_period": "",
+        f"{base_key}_qual_narrative_prompt": "",
+        f"{base_key}_qual_narrative_recorded": "Yes",
+        f"{base_key}_qual_online_platforms": "",
+        f"{base_key}_qual_online_topics": "",
+        f"{base_key}_qual_online_public": "Yes",
+        f"{base_key}_quant_missing_values": "",
+        f"{base_key}_quant_outlier_plan": "",
+        f"{base_key}_quant_duplicate_plan": "",
+        f"{base_key}_qual_recording_plan": "",
+        f"{base_key}_qual_coding_plan": "",
+        f"{base_key}_qual_bias_plan": "",
+        f"{base_key}_mixed_quant_quality": "",
+        f"{base_key}_mixed_qual_recording": "",
+        f"{base_key}_mixed_integration_plan": "",
+        f"{base_key}_privacy_level": "Non-personal business data",
+        f"{base_key}_consent": "No",
+        f"{base_key}_anonymisation": "No",
+    }
+
+    if step_key not in st.session_state:
+        st.session_state[step_key] = 1
+    if approach_key not in st.session_state:
+        st.session_state[approach_key] = "Quantitative"
+    if selected_approach_key not in st.session_state:
+        st.session_state[selected_approach_key] = st.session_state[approach_key]
+    total_steps = 5
+    current_step = st.session_state[step_key]
+    step_field_suffixes = {
+        1: [
+            "company_name",
+            "industry",
+            "department",
+            "decision_owner",
+            "primary_goal",
+            "unit_of_analysis",
+            "business_goal",
+            "decision_question",
+        ],
+        2: [
+            "quant_objective",
+            "quant_metric_type",
+            "quant_target_variable",
+            "quant_granularity",
+            "quant_baseline_period",
+            "quant_seasonality",
+            "quant_comparison_groups",
+            "quant_group_variable",
+            "quant_intervention_name",
+            "quant_intervention_start",
+            "quant_control_group",
+            "quant_prediction_horizon",
+            "quant_history_window",
+            "quant_measurement_unit",
+            "quant_count_definition",
+            "quant_positive_case_definition",
+            "quant_scale_definition",
+            "qual_purpose",
+            "qual_participant_group",
+            "qual_output",
+            "qual_context",
+            "qual_topics",
+        ],
+        3: [
+            "population",
+            "data_owner",
+            "quant_collection_method",
+            "quant_refresh_frequency",
+            "quant_sampling_approach",
+            "quant_source_systems",
+            "quant_system_export",
+            "quant_join_key",
+            "quant_survey_sample_size",
+            "quant_survey_scale",
+            "quant_survey_channel",
+            "quant_experiment_independent",
+            "quant_experiment_dependent",
+            "quant_experiment_control",
+            "quant_measurement_tool",
+            "quant_measurement_rule",
+            "quant_secondary_source",
+            "quant_secondary_period",
+            "quant_tracking_tool",
+            "quant_event_list",
+            "qual_collection_method",
+            "qual_sampling_approach",
+            "qual_sample_size_note",
+            "qual_sources",
+            "qual_interview_style",
+            "qual_interview_mode",
+            "qual_interview_recorded",
+            "qual_focus_group_count",
+            "qual_focus_group_size",
+            "qual_focus_group_moderator",
+            "qual_observation_setting",
+            "qual_observation_duration",
+            "qual_observation_protocol",
+            "qual_document_types",
+            "qual_document_range",
+            "qual_ethnography_site",
+            "qual_ethnography_period",
+            "qual_narrative_prompt",
+            "qual_narrative_recorded",
+            "qual_online_platforms",
+            "qual_online_topics",
+            "qual_online_public",
+        ],
+        4: [
+            "quant_missing_values",
+            "quant_outlier_plan",
+            "quant_duplicate_plan",
+            "qual_recording_plan",
+            "qual_coding_plan",
+            "qual_bias_plan",
+            "mixed_quant_quality",
+            "mixed_qual_recording",
+            "mixed_integration_plan",
+            "privacy_level",
+            "consent",
+            "anonymisation",
+        ],
+    }
+    step_sync_keys = {
+        step: {f"{base_key}_{suffix}" for suffix in suffixes}
+        for step, suffixes in step_field_suffixes.items()
+    }
+    active_sync_keys = step_sync_keys.get(current_step, set())
+    if stored_values_key not in st.session_state:
+        st.session_state[stored_values_key] = dict(persistent_defaults)
+    for key, default_value in persistent_defaults.items():
+        if key in active_sync_keys and key in st.session_state:
+            st.session_state[stored_values_key][key] = st.session_state[key]
+    for key, default_value in persistent_defaults.items():
+        if key not in st.session_state or key in active_sync_keys:
+            st.session_state[key] = st.session_state[stored_values_key].get(key, default_value)
+
+    for mode, storage_key in field_key_map.items():
+        if storage_key not in st.session_state:
+            st.session_state[storage_key] = [dict(item) for item in field_presets[mode]]
+
+    step_titles = {
+        1: "Company and Goal",
+        2: "Research Design",
+        3: "Collection Method",
+        4: "Data Structure and Quality",
+        5: "Summary and Checklist",
+    }
+
+    st.caption("This wizard helps you plan what company data to collect, how to collect it, and what questions to clarify before analysis starts.")
+    st.progress(current_step / total_steps)
+    st.markdown(f"**Step {current_step} of {total_steps}: {step_titles[current_step]}**")
+
+    if current_step == 1:
+        col1, col2 = st.columns(2)
+        with col1:
+            st.text_input("Company name", key=f"{base_key}_company_name")
+            st.text_input("Industry", key=f"{base_key}_industry")
+            st.text_input("Department or team asking for the analysis", key=f"{base_key}_department")
+        with col2:
+            st.text_input("Decision owner", key=f"{base_key}_decision_owner")
+            st.text_input("Primary KPI, outcome, or research focus", key=f"{base_key}_primary_goal")
+            st.text_input("Unit of analysis (customer, order, employee, store, machine, etc.)", key=f"{base_key}_unit_of_analysis")
+
+        st.radio(
+            "What kind of data collection plan are you building?",
+            ["Quantitative", "Qualitative", "Mixed methods"],
+            horizontal=True,
+            key=approach_key,
+        )
+        st.session_state[selected_approach_key] = st.session_state[approach_key]
+        st.text_area(
+            "Business goal",
+            key=f"{base_key}_business_goal",
+            placeholder="Example: Reduce churn, understand customer complaints, or combine both measurable patterns and customer explanations.",
+            height=110,
+        )
+        st.text_area(
+            "What business decision should this data support?",
+            key=f"{base_key}_decision_question",
+            placeholder="Example: Decide whether to improve onboarding, revise customer support, or redesign a process.",
+            height=100,
+        )
+
+    approach = st.session_state.get(selected_approach_key, st.session_state.get(approach_key, "Quantitative"))
+
+    if current_step == 2:
+        if approach in {"Quantitative", "Mixed methods"}:
+            st.markdown("**Quantitative design**")
+            col1, col2 = st.columns(2)
+            with col1:
+                quant_objective = st.selectbox(
+                    "What is the main quantitative objective?",
+                    [
+                        "Monitor trends over time",
+                        "Compare groups",
+                        "Evaluate an intervention",
+                        "Predict a future outcome",
+                    ],
+                    key=f"{base_key}_quant_objective",
+                )
+                quant_metric_type = st.selectbox(
+                    "What type of quantitative variable matters most?",
+                    [
+                        "Continuous measurement",
+                        "Discrete count",
+                        "Binary outcome",
+                        "Ordinal scale",
+                        "Monetary value",
+                        "Time-based metric",
+                    ],
+                    key=f"{base_key}_quant_metric_type",
+                )
+            with col2:
+                st.text_input("Target variable or main metric name", key=f"{base_key}_quant_target_variable")
+                st.selectbox(
+                    "Preferred reporting granularity",
+                    ["Per record", "Hourly", "Daily", "Weekly", "Monthly", "Quarterly"],
+                    key=f"{base_key}_quant_granularity",
+                )
+
+            if quant_objective == "Monitor trends over time":
+                st.text_input("Baseline period to compare against", key=f"{base_key}_quant_baseline_period")
+                st.text_input("Seasonality or cycle to watch for", key=f"{base_key}_quant_seasonality")
+            elif quant_objective == "Compare groups":
+                st.text_input("Which groups will be compared?", key=f"{base_key}_quant_comparison_groups")
+                st.text_input("What variable defines the groups?", key=f"{base_key}_quant_group_variable")
+            elif quant_objective == "Evaluate an intervention":
+                st.text_input("What change or intervention is being tested?", key=f"{base_key}_quant_intervention_name")
+                st.text_input("When did the intervention start?", key=f"{base_key}_quant_intervention_start")
+                st.radio(
+                    "Do you have a control group?",
+                    ["Yes", "No"],
+                    horizontal=True,
+                    key=f"{base_key}_quant_control_group",
+                )
+            elif quant_objective == "Predict a future outcome":
+                st.text_input("Prediction horizon", key=f"{base_key}_quant_prediction_horizon", placeholder="Example: 30 days ahead")
+                st.text_input("How much historical data is available?", key=f"{base_key}_quant_history_window")
+
+            if quant_metric_type in {"Continuous measurement", "Monetary value", "Time-based metric"}:
+                st.text_input("Unit, currency, or time definition", key=f"{base_key}_quant_measurement_unit")
+            elif quant_metric_type == "Discrete count":
+                st.text_input("What exact event is being counted?", key=f"{base_key}_quant_count_definition")
+            elif quant_metric_type == "Binary outcome":
+                st.text_input("What counts as a positive case?", key=f"{base_key}_quant_positive_case_definition")
+            elif quant_metric_type == "Ordinal scale":
+                st.text_input("Scale definition", key=f"{base_key}_quant_scale_definition", placeholder="Example: 1-5 where 5 = very satisfied")
+
+        if approach in {"Qualitative", "Mixed methods"}:
+            st.markdown("**Qualitative design**")
+            col1, col2 = st.columns(2)
+            with col1:
+                st.selectbox(
+                    "What is the main qualitative purpose?",
+                    [
+                        "Explore experiences",
+                        "Understand motivations and attitudes",
+                        "Study group perspectives",
+                        "Observe behaviour in context",
+                        "Interpret stories and narratives",
+                        "Analyse documents or existing text",
+                    ],
+                    key=f"{base_key}_qual_purpose",
+                )
+                st.text_input("Main participant or source group", key=f"{base_key}_qual_participant_group")
+            with col2:
+                st.selectbox(
+                    "Expected qualitative output",
+                    ["Themes", "Categories", "Quotes and insights", "Behavioural patterns", "Journey or pain points"],
+                    key=f"{base_key}_qual_output",
+                )
+                st.text_input("Setting or context", key=f"{base_key}_qual_context")
+
+            st.text_area(
+                "Main themes, prompts, or topics to explore",
+                key=f"{base_key}_qual_topics",
+                placeholder="Example: onboarding confusion, trust in the service, reasons for churn, emotional reactions to a treatment.",
+                height=100,
+            )
+
+    elif current_step == 3:
+        st.text_input("Who or what should be included in the data collection?", key=f"{base_key}_population")
+        st.text_input("Data owner or contact person", key=f"{base_key}_data_owner")
+
+        if approach in {"Quantitative", "Mixed methods"}:
+            st.markdown("**Quantitative collection path**")
+            col1, col2 = st.columns(2)
+            with col1:
+                quant_collection_method = st.selectbox(
+                    "How are you going to collect the quantitative data?",
+                    [
+                        "Existing business systems",
+                        "Structured survey",
+                        "Experiments",
+                        "Measurements and assessments",
+                        "Secondary data analysis",
+                        "Social media and web analytics",
+                    ],
+                    key=f"{base_key}_quant_collection_method",
+                )
+                st.selectbox(
+                    "Refresh frequency",
+                    ["Real-time", "Hourly", "Daily", "Weekly", "Monthly", "One-off"],
+                    key=f"{base_key}_quant_refresh_frequency",
+                )
+            with col2:
+                st.selectbox(
+                    "Sampling approach",
+                    ["All available records", "Random sample", "Stratified sample", "Convenience sample", "Manual selection"],
+                    key=f"{base_key}_quant_sampling_approach",
+                )
+                st.multiselect(
+                    "Relevant quantitative sources",
+                    [
+                        "CRM",
+                        "ERP",
+                        "Point-of-sale",
+                        "Finance system",
+                        "HR system",
+                        "Support or ticketing system",
+                        "Website analytics",
+                        "Mobile app analytics",
+                        "Survey platform",
+                        "Data warehouse",
+                        "Spreadsheet files",
+                        "External API",
+                    ],
+                    key=f"{base_key}_quant_source_systems",
+                )
+
+            if quant_collection_method == "Existing business systems":
+                st.text_input("Main system or export format", key=f"{base_key}_quant_system_export")
+                st.text_input("Join key or unique identifier across systems", key=f"{base_key}_quant_join_key")
+            elif quant_collection_method == "Structured survey":
+                st.number_input("Target sample size", min_value=1, value=100, step=10, key=f"{base_key}_quant_survey_sample_size")
+                st.text_input("Response scale or question format", key=f"{base_key}_quant_survey_scale")
+                st.text_input("Collection channel", key=f"{base_key}_quant_survey_channel", placeholder="Email, app, website, phone")
+            elif quant_collection_method == "Experiments":
+                st.text_input("Independent variable being manipulated", key=f"{base_key}_quant_experiment_independent")
+                st.text_input("Dependent variable being measured", key=f"{base_key}_quant_experiment_dependent")
+                st.radio("Will there be a control group?", ["Yes", "No"], horizontal=True, key=f"{base_key}_quant_experiment_control")
+            elif quant_collection_method == "Measurements and assessments":
+                st.text_input("Instrument, device, or assessment tool", key=f"{base_key}_quant_measurement_tool")
+                st.text_input("Calibration, scoring, or measurement rule", key=f"{base_key}_quant_measurement_rule")
+            elif quant_collection_method == "Secondary data analysis":
+                st.text_input("Dataset or official source name", key=f"{base_key}_quant_secondary_source")
+                st.text_input("Coverage period", key=f"{base_key}_quant_secondary_period")
+            elif quant_collection_method == "Social media and web analytics":
+                st.text_input("Analytics platform or social tool", key=f"{base_key}_quant_tracking_tool")
+                st.text_input("Important metrics or events to track", key=f"{base_key}_quant_event_list")
+
+        if approach in {"Qualitative", "Mixed methods"}:
+            st.markdown("**Qualitative collection path**")
+            col3, col4 = st.columns(2)
+            with col3:
+                qual_method = st.selectbox(
+                    "How are you going to collect the qualitative data?",
+                    [
+                        "Interviews",
+                        "Focus groups",
+                        "Observations",
+                        "Document analysis",
+                        "Ethnography",
+                        "Narrative inquiry",
+                        "Online research",
+                    ],
+                    key=f"{base_key}_qual_collection_method",
+                )
+                st.selectbox(
+                    "Qualitative sampling approach",
+                    ["Purposive sampling", "Snowball sampling", "Quota sampling", "Convenience sampling", "Expert selection"],
+                    key=f"{base_key}_qual_sampling_approach",
+                )
+            with col4:
+                st.text_input("How many participants, groups, or sources are expected?", key=f"{base_key}_qual_sample_size_note")
+                st.multiselect(
+                    "Relevant qualitative sources",
+                    [
+                        "Interview participants",
+                        "Customer support transcripts",
+                        "Internal reports",
+                        "Open-ended survey responses",
+                        "Observation notes",
+                        "Public online discussions",
+                        "Internal documents",
+                    ],
+                    key=f"{base_key}_qual_sources",
+                )
+
+            if qual_method == "Interviews":
+                st.selectbox("Interview style", ["Structured", "Semi-structured", "Unstructured"], key=f"{base_key}_qual_interview_style")
+                st.text_input("Interview mode", key=f"{base_key}_qual_interview_mode", placeholder="In person, phone, video call")
+                st.radio("Will interviews be recorded?", ["Yes", "No"], horizontal=True, key=f"{base_key}_qual_interview_recorded")
+            elif qual_method == "Focus groups":
+                st.text_input("Number of focus groups", key=f"{base_key}_qual_focus_group_count")
+                st.text_input("Participants per group", key=f"{base_key}_qual_focus_group_size")
+                st.text_input("Moderator plan", key=f"{base_key}_qual_focus_group_moderator")
+            elif qual_method == "Observations":
+                st.text_input("Observation setting", key=f"{base_key}_qual_observation_setting")
+                st.text_input("Observation duration or schedule", key=f"{base_key}_qual_observation_duration")
+                st.text_input("Observation protocol", key=f"{base_key}_qual_observation_protocol")
+            elif qual_method == "Document analysis":
+                st.text_input("Documents or sources to analyse", key=f"{base_key}_qual_document_types")
+                st.text_input("Date range or inclusion rule", key=f"{base_key}_qual_document_range")
+            elif qual_method == "Ethnography":
+                st.text_input("Field site or community", key=f"{base_key}_qual_ethnography_site")
+                st.text_input("Planned immersion period", key=f"{base_key}_qual_ethnography_period")
+            elif qual_method == "Narrative inquiry":
+                st.text_input("Narrative prompt or story trigger", key=f"{base_key}_qual_narrative_prompt")
+                st.radio("Will narratives be recorded?", ["Yes", "No"], horizontal=True, key=f"{base_key}_qual_narrative_recorded")
+            elif qual_method == "Online research":
+                st.text_input("Platforms or communities to study", key=f"{base_key}_qual_online_platforms")
+                st.text_input("Search terms, hashtags, or topics", key=f"{base_key}_qual_online_topics")
+                st.radio("Is the content public?", ["Yes", "No", "Mixed"], horizontal=True, key=f"{base_key}_qual_online_public")
+
+    elif current_step == 4:
+        active_fields_key = field_key_map[approach]
+        st.markdown("**Plan the data or information you need from the company.**")
+        edited_fields = st.data_editor(
+            pd.DataFrame(st.session_state[active_fields_key]),
+            num_rows="dynamic",
+            use_container_width=True,
+            key=f"{base_key}_{approach.lower().replace(' ', '_')}_fields_editor",
+        )
+        st.session_state[active_fields_key] = edited_fields.to_dict("records")
+
+        if approach == "Quantitative":
+            col1, col2 = st.columns(2)
+            with col1:
+                st.text_area(
+                    "How will you handle missing values?",
+                    key=f"{base_key}_quant_missing_values",
+                    placeholder="Example: flag blanks, investigate the source, and only impute values where justified.",
+                    height=90,
+                )
+                st.text_area(
+                    "How will you detect and handle outliers?",
+                    key=f"{base_key}_quant_outlier_plan",
+                    placeholder="Example: use box plots, thresholds, and business rules before deciding whether to keep or correct values.",
+                    height=90,
+                )
+            with col2:
+                st.text_area(
+                    "How will you deal with duplicates or inconsistent records?",
+                    key=f"{base_key}_quant_duplicate_plan",
+                    placeholder="Example: use record_id plus timestamp as a duplicate rule and document all removals.",
+                    height=90,
+                )
+                st.selectbox(
+                    "Privacy level of this dataset",
+                    ["Non-personal business data", "Personal data", "Sensitive personal data"],
+                    key=f"{base_key}_privacy_level",
+                )
+        elif approach == "Qualitative":
+            col1, col2 = st.columns(2)
+            with col1:
+                st.text_area(
+                    "How will responses, notes, or transcripts be captured?",
+                    key=f"{base_key}_qual_recording_plan",
+                    placeholder="Example: audio recording plus written notes, then transcription into a secure folder.",
+                    height=90,
+                )
+                st.text_area(
+                    "How will you code or analyse themes?",
+                    key=f"{base_key}_qual_coding_plan",
+                    placeholder="Example: open coding followed by thematic grouping and quote selection.",
+                    height=90,
+                )
+            with col2:
+                st.text_area(
+                    "How will you reduce bias and protect confidentiality?",
+                    key=f"{base_key}_qual_bias_plan",
+                    placeholder="Example: use a clear interview guide, anonymise names, and separate raw data from final reporting.",
+                    height=90,
+                )
+                st.selectbox(
+                    "Privacy level of this dataset",
+                    ["Non-personal business data", "Personal data", "Sensitive personal data"],
+                    key=f"{base_key}_privacy_level",
+                )
+        else:
+            col1, col2 = st.columns(2)
+            with col1:
+                st.text_area(
+                    "How will you handle missing values, outliers, and duplicates in the quantitative part?",
+                    key=f"{base_key}_mixed_quant_quality",
+                    placeholder="Example: define clear numeric validation rules before analysis.",
+                    height=100,
+                )
+                st.text_area(
+                    "How will responses, notes, or transcripts be captured in the qualitative part?",
+                    key=f"{base_key}_mixed_qual_recording",
+                    placeholder="Example: record interviews, transcribe them, and store them securely.",
+                    height=100,
+                )
+            with col2:
+                st.text_area(
+                    "How will you integrate the qualitative and quantitative evidence?",
+                    key=f"{base_key}_mixed_integration_plan",
+                    placeholder="Example: compare survey scores with interview themes for the same customer segment.",
+                    height=100,
+                )
+                st.selectbox(
+                    "Privacy level of this dataset",
+                    ["Non-personal business data", "Personal data", "Sensitive personal data"],
+                    key=f"{base_key}_privacy_level",
+                )
+
+        col3, col4 = st.columns(2)
+        with col3:
+            st.radio("Is informed consent needed?", ["Yes", "No", "Not sure"], horizontal=True, key=f"{base_key}_consent")
+        with col4:
+            st.radio("Should the data be anonymised or pseudonymised?", ["Yes", "No", "Not sure"], horizontal=True, key=f"{base_key}_anonymisation")
+
+        st.markdown("**Optional: upload a sample company file to compare it with your plan.**")
+        allowed_types = ["csv"] if approach == "Quantitative" else ["csv", "txt"]
+        uploaded_file = st.file_uploader("Upload sample file", type=allowed_types, key=f"{base_key}_{approach.lower().replace(' ', '_')}_file_upload")
+        if uploaded_file is not None:
+            try:
+                file_name = uploaded_file.name.lower()
+                if file_name.endswith(".csv"):
+                    uploaded_df = pd.read_csv(uploaded_file)
+                    st.dataframe(uploaded_df.head(10), use_container_width=True)
+                    first_column_name = list(edited_fields.columns)[0]
+                    planned_names = {
+                        str(item.get(first_column_name, "")).strip()
+                        for item in st.session_state[active_fields_key]
+                        if str(item.get(first_column_name, "")).strip()
+                    }
+                    uploaded_columns = set(uploaded_df.columns.astype(str))
+                    missing_columns = sorted(planned_names - uploaded_columns)
+                    extra_columns = sorted(uploaded_columns - planned_names)
+                    col_a, col_b = st.columns(2)
+                    with col_a:
+                        st.markdown("**Missing from uploaded CSV**")
+                        if missing_columns:
+                            for column_name in missing_columns:
+                                st.markdown(f"- {column_name}")
+                        else:
+                            st.markdown("All planned items are present in the uploaded sample.")
+                    with col_b:
+                        st.markdown("**Extra columns in uploaded CSV**")
+                        if extra_columns:
+                            for column_name in extra_columns:
+                                st.markdown(f"- {column_name}")
+                        else:
+                            st.markdown("No extra columns found beyond the current plan.")
+                else:
+                    preview_text = uploaded_file.getvalue().decode("utf-8", errors="ignore")
+                    st.text_area("Text preview", value=preview_text[:1500], height=220)
+            except Exception as exc:
+                st.warning(f"Could not preview the uploaded file: {exc}")
+
+    elif current_step == 5:
+        active_fields_key = field_key_map[approach]
+        company_name = get_saved_value(f"{base_key}_company_name", "").strip() or "the company"
+        business_goal = get_saved_value(f"{base_key}_business_goal", "").strip()
+        decision_question = get_saved_value(f"{base_key}_decision_question", "").strip()
+        primary_goal = get_saved_value(f"{base_key}_primary_goal", "")
+        unit_of_analysis = get_saved_value(f"{base_key}_unit_of_analysis", "")
+        quant_objective = get_saved_value(f"{base_key}_quant_objective", "")
+        quant_metric_type = get_saved_value(f"{base_key}_quant_metric_type", "")
+        quant_collection_method = get_saved_value(f"{base_key}_quant_collection_method", "")
+        qual_collection_method = get_saved_value(f"{base_key}_qual_collection_method", "")
+        planned_items = st.session_state.get(active_fields_key, [])
+
+        recommended_items = []
+        if approach in {"Quantitative", "Mixed methods"}:
+            recommended_items.extend(["record_id", "event_date"])
+            if unit_of_analysis:
+                recommended_items.append(f"{re.sub(r'[^a-z0-9]+', '_', unit_of_analysis.lower()).strip('_')}_id")
+            if primary_goal:
+                recommended_items.append(re.sub(r'[^a-z0-9]+', '_', primary_goal.lower()).strip('_'))
+            if quant_objective == "Compare groups":
+                recommended_items.append("group_label")
+            elif quant_objective == "Evaluate an intervention":
+                recommended_items.extend(["before_after_flag", "intervention_group"])
+            elif quant_objective == "Predict a future outcome":
+                recommended_items.extend(["target_label", "feature_snapshot_date"])
+            elif quant_objective == "Monitor trends over time":
+                recommended_items.append("time_period")
+
+        if approach in {"Qualitative", "Mixed methods"}:
+            recommended_items.extend(["participant_id", "collection_date", "collection_method", "raw_response_or_notes", "consent_status", "theme_code"])
+
+        relevant_questions = [
+            "What exact business decision should this data support?",
+            "How is success defined for this project?",
+            "Who owns the data, and who can confirm the definitions?",
+            "What access permissions or ethical approvals are needed?",
+        ]
+
+        if approach in {"Quantitative", "Mixed methods"}:
+            relevant_questions.extend([
+                "What is the unique key for each quantitative record?",
+                "How often will the numeric data be refreshed, and how current does it need to be?",
+            ])
+            if quant_collection_method == "Structured survey":
+                relevant_questions.extend([
+                    "What question wording and scale will be used?",
+                    "What response rate is acceptable?",
+                    "How will non-response bias be checked?",
+                ])
+            elif quant_collection_method == "Existing business systems":
+                relevant_questions.extend([
+                    "Which systems hold the data, and can they be joined reliably?",
+                    "Which field is the common join key across systems?",
+                ])
+            elif quant_collection_method == "Experiments":
+                relevant_questions.extend([
+                    "How will random assignment and control conditions be handled?",
+                    "What other factors could affect the outcome besides the intervention?",
+                ])
+            elif quant_collection_method == "Measurements and assessments":
+                relevant_questions.extend([
+                    "What instrument or sensor will be used, and is it calibrated?",
+                    "How will measurement consistency be maintained?",
+                ])
+            elif quant_collection_method == "Secondary data analysis":
+                relevant_questions.extend([
+                    "Who collected the original data and for what purpose?",
+                    "Does the existing dataset really fit the current question?",
+                ])
+            elif quant_collection_method == "Social media and web analytics":
+                relevant_questions.extend([
+                    "Which metrics actually matter for the business question?",
+                    "How are bot traffic, noise, or duplicate interactions handled?",
+                ])
+
+            if quant_metric_type in {"Continuous measurement", "Monetary value", "Time-based metric"}:
+                relevant_questions.extend([
+                    "What unit, currency, or time definition should be used consistently?",
+                    "What range of values is realistic before a value is treated as suspicious?",
+                ])
+            elif quant_metric_type == "Discrete count":
+                relevant_questions.extend([
+                    "What exact event is being counted, and when does the count reset?",
+                    "How will repeated events or duplicates be handled?",
+                ])
+            elif quant_metric_type == "Binary outcome":
+                relevant_questions.extend([
+                    "What exactly counts as a positive case?",
+                    "How common is the positive case, and is class imbalance a risk?",
+                ])
+            elif quant_metric_type == "Ordinal scale":
+                relevant_questions.extend([
+                    "What does each scale point mean?",
+                    "Will the scale be treated as ordered categories or as near-numeric scores?",
+                ])
+
+        if approach in {"Qualitative", "Mixed methods"}:
+            relevant_questions.extend([
+                "Who should be interviewed, observed, or included, and why are they relevant?",
+                "What consent, confidentiality, and storage rules are needed for notes, recordings, or transcripts?",
+                "What prompts or themes should guide the qualitative collection?",
+            ])
+            if qual_collection_method == "Interviews":
+                relevant_questions.extend([
+                    "Should the interviews be structured, semi-structured, or unstructured?",
+                    "Will interviews be recorded and transcribed?",
+                ])
+            elif qual_collection_method == "Focus groups":
+                relevant_questions.extend([
+                    "How many groups are needed, and who should be grouped together?",
+                    "Who will moderate the discussion and manage group dynamics?",
+                ])
+            elif qual_collection_method == "Observations":
+                relevant_questions.extend([
+                    "What setting will be observed, and for how long?",
+                    "How will observation notes be structured to reduce bias?",
+                ])
+            elif qual_collection_method == "Document analysis":
+                relevant_questions.extend([
+                    "Which documents are in scope, and what is the inclusion rule?",
+                    "How will relevant excerpts be coded and compared?",
+                ])
+            elif qual_collection_method == "Ethnography":
+                relevant_questions.extend([
+                    "How much immersion is realistic and ethically appropriate?",
+                    "What role will the researcher take in the field?",
+                ])
+            elif qual_collection_method == "Narrative inquiry":
+                relevant_questions.extend([
+                    "What story prompts will help participants reflect deeply?",
+                    "How will narratives be interpreted without losing context?",
+                ])
+            elif qual_collection_method == "Online research":
+                relevant_questions.extend([
+                    "Is the online content public, private, or ethically sensitive?",
+                    "Which platforms, keywords, or communities are actually relevant?",
+                ])
+
+        summary_payload = {
+            "company_name": get_saved_value(f"{base_key}_company_name", ""),
+            "industry": get_saved_value(f"{base_key}_industry", ""),
+            "department": get_saved_value(f"{base_key}_department", ""),
+            "decision_owner": get_saved_value(f"{base_key}_decision_owner", ""),
+            "business_goal": get_saved_value(f"{base_key}_business_goal", ""),
+            "decision_question": get_saved_value(f"{base_key}_decision_question", ""),
+            "approach": approach,
+            "primary_goal": primary_goal,
+            "unit_of_analysis": unit_of_analysis,
+            "population": get_saved_value(f"{base_key}_population", ""),
+            "data_owner": get_saved_value(f"{base_key}_data_owner", ""),
+            "quantitative_design": {
+                "objective": get_saved_value(f"{base_key}_quant_objective", ""),
+                "metric_type": get_saved_value(f"{base_key}_quant_metric_type", ""),
+                "target_variable": get_saved_value(f"{base_key}_quant_target_variable", ""),
+                "granularity": get_saved_value(f"{base_key}_quant_granularity", ""),
+                "collection_method": get_saved_value(f"{base_key}_quant_collection_method", ""),
+                "sampling_approach": get_saved_value(f"{base_key}_quant_sampling_approach", ""),
+                "refresh_frequency": get_saved_value(f"{base_key}_quant_refresh_frequency", ""),
+                "source_systems": get_saved_value(f"{base_key}_quant_source_systems", []),
+            },
+            "qualitative_design": {
+                "purpose": get_saved_value(f"{base_key}_qual_purpose", ""),
+                "participant_group": get_saved_value(f"{base_key}_qual_participant_group", ""),
+                "expected_output": get_saved_value(f"{base_key}_qual_output", ""),
+                "context": get_saved_value(f"{base_key}_qual_context", ""),
+                "topics": get_saved_value(f"{base_key}_qual_topics", ""),
+                "collection_method": get_saved_value(f"{base_key}_qual_collection_method", ""),
+                "sampling_approach": get_saved_value(f"{base_key}_qual_sampling_approach", ""),
+                "sources": get_saved_value(f"{base_key}_qual_sources", []),
+            },
+            "planned_items": planned_items,
+            "privacy_level": get_saved_value(f"{base_key}_privacy_level", ""),
+            "consent": get_saved_value(f"{base_key}_consent", ""),
+            "anonymisation": get_saved_value(f"{base_key}_anonymisation", ""),
+        }
+
+        filled_items = [
+            bool(get_saved_value(f"{base_key}_company_name", "").strip()),
+            bool(get_saved_value(f"{base_key}_business_goal", "").strip()),
+            bool(primary_goal.strip()),
+            bool(get_saved_value(f"{base_key}_decision_question", "").strip()),
+            bool(get_saved_value(f"{base_key}_population", "").strip()),
+            bool(get_saved_value(f"{base_key}_data_owner", "").strip()),
+            len(st.session_state.get(active_fields_key, [])) > 0,
+        ]
+        completion_score = sum(filled_items)
+
+        item_name_key = "Field name" if approach in {"Quantitative", "Mixed methods"} else "Field name"
+        planned_names = [
+            str(item.get(item_name_key, "")).strip()
+            for item in planned_items
+            if str(item.get(item_name_key, "")).strip()
+        ]
+        planned_names_text = ", ".join(planned_names[:8]) if planned_names else "the key fields or evidence items listed in the plan"
+
+        if approach == "Quantitative":
+            exam_answer_draft = (
+                f"In this scenario, I would use a quantitative data collection approach for {company_name}. "
+                f"The goal is to {business_goal or 'support the stated business goal with measurable evidence'}. "
+                f"I would collect structured numerical data using {quant_collection_method.lower() if quant_collection_method else 'a suitable quantitative method'}, "
+                f"because this makes it possible to measure patterns, compare results, and carry out statistical analysis. "
+                f"The main unit of analysis would be {unit_of_analysis or 'the relevant business entity'}, and the main metric or outcome would be {primary_goal or 'the target KPI'}. "
+                f"I would make sure the dataset includes items such as {planned_names_text}. "
+                f"I would also define the sampling approach, check for missing values, duplicates, and outliers, and apply privacy, consent, and anonymisation rules where needed. "
+                f"This would help the company answer the decision question: {decision_question or 'what action should be taken based on the data'}."
+            )
+            exam_answer_steps = [
+                "State that a quantitative approach is suitable because the problem needs measurable numerical evidence.",
+                "Name the collection method and explain why it fits the business goal.",
+                "Identify the unit of analysis, KPI, and the main variables to collect.",
+                "Mention sampling, data quality checks, and privacy or consent requirements.",
+                "Finish by linking the data collection plan back to the business decision.",
+            ]
+        elif approach == "Qualitative":
+            qual_purpose = get_saved_value(f"{base_key}_qual_purpose", "")
+            exam_answer_draft = (
+                f"In this scenario, I would use a qualitative data collection approach for {company_name}. "
+                f"The goal is to {business_goal or 'understand the problem in more depth from human experiences, opinions, or behaviour'}. "
+                f"I would collect rich descriptive evidence through {qual_collection_method.lower() if qual_collection_method else 'a suitable qualitative method'}, "
+                f"because this helps explain motivations, attitudes, meanings, and context. "
+                f"The main focus would be {qual_purpose.lower() if qual_purpose else 'understanding the relevant experiences or perspectives'}, "
+                f"and I would collect items such as {planned_names_text}. "
+                f"I would make sure there is a clear participant or source-selection strategy, a guide for prompts or themes, and a plan for confidentiality, consent, and secure handling of notes, recordings, or transcripts. "
+                f"After collection, I would analyse the material through coding and thematic interpretation so the company can answer the decision question: {decision_question or 'what action should be taken based on the evidence'}."
+            )
+            exam_answer_steps = [
+                "State that a qualitative approach is suitable because the scenario needs experiences, explanations, or context.",
+                "Name the qualitative method and explain why it fits the research goal.",
+                "Identify who or what will be included and what evidence will be captured.",
+                "Mention prompts or themes, confidentiality, consent, and secure storage.",
+                "Finish by explaining that coding and thematic analysis will support the business decision.",
+            ]
+        else:
+            exam_answer_draft = (
+                f"In this scenario, I would use a mixed-methods data collection approach for {company_name}. "
+                f"The goal is to {business_goal or 'combine measurable patterns with deeper explanation and context'}. "
+                f"I would collect quantitative data using {quant_collection_method.lower() if quant_collection_method else 'a suitable quantitative method'} "
+                f"and qualitative data using {qual_collection_method.lower() if qual_collection_method else 'a suitable qualitative method'}. "
+                f"This is useful because the quantitative data shows the size, frequency, or trend of the problem, while the qualitative data helps explain why it happens. "
+                f"The plan should include items such as {planned_names_text}. "
+                f"I would also define how the two data types will be linked, how data quality and ethics will be handled, and how the combined findings will support the decision question: {decision_question or 'what action should be taken based on the evidence'}."
+            )
+            exam_answer_steps = [
+                "State that mixed methods are suitable because the exam scenario needs both measurable evidence and explanation.",
+                "Name the quantitative and qualitative collection methods and explain the role of each.",
+                "Identify the key variables, evidence items, and how the two data types will be linked.",
+                "Mention data quality, confidentiality, consent, and integration of findings.",
+                "Finish by explaining how the combined evidence supports stronger decision-making.",
+            ]
+
+        st.metric("Plan completeness", f"{completion_score}/7")
+        st.markdown(f"**Company:** {get_saved_value(f'{base_key}_company_name', '') or 'Not filled in yet'}")
+        st.markdown(f"**Recommended items to make sure you include:** {', '.join(dict.fromkeys([item for item in recommended_items if item]))}")
+
+        st.markdown("**Important questions to ask the company before collecting the data**")
+        for question in dict.fromkeys(relevant_questions):
+            st.markdown(f"- {question}")
+
+        st.markdown("**How this helps in the exam**")
+        for step in exam_answer_steps:
+            st.markdown(f"- {step}")
+
+        st.markdown("**Exam-ready answer draft**")
+        st.text_area(
+            "Use this as a model answer structure",
+            value=exam_answer_draft,
+            height=220,
+        )
+
+        st.markdown("**Quick summary of your current plan**")
+        st.json(summary_payload, expanded=False)
+
+        file_slug = approach.lower().replace(" ", "_")
+        st.download_button(
+            "Download wizard summary as JSON",
+            data=json.dumps(summary_payload, indent=2, ensure_ascii=False, default=str),
+            file_name=f"{file_slug}_data_collection_plan.json",
+            mime="application/json",
+            key=f"{base_key}_download_json",
+        )
+        st.download_button(
+            "Download exam answer draft as TXT",
+            data=exam_answer_draft,
+            file_name=f"{file_slug}_exam_answer_draft.txt",
+            mime="text/plain",
+            key=f"{base_key}_download_exam_answer",
+        )
+
+    back_col, next_col = st.columns(2)
+    with back_col:
+        if current_step > 1 and st.button("◀ Back", key=f"{base_key}_back_{current_step}"):
+            st.session_state[step_key] = current_step - 1
+            st.rerun()
+    with next_col:
+        if current_step < total_steps:
+            if st.button("Next ▶", key=f"{base_key}_next_{current_step}", type="primary"):
+                st.session_state[step_key] = current_step + 1
+                st.rerun()
+        else:
+            if st.button("Start over", key=f"{base_key}_restart", type="primary"):
+                st.session_state[step_key] = 1
+                st.rerun()
+
+
+def render_data_types_exam_solver():
+    base_key = "m2_l23_exam_solver"
+    wizard_base_key = "m2_l23_company_data_wizard"
+    wizard_store = st.session_state.get(f"{wizard_base_key}_stored_values", {})
+
+    def get_wizard_default(field_name, default=""):
+        session_key = f"{wizard_base_key}_{field_name}"
+        return wizard_store.get(
+            session_key,
+            st.session_state.get(session_key, default),
+        )
+
+    default_company = get_wizard_default("company_name", "")
+    default_goal = get_wizard_default("business_goal", "")
+    default_decision = get_wizard_default("decision_question", "")
+    default_population = get_wizard_default("population", "")
+    default_unit = get_wizard_default("unit_of_analysis", "")
+    default_primary_goal = get_wizard_default("primary_goal", "")
+    default_approach = st.session_state.get(f"{wizard_base_key}_selected_approach", get_wizard_default("approach", "Quantitative"))
+
+    st.caption("Paste the exam prompt, classify the question, and let the tool build a strong answer structure you can adapt under exam pressure.")
+
+    exam_question = st.text_area(
+        "Paste the exam question or scenario",
+        key=f"{base_key}_question",
+        placeholder="Example: A hospital wants to understand why patient satisfaction scores are falling. Explain whether qualitative, quantitative, or mixed methods would be most suitable and describe how the data should be collected.",
+        height=140,
+    )
+
+    col1, col2 = st.columns(2)
+    with col1:
+        question_type = st.selectbox(
+            "What type of exam question is this?",
+            [
+                "Choose and justify the data type",
+                "Design a data collection plan",
+                "Identify variables, fields, or evidence to collect",
+                "Explain sampling, ethics, and data quality",
+                "Explain a qualitative approach",
+                "Explain a quantitative approach",
+                "Explain a mixed-methods approach",
+                "Compare qualitative and quantitative data",
+            ],
+            key=f"{base_key}_question_type",
+        )
+    with col2:
+        approach = st.radio(
+            "Main answer angle",
+            ["Quantitative", "Qualitative", "Mixed methods"],
+            horizontal=True,
+            index=["Quantitative", "Qualitative", "Mixed methods"].index(default_approach) if default_approach in {"Quantitative", "Qualitative", "Mixed methods"} else 0,
+            key=f"{base_key}_approach",
+        )
+
+    col3, col4 = st.columns(2)
+    with col3:
+        answer_style = st.selectbox(
+            "Answer style",
+            ["Short exam paragraph", "Structured exam answer", "Detailed exam answer"],
+            key=f"{base_key}_answer_style",
+        )
+        scenario_name = st.text_input("Company, organisation, or scenario", value=default_company, key=f"{base_key}_scenario_name")
+        business_goal = st.text_input("Business goal or research goal", value=default_goal, key=f"{base_key}_business_goal")
+    with col4:
+        decision_question = st.text_input("Decision or research question", value=default_decision, key=f"{base_key}_decision_question")
+        target_population = st.text_input("Population, participants, or records", value=default_population, key=f"{base_key}_population")
+        unit_of_analysis = st.text_input("Unit of analysis", value=default_unit, key=f"{base_key}_unit_of_analysis")
+
+    if approach == "Quantitative":
+        method_options = [
+            "Surveys",
+            "Experiments",
+            "Measurements and assessments",
+            "Secondary data analysis",
+            "Social media and web analytics",
+            "Existing business systems",
+        ]
+        analysis_options = ["Descriptive statistics", "Comparison of groups", "Trend analysis", "Prediction", "Hypothesis testing"]
+    elif approach == "Qualitative":
+        method_options = [
+            "Interviews",
+            "Focus groups",
+            "Observations",
+            "Document analysis",
+            "Ethnography",
+            "Narrative inquiry",
+            "Online research",
+        ]
+        analysis_options = ["Coding", "Thematic analysis", "Narrative analysis", "Interpretation of meaning", "Context analysis"]
+    else:
+        method_options = [
+            "Survey + interviews",
+            "Survey + focus groups",
+            "Business systems + interviews",
+            "Analytics + observations",
+            "Secondary data + document analysis",
+        ]
+        analysis_options = ["Combine statistics with themes", "Explain numbers with interviews", "Triangulate multiple evidence sources", "Integrate trends with context"]
+
+    col5, col6 = st.columns(2)
+    with col5:
+        selected_method = st.selectbox("Recommended collection method", method_options, key=f"{base_key}_method")
+    with col6:
+        selected_analysis = st.selectbox("Recommended analysis approach", analysis_options, key=f"{base_key}_analysis")
+
+    key_items = st.text_area(
+        "Key variables, fields, or evidence items to mention",
+        value=default_primary_goal,
+        key=f"{base_key}_items",
+        placeholder="Example: churn rate, login frequency, interview transcripts, patient comments, waiting time, theme codes",
+        height=90,
+    )
+
+    ethics_choices = st.multiselect(
+        "Important ethics and quality points to include",
+        [
+            "Informed consent",
+            "Confidentiality",
+            "Anonymisation or pseudonymisation",
+            "Sampling representativeness",
+            "Bias reduction",
+            "Missing-value checks",
+            "Outlier checks",
+            "Duplicate checks",
+            "Secure storage",
+            "Clear definitions of variables or prompts",
+        ],
+        default=["Informed consent", "Confidentiality", "Secure storage"] if approach != "Quantitative" else ["Sampling representativeness", "Missing-value checks", "Duplicate checks"],
+        key=f"{base_key}_ethics_quality",
+    )
+
+    question_lower = exam_question.lower()
+    detected_focus = []
+    if exam_question.strip():
+        if "compare" in question_lower:
+            detected_focus.append("comparison")
+        if "collect" in question_lower or "gather" in question_lower:
+            detected_focus.append("data collection")
+        if "qualitative" in question_lower:
+            detected_focus.append("qualitative wording")
+        if "quantitative" in question_lower:
+            detected_focus.append("quantitative wording")
+        if "mixed" in question_lower:
+            detected_focus.append("mixed-methods wording")
+        if "ethic" in question_lower or "consent" in question_lower or "privacy" in question_lower:
+            detected_focus.append("ethics")
+
+    if detected_focus:
+        st.markdown(f"**Detected focus from the question text:** {', '.join(detected_focus)}")
+
+    focus_map = {
+        "Choose and justify the data type": "identify the best data type, justify why it fits the scenario, and connect it to the business goal",
+        "Design a data collection plan": "describe how the data should be collected, from whom or what, with which method, and with what controls",
+        "Identify variables, fields, or evidence to collect": "name the most important items the answer must include and explain why they matter",
+        "Explain sampling, ethics, and data quality": "show that you understand representativeness, confidentiality, consent, and data quality controls",
+        "Explain a qualitative approach": "justify a qualitative method and explain how rich descriptive evidence will be collected and analysed",
+        "Explain a quantitative approach": "justify a quantitative method and explain how structured numerical data will be collected and analysed",
+        "Explain a mixed-methods approach": "show how quantitative and qualitative evidence work together and why the combination is stronger",
+        "Compare qualitative and quantitative data": "compare both types clearly and explain the strengths and limits of each",
+    }
+
+    examiner_focus = focus_map[question_type]
+
+    common_mistakes = [
+        "Only defining terms without linking them to the scenario.",
+        "Forgetting to explain why the chosen method fits the business goal.",
+        "Not naming what data, variables, participants, or evidence should be collected.",
+        "Ignoring ethics, privacy, sampling, or data-quality issues.",
+    ]
+    if approach == "Mixed methods":
+        common_mistakes.append("Saying 'use both' without explaining the role of each data type.")
+    elif approach == "Qualitative":
+        common_mistakes.append("Treating qualitative data as only opinions without mentioning context, prompts, or thematic analysis.")
+    else:
+        common_mistakes.append("Mentioning numerical data without defining the KPI, metric, or unit of analysis clearly.")
+
+    key_points = []
+    if question_type == "Choose and justify the data type":
+        key_points = [
+            f"State that {approach.lower()} is the most suitable approach.",
+            "Explain why this approach matches the kind of information needed.",
+            "Link the method choice to the business goal or decision problem.",
+            f"Name the collection method: {selected_method}.",
+            f"Finish by showing how the evidence will support {selected_analysis.lower()}.",
+        ]
+    elif question_type == "Design a data collection plan":
+        key_points = [
+            "Start with the business goal and decision question.",
+            f"Name the target population or unit of analysis: {target_population or unit_of_analysis or 'the relevant group'}.",
+            f"Explain how the data will be collected using {selected_method.lower()}.",
+            f"Name the main items to collect: {key_items or 'the key variables or evidence'}.",
+            "Include sampling, ethics, privacy, and data-quality controls.",
+        ]
+    elif question_type == "Identify variables, fields, or evidence to collect":
+        key_points = [
+            "List the most important items to collect.",
+            "Explain why each item helps answer the business question.",
+            "Separate identifiers, outcome measures, context variables, and supporting evidence where relevant.",
+            "Mention privacy and data-quality checks.",
+        ]
+    elif question_type == "Explain sampling, ethics, and data quality":
+        key_points = [
+            "State who or what should be included in the data collection.",
+            "Explain the sampling approach and why it is suitable.",
+            "Mention consent, confidentiality, and secure storage.",
+            "Explain checks for bias, missing values, duplicates, outliers, or coding consistency depending on the method.",
+        ]
+    elif question_type == "Explain a qualitative approach":
+        key_points = [
+            "State that qualitative data is suitable because the scenario needs meaning, experience, or context.",
+            f"Name the method: {selected_method}.",
+            "Explain who will be included and what prompts or themes will be explored.",
+            f"Explain that the material will be analysed through {selected_analysis.lower()}.",
+            "Include confidentiality and consent.",
+        ]
+    elif question_type == "Explain a quantitative approach":
+        key_points = [
+            "State that quantitative data is suitable because the scenario needs measurable evidence.",
+            f"Name the method: {selected_method}.",
+            "Explain the KPI, target metric, and unit of analysis.",
+            f"Explain that the dataset will support {selected_analysis.lower()}.",
+            "Include sampling and data-quality checks.",
+        ]
+    elif question_type == "Explain a mixed-methods approach":
+        key_points = [
+            "State that mixed methods are suitable because the scenario needs both measurement and explanation.",
+            "Explain the role of the quantitative part and the role of the qualitative part.",
+            f"Name the combined collection method: {selected_method}.",
+            "Explain how the two evidence types will be linked in the answer.",
+            "Include ethics, quality, and integration of findings.",
+        ]
+    elif question_type == "Compare qualitative and quantitative data":
+        key_points = [
+            "Define qualitative data and quantitative data clearly.",
+            "Give one realistic example of each from the scenario.",
+            "Explain that qualitative gives meaning and context while quantitative gives measurement and comparison.",
+            "Finish by stating when mixed methods may be stronger than using only one type.",
+        ]
+
+    scenario_text = scenario_name or "the organisation"
+    goal_text = business_goal or "solve the stated business problem"
+    decision_text = decision_question or "support the decision in the scenario"
+    population_text = target_population or unit_of_analysis or "the relevant population or records"
+    item_text = key_items or "the key variables, fields, or evidence items"
+    ethics_text = ", ".join(ethics_choices) if ethics_choices else "appropriate ethics and quality checks"
+
+    if question_type == "Compare qualitative and quantitative data":
+        model_answer = (
+            f"In this scenario, qualitative and quantitative data serve different but complementary purposes. "
+            f"Qualitative data would help {scenario_text} understand meanings, experiences, attitudes, or context, for example through {selected_method.lower()} and evidence such as {item_text}. "
+            f"Quantitative data would help measure patterns, amounts, or changes using structured variables and numerical analysis. "
+            f"In exam terms, the key difference is that qualitative data explains why something happens, while quantitative data shows how much, how often, or how strongly it happens. "
+            f"If the scenario needs both measurable results and explanation, a mixed-methods approach can be the strongest answer."
+        )
+    elif approach == "Quantitative":
+        model_answer = (
+            f"In this scenario, I would use a quantitative approach because the question asks for measurable evidence that can help {scenario_text} {goal_text}. "
+            f"I would collect the data using {selected_method.lower()}, focusing on {population_text}. "
+            f"The main items to collect would include {item_text}, because these variables make it possible to compare results, track patterns, and support {selected_analysis.lower()}. "
+            f"I would also explain the sampling approach, define the KPI or outcome clearly, and include controls such as {ethics_text}. "
+            f"This makes the answer stronger because it links data collection directly to the decision question: {decision_text}."
+        )
+    elif approach == "Qualitative":
+        model_answer = (
+            f"In this scenario, I would use a qualitative approach because the question needs deeper understanding of experiences, attitudes, or context rather than only numerical measurement. "
+            f"I would collect the data using {selected_method.lower()}, focusing on {population_text}. "
+            f"The evidence would include {item_text}, and I would structure the collection around clear prompts or themes linked to the goal of helping {scenario_text} {goal_text}. "
+            f"After collection, I would analyse the material through {selected_analysis.lower()} so that patterns, meanings, and perspectives become clear. "
+            f"I would also include safeguards such as {ethics_text}. "
+            f"This would support the decision question: {decision_text}."
+        )
+    else:
+        model_answer = (
+            f"In this scenario, I would use a mixed-methods approach because the exam question needs both measurable evidence and deeper explanation. "
+            f"The quantitative part would show the size, trend, or frequency of the problem, while the qualitative part would explain why it happens. "
+            f"I would collect the evidence using {selected_method.lower()}, focusing on {population_text}. "
+            f"The main variables and evidence items would include {item_text}. "
+            f"I would then combine the findings so the numerical results can be interpreted alongside themes, experiences, or contextual insights. "
+            f"I would also explain ethics and quality controls such as {ethics_text}. "
+            f"This would help {scenario_text} {goal_text} and answer the decision question: {decision_text}."
+        )
+
+    if answer_style == "Short exam paragraph":
+        short_version = model_answer
+    elif answer_style == "Structured exam answer":
+        short_version = "\n".join([
+            f"1. Recommended approach: {approach}",
+            f"2. Why it fits: {examiner_focus}.",
+            f"3. Collection method: {selected_method}.",
+            f"4. Main items to collect: {item_text}.",
+            f"5. Ethics and quality: {ethics_text}.",
+            f"6. Link to decision: {decision_text}.",
+        ])
+    else:
+        short_version = "\n".join([
+            f"Recommended approach: {approach}",
+            f"What the examiner is asking: {examiner_focus}.",
+            f"Scenario: {scenario_text}",
+            f"Business goal: {goal_text}",
+            f"Population or unit of analysis: {population_text}",
+            f"Collection method: {selected_method}",
+            f"Main items to collect: {item_text}",
+            f"Analysis approach: {selected_analysis}",
+            f"Ethics and quality controls: {ethics_text}",
+            f"Decision link: {decision_text}",
+            "",
+            model_answer,
+        ])
+
+    st.markdown("**What the examiner is really asking**")
+    st.markdown(f"- {examiner_focus}")
+
+    st.markdown("**What to include in your answer**")
+    for point in key_points:
+        st.markdown(f"- {point}")
+
+    st.markdown("**Common mistakes to avoid**")
+    for point in common_mistakes:
+        st.markdown(f"- {point}")
+
+    st.markdown("**Model answer draft**")
+    st.text_area(
+        "Adapt this draft to your own wording",
+        value=short_version,
+        height=240,
+    )
+
+    st.download_button(
+        "Download exam solver draft as TXT",
+        data=short_version,
+        file_name="data_types_exam_solver_answer.txt",
+        mime="text/plain",
+        key=f"{base_key}_download",
+    )
 
 all_pages = [
     "Overview", "Course Plan", "Training Center", "Playground", "Learn & Practice",
@@ -35217,6 +39889,8 @@ elif page == "Training Center":
                     if not correct:
                         st.markdown(f"   Correct answer: {correct_answer}")
                     st.markdown(f"   *{q['explanation']}*")
+                    if q.get('visual_explanation'):
+                        st.markdown(q['visual_explanation'])
 
 elif page == "Course Plan":
     st.title("📚 Course Plan")
@@ -35676,6 +40350,15 @@ elif page == "Learn & Practice":
                             # Render regular markdown content
                             if part.strip():
                                 st.markdown(part, unsafe_allow_html=True)
+
+                    if course_code == "FI1BBDD75" and lesson.get("lesson_number") == "2.3":
+                        st.markdown("---")
+                        st.markdown("### Interactive Study Lab")
+                        st.markdown("Use the tools below to plan company data collection and turn exam prompts into structured answers for quantitative, qualitative, and mixed-methods questions.")
+                        with st.expander("Company Data Collection Wizard", expanded=True):
+                            render_quantitative_collection_wizard()
+                        with st.expander("Exam Question Solver", expanded=False):
+                            render_data_types_exam_solver()
                     
                     st.markdown("---")
                     
@@ -42919,40 +47602,6 @@ elif page == "Progression Plan":
             _countdown = f"in {_delta} days"
             _bg = "#0d2d1a"
             _border = "#2ecc71"
-
-        _course_colour = _COURSE_COLOURS.get(_evt["course"], "#555")
-        _icon = _type_icons.get(_evt["type"], "📌")
-
-        st.markdown(f"""
-<div style="
-    background:{_bg};
-    border-left: 5px solid {_border};
-    border-radius: 8px;
-    padding: 12px 16px;
-    margin-bottom: 8px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-">
-  <div style="min-width:56px; text-align:center;">
-    <span style="background:{_course_colour}; color:#fff; font-size:11px; font-weight:700;
-                 padding:3px 7px; border-radius:12px; display:inline-block;">{_evt['course']}</span>
-  </div>
-  <div style="flex:1;">
-    <div style="font-size:15px; font-weight:600; color:#f0f0f0;">{_icon} {_evt['name']}</div>
-    <div style="font-size:12px; color:#aaa; margin-top:2px;">{_evt['course_name']}</div>
-  </div>
-  <div style="text-align:right; min-width:130px;">
-    <div style="font-size:13px; color:#ddd; font-weight:600;">{_edate.strftime('%a %d %b %Y')}</div>
-    <div style="font-size:13px; color:{_border}; font-weight:700; margin-top:2px;">{_status_emoji} {_countdown}</div>
-  </div>
-</div>
-""", unsafe_allow_html=True)
-
-    st.markdown("---")
-    st.caption("📋 Source: PROGRESSION PLAN DA1 FT (JAN 2026 cohort) · Updated 16 December 2025")
-
-save_persisted_state(st.session_state)
 
         _course_colour = _COURSE_COLOURS.get(_evt["course"], "#555")
         _icon = _type_icons.get(_evt["type"], "📌")
