@@ -1,7 +1,10 @@
+import csv
+import io
 import json
 import os
 import random
 import re
+import zipfile
 from datetime import datetime, timedelta
 
 import numpy as np
@@ -22,6 +25,62 @@ AI_NOT_CONFIGURED_MESSAGE = "OpenAI API is not configured. Add `OPENAI_API_KEY` 
 
 _openai_api_key = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=_openai_api_key) if _openai_api_key else None
+
+
+def render_mermaid_diagram(mermaid_code, key_suffix="default", height=420):
+    mermaid_code = str(mermaid_code).strip()
+    if not mermaid_code:
+        return
+
+    mermaid_html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+        <style>
+            html, body {{
+                margin: 0;
+                padding: 0;
+                width: 100%;
+                height: 100%;
+                background: white;
+                overflow: hidden;
+                font-family: Arial, sans-serif;
+            }}
+            .diagram-shell {{
+                width: 100%;
+                height: 100%;
+                min-height: {height - 20}px;
+                overflow: auto;
+                border: 1px solid #e0e0e0;
+                border-radius: 8px;
+                background: #fafafa;
+                padding: 16px;
+                box-sizing: border-box;
+            }}
+            .mermaid {{
+                min-width: max-content;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="diagram-shell">
+            <div class="mermaid">
+{mermaid_code}
+            </div>
+        </div>
+        <script>
+            mermaid.initialize({{
+                startOnLoad: true,
+                securityLevel: 'loose',
+                theme: 'default',
+                flowchart: {{ useMaxWidth: false, htmlLabels: true }}
+            }});
+        </script>
+    </body>
+    </html>
+    """
+    html(mermaid_html, height=height, scrolling=False)
 
 training_modules = {
     "Key Performance Indicators (KPIs)": {
@@ -27071,6 +27130,26 @@ Exploratory analysis helps the grocery company understand the dataset before dee
 #### Core principle
 
 The purpose of data-driven decision-making is not simply to collect more data. The purpose is to use relevant, reliable, and well-interpreted data to support better decisions and stronger outcomes.
+
+#### Exam Notes
+
+When revising Lesson `1.1`, focus especially on these high-yield exam points:
+
+- define **data-driven decision-making** clearly and explain why it is better than guesswork alone
+- know the difference between **descriptive**, **diagnostic**, **predictive**, and **prescriptive** analysis
+- explain why **data quality** matters and be able to identify the correct quality dimension in a scenario
+- know the difference between **internal** and **external** data sources
+- explain how **descriptive statistics**, **inferential statistics**, **EDA**, and **visualisation** support better decisions
+- connect every method back to a realistic business case, such as the grocery-delivery scenario
+
+##### Strong exam answer rule
+
+A strong answer from this lesson usually:
+
+1. names the concept correctly
+2. explains what it does
+3. applies it to a scenario
+4. links it back to decision quality or business action
             """,
             "key_points": [
                 "Data-driven decision-making uses data, analysis, and insights to make informed choices",
@@ -29456,6 +29535,26 @@ As a data analyst, you do not always have to build every method yourself. But yo
 4. translate analytical results into a form decision-makers can use
 
 That is why this lesson matters. It connects analysis skills to how decisions are really made in organisations.
+
+#### Exam Notes
+
+When revising Lesson `1.2`, focus especially on these high-yield exam points:
+
+- define **decision trees**, **heuristics**, **algorithms**, and **optimisation techniques** clearly
+- explain the difference between a **root node**, a **decision node**, and a **terminal node**
+- know when a business would use a **fast heuristic** instead of a more complex optimisation method
+- be able to explain practical problems such as **TSP**, **VRP**, **FCFS**, **HPF**, and **EDF**
+- compare methods by linking them to the business problem they solve, not only by giving definitions
+- show at least one **strength** and one **limitation** of the technique you describe
+
+##### Strong exam answer rule
+
+A strong answer from this lesson usually:
+
+1. defines the technique
+2. explains the basic process or logic
+3. gives a business use case
+4. mentions why that method fits the problem better than a simpler alternative
             """,
             "key_points": [
                 "Decision trees, heuristics, algorithms, and optimisation each support different kinds of decisions",
@@ -30642,6 +30741,26 @@ Instead of saying only "this crop looks best," the analyst can explain:
 - how uncertainty changes the recommendation
 
 That is the real value of these criteria: they provide a structured and defensible way to choose under uncertainty.
+
+#### Exam Notes
+
+When revising Lesson `1.3`, focus especially on these high-yield exam points:
+
+- know what each criterion is trying to **maximise** or **minimise**
+- link each rule to the correct decision attitude: **optimistic**, **cautious**, **balanced**, **neutral**, or **regret-based**
+- be able to explain the difference between a **payoff table** and a **regret table**
+- know when **probabilities** are required and when all states are treated equally
+- explain why the same payoff matrix can lead to different recommendations under different rules
+- in cost-table questions, remember that the logic must be interpreted as **cost minimisation**
+
+##### Strong exam answer rule
+
+A strong answer from this lesson usually:
+
+1. defines the criterion
+2. shows what values from the table are used
+3. explains the result step by step
+4. states the final recommendation and why it fits that rule
             """,
             "key_points": [
                                 "Decision-making criteria help analyse the same payoff matrix from different perspectives under uncertainty",
@@ -32717,6 +32836,26 @@ Before the semester exam, make sure you can confidently explain:
 - how decision criteria affect final recommendations under uncertainty
 - how real business cases such as churn, pricing, risk, and attrition use the same analytical logic
 - how to connect data, method, decision, and business impact in one coherent answer
+
+#### Exam Notes
+
+When revising Lesson `1.4`, focus especially on these high-yield exam points:
+
+- identify the **business problem** first before choosing a method
+- explain which **data sources**, **variables**, or **KPIs** matter in each use case
+- know the logic behind **churn prediction**, **fraud detection**, **demand forecasting**, **credit scoring**, **inventory optimisation**, **pricing optimisation**, **risk assessment**, and **employee attrition prediction**
+- be able to explain each use case as a short **pipeline of stages** from data collection to action
+- connect each example back to a real business decision, such as retention, pricing, safety, or workforce planning
+- show that different use cases still follow the same core DDM logic: data -> analysis -> recommendation -> action
+
+##### Strong exam answer rule
+
+A strong answer from this lesson usually:
+
+1. defines the use case clearly
+2. identifies the relevant data
+3. explains the analytical process or model
+4. ends with a business recommendation or expected impact
             """,
             "key_points": [
                 "Lesson 1.4 connects earlier methods to real data-driven decision problems in society and business",
@@ -35871,6 +36010,38 @@ For example, if one ward consistently receives lower scores on discharge clarity
 
 In exam answers, it is often strong to explain that a Likert scale is useful when researchers need to measure **subjective opinions in a structured quantitative way**. It is especially suitable for surveys about satisfaction, agreement, attitudes, and perceived quality.
 
+#### Case Studies and Examples
+
+Case studies and examples offer valuable insights into the practical application of data types in real-world contexts. Let’s explore some illustrative scenarios across different industries:
+
+##### Marketing
+
+In a marketing case study, a company conducts focus groups to gather qualitative data and surveys to collect quantitative data. The objective is to understand customer preferences, measure customer satisfaction scores, assess brand awareness metrics, and analyse market share.
+
+##### Healthcare
+
+In the healthcare field, a study focuses on patient interviews (qualitative data) and medical records (quantitative data) to evaluate the effectiveness of a new treatment. The research aims to measure patient outcomes and mortality rates and to conduct a cost-effectiveness analysis.
+
+##### Education
+
+In the education sector, a case study evaluates a teaching intervention using qualitative data from classroom observations and quantitative data from student assessments. The objective is to analyse student performance metrics and dropout rates and gather feedback from teachers and students.
+
+##### Finance
+
+An example in finance involves qualitative data gathered from interviews with financial experts and quantitative data from financial statements. The study analyses investment opportunities, financial ratios, investment return, and risk assessment.
+
+##### Manufacturing
+
+A case study combines qualitative data from employee interviews with quantitative data from production records in the manufacturing industry. The research focuses on optimising manufacturing processes, analysing productivity metrics, defect rates, and inventory turnover.
+
+##### Social sciences
+
+A study integrates qualitative data from interviews with marginalised communities and quantitative data from surveys. The objective is to investigate social inequalities and assess socioeconomic status, discrimination indices, and well-being indicators.
+
+##### Why these case studies matter
+
+These case studies and examples provide practical insights into how data types address diverse research objectives and inform decision-making processes across various industries and contexts.
+
 #### Visual figure illustration - Data types
 
 <div class="mermaid">
@@ -35952,6 +36123,36 @@ By combining qualitative and quantitative data, HealthCare Plus develops a more 
 
 As a result, the organisation can introduce communication training for medical staff, reduce waiting times, and improve patient experience more effectively.
 
+#### What did I Learn in This Lesson?
+
+This lesson provided the following insights:
+
+- identifying the difference between quantitative and qualitative data types and their characteristics
+- how to choose the correct data type for a variable
+- how to collect and analyse both data types
+- how to identify data types in case studies
+
+#### Exam Notes
+
+When revising this lesson for the semester exam, focus especially on these high-yield points:
+
+- know the difference between **qualitative** and **quantitative** data and be able to define both clearly
+- recognise the characteristics of each data type and explain what kind of insight each one gives
+- explain how each type is **collected**, for example interviews and focus groups for qualitative data, or surveys and measurements for quantitative data
+- explain how each type is **analysed**, such as thematic analysis for qualitative data or descriptive statistics and regression for quantitative data
+- justify **why** one type, or a mixed-methods approach, is more suitable in a given scenario
+- remember that **Likert scales** are often used to turn subjective opinions into structured quantitative survey data
+- in case-study questions, always connect the data type to the **goal**, the **collection method**, and the **analysis method**
+
+##### Strong exam answer rule
+
+A strong answer in this topic usually does four things:
+
+1. defines the data type correctly
+2. gives a realistic example
+3. explains how the data would be collected or analysed
+4. links the answer back to the scenario or business problem
+
 #### Important takeaways
 
 1. Data types describe the kind of information a variable contains and influence how it should be analysed.
@@ -35990,6 +36191,7 @@ As a result, the organisation can introduce communication training for medical s
 34. A Likert scale is a structured way to measure subjective attitudes, agreement, or satisfaction using ordered response categories that can be analysed quantitatively.
 35. Likert scales are useful when opinions need to be collected in a form that supports counts, comparisons, charts, and trend analysis.
 36. Likert scales are commonly used in customer surveys, employee engagement studies, healthcare feedback, education, and market research.
+37. Case studies from marketing, healthcare, education, finance, manufacturing, and social sciences show how the same data-type concepts can be applied differently depending on the scenario and research goal.
 
 #### Semester exam highlight
 
@@ -36019,6 +36221,212 @@ Strong answer structure:
 #### Core lesson idea
 
 Data types are a foundation of data analysis because they determine how information is collected, interpreted, and transformed into useful insight for decision-making.
+
+#### The Task
+
+##### Question 1
+
+Explain why it is essential to select the appropriate data type for analysis.
+
+**Solution:**
+It is essential to select the appropriate data type because the data type determines how the information should be collected, stored, analysed, and interpreted. If the wrong data type is chosen, the analysis may become misleading or less useful. For example, qualitative data is better for understanding opinions, experiences, and meaning, while quantitative data is better for measurement, comparison, and statistical testing. The correct choice improves accuracy, supports better methods, and leads to stronger decision-making.
+
+##### Question 2
+
+What are the key differences between qualitative and quantitative data?
+
+**Solution:**
+Qualitative data is non-numerical and focuses on categories, meanings, opinions, perceptions, and experiences. It is often collected through interviews, focus groups, observations, or open-ended responses, and it is usually analysed through coding, themes, and interpretation.
+
+Quantitative data is numerical and focuses on counts, measurements, amounts, and comparisons. It is often collected through surveys with closed questions, experiments, measurements, or system data, and it is usually analysed through statistics, charts, correlation, regression, or hypothesis testing.
+
+In short, qualitative data helps explain **why** something happens, while quantitative data helps measure **how much**, **how often**, or **how strongly** something happens.
+
+##### Question 3
+
+What are some common methods for collecting qualitative data?
+
+**Solution:**
+Common methods for collecting qualitative data include:
+
+- interviews
+- focus groups
+- observations
+- document analysis
+- ethnography
+- narrative inquiry
+- online research such as open-ended surveys or discussion analysis
+
+These methods are useful when the goal is to understand experiences, opinions, behaviours, motivations, or context in depth.
+
+##### Question 4
+
+What are some common approaches for collecting quantitative data?
+
+**Solution:**
+Common approaches for collecting quantitative data include:
+
+- surveys with structured questions or rating scales
+- experiments
+- measurements and assessments
+- secondary data analysis
+- social media and web analytics
+- sampling techniques to ensure the data is representative
+
+These approaches are useful when the goal is to collect numerical data that can be counted, measured, compared, or tested statistically.
+
+##### Question 5
+
+What are some common techniques for analysing qualitative data?
+
+**Solution:**
+Common techniques for analysing qualitative data include:
+
+- coding
+- thematic analysis
+- narrative analysis
+- content analysis
+- grounded theory
+- Interpretative Phenomenological Analysis (IPA)
+- matrix analysis
+
+These techniques help researchers organise meaning, identify patterns, compare responses, and understand deeper themes in non-numerical data.
+
+##### Question 6
+
+What are some common methods for analysing quantitative data?
+
+**Solution:**
+Common methods for analysing quantitative data include:
+
+- descriptive statistics
+- inferential statistics
+- data visualisation
+- correlation analysis
+- regression analysis
+- Principal Component Analysis (PCA) and factor analysis
+- survival analysis
+- data mining and machine learning
+
+These methods help summarise data, compare groups, identify relationships, test hypotheses, and support prediction and evidence-based decisions.
+
+##### Question 7
+
+Look at the below scenarios and identify which data type they are.
+
+###### Scenario 1
+
+A student is researching the relationship between age and income levels among individuals. They have collected data on the participants’ ages and annual income. The student wants to determine the data type for each variable.
+
+**Solution:**
+Both variables are **quantitative**.
+
+- **Age** is quantitative because it is measured numerically.
+- **Annual income** is quantitative because it is also measured numerically.
+
+These variables can be analysed using statistical techniques such as correlation or regression to examine the relationship between them.
+
+###### Scenario 2
+
+A student is studying people’s perceptions of different political parties. They collected responses to survey questions where participants ranked their level of agreement on a scale of 1 to 5 for statements related to political ideologies.
+
+**Solution:**
+This is primarily **quantitative structured survey data**, more specifically **ordinal data** because the responses are ordered from 1 to 5.
+
+It is collected in numerical form, but the values represent ranked levels of agreement rather than exact measurable distances. This is a classic **Likert-scale** example.
+
+###### Scenario 3
+
+A student is conducting interviews with individuals to explore their experiences with a specific medical treatment. The discussions involve open-ended questions where participants can freely express their opinions, emotions, and personal stories.
+
+**Solution:**
+This is **qualitative data** because it consists of open-ended responses, personal experiences, emotions, and opinions.
+
+It would typically be analysed using techniques such as coding, thematic analysis, or narrative analysis.
+
+###### Scenario 4
+
+A student is analysing the content of newspaper articles related to climate change. They categorise the articles based on themes such as environmental policies, scientific research, and public opinion.
+
+**Solution:**
+This is **qualitative data** because the analysis focuses on themes, categories, and meaning in written text.
+
+The most suitable analysis method here would often be **content analysis** or **thematic analysis**.
+
+##### Strong exam note for this task
+
+In exam questions like these, a stronger answer does not only label the data type. It also explains:
+
+1. why that data type fits the scenario
+2. how it would likely be collected
+3. how it would likely be analysed
+
+##### Exam resolver style answers - supplement
+
+The following answers are added as a supplement in the same style the exam resolver is designed to support. They do **not** replace the main solutions above. Instead, they show how a stronger semester-exam answer can connect definition, method, and application more explicitly.
+
+###### Resolver view - Question 1
+
+**Question style:** Definition or explanation
+
+**What the examiner is really testing:** Whether the student understands that data type selection affects collection, analysis quality, and the usefulness of the final decision.
+
+**Resolver-style answer draft:**
+It is essential to select the appropriate data type because the data type determines how the information should be collected, organised, analysed, and interpreted. If the wrong type is chosen, the analyst may use unsuitable methods and draw weaker conclusions. Qualitative data is more suitable when the goal is to understand meaning, opinions, or experience, while quantitative data is more suitable when the goal is to measure, compare, or test relationships statistically. Therefore, selecting the right data type improves both analytical accuracy and decision-making quality.
+
+###### Resolver view - Question 2
+
+**Question style:** Comparison question
+
+**What the examiner is really testing:** Whether the student can compare qualitative and quantitative data clearly and explain when each is more suitable.
+
+**Resolver-style answer draft:**
+The key difference is that qualitative data is non-numerical and focuses on meaning, categories, opinions, and lived experience, while quantitative data is numerical and focuses on counts, measurements, and comparison. Qualitative data is commonly collected through interviews, focus groups, and observations, and it is analysed through methods such as coding and thematic analysis. Quantitative data is commonly collected through surveys, experiments, and measurements, and it is analysed through statistics, visualisation, correlation, or regression. In practice, qualitative data helps explain why something happens, while quantitative data helps measure how much or how often it happens.
+
+###### Resolver view - Question 3
+
+**Question style:** Data collection or process
+
+**What the examiner is really testing:** Whether the student knows which collection methods fit non-numerical and experience-based data.
+
+**Resolver-style answer draft:**
+Common methods for collecting qualitative data include interviews, focus groups, observations, document analysis, ethnography, narrative inquiry, and online research. These methods are suitable because they allow respondents to describe experiences, feelings, meanings, and opinions in depth. For example, interviews are useful when a researcher wants detailed personal insight, while focus groups are useful when the goal is to explore shared views or group discussion. A strong answer should therefore list the methods and explain that they are used when depth and context matter more than numerical measurement.
+
+###### Resolver view - Question 4
+
+**Question style:** Data collection or process
+
+**What the examiner is really testing:** Whether the student knows how structured numerical data is normally gathered.
+
+**Resolver-style answer draft:**
+Common approaches for collecting quantitative data include surveys with closed questions or rating scales, experiments, measurements and assessments, secondary data analysis, web and social media analytics, and structured sampling techniques. These approaches are useful because they produce numerical data that can be counted, compared, and analysed statistically. For example, surveys can measure satisfaction scores, experiments can test cause-and-effect relationships, and measurements can record values such as height, income, or response time. Therefore, quantitative collection is strongest when the goal is objective measurement and statistical comparison.
+
+###### Resolver view - Question 5
+
+**Question style:** Definition or explanation
+
+**What the examiner is really testing:** Whether the student can connect qualitative data to the correct analysis methods.
+
+**Resolver-style answer draft:**
+Common techniques for analysing qualitative data include coding, thematic analysis, narrative analysis, content analysis, grounded theory, Interpretative Phenomenological Analysis, and matrix analysis. These techniques help the researcher organise non-numerical data into patterns, meanings, categories, and themes. For example, coding labels important parts of interviews, while thematic analysis identifies repeated ideas across many responses. In an exam answer, it is strong to explain not only the method names, but also that these methods are used to understand meaning and context rather than numerical relationships.
+
+###### Resolver view - Question 6
+
+**Question style:** Definition or explanation
+
+**What the examiner is really testing:** Whether the student can link numerical data to suitable analytical techniques and explain what those techniques achieve.
+
+**Resolver-style answer draft:**
+Common methods for analysing quantitative data include descriptive statistics, inferential statistics, data visualisation, correlation analysis, regression analysis, PCA, factor analysis, survival analysis, and machine learning. These methods help analysts summarise data, compare groups, test relationships, identify trends, and make predictions. For example, descriptive statistics show averages and variation, while regression analysis helps identify how variables are related. A strong exam answer should explain that quantitative methods are chosen when the data is numerical and the goal is measurement, comparison, or statistical inference.
+
+###### Resolver view - Question 7
+
+**Question style:** Comparison and application question
+
+**What the examiner is really testing:** Whether the student can identify the correct data type in context and justify the classification.
+
+**Resolver-style answer draft:**
+In Scenario 1, both age and annual income are quantitative because they are measured numerically and can be analysed statistically. In Scenario 2, the agreement scale from 1 to 5 is structured quantitative survey data, more specifically ordinal data, because the responses are ordered but represent levels of agreement rather than exact continuous measurement. In Scenario 3, the interview responses are qualitative because they contain open-ended experiences, emotions, and personal stories. In Scenario 4, the newspaper article themes are qualitative because the task focuses on categorising meaning in text. Therefore, the correct answer is not only to label each type, but also to explain why that type fits the way the data was collected and how it would later be analysed.
             """,
             "key_points": [
                 "Data types describe the kind of information being collected and help determine how it should be analysed",
@@ -36052,6 +36460,8 @@ Data types are a foundation of data analysis because they determine how informat
                 "Good conversion preserves the meaning, validity, and usefulness of the original data",
                 "A Likert scale measures agreement, satisfaction, or perception using ordered response options such as strongly disagree to strongly agree",
                 "Likert scales are especially useful when subjective opinions need to be collected in a structured quantitative form for comparison and analysis",
+                "Cross-industry case studies help show how the same data-type concepts can be applied differently in marketing, healthcare, education, finance, manufacturing, and social science research",
+                "Exam preparation for this lesson should focus on definitions, characteristics, collection methods, analysis methods, Likert scales, and case-based justification of the chosen data type",
                 "Exam answers should define each type clearly, give examples, and explain how the type affects analysis"
             ],
             "visual_elements": {
@@ -36062,38 +36472,2285 @@ Data types are a foundation of data analysis because they determine how informat
         },
         {
             "lesson_number": "2.4",
-            "title": "KPIs, Use Cases, and Evaluating Results",
+            "title": "Data Structures",
             "content": """
-### Measuring Whether a Decision Worked
+### Introduction
 
-This is the part of the course where **Key Performance Indicators (KPIs)** become essential. KPIs act as practical heuristics for tracking data behaviour over time.
+In this lesson, we will delve into **data structures**, exploring how they play a vital role in organising and managing data effectively. As aspiring programmers, data analysts, or data enthusiasts, efficient data management is critical for any organisation’s success. Data structures provide a systematic way to store, organise, and manipulate data, defining the relationships between data elements and the functions that can be performed on them.
 
-#### KPI examples by use case
+Throughout our journey, we will explore various data structures, from **arrays** and **linked lists** to **trees**, **graphs**, and more, gaining valuable insight into their real-world applications.
 
-| Use case | Useful KPI |
-|----------|------------|
-| Marketing campaign | Conversion rate, cost per lead |
-| Customer retention | Churn rate, renewal rate |
-| Operations improvement | Cycle time, defect rate |
-| Revenue growth | Monthly revenue, average order value |
+The significance of data structures lies in their ability to improve the performance and functionality of software systems. Well-organised data accelerates data retrieval, manipulation, and analysis, making applications more efficient and responsive. In addition, neatly structured data leads to more readable, maintainable, and extensible code, which simplifies problem-solving and algorithm design.
 
-Candidates should be able to:
+As we dive into data structures, we also encounter factors that influence efficiency. Two especially important ideas are:
 
-1. Choose KPIs that match the business goal
-2. Measure results before and after a change
-3. Interpret whether the change was meaningful
-4. Recommend the next action based on evidence
+- **temporal complexity**, which describes how fast an operation can be performed
+- **spatial complexity**, which describes how much memory an operation requires
 
-The course uses real-world use case studies because business decisions are rarely abstract. The value of analytics comes from applying methods to practical problems and measuring whether outcomes improved.
+Different data structures have different temporal and spatial complexities, so it is important to analyse the goal of the task before selecting the most suitable structure.
+
+So, let us begin this journey into data structures and discover how efficient data organisation and manipulation can strengthen data-driven work in real scenarios.
+
+#### Why data structures matter
+
+| Idea | Why it matters |
+|------|----------------|
+| Storage | Data structures define how information is stored |
+| Organisation | They show how data elements relate to each other |
+| Manipulation | They affect how easily data can be inserted, updated, deleted, or searched |
+| Performance | They influence speed and memory efficiency |
+| Maintainability | They help make systems and code easier to understand and extend |
+
+#### Common data structures we will meet
+
+| Data structure | Simple idea | Example use |
+|----------------|-------------|-------------|
+| Array | Ordered collection with indexed positions | Storing a sequence of scores or values |
+| Linked list | Items connected through links | Dynamic collections where insertions matter |
+| Tree | Hierarchical structure | Folder systems, decision trees, taxonomy |
+| Graph | Nodes with connections | Social networks, route mapping, recommendation systems |
+
+#### Visual figure illustration
+
+<div class="mermaid">
+flowchart TB
+    A[Data Structures] --> B[Linear structures]
+    A --> C[Non-linear structures]
+    B --> D[Arrays]
+    B --> E[Linked Lists]
+    C --> F[Trees]
+    C --> G[Graphs]
+    D --> H[Fast indexed access]
+    E --> I[Flexible insertions]
+    F --> J[Hierarchical data]
+    G --> K[Connected relationships]
+
+    style A fill:#4A90D9,stroke:#2E5C8A,stroke-width:2px,color:#fff
+    style B fill:#50C878,stroke:#2E7D32,stroke-width:2px,color:#fff
+    style C fill:#FF9800,stroke:#E65100,stroke-width:2px,color:#fff
+    style D fill:#26A69A,stroke:#00695C,stroke-width:2px,color:#fff
+    style E fill:#26A69A,stroke:#00695C,stroke-width:2px,color:#fff
+    style F fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style G fill:#9B59B6,stroke:#6C3483,stroke-width:2px,color:#fff
+    style H fill:#FFD700,stroke:#B8860B,stroke-width:2px,color:#000
+    style I fill:#FFD700,stroke:#B8860B,stroke-width:2px,color:#000
+    style J fill:#FFD700,stroke:#B8860B,stroke-width:2px,color:#000
+    style K fill:#FFD700,stroke:#B8860B,stroke-width:2px,color:#000
+</div>
+
+#### Real-world example
+
+Suppose an online store wants to manage large product catalogues, customer accounts, and delivery routes.
+
+- an **array** might be used for fixed collections such as monthly sales values
+- a **tree** might be used for product categories and subcategories
+- a **graph** might be used to model delivery routes between cities
+
+This example shows that the “best” data structure depends on the type of relationship in the data and the operation the organisation wants to perform.
+
+#### Types of Data Structures
+
+Let us now explore different data structures and the kinds of problems they are designed to solve. Understanding the variety of data structures is important because each one has unique characteristics, operations, strengths, and limitations.
+
+By understanding these differences, we can make better decisions when selecting the most suitable structure for a given objective. This matters in programming, data analysis, and problem-solving because good data organisation supports both efficiency and clarity.
+
+##### Arrays
+
+In the world of data structures, **arrays** are one of the most important and widely used foundations. An array is a structured collection that stores a **fixed-size sequence of elements**, where all elements share the same data type.
+
+Because every element is assigned a unique index, arrays create a direct relationship between **data** and **position**. Their contiguous memory allocation allows for fast and precise access to specific elements, which is one of the key reasons arrays are so useful.
+
+##### Key characteristics of arrays
+
+| Characteristic | Meaning |
+|----------------|---------|
+| Homogeneous elements | All elements in the array have the same data type |
+| Fixed size | The size is decided when the array is created and normally cannot change dynamically |
+| Indexed positions | Each element is stored at a position identified by an index |
+| Contiguous memory | Elements are stored next to each other in memory, which supports fast access |
+| Efficient access | Specific elements can be retrieved quickly using their index |
+
+##### Why arrays are useful
+
+Arrays are useful because they:
+
+- keep data organised in a consistent format
+- allow direct access to elements by index
+- make iteration and repeated calculations easier
+- work well when the number of elements is known in advance
+- serve as a foundation for many other data structures and algorithms
+
+##### Creating an array
+
+Creating an array usually involves two main decisions:
+
+1. the **data type** of the elements
+2. the **size** of the array
+
+When the data type is defined, the array can only store that type of value. When the size is set, it usually stays fixed for the life of the array.
+
+This means arrays are efficient, but not always flexible. If the data later grows beyond the original size, a new array or extra memory allocation may be needed.
+
+##### Accessing, inserting, and deleting elements
+
+| Operation | What happens | Typical idea |
+|-----------|--------------|--------------|
+| Access | Use the index to retrieve an element | Very fast because the location is known directly |
+| Insert | Add a new value at a chosen position | Existing elements may need to shift |
+| Delete | Remove an element from a position | Remaining elements may need to shift to fill the gap |
+
+That means arrays are especially strong for **reading and indexed access**, but less efficient for repeated insertions and deletions in the middle of the structure.
+
+##### Simple operation view
+
+| Operation | Common complexity idea | Why |
+|-----------|------------------------|-----|
+| Access by index | O(1) | The position is known directly |
+| Search | O(n) | Each element may need to be checked |
+| Insert | O(n) | Elements may need to shift |
+| Delete | O(n) | Elements may need to shift after removal |
+
+##### Multidimensional arrays
+
+Arrays are not limited to one dimension. They can also represent data in multiple dimensions.
+
+| Type | Description | Example |
+|------|-------------|---------|
+| 1D array | A simple list of values | Monthly sales totals |
+| 2D array | A table or grid of values | Student grades by subject |
+| 3D array | Data across three dimensions | Sales by product, region, and month |
+
+Multidimensional arrays are especially useful when the data naturally fits a table, matrix, grid, or other layered structure.
+
+##### Visual explanation of the array example
+
+Looking at the array example, we can identify the main parts clearly:
+
+- **Type** refers to the kind of data being stored, such as `int`
+- **Name** identifies the array itself, such as `array`
+- **Size** shows the length of the array, such as `[10]`
+- **Elements** are the actual stored values, such as `{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}`
+
+```text
+int array[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+|   |    |        |
+|   |    |        -> elements
+|   |    -> size
+|   -> name
+-> type
+```
+
+##### Why arrays matter in real-world work
+
+Suppose a company wants to store the daily number of orders for the last 30 days.
+
+An array is useful here because:
+
+- the data has one consistent type, such as integers
+- the number of positions is known in advance
+- analysts may want quick access to a value at a specific day index
+
+This shows that arrays are practical when the structure is stable and direct access is more important than flexible resizing.
+
+##### Applications of arrays
+
+Arrays are highly versatile and are used in many different practical settings.
+
+| Application area | How arrays are used |
+|------------------|---------------------|
+| Data storage | Arrays store and retrieve lists, collections, and tables of values |
+| Sorting and searching | Arrays are common in sorting and searching algorithms |
+| Matrices and grids | Multidimensional arrays represent tables, grids, and matrix-like data |
+| Image processing | Pixel colour values can be stored and manipulated in arrays |
+| Game development | Arrays store scores, levels, positions, and character attributes |
+| Statistical analysis | Arrays store numerical observations used for mean, median, standard deviation, and correlation |
+| Dynamic programming | Arrays store solutions to smaller overlapping subproblems for faster computation |
+
+##### Why these applications matter
+
+These use cases show that arrays are not just a theoretical structure. They are practical whenever data needs to be stored in a predictable, indexed, and efficient way.
+
+For example:
+
+- in **sorting and searching**, arrays provide the structured sequence needed for comparison and lookup
+- in **image processing**, arrays make it possible to work with pixel values quickly
+- in **statistical analysis**, arrays provide a clear way to store observations for repeated calculations
+- in **dynamic programming**, arrays help avoid recomputing the same smaller problem again and again
+
+##### Real-world example - Inventory management
+
+A good real-world example of arrays in business is **inventory management**.
+
+Consider a retail store that sells different categories of products such as electronics, clothing, and household items. The store needs to track how many products are currently available in stock.
+
+One simple way to do this is to use arrays where:
+
+- each array represents one product category
+- each position in the array represents a specific product
+- each value in the array represents the quantity currently in stock
+
+```python
+# Array representing the inventory for the electronics category
+electronics_inventory = [10, 15, 5, 8, 20]
+
+# Array representing the inventory for the clothing category
+clothing_inventory = [30, 25, 12, 18, 5]
+
+# Array representing the inventory for the household items category
+household_inventory = [50, 40, 30, 15, 10]
+```
+
+In this example, the index of each element refers to a specific product within the category, and the stored value shows how many units are currently in stock.
+
+##### Why arrays work well in this case
+
+Arrays are useful in this inventory case because:
+
+- the store can access product quantities quickly by index
+- updating stock is simple when an item is sold or restocked
+- the data is structured and easy to loop through for reports or calculations
+
+For example:
+
+- if a customer buys one item, the store can decrease the corresponding array value
+- if new stock arrives, the store can increase the corresponding value
+- if the store wants to calculate total inventory in a category, it can sum all elements in the array
+
+##### Simple business interpretation
+
+This example shows that arrays are especially strong when:
+
+- the data belongs to one clear category
+- each position has a stable meaning
+- quick updates and fast access matter
+
+In a more advanced business system, arrays may be combined with more flexible structures, but they still provide a strong foundation for organised data handling.
+
+##### Real-world example - Gaming
+
+Another strong real-world example of arrays is found in the **gaming industry**. Games often need to store and update large amounts of structured data very quickly, and arrays make this easier because they support fast indexed access.
+
+Arrays can be used for:
+
+- **player scores**
+- **game levels**
+- **inventory items**
+- **character attributes**
+
+##### How arrays can be used for player scores
+
+Suppose a game tracks the score of five players in a match.
+
+```python
+player_scores = [1200, 950, 1430, 880, 1100]
+```
+
+Here:
+
+- each index represents a specific player
+- each value represents that player's score
+
+This makes it easy to:
+
+- retrieve one player's score quickly
+- update the score when the player earns more points
+- compare scores to find the winner
+
+For example, if Player 3 earns 200 more points, the game can update that value directly using the correct index.
+
+##### How arrays can be used for game levels
+
+Suppose a game tracks whether each level has been completed.
+
+```python
+level_completion = [True, True, False, False, False]
+```
+
+In this case:
+
+- each index represents a level
+- each value shows whether the level is completed
+
+This helps the game:
+
+- unlock the next level
+- display player progress
+- save and reload the game state efficiently
+
+It also makes reporting progress easy, because the system can count how many levels are marked as completed.
+
+##### How arrays can be used for inventory
+
+Suppose a player collects different resources in a survival game.
+
+```python
+player_inventory = [5, 2, 12, 1]
+```
+
+The indexes could represent:
+
+- index 0 = health potions
+- index 1 = keys
+- index 2 = arrows
+- index 3 = shields
+
+The values show how many of each item the player currently has.
+
+This allows the game to:
+
+- increase an item count when the player picks something up
+- decrease an item count when the player uses something
+- check quickly whether the player has enough of a required item
+
+##### Why arrays work well in gaming
+
+Arrays are useful in gaming because:
+
+- game data often has a stable structure
+- the system needs very fast access during play
+- repeated updates happen constantly during gameplay
+- loops can easily process every score, level, or inventory value
+
+This means arrays are especially strong for game state management where speed and predictable structure are important.
+
+##### High-yield exam note on arrays
+
+In exam answers, it is often strong to explain that arrays are best when:
+
+- the data type is consistent
+- the size is known or stable
+- fast indexed access is needed
+
+It is also strong to mention that arrays are **less flexible** when frequent insertion, deletion, or resizing is required.
+
+##### Lists
+
+Lists are another fundamental type of data structure. They organise elements in a **linear sequence**, but unlike arrays, lists are often more flexible when elements need to be inserted or removed.
+
+There are several types of lists, each with different characteristics and use cases.
+
+##### Main types of lists
+
+| List type | Main idea | Key feature |
+|-----------|-----------|-------------|
+| Singly-linked list | Each node stores a value and a reference to the next node | Traversal only moves forward |
+| Doubly-linked list | Each node stores a value plus references to both the next and previous nodes | Traversal can move forward and backward |
+| Circular list | The last node links back to the first node | The structure forms a loop |
+
+##### Singly-linked list
+
+In a **singly-linked list**, each element is called a **node**. Every node contains:
+
+- a value
+- a reference to the next node
+
+The final node points to `null`, showing the end of the list.
+
+That means a singly-linked list can only be traversed in one direction, from the first node to the last node.
+
+```text
+Head -> [Data|Next] -> [Data|Next] -> [Data|null]
+```
+
+##### Doubly-linked list
+
+A **doubly-linked list** extends this idea by giving each node:
+
+- a reference to the next node
+- a reference to the previous node
+
+This makes it possible to move through the list in both directions.
+
+```text
+null <- [Prev|Data|Next] <-> [Prev|Data|Next] <-> [Prev|Data|Next] -> null
+```
+
+The main trade-off is that this structure uses more memory than a singly-linked list because each node stores an extra reference.
+
+##### Circular list
+
+A **circular list** creates a loop by connecting the last node back to the first node.
+
+```text
+[Data|Next] -> [Data|Next] -> [Data|Next]
+     ^_______________________________|
+```
+
+This means traversal can continue without ever reaching `null`, which is useful in applications with repeated cyclic behaviour.
+
+##### Why lists are useful
+
+Lists are especially useful when:
+
+- data changes frequently
+- insertions and deletions are more important than direct indexed access
+- elements need to be linked in a meaningful order
+
+Compared with arrays, lists are often more flexible for structural changes, but they are usually weaker for fast random access.
+
+##### Practical applications of lists
+
+| Use case | How lists help |
+|----------|----------------|
+| Task management | Tasks can be added, removed, and reordered easily |
+| Contact lists | Contacts can be stored and traversed in an organised sequence |
+| Music playlists | Songs can be inserted, removed, or rearranged |
+| Browser history | Pages can be moved through forward and backward |
+| Shopping cart | Items can be added, updated, or removed during a session |
+| Navigation systems | A step-by-step route can be stored in order |
+
+##### Why these list examples matter
+
+These examples show that lists are practical when a system needs to manage items in sequence while also allowing regular updates.
+
+For example:
+
+- a **to-do app** may keep tasks in a list so users can insert, remove, or reorder them
+- a **browser history** can benefit from a doubly-linked list because users move both backward and forward
+- a **music playlist** needs a structure that keeps order while still allowing songs to be inserted or removed
+- a **shopping cart** changes continuously as the user browses products
+
+##### Real-world example - Browser history
+
+Browser history is a strong example of where lists are useful.
+
+Each visited page can be treated like a node in a list. If the browser uses a **doubly-linked list**, then:
+
+- one link points to the previously visited page
+- one link points to the next page
+
+That makes the `Back` and `Forward` buttons possible in a very natural way.
+
+This example is often useful in exams because it clearly shows why a **doubly-linked list** is better than a singly-linked list in situations where movement in both directions is needed.
+
+##### Real-world example - Task management and project planning
+
+Task management and project planning are also strong real-world examples of how businesses use lists.
+
+Project managers often create **to-do lists** or **task lists** to keep track of:
+
+- tasks
+- assignments
+- deadlines
+- project milestones
+
+Each task becomes one element in the list, and the list can then be organised by:
+
+- priority
+- due date
+- responsible team member
+- project phase
+
+##### Example - Marketing team social media campaign
+
+Suppose a marketing team is working on a social media campaign.
+
+```python
+social_media_tasks = [
+    "Create content calendar",
+    "Design graphics for posts",
+    "Write engaging captions",
+    "Schedule posts on platforms",
+    "Monitor engagement and respond to comments",
+    "Analyse campaign performance",
+    "Adjust strategy based on analytics"
+]
+```
+
+##### Solving the example
+
+In this case, the list is useful because each task is stored as a separate element in the order the team wants to manage it.
+
+This allows the team to:
+
+- add a new task if the campaign changes
+- remove a task when it is completed
+- reorder tasks if priorities shift
+- loop through all tasks to review progress
+
+For example:
+
+- if the team decides that analytics should be checked earlier, that task can be moved upward in the list
+- if a new platform is added, a new task such as `"Prepare TikTok content"` can be inserted
+- if `"Create content calendar"` is completed, it can be marked as done or removed from the active task list
+
+##### Why a list is suitable here
+
+A list is a suitable structure in this scenario because:
+
+- the tasks must stay in a meaningful sequence
+- the campaign may change while the work is in progress
+- elements may need to be added, removed, or reordered
+- the team often needs to review tasks one by one
+
+This makes lists a natural choice for project tracking because they support structured organisation while remaining flexible.
+
+##### Resolver-style case answer
+
+**Question style:** Method or model choice
+
+**What the examiner is really testing:** Whether the student can justify why a list is a better structure than a fixed array in a scenario where items change over time.
+
+**Resolver-style answer draft:**
+In this social media campaign case, a list is a suitable data structure because the tasks are organised in a meaningful order and may need to change while the campaign is running. The marketing team may need to add new tasks, remove completed tasks, or reorder work if priorities shift. That makes a list more practical than a rigid structure that assumes everything will stay fixed. The list helps the team track progress clearly, assign work logically, and keep the project organised as the campaign develops.
+
+##### Real-world example - Project management tools
+
+Another strong business example of lists can be seen in project and task management tools such as **Asana**, **Trello**, and **Jira**.
+
+These platforms use list-like structures to help teams:
+
+- organise tasks
+- track project progress
+- assign responsibility
+- update task information as work develops
+
+Lists are especially useful here because project work changes often. Teams may need to add new tasks, move tasks between stages, update deadlines, or assign work to different people.
+
+##### How lists can be used in project boards
+
+Project boards often organise work into list-based stages such as:
+
+- To do
+- In progress
+- Review
+- Done
+
+Each stage can be treated as a list of tasks.
+
+That means a team can:
+
+- insert a new task into the correct stage
+- move a task from one list to another as progress changes
+- keep a visual overview of current project status
+
+For example, if a design task is completed, it can move from the `In progress` list to the `Review` list. This makes the workflow easy to understand at a glance.
+
+##### How lists can be used for task details
+
+Each task in a project tool can also contain detailed information, such as:
+
+- task name
+- description
+- due date
+- priority
+- status
+- comments
+
+In practice, the list keeps the tasks in order, while each task element holds the details the team needs.
+
+That helps businesses because:
+
+- tasks are easier to track
+- deadlines are clearer
+- updates are centralised
+- teams can review work item by item
+
+##### How lists can be used when assigning tasks
+
+Lists are also useful for task assignment.
+
+For example, a project manager may keep a list of tasks assigned to each team member:
+
+```python
+anna_tasks = ["Write campaign brief", "Review captions"]
+jamal_tasks = ["Design post graphics", "Edit video assets"]
+sofia_tasks = ["Schedule posts", "Track engagement metrics"]
+```
+
+This makes it easy to:
+
+- see who is responsible for what
+- balance workload across team members
+- update assignments if priorities change
+- monitor whether tasks are completed on time
+
+If one employee becomes overloaded, tasks can be removed from one list and added to another. That flexibility is one of the biggest strengths of lists in project work.
+
+##### Why lists work well in project management
+
+Lists work well in project management because they:
+
+- provide a clear visual structure
+- support frequent updates
+- make collaboration easier
+- help teams stay organised around priorities and deadlines
+
+They are especially valuable when businesses need to coordinate many moving tasks while still keeping responsibilities and progress easy to understand.
+
+##### High-yield exam note on lists
+
+In exam answers, it is often strong to explain that:
+
+- lists organise data in a linear way
+- linked lists store nodes connected by references
+- singly-linked lists support forward traversal only
+- doubly-linked lists support forward and backward traversal
+- circular lists are useful when repeated looping behaviour is needed
+
+It is also strong to compare arrays and lists by saying that arrays are usually better for fast indexed access, while lists are often better for frequent structural updates.
+
+##### Files and file systems
+
+Files and file systems also play an important role in structured data management. A **file** is a container that stores related information such as text, numbers, images, or records. A **file system** provides the structure used to organise, access, and manage those files.
+
+This matters because businesses and systems must not only store data, but also retrieve, update, and organise it efficiently.
+
+##### Common ways to organise files
+
+| Technique | Main idea | Strength | Limitation |
+|-----------|-----------|----------|------------|
+| Arrays of records | Records are stored in fixed positions within the file | Direct access by position | Less flexible for many insertions and deletions |
+| Linked lists | Records are connected through pointers | Flexible for dynamic updates | Slower random access because traversal may be needed |
+| B-Trees | Balanced tree structure with multiple keys per node | Fast search, insertion, and deletion | More complex structure to design and maintain |
+
+##### Arrays of records
+
+In this technique, the file stores records as an **array**. Each record takes up a fixed-size part of the file, so the system can locate a record directly from its position.
+
+This method is simple and efficient for predictable data, but it becomes less practical when:
+
+- records are inserted often
+- records are deleted often
+- file size changes frequently
+
+##### Linked lists in file organisation
+
+With **linked-list organisation**, each record is stored as a node that contains:
+
+- the actual data
+- a pointer to the next record
+
+This makes insertions and deletions more flexible, because records can be linked without shifting the whole file structure.
+
+The trade-off is that accessing one specific record may require moving through the chain first, which can be slower than direct indexed access.
+
+##### B-Trees
+
+**B-Trees** are balanced tree structures that are especially useful for large volumes of data.
+
+They are often used in file systems and database systems because they support:
+
+- efficient searching
+- efficient insertion
+- efficient deletion
+
+Each node in a B-Tree can hold several keys and pointers, which makes the structure highly efficient when large collections of records must be organised and searched.
+
+##### File operations
+
+Once files are organised, systems must perform common operations on them.
+
+| Operation | What it does |
+|-----------|--------------|
+| Opening | Connects the file to the application so work can begin |
+| Reading | Retrieves data from the file into memory |
+| Writing | Stores data from memory into the file |
+| Closing | Ends the connection and ensures changes are saved properly |
+| Deleting | Removes the file and its data from the file system |
+
+##### Why these file operations matter
+
+These operations are fundamental because almost every software system depends on them.
+
+For example:
+
+- a report system may **open** and **read** a file with stored sales data
+- a user profile system may **write** updated information back to a file
+- a backup or archive process may **close** files carefully to ensure no data is lost
+- a cleanup routine may **delete** files that are no longer needed
+
+##### Real-world example - Medical records system
+
+Suppose a healthcare provider stores patient records digitally.
+
+- an **array of records** could work for fixed, well-structured datasets with stable record sizes
+- a **linked-list style organisation** may help if records need flexible insertion or dynamic chaining
+- a **B-Tree** is often the strongest large-scale choice because staff may need fast access to specific records among thousands or millions of entries
+
+In this type of system, reading, writing, and searching must be both efficient and reliable, because slow or poor organisation can directly affect service quality.
+
+##### Real-world example - Document management in a law firm
+
+Document management and storage are another strong real-world example of how businesses depend on files and file systems.
+
+Almost every company works with digital documents such as:
+
+- contracts
+- reports
+- invoices
+- presentations
+- internal policies
+- client records
+
+File systems are important because they help organise these documents in a structured and searchable way.
+
+Suppose a law firm needs to store and manage large volumes of legal material every day. These may include client contracts, court filings, evidence files, case research, reports, and internal meeting records.
+
+One practical way to organise this is through a hierarchical file structure:
+
+```text
+Law Firm Documents
+├── Clients
+│   ├── Client1_Contract.pdf
+│   ├── Client1_CourtFiling.docx
+│   └── ...
+├── Cases
+│   ├── Case1_Evidence.pdf
+│   ├── Case1_Research.docx
+│   └── ...
+├── Reports
+│   ├── Financial_Report.pdf
+│   ├── Quarterly_Report.docx
+│   └── ...
+└── Miscellaneous
+    ├── Meeting_Minutes.docx
+    ├── Company_Policies.pdf
+    └── ...
+```
+
+##### Why this file system structure works
+
+This structure helps because:
+
+- documents are grouped by purpose or business context
+- staff can navigate to the right folder quickly
+- retrieval becomes easier when files follow a clear naming pattern
+- sensitive material can be protected through folder-level permissions
+
+In practice, this means that if an attorney needs a specific client contract or evidence file, it can be located much faster than in an unstructured storage system.
+
+##### Why file operations matter in this case
+
+The core file operations are all important in this law-firm example:
+
+- **opening** allows the document to be accessed
+- **reading** allows staff to review the contents
+- **writing** allows updates, comments, or edits to be saved
+- **closing** ensures the file is safely stored after use
+- **deleting** removes documents that should no longer be retained
+
+In a legal environment, these operations are especially important because documents are sensitive, high-value, and often tied to deadlines and compliance requirements.
+
+##### Security and integrity
+
+File systems are also valuable because they support features such as:
+
+- file permissions
+- controlled access
+- backup mechanisms
+- version tracking
+
+This is especially important in law firms, where confidentiality, integrity, and reliable retrieval are critical.
+
+##### Archiving and long-term storage
+
+File systems are also essential for **data archiving** and **long-term storage**.
+
+Businesses often create backups of critical files so that important information can be restored if data is lost because of:
+
+- hardware failure
+- accidental deletion
+- software problems
+- other unexpected events
+
+This means file systems do more than store active working documents. They also protect the organisation’s long-term information assets and help maintain business continuity.
+
+In practice, this is important because smooth business operations depend on both:
+
+- fast access to current information
+- safe recovery of older or critical information when something goes wrong
+
+##### Why files and file systems matter in business
+
+Files and file systems are fundamental tools that businesses rely on to manage, organise, and store digital documents efficiently and securely.
+
+They are important because they help:
+
+- streamline everyday operations
+- keep information organised
+- support collaboration
+- protect important data
+- ensure the smooth flow of information across the organisation
+
+##### Trees
+
+**Trees** are another major type of data structure. A tree shows data in a **hierarchical arrangement**, which means the elements are organised in levels rather than only in a straight line.
+
+A tree is made up of **nodes** connected by **edges**.
+
+The main parts of a tree are:
+
+- **root**: the top node in the hierarchy
+- **parent node**: a node that has one or more children
+- **child node**: a node below another node
+- **leaf node**: a node with no children
+
+This structure makes trees very useful for representing layered relationships such as folders, organisation charts, decision models, and category systems.
+
+##### Main parts of a tree
+
+| Tree term | Meaning |
+|-----------|---------|
+| Root | The starting node at the top of the tree |
+| Edge | The connection between two nodes |
+| Parent node | A node that has child nodes beneath it |
+| Child node | A node connected below a parent |
+| Leaf node | A node with no children |
+| Subtree | A smaller branch of the larger tree |
+
+##### Why trees are useful
+
+Trees are useful because they:
+
+- organise hierarchical data clearly
+- make relationships between levels easier to understand
+- support structured searching and traversal
+- work well when data naturally branches into categories and subcategories
+
+##### Visual figure illustration - Tree hierarchy
+
+<div class="mermaid">
+flowchart TB
+    A[Root] --> B[Parent Node]
+    A --> C[Parent Node]
+    B --> D[Leaf Node]
+    B --> E[Leaf Node]
+    C --> F[Child Node]
+    C --> G[Child Node]
+    F --> H[Leaf Node]
+    G --> I[Leaf Node]
+
+    style A fill:#1098ad,stroke:#0b7285,stroke-width:2px,color:#fff
+    style B fill:#22b8cf,stroke:#0b7285,stroke-width:2px,color:#fff
+    style C fill:#22b8cf,stroke:#0b7285,stroke-width:2px,color:#fff
+    style D fill:#74c0fc,stroke:#1864ab,stroke-width:2px,color:#000
+    style E fill:#74c0fc,stroke:#1864ab,stroke-width:2px,color:#000
+    style F fill:#4dabf7,stroke:#1864ab,stroke-width:2px,color:#fff
+    style G fill:#4dabf7,stroke:#1864ab,stroke-width:2px,color:#fff
+    style H fill:#a5d8ff,stroke:#1971c2,stroke-width:2px,color:#000
+    style I fill:#a5d8ff,stroke:#1971c2,stroke-width:2px,color:#000
+</div>
+
+##### Real-world example - Decision trees and folder systems
+
+Trees are useful in many real-world settings.
+
+For example:
+
+- a **folder system** can be represented as a tree, where the main folder is the root and subfolders branch below it
+- a **decision tree** can represent a sequence of choices and outcomes
+- a **product category structure** in an online store can place main categories at the top and more specific categories below
+
+This is why trees are so common in computing: they reflect the way many real systems are naturally organised.
+
+##### Critical components of a tree
+
+To understand trees properly, it helps to look more closely at the role of each component.
+
+###### Parent nodes
+
+Nodes are the basic building blocks of a tree. A **parent node** is a node that has one or more child nodes connected beneath it.
+
+Depending on the context, a parent node may represent:
+
+- a category
+- a decision point
+- a folder
+- a higher-level entity in a hierarchy
+
+###### Child nodes
+
+A **child node** is any node connected below another node.
+
+In a tree:
+
+- the **root** is the only node that is not a child
+- all other nodes are children of some parent
+
+That means child nodes represent the lower levels of the hierarchy.
+
+###### Edges or branches
+
+**Edges** are the links between nodes. They show the relationship from one node to another and create the branching structure of the tree.
+
+Without edges, the hierarchy would not exist because the nodes would not be connected.
+
+###### Root
+
+The **root** is the top node of the tree. It is the single starting point from which the rest of the structure can be reached.
+
+A tree has only one root node.
+
+###### Leaf nodes
+
+**Leaf nodes** are nodes that do not have any children.
+
+They represent the final points in the structure, such as:
+
+- the final category in a hierarchy
+- the final folder in a branch
+- the final outcome in a decision tree
+
+##### Binary trees
+
+A **binary tree** is a special type of tree in which each node can have at most **two child nodes**:
+
+- a **left child**
+- a **right child**
+
+Binary trees are widely used because they are relatively simple and often efficient for searching, sorting, and structured decision-making.
+
+##### Binary Search Trees (BST)
+
+A **Binary Search Tree (BST)** is a binary tree that follows an ordering rule:
+
+- values in the **left subtree** are smaller than the current node
+- values in the **right subtree** are larger than the current node
+
+This ordering makes BSTs useful for:
+
+- efficient searching
+- insertion
+- deletion
+- storing sorted data
+
+BSTs are often relevant in exam questions because they clearly connect tree structure with efficient lookup.
+
+##### AVL trees
+
+**AVL trees** are self-balancing binary search trees.
+
+They maintain balance by controlling the height difference between the left and right subtrees of each node. When insertions or deletions make the tree unbalanced, the structure is adjusted to restore balance.
+
+The main benefit of AVL trees is that they keep search and retrieval efficient by preventing the tree from becoming too uneven.
+
+##### Red-black trees
+
+**Red-black trees** are another type of self-balancing binary search tree.
+
+They maintain balance using extra rules such as node colour assignments and structural adjustments during insertion and deletion.
+
+Red-black trees are valuable because they keep the tree reasonably balanced while still supporting efficient operations.
+
+##### Tree traversal algorithms
+
+Tree traversal algorithms are used to visit and process all nodes in a tree in a structured order.
+
+| Traversal type | Order | Common use |
+|----------------|-------|------------|
+| In-order | Left subtree -> current node -> right subtree | Sorted output in a BST |
+| Pre-order | Root -> left subtree -> right subtree | Copying or prefix-style representation |
+| Post-order | Left subtree -> right subtree -> root | Deletion, cleanup, or bottom-up calculation |
+
+###### In-order traversal
+
+In **in-order traversal**, the algorithm visits:
+
+1. the left subtree
+2. the current node
+3. the right subtree
+
+In a binary search tree, this produces the values in ascending order.
+
+###### Pre-order traversal
+
+In **pre-order traversal**, the algorithm visits:
+
+1. the root
+2. the left subtree
+3. the right subtree
+
+This is useful when the current node must be handled before its children.
+
+###### Post-order traversal
+
+In **post-order traversal**, the algorithm visits:
+
+1. the left subtree
+2. the right subtree
+3. the root
+
+This is useful when the children must be processed before the parent, such as in deletion or bottom-up evaluation.
+
+##### Applications of trees
+
+Trees are used in many different practical settings because they provide a flexible way to represent hierarchical structure.
+
+| Application area | How trees are used |
+|------------------|--------------------|
+| Hierarchical data representation | Trees model layered structures such as file systems, organisation charts, family trees, and XML/HTML documents |
+| Decision trees | Trees model decisions and outcomes in machine learning, data mining, and business logic |
+| Expression evaluation | Trees represent operators and operands in mathematical or syntactic expressions |
+| Network routing algorithms | Trees can help represent routing paths and structured transmission logic between nodes |
+
+##### Why these tree applications matter
+
+These applications show why trees are so widely used:
+
+- they match the way hierarchical relationships naturally appear in the real world
+- they allow complex structures to be broken into clear parent-child levels
+- they support efficient navigation, evaluation, and processing
+
+For example:
+
+- in **hierarchical data representation**, trees make it easier to move from general categories to more specific ones
+- in **decision trees**, the path from root to leaf shows how a final outcome is reached
+- in **expression evaluation**, the tree makes the calculation order clear
+- in **network routing**, the structure helps represent organised paths across connected systems
+
+##### Real-world example - CRM and customer support
+
+A strong business example of decision trees can be found in **Customer Relationship Management (CRM)** and **customer support** systems.
+
+Consider a large e-commerce company that receives thousands of customer questions and support requests every day. To respond efficiently, the company can use a **decision tree-based support system** to route each inquiry to the correct support path.
+
+For example, a simplified support tree might look like this:
+
+```text
+Customer inquiry
+├── Order issue
+│   ├── Late delivery -> Logistics support
+│   ├── Missing item -> Order support
+│   └── Wrong item -> Returns support
+├── Payment issue
+│   ├── Failed payment -> Billing support
+│   └── Refund request -> Finance support
+└── Product issue
+    ├── Damaged product -> Returns support
+    └── Product question -> Product support
+```
+
+##### Why trees work well in this CRM case
+
+Trees are useful in this case because:
+
+- the support process follows a clear sequence of choices
+- each branch leads the customer toward a more specific category
+- the final leaf can represent the correct support team, response, or outcome
+- the structure improves speed, consistency, and clarity
+
+This helps the company:
+
+- route cases faster
+- reduce confusion
+- standardise support decisions
+- improve customer experience through more accurate handling
+
+##### How the decision tree-based routing system works
+
+This kind of routing system can be described in a few clear steps.
+
+###### Inquiry classification
+
+The decision tree first classifies the customer inquiry according to its content and type.
+
+Typical top-level branches may include:
+
+- product inquiries
+- shipping issues
+- payment problems
+- general feedback
+
+This helps the company move each request into the correct part of the support process as early as possible.
+
+###### Features and decisions
+
+The decision tree then uses features or attributes from the inquiry to decide which branch to follow.
+
+Examples of useful features include:
+
+- keywords
+- key phrases
+- sentiment analysis
+- predefined tags
+
+Each internal node in the decision tree represents a decision based on one of these features. The answer to that decision determines which branch is followed next.
+
+###### Routing and escalation
+
+Once the inquiry has been classified, the system can route it to the appropriate support team.
+
+For example:
+
+- product inquiries -> product support
+- shipping issues -> logistics support
+- payment problems -> billing or finance
+
+If the issue is more serious or complex, the same decision tree can also help determine when the case should be escalated to a more specialised department.
+
+###### Automation and personalisation
+
+Decision tree systems are also useful because they can automate simple responses.
+
+For example:
+
+- common questions can trigger automatic replies
+- straightforward requests can be resolved without waiting for a human agent
+- more complex or unusual cases can be sent to experienced staff
+
+This improves both speed and consistency while still allowing human support where needed.
+
+###### Continuous improvement
+
+A strong decision tree system is not static. It can improve over time by using historical inquiry data.
+
+As the company receives more support cases, it can analyse:
+
+- which branches are most common
+- where classification mistakes happen
+- which issues need new routing paths
+- which automated responses are most effective
+
+That allows the company to refine the tree structure and improve accuracy and efficiency.
+
+###### Business value of the decision tree system
+
+By using a decision tree in CRM and customer support, the e-commerce company can:
+
+- optimise resource allocation
+- reduce response time
+- improve routing accuracy
+- increase customer satisfaction
+
+This is a strong real-world example because it clearly shows how a hierarchical structure can directly improve business operations.
+
+##### Resolver-style case answer
+
+**Question style:** Method or model choice
+
+**What the examiner is really testing:** Whether the student can explain why a tree structure is suitable when a business process branches into multiple categories and outcomes.
+
+**Resolver-style answer draft:**
+In this CRM and customer support case, a tree is a suitable data structure because the inquiry process follows a hierarchy of decisions. The root begins with the overall customer request, the internal nodes represent branching questions such as order, payment, or product issue, and the leaf nodes represent the final support destination or action. This makes the process easier to organise, faster to navigate, and more consistent for the business. A decision tree is therefore a strong choice when the system must guide users through structured choices toward a clear outcome.
+
+##### Semester exam practice case - CRM and customer support
+
+Here is a full semester-exam style case you can use directly in the app and in the exam resolver.
+
+```text
+A large e-commerce company uses a CRM system to manage customer inquiries. Every day, the company receives thousands of requests related to late deliveries, damaged products, refund claims, failed payments, and general product questions. Management has noticed that response times are too long, some inquiries are sent to the wrong department, and customer satisfaction scores have started to fall.
+
+The company wants to redesign the support process so that inquiries are classified faster, routed more accurately, and handled more efficiently. It also wants to automate simple requests while sending more complex issues to experienced support staff. In addition, management wants to evaluate whether the new system actually improves performance over time.
+
+Question:
+1. Explain which data structure would be most suitable for organising and routing these customer inquiries.
+2. Describe how this structure works in the CRM scenario.
+3. Explain why it is more suitable than a simple list or array in this case.
+4. Identify what kind of data the company would need to collect to improve the support process.
+5. Explain which KPIs should be used to evaluate whether the new routing system works.
+6. Show how the company could improve the system over time using historical inquiry data.
+7. Conclude with a recommendation for the business.
+```
+
+##### How to connect the case to the lesson
+
+This case is strong because it allows the student to connect several parts of the course at the same time:
+
+- **Trees** for the routing structure
+- **Data types** for the inquiry data being collected
+- **Decision-making and KPI thinking** for evaluation
+- **Continuous improvement** through historical CRM data
+
+##### Model answer - Semester exam style
+
+In this CRM case, the most suitable data structure is a **decision tree**. A tree fits the problem because customer inquiries move through a hierarchy of choices. The root represents the incoming inquiry, internal nodes represent classification decisions such as product issue, delivery problem, payment issue, or refund request, and leaf nodes represent the final support path, team, or action. This structure is suitable because the process branches logically from general questions to more specific outcomes.
+
+A tree is more suitable than a simple list or array because a list or array mainly stores items in sequence, while this CRM process depends on **branching decisions**. The company does not only need to store inquiries; it needs to guide each one through a path of classification and routing. A tree therefore reflects the real structure of the problem much better than a linear structure.
+
+To improve the support process, the company should collect both **qualitative** and **quantitative** data. Quantitative data could include response time, number of escalations, inquiry volume by category, resolution time, and customer satisfaction score. Qualitative data could include customer comments, support notes, recurring complaint themes, and examples of misrouted cases. Together, these data types help the company measure performance and understand why problems happen.
+
+To evaluate whether the new routing system works, the company should use KPIs such as:
+
+- average response time
+- first-contact resolution rate
+- percentage of correctly routed inquiries
+- escalation rate
+- customer satisfaction score
+
+These KPIs show whether the system is becoming faster, more accurate, and more useful from the customer’s point of view.
+
+The company can improve the decision tree over time by analysing historical inquiry data. It can study which inquiry types appear most often, where routing mistakes happen, which branches create delays, and which automated responses solve problems effectively. This allows the company to refine the classification logic, add new branches, improve escalation rules, and increase routing accuracy.
+
+My recommendation is that the company should implement a decision tree-based CRM routing system supported by historical data analysis and KPI monitoring. This would reduce delays, improve routing consistency, use support resources more efficiently, and increase customer satisfaction over time.
+
+##### Why this is a strong exam answer
+
+This type of answer is strong because it:
+
+1. identifies the correct data structure
+2. explains why it fits the business process
+3. links the case to data collection and evaluation
+4. ends with a clear recommendation and business benefit
+
+##### High-yield exam note on trees
+
+In exam answers, it is often strong to explain that:
+
+- trees organise data hierarchically
+- the **root** is the starting point
+- **parent**, **child**, **edge**, and **leaf** describe the structure
+- a **binary tree** allows at most two children per node
+- a **BST** uses ordering to support efficient search
+- **AVL** and **red-black trees** keep the structure balanced
+- traversal order changes what output or processing sequence you get
+
+##### High-yield exam note on files and file systems
+
+In exam answers, it is often strong to explain that:
+
+- files store related data in a structured container
+- file systems organise how files are stored and accessed
+- arrays of records, linked lists, and B-Trees represent different ways to organise file data
+- the best file organisation depends on whether the main need is direct access, flexible updates, or fast large-scale search
+
+#### Selecting the Right Data Structure
+
+Choosing the right data structure is extremely important. If we choose an unsuitable structure, it can reduce efficiency, slow down performance, and make it harder to achieve the intended goal.
+
+When selecting the proper data structure, several factors should be considered.
+
+##### Key selection factors
+
+| Factor | Why it matters |
+|--------|----------------|
+| Required operations | Different structures are stronger at different tasks such as insertion, deletion, searching, and traversal |
+| Efficiency | Time and space complexity affect performance and resource usage |
+| Data size and type | Some structures fit particular data types and scales better than others |
+| Memory constraints | Some structures require more memory or more rigid allocation patterns |
+| Flexibility and extensibility | Some structures handle resizing and future changes better than others |
+| Familiarity and support | Well-known structures and available libraries can reduce implementation effort |
+
+##### Required operations
+
+The first question should often be: **What do we need to do most often with the data?**
+
+For example:
+
+- if fast indexed access matters, an **array** may be better
+- if insertion and deletion happen frequently, a **list** may be better
+- if the data is hierarchical, a **tree** may be better
+- if fast searching over large structured records matters, a **B-Tree** or tree-based structure may be better
+
+That means the “best” structure depends on the operations we expect to perform most often.
+
+##### Efficiency
+
+Efficiency includes both:
+
+- **time complexity**: how fast an operation is performed
+- **space complexity**: how much memory is required
+
+When selecting a structure, we should think about both average and worst-case performance.
+
+For example, a structure may be fast for searching but weaker for insertion, or it may be flexible but use more memory. Choosing the right balance is part of good design.
+
+##### Data size and type
+
+The size and type of data also matter.
+
+Some structures work best when:
+
+- the number of elements is small and stable
+- the data is highly structured
+- the values have hierarchical relationships
+- the data must scale to a large number of records
+
+This means the structure should match not just the operation, but also the nature of the data itself.
+
+##### Memory constraints
+
+Memory limitations are also important.
+
+Some structures rely on:
+
+- contiguous memory allocation
+- extra pointers or links
+- balancing information or metadata
+
+If memory is limited, then a lighter or more compact structure may be preferable.
+
+##### Flexibility and extensibility
+
+Some systems need a structure that can change over time.
+
+For example:
+
+- projects may grow
+- categories may expand
+- records may be inserted or removed often
+
+If the data is likely to change, a more flexible structure may be a better long-term choice than a rigid one.
+
+##### Familiarity and support
+
+A final practical factor is familiarity and support.
+
+If a structure is:
+
+- well understood
+- well documented
+- supported by libraries and tools
+
+then it may save time and reduce implementation risk.
+
+This does not mean we should always choose the simplest option, but it does mean that practical support matters in real projects.
+
+##### Simple decision guide
+
+| If the main need is... | A likely better choice is... |
+|------------------------|------------------------------|
+| Fast indexed access | Array |
+| Frequent insertions and deletions | List |
+| Hierarchical relationships | Tree |
+| Large searchable record sets | B-Tree or structured file/tree system |
+
+##### High-yield exam note on selecting the right structure
+
+In exam answers, it is often strong to explain that selecting the right data structure depends on:
+
+- what operations are most important
+- how much speed and memory efficiency matter
+- the type and size of the data
+- whether the structure must adapt over time
+
+The strongest answers usually compare at least two possible structures and explain **why one fits the case better than the other**.
+
+##### Real-world example - Large-scale online retail platform
+
+Let us consider a large-scale online retail platform where efficient data handling is crucial for business performance. In this kind of system, choosing the right data structure becomes very important because poor choices can reduce speed, waste memory, and make the platform harder to scale.
+
+This case is useful because it shows that, in real business systems, one single data structure is often not enough. Different parts of the platform may need different structures depending on the job being performed.
+
+##### Required operations in the retail case
+
+An online retail platform performs many frequent operations, such as:
+
+- inserting new products
+- deleting discontinued products
+- searching for product information
+- traversing categories and records
+
+Because these operations happen often and at scale, the chosen data structures must support them efficiently.
+
+For example:
+
+- a **hash table** or **hash map** can support very fast product lookup by product ID
+- a **dynamic array** can be useful when product collections need indexed access with flexible resizing
+- a **tree-based structure** can support hierarchical product categories and ordered searching
+
+This shows that the correct choice depends strongly on what the platform needs to do most often.
+
+##### Efficiency in the retail case
+
+Efficiency becomes critical when the platform handles a very large number of products, users, and transactions.
+
+In this scenario, it is important to think about both:
+
+- **time complexity**, which affects how fast the platform responds
+- **space complexity**, which affects how efficiently memory is used
+
+Balanced tree structures such as **AVL trees** or **red-black trees** can help maintain good performance as data grows, because they avoid becoming heavily unbalanced. A **binary search tree** can also support searching and sorting by product attributes, although a balanced version is often safer in practice when scale matters.
+
+##### Data size and type in the retail case
+
+The platform stores many kinds of data, including:
+
+- product details
+- product images
+- customer profiles
+- order history
+
+These data types do not all fit the same structure equally well.
+
+For example:
+
+- **arrays** or **linked lists** may be reasonable for lighter structured records in some contexts
+- large binary objects such as **images** are usually better handled through file-based or external storage structures
+- **B-Trees** or **external hash tables** can be more suitable when large records must be stored and searched efficiently at scale
+
+This means the system should match the data structure not only to the operation, but also to the **type and size of the stored data**.
+
+##### Memory constraints in the retail case
+
+Even large systems still face practical memory constraints, especially when product inventory and customer data change over time.
+
+In this type of platform, structures that support **dynamic memory allocation** can be helpful. For example:
+
+- **hash maps** can scale as lookup needs grow
+- **linked lists** can adjust more easily when the amount of data changes
+
+That makes them more adaptable than rigid structures when the system experiences fluctuations in traffic, inventory, or customer activity.
+
+##### Flexibility and extensibility in the retail case
+
+An online retail platform rarely stays static. Over time, it may introduce:
+
+- new product categories
+- new user features
+- promotions and campaign logic
+- new forms of customer data
+
+Because of this, the system needs structures that are flexible and extensible. **Dynamic arrays**, **linked lists**, and **trees** can all support different kinds of change without forcing the whole system to be redesigned.
+
+##### Familiarity and support in the retail case
+
+Another real-world factor is the experience level of the development team. Even if a structure is theoretically strong, it may increase implementation risk if the team is unfamiliar with it.
+
+In practice, choosing well-documented and widely supported structures such as:
+
+- **hash maps**
+- **priority queues**
+- standard library tree or collection implementations
+
+can reduce development time and make maintenance easier.
+
+##### Practical conclusion from the retail case
+
+This retail example shows that selecting the right data structure is rarely about finding one universal answer. Instead, the platform may combine several structures:
+
+- **hash tables** for rapid lookups
+- **dynamic arrays** for flexible indexed collections
+- **trees** for hierarchy and ordered access
+- **B-Trees** or file-based structures for large-scale searchable storage
+
+By selecting structures carefully for different tasks, the online retail platform can improve speed, scalability, maintainability, and the overall customer experience.
+
+##### Resolver-style case answer
+
+**Question style:** Method or model choice
+
+**What the examiner is really testing:** Whether the student can use clear selection criteria to justify why different parts of a large retail platform may need different data structures.
+
+**Resolver-style answer draft:**
+In this online retail case, I would not assume that one single data structure is enough for the whole platform. I would first identify the required operations, such as fast product lookup, insertion and deletion of changing records, hierarchical category navigation, and large-scale searchable storage. Based on that, I would justify a mixed structure approach. A **hash table** is strong for rapid product lookup, a **dynamic array** is useful for flexible indexed collections, a **tree** is useful for hierarchical categories and ordered access, and a **B-Tree** or file-based structure is more suitable for large searchable records such as image references or large document-like storage. This is a strong answer because it shows that the correct structure depends on the operation, the scale of the data, memory constraints, and how the platform is expected to grow.
+
+##### Semester exam practice case - Selecting the right data structure
+
+Here is a semester-exam style case you can paste directly into the exam resolver when you want to practise choosing the most suitable data structure and justifying the choice.
+
+```text
+A fast-growing e-commerce company wants to improve how customer support requests are handled inside its CRM system. Every day, the company receives thousands of inquiries related to deliveries, damaged products, payment failures, refund requests, and general product questions.
+
+The company needs a structure that can:
+- classify inquiries into categories and subcategories
+- route each case to the correct team
+- support frequent updates when new inquiry types appear
+- handle a large and growing volume of cases
+
+The development team is discussing whether they should mainly rely on an array, a list, or a tree structure.
+
+Question:
+1. Explain how you would choose the right data structure for this case.
+2. Compare the main candidate structures.
+3. Identify which operations matter most in the scenario.
+4. Recommend the most suitable data structure and justify the choice.
+5. Conclude with the business benefit of that choice.
+```
+
+##### How the exam resolver should approach this case
+
+This is a strong practice case because it does not only ask for a definition. It asks the student to:
+
+- identify the **required operations**
+- compare multiple candidate structures
+- discuss **efficiency**, **memory**, and **flexibility**
+- make a justified final recommendation
+
+This means the resolver should not answer with only "use a tree." It should show **why** a tree is stronger than an array or list in this exact scenario.
+
+##### Model answer - Selection logic in semester-exam style
+
+To choose the right data structure in this case, I would begin by identifying the most important operations. The CRM system must classify incoming inquiries, route them through categories and subcategories, update the structure when new case types appear, and still work efficiently as the volume of requests grows. This means the most important needs are **hierarchical organisation**, **structured traversal**, **efficient searching through categories**, and **flexibility when the routing logic changes**.
+
+An **array** would not be the strongest choice here. Arrays are useful when fast indexed access matters and the structure is relatively fixed, but this case is not mainly about storing items in a simple sequence. The CRM process involves branching decisions, and arrays are weaker when the structure needs to represent multiple levels of classification.
+
+A **list** would be more flexible than an array for inserting or removing items, so it would be better if the main task were simply maintaining a changing sequence of support requests. However, a list is still a linear structure. It does not naturally represent categories, subcategories, and routing paths, so it is not the best fit when the support workflow depends on hierarchical branching.
+
+A **tree** is the most suitable data structure because the problem itself is hierarchical. The root can represent the incoming customer inquiry, the internal nodes can represent decisions such as delivery issue, payment problem, refund request, or product question, and the leaf nodes can represent the final team, action, or escalation path. A tree therefore matches the real structure of the CRM process much better than a linear structure.
+
+From an efficiency and design perspective, a tree is also stronger because it supports structured routing and can be extended when the company adds new inquiry categories. That makes it more flexible for a growing business. Although a tree may require more complex implementation than a simple array or list, the added structure is justified because the company needs accurate routing, not just storage.
+
+My recommendation is that the company should use a **tree-based structure**, specifically a decision-tree-style routing model, for its CRM support process. This choice is justified because the required operations are hierarchical classification, routing, and flexible updates, and a tree supports these better than an array or list. The business benefit is that the company can reduce routing mistakes, improve response speed, adapt more easily to new inquiry types, and increase customer satisfaction.
+
+##### Why this is a strong resolver case
+
+This case is useful because it trains the resolver and the student to move through the exact logic expected in many semester exams:
+
+1. identify what the system must do
+2. compare realistic alternatives
+3. apply the selection criteria from the lesson
+4. justify the final recommendation clearly
+
+##### Semester exam practice case - Files and file systems
+
+Here is another semester-exam style case you can use when the question is about file organisation, access, and large searchable document sets.
+
+```text
+A law firm manages thousands of digital files, including contracts, evidence files, court submissions, internal reports, and archived case notes. Staff need to open, read, update, and retrieve documents quickly. The firm also wants the system to support secure long-term storage, backup, and efficient searching as the number of records continues to grow.
+
+The technical team is discussing whether the main file organisation should rely on arrays of records, linked lists, or a B-Tree-based approach.
+
+Question:
+1. Explain how you would choose the right file organisation method for this case.
+2. Compare arrays of records, linked lists, and B-Trees.
+3. Identify which operations matter most in the scenario.
+4. Recommend the most suitable structure and justify the choice.
+5. Conclude with the business benefit of that choice.
+```
+
+##### Model answer - Files and file systems in semester-exam style
+
+To choose the right structure in this law-firm case, I would first identify the most important operations. The firm must store many records securely, retrieve documents quickly, support updates, and handle a large and growing volume of files. This means the key needs are **efficient searching**, **reliable storage**, **scalability**, and **support for ongoing updates and retrieval**.
+
+An **array of records** can be useful when the records are fixed and direct access by position matters. However, this law-firm case is not mainly about fixed-position access. The volume of documents is large, the records change over time, and fast searching across many files is more important than simple positional access. This makes arrays less suitable as the main organisational structure.
+
+A **linked list** is more flexible for inserting and deleting records, so it can support changing file content better than a fixed array. However, linked lists are weaker when rapid searching is important because the system may need to traverse many nodes before reaching the target record. For a firm that needs fast retrieval of many legal documents, this is a major limitation.
+
+A **B-Tree** is the most suitable structure because it is designed for efficient searching, insertion, and deletion across large record sets. It supports balanced access paths and is especially strong when many records must be stored, searched, and updated efficiently. This fits the law-firm scenario much better than a simple linear structure.
+
+My recommendation is that the law firm should use a **B-Tree-based file organisation approach** for large searchable document sets, supported by a clear hierarchical file system for categories such as clients, cases, and reports. This is the strongest choice because the key operations are search, update, and long-term management at scale. The business benefit is faster retrieval, better scalability, and more reliable document handling in a professional environment.
+
+##### Why this is a strong resolver case
+
+This case is useful because it teaches the student to distinguish between:
+
+1. fixed record storage
+2. flexible sequential storage
+3. large-scale searchable file structures
+
+It also trains the resolver to connect file operations with business needs such as retrieval speed, archiving, and security.
+
+##### Semester exam practice case - Lists vs arrays
+
+This semester-exam style case is useful when the question is about choosing between a fixed indexed structure and a more flexible linear structure.
+
+```text
+A marketing team uses a project board to manage a social media campaign. Tasks are frequently added, removed, reordered, assigned to new staff, and moved between stages such as To Do, In Progress, Review, and Done. Management wants a structure that is easy to update as the project changes.
+
+The team is discussing whether a fixed array or a list structure would be more suitable for this task-management workflow.
+
+Question:
+1. Explain how you would choose the right data structure for this case.
+2. Compare an array and a list.
+3. Identify which operations matter most in the scenario.
+4. Recommend the most suitable structure and justify the choice.
+5. Conclude with the business benefit of that choice.
+```
+
+##### Model answer - Lists vs arrays in semester-exam style
+
+To choose the right structure in this marketing-project case, I would first identify the most important operations. The project board needs tasks to be added, removed, reordered, reassigned, and moved between stages often. That means the key needs are **flexibility**, **frequent updates**, and **easy modification of sequence and status**.
+
+An **array** would not be the strongest choice here. Arrays are useful when the size is stable and fast indexed access matters most, but this project board changes regularly. If tasks are inserted or removed often, arrays can become less convenient because items may need to be shifted and the fixed-size mindset is less suitable for a changing workflow.
+
+A **list** is more suitable because lists are designed for sequential data that changes over time. In this case, tasks can be inserted, removed, or reordered more naturally, and the structure better reflects the reality of a project board where the sequence and contents are updated continuously.
+
+My recommendation is that the team should use a **list-based structure** for managing tasks and project-board items. This is the strongest choice because the required operations are not mainly fixed indexed access, but frequent updates and reorganisation. The business benefit is that the team can manage project changes more smoothly, keep the workflow organised, and adapt quickly as campaign priorities shift.
+
+##### Why this is a strong resolver case
+
+This case is useful because it trains the resolver and the student to explain:
+
+1. why fixed-size or index-driven access is not always the main need
+2. why flexibility can matter more than simple direct access
+3. why a list is often stronger than an array in changing workflow scenarios
+
+#### Real-world Applications
+
+Let us also look at how different data structures are used in real systems to solve practical business and technical problems.
+
+These examples are useful because they show that data structures are not only theoretical concepts. They are part of the way real applications store, organise, and process data efficiently.
+
+##### Databases
+
+In database systems, data structures such as **B-Trees** are widely used to store and retrieve large volumes of structured data efficiently.
+
+That makes them useful because:
+
+- they support fast searching
+- they handle insertions and deletions efficiently
+- they scale well as the volume of records grows
+
+This is why balanced tree structures are so important in database management systems.
+
+##### File systems
+
+File systems use data structures such as **B-Trees** and **hash tables** to organise:
+
+- files
+- directories
+- metadata
+
+These structures help the system perform file operations smoothly and support quick retrieval of stored data.
+
+##### Web applications
+
+Data structures are also essential in web applications.
+
+For example:
+
+- **hash tables** are useful for caching and session management
+- **linked lists** may be useful in structures where ordered updates happen frequently
+
+These structures help web applications store and access data efficiently while supporting large numbers of users and interactions.
+
+##### Social networks
+
+In social networks, **graph data structures** are especially important because they model the relationships between users.
+
+Common graph representations include:
+
+- adjacency lists
+- adjacency matrices
+
+These structures support tasks such as:
+
+- friend suggestions
+- relationship traversal
+- network analysis
+
+##### Geographic Information Systems (GIS)
+
+GIS platforms rely on **spatial data structures** such as **quadtrees** or **R-trees** to store and query geographic data efficiently.
+
+These structures are useful for:
+
+- map navigation
+- spatial indexing
+- spatial analysis
+
+They are strong choices when location and spatial relationships are central to the system.
+
+##### Image processing
+
+In image processing, **arrays** and **matrices** are often used to represent and manipulate images.
+
+These structures support operations such as:
+
+- filtering
+- compression
+- transformation
+- pixel-level manipulation
+
+That makes them a natural fit for applications where the data is organised in rows, columns, and channels.
+
+##### Why these applications matter
+
+These examples show that the value of a data structure depends on the task it must support.
+
+In exam answers, it is often strong to show that:
+
+- databases need efficient searchable storage
+- file systems need organised retrieval and metadata handling
+- web applications need fast session and cache access
+- social networks need relationship modelling
+- GIS needs spatial indexing
+- image processing needs grid-based data representation
+
+This helps connect theory to realistic use cases and shows why selecting the right structure matters in practice.
+
+#### Case Studies and Examples of Using Data Structures in Practice
+
+Let us also connect the lesson to some well-known case studies and practical examples that show how data structures are used in real systems across different industries.
+
+These examples are useful because they show that the selection of a data structure can directly affect speed, scalability, search quality, user experience, and overall system performance.
+
+##### Google's PageRank algorithm
+
+Google's search engine became highly influential through the use of the **PageRank** algorithm. In simplified terms, the web can be represented as a **graph**, where:
+
+- web pages are nodes
+- links between pages are edges
+
+This graph-based structure makes it possible to analyse how pages connect to one another and which pages appear more important within the larger network. That helps improve the relevance of search results. This is a strong example of how graph thinking can solve a large-scale ranking problem in practice.
+
+##### Facebook's Graph API
+
+Facebook is another clear example of graph-based thinking in practice. The relationships between users, pages, groups, and interactions can be represented through **graph data structures**.
+
+That is useful for tasks such as:
+
+- modelling social connections
+- generating friend suggestions
+- supporting personalised content and interactions
+
+This case shows why graph structures are especially powerful when the main problem is understanding and traversing relationships.
+
+##### Redis
+
+**Redis** is an in-memory data structure store that can be used as:
+
+- a database
+- a cache
+- a message broker
+
+It is powerful because it supports several different structures, including:
+
+- strings
+- hashes
+- lists
+- sorted sets
+
+This makes Redis a strong real-world example of how different structures can be chosen for different access patterns when speed is critical.
+
+##### Binary search tree in spell checkers
+
+Spell checkers often need very fast word lookup. A **binary search tree** can be used to organise dictionary words so that the system can search efficiently and suggest corrections quickly.
+
+This is a useful example because it shows how a structure that supports efficient ordered search can improve writing tools and productivity applications.
+
+##### Amazon's recommendation engine
+
+Amazon's recommendation systems rely on efficient storage and processing of user and product data. In practice, different data structures can help manage:
+
+- user behaviour data
+- product relationships
+- recommendation candidates
+
+This example is important because it shows that large recommendation systems often depend on structured data handling to support personalisation, engagement, and efficient retrieval of relevant products.
+
+##### Uber's real-time navigation
+
+Uber's navigation and location systems depend on efficient handling of spatial data. Structures such as **R-trees** are useful because they can store and query geographic information efficiently.
+
+That helps support:
+
+- route calculations
+- location queries
+- real-time navigation
+
+This is a strong example of how specialised spatial structures become important when the system depends on location and movement data.
+
+##### Why these case studies matter
+
+These case studies show that different industries depend on different structures because their problems are different:
+
+- search engines depend heavily on **graphs**
+- social platforms depend on **relationship structures**
+- high-speed caches use multiple in-memory structures
+- dictionaries and lookup tools depend on efficient search structures
+- recommendation systems depend on efficient storage and retrieval of preference data
+- navigation systems depend on spatial indexing structures
+
+In exam answers, these examples are useful because they show that the right data structure is closely connected to the nature of the problem being solved.
+
+#### Organising a Data Structure
+
+After exploring different data structures and their practical applications, it is also important to understand how a data structure is organised in a clear, step-by-step way.
+
+In software development, this process is especially important because efficient data handling depends not only on choosing the right structure, but also on designing, implementing, testing, optimising, and maintaining it properly.
+
+This is useful in both development work and exam answers because it shows not only which structure is chosen, but also how that choice is designed, implemented, tested, optimised, and maintained.
+
+##### Step 1: Identify the data
+
+The first step is to understand the data we want to store and manipulate.
+
+We should think about:
+
+- the size of the data
+- the type of the data
+- the relationships between elements
+
+This helps us understand what kind of structure will be most suitable.
+
+##### Step 2: Choose the data structure
+
+Once the data is understood, we choose the structure that best fits the required operations and constraints.
+
+Examples include:
+
+- arrays
+- linked lists
+- stacks
+- queues
+- trees
+- hash tables
+- graphs
+
+The choice should be based on efficiency, time complexity, and memory usage.
+
+##### Step 3: Define the structure
+
+After choosing the structure, we define how it will be organised.
+
+For example:
+
+- if we choose an **array**, we define its size and indexing
+- if we choose a **linked list**, we define the node structure and the links between nodes
+- if we choose a **tree**, we define the root, child nodes, and the relationships between branches
+
+This step turns the idea into a clear design.
+
+##### Step 4: Define operations
+
+Next, we define what operations the structure must support.
+
+Common operations include:
+
+- insertion
+- deletion
+- search
+- traversal
+- updates
+
+For each one, we should know what input it needs and what output or result is expected.
+
+##### Step 5: Implement the data structure
+
+At this stage, the design is turned into code.
+
+Depending on the language, this may involve:
+
+- classes
+- methods
+- functions
+- modules
+
+This is where abstraction and encapsulation can help keep the structure clear and reusable.
+
+##### Step 6: Test and debug
+
+The implementation must then be tested carefully.
+
+This includes:
+
+- normal cases
+- edge cases
+- incorrect input
+- large or changing data
+
+The goal is to make sure the structure keeps its integrity and that operations behave correctly.
+
+##### Step 7: Optimise if needed
+
+After testing, we should review how the structure performs in practice.
+
+If bottlenecks or inefficiencies appear, we may need to:
+
+- optimise the implementation
+- improve the supporting algorithms
+- revisit the original structure choice
+
+This is important because a correct structure is not always an optimal structure under real performance pressure.
+
+##### Step 8: Document and maintain
+
+Finally, the structure should be documented and maintained over time.
+
+Good documentation should explain:
+
+- the structure design
+- how operations work
+- how the structure should be used
+- what limitations or assumptions exist
+
+This makes it easier for other developers to understand, reuse, and improve the structure later.
+
+##### Why these steps matter
+
+Together, these steps help ensure that the chosen data structure is not only theoretically correct, but also practical, reliable, optimised, and suitable for the real project.
+
+##### Semester exam practice case - Organising a data structure
+
+Here is a semester-exam style case that applies these steps directly.
+
+```text
+An online bookstore wants to improve the way it organises its catalogue. The system stores book categories, subcategories, and individual books. Management wants customers to browse categories easily, and the company also wants staff to add, remove, and search books efficiently.
+
+Question:
+Explain how you would organise a suitable data structure for this system by using a step-by-step process.
+```
+
+##### Model answer - Organising a data structure in semester-exam style
+
+In this case, I would organise the data structure by following a clear step-by-step process.
+
+**Step 1: Identify the data.**  
+The system stores categories, subcategories, and books. This means the data is hierarchical because books belong to subcategories, and subcategories belong to larger categories.
+
+**Step 2: Choose the data structure.**  
+Because the catalogue is hierarchical, a **tree** would be a suitable structure. A tree is stronger than a simple array or list here because the main relationship is not a sequence, but a hierarchy.
+
+**Step 3: Define the structure.**  
+I would define a root node for the bookstore catalogue, child nodes for main categories such as fiction or science, further child nodes for subcategories, and leaf nodes for the individual books.
+
+**Step 4: Define operations.**  
+The structure should support adding a new category, inserting a new book, deleting an outdated book, searching for a book inside the hierarchy, and traversing the structure so that users can browse the catalogue.
+
+**Step 5: Implement the data structure.**  
+I would implement the tree by defining nodes with values and child references. Then I would create functions or methods for insert, delete, search, and traversal.
+
+**Step 6: Test and debug.**  
+I would test whether books can be added to the correct category, whether searches return the correct result, whether deleted books disappear properly, and whether traversal shows the catalogue in a logical order.
+
+**Step 7: Optimise if needed.**  
+If browsing or searching becomes slow as the catalogue grows, I would review whether the implementation should be improved, whether traversal can be made more efficient, or whether a more specialised variant is needed for large-scale search.
+
+**Step 8: Document and maintain.**  
+Finally, I would document how the tree is organised, what each operation does, and how future developers should extend the catalogue when new categories or features are added.
+
+This is a strong answer because it does not only name the data structure. It also explains how the structure is planned, implemented, tested, optimised, and maintained in a realistic business scenario.
+
+##### Resolver-style case answer
+
+**Question style:** Data collection or process
+
+**What the examiner is really testing:** Whether the student can explain the organisation of a data structure as a full software-development process instead of only naming a structure.
+
+**Resolver-style answer draft:**
+In this kind of software-development question, I would answer with a step-by-step process. First, I would identify the data by explaining its size, type, and relationships. Then I would choose the most suitable structure based on the required operations, efficiency, and memory usage. After that, I would define how the structure is organised, define the main operations it must support, and explain how it would be implemented in code. I would then include testing and debugging, show that optimisation may be needed if performance becomes weak, and finish with documentation and maintenance. This is a strong answer because it shows that organising a data structure is not only a design choice, but a full development workflow.
+
+#### What did I Learn in This Lesson?
+
+This lesson provided the following key insights:
+
+- what data structures are and why they matter for storing, organising, and manipulating data efficiently
+- how different structures are suited to different kinds of tasks, relationships, and operations
+- how **arrays**, **lists**, **files and file systems**, **trees**, and **graphs** are used in practice
+- why **temporal complexity** focuses on speed and **spatial complexity** focuses on memory use
+- how to choose the right structure by considering required operations, efficiency, data size and type, memory constraints, flexibility, and familiarity
+- how real-world systems such as databases, web applications, social networks, GIS platforms, recommendation systems, and navigation tools depend on different data structures
+- how to organise a data structure through a step-by-step software-development process: identify the data, choose the structure, define it, define operations, implement it, test it, optimise it if needed, and maintain it
+- how to connect data-structure knowledge to semester-exam cases by comparing alternatives and justifying why one structure fits a scenario better than another
+
+##### Semester exam takeaway
+
+In a semester exam, it is often not enough to only name a structure. A stronger answer usually explains:
+
+- what the system needs to do
+- which operations matter most
+- which structures are realistic alternatives
+- why the final choice is the strongest fit for the case
+
+#### Exam Notes
+
+When revising Lesson `2.4`, focus especially on these high-yield exam points:
+
+- define **data structures** clearly as systematic ways to store and organise data
+- explain why data structures matter for **retrieval**, **manipulation**, and **analysis**
+- know the difference between **linear** and **non-linear** structures
+- connect structures such as **arrays**, **linked lists**, **trees**, and **graphs** to realistic use cases
+- explain that the choice of structure depends on both **temporal complexity** and **spatial complexity**
+- explain why file systems support both active storage and long-term archiving
+- identify the key parts of a tree, such as root, parent, child, leaf, and edge
+- know the difference between a general tree, a binary tree, and a binary search tree
+- recognise the purpose of in-order, pre-order, and post-order traversal
+- explain how required operations, efficiency, data size, memory limits, flexibility, and familiarity affect structure choice
+- in case questions, justify **why** one structure is more suitable than another
+
+##### Strong exam answer rule
+
+A strong answer from this lesson usually:
+
+1. defines the data structure concept clearly
+2. explains why efficient organisation matters
+3. links the structure to speed, memory, or usability
+4. gives a realistic example of where that structure would be useful
+
+#### The Task
+
+Answer the questions below thoroughly.
+
+##### Question 1
+
+What are the factors to consider when selecting a data structure?
+
+**Solution:**
+The main factors to consider are:
+
+- the **required operations**, such as insertion, deletion, search, traversal, or updates
+- **efficiency**, including both time complexity and space complexity
+- the **size and type of data**
+- **memory constraints**
+- **flexibility and extensibility**
+- **familiarity and support**
+
+These factors matter because different data structures are strong in different situations. A good structure should match both the technical needs of the system and the practical needs of the project.
+
+##### Question 2
+
+Why is it important to consider the required operations when selecting a data structure?
+
+**Solution:**
+It is important because different data structures perform operations differently. Some structures are strong for indexed access, while others are better for insertion, deletion, searching, or hierarchical traversal. If the required operations are not considered, the chosen structure may slow the system down or make the application harder to manage. Therefore, the best structure depends heavily on what the system needs to do most often.
+
+##### Question 3
+
+What is the significance of data size and type in selecting a data structure?
+
+**Solution:**
+Data size and type are significant because they affect how the structure should store and manage information. Small, simple, structured data may work well in one kind of structure, while large, complex, or hierarchical data may need another. For example, a structure suitable for small text records may not be suitable for large image files or large searchable datasets. This means that the structure should fit both the nature of the data and the scale at which the system operates.
+
+##### Question 4
+
+Why is it important to consider memory constraints when selecting a data structure?
+
+**Solution:**
+Memory constraints matter because some data structures use more memory than others. For example, some structures rely on contiguous memory allocation, while others require extra pointers, links, balancing information, or metadata. If memory is limited, choosing a heavy structure may reduce system performance or increase resource waste. A suitable data structure should therefore balance functionality with efficient memory usage.
+
+##### Question 5
+
+What does it mean to organise a data structure?
+
+**Solution:**
+To organise a data structure means to design and prepare it in a structured way so it can store, relate, and manage data effectively. This includes:
+
+- understanding the data
+- choosing the correct structure
+- defining how elements are arranged
+- deciding which operations it must support
+- implementing it in code
+- testing and improving it
+- documenting and maintaining it
+
+In other words, organising a data structure means turning a data-handling need into a clear, practical, and usable system design.
+
+##### Question 6
+
+Why is it important to organise data structures effectively?
+
+**Solution:**
+It is important because effective organisation improves:
+
+- performance
+- reliability
+- scalability
+- maintainability
+- ease of use
+
+If a structure is poorly organised, operations may become slower, the code may become harder to manage, and the system may struggle as data grows. Effective organisation helps ensure that the system works efficiently and remains adaptable over time.
+
+##### Question 7
+
+What steps can get followed to organise a data structure?
+
+**Solution:**
+The steps that can be followed are:
+
+1. **Identify the data** by understanding its size, type, and relationships.
+2. **Choose the data structure** that best fits the operations and constraints.
+3. **Define the structure** by deciding how elements are stored and related.
+4. **Define operations** such as insertion, deletion, search, traversal, and update.
+5. **Implement the data structure** in code using classes, methods, functions, or modules.
+6. **Test and debug** the structure using normal cases and edge cases.
+7. **Optimise if needed** when performance bottlenecks or inefficiencies appear.
+8. **Document and maintain** the structure so it remains understandable and useful over time.
+
+These steps create a full workflow from design to long-term use.
+
+##### Question 8
+
+How can I choose the appropriate data structure when organising data?
+
+**Solution:**
+To choose the appropriate data structure, you should:
+
+- identify what kind of data you have
+- decide which operations matter most
+- compare the likely efficiency of candidate structures
+- consider memory limits
+- think about how much the structure may need to change over time
+- consider practical issues such as library support and developer familiarity
+
+The correct choice usually comes from comparing realistic alternatives and then justifying why one fits the scenario better than the others.
+
+##### Question 9
+
+Why is testing and debugging important in the organisation of data structures?
+
+**Solution:**
+Testing and debugging are important because they confirm that the structure behaves correctly in practice. Even if the design looks good in theory, implementation errors can still cause problems. Testing checks whether insertion, deletion, searching, traversal, and updates work as expected. It also helps uncover edge cases, incorrect assumptions, and hidden bugs. Without proper testing, the structure may fail when used with real data.
+
+##### Question 10
+
+When should optimisation be considered in the organisation of data structures?
+
+**Solution:**
+Optimisation should be considered after the structure has been implemented and tested, especially when performance bottlenecks or inefficiencies become visible. For example, if searching, traversal, or updates become too slow as the data grows, then optimisation may be needed. This could involve improving the implementation, changing the supporting algorithm, or revisiting the original data structure choice. Optimisation is therefore most relevant when practical performance no longer matches the needs of the system.
+
+##### Question 11
+
+What is the role of documentation and maintenance in organising data structures?
+
+**Solution:**
+Documentation and maintenance play a crucial long-term role. Documentation explains:
+
+- how the structure is designed
+- what operations it supports
+- how it should be used
+- what assumptions or limitations exist
+
+Maintenance ensures that the structure remains efficient, relevant, and aligned with changing requirements. Together, documentation and maintenance make it easier for developers to understand, update, extend, and reuse the structure in future work.
+
+##### Strong exam note for this task
+
+In a semester exam, stronger answers to questions like these do not stop at short definitions. They usually:
+
+1. define the concept clearly
+2. explain why it matters
+3. connect it to operations, efficiency, or design logic
+4. use a small realistic example when possible
+
+##### Exam resolver style answers - supplement
+
+The following answers are added as a supplement in the same style the exam resolver is designed to support. They do **not** replace the main solutions above. Instead, they show how a stronger semester-exam answer can connect definition, process, and application more explicitly.
+
+###### Resolver view - Question 1
+
+**Question style:** Definition or explanation
+
+**What the examiner is really testing:** Whether the student knows that data-structure choice depends on technical, performance, and practical design factors.
+
+**Resolver-style answer draft:**
+When selecting a data structure, I would consider the required operations, efficiency, data size and type, memory constraints, flexibility and extensibility, and familiarity or implementation support. These factors matter because different structures are better at different tasks. A strong choice is therefore one that fits both the operations the system performs most often and the real constraints of the project.
+
+###### Resolver view - Question 2
+
+**Question style:** Definition or explanation
+
+**What the examiner is really testing:** Whether the student understands that operations drive structure choice.
+
+**Resolver-style answer draft:**
+It is important to consider the required operations because the best data structure depends on what the system needs to do most often. If the system mainly needs fast indexed access, one structure may be better, while frequent insertion, deletion, or hierarchical traversal may favour another. Therefore, selecting a structure without considering operations can reduce efficiency and make the system harder to scale or maintain.
+
+###### Resolver view - Question 3
+
+**Question style:** Definition or explanation
+
+**What the examiner is really testing:** Whether the student can connect data characteristics to structure suitability.
+
+**Resolver-style answer draft:**
+Data size and type are significant because they influence how information should be stored, related, and accessed. Small structured records may fit one kind of structure, while large files, hierarchical records, or searchable datasets may require another. A strong answer explains that the structure must match both the nature of the data and the scale of the system.
+
+###### Resolver view - Question 4
+
+**Question style:** Definition or explanation
+
+**What the examiner is really testing:** Whether the student understands that memory use is part of good structure design, not just speed.
+
+**Resolver-style answer draft:**
+Memory constraints are important because some data structures use more memory than others through pointers, links, metadata, or rigid allocation patterns. If memory is limited, choosing a heavier structure may weaken performance or waste resources. Therefore, the right data structure should balance functionality with efficient memory usage.
+
+###### Resolver view - Question 5
+
+**Question style:** Definition or explanation
+
+**What the examiner is really testing:** Whether the student can explain what it means to organise a data structure as a practical process.
+
+**Resolver-style answer draft:**
+To organise a data structure means to design and prepare it so data can be stored, related, and managed effectively. This includes understanding the data, choosing the right structure, defining how it works, deciding which operations it must support, implementing it, testing it, and maintaining it over time. In other words, it is the full process of turning a data-handling need into a usable system design.
+
+###### Resolver view - Question 6
+
+**Question style:** Definition and application question
+
+**What the examiner is really testing:** Whether the student understands the business and technical value of effective structure design.
+
+**Resolver-style answer draft:**
+It is important to organise data structures effectively because good organisation improves performance, reliability, scalability, maintainability, and ease of use. If a structure is poorly organised, operations may become slower, the code may become harder to manage, and the system may struggle as data grows. A stronger answer links this directly to system quality and long-term usability.
+
+###### Resolver view - Question 7
+
+**Question style:** Data collection or process
+
+**What the examiner is really testing:** Whether the student can describe the full workflow for organising a data structure.
+
+**Resolver-style answer draft:**
+The main steps are to identify the data, choose the structure, define how it is organised, define the required operations, implement it in code, test and debug it, optimise it if needed, and then document and maintain it. A strong answer should explain that this is a full workflow from design to long-term use, not only a one-time technical choice.
+
+###### Resolver view - Question 8
+
+**Question style:** Method or model choice
+
+**What the examiner is really testing:** Whether the student can justify how to choose between candidate structures.
+
+**Resolver-style answer draft:**
+To choose the appropriate data structure, I would first identify the kind of data involved and the operations that matter most. Then I would compare candidate structures by looking at efficiency, memory needs, flexibility, and practical support. A stronger answer explains that the final choice should come from comparing realistic alternatives and then justifying why one structure fits the scenario better than the others.
+
+###### Resolver view - Question 9
+
+**Question style:** Definition and application question
+
+**What the examiner is really testing:** Whether the student understands that implementation quality must be verified in practice.
+
+**Resolver-style answer draft:**
+Testing and debugging are important because they confirm that the structure behaves correctly with real operations and real data. Even a good design can fail if the implementation contains errors. A strong answer explains that testing should cover normal cases, edge cases, incorrect input, and changing data so the structure remains reliable and correct.
+
+###### Resolver view - Question 10
+
+**Question style:** Definition and application question
+
+**What the examiner is really testing:** Whether the student knows when optimisation becomes necessary in a structure workflow.
+
+**Resolver-style answer draft:**
+Optimisation should be considered after implementation and testing, especially when performance bottlenecks appear. For example, if searching, traversal, or updates become too slow as the data grows, then optimisation may be required. This could involve improving the implementation, improving the supporting algorithm, or revisiting the original structure choice.
+
+###### Resolver view - Question 11
+
+**Question style:** Definition and application question
+
+**What the examiner is really testing:** Whether the student understands the long-term lifecycle of a data structure after implementation.
+
+**Resolver-style answer draft:**
+Documentation and maintenance play a long-term role because they keep the structure understandable, usable, and adaptable. Documentation explains how the structure is designed, how operations work, and what assumptions or limitations exist. Maintenance ensures that the structure remains efficient and aligned with changing requirements. A strong answer should show that good structure design continues beyond implementation.
             """,
             "key_points": [
-                "KPIs translate business goals into measurable signals",
-                "Before-and-after comparisons help evaluate interventions",
-                "Use case studies help candidates connect theory to practice",
-                "Strong recommendations depend on measurable outcomes"
+                "Data structures are systematic ways to store, organise, and manipulate data",
+                "Efficient data organisation improves retrieval speed, manipulation, and analysis",
+                "Different data structures are suited to different relationships and operations",
+                "Arrays, linked lists, trees, and graphs are common structures with different use cases",
+                "Arrays store homogeneous elements of the same data type in indexed positions",
+                "Arrays usually have a fixed size, which makes them efficient but less flexible to resize",
+                "Contiguous memory allocation helps arrays support very fast indexed access",
+                "Array access is typically strong, while insertion and deletion may require shifting elements",
+                "Multidimensional arrays are useful for tables, matrices, and structured grid-like data",
+                "Arrays are commonly used for data storage, sorting, searching, image processing, game development, statistical analysis, and dynamic programming",
+                "Inventory management is a practical business example where arrays can store stock quantities by indexed product position",
+                "Gaming is another practical example where arrays can manage player scores, level progress, inventory items, and other structured game-state data",
+                "Lists organise elements in a linear sequence and are often more flexible than arrays when insertions and deletions are frequent",
+                "Singly-linked lists move forward only, doubly-linked lists move forward and backward, and circular lists support looping traversal",
+                "Lists are useful in practical cases such as task management, playlists, browser history, shopping carts, and navigation systems",
+                "Browser history is a strong real-world example of why doubly-linked lists are useful",
+                "Task management and project planning are strong business examples where lists help organise tasks, assignments, and milestones",
+                "A social media campaign task list shows why lists are useful when tasks may need to be added, removed, or reordered during a project",
+                "Project management tools such as Asana, Trello, and Jira rely on list-like structures to organise boards, task details, and assignments",
+                "Lists are useful in project boards because tasks can move between stages such as to do, in progress, review, and done",
+                "Files and file systems organise stored data so it can be accessed, updated, and managed efficiently",
+                "Arrays of records, linked lists, and B-Trees are different ways to organise records inside files",
+                "Opening, reading, writing, closing, and deleting are core file operations every data system depends on",
+                "B-Trees are especially important when large volumes of records need efficient searching and updating",
+                "Document management in a law firm is a strong example of how hierarchical file systems support categorisation, navigation, permissions, and secure retrieval",
+                "File systems also support archiving, backup, and long-term storage so critical business information can be recovered after data loss",
+                "Trees organise data hierarchically using concepts such as root, parent, child, leaf, and edge",
+                "Trees are especially useful for decision structures, folder systems, and category hierarchies",
+                "A binary tree allows at most two children per node, while a BST uses an ordering rule for efficient search",
+                "AVL trees and red-black trees are self-balancing binary search trees that help maintain efficient performance",
+                "In-order, pre-order, and post-order traversal visit tree nodes in different useful sequences",
+                "Trees are also used for hierarchical data representation, decision trees, expression evaluation, and some routing structures",
+                "CRM and customer-support routing is a strong business example of how decision trees guide cases from a root question to final outcomes",
+                "Decision tree routing systems classify inquiries, use features such as keywords or tags, route cases to the correct team, and improve over time through historical data",
+                "A semester exam CRM case can connect trees, data types, KPI evaluation, and continuous improvement in one structured business answer",
+                "A semester exam file-system case may require the student to compare arrays of records, linked lists, and B-Trees before recommending the strongest option",
+                "A semester exam project-management case may require the student to compare arrays and lists before justifying why flexibility matters",
+                "Selecting the right data structure depends on required operations, efficiency, data size and type, memory constraints, flexibility, and familiarity",
+                "A large-scale online retail platform is a strong real-world example because it may need a combination of hash tables, dynamic arrays, trees, and B-Trees for different tasks",
+                "A strong retail-platform answer may justify a mixed structure approach instead of forcing one structure onto every system component",
+                "Real-world applications of data structures include databases, file systems, web applications, social networks, GIS, and image processing",
+                "Different domains rely on different structures because their operations and data relationships are not the same",
+                "Case studies such as Google PageRank, Facebook's Graph API, Redis, Amazon's recommendation systems, and Uber's navigation show how data structures solve different large-scale problems in practice",
+                "Organising a data structure can be explained as a step-by-step process: identify the data, choose the structure, define it, define operations, implement it, test it, optimise it if needed, and maintain it",
+                "A strong semester exam answer may show not only which structure is chosen, but also how it is organised, tested, optimised, and documented",
+                "A strong semester exam case may ask the student to compare arrays, lists, and trees before choosing the most suitable structure",
+                "Strong exam answers compare possible structures and justify why one fits the case better than another",
+                "Temporal complexity focuses on how fast an operation runs",
+                "Spatial complexity focuses on how much memory an operation uses",
+                "Choosing the right data structure improves both system performance and code maintainability",
+                "Exam answers should define the structure, explain why it fits, and connect it to a realistic scenario"
             ],
             "visual_elements": {
-                "diagrams": False,
+                "diagrams": True,
                 "tables": True,
                 "highlighted_sections": True
             }
@@ -36199,6 +38856,25 @@ Optimization techniques search for the best possible solution under constraints.
 ### Key takeaway from the case
 
 The same business problem can use different decision techniques at different levels. A manager may begin with heuristics for immediate action, apply algorithms for more consistent decisions, and then use optimization to improve long-term performance.
+
+#### Exam Notes
+
+When revising Lesson `2.5`, focus especially on these high-yield exam points:
+
+- define **data-driven decision-making** as the use of relevant data, structured analysis, and explicit criteria to choose between actions
+- know the difference between **descriptive**, **diagnostic**, **predictive**, and **prescriptive** use in the shared case
+- explain the role of **rules**, **heuristics**, **algorithms**, and **optimization**
+- be able to justify why one technique fits a problem better than another
+- use the grocery-delivery case as a model for structuring exam answers
+
+##### Strong exam answer rule
+
+A strong answer from this lesson usually:
+
+1. identifies the business problem
+2. selects the right decision technique
+3. explains how the technique works in the scenario
+4. ends with the likely business action or improvement
             """,
             "key_points": [
                 "DDM means using evidence, analysis, and explicit decision criteria to choose actions",
@@ -36358,6 +39034,25 @@ In the grocery-delivery scenario, different decision criteria can produce differ
 - A balanced or probability-based manager will likely choose route-optimization software
 
 This shows why decision criteria matter. The best choice is not only about data, but also about risk attitude, uncertainty, and business priorities.
+
+#### Exam Notes
+
+When revising Lesson `2.6`, focus especially on these high-yield exam points:
+
+- know the meaning of **Maximax**, **Maximin**, **Hurwicz**, **Minimax regret**, **Laplace**, **Expected payoff**, and **Expected loss of opportunity**
+- be able to explain why different criteria can recommend different actions from the same payoff table
+- know which rules use **best-case**, **worst-case**, **average**, **regret**, or **probability**
+- explain how **risk attitude** changes the recommendation
+- show the calculation logic clearly when the exam gives a payoff matrix
+
+##### Strong exam answer rule
+
+A strong answer from this lesson usually:
+
+1. defines the criterion
+2. shows the values used from the payoff matrix
+3. explains the result step by step
+4. states why the chosen strategy fits that rule under uncertainty
             """,
             "key_points": [
                 "Different decision criteria can recommend different actions from the same payoff matrix",
@@ -36368,6 +39063,3985 @@ This shows why decision criteria matter. The best choice is not only about data,
             "visual_elements": {
                 "diagrams": False,
                 "tables": True,
+                "highlighted_sections": True
+            }
+        },
+        {
+            "lesson_number": "3.0",
+            "title": "Module 3 Overview and Learning Outcomes",
+            "content": """
+### Module 3: Lessons and Tasks
+
+### Module Overview
+
+#### Introduction
+
+This module will expand on our knowledge and cover **data models**, **data cleaning**, **analysis philosophies**, and **Key Performance Indicators (KPIs)**. It serves as a building block that helps us continue from the knowledge we have gained so far and introduces us to concepts such as data models and their techniques, data-cleaning methods, the four main kinds of data analysis, and an understanding of KPIs and their importance.
+
+#### Why this module matters
+
+In real analytical work, it is not enough to collect data and store it. We must also understand:
+
+- which model fits the scenario
+- how to clean and improve poor-quality data
+- which analytical philosophy matches the business question
+- how KPIs can be used to track performance and support decisions
+
+This makes Module 3 an important bridge between basic analytical understanding and stronger, more controlled decision-making in realistic business contexts.
+
+#### Module focus areas
+
+| Focus area | What candidates should understand |
+|-----------|------------------------------------|
+| Data models | How different data models fit different scenarios and types of analysis |
+| Data cleaning | How to detect, correct, and reduce errors in data before analysis |
+| Analysis philosophies | How descriptive, diagnostic, predictive, and prescriptive thinking solve different kinds of problems |
+| KPIs | How Key Performance Indicators help monitor behaviour, measure success, and guide decisions |
+
+#### Learning Outcomes
+
+In this module, we are covering the following **knowledge learning outcomes**:
+
+- The candidate has knowledge of concepts and processes used for data cleaning using proxy real-world data.
+- The candidate has knowledge of the four data analysis philosophies: descriptive, diagnostic, predictive, and prescriptive; as well as surface error detection, elimination, and correction.
+- The candidate has knowledge of Key Performance Indicators (KPIs), data types (qualitative vs quantitative) and the data analysis lifecycle.
+
+In this module, we are covering the following **skill learning outcomes**:
+
+- The candidate can deliver insights to entire data sets to gauge if the model is accurate for the intended use.
+- The candidate masters relevant theoretical models to proxy real-world data.
+- The candidate can identify incorrect erroneous data and use insights on how to eliminate and correct them.
+
+In this module, we are covering the following **general competence learning outcome**:
+
+- The candidate can develop work methods using KPIs as a guide in the decision-making process.
+
+#### Module 3 preview tasks
+
+1. Match a data model to the most suitable scenario.
+2. Explain how data cleaning improves reliability before analysis.
+3. Distinguish between descriptive, diagnostic, predictive, and prescriptive analysis.
+4. Explain how KPIs act as measurable signals in decision-making.
+5. Connect cleaning, modelling, analysis philosophy, and KPIs in one realistic case.
+
+#### Important takeaways
+
+1. **Data models** help structure information so it can be analysed in the right way.
+2. **Data cleaning** improves reliability and reduces the risk of weak conclusions.
+3. The four main analysis philosophies solve different questions about what happened, why it happened, what may happen next, and what action should be taken.
+4. **KPIs** turn goals into measurable signals that support monitoring and decision-making.
+5. Strong analysts connect models, cleaned data, analytical method, and KPI evaluation in one coherent workflow.
+
+#### Semester exam highlight
+
+In the semester exam, these topics are often strongest when connected together rather than described as isolated definitions. A good answer usually:
+
+1. identifies the business problem clearly
+2. selects the right model or analytical philosophy
+3. explains how data quality or cleaning affects the answer
+4. shows how KPIs would be used to evaluate success
+
+#### Progression note
+
+Check your progression plan and/or contact a tutor if anything is unclear.
+            """,
+            "key_points": [
+                "Module 3 builds on earlier knowledge and focuses on data models, data cleaning, analysis philosophies, and KPIs",
+                "Data cleaning with proxy real-world data is a core knowledge area in this module",
+                "The four main analysis philosophies are descriptive, diagnostic, predictive, and prescriptive",
+                "Surface error detection, elimination, and correction are part of the data-quality focus in this module",
+                "KPIs, data types, and the data analysis lifecycle remain central concepts in this module",
+                "Candidates should be able to use theoretical models, identify erroneous data, and judge whether a model is fit for its intended use",
+                "General competence in this module includes developing work methods that use KPIs to guide decision-making",
+                "Candidates should check their progression plan or contact a tutor if anything in the module is unclear"
+            ],
+            "visual_elements": {
+                "diagrams": False,
+                "tables": True,
+                "highlighted_sections": True
+            }
+        },
+        {
+            "lesson_number": "3.1",
+            "title": "Lesson - Data Models",
+            "content": """
+### 3.1. Lesson - Data Models
+
+#### Introduction
+
+Data modelling is the process of representing real-world processes, relationships, and patterns so they can be analysed and used in decision-making. Data modelling techniques are important because they help analysts gain insight, make predictions, and support informed actions.
+
+Several broad approaches are commonly used in industry:
+
+- **statistical modelling**
+- **machine learning**
+- **mathematical modelling**
+
+Statistical modelling uses statistical techniques to analyse and interpret data. Machine learning uses algorithms that allow systems to learn from data and improve from experience. Mathematical modelling uses equations and formulas to describe and study complex phenomena.
+
+In practice, data models are used to answer different kinds of questions, such as:
+
+- what factors influence an outcome
+- how variables are related
+- whether groups or patterns exist in the data
+- what is likely to happen next
+
+#### A First Look at Data Models
+
+Data models are extremely important in data-driven decision-making because they help organise and represent information effectively. A data model acts as a conceptual framework that defines how data should be structured, stored, and manipulated inside a database or information system.
+
+This is important because a data model does not only describe the data itself. It also provides a blueprint for how an organisation understands, manages, and uses its information assets.
+
+##### Structure and organisation
+
+One of the most important functions of a data model is to organise data in a consistent and meaningful way.
+
+For example, a data model can identify:
+
+- entities such as customers, products, and orders
+- attributes such as names, quantities, prices, and dates
+- relationships such as a customer placing an order
+
+This gives the organisation a structured and standardised way to store, retrieve, and manipulate information.
+
+##### Data integrity and quality
+
+Data models also help maintain **data integrity** and support **data quality**.
+
+They do this by defining rules such as:
+
+- data types
+- valid relationships
+- constraints
+- business rules
+
+These rules reduce inconsistency and error, which is important because poor-quality data can weaken decision-making and reduce confidence in the results.
+
+##### Data integration
+
+Another important role of a data model is to support **data integration**.
+
+When different systems use a common data framework, it becomes easier to:
+
+- understand data across systems
+- share information
+- exchange data between applications and databases
+
+This improves consistency and helps organisations make decisions using a more coherent view of their data.
+
+##### Analysis and reporting
+
+A well-designed data model also supports effective **analysis and reporting**.
+
+When the data is organised meaningfully, it becomes easier to:
+
+- query the data
+- aggregate values
+- analyse patterns
+- generate reports
+
+That leads to stronger insight, clearer reporting, and more informed data-driven decisions.
+
+##### System development and maintenance
+
+Data models are also important in software and database development.
+
+They act as a blueprint for:
+
+- designing databases
+- defining tables
+- establishing relationships
+- applying constraints
+- maintaining the system over time
+
+This means the value of a data model goes beyond analysis. It also supports efficient implementation and smoother long-term system maintenance.
+
+##### Why this first look matters
+
+In conclusion, data models are fundamental to data-driven decision-making because they support:
+
+- efficient data organisation
+- quality and integrity control
+- data integration
+- effective analysis and reporting
+- system development and maintenance
+
+By using data models properly, organisations are better able to make informed and impactful decisions based on accurate, structured, and well-managed information.
+
+#### Why data models matter
+
+Data models matter because they help turn raw data into structured insight. Without a model, it is much harder to explain patterns, test assumptions, or produce reliable predictions.
+
+In real decision-making, a model can help an organisation:
+
+- understand a problem more clearly
+- compare different variables
+- forecast future outcomes
+- support better planning and action
+
+#### Common data modelling approaches
+
+| Approach | Main idea | Typical use |
+|----------|-----------|-------------|
+| Statistical modelling | Uses statistics to describe relationships and test ideas | Explanation, inference, comparison |
+| Machine learning | Uses algorithms that learn patterns from data | Prediction, classification, automation |
+| Mathematical modelling | Uses equations and formulas to describe systems | Simulation, optimisation, complex systems |
+
+#### Types of Data Models
+
+Data models are commonly categorised into three main types:
+
+- **Conceptual**
+- **Logical**
+- **Physical**
+
+Each type represents a different level of abstraction and has a different purpose in the modelling process.
+
+##### Conceptual data model
+
+A **conceptual data model** is the initial stage of the data modelling process. It focuses on capturing high-level business concepts, entities, and relationships without going deeply into technical implementation details.
+
+This makes the conceptual model useful when the goal is to:
+
+- understand the business at a high level
+- identify the main entities involved
+- clarify how those entities are related
+- communicate requirements with stakeholders before technical design begins
+
+##### Key characteristics of conceptual data modelling
+
+There are several recognisable characteristics of conceptual data modelling.
+
+###### Business understanding
+
+Conceptual modelling starts with a strong understanding of the business domain.
+
+That often involves:
+
+- interviews
+- workshops
+- discussions with users or stakeholders
+
+The purpose is to identify the key business entities, their attributes, and the relationships between them.
+
+###### Abstraction
+
+Conceptual models focus on **abstraction**. This means they emphasise the essential business concepts rather than the technical details of how the data will be stored, indexed, or accessed.
+
+The model gives a high-level business view, not an implementation design.
+
+###### Entities
+
+**Entities** are the important business objects in the model.
+
+For example, in a sales example, two important entities might be:
+
+- **Customer**
+- **Product**
+
+These are the main things the organisation wants to track and understand.
+
+###### Attributes
+
+**Attributes** describe the properties or characteristics of entities.
+
+For example:
+
+- a customer may have attributes such as customer number, customer name, and customer email
+- a product may have attributes such as product code and product name
+
+Attributes provide the details that make the entity useful in the data model.
+
+###### Relationships
+
+**Relationships** describe how entities are connected.
+
+For example:
+
+- a customer can purchase a product
+- a product can appear in many sales
+
+Relationships can be:
+
+- one-to-one
+- one-to-many
+- many-to-many
+
+###### Cardinality
+
+**Cardinality** refers to the numerical relationship between entities in a data model.
+
+It explains how many instances of one entity can be associated with or connected to another entity.
+
+Cardinality is commonly described as:
+
+- **one-to-one**, where one instance of an entity is linked to exactly one instance of another entity
+- **one-to-many**, where one instance of an entity can be linked to many instances of another entity, while those instances link back to only one of the first entity
+- **many-to-many**, where multiple instances of both entities can be linked to each other
+
+For example:
+
+- one student may belong to one department, while one department may contain many students
+- one customer may place many orders
+- one course may have many students, and one student may enrol in many courses
+
+Cardinality helps clarify the minimum and maximum relationship between entities and is important when deciding how the data should be organised.
+
+##### Conceptual example - Sales model
+
+The following simplified example shows how a conceptual data model may represent a sales scenario.
+
+<div class="mermaid">
+flowchart LR
+    A[Customer entity] -->|Sales relationship| B[Product entity]
+    A1[Customer Name] --- A
+    A2[Customer Surname] --- A
+    A3[Customer ID] --- A
+    A4[Customer Number] --- A
+    A5[Customer Email] --- A
+    B1[Product Name] --- B
+    B2[Product ID] --- B
+
+    style A fill:#A3D65C,stroke:#4E8A1F,stroke-width:2px,color:#000
+    style B fill:#52D1B2,stroke:#1F8A70,stroke-width:2px,color:#000
+    style A1 fill:#FFFFFF,stroke:#999,stroke-width:1px,color:#000
+    style A2 fill:#FFFFFF,stroke:#999,stroke-width:1px,color:#000
+    style A3 fill:#FFFFFF,stroke:#999,stroke-width:1px,color:#000
+    style A4 fill:#FFFFFF,stroke:#999,stroke-width:1px,color:#000
+    style A5 fill:#FFFFFF,stroke:#999,stroke-width:1px,color:#000
+    style B1 fill:#FFFFFF,stroke:#999,stroke-width:1px,color:#000
+    style B2 fill:#FFFFFF,stroke:#999,stroke-width:1px,color:#000
+</div>
+
+In this example:
+
+- **Customer** and **Product** are the main entities
+- customer and product details are shown as attributes
+- **Sales** is the relationship connecting the two entities
+
+##### Benefits of a conceptual data model
+
+Conceptual data models offer several important benefits.
+
+###### Requirement analysis
+
+A conceptual model helps with **requirement analysis** by identifying and documenting the core entities and relationships in the business.
+
+This creates a strong starting point for understanding the organisation's goals and data requirements.
+
+###### System design and alignment
+
+A conceptual model also helps with **system design and alignment**.
+
+It gives system designers and developers a clearer business picture and helps ensure that the later technical design reflects the real business domain.
+
+###### Data governance and data strategy
+
+Conceptual models also support **data governance** and **data strategy** because they help create a shared understanding of data definitions, structures, and relationships.
+
+This makes them useful for:
+
+- data integration planning
+- quality management
+- long-term data strategy
+
+###### Business intelligence and reporting
+
+Conceptual models can also support **business intelligence and reporting** because they provide a foundation for future data warehouses, analytical systems, and reporting structures.
+
+When the high-level model is clear, later reporting and analytical work becomes easier to organise.
+
+##### Why conceptual modelling matters
+
+Conceptual data modelling matters because it gives an organisation a shared, high-level understanding of its important data before technical implementation begins.
+
+It helps connect business requirements, system design, governance, and future reporting into one structured starting point.
+
+##### Real-world example - Online retail platform
+
+Let us explore conceptual data modelling through the example of an **online retail platform**. The goal is to create a conceptual data model that captures the essential components and relationships required to support the main business processes.
+
+##### Entities
+
+The conceptual model may include the following important entities:
+
+###### Customer
+
+Represents the individual customers who use the e-commerce platform to browse and purchase products.
+
+###### Product
+
+Represents the different items available for sale on the platform, each with its own identifying characteristics.
+
+###### Order
+
+Represents a customer's purchase transaction, including the items bought, quantities, and total cost.
+
+###### Payment
+
+Represents the payment details connected to an order, such as the payment method and transaction status.
+
+###### Category
+
+Represents the different product categories available on the platform, helping users browse and filter products more effectively.
+
+##### Relationships
+
+The conceptual model should also show how these entities are connected.
+
+###### Customer-Order
+
+This relationship connects customers to the orders they place.
+
+###### Order-Product
+
+This relationship connects each order to the products purchased in that transaction.
+
+###### Product-Category
+
+This relationship connects products to the categories they belong to.
+
+###### Order-Payment
+
+This relationship connects an order to its payment transaction.
+
+##### Attributes
+
+Each entity can also be described through attributes.
+
+###### Customer attributes
+
+- name
+- email
+- address
+- phone number
+
+###### Product attributes
+
+- name
+- price
+- description
+- stock quantity
+
+###### Order attributes
+
+- date
+- status
+- delivery address
+- total amount
+
+###### Payment attributes
+
+- payment date
+- method
+- transaction ID
+
+###### Category attributes
+
+- category name
+- description
+
+##### Why this retail example matters
+
+By creating a conceptual data model like this, the online retail platform gains a clearer understanding of:
+
+- its main business entities
+- the relationships between them
+- the kind of information each one contains
+
+This gives stakeholders and developers a shared view of the system and helps prepare for later database design, software development, and decision-making. It also helps visualise how customers, products, orders, payments, and categories are connected, which supports stronger planning and a better overall user experience.
+
+##### Exam resolver - Online retail conceptual model
+
+###### What the examiner is really testing
+
+In a case like this, the examiner usually wants to see whether you can:
+
+- identify that a **conceptual data model** is the correct level to use
+- extract the main **entities**, **relationships**, and **attributes** from a business case
+- explain why a high-level model is useful before technical implementation begins
+- connect the model to business understanding, future database design, and system development
+
+###### Resolver-style answer draft
+
+In this scenario, the most suitable type of data model is a **conceptual data model**. This is because the task focuses on understanding the main business components of the online retail platform and the relationships between them, rather than defining exact tables, field types, or database constraints.
+
+The first step is to identify the main **entities** in the case. These are **Customer**, **Product**, **Order**, **Payment**, and **Category**. These entities represent the most important business objects in the e-commerce system. A customer browses and purchases products, an order records a transaction, a payment records how the transaction was paid, and a category helps organise the products available on the platform.
+
+The next step is to identify the main **relationships**. A **Customer** places an **Order**, an **Order** includes one or more **Products**, a **Product** belongs to a **Category**, and an **Order** has a related **Payment**. These relationships show how the business operates and how the different parts of the platform connect to each other.
+
+The conceptual model should also include important **attributes** for each entity. For example, a customer may have a name, email, address, and phone number. A product may have a name, price, description, and stock quantity. An order may have a date, status, delivery address, and total amount. A payment may include a payment date, method, and transaction ID. A category may include a category name and description.
+
+This type of model is useful because it gives stakeholders a shared understanding of the system before moving into more technical design. It supports requirement analysis, helps software developers understand the business domain, and creates a strong foundation for later logical and physical data modelling. In other words, the conceptual model helps the organisation see how customers, products, orders, payments, and categories fit together before deciding exactly how the system will be implemented.
+
+###### Why this is a strong exam answer
+
+This is a strong exam answer because it:
+
+- chooses the correct data model level
+- uses the case to identify entities, relationships, and attributes clearly
+- explains why the model fits the scenario
+- links the business view to later database and system design
+
+##### Exam resolver - University course management system
+
+###### What the examiner is really testing
+
+In this type of university case, the examiner usually wants to see whether you can:
+
+- recognise that the task requires a **conceptual data model**
+- identify the main university entities and the attributes that describe them
+- define realistic relationships that match how course registration and enrolment work
+- explain why the model supports system planning before technical implementation
+
+###### Resolver-style answer draft
+
+In this scenario, the most suitable type of data model is a **conceptual data model**. The reason is that the university first needs a high-level understanding of the main parts of the course management system before moving to database tables, keys, and implementation details.
+
+The main **entities** in the system are **Student**, **Course**, **Instructor**, **Department**, and **Enrollment**. These represent the core business objects in the university environment. A student participates in academic activity, a course represents a unit of study, an instructor teaches academic content, a department organises courses and staff, and enrollment represents the connection between a student and a course.
+
+Each entity should have clear **attributes**. For **Student**, useful attributes include student ID, name, email, programme, and phone number. For **Course**, useful attributes include course ID, course name, credits, semester, and description. For **Instructor**, useful attributes include instructor ID, name, email, office, and title. For **Department**, useful attributes include department ID, department name, office location, and contact email. For **Enrollment**, useful attributes include enrollment ID, enrollment date, grade, and status.
+
+The main **relationships** in the model should reflect how the university operates. A **Student** enrols in a **Course**, and this relationship is captured through **Enrollment**. An **Instructor** teaches a **Course**. A **Department** offers one or more **Courses**. A **Department** may also have one or more **Instructors** connected to it. These relationships show how registration, teaching, and academic organisation work together in the course management system.
+
+This conceptual model is useful because it gives the university a clear picture of the essential data and interactions in the system. It supports requirement analysis, improves communication between stakeholders, and creates a strong foundation for later logical and physical modelling. In a semester exam answer, this shows that the analyst understands both the business context and the role of conceptual modelling in system design.
+
+###### Why this is a strong exam answer
+
+This is a strong exam answer because it:
+
+- identifies the correct modelling level for the task
+- includes at least five realistic entities
+- adds relevant attributes to each entity
+- explains realistic relationships based on university processes
+- links the model to planning, communication, and future implementation
+
+##### Logical data model
+
+A **logical data model** is an intermediate stage in the data modelling process. It builds on the conceptual model by translating high-level business concepts into a more detailed but still implementation-independent representation.
+
+The goal of logical data modelling is to create a structured blueprint that describes the data requirements clearly and comprehensively without yet defining exact database technology.
+
+###### Key characteristics of logical data modelling
+
+There are several recognisable characteristics of logical data modelling.
+
+###### Entities
+
+Like in the conceptual model, **entities** represent the major business objects in the system.
+
+However, in the logical model the entities are described in a more structured way so that they can support later database design.
+
+###### Attributes
+
+**Attributes** still describe the properties of each entity, but they are usually more refined and specific than in the conceptual model.
+
+They show exactly which pieces of data need to be stored for each entity.
+
+###### Relationships
+
+**Relationships** describe how entities are associated with each other.
+
+In the logical model these relationships are more precise and may include:
+
+- one-to-one relationships
+- one-to-many relationships
+- many-to-many relationships
+- cardinality constraints
+- participation constraints
+
+###### Keys
+
+**Keys** are an important part of the logical model because they identify records and connect related entities.
+
+- a **primary key** uniquely identifies each instance of an entity
+- a **foreign key** creates a reference to a related entity
+
+This makes the logical model much more detailed than the conceptual model.
+
+###### Logical example - Sales model
+
+In a logical sales model, the main business entities may be **Customer**, **Product**, and **Sale**.
+
+All the important attributes are shown inside each entity, and the relationships are more specific than in the conceptual version.
+
+For example:
+
+- **Customer** may include customer name, customer surname, customer ID, customer number, and customer email
+- **Product** may include product name and product ID
+- **Sale** may include sale ID, customer ID, product ID, sales date, and contact details
+
+In this example:
+
+- **Customer ID** can be the primary key for the Customer entity
+- **Product ID** can be the primary key for the Product entity
+- **Customer ID** and **Product ID** can appear in the Sale entity as foreign keys
+
+This shows how a logical model moves closer to implementation while still staying at a design level.
+
+###### Why the sales relationship matters
+
+The relationship between these entities is more detailed than in the conceptual model.
+
+The **Sale** entity acts as a child or linking entity between **Customer** and **Product**. It helps represent the sales event and stores the details of that interaction.
+
+This is useful when a customer can be linked to many sales and a product can appear in many sales. In practice, the sale record should reference an existing customer and an existing product.
+
+##### Why logical modelling matters
+
+Logical modelling matters because it helps analysts and designers move from high-level business understanding to a properly organised data structure.
+
+It is especially useful for:
+
+- clarifying entities and attributes in more detail
+- defining keys and relationship rules
+- preparing for later database design
+- reducing ambiguity before technical implementation begins
+
+##### Benefits of a logical data model
+
+Logical data models provide several important practical benefits.
+
+###### Database design and implementation
+
+Logical data models provide the foundation for **database design and implementation**.
+
+They help guide the creation of:
+
+- database tables
+- columns
+- primary keys
+- foreign keys
+- other structural design elements
+
+###### Query and reporting design
+
+Logical models also support **query and reporting design** because they show the relationships between entities and their attributes more clearly.
+
+This makes it easier to design meaningful queries, reports, and dashboards.
+
+###### Data integration and interoperability
+
+Logical models support **data integration and interoperability** by giving systems a standardised view of entities and their relationships.
+
+This creates a common understanding of the data structure and helps different systems exchange information more consistently.
+
+###### Data quality and consistency
+
+Logical models also support **data quality and consistency** because they define rules and constraints that reduce errors and improve integrity.
+
+By standardising structures and relationships, they help organisations enforce stronger quality standards.
+
+###### System documentation and communication
+
+Logical data models also serve as a **documentation and communication tool**.
+
+They help analysts, developers, and stakeholders understand the structure and meaning of the data, which improves collaboration and system planning.
+
+##### Real-world example - Human Resources Information System (HRIS)
+
+Let us explore logical data modelling through the example of a **Human Resources Information System (HRIS)**. The goal is to design a logical data model that helps an organisation manage employee data and HR processes in a structured and efficient way.
+
+The HRIS acts as a centralised system for storing employee information, tracking records, and supporting important HR activities.
+
+###### Entities and attributes
+
+The logical data model may include the following important entities and attributes.
+
+###### Employee
+
+This entity represents individual employees.
+
+Typical attributes may include:
+
+- employee ID
+- first name
+- last name
+- date of birth
+- gender
+- contact information
+- job title
+
+###### Department
+
+This entity represents departments within the organisation.
+
+Typical attributes may include:
+
+- department ID
+- department name
+- supervisor
+
+###### Job position
+
+This entity represents the different job positions available in the organisation.
+
+Typical attributes may include:
+
+- job title
+- job description
+- salary range
+- employment status
+
+###### Performance review
+
+This entity records employee performance evaluations.
+
+Typical attributes may include:
+
+- review date
+- performance rating
+- reviewer
+- comments
+
+###### Training programme
+
+This entity manages employee training activities.
+
+Typical attributes may include:
+
+- programme ID
+- programme name
+- training date
+- trainer
+
+###### Leave request
+
+This entity records employee leave requests.
+
+Typical attributes may include:
+
+- leave ID
+- leave type
+- start date
+- end date
+- status
+
+###### Payroll information
+
+This entity stores payroll-related data.
+
+Typical attributes may include:
+
+- salary
+- bonus
+- taxes
+- deductions
+- payment date
+
+###### Relationships
+
+The logical data model should also define the important relationships between these entities.
+
+- employees are assigned to a specific **Department** in a many-to-one relationship
+- employees hold a particular **Job position** in a many-to-one relationship
+- employees participate in **Performance reviews** in a one-to-many relationship
+- employees attend **Training programmes** in a many-to-many relationship
+- employees can submit multiple **Leave requests** in a one-to-many relationship
+- **Payroll information** is associated with each employee in a one-to-one relationship
+
+These relationship definitions make the HRIS model more precise and useful for later database design.
+
+###### Logical data model documentation
+
+The logical data model captures the essential entities, attributes, and relationships required for the HRIS.
+
+It serves as a blueprint for:
+
+- organising employee data efficiently
+- defining structural relationships between HR records
+- improving data integrity through clearer constraints
+- supporting HR processes such as performance tracking, training, leave handling, and payroll
+
+By developing a logical data model for an HRIS, an organisation can improve HR operations, support stronger data accuracy, and make better workforce-management decisions.
+
+This logical model also creates the foundation for the later **physical data model**, where the design is translated into actual database structures and storage choices.
+
+##### Exam resolver - Library Management System
+
+###### What the examiner is really testing
+
+In this type of library case, the examiner usually wants to see whether you can:
+
+- identify that the scenario requires a **logical data model**
+- choose realistic entities for books, borrowers, and library transactions
+- add appropriate attributes to each entity
+- define clear relationships that reflect borrowing and return processes
+
+###### Resolver-style answer draft
+
+In this scenario, the most suitable type of data model is a **logical data model**. This is because the task goes beyond a high-level business overview and asks for a more detailed structure of the data, including entities, attributes, and relationships that could later be used for database design.
+
+The first step is to identify the key **entities** in the Library Management System. A strong set of entities would include **Book**, **Borrower**, **Loan**, **Author**, and **Category**. These represent the main parts of the system. A book is the item being managed, a borrower is the person who borrows materials, a loan records the transaction, an author represents who wrote the book, and a category helps organise books into genres or subject areas.
+
+The next step is to define the relevant **attributes** for each entity. For **Book**, useful attributes include book ID, title, ISBN, publication year, and availability status. For **Borrower**, useful attributes include borrower ID, name, email, phone number, and membership date. For **Loan**, useful attributes include loan ID, issue date, due date, return date, and loan status. For **Author**, useful attributes include author ID, first name, last name, and nationality. For **Category**, useful attributes include category ID, category name, and description.
+
+The final step is to establish the **relationships** between the entities. A **Borrower** can have many **Loans**, while each **Loan** belongs to one borrower. A **Book** can appear in many loans over time, while each **Loan** refers to one book. A **Book** may be linked to one or more **Authors**, and an **Author** may write one or more books, which creates a many-to-many relationship. A **Book** can also belong to a **Category**, while a category can contain many books.
+
+This logical data model helps the library organise information more effectively, improve transaction tracking, and support future database implementation. It also improves data consistency because it clarifies what information must be stored and how records are connected. In a semester exam answer, this shows that the analyst understands how to move from a business scenario to a structured logical design.
+
+###### Why this is a strong exam answer
+
+This is a strong exam answer because it:
+
+- chooses the correct modelling level for the task
+- identifies realistic library entities
+- adds useful attributes to each entity
+- defines relationships that match real library operations
+- links the model to organisation, consistency, and later database design
+
+##### Physical data model
+
+A **physical data model** is the final stage in the data modelling process. It focuses on translating the logical data model into a real implementation inside a specific **Database Management System (DBMS)**.
+
+This means the physical model deals with the technical details of how data is actually stored, accessed, and organised.
+
+###### Key characteristics of physical data modelling
+
+There are several recognisable characteristics of physical data modelling.
+
+###### Table structures
+
+In a physical data model, entities are represented as **tables** in the database.
+
+Each table has a defined structure that may include:
+
+- column names
+- data types
+- field sizes
+- null or not-null settings
+- other storage-related properties
+
+The physical model determines how the data will be stored and organised inside these tables.
+
+###### Indexes
+
+**Indexes** are created on selected columns to improve retrieval performance.
+
+The physical model helps identify:
+
+- which columns should be indexed
+- what kind of index may be appropriate
+
+Examples include:
+
+- B-tree indexes
+- hash indexes
+- bitmap indexes
+
+###### Partitioning
+
+**Partitioning** is the process of dividing large tables or indexes into smaller sections called partitions.
+
+The physical model may define partitioning based on:
+
+- data volume
+- access patterns
+- maintenance requirements
+
+Partitioning can improve performance, simplify maintenance, and support more efficient large-scale processing.
+
+###### Constraints
+
+Physical data models also enforce **constraints** that help maintain consistency and validity in the database.
+
+These may include:
+
+- primary key constraints
+- foreign key constraints
+- unique constraints
+- check constraints
+
+For example, a sales date field may be restricted by a rule that prevents invalid dates from being stored.
+
+###### Physical example - Sales model
+
+In a physical sales model, the entities from the logical model are translated into real database tables.
+
+For example:
+
+- the **Customer** table may include fields such as customer name, customer surname, customer ID, customer number, and customer email
+- the **Product** table may include fields such as product name and product ID
+- the **Sales** table may include sales ID, customer ID, product ID, sales date, and contact details
+
+At the physical level, these fields are given specific technical definitions such as:
+
+- `Customer ID` as a primary key with a defined data type
+- `Product ID` as a primary key with a defined data type
+- `Customer ID` and `Product ID` in the Sales table as foreign keys
+- `Sales Date` with a date type and a constraint rule
+
+This shows how the physical model moves from design thinking to implementation planning.
+
+##### Why physical modelling matters
+
+Physical modelling matters because it prepares the data design for real use inside a database system.
+
+It is especially useful for:
+
+- implementing the database correctly
+- improving performance through indexes and partitioning
+- enforcing data validity through constraints
+- making storage and retrieval more efficient
+- supporting long-term maintenance in the DBMS
+
+##### Benefits of a physical data model
+
+Physical data models provide several important practical benefits.
+
+###### Database implementation
+
+Physical data models support **database implementation** by giving the exact details needed to create the real database structure.
+
+They help translate the logical data model into:
+
+- tables
+- columns
+- indexes
+- constraints
+- other physical database components
+
+###### Performance optimisation
+
+Physical data models also support **performance optimisation**.
+
+By planning:
+
+- indexing strategies
+- partitioning strategies
+- denormalisation choices where appropriate
+
+they help ensure that retrieval and update operations meet system performance requirements.
+
+###### Database administration and maintenance
+
+Physical data models also help with **database administration and maintenance**.
+
+They give administrators a clearer understanding of the implemented structure, which supports tasks such as:
+
+- backup and recovery
+- replication
+- monitoring
+- performance tuning
+
+##### Real-world example - Inventory Management System
+
+Let us explore physical data modelling through the example of an **Inventory Management System** for a retail store. The goal is to store and manage inventory data efficiently through a clear database structure.
+
+###### Entities and attributes
+
+The key entities in this physical example may include:
+
+- **Product**
+- **Supplier**
+- **Category**
+- **Inventory**
+
+At the physical level, each entity is translated into a table with defined columns and data types.
+
+###### Product table example
+
+The **Product** table may include:
+
+- `ProductID` - `INT` - unique identifier for each product
+- `ProductName` - `VARCHAR(100)` - name of the product
+- `Description` - `TEXT` - brief description of the product
+- `CategoryID` - `INT` - foreign key linking to the Category table
+- `SupplierID` - `INT` - foreign key linking to the Supplier table
+- `Price` - `DECIMAL(10,2)` - price of the product
+- `QuantityInStock` - `INT` - quantity available in stock
+- `ReorderThreshold` - `INT` - minimum stock level for reorder
+
+###### Supplier table example
+
+The **Supplier** table may include:
+
+- `SupplierID` - `INT` - unique identifier for each supplier
+- `SupplierName` - `VARCHAR(100)` - name of the supplier
+- `ContactName` - `VARCHAR(100)` - name of the contact person
+- `ContactEmail` - `VARCHAR(100)` - email address of the contact person
+- `Phone` - `VARCHAR(20)` - contact phone number
+
+###### Relationships
+
+The physical data model should also define the relationships between these tables.
+
+For example:
+
+- each **Product** belongs to one **Category** in a many-to-one relationship
+- each **Product** is supplied by one **Supplier** in a many-to-one relationship
+- an **Inventory** record is linked to a specific **Product**
+
+These relationships are usually implemented through foreign key fields such as `CategoryID` and `SupplierID`.
+
+###### Data types and constraints
+
+At the physical level, each field should have an appropriate **data type** and any needed **constraints**.
+
+Typical choices may include:
+
+- `INT` for identifiers and stock counts
+- `VARCHAR` for names, email addresses, and phone numbers
+- `TEXT` for longer descriptions
+- `DECIMAL(10,2)` for prices
+
+Typical constraints may include:
+
+- `PRIMARY KEY` on `ProductID` and `SupplierID`
+- `FOREIGN KEY` on `CategoryID` and `SupplierID` inside the Product table
+- `UNIQUE` constraints where duplicate values should not be allowed
+- `NOT NULL` constraints on essential fields such as product name or supplier name
+- `CHECK` constraints such as `QuantityInStock >= 0` or `Price >= 0`
+
+###### Indexing
+
+The physical model should also identify which attributes need **indexing** for faster retrieval.
+
+Useful examples include:
+
+- indexing `ProductID` because it is frequently used to locate products
+- indexing `SupplierID` because products are often searched by supplier
+- indexing `CategoryID` because products may be filtered by category
+
+This improves performance when the store manages a large number of records.
+
+###### Data integrity and performance considerations
+
+The physical data model should protect **data integrity** and support strong **performance**.
+
+This may include:
+
+- enforcing foreign key rules so products cannot reference missing suppliers or categories
+- using constraints to prevent invalid prices or negative stock levels
+- planning indexes based on common search patterns
+- considering data volume so large product tables remain efficient over time
+- reviewing usage patterns such as frequent stock checks, reorder checks, and supplier lookups
+
+###### Physical data model diagram
+
+The simplified diagram below shows how the main physical tables connect in this inventory example.
+
+<div class="mermaid">
+flowchart LR
+    C[Category table<br/>CategoryID PK<br/>CategoryName]
+    S[Supplier table<br/>SupplierID PK<br/>SupplierName<br/>ContactEmail]
+    P[Product table<br/>ProductID PK<br/>ProductName<br/>CategoryID FK<br/>SupplierID FK<br/>Price<br/>QuantityInStock]
+    I[Inventory table<br/>InventoryID PK<br/>ProductID FK<br/>LastUpdated]
+
+    C -->|one category to many products| P
+    S -->|one supplier to many products| P
+    P -->|one product to inventory records| I
+
+    style C fill:#DCECC9,stroke:#7AA95C,stroke-width:2px,color:#000
+    style S fill:#D8F1EC,stroke:#4A9E8E,stroke-width:2px,color:#000
+    style P fill:#FFF3C4,stroke:#C8A23C,stroke-width:2px,color:#000
+    style I fill:#E6E6FA,stroke:#7D7DAA,stroke-width:2px,color:#000
+</div>
+
+###### Why this inventory example matters
+
+This example shows how a physical model moves beyond high-level design and into technical implementation decisions.
+
+It demonstrates:
+
+- specific column names
+- specific data types
+- foreign key links between tables
+- indexing and constraint choices
+- practical support for inventory control and supplier management
+
+This kind of physical model helps ensure that the retail store can manage stock, reordering, suppliers, and product data accurately and efficiently.
+
+##### Exam resolver - Hospital Stock Management System
+
+###### What the examiner is really testing
+
+In this kind of hospital inventory case, the examiner usually wants to see whether you can:
+
+- identify that the scenario requires a **physical data model**
+- define realistic **entities**, **attributes**, and **relationships** for stock management
+- show how the design becomes technical through data types, keys, and constraints
+- explain why the model supports accurate and efficient inventory control
+
+###### Resolver-style answer draft
+
+In this scenario, the most suitable type of data model is a **physical data model**. This is because the task is not only to describe the business at a high level, but to create a structure that can be implemented inside a database for a hospital stock system.
+
+The main **entities** in this Stock Management System could include **Item**, **Supplier**, **Category**, **StockRecord**, and **Department**. An **Item** represents a medical product or supply, such as gloves, syringes, medicine, or masks. A **Supplier** represents the company that provides the stock. A **Category** helps organise items into groups such as medication, protective equipment, or surgical supplies. A **StockRecord** tracks quantity, movement, and reorder information. A **Department** represents the hospital unit that uses or requests stock, such as emergency, surgery, or pharmacy.
+
+Each entity should include suitable **attributes**. For **Item**, useful attributes include `ItemID`, `ItemName`, `Description`, `CategoryID`, `SupplierID`, `UnitCost`, `QuantityInStock`, `ExpiryDate`, and `ReorderLevel`. For **Supplier**, useful attributes include `SupplierID`, `SupplierName`, `ContactName`, `ContactEmail`, and `Phone`. For **Category**, useful attributes include `CategoryID`, `CategoryName`, and `Description`. For **StockRecord**, useful attributes include `StockRecordID`, `ItemID`, `BatchNumber`, `QuantityReceived`, `QuantityIssued`, `LastUpdated`, and `StorageLocation`. For **Department**, useful attributes include `DepartmentID`, `DepartmentName`, and `ContactExtension`.
+
+The **relationships** should reflect how hospital stock operates. Each **Item** belongs to one **Category**, which gives a many-to-one relationship from item to category. Each **Item** is supplied by one **Supplier**, which gives a many-to-one relationship from item to supplier. Each **StockRecord** is linked to one **Item**, which allows the system to track stock levels and movement over time. A **Department** may use many items, and an item may be requested by multiple departments, which can be handled through a linking or issue table if the implementation needs that level of detail.
+
+At the physical level, the fields should also use clear **data types** and **constraints**. For example, IDs can use `INT`, names can use `VARCHAR`, descriptions can use `TEXT`, costs can use `DECIMAL(10,2)`, and dates can use `DATE` or `DATETIME`. `PRIMARY KEY` constraints should be placed on fields such as `ItemID` and `SupplierID`. `FOREIGN KEY` constraints should connect `CategoryID` and `SupplierID` in the Item table, and `ItemID` in the StockRecord table. `CHECK` constraints can help ensure that stock quantity is never negative and that expiry dates are valid.
+
+The system should also support **performance** and **data integrity**. Important indexes may be placed on `ItemID`, `SupplierID`, `CategoryID`, and `ExpiryDate` so staff can quickly search for products, suppliers, and time-sensitive stock. Constraints and foreign keys help prevent invalid records, which is especially important in a hospital environment where inventory accuracy directly affects patient care.
+
+Overall, this physical data model gives the hospital a database-ready structure for managing supplies safely and efficiently. It supports stock control, supplier tracking, category organisation, and department usage while also preparing the system for strong performance and accurate reporting.
+
+###### Why this is a strong exam answer
+
+This is a strong exam answer because it:
+
+- identifies the correct modelling level for the task
+- defines realistic entities for a hospital stock environment
+- adds appropriate attributes with implementation-oriented thinking
+- explains relationships clearly
+- connects the physical model to constraints, indexing, performance, and inventory accuracy
+
+##### Why these three types matter
+
+These three types matter because they support different stages of the modelling process:
+
+- the **conceptual** model supports understanding
+- the **logical** model supports structured design
+- the **physical** model supports technical implementation
+
+Together, they help move from business understanding to practical system development in a clear and organised way.
+
+#### Data Modelling Techniques
+
+Data modelling techniques are used to create structured and meaningful representations of data inside a system.
+
+They help show:
+
+- the structure of the data
+- the relationships between data elements
+- the constraints that help keep the data accurate
+
+Different techniques are used depending on the organisation's objectives, the complexity of the system, and the type of insight or management support needed.
+
+One important technique is shown below.
+
+##### Entity-Relationship (ER) modelling
+
+**Entity-Relationship (ER) modelling** is a widely used data modelling technique that focuses on identifying the key **entities**, their **attributes**, and the **relationships** between them.
+
+This technique gives a high-level but structured visual view of the data requirements in a system.
+
+In a simple ER example, the main entities may be **Customer** and **Product**, while **Sales** represents the relationship between them.
+
+This kind of model is useful because it helps analysts and stakeholders:
+
+- understand the core data structure
+- visualise how business objects are connected
+- identify which details belong to each entity
+- prepare for later logical and physical modelling
+
+ER modelling is especially valuable early in a project because it creates a shared understanding of what the system needs to store and how the main business objects interact.
+
+##### Exam resolver - University ER scenario
+
+###### What the examiner is really testing
+
+In this kind of university ER case, the examiner usually wants to see whether you can:
+
+- identify that **ER modelling** is the most suitable technique
+- name the main **entities** in the scenario
+- define the **relationships** between the entities clearly
+- explain how the model supports data management and academic processes
+
+###### Resolver-style answer draft
+
+In this scenario, the most suitable technique is **Entity-Relationship (ER) modelling**. This is because the case focuses on identifying the main entities in the university system and showing how they are connected through relationships.
+
+The main **entities** in this case are **Student**, **Course**, **Professor**, and **Department**. These entities represent the most important business objects in the university management system. A student is the person being registered and managed, a course is the unit of study, a professor is responsible for teaching, and a department represents the academic area to which students and courses belong.
+
+The next step is to define the **relationships** between these entities. **Student** is linked to **Course** through the **Enrolls-in** relationship. This means that a student can enrol in multiple courses, and each course can have multiple students, which makes this a many-to-many relationship. **Professor** is linked to **Course** through the **Teaches** relationship. This means that a professor can teach multiple courses, while each course is assigned to one professor in this simplified model. **Student** is linked to **Department** through the **Belongs-to** relationship. This means that each student belongs to one department, while each department can have many students.
+
+Using ER modelling, the university can clearly visualise its data requirements and understand how the main academic objects connect to each other. This supports better data organisation, more efficient course allocation, clearer professor assignments, and improved student registration processes. It also creates a strong foundation for later logical and physical modelling if the system is developed further.
+
+###### Why this is a strong exam answer
+
+This is a strong exam answer because it:
+
+- identifies the correct modelling technique
+- clearly names the relevant entities
+- explains the relationships and their meaning
+- links the ER model to real university processes such as registration and course management
+
+##### Hierarchical modelling
+
+**Hierarchical modelling** is a data modelling technique that organises information into a tree-like structure.
+
+This technique is based on **parent-child relationships**, where each child element is linked to one parent element, while a parent can have multiple children.
+
+Hierarchical modelling is useful when the data already has a natural top-down structure, such as:
+
+- file systems
+- organisational hierarchies
+- product categorisation
+
+###### Main components of hierarchical modelling
+
+The key components of hierarchical modelling include the following.
+
+###### Parent-child relationships
+
+Hierarchical modelling is built on **one-to-many** relationships.
+
+Each child belongs to one parent, while one parent can have several child elements.
+
+###### Nodes
+
+**Nodes** represent the individual data elements inside the hierarchy.
+
+Each node may also include attributes that describe its properties.
+
+###### Root node
+
+The **root node** is the topmost element in the hierarchy.
+
+It does not have a parent, but it can have one or more child nodes below it.
+
+###### Leaf nodes
+
+**Leaf nodes** are the endpoints of the structure.
+
+They are the lowest-level nodes and do not have children of their own.
+
+###### Levels
+
+**Levels** describe the different layers in the hierarchy.
+
+Each level groups nodes that are the same distance away from the root node.
+
+##### Real-world example - Organisational structure
+
+A good real-world example of hierarchical modelling is the **organisational structure** of a large multinational company.
+
+In this case:
+
+- the **CEO** acts as the root node
+- departments appear as child nodes under the CEO
+- teams or divisions appear as lower-level child nodes under each department
+
+This makes it easier to understand reporting lines, responsibility areas, and the overall structure of the organisation.
+
+Hierarchical modelling is useful here because it provides a clear visual structure for how the organisation is arranged, and it supports efficient management of departments, teams, and authority relationships.
+
+##### Exam resolver - Organisational hierarchy
+
+###### What the examiner is really testing
+
+In this type of hierarchy case, the examiner usually wants to see whether you can:
+
+- identify that **hierarchical modelling** is the right technique
+- recognise the **root node**, **parent-child relationships**, **levels**, and **leaf nodes**
+- explain how the organisational structure is represented in the hierarchy
+- connect the model to practical business understanding and reporting lines
+
+###### Resolver-style answer draft
+
+In this scenario, the most suitable modelling technique is **hierarchical modelling**. This is because the organisational structure is clearly arranged in levels, with one top-level leader and several lower-level units reporting beneath that role.
+
+The **root node** in this hierarchy is the **CEO**, because this is the topmost element and it does not report to any other node. Under the CEO, the next level contains **Department A**, **Department B**, and **Department C**. These are child nodes of the CEO and parent nodes for the next lower level of the structure.
+
+Below the department level, the model contains team nodes. Under **Department A**, there are **Team A1** and **Team A2**. Under **Department B**, there are **Team B1**, **Team B2**, and **Team B3**. Under **Department C**, there is **Team C1**. These teams are child nodes of their departments. In this structure, the teams are also the **leaf nodes** because they do not have further child nodes below them.
+
+The hierarchy is based on clear **parent-child relationships**. The CEO is the parent of the departments. Each department is the parent of its own teams. Each team has exactly one parent department, while each department can have multiple child teams. This is a one-to-many structure, which is a key characteristic of hierarchical modelling.
+
+This model is useful because it clearly shows the company’s reporting structure, chain of responsibility, and organisational layers. It helps the business understand who reports to whom, how departments are arranged, and how teams fit into the wider structure. In an exam answer, this demonstrates that hierarchical modelling is especially suitable when data already has a natural top-down structure.
+
+###### Why this is a strong exam answer
+
+This is a strong exam answer because it:
+
+- identifies the correct modelling technique
+- correctly names the root node, departments, and leaf nodes
+- explains the parent-child structure clearly
+- links the hierarchy to reporting lines and organisational understanding
+
+##### Relational modelling
+
+**Relational modelling** is a fundamental data modelling technique used to design and represent data inside a **Relational Database Management System (RDBMS)**.
+
+The system is built on the relational model, and this approach organises data into **tables** made up of rows and columns.
+
+The main purpose of relational modelling is to capture the interconnections between tables and maintain data integrity through key components such as primary keys, foreign keys, and relational constraints.
+
+###### Main components of relational modelling
+
+The key components of relational modelling include the following.
+
+###### Tables
+
+**Tables** are the core building blocks of a relational model.
+
+Each table represents an entity in the system. The rows represent records or occurrences of the entity, while the columns represent the attributes associated with that entity.
+
+###### Attributes
+
+**Attributes** are the columns that describe the properties of the entity.
+
+For example, a Customer table may include attributes such as customer ID, name, and contact information.
+
+###### Primary keys
+
+A **primary key**, or a combination of columns acting as a primary key, uniquely identifies each row in a table.
+
+This helps maintain uniqueness and integrity inside the table.
+
+Typical examples include customer ID or product ID.
+
+###### Foreign keys
+
+**Foreign keys** create links between tables by referring to primary keys in other tables.
+
+They represent dependencies or associations between tables and help maintain **referential integrity**, so relationships between records remain consistent and accurate.
+
+###### Relationships
+
+**Relationships** describe how tables are connected.
+
+In relational modelling, relationships may be:
+
+- one-to-one
+- one-to-many
+- many-to-many
+
+These relationships are usually implemented through foreign keys and, in many-to-many cases, through linking tables that make the relationship easier to manage and query.
+
+###### Relational constraints
+
+**Relational constraints** are rules that help maintain consistency and validity in the data.
+
+Common examples include:
+
+- uniqueness constraints
+- check constraints
+- referential integrity constraints
+
+These rules help ensure that the data remains accurate, dependable, and consistent across related tables.
+
+##### Why relational modelling matters
+
+Relational modelling matters because it provides a structured way to design database systems that are:
+
+- accurate
+- maintainable
+- easy to query
+- easier to scale across real-world business processes
+
+It is widely used in systems such as customer relationship management, inventory systems, and financial transaction systems because these environments depend on clear table structures, dependable relationships, and reliable data integrity.
+
+##### Real-world example - Online bookstore
+
+Let us explore relational modelling through the example of an **online bookstore**.
+
+In this case, relational modelling can be used to represent the connections between customers, books, and orders in a structured database.
+
+###### Entities
+
+The main entities in the bookstore example may include:
+
+- **Customers**
+- **Books**
+- **Orders**
+
+###### Attributes
+
+Each entity may include the following attributes.
+
+###### Customers
+
+- `CustomerID`
+- `Name`
+- `Email`
+- `Address`
+
+###### Books
+
+- `BookID`
+- `Title`
+- `Author`
+- `Genre`
+- `Price`
+
+###### Orders
+
+- `OrderID`
+- `CustomerID`
+- `BookID`
+- `OrderDate`
+- `Quantity`
+
+###### Primary keys
+
+The main primary keys may be:
+
+- **Customers**: `CustomerID`
+- **Books**: `BookID`
+- **Orders**: `OrderID`
+
+###### Foreign keys
+
+The `Orders` table may contain:
+
+- `CustomerID` as a foreign key referencing `CustomerID` in the **Customers** table
+- `BookID` as a foreign key referencing `BookID` in the **Books** table
+
+###### Relationships
+
+The main relationships in this relational model are:
+
+- one **Customer** can place many **Orders**, which creates a one-to-many relationship between Customers and Orders
+- one **Book** can appear in many **Orders** over time
+
+In practice, the bookstore uses the Orders table to connect customers and books, allowing data to be organised efficiently while keeping the relationships clear.
+
+###### Why this bookstore example matters
+
+This example shows how relational modelling helps organise a database around:
+
+- entities
+- attributes
+- primary keys
+- foreign keys
+- relationships
+
+It also shows how relational tables make it easier to retrieve data, track customer purchases, and maintain strong integrity inside the bookstore system.
+
+##### Exam resolver - Online bookstore relational model
+
+###### What the examiner is really testing
+
+In this kind of bookstore case, the examiner usually wants to see whether you can:
+
+- identify that the scenario requires **relational modelling**
+- define the main tables and their attributes
+- explain how **primary keys** and **foreign keys** connect the tables
+- describe the relationships clearly and connect them to practical data management
+
+###### Resolver-style answer draft
+
+In this scenario, the most suitable technique is **relational modelling**. This is because the online bookstore needs a structured database where related data can be stored in tables and connected through keys.
+
+The main **entities** in this model are **Customers**, **Books**, and **Orders**. These entities can be represented as separate tables in the database. The **Customers** table stores customer information, the **Books** table stores book information, and the **Orders** table records transactions between customers and books.
+
+The main **attributes** for the **Customers** table can be `CustomerID`, `Name`, `Email`, and `Address`. The **Books** table can include `BookID`, `Title`, `Author`, `Genre`, and `Price`. The **Orders** table can include `OrderID`, `CustomerID`, `BookID`, `OrderDate`, and `Quantity`.
+
+The main **primary keys** are `CustomerID` in the Customers table, `BookID` in the Books table, and `OrderID` in the Orders table. These keys ensure that each record can be uniquely identified. The main **foreign keys** are `CustomerID` and `BookID` in the Orders table. These fields connect each order to a customer and a book.
+
+The main **relationships** are as follows. One customer can place many orders, which creates a one-to-many relationship between Customers and Orders. One book can appear in many orders over time. The Orders table works as the connecting table that links customers and books, allowing the bookstore to track purchases efficiently.
+
+This relational model is useful because it keeps the data organised, supports accurate retrieval of information, and maintains integrity through primary keys, foreign keys, and constraints. In a real online bookstore, this makes it easier to track customers, manage book sales, and query order history without duplicating unnecessary data.
+
+###### Why this is a strong exam answer
+
+This is a strong exam answer because it:
+
+- identifies the correct modelling technique
+- defines the correct tables and attributes
+- explains how keys preserve the relationships
+- connects the relational structure to real bookstore operations
+
+##### Exam resolver - School, banking, and craft shop diagrams
+
+###### What the examiner is really testing
+
+In this kind of mixed-model question, the examiner usually wants to see whether you can:
+
+- match each scenario to the most suitable modelling technique
+- create a simple diagram for each technique
+- identify the important entities, levels, tables, or relationships
+- explain briefly why each model fits that scenario
+
+###### Resolver-style answer draft
+
+In this question, I would use three different modelling techniques because each business example has a different structure and purpose. I would use **ER modelling** for the **School Management System**, **hierarchical modelling** for the **banking institution**, and **relational modelling** for the **online craft shop**.
+
+For the **School Management System**, **ER modelling** is the best choice because the main goal is to show entities and the relationships between them. A simple ER-style diagram could be represented as:
+
+`STUDENT -- Enrolls-in -- COURSE`
+
+`TEACHER -- Teaches -- COURSE`
+
+`STUDENT -- Belongs-to -- DEPARTMENT`
+
+In this ER example, the main entities are **Student**, **Course**, **Teacher**, and **Department**. The relationships explain how students enrol in courses, teachers teach courses, and students belong to departments. This is suitable because a school system depends on clearly understanding how the main academic entities connect to one another.
+
+For the **banking institution**, **hierarchical modelling** is the most suitable technique because the scenario can be shown as a top-down organisational or service structure. A simple hierarchical diagram could be represented as:
+
+`BANK HEAD OFFICE`
+
+`|- Branch A`
+
+`|  |- Loans Department`
+
+`|  |- Customer Service`
+
+`|- Branch B`
+
+`|  |- Savings Department`
+
+`|  |- Credit Department`
+
+This hierarchy has a clear **root node**, which is the **Bank Head Office**. Under that root, the branches appear as child nodes, and under each branch, the departments appear as lower-level child nodes. This model is appropriate because a bank often has a clear reporting and management structure that fits a tree-like arrangement.
+
+For the **online craft shop**, **relational modelling** is the most suitable technique because the business needs structured tables linked through keys. A simple relational-style diagram could be represented as:
+
+`CUSTOMERS(CustomerID, Name, Email)`
+
+`PRODUCTS(ProductID, ProductName, Price, Category)`
+
+`ORDERS(OrderID, CustomerID, ProductID, OrderDate, Quantity)`
+
+In this relational example, **CustomerID** and **ProductID** are primary keys in their own tables, while **CustomerID** and **ProductID** also appear as foreign keys in the **Orders** table. This allows the craft shop to connect customers, products, and orders efficiently. Relational modelling fits here because online sales systems depend on structured tables, accurate order tracking, and strong data integrity.
+
+Overall, this answer shows that different modelling techniques solve different business needs. ER modelling is best when the focus is on entities and relationships, hierarchical modelling is best when the structure is top-down, and relational modelling is best when data must be stored and queried through linked tables in a database.
+
+###### Why this is a strong exam answer
+
+This is a strong exam answer because it:
+
+- matches each scenario to a suitable modelling technique
+- gives a simple diagram for each business case
+- explains the important entities, levels, or tables clearly
+- justifies why each modelling technique fits its scenario
+- shows comparison and application, not just definitions
+
+#### Common techniques used in industry
+
+Some popular techniques include:
+
+- **linear regression**
+- **decision trees**
+- **clustering**
+- **neural networks**
+
+These techniques are used for different goals.
+
+- **Linear regression** is useful when we want to understand or predict a numerical relationship.
+- **Decision trees** are useful when a process branches into different possible outcomes.
+- **Clustering** is useful when we want to group similar observations without predefined labels.
+- **Neural networks** are useful when the patterns are complex and harder to capture with simpler models.
+
+#### Common tools used for data modelling
+
+Various tools are used to build, test, and visualise data models.
+
+Common examples include:
+
+- **Python** with libraries such as `pandas`, `NumPy`, and `scikit-learn`
+- **R** with packages such as `ggplot2` and `caret`
+- commercial tools such as **Tableau** and **Microsoft Power BI**
+
+These tools help analysts:
+
+- prepare data
+- build models
+- evaluate results
+- present findings clearly
+
+In industry, several practical tools are also commonly used to simplify database design, diagramming, and model management.
+
+###### MySQL Workbench
+
+**MySQL Workbench** is a comprehensive database design and administration tool for MySQL.
+
+It provides visual support for:
+
+- database development
+- modelling
+- SQL coding
+- administration tasks
+
+###### ER/Studio
+
+**ER/Studio** is a versatile data modelling and database design tool that supports multiple database platforms.
+
+It is often used to:
+
+- create Entity-Relationship Diagrams (ERDs)
+- document complex database structures
+- generate SQL scripts
+
+###### SQuirreL SQL Client
+
+**SQuirreL SQL Client** is an open-source graphical SQL client that supports many relational databases through one interface.
+
+It is useful when analysts or developers need a flexible tool for working across different database systems.
+
+###### Draw.io
+
+**Draw.io** is a web-based diagramming tool used to create different visual models such as:
+
+- network diagrams
+- flowcharts
+- UML-style diagrams
+
+Its drag-and-drop interface makes it useful for fast modelling and collaboration.
+
+###### Lucidchart
+
+**Lucidchart** is a cloud-based diagramming and visual communication tool.
+
+It supports collaborative work and is useful for creating clear data-model diagrams with team input.
+
+###### Postico
+
+**Postico** is a PostgreSQL client for macOS.
+
+It provides a streamlined interface for managing PostgreSQL databases and running SQL queries.
+
+###### DataGrip
+
+**DataGrip** is a database-focused IDE from JetBrains.
+
+It supports many database systems and offers features such as:
+
+- SQL coding support
+- schema navigation
+- query development
+- data management assistance
+
+###### Why these tools matter
+
+These tools help data professionals:
+
+- visualise complex data structures
+- document database systems more clearly
+- build and manage models more efficiently
+- collaborate more effectively in projects
+
+In practice, the right tool depends on whether the main goal is diagramming, SQL/database administration, cross-platform database work, or team collaboration.
+
+#### Real-world case framing
+
+Imagine a company wants to predict customer churn. Different modelling approaches could support that work in different ways:
+
+- a **statistical model** could test which variables are strongly associated with churn
+- a **machine learning model** could classify which customers are most likely to leave
+- a **mathematical model** could represent system-level behaviour or optimisation choices
+
+This shows that the best model depends on the business question, the type of data, and the intended use of the result.
+
+#### Case Studies: Real-world Examples of Data Models in Action
+
+Having explored data modelling techniques, let us now connect them to real-world scenarios where these techniques support practical systems and business decisions.
+
+##### Airline Reservation System (relational model)
+
+Major airlines often rely on a **relational model** in their reservation systems.
+
+This model organises data into connected tables so the system can manage:
+
+- flight details
+- seat availability
+- passenger information
+- bookings
+
+This is useful because the airline needs accurate and up-to-date data across many related records at the same time. Relational modelling supports efficient reservation management, structured querying, and strong integrity across customer and booking information.
+
+##### Inventory Management System (hierarchical model)
+
+Retail inventory systems often use **hierarchical modelling** to organise stock into a tree-like structure.
+
+For example, the system may move from:
+
+- product category
+- subcategory
+- individual item
+
+This structure is useful because stock is often managed in clear parent-child levels. A business can then track product groups, narrow down subcategories, and manage individual items more efficiently.
+
+##### Social media platform (network model)
+
+Social media platforms such as Facebook or LinkedIn are strong examples of **network modelling**.
+
+In a network model:
+
+- users can be represented as nodes
+- the connections between users can be represented as edges or links
+
+This is useful because the platform depends on relationships between users, not only on isolated records. A network model supports:
+
+- friend or connection recommendations
+- social-graph analysis
+- targeted advertising based on linked behaviour
+- efficient exploration of connected users
+
+##### Customer Relationship Management (CRM) system (entity-relationship model)
+
+Many **CRM systems** use an **entity-relationship model** to organise customer data clearly.
+
+Important entities may include:
+
+- customers
+- orders
+- products
+- interactions
+
+The relationships between these entities help the organisation understand how customers behave, what they have bought, and how they have interacted with the company. This gives the business a more complete customer view and supports better service, stronger follow-up, and more useful reporting.
+
+##### Internet of Things (IoT) sensor data (relational and network model)
+
+In **IoT applications**, organisations may combine more than one modelling technique.
+
+For example, in a smart-city scenario:
+
+- a **relational model** can store structured sensor records such as traffic counts, weather readings, and pollution measurements
+- a **network model** can represent how sensors, locations, and connected systems relate to each other
+
+This combination is useful because IoT environments often need both:
+
+- structured storage for measured values
+- connected modelling for devices, locations, and interactions
+
+That supports stronger analysis, faster monitoring, and more informed decisions for city or infrastructure management.
+
+##### Why these case studies matter
+
+These examples show that data models are not only theoretical diagrams. They are practical tools used in real systems across different industries.
+
+They also show an important exam idea:
+
+- **relational models** are strong when the system depends on connected tables and data integrity
+- **hierarchical models** are strong when the structure is top-down and parent-child based
+- **network models** are strong when the value comes from connected relationships between nodes
+- **entity-relationship models** are strong when the goal is to understand entities and their relationships clearly before implementation
+- some systems, such as **IoT**, may combine techniques because one model alone is not always enough
+
+#### The Task
+
+Answer the questions below thoroughly.
+
+##### Question 1
+
+A student is enrolled in multiple courses at a university. Please create a logical model that depicts this scenario with the relevant entities and attributes.
+
+###### Suggested answer
+
+The most suitable design for this scenario is a **logical data model** because the question asks for entities, attributes, and the relationships between them in a more structured way than a simple conceptual overview.
+
+The main entities should be **Student**, **Course**, and **Enrollment**.
+
+- **Student** can include attributes such as `StudentID`, `StudentName`, `Email`, `PhoneNumber`, and `DepartmentID`
+- **Course** can include attributes such as `CourseID`, `CourseName`, `Credits`, `Semester`, and `InstructorID`
+- **Enrollment** can include attributes such as `EnrollmentID`, `StudentID`, `CourseID`, `EnrollmentDate`, `Status`, and `Grade`
+
+The reason **Enrollment** is important is that the relationship between Student and Course is **many-to-many**. One student can enrol in many courses, and one course can have many students. In a logical model, this relationship is usually handled through a linking entity such as Enrollment.
+
+The main relationships are:
+
+- one **Student** can have many **Enrollment** records
+- one **Course** can have many **Enrollment** records
+- each **Enrollment** record connects one student to one course
+
+This logical model is useful because it clearly represents how course registration works in a university system. It also prepares the system for later database design by identifying keys and relationships in a structured way.
+
+##### Question 2
+
+Using the examples in the lesson, develop your own scenarios and subsequent breakdowns for a conceptual, logical, and physical data model in written format.
+
+###### Suggested answer
+
+One strong way to answer this question is to use three realistic business scenarios and match each one to the correct type of data model.
+
+###### Conceptual data model scenario - Food delivery platform
+
+In a food delivery platform, the organisation first needs a high-level understanding of the system. The main entities may include **Customer**, **Restaurant**, **Order**, **Driver**, and **Payment**. The main relationships are that a customer places an order, a restaurant prepares an order, a driver delivers an order, and a payment is linked to an order.
+
+At this level, the focus is on business understanding, not technical implementation. The conceptual model helps stakeholders see how the important parts of the platform connect to each other before tables, data types, or constraints are discussed.
+
+###### Logical data model scenario - Library Management System
+
+In a library system, the organisation needs more detailed design. The main entities may include **Book**, **Borrower**, **Loan**, **Author**, and **Category**. Each entity needs attributes. For example, Book may include `BookID`, `Title`, `ISBN`, and `PublicationYear`. Borrower may include `BorrowerID`, `Name`, and `Email`. Loan may include `LoanID`, `IssueDate`, `DueDate`, and `ReturnDate`.
+
+The relationships must also be clear. A borrower can have many loans, a book can appear in many loans over time, and a book may be linked to one or more authors. This logical model is more detailed than the conceptual one because it prepares the system for later database design through clearer entities, attributes, and keys.
+
+###### Physical data model scenario - Pharmacy Inventory System
+
+In a pharmacy inventory system, the model must move into implementation detail. The main tables may include **Medicine**, **Supplier**, **Category**, and **StockRecord**. The fields need exact data types such as `MedicineID INT`, `MedicineName VARCHAR(100)`, `UnitPrice DECIMAL(10,2)`, `ExpiryDate DATE`, and `QuantityInStock INT`.
+
+The physical model must also define constraints and performance rules. For example, `MedicineID` should be a primary key, `SupplierID` should be a foreign key, `QuantityInStock` should have a check constraint to prevent negative values, and indexes may be added on fields like `MedicineID` and `ExpiryDate`.
+
+This written breakdown shows the difference clearly:
+
+- the **conceptual** model explains the business at a high level
+- the **logical** model adds detailed entities, attributes, and relationships
+- the **physical** model defines the exact database implementation
+
+##### Question 3
+
+Using the examples in the lesson, develop your own scenarios and subsequent breakdowns for ER, hierarchical, and relational modelling techniques in written format.
+
+###### Suggested answer
+
+###### ER modelling scenario - School Management System
+
+A school management system is a strong example of **ER modelling**. The main entities may be **Student**, **Course**, **Teacher**, and **Department**. The relationships may be:
+
+- Student **enrols in** Course
+- Teacher **teaches** Course
+- Student **belongs to** Department
+
+This works well as ER modelling because the main purpose is to identify the entities and clearly show how they are related before moving into database implementation.
+
+###### Hierarchical modelling scenario - Hospital organisational structure
+
+A hospital organisational structure is a strong example of **hierarchical modelling**. The **Hospital Director** can be the root node. Under the director, there may be child nodes such as **Emergency Department**, **Surgery Department**, and **Pharmacy Department**. Under each department, there may be lower-level nodes such as teams, units, or roles.
+
+This is suitable because the structure is top-down and based on parent-child relationships. Each lower unit belongs to one higher unit, which makes hierarchical modelling the best fit.
+
+###### Relational modelling scenario - Online craft shop
+
+An online craft shop is a strong example of **relational modelling**. The main tables may be **Customers**, **Products**, and **Orders**.
+
+- **Customers** may include `CustomerID`, `Name`, and `Email`
+- **Products** may include `ProductID`, `ProductName`, `Category`, and `Price`
+- **Orders** may include `OrderID`, `CustomerID`, `ProductID`, `OrderDate`, and `Quantity`
+
+The relationships are implemented through keys. `CustomerID` and `ProductID` appear in the Orders table as foreign keys. This makes relational modelling suitable because the business depends on structured tables, linked records, and reliable querying.
+
+##### Question 4
+
+Look at the below scenarios and identify each data modelling technique used.
+
+###### Suggested answer
+
+###### Scenario 1
+
+In which data modelling technique is data organised into a collection of interconnected records called nodes and relationships?
+
+**Answer:** **Network modelling**
+
+This is the network model because it represents data as nodes and the connections between them as relationships or links.
+
+###### Scenario 2
+
+Which data modelling technique represents data in tables with records and columns and establishes relationships through foreign keys?
+
+**Answer:** **Relational modelling**
+
+This is the relational model because it uses tables, rows, columns, primary keys, and foreign keys.
+
+###### Scenario 3
+
+In which data modelling technique is data structured in a tree-like hierarchical structure with parent-child relationships between data elements?
+
+**Answer:** **Hierarchical modelling**
+
+This is the hierarchical model because it is based on root nodes, levels, and parent-child structure.
+
+###### Scenario 4
+
+Which data modelling technique allows for a flexible and dynamic representation of data with varying complexity and relationships?
+
+**Answer:** **Network modelling**
+
+This is the network model because it handles complex relationships more flexibly than strict parent-child or fixed table-only structures.
+
+###### Scenario 5
+
+Which data modelling technique is best suited for representing complex relationships and hierarchical structures, such as organisational charts or file systems?
+
+**Answer:** **Hierarchical modelling**
+
+Although the wording mentions complexity, the examples given are organisational charts and file systems, which are classic parent-child hierarchies.
+
+###### Scenario 6
+
+In which data modelling technique does data modelling include entities, attributes, and relationships between them, focusing on capturing the business requirements and semantics?
+
+**Answer:** **Entity-Relationship (ER) modelling**
+
+This is the ER model because its main purpose is to capture business entities, their attributes, and the relationships between them.
+
+###### Scenario 7
+
+In which data modelling technique does data have a one-to-many relationship between parent and child elements?
+
+**Answer:** **Hierarchical modelling**
+
+This is the hierarchical model because one parent can have many children, while each child belongs to one parent.
+
+##### Question 5
+
+Write a summary of the differences between the types of data models.
+
+###### Suggested answer
+
+The main difference between the **conceptual**, **logical**, and **physical** data models is the level of detail and the purpose of each one.
+
+The **conceptual data model** is the highest-level version. It focuses on business understanding and identifies the main entities, attributes, and relationships without technical detail. It is useful when stakeholders need a clear overview of the system.
+
+The **logical data model** is more detailed. It builds on the conceptual model by refining entities, attributes, relationships, cardinality, and keys. It is still independent of a specific database system, but it is much closer to implementation planning.
+
+The **physical data model** is the most technical version. It translates the logical design into actual database structures such as tables, columns, data types, indexes, partitioning rules, and constraints. It is used for real implementation inside a DBMS.
+
+In short:
+
+- the **conceptual model** explains the business view
+- the **logical model** explains the structured design view
+- the **physical model** explains the implementation view
+
+#### Resolver-style supplement
+
+The following answers show how an exam resolver would frame the same tasks.
+
+##### Resolver view - Question 1
+
+###### What the examiner is really testing
+
+The examiner wants to see whether you can recognise a **many-to-many university relationship** and turn it into a correct **logical model** using a linking entity.
+
+###### Resolver-style answer draft
+
+I would model this as a **logical data model** with the entities **Student**, **Course**, and **Enrollment**. Student would include attributes such as `StudentID`, `StudentName`, and `Email`. Course would include `CourseID`, `CourseName`, and `Credits`. Enrollment would include `EnrollmentID`, `StudentID`, `CourseID`, `EnrollmentDate`, and `Status`. I would explain that a student can enrol in many courses and a course can contain many students, so the relationship is many-to-many and is resolved through the Enrollment entity. This is a strong logical model because it identifies the main entities, adds useful attributes, and shows the relationship clearly enough for later database design.
+
+##### Resolver view - Question 2
+
+###### What the examiner is really testing
+
+The examiner wants to see whether you understand the **difference in abstraction** between conceptual, logical, and physical models, not just their definitions.
+
+###### Resolver-style answer draft
+
+I would answer this by using three short business scenarios. For the **conceptual model**, I would use a food delivery platform and explain the main entities and relationships at a high level. For the **logical model**, I would use a library system and show more detailed entities, attributes, and keys. For the **physical model**, I would use a pharmacy inventory system and define tables, data types, constraints, and indexes. This structure is strong because it shows that conceptual models are for business understanding, logical models are for detailed design, and physical models are for actual implementation.
+
+##### Resolver view - Question 3
+
+###### What the examiner is really testing
+
+The examiner wants to see whether you can **match the right modelling technique to the right scenario** and explain why it fits.
+
+###### Resolver-style answer draft
+
+I would use **ER modelling** for a school management system because the task is to identify entities and relationships such as Student, Course, Teacher, and Department. I would use **hierarchical modelling** for a hospital organisational structure because the data is arranged in parent-child levels from director to departments to teams. I would use **relational modelling** for an online craft shop because the system depends on linked tables such as Customers, Products, and Orders connected through primary and foreign keys. This is a strong answer because it shows correct matching, clear structure, and realistic application.
+
+##### Resolver view - Question 4
+
+###### What the examiner is really testing
+
+The examiner wants to see whether you can **recognise the defining features** of each modelling technique quickly and accurately.
+
+###### Resolver-style answer draft
+
+Scenario 1 is **network modelling** because it uses interconnected nodes and relationships. Scenario 2 is **relational modelling** because it uses tables and foreign keys. Scenario 3 is **hierarchical modelling** because it uses a tree-like parent-child structure. Scenario 4 is **network modelling** because it allows flexible relationships of varying complexity. Scenario 5 is **hierarchical modelling** because organisational charts and file systems are classic top-down hierarchies. Scenario 6 is **ER modelling** because it focuses on entities, attributes, and relationships based on business semantics. Scenario 7 is **hierarchical modelling** because it is defined by one-to-many parent-child relationships.
+
+##### Resolver view - Question 5
+
+###### What the examiner is really testing
+
+The examiner wants to see whether you can compare the three **types of data models** clearly and explain how they progress from business view to technical implementation.
+
+###### Resolver-style answer draft
+
+The conceptual, logical, and physical data models differ mainly in their level of detail. A **conceptual model** gives a high-level business overview of entities and relationships. A **logical model** adds more structure by defining refined attributes, keys, and clearer relationship rules. A **physical model** turns the design into real database implementation details such as tables, data types, indexes, and constraints. A strong answer should show that the three models are connected stages, not unrelated ideas.
+
+#### What did I Learn in This Lesson?
+
+This lesson provided the following key insights:
+
+- data models represent real-world processes, relationships, and patterns
+- data models provide a framework for structuring, storing, and managing information effectively
+- data models support structure, integrity, integration, reporting, and system development
+- conceptual, logical, and physical models represent different levels of abstraction in the modelling process
+- conceptual models focus on business understanding, abstraction, entities, attributes, relationships, and cardinality
+- logical models add more detail by refining entities, attributes, relationships, and keys without yet becoming physical implementations
+- physical models translate the logical design into actual tables, columns, data types, indexes, partitioning rules, and constraints
+- physical models support implementation, performance optimisation, and long-term administration inside a DBMS
+- physical models also depend on explicit relationships, indexing strategies, and integrity rules to support efficient real-world systems
+- ER modelling is a key data modelling technique that identifies entities, attributes, and relationships in a visual and structured way
+- ER modelling can be applied directly to university systems by linking entities such as Student, Course, Professor, and Department through relationships like Enrolls-in, Teaches, and Belongs-to
+- hierarchical modelling organises data into parent-child structures and is useful for organisational charts, file systems, and product categories
+- hierarchical modelling can be applied directly to organisational structures by using a root node such as a CEO, department nodes, and team-level leaf nodes
+- relational modelling organises data into tables and uses primary keys, foreign keys, and constraints to preserve integrity across related records
+- an online bookstore is a strong relational-modelling example because customers, books, and orders are naturally connected through keys and table relationships
+- relational modelling can be used directly in online bookstore systems by linking customer, book, and order tables through primary and foreign keys
+- the same physical-modelling approach can be applied to hospital stock systems where items, suppliers, departments, and stock records must be stored accurately
+- logical models support database design, reporting, integration, data quality, and communication between stakeholders
+- an HRIS is a strong logical-modelling example because departments, job positions, performance reviews, training, leave, and payroll need clearly defined entities and relationships
+- a library system is also a strong logical-modelling example because books, borrowers, authors, categories, and loans need structured attributes and clear borrowing relationships
+- an inventory system is a strong physical-modelling example because products and suppliers require exact table fields, data types, and foreign key links
+- a simple online retail platform can be used to show how customers, products, orders, payments, and categories fit together in a conceptual model
+- a strong conceptual-model exam answer should identify the correct model level first, then explain entities, relationships, attributes, and business value
+- the same conceptual-modelling method can also be applied to university systems, such as course management, enrolment, and academic records
+- a mixed exam question may require matching different scenarios to different techniques, such as ER modelling for a school system, hierarchical modelling for a banking structure, and relational modelling for an online craft shop
+- statistical, machine learning, and mathematical modelling are common broad approaches
+- different modelling techniques are suited to different types of analytical questions
+- tools such as Python, R, Tableau, and Power BI are commonly used in modelling workflows
+- tools such as MySQL Workbench, ER/Studio, SQuirreL SQL Client, Draw.io, Lucidchart, Postico, and DataGrip are also common in practical modelling work
+- real-world systems such as airline reservation platforms, inventory systems, social media platforms, CRM systems, and IoT sensor environments use different data models for different structural needs
+- some real-world systems may combine models, such as using relational storage for structured records and network modelling for connected devices or interactions
+- choosing the right model depends on the scenario, the data, and the decision goal
+
+#### Exam Notes
+
+When revising this lesson for the semester exam, focus especially on these high-yield points:
+
+- define **data modelling** clearly
+- know the difference between **conceptual**, **logical**, and **physical** data models
+- explain that conceptual modelling focuses on high-level business understanding before technical implementation
+- explain that logical modelling adds more structure by defining refined attributes, clearer relationships, and **primary/foreign keys**
+- explain that physical modelling focuses on real DBMS implementation through **tables**, **data types**, **indexes**, **partitioning**, and **constraints**
+- know that **ER modelling** focuses on identifying entities, attributes, and relationships visually
+- be ready to solve a university-style **ER modelling** case by identifying entities and explaining relationships such as **Enrolls-in**, **Teaches**, and **Belongs-to**
+- know that **hierarchical modelling** uses parent-child relationships, root nodes, leaf nodes, and levels
+- be ready to solve an organisational-hierarchy case by identifying the **root node**, department nodes, team nodes, and the parent-child reporting structure
+- know that **relational modelling** uses tables, primary keys, foreign keys, relationships, and constraints inside an RDBMS
+- be ready to explain a relational-model case such as an **online bookstore**, where customers, books, and orders are connected through keys
+- be ready to explain how an **Orders** table can act as the linking structure between customers and books in a relational design
+- be ready for mixed case questions where you must choose different techniques for different scenarios, for example **ER** for a school system, **hierarchical** for a banking structure, and **relational** for an online craft shop
+- know the benefits of a physical model, especially for **implementation**, **performance optimisation**, and **database administration**
+- be able to explain how **relationships**, **indexing**, and **data integrity constraints** are implemented in a physical model
+- know the benefits of a logical model, especially for **database design**, **query/report design**, **integration**, **data quality**, and **documentation**
+- be ready to solve a **Stock Management System** case for a hospital by defining entities, attributes, relationships, and technical database rules
+- be ready to explain a logical-model case such as an **HRIS**, where employee data and HR processes depend on well-defined entities and relationships
+- be ready to solve a **Library Management System** case by identifying entities, attributes, and borrowing relationships in a logical model
+- be ready to explain a physical-model case such as an **Inventory Management System**, where tables, data types, and foreign keys are defined explicitly
+- know the meaning of **entities**, **attributes**, **relationships**, and **cardinality**
+- be able to distinguish between **one-to-one**, **one-to-many**, and **many-to-many** cardinality in a case scenario
+- be ready to build a simple **conceptual example** from a business case, such as an online retail platform
+- explain why a **conceptual** model fits better than a logical or physical model when the question is still high-level
+- be ready to explain when a **logical** model is more appropriate than a conceptual one because the scenario needs more design detail
+- be ready to solve a university-style case by identifying entities such as **Student**, **Course**, **Instructor**, **Department**, and **Enrollment**
+- explain how data models support **structure**, **data integrity**, **integration**, **reporting**, and **system development**
+- explain the difference between **statistical**, **machine learning**, and **mathematical** modelling
+- know common techniques such as **linear regression**, **decision trees**, **clustering**, and **neural networks**
+- connect the model choice to the business question or scenario
+- mention that tools help with data preparation, modelling, evaluation, visualisation, diagramming, and database design
+- recognise practical modelling tools such as **MySQL Workbench**, **ER/Studio**, **Draw.io**, **Lucidchart**, **Postico**, and **DataGrip**
+- be ready to match real-world case studies to the correct model, such as **airline reservation** to relational, **inventory management** to hierarchical, **social media** to network, and **CRM** to entity-relationship modelling
+- explain that some scenarios, such as **IoT sensor systems**, may combine models because structured data storage and connected relationships may both matter
+
+##### Strong exam answer rule
+
+A strong answer in this topic usually:
+
+1. defines the modelling concept clearly
+2. identifies the most relevant modelling approach
+3. explains why that approach fits the scenario
+4. links the model to a realistic business use
+            """,
+            "key_points": [
+                "Data modelling represents real-world processes, relationships, and patterns for analysis and decision-making",
+                "Data models provide a conceptual framework for structuring, storing, and manipulating information",
+                "Data models support structure and organisation by defining entities, attributes, and relationships",
+                "Data models support data integrity and quality by applying rules, data types, constraints, and business logic",
+                "Data models also support data integration, analysis and reporting, and system development and maintenance",
+                "Conceptual, logical, and physical data models represent different levels of abstraction and different purposes in the modelling process",
+                "Conceptual data modelling focuses on high-level business understanding before technical implementation begins",
+                "Business understanding, abstraction, entities, attributes, relationships, and cardinality are key parts of conceptual modelling",
+                "Cardinality describes the numerical relationship between entities, such as one-to-one, one-to-many, and many-to-many",
+                "Logical data modelling adds more detail than conceptual modelling by refining entities, attributes, relationships, and keys",
+                "Primary keys and foreign keys are important parts of a logical model because they identify records and connect related entities",
+                "A logical sales model can use Customer, Product, and Sale to show how attributes and foreign-key relationships become more precise",
+                "Physical data modelling translates the logical model into real database implementation details such as tables, data types, indexes, partitioning, and constraints",
+                "A physical sales model shows how keys, field types, and constraint rules are applied inside actual database tables",
+                "Physical data models support implementation, performance optimisation, and long-term administration in the DBMS",
+                "A strong physical model also defines relationships, indexing choices, and integrity constraints so the database remains accurate and efficient",
+                "Entity-Relationship modelling is a core technique that identifies entities, attributes, and relationships in a clear visual structure",
+                "Entity-Relationship modelling can be applied to university systems by connecting Student, Course, Professor, and Department through relationships such as Enrolls-in, Teaches, and Belongs-to",
+                "Hierarchical modelling organises data into parent-child structures with root nodes, leaf nodes, and levels",
+                "Hierarchical modelling can be applied to organisational structures by using a CEO as the root node, departments as parent nodes, and teams as leaf nodes",
+                "Relational modelling organises data into tables and uses primary keys, foreign keys, and relational constraints to preserve integrity and support querying",
+                "A mixed exam scenario may require matching different business examples to different techniques, such as ER for a school system, hierarchical for a banking institution, and relational for an online craft shop",
+                "An online bookstore is a strong relational-modelling example because customers, books, and orders can be linked clearly through tables and keys",
+                "In relational modelling, an Orders table can act as the linking structure that connects customers and books while preserving data integrity",
+                "An Inventory Management System is a strong physical-modelling example because products and suppliers require precise fields, data types, and foreign-key links",
+                "The same physical-modelling logic can be applied to hospital stock systems by defining items, suppliers, categories, stock records, and departments with strong constraints and indexing",
+                "Logical data models support database design, reporting, integration, data quality, and communication between analysts, developers, and stakeholders",
+                "A Human Resources Information System is a strong logical-modelling example because employee, department, job, review, training, leave, and payroll data must be linked clearly",
+                "A Library Management System is a strong logical-modelling example because books, borrowers, loans, authors, and categories must be organised through clear entities and relationships",
+                "Conceptual models support requirement analysis, system alignment, data governance, and future reporting or business intelligence work",
+                "An online retail platform is a strong conceptual-modelling example because customers, products, orders, payments, and categories can be represented as connected entities",
+                "A strong conceptual-modelling exam answer should identify the correct modelling level first and then explain entities, relationships, attributes, and business value",
+                "The same conceptual-modelling logic can be applied to university systems by identifying entities such as Student, Course, Instructor, Department, and Enrollment",
+                "Statistical, machine learning, and mathematical modelling are three common broad approaches",
+                "Linear regression, decision trees, clustering, and neural networks are common modelling techniques",
+                "Different models are suited to different analytical goals such as explanation, classification, grouping, or prediction",
+                "Airline reservation systems are a strong relational-model example because flight, passenger, seat, and booking data must stay consistent across linked tables",
+                "Inventory Management Systems are a strong hierarchical-model example because categories, subcategories, and items can be organised in parent-child levels",
+                "Social media platforms are a strong network-model example because users and their connections are best represented as linked nodes and edges",
+                "CRM systems are a strong entity-relationship example because customers, orders, products, and interactions need clear entities and relationships before implementation",
+                "IoT sensor environments may combine relational and network models because measured values are structured while device and location relationships are highly connected",
+                "Python, R, Tableau, and Power BI are common tools in modern modelling workflows",
+                "MySQL Workbench, ER/Studio, SQuirreL SQL Client, Draw.io, Lucidchart, Postico, and DataGrip are practical tools used for modelling, diagramming, and database work",
+                "Strong model choice depends on the scenario, the type of data, and the intended use of the result"
+            ],
+            "visual_elements": {
+                "diagrams": False,
+                "tables": True,
+                "highlighted_sections": True
+            }
+        },
+        {
+            "lesson_number": "3.2",
+            "title": "Lesson - Data Cleaning",
+            "content": """
+### 3.2. Lesson - Data Cleaning
+
+#### Introduction
+
+Data quality and integrity depend heavily on **data cleaning**, which is also commonly called **data cleansing** or **data scrubbing**.
+
+Data cleaning involves identifying and correcting errors, inconsistencies, and inaccuracies in datasets collected from different sources such as:
+
+- databases
+- surveys
+- sensors
+- web scraping
+
+Raw data often contains imperfections. These may come from:
+
+- human error during data entry
+- technical glitches
+- missing values
+- outliers
+- formatting inconsistencies
+- intentional manipulation
+
+The purpose of data cleaning is to address these problems so the dataset becomes more reliable, accurate, and suitable for analysis.
+
+#### Why data cleaning matters
+
+The importance of data cleaning cannot be overstated.
+
+If the data is flawed or dirty, the results of later analysis can also become flawed. Dirty data can lead to:
+
+- incorrect conclusions
+- biased insights
+- poor predictions
+- weak reporting
+- erroneous decision-making
+
+By improving data quality first, data cleaning strengthens everything that follows, including:
+
+- descriptive analysis
+- statistical testing
+- predictive modelling
+- dashboards and reporting
+- business intelligence
+
+In other words, data cleaning is not a side task. It is a core part of building trustworthy analysis.
+
+#### Understanding the Importance of Data Cleaning and Pre-processing
+
+Data cleaning and **pre-processing** play a vital role in the data analysis pipeline because they transform raw data into a cleaner, more structured, and more reliable format that is suitable for analysis.
+
+There are several key reasons why data cleaning and pre-processing are essential.
+
+##### Improved data quality
+
+By identifying and correcting errors, inconsistencies, and inaccuracies, data cleaning and pre-processing improve:
+
+- accuracy
+- reliability
+- trustworthiness
+
+Clean data supports more meaningful insight and reduces the risk of incorrect conclusions or flawed decisions based on weak information.
+
+##### Reliable analysis
+
+Clean and pre-processed data provides a much stronger foundation for analysis.
+
+When analysts handle:
+
+- outliers
+- missing data
+- inconsistent formats
+
+they reduce the chance of biased, distorted, or misleading results.
+
+Reliable analysis depends on accurate and consistent data, so cleaning and pre-processing are central to producing dependable findings.
+
+##### Enhanced decision-making
+
+Good decisions depend on trustworthy evidence.
+
+Data cleaning and pre-processing improve decision-making because they reduce the chance that a business, analyst, or manager will rely on:
+
+- incomplete information
+- erroneous values
+- misleading records
+
+That leads to better decisions and better outcomes.
+
+##### Increased efficiency
+
+Data cleaning and pre-processing also improve efficiency in the analysis process.
+
+By dealing with missing values, duplicates, and formatting issues early, analysts save time later. This allows them to spend more time on:
+
+- extracting insight
+- interpreting patterns
+- generating value from the data
+
+instead of repeatedly fixing avoidable quality problems during analysis.
+
+##### Compatibility and integration
+
+Another major advantage is better compatibility across systems.
+
+When formats are standardised, structures are reconciled, and inconsistencies are resolved, the data becomes easier to:
+
+- integrate
+- share
+- compare
+- use across platforms
+
+This supports stronger collaboration and better use of data inside the organisation.
+
+##### Improved model performance
+
+Data quality has a direct effect on the performance of predictive and machine-learning models.
+
+If analysts handle missing values, normalise data, and review outliers during pre-processing, they can produce a more representative dataset. This often leads to:
+
+- more accurate models
+- more stable results
+- stronger predictive power
+- better reliability
+
+This means that cleaning and pre-processing are important not only for descriptive analysis, but also for modelling and forecasting.
+
+#### Data Cleaning Techniques
+
+Data cleaning is a crucial step in the analysis process.
+
+Although it can be carried out in different ways depending on the situation, the basic ideas behind data cleaning remain consistent across datasets and domains.
+
+The exact methods used may vary depending on:
+
+- the characteristics of the data
+- the domain being analysed
+- the size and structure of the dataset
+- the type of problems present
+- the outcome the analyst wants to achieve
+
+This means there is **no one-size-fits-all solution** for data cleaning.
+
+An analyst does not use exactly the same approach for:
+
+- customer survey data
+- financial transaction records
+- healthcare records
+- sensor data
+- text collected from web platforms
+
+Instead, the cleaning process must match the nature of the data and the problems found inside it.
+
+##### Core ideas behind data cleaning techniques
+
+Even though the exact workflow can vary, most data cleaning techniques still rely on the same core concepts.
+
+These include:
+
+- handling missing data
+- addressing duplicates
+- standardising data formats
+- managing outliers
+- validating data against predefined rules
+- handling inconsistent data structures
+- automating repeated cleaning tasks through programming or specialised tools
+
+These ideas are important because they form the foundation for improving:
+
+- data quality
+- consistency
+- reliability
+- usability in analysis
+
+##### Why these techniques matter
+
+By following these core concepts, analysts can prepare the data more effectively for:
+
+- descriptive analysis
+- statistical testing
+- predictive modelling
+- dashboards and reports
+- data-driven decision-making
+
+A strong data-cleaning process is essential because it helps analysts unlock the real value of the data instead of building conclusions on unreliable or inconsistent records.
+
+##### Let us explore these techniques in more detail
+
+###### Handling missing data
+
+One of the first steps in data cleaning is identifying and assessing **missing values** in the dataset.
+
+These missing values may appear as:
+
+- blank cells
+- placeholders such as `N/A`
+- special missing-value codes
+
+Once missing values are identified, the analyst must decide how to handle them appropriately.
+
+Depending on the context, this may involve:
+
+- removing rows that contain too much missing data
+- removing columns that are unusable because too much information is missing
+- replacing missing values with estimated values through **imputation**
+
+Common imputation methods include:
+
+- **mean**
+- **median**
+- **mode**
+
+The best choice depends on the type of data, the amount of missingness, and whether replacing the values would strengthen or weaken the analysis.
+
+###### Removing duplicates
+
+Duplicates are another important issue because they can distort counts, summaries, and analysis results.
+
+To address duplicates, the analyst first identifies records that may represent the same entity more than once.
+
+This requires defining what counts as a duplicate. For example, duplication may be based on:
+
+- customer ID
+- name and date of birth
+- email and phone number
+- another combination of key fields
+
+Once the duplication rule is clear, duplicate records can be:
+
+- merged
+- removed
+- flagged for review
+
+This helps prevent redundancy and keeps the dataset more accurate.
+
+###### Standardising data
+
+Data standardisation is essential for consistency and reliable analysis.
+
+Analysts often need to create one common format for fields such as:
+
+- dates
+- phone numbers
+- addresses
+- names
+
+This prevents small variations from creating larger analytical problems.
+
+Standardisation also includes making category labels consistent. For example:
+
+- `Male` and `M` may be converted into one standard label
+- repeated or redundant categories may be merged
+- spelling differences may be corrected into one agreed format
+
+This helps ensure that the same real-world meaning is represented consistently throughout the dataset.
+
+###### Handling outliers
+
+Outliers are extreme values or unusual data points that differ strongly from the rest of the dataset.
+
+These values can affect:
+
+- averages
+- variance
+- model behaviour
+- interpretation of results
+
+Once identified, the analyst must decide how to deal with them.
+
+Depending on their cause and importance, outliers may be:
+
+- removed
+- transformed using statistical techniques
+- retained but analysed separately
+
+The correct choice depends on whether the outlier is a real but unusual case or an error in the data.
+
+###### Data validation and error checking
+
+Data integrity depends on **validation** and **error checking**.
+
+This means checking whether values follow predefined rules, constraints, or business expectations.
+
+Examples include:
+
+- making sure ages are realistic
+- checking that prices are not negative when they should not be
+- ensuring IDs follow the expected format
+- catching typographical errors or invalid values
+
+Validation helps detect and correct weak data before it enters the analysis stage.
+
+###### Dealing with inconsistent data structures
+
+When datasets are merged from multiple sources, the analyst may face inconsistent structures.
+
+For example:
+
+- field names may not match
+- data types may differ
+- formats may vary between sources
+
+These inconsistencies can create problems such as:
+
+- misaligned rows
+- mismatched columns
+- failed merges
+- misleading combined datasets
+
+To avoid this, the analyst must reconcile the structures before merging or concatenating the data.
+
+###### Automating data cleaning
+
+To make the cleaning process more efficient, analysts often automate repeated tasks.
+
+This can be done with:
+
+- programming languages such as **Python** or **R**
+- reusable scripts and cleaning pipelines
+- specialised data-cleaning tools or profiling tools
+
+Automation is useful because it:
+
+- saves time
+- reduces repeated manual work
+- improves consistency across cleaning tasks
+- makes the cleaning process easier to reuse and document
+
+This is especially important when organisations work with large datasets or recurring reports.
+
+#### Common data-quality problems
+
+When analysts clean data, they often look for issues such as:
+
+- missing values
+- duplicate records
+- invalid entries
+- inconsistent spellings or labels
+- formatting differences
+- outliers that may need investigation
+- impossible or unrealistic values
+
+For example:
+
+- a date may appear in multiple formats
+- a gender field may use `M`, `Male`, and `male` for the same meaning
+- a sales amount may contain text instead of numbers
+- a survey may include missing responses
+
+These issues reduce consistency and make analysis more difficult if they are not corrected.
+
+#### How data cleaning works
+
+Data cleaning usually involves a combination of:
+
+- careful review
+- statistical methods
+- computational rules
+- domain knowledge
+
+That means data cleaning is not only technical. It also depends on understanding what the data is supposed to represent in the real world.
+
+For example, a value may look unusual but still be valid in the business context. On the other hand, a value may appear normal in format but still be wrong in meaning. This is why analysts need both tools and judgment.
+
+#### Simple data cleaning workflow
+
+A typical workflow may include:
+
+1. identifying the errors or inconsistencies
+2. checking whether the issue is real or only appears unusual
+3. correcting, removing, or flagging the problem
+4. documenting what was changed and why
+5. rechecking whether the cleaned data is fit for analysis
+
+This kind of process improves transparency and makes later analysis more reliable.
+
+#### Real-world example - Customer database
+
+Imagine a company exports customer data from several systems before starting churn analysis.
+
+The combined dataset may contain:
+
+- duplicate customer records
+- missing email addresses
+- different date formats
+- inconsistent country names
+- impossible ages
+
+Before the company builds a churn model, the analyst needs to clean the dataset. That may involve removing duplicates, standardising formats, correcting invalid entries, and checking whether suspicious values should be corrected or excluded.
+
+Without this step, the final analysis could misclassify customers, miscount segments, and reduce trust in the model results.
+
+#### Exploring Proxy Real-world Data and Its Use for Data Cleaning and Analysis
+
+In data analysis and data cleaning, **proxy real-world data** can play an important role.
+
+These datasets are created artificially so they imitate real-world data as closely as possible. This makes them useful for:
+
+- simulating realistic scenarios
+- testing algorithms
+- checking whether cleaning methods work well
+- evaluating data-analysis workflows before real deployment
+
+Because of this, proxy data can help analysts improve the accuracy, reliability, and practicality of their methods before they apply them to sensitive or hard-to-access real-world datasets.
+
+#### Understanding proxy real-world data
+
+Proxy real-world data is data that acts as a substitute or indirect representation of real-world data.
+
+It is often used when collecting or accessing the original dataset is:
+
+- difficult
+- expensive
+- time-consuming
+- restricted
+
+Instead of working directly on the live or original dataset, analysts use proxy data to approximate the same kind of structure, pattern, or behaviour.
+
+##### Key characteristics of proxy data
+
+There are several important characteristics of proxy data.
+
+###### Indirect representation
+
+Proxy data is not the real data itself. It is a substitute that stands in for the actual data.
+
+That means the analyst must always remember that the proxy is only an approximation, not a perfect replacement.
+
+###### Correlation
+
+Proxy data is chosen because it is meaningfully linked to the real-world data of interest.
+
+The assumption is that the proxy dataset has enough correlation with the target data to make testing, cleaning, or modelling useful.
+
+###### Availability
+
+Proxy data is often easier to access than the real dataset.
+
+This is especially useful when the actual data is:
+
+- confidential
+- regulated
+- difficult to collect
+- not yet available in full
+
+###### Simplification
+
+Proxy data may simplify a complex real-world situation into something more manageable.
+
+This can make it easier to:
+
+- test cleaning rules
+- simulate errors
+- experiment with preprocessing techniques
+- practise analysis workflows
+
+#### Differences between proxy data and actual real-world data
+
+Although proxy data can be useful, it is not identical to the real dataset.
+
+There are several key differences.
+
+##### Accuracy
+
+Proxy data only approximates real-world data.
+
+It may not capture every nuance, exception, or irregularity found in the real environment. Because of this, proxy data can introduce measurement error or bias if it is treated as though it were perfectly real.
+
+##### Representativeness
+
+Proxy data may not fully reflect the full complexity of actual real-world situations.
+
+It may miss:
+
+- rare cases
+- unusual combinations of values
+- real user behaviour
+- hidden biases in live systems
+
+This means conclusions based only on proxy data may be incomplete if they are not later checked against actual data.
+
+##### Specificity
+
+Actual real-world data directly reflects the real variables and events being studied, while proxy data is only indirectly related.
+
+As a result, proxy data may focus on only part of the picture and may leave out details that become important in real analysis.
+
+#### Why proxy data is useful for data cleaning
+
+Even with these limitations, proxy data is still valuable in data cleaning and analysis.
+
+It can be used to:
+
+- test cleaning rules safely before using real data
+- simulate missing values, duplicates, formatting errors, and outliers
+- evaluate whether validation checks work properly
+- practise data pipelines without exposing private or sensitive information
+- compare different cleaning approaches before deciding on one
+
+This is especially helpful in domains where real data may be sensitive, such as:
+
+- healthcare
+- finance
+- education
+- customer records
+
+#### Why proxy data is useful for analysis
+
+Proxy data is also useful in the broader analysis process because it allows analysts to experiment before working on live data.
+
+For example, proxy data can help analysts:
+
+- test dashboards and reports
+- validate summary calculations
+- check whether a model pipeline runs correctly
+- identify weaknesses in data structure or cleaning logic
+- train students or analysts using realistic but safer datasets
+
+In this way, proxy data helps organisations prepare for real-world analysis more carefully and responsibly.
+
+#### Advantages of using proxy data in data analysis
+
+Proxy data can offer several practical advantages in analysis work.
+
+##### Accessibility
+
+Proxy data is often easier to obtain than the original dataset.
+
+This means analysts may still be able to carry out useful research and testing even when the real data is hard to access.
+
+##### Cost-effective
+
+Proxy data can be a more cost-effective option when collecting the original data would be:
+
+- expensive
+- time-consuming
+- operationally difficult
+
+This makes proxy data especially useful in early-stage studies or resource-limited projects.
+
+##### Privacy protection
+
+Proxy data can also help protect privacy.
+
+If analysts use anonymised, simulated, or aggregated information, they may still gain useful insight while reducing the exposure of personal or sensitive real-world records.
+
+#### Limitations of using proxy data in data analysis
+
+Even though proxy data can be valuable, it also has important limitations.
+
+##### Measurement bias
+
+Because proxy data is only an approximation, it can introduce measurement error or bias.
+
+If the proxy does not reflect the real-world variable closely enough, the final conclusion may become inaccurate or misleading.
+
+##### Lack of granularity
+
+Proxy data may not capture the same level of detail as the real dataset.
+
+That means the analysis may miss finer patterns, exceptions, or local variation that would have been visible in the original data.
+
+##### Assumptions and correlations
+
+The usefulness of proxy data depends heavily on the assumption that it remains strongly correlated with the target data.
+
+If that correlation weakens, changes over time, or was incorrectly assumed in the first place, then the proxy may become unreliable.
+
+##### Generalisability
+
+Proxy data may be tied to a specific location, system, or population.
+
+This makes it harder to assume that findings from the proxy dataset can be applied broadly to other contexts or groups without caution.
+
+#### Generating Proxy Real-world Data
+
+Generating **proxy real-world data** means creating substitute datasets that imitate the characteristics and patterns of the actual real-world data as closely as possible.
+
+This can be useful when analysts need a realistic dataset for:
+
+- testing
+- cleaning practice
+- simulation
+- method comparison
+- safe experimentation
+
+Several techniques can be used to generate or build proxy data.
+
+#### Techniques for generating proxy data
+
+##### Random sampling
+
+**Random sampling** means selecting a subset of observations from the original dataset to create a smaller proxy dataset.
+
+This approach assumes that the sampled data is representative enough to approximate the wider population and preserve the main statistical properties of the original data.
+
+Random sampling is useful when:
+
+- the original dataset is very large
+- analysts want a smaller but still realistic working sample
+- the aim is to test cleaning steps or analysis methods efficiently
+
+However, the value of this technique depends on whether the sample truly represents the population.
+
+##### Data augmentation
+
+**Data augmentation** means creating new variations of existing data by applying controlled transformations or modifications.
+
+These changes might include:
+
+- scaling
+- rotation
+- noise addition
+- interpolation
+
+This method is especially useful when analysts want to expand a dataset while still keeping it close to the original structure and patterns.
+
+Data augmentation is common when:
+
+- the original dataset is too small
+- analysts want to test how cleaning methods handle variation
+- the dataset needs more diversity without collecting entirely new real-world observations
+
+##### Synthetic data generation
+
+**Synthetic data generation** means creating entirely new data points that resemble the statistical patterns and characteristics of the original dataset.
+
+This can be done through:
+
+- statistical modelling
+- simulations
+- rule-based generation
+- generative models such as **GANs**
+- variational autoencoders (**VAEs**)
+
+Synthetic data generation is especially helpful when the real data is:
+
+- limited
+- sensitive
+- private
+- unavailable
+
+If done well, synthetic data can support safe experimentation, cleaning-pipeline design, and modelling practice without exposing real personal or operational records.
+
+#### Why proxy-data generation matters
+
+Generating proxy data is important because it gives analysts a safer and often more practical way to test methods before using real data.
+
+It can help analysts:
+
+- test cleaning pipelines
+- practise validation rules
+- simulate common data-quality problems
+- compare analysis methods
+- reduce privacy risk when training or experimenting
+
+At the same time, generated proxy data must still be reviewed carefully. If the generated data does not reflect the original structure or behaviour closely enough, the final analysis or cleaning test may become misleading.
+
+#### Factors to consider when creating proxy datasets
+
+Now that the main proxy-data techniques are clear, it is also important to understand the key factors that should guide the creation of a useful proxy dataset.
+
+##### Representative sample
+
+The proxy dataset should be representative of the target population or of the characteristics the analyst is trying to capture.
+
+If the proxy data is biased, incomplete, or skewed, then the cleaning or analysis results may also become misleading. A proxy dataset should therefore reflect the important patterns of the wider population as closely as possible.
+
+##### Statistical properties
+
+The proxy data should also imitate the main statistical properties of the actual dataset.
+
+This includes features such as:
+
+- mean
+- variance
+- distributional shape
+- correlations between variables
+
+If these properties are not preserved, the proxy dataset may fail to produce meaningful or realistic analytical results.
+
+##### Contextual relevance
+
+Proxy data should always match the real-world context in which it will be used.
+
+This means the analyst must consider domain-specific features. For example:
+
+- in healthcare, clinical meaning and patient demographics matter
+- in finance, transaction patterns and risk behaviour matter
+- in traffic analysis, travel timing and location patterns matter
+
+Without contextual relevance, the proxy dataset may look realistic on the surface but still fail to support useful conclusions.
+
+##### Privacy and security
+
+Privacy and security must also be considered when creating proxy data, especially when the original domain includes sensitive information.
+
+Where necessary, analysts should use approaches such as:
+
+- anonymisation
+- aggregation
+- masking
+- safe synthetic generation
+
+These steps help reduce privacy risk while still allowing the dataset to remain useful for testing and analysis.
+
+#### Why these factors matter
+
+By combining the right generation technique with the right quality checks, analysts can create proxy datasets that are much more useful as substitutes for real-world data.
+
+This makes proxy data stronger for:
+
+- cleaning practice
+- workflow testing
+- model development
+- safer research
+- training and experimentation
+
+#### Use of Proxy Real-world Data in Data Cleaning
+
+Using proxy real-world data can offer major advantages when analysts want to evaluate cleaning techniques, simulate data-quality issues, and judge how much a cleaning process improves the final dataset.
+
+This is especially useful when direct experimentation on the original dataset is difficult, risky, or too expensive.
+
+#### Evaluating data cleaning techniques using proxy data
+
+Proxy data can be used as a substitute for real-world data when analysts want to compare different cleaning methods.
+
+For example, analysts can apply several cleaning approaches to a proxy dataset and compare how well those approaches deal with:
+
+- missing values
+- outliers
+- inconsistencies
+- duplicates
+
+This makes it easier to identify which technique is most suitable before applying it to the real dataset.
+
+In this way, proxy data provides a controlled and lower-risk environment for testing data-cleaning strategies.
+
+#### Simulating common data-quality issues in proxy datasets
+
+Proxy data can also be intentionally modified so it contains the kinds of data-quality problems that are common in real-world datasets.
+
+Researchers or analysts can introduce controlled issues such as:
+
+- missing values
+- duplicate records
+- inconsistent entries
+- invalid formats
+- noisy values
+
+This creates a simulated testing environment in which different cleaning algorithms can be evaluated more carefully.
+
+By simulating these problems, analysts can:
+
+- test cleaning logic in a controlled setting
+- identify weaknesses in an algorithm or workflow
+- fine-tune parameters and rules
+- understand how specific issues affect overall data quality
+
+#### Gauging the effect of data cleaning on dataset quality
+
+Another important use of proxy data is that it helps analysts measure how much the cleaning process improves a dataset.
+
+After cleaning a proxy dataset, analysts can assess whether quality improved in areas such as:
+
+- completeness
+- consistency
+- accuracy
+- usability for later analysis
+
+This is important because a cleaning process should not only run successfully, it should also make the data meaningfully better.
+
+Assessing the impact of cleaning on proxy data also helps analysts identify likely challenges or limitations before they move to real-world data.
+
+For example, this kind of testing can reveal:
+
+- where a certain cleaning method works especially well
+- where a method struggles with a specific type of issue
+- which approaches are most suitable for the structure and quality problems of the real dataset
+
+#### Why this use of proxy data matters
+
+Using proxy data in this way helps analysts improve their methods before those methods are used on live data.
+
+That leads to:
+
+- better cleaning strategies
+- safer testing
+- stronger workflows
+- more reliable later analysis
+
+#### Proxy Real-world Data for Analysis
+
+Proxy real-world data also offers a practical way to carry out deeper analysis before working on the original live dataset.
+
+It can be used to:
+
+- apply different analysis techniques
+- identify patterns and trends
+- evaluate algorithm performance
+- assess scalability before moving to larger real-world data
+
+This gives analysts a safer environment for experimentation while still producing useful insight.
+
+#### Applying data analysis techniques to proxy data
+
+Proxy data can be analysed using many of the same methods that would later be used on real-world data.
+
+These may include:
+
+- statistical analysis
+- exploratory data analysis
+- machine learning
+- predictive modelling
+
+The goal is to extract insight, identify relationships, and understand patterns inside the proxy dataset.
+
+For example, statistical analysis can help analysts understand:
+
+- distribution
+- central tendency
+- variability
+
+Exploratory data analysis can then be used to reveal:
+
+- patterns
+- correlations
+- outliers
+- unusual behaviour in the dataset
+
+This makes proxy data valuable not just for cleaning practice, but also for building stronger analytical workflows.
+
+#### Identifying patterns, trends, and insights in proxy datasets
+
+When proxy data is well designed, analysts can use it to uncover patterns, trends, and insights that may also exist in the target real-world data.
+
+For example, analysts may use:
+
+- visualisation
+- clustering
+- association rule mining
+- summary statistics
+
+to identify:
+
+- groups of similar observations
+- frequent patterns
+- unusual anomalies
+- meaningful associations between variables
+
+These findings can support:
+
+- decision-making
+- trend analysis
+- further investigation
+
+Even though the dataset is only a proxy, it can still provide a strong analytical foundation if it reflects the important features of the real-world system.
+
+#### Assessing scalability and performance of analysis algorithms using proxy data
+
+Proxy data is also useful for testing the scalability and performance of analytical algorithms before they are applied to actual operational data.
+
+Researchers and analysts can use the proxy dataset to evaluate:
+
+- computational efficiency
+- memory or processing requirements
+- scalability to larger datasets
+- possible bottlenecks or technical limitations
+
+This is especially valuable when the real dataset is large, sensitive, or expensive to process repeatedly during testing.
+
+By using proxy data first, organisations can:
+
+- compare algorithms
+- optimise workflows
+- identify limitations early
+- make better decisions about which methods to use later on real data
+
+#### Why proxy data is useful for analytical preparation
+
+Overall, proxy real-world data is valuable not only for cleaning but also for analytical preparation.
+
+It allows analysts to test whether their methods can:
+
+- uncover useful patterns
+- handle the expected scale of the problem
+- produce meaningful and efficient results
+
+This improves readiness before the final move to real-world analysis.
+
+#### Real-world example - Healthcare research organisation
+
+Imagine a healthcare research organisation that wants to study the effect of air pollution on lung disease in a city.
+
+To do this well, the organisation would ideally want direct, real-time air-quality data from many monitoring stations across the city. However, due to cost and logistical constraints, collecting or accessing that full original dataset may not be feasible.
+
+Instead, the analysts explore whether they can use **proxy real-world data**.
+
+After research, they identify publicly available meteorological data from a nearby station, including:
+
+- wind speed
+- humidity
+- temperature
+
+Based on domain knowledge and scientific research, these weather factors are known to be meaningfully correlated with air-pollution patterns in the city.
+
+Because of this correlation, the organisation decides to use the meteorological dataset as a proxy for air-quality conditions.
+
+##### How proxy data is used in the cleaning process
+
+Before analysis, the proxy dataset still needs cleaning and preparation.
+
+The analysts may:
+
+- identify and handle missing values in the meteorological data
+- standardise field formats such as dates and measurement units
+- validate ranges and consistency through integrity checks
+- correct obvious entry or formatting errors
+
+These steps help ensure that the proxy data is as reliable as possible before it is used in further analysis.
+
+##### How proxy data is used in the analysis process
+
+Once cleaned, the meteorological data can be used to estimate air-pollution conditions across different parts of the city.
+
+The analysts can then combine this proxy information with available health records to study possible relationships between estimated pollution exposure and respiratory disease.
+
+This allows the organisation to conduct a meaningful study even though it could not access the full original air-quality dataset.
+
+##### Interpreting proxy-data results carefully
+
+Throughout the study, the analysts must still recognise the limits of the proxy.
+
+Even if the weather data is helpful, it may not fully capture every aspect of real pollution exposure. That means the team must:
+
+- interpret results carefully
+- acknowledge possible bias
+- avoid claiming more precision than the proxy data can support
+
+##### Why this healthcare example matters
+
+This is a strong example because it shows both the value and the limits of proxy data.
+
+The organisation can still carry out useful research, clean the dataset, and generate insight, but it must also remain cautious about representativeness, accuracy, and bias.
+
+#### Real-world example - Financial institution
+
+Imagine a financial institution that wants to analyse customer spending patterns in order to develop targeted marketing strategies and improve customer satisfaction.
+
+The institution collects transaction data such as:
+
+- purchase amounts
+- transaction dates
+- transaction locations
+
+However, direct access to raw transaction data may be restricted because privacy regulations and security concerns make the use of real-world financial records difficult.
+
+To address this, the institution can generate a **proxy real-world dataset** that closely resembles the original transaction data while protecting customer privacy.
+
+##### How the proxy dataset is created
+
+The institution can use **data augmentation** techniques on a subset of the original transaction data so the proxy dataset preserves the important statistical properties of the real system.
+
+For example, the augmented proxy dataset may introduce controlled variation in:
+
+- transaction amounts
+- timestamps
+- geographical locations
+- simulated spending patterns
+- small amounts of random noise
+
+The goal is to create a dataset that still reflects realistic customer behaviour while ensuring that no individual customer record is directly exposed.
+
+##### How the proxy data supports cleaning
+
+Once created, the proxy dataset can be used to test and improve cleaning techniques before those techniques are used on more sensitive operational data.
+
+The institution can use the proxy dataset to:
+
+- detect and handle missing values
+- remove duplicate transaction records
+- review unusual outliers
+- standardise formats and labels
+- validate consistency across transaction fields
+
+This helps analysts understand whether the cleaning process is strong enough before they move to larger or more sensitive real-world financial datasets.
+
+##### How the proxy data supports analysis
+
+After cleaning, the proxy dataset can also be used for analytical testing.
+
+For example, analysts can use it to:
+
+- apply clustering techniques
+- use association rule mining
+- test predictive models
+- identify spending patterns
+- segment customers by purchasing behaviour
+- discover frequent purchasing combinations
+
+These insights can then support:
+
+- targeted marketing campaigns
+- personalised offers
+- improved product recommendations
+- better customer experience strategies
+
+##### How the proxy data supports scalability testing
+
+The proxy dataset can also be used to assess the scalability and performance of the analysis algorithms before they are applied to the actual transaction environment.
+
+For example, analysts can test:
+
+- computational requirements
+- processing times
+- algorithm efficiency
+- whether the workflow can scale to large and complex real-world data
+
+This allows the institution to fine-tune the algorithms in advance and reduce the risk of performance problems later.
+
+##### Why this financial example matters
+
+This example is important because it shows how proxy data can support both **privacy protection** and **meaningful analysis** at the same time.
+
+The institution can clean the data, analyse customer spending behaviour, test analytical methods, and improve strategy design without compromising sensitive financial records.
+
+By using proxy real-world data in this way, the financial institution can overcome privacy and security barriers while still gaining valuable insight into customer behaviour. The proxy analysis becomes a practical precursor to later data-driven strategy deployment without exposing raw customer transaction records.
+
+#### Exam resolver - Proxy data proving valuable in data cleaning
+
+##### What the examiner is really testing
+
+In this kind of question, the examiner usually wants to see whether you can:
+
+- choose a realistic example where **proxy real-world data** is genuinely useful
+- explain clearly **why** proxy data is needed
+- document the cleaning process in a step-by-step way
+- connect the cleaned proxy dataset to a useful analytical or operational outcome
+
+##### Resolver-style answer draft
+
+One strong example would be a **financial institution** that wants to analyse credit-card transaction data to improve fraud detection and customer protection. In a real banking environment, direct use of actual transaction records is highly restricted because the data contains sensitive personal and financial information. For that reason, proxy real-world data becomes valuable because it allows the organisation to test data cleaning and analysis methods without exposing real customers.
+
+In this case, I would begin by creating or obtaining a **synthetic transaction dataset** that closely imitates the main characteristics of the real data. The proxy dataset should reflect patterns such as transaction size, time of day, merchant type, and geographic activity while still protecting privacy.
+
+The steps I would follow are:
+
+1. **Define the purpose of the proxy dataset.**  
+   First, I would clarify that the purpose is to test cleaning methods and prepare the data for fraud analysis without using live customer records.
+
+2. **Create or select the proxy dataset.**  
+   I would use synthetic data generation and controlled augmentation so the dataset keeps important transaction patterns such as realistic values, timestamps, merchant categories, and regional behaviour.
+
+3. **Check representativeness and statistical properties.**  
+   Before cleaning begins, I would confirm that the proxy data broadly preserves the important statistical characteristics of the original environment, such as common transaction ranges, typical daily activity patterns, and realistic correlations between variables.
+
+4. **Introduce or identify common data-quality issues.**  
+   To make the dataset useful for cleaning evaluation, I would include realistic issues such as missing merchant fields, duplicate transactions, inconsistent location labels, outliers, and invalid timestamps.
+
+5. **Apply data cleaning techniques.**  
+   I would then clean the proxy dataset by:
+   - handling missing values
+   - removing duplicates
+   - standardising categories and formats
+   - checking outliers
+   - validating dates, transaction amounts, and field consistency
+
+6. **Evaluate which cleaning methods work best.**  
+   After applying the cleaning steps, I would compare the results to see which methods most effectively improve the dataset. This would show where a method works well and where it struggles.
+
+7. **Assess the effect of cleaning on dataset quality.**  
+   I would measure whether the cleaned proxy data is more complete, consistent, accurate, and ready for analysis than the unclean version.
+
+8. **Use the cleaned proxy data for analysis testing.**  
+   Once the data is improved, I would use it to test fraud-detection logic, suspicious-pattern identification, or anomaly detection workflows.
+
+9. **Document the findings for real-world use.**  
+   Finally, I would document what cleaning steps were effective, what limitations remained, and how those lessons should guide later cleaning of more sensitive operational data.
+
+Overall, this example proves that proxy real-world data is valuable in data cleaning because it provides a safe but realistic environment for testing methods, measuring improvements, and preparing better analytical workflows. In a financial institution, this is especially important because privacy and security rules make direct experimentation on real transaction data difficult.
+
+##### Why this is a strong exam answer
+
+This is a strong exam answer because it:
+
+- gives a realistic proxy-data example
+- explains why proxy data is needed in that context
+- documents the steps clearly and in order
+- links the cleaned proxy dataset to a practical analytical benefit
+
+#### Exam resolver - Traffic congestion and flexible working proxy-data scenario
+
+##### What the examiner is really testing
+
+In this kind of traffic-congestion case, the examiner usually wants to see whether you can:
+
+- explain how **proxy real-world data** can replace hard-to-obtain direct data
+- identify realistic public or online data sources for congestion and commuting behaviour
+- describe the **cleaning** and **pre-processing** steps needed before analysis
+- show how the cleaned proxy data could support a decision about **flexible working hours**
+
+##### Resolver-style answer draft
+
+In this scenario, I would explain that it may be difficult to obtain direct data from every driver, every employer, and every road segment at the same time. Because of this, **proxy real-world data** is a practical way to study congestion patterns and test whether flexible working hours could help reduce traffic jams.
+
+I would begin by building the study around several online and publicly available proxy sources. First, I would use **probe-vehicle travel-time and speed data** such as the kind described by the **FHWA National Performance Management Research Data Set (NPMRDS)** or city-level traffic datasets such as the **TomTom Traffic Index**. These sources can act as a proxy for actual congestion conditions because they show how travel times, speeds, and congestion levels change by road segment and by time of day. They are especially useful for identifying the morning and evening peak periods and for measuring indicators such as travel time, reliability, and congestion intensity.
+
+Second, I would use **commuting-pattern data** as a proxy for travel demand. Public sources such as commuting statistics from the **U.S. Census Bureau** can show how many people travel to work, when they leave home, and how working from home has shifted the number of people travelling during core commuting hours. This helps build a view of whether changing work schedules is likely to reduce demand during the most congested periods.
+
+Third, I would use **flexible-working evidence** from government or transport-policy sources to understand what kinds of changes are realistic. For example, public guidance and research on flexible working show that flexible work can include changing start and finish times, hybrid working, and part-time commuting patterns. This helps translate the traffic study into a realistic intervention rather than an abstract idea.
+
+Once the proxy data sources are selected, I would carry out **data cleaning and pre-processing**. I would standardise timestamps, locations, route or corridor names, and units of measurement so the traffic data and commuting data can be compared properly. I would handle missing intervals in speed or travel-time data, remove duplicate observations, and validate whether extreme values are true congestion spikes or just bad records. I would also align the different datasets into common time blocks such as 15-minute, 30-minute, or hourly intervals so that the traffic series and commuting patterns can be analysed together.
+
+I would then add **contextual cleaning and validation** by checking whether unusual traffic values are explained by incidents, bad weather, holidays, or school schedules rather than normal commuting behaviour. This is important because the study is about congestion caused by work-trip timing, not every possible cause of delay.
+
+After cleaning, I would analyse which corridors and time periods show the greatest congestion. For example, I would compare:
+
+- morning peak versus evening peak
+- weekdays versus lower-demand days
+- periods with stronger work-from-home behaviour versus more traditional commuting periods
+
+If the congestion data shows that delays are concentrated in narrow peak windows, and the commuting data suggests many journeys are linked to similar start times, then this supports the idea that flexible working hours could help spread demand more evenly across the day.
+
+To make the study decision-oriented, I would propose simple scenario testing. For example, I would estimate what happens if a share of commuters starts work 30 to 60 minutes earlier or later, or if some workers shift to hybrid attendance on selected days. Even if we do not have direct employer-level data, proxy data can still provide a strong evidence-based view of whether peak congestion might be reduced by spreading trips away from the busiest hours.
+
+Overall, I would conclude that proxy real-world data enables this study by making it possible to combine public traffic indicators, commute-pattern evidence, and flexible-working evidence into one analytical view. This does not give perfect causal proof, but it provides a strong, practical basis for identifying congestion patterns, testing assumptions, and deciding whether a flexible-hours pilot should be introduced.
+
+##### Why this is a strong exam answer
+
+This is a strong exam answer because it:
+
+- explains clearly why proxy data is needed
+- identifies realistic online sources for traffic, commuting, and flexible-working evidence
+- includes cleaning and pre-processing before the analysis
+- links the proxy-data study directly to a practical congestion-reduction decision
+
+#### Exam resolver - Migratory whale movement proxy-data scenario
+
+##### What the examiner is really testing
+
+In this kind of endangered-species case, the examiner usually wants to see whether you can:
+
+- explain why **proxy real-world data** is needed when direct tracking data is incomplete
+- show how **data augmentation** can extend a small but reliable GPS dataset
+- give realistic and domain-relevant augmentation examples rather than generic ones
+- connect the augmented proxy data to a practical movement-analysis goal
+
+##### Resolver-style answer draft
+
+In this scenario, I would explain that the research organisation has only a subset of whales with complete GPS tracking data, while many other whales have incomplete or inconsistent records because trackers do not always transmit reliably. Because the species is rare and its habitat is remote, collecting full real-time data for every whale would be costly and difficult. For that reason, **proxy real-world data** can be created by using **data augmentation** on the complete subset of whale GPS records.
+
+The first step would be to identify the cleanest and most reliable source records. I would start with the whales that have the most complete tracking histories and clean those records first by:
+
+- removing duplicate GPS points
+- checking impossible coordinates
+- correcting timestamp formats
+- reviewing unrealistic jumps in distance or speed
+- separating true signal loss from biologically plausible pauses in movement
+
+Once the base dataset is clean, I would use it as the foundation for augmentation.
+
+One useful augmentation scenario would be **controlled positional noise**. I could add small, realistic GPS variation to latitude and longitude so the proxy tracks still resemble natural whale movement while accounting for minor tracking uncertainty. This would help test whether the analysis remains stable when the exact position is not perfectly measured.
+
+A second scenario would be **gap reconstruction and interpolation**. Because whale trackers often miss transmissions, I could create augmented tracks where short missing segments are filled in using realistic interpolated movement based on nearby timestamps, speed limits, and direction of travel. This would emulate the kind of incomplete tracking pattern that researchers actually face in the field.
+
+A third scenario would be **time-shifted migration behaviour**. I could slightly shift the timing of known migration paths forward or backward to represent whales that begin seasonal movement earlier or later than the original tracked individuals. This is useful because migration does not happen at exactly the same time for every animal.
+
+A fourth scenario would be **route variation around feeding or resting areas**. Starting from a real migration route, I could generate nearby path variants that include slightly different turning behaviour around known feeding grounds, breeding areas, or safe corridors. This would create realistic path diversity without inventing completely unrealistic movements.
+
+A fifth scenario would be **environment-driven detours**. I could create augmented whale tracks where paths bend away from certain areas or become less direct, representing conditions such as strong currents, vessel disturbance, temporary habitat avoidance, or environmental noise. This would be a good way to test whether the study can still identify broad migration patterns when routes are not perfectly regular.
+
+A sixth scenario would be **speed-profile augmentation**. Using the complete whale tracks, I could vary travel speed within biologically realistic limits so some augmented tracks include slower migration phases, faster transit phases, or longer pauses. This would help the organisation study not only where whales move, but also how movement intensity changes across time.
+
+After augmentation, I would still validate the generated proxy data carefully. For example, I would check that:
+
+- routes stay within realistic marine areas
+- speeds remain biologically plausible
+- paths do not jump across impossible distances in short time intervals
+- seasonal timing still makes ecological sense
+- the augmented dataset preserves the key statistical patterns of the original complete subset
+
+Overall, I would conclude that data augmentation allows the organisation to expand a limited but high-quality whale-tracking dataset into a stronger proxy dataset for analysis. This would not replace true field observations, but it would support more robust study of migration corridors, timing differences, habitat use, and the likely movement patterns of whales whose trackers produced incomplete data.
+
+##### Why this is a strong exam answer
+
+This is a strong exam answer because it:
+
+- explains clearly why proxy data is needed in whale tracking
+- uses **data augmentation** directly, which is what the question asks for
+- gives several realistic and unique augmentation scenarios
+- shows how the augmented data would still need validation before being trusted for analysis
+
+#### Real-world example - Online retail company
+
+Imagine an online retail company that collects customer data through several channels, such as:
+
+- online purchases
+- in-store transactions
+- customer feedback forms
+
+The collected data may include:
+
+- customer names
+- addresses
+- contact information
+- purchase history
+- feedback comments
+
+During collection, several quality problems may appear. For example:
+
+- customers may misspell their names
+- addresses may be incomplete
+- some records may contain missing values
+- feedback comments may include special characters or irrelevant text
+
+To make the dataset suitable for analysis, the retail company performs data cleaning and pre-processing.
+
+##### Data standardisation
+
+The company applies standardisation techniques so the data uses consistent formats.
+
+For example:
+
+- customer names may be converted to title case
+- addresses may be formatted in a uniform way
+- fields may be aligned to one common date or text format
+
+This improves consistency and makes records easier to compare.
+
+##### Handling missing data
+
+The company identifies fields that are missing important values.
+
+For example, if a phone number is missing, the company may:
+
+- leave it blank if it is optional
+- flag it for review
+- estimate or impute part of the value where this is justified by other information
+
+This step helps reduce gaps in the dataset while also avoiding careless assumptions.
+
+##### Removing duplicates
+
+The company looks for duplicate customer entries, which may happen if the same person registers more than once across different channels.
+
+Duplicate records may be:
+
+- merged
+- removed
+- flagged for manual review
+
+This reduces redundancy and prevents the same customer from being counted multiple times in the analysis.
+
+##### Handling outliers
+
+The company also checks for outliers, which are values that differ strongly from the majority of the data.
+
+For example:
+
+- an unrealistic purchase value
+- an impossible age
+- an unusually high transaction frequency
+
+Depending on the business context, these outliers may be investigated, corrected, excluded from some calculations, or retained if they are genuine.
+
+##### Text pre-processing
+
+Customer feedback comments may also need text pre-processing.
+
+This may involve:
+
+- removing special characters
+- converting text to lowercase
+- removing irrelevant information
+
+This helps the company extract more useful insight from customer comments and makes later text analysis more effective.
+
+##### Data validation
+
+Finally, the company validates the data to ensure values remain realistic and fall within acceptable ranges.
+
+For example:
+
+- customer ages should be reasonable
+- transaction values should not be negative when that makes no business sense
+- contact fields should follow the expected format
+
+This step helps prevent invalid data from entering the final analysis dataset.
+
+##### Dealing with inconsistent data structures
+
+Suppose the online retail company acquires another business and receives a second customer database with a slightly different structure.
+
+For example:
+
+- field names may not match exactly
+- address fields may be split differently
+- data types may not be aligned
+- formats may vary between the two systems
+
+Before merging the datasets, the company must reconcile these inconsistent structures so the records align correctly. This helps prevent:
+
+- misaligned rows
+- mismatched columns
+- failed merges
+- misleading combined datasets
+
+##### Automating data cleaning
+
+Because the company handles a large and constantly growing volume of customer data, manual cleaning can become too slow and error-prone.
+
+To solve this, the company can automate repeated cleaning tasks by using:
+
+- programming languages such as **Python**
+- reusable cleaning scripts
+- specialised data cleaning software
+
+Automation improves the process because it:
+
+- saves time
+- reduces repeated manual work
+- improves consistency
+- makes the cleaning steps easier to reuse as the dataset grows
+
+##### Why this retail example matters
+
+By carrying out these cleaning and pre-processing steps, the retail company improves the quality of its customer data before analysis begins.
+
+That clean data can then be used to:
+
+- understand customer behaviour more accurately
+- identify preferences and buying patterns
+- improve marketing strategy
+- strengthen customer service
+- support better business decisions
+
+#### Exam resolver - Telecommunications company data cleaning scenario
+
+##### What the examiner is really testing
+
+In this kind of telecommunications case, the examiner usually wants to see whether you can:
+
+- identify the likely data-quality problems in a multi-source customer dataset
+- explain realistic **data cleaning** and **pre-processing** steps
+- connect those steps to **data integrity**
+- show why cleaning matters before later analysis, modelling, or decision-making
+
+##### Resolver-style answer draft
+
+In this scenario, I would explain that the telecommunications company needs both **data cleaning** and **data pre-processing** because the customer information comes from several sources, such as invoices, in-store transactions, and customer care calls. When data is collected through different channels, it is common to find missing values, duplicates, inconsistent formats, spelling differences, and unstructured text that can reduce data integrity if they are not handled properly.
+
+The first step I would apply is **data standardisation**. Customer names, addresses, and contact fields should be brought into a consistent format. For example, names can be standardised to one text style, phone numbers can follow one pattern, and address fields can be formatted in the same way across the dataset. This improves consistency and makes it easier to match customer records from different sources.
+
+The next step would be **handling missing data**. If values such as phone number, postcode, or contact preference are missing, the company should decide whether to leave them blank, flag them for review, or fill them in only when there is a justifiable basis from other linked information. This helps reduce incomplete records without introducing careless assumptions.
+
+I would also perform **duplicate detection and removal**. In a telecommunications company, the same customer may appear more than once because they interacted through different channels. Duplicate records should be merged, removed, or reviewed manually so that the company does not overcount customers or split one customer history across several entries.
+
+Another important step is **handling outliers and invalid values**. For example, unusual billing amounts, impossible ages, unrealistic transaction counts, or invalid account dates should be checked. Some outliers may be genuine and worth keeping, while others may come from entry mistakes or system errors. The key point is that they should be investigated before being used in analysis.
+
+The company should also apply **text pre-processing** to customer-care notes or feedback comments. This may include removing unnecessary special characters, standardising text case, and removing irrelevant fragments so the text becomes more useful for later sentiment analysis, complaint classification, or service-quality review.
+
+Finally, I would include **data validation** checks. These checks make sure values stay within valid ranges and formats. For example, customer IDs should follow the correct structure, invoice values should not be negative unless refunds are expected, and dates should be realistic and in the right order. This supports stronger integrity across the dataset.
+
+Overall, these cleaning and pre-processing steps improve data integrity because they make the data more accurate, complete, and consistent across sources. That gives the telecommunications company a stronger foundation for customer analysis, churn modelling, service improvement, and better decision-making.
+
+##### Why this is a strong exam answer
+
+This is a strong exam answer because it:
+
+- identifies realistic cleaning problems in a telecommunications dataset
+- explains practical steps such as standardisation, missing-data handling, duplicate removal, outlier review, text pre-processing, and validation
+- links those steps directly to data integrity
+- shows why cleaning improves later analysis and business decisions
+
+#### Exam resolver - Dental practice data cleaning scenario
+
+##### What the examiner is really testing
+
+In this kind of dental-practice case, the examiner usually wants to see whether you can:
+
+- identify realistic data-quality problems in healthcare-style operational data
+- explain step-by-step **data cleaning** and **pre-processing** actions
+- connect those actions to **data integrity**, patient administration, and reporting quality
+- show why accurate data matters before analysis, scheduling, billing, and decision-making
+
+##### Resolver-style answer draft
+
+In this scenario, I would explain that an extensive dental practice is likely to collect data from several parts of the business, such as patient registration forms, appointment systems, treatment records, invoices, insurance claims, recall systems, and feedback notes. Because the data comes from multiple sources and is updated regularly, the dataset may contain missing values, duplicates, inconsistent spellings, invalid dates, mismatched formats, and free-text notes that need cleaning before the practice can rely on the data.
+
+The first step I would take is **data standardisation**. Patient names, phone numbers, addresses, dates of birth, treatment dates, and procedure labels should all be placed into one consistent format. For example, phone numbers should follow one pattern, dates should use one standard date format, and treatment names should use one agreed naming convention. This makes records easier to compare and reduces confusion across clinical, billing, and appointment systems.
+
+The next step would be **handling missing data**. In a dental-practice dataset, important information such as phone number, next appointment date, insurance details, or medical alerts may sometimes be incomplete. I would identify which fields are essential and decide whether missing values should be left blank, flagged for follow-up, or completed from another trusted source. This helps improve completeness without making unsafe assumptions.
+
+I would then carry out **duplicate detection and removal**. A patient may appear more than once if they registered separately online and in person, or if staff entered the same patient with small spelling differences. I would compare records using identifiers such as patient ID, date of birth, phone number, or email address, then merge or remove duplicates where appropriate. This prevents one patient from being counted twice and helps maintain one reliable patient history.
+
+Another important step is **data validation and error checking**. I would check that ages and dates of birth are realistic, appointment dates are in valid ranges, invoice totals are not negative unless there is a refund, treatment codes match allowed values, and recall dates happen after the original treatment date. These checks help detect typos, system-entry mistakes, and inconsistent records before analysis begins.
+
+I would also review **outliers and suspicious values**. For example, unusually high treatment charges, impossible patient ages, extremely frequent visits, or a sudden jump in missed appointments may need investigation. Some outliers may be genuine, but others may result from data-entry errors or coding mistakes. The key point is that they should be reviewed rather than automatically trusted.
+
+If the practice wants to analyse dentist notes or patient feedback, I would include **text pre-processing** as well. This may involve removing irrelevant special characters, making text formatting consistent, and separating useful comments from noise. That makes the text easier to analyse for themes such as patient satisfaction, recurring complaints, or follow-up needs.
+
+I would also deal with **inconsistent data structures** if the practice uses separate systems for reception, billing, and clinical records. Before merging these sources, I would align field names, data types, date formats, and category labels so that rows and columns match properly. This reduces the risk of failed merges or misleading combined datasets.
+
+Finally, I would recommend **automating repeated cleaning steps**. An extensive dental practice handles ongoing appointments, treatment updates, and invoices, so manual cleaning every time would be inefficient. Using repeatable scripts or cleaning tools can help standardise the process, reduce human error, and keep the data quality high as the dataset grows.
+
+Overall, these steps would help ensure the practice has the best possible data because the final dataset would be more accurate, complete, consistent, and reliable. That supports better scheduling, billing accuracy, patient follow-up, service analysis, and stronger decision-making across the dental practice.
+
+##### Why this is a strong exam answer
+
+This is a strong exam answer because it:
+
+- identifies realistic data-quality issues in a dental-practice dataset
+- explains the cleaning steps in a clear order
+- links cleaning directly to integrity, patient administration, billing, and reporting
+- shows why good data matters before analysis and operational decisions
+
+#### Case Studies and Examples
+
+Let us explore a few case studies and examples of how proxy data can be used across different industries.
+
+#### Case study 1: Proxy data for data cleaning and analysis
+
+##### Scenario
+
+A retail company wants to analyse customer purchasing patterns and preferences by using transaction data, but privacy concerns prevent direct access to actual customer transaction records.
+
+##### Proxy data usage
+
+To solve this, the company uses proxy data generated from simulated transaction records that closely resemble the main characteristics of actual customer transactions.
+
+##### Data cleaning
+
+The company applies cleaning techniques to improve the quality of the proxy dataset.
+
+For example:
+
+- **imputation** is used to handle missing values
+- **outlier detection** is used to identify and manage anomalies
+- **data validation** is used to check consistency and integrity
+
+##### Analysis
+
+After cleaning, the retail company can use the proxy data for:
+
+- customer segmentation
+- market basket analysis
+- recommendation system development
+
+This allows the company to identify customer-purchasing patterns, popular product combinations, and customer preferences without exposing real customer transactions.
+
+#### Case study 2: Proxy data for data quality assessment
+
+##### Scenario
+
+A healthcare organisation wants to assess the quality of its electronic health records (**EHR**) data, but it cannot directly analyse the sensitive patient information stored in the real EHR system.
+
+##### Proxy data usage
+
+To address this, the organisation creates a synthetic dataset that resembles the structure and characteristics of the real EHR data.
+
+They then introduce common quality issues into the proxy dataset, such as:
+
+- missing values
+- duplicate records
+- inconsistencies
+
+This creates a safe environment for testing and assessment.
+
+##### Data quality assessment
+
+The organisation evaluates the quality of the proxy dataset using data-quality metrics such as:
+
+- completeness
+- accuracy
+- consistency
+- timeliness
+
+This helps them understand both the extent and the effect of the introduced quality issues.
+
+##### Data cleaning optimisation
+
+The healthcare organisation then tests different cleaning pipelines on the proxy dataset.
+
+For example, they compare techniques for:
+
+- handling missing values
+- detecting duplicates
+- resolving inconsistencies
+
+This helps them identify the most suitable cleaning approaches before moving to the real and more sensitive healthcare dataset.
+
+#### Case study 3: Proxy data for machine learning model development
+
+##### Scenario
+
+An insurance company wants to develop a predictive model for risk assessment by using policyholder data, but privacy regulations prevent direct access to the actual policyholder records.
+
+##### Proxy data usage
+
+To overcome this, the company generates a synthetic dataset that closely resembles the main characteristics and patterns of the original policyholder data.
+
+This proxy dataset is then used as a safe substitute for early model training and testing.
+
+##### Data pre-processing
+
+Before model development, the company pre-processes the proxy dataset.
+
+This includes:
+
+- handling missing values
+- encoding categorical variables
+- normalising numerical features
+- performing feature selection or dimensionality reduction
+
+These steps help make the proxy data cleaner, more structured, and more suitable for machine learning.
+
+##### Machine learning model development
+
+Using the pre-processed proxy data, the company trains and optimises machine learning models such as:
+
+- logistic regression
+- random forests
+- gradient boosting
+
+They then evaluate model performance by using measures such as:
+
+- accuracy
+- precision
+- recall
+
+This allows the company to compare models and improve them before testing on more sensitive real-world data.
+
+##### Model transferability
+
+After optimising the model on the proxy dataset, the insurance company assesses whether the model can transfer well to the real policyholder data.
+
+To do this, the company tests the model on a separate validation set derived from the real data in a secure and controlled manner.
+
+This helps the organisation judge whether the model generalises well, whether the proxy data was realistic enough, and whether further refinement is needed before deployment.
+
+#### The Task
+
+Answer the questions below thoroughly.
+
+##### Question 1
+
+A group of students is working on a research project to analyse customer behaviour in an e-commerce platform. Due to privacy restrictions, they are provided with proxy data that closely resemble customer data.
+
+How can the students explain how proxy data can be used to analyse customer behaviour in this research project?
+
+###### Suggested answer
+
+The students can explain that **proxy data** allows them to study customer behaviour without exposing real customer identities or sensitive purchasing histories. The proxy dataset should be designed to resemble the real e-commerce data as closely as possible in terms of transaction patterns, product categories, order frequency, customer segments, and spending behaviour.
+
+Before analysis begins, the students should clean and prepare the proxy data. This may include handling missing values, removing duplicates, standardising date and category fields, checking for unrealistic values, and making sure the dataset is consistent enough for analysis.
+
+Once the proxy data is cleaned, the students can use it to analyse customer behaviour through methods such as:
+
+- customer segmentation
+- market basket analysis
+- trend analysis
+- recommendation logic
+- exploratory analysis of buying frequency, spending levels, and product preferences
+
+They can explain that the goal is not to claim that the proxy data is identical to real customer data, but that it is useful for testing methods, identifying likely patterns, and developing analysis workflows in a privacy-safe way.
+
+The students should also mention that proxy data has limitations. It may not capture every nuance of the real customers, so conclusions should be interpreted carefully. Even so, it remains valuable because it supports analysis design, insight development, and early experimentation without breaking privacy rules.
+
+##### Question 2
+
+A group of students is conducting a study to assess the quality of Electronic Health Records (EHR) in a healthcare organisation. Due to privacy regulations, they are provided with a synthetic dataset that simulates the characteristics of the actual EHR data.
+
+How can the students explain how proxy data can be used to assess the EHR’s data quality in this study?
+
+###### Suggested answer
+
+The students can explain that proxy data is useful because it creates a safe environment for testing data-quality methods without exposing sensitive patient information. In this case, the synthetic EHR dataset acts as a substitute for the real healthcare data while still reflecting its structure and common quality issues.
+
+The students should explain that the proxy dataset can be used to simulate and assess problems such as:
+
+- missing values
+- duplicate patient records
+- inconsistent formats
+- invalid entries
+- incomplete timestamps or delayed updates
+
+Using this dataset, the students can evaluate data-quality dimensions such as:
+
+- completeness
+- accuracy
+- consistency
+- timeliness
+
+They can also test different cleaning pipelines on the proxy data. For example, they may compare methods for imputing missing values, detecting duplicates, reconciling inconsistent fields, and validating record structure.
+
+This helps the students identify which cleaning techniques are likely to work best before they are applied to the real EHR environment. The main value of the proxy data is that it supports safe experimentation, quality assessment, and method improvement while still respecting healthcare privacy requirements.
+
+##### Question 3
+
+A group of students is working on a machine learning project to develop a predictive model for stock price prediction. Due to data restrictions, they are provided with proxy data that resemble the characteristics and patterns of the actual stock market data.
+
+How can the students explain how proxy data can be used to optimise machine learning models in this project?
+
+###### Suggested answer
+
+The students can explain that proxy data gives them a safe and practical way to build and improve a machine learning model before limited real data is used. The proxy dataset should imitate important properties of stock market data, such as price movements, volatility, volume patterns, trend behaviour, and time-based variation.
+
+Before model training, the students should pre-process the proxy dataset. This may include:
+
+- handling missing values
+- removing duplicates
+- normalising or scaling numerical variables
+- creating time-based features
+- selecting the most relevant features
+- checking for outliers that could distort the model
+
+Once the data is prepared, the students can train and compare machine learning models such as regression models, random forests, gradient boosting models, or other suitable predictive methods. Proxy data allows them to:
+
+- test feature engineering ideas
+- tune hyperparameters
+- compare model performance
+- evaluate metrics such as error rate, precision of trend direction, or other relevant prediction measures
+
+The students should also explain that proxy data can be used to test the scalability and computational performance of the modelling workflow. After optimisation, the final step is to assess how well the model transfers to a secure real-data validation set. This shows whether the model generalises well or whether the proxy data was too simplified.
+
+Overall, proxy data helps optimise the machine learning model by enabling safe experimentation, repeated tuning, and structured testing before exposure to restricted real market data.
+
+##### Question 4
+
+Write a summary of the concepts of the data cleaning techniques.
+
+###### Suggested answer
+
+The concepts of data cleaning techniques all focus on improving data quality before analysis, modelling, or reporting. Although the exact method depends on the dataset, the core concepts are consistent.
+
+**Handling missing data** means identifying blank fields or unavailable values and deciding whether to remove them, leave them blank, flag them, or replace them using methods such as mean, median, or mode.
+
+**Removing duplicates** means finding repeated records and deciding how to merge, remove, or review them so that the dataset does not overcount the same case.
+
+**Standardising data** means making formats consistent. This includes aligning dates, names, phone numbers, addresses, and category labels so the same kind of information is represented in one uniform way.
+
+**Handling outliers** means identifying data points that are unusually different from the rest. These values may be errors, unusual cases, or meaningful exceptions, so they should be investigated carefully.
+
+**Data validation and error checking** means testing the dataset against rules and constraints, such as valid date ranges, valid IDs, realistic ages, or allowed category values.
+
+**Dealing with inconsistent data structures** means aligning field names, data types, and formats when data comes from different sources so that datasets can be merged or compared correctly.
+
+**Automating data cleaning** means using tools, scripts, or programming languages such as Python or R to make the cleaning process faster, more repeatable, and less dependent on manual work.
+
+Together, these concepts help make data more accurate, complete, consistent, and trustworthy for later use.
+
+##### Question 5
+
+How can proxy data be used to evaluate the effectiveness of data-cleaning techniques?
+
+###### Suggested answer
+
+Proxy data can be used to evaluate data-cleaning techniques by creating a safe test environment that behaves like the real dataset. Analysts can intentionally add known quality problems to the proxy data, such as missing values, duplicates, inconsistent entries, or outliers.
+
+They can then apply different cleaning methods and compare the results. For example, they can test:
+
+- different missing-value treatments
+- different duplicate-detection rules
+- different standardisation rules
+- different validation checks
+
+Because the issues in the proxy data are controlled, analysts can measure how well each cleaning method performs. They can compare the dataset before and after cleaning by using quality indicators such as completeness, consistency, error rate, and overall fitness for analysis.
+
+This process helps analysts identify which techniques are most effective, where certain methods fail, and what adjustments are needed before working on the real dataset. Proxy data is therefore valuable because it allows safe experimentation, comparison, and optimisation of cleaning workflows without risking sensitive live data.
+
+#### Resolver-style supplement
+
+The following answers show how an exam resolver would frame the same tasks.
+
+##### Resolver view - Question 1
+
+###### What the examiner is really testing
+
+The examiner wants to see whether you can connect **proxy data** to **customer-behaviour analysis** while still recognising the limits created by privacy and realism.
+
+###### Resolver-style answer draft
+
+I would explain that the students can use proxy data because it imitates the structure and behaviour of real e-commerce customer data without revealing real customer identities. After cleaning the proxy data, they can analyse customer behaviour through segmentation, purchasing trends, recommendation logic, and product-combination analysis. This is useful because it allows them to build and test analysis methods safely, even though the results must still be interpreted with care because proxy data is only an approximation of reality.
+
+##### Resolver view - Question 2
+
+###### What the examiner is really testing
+
+The examiner wants to see whether you understand that proxy data is not only for analysis, but also for **data-quality assessment** and **cleaning optimisation**.
+
+###### Resolver-style answer draft
+
+I would explain that the synthetic EHR dataset allows the students to assess data quality without exposing patient information. They can use it to measure completeness, accuracy, consistency, and timeliness, and they can also simulate common problems such as missing values, duplicate records, and inconsistent entries. By testing cleaning pipelines on this proxy dataset, they can identify which methods are most suitable before any work is carried out on the real healthcare data.
+
+##### Resolver view - Question 3
+
+###### What the examiner is really testing
+
+The examiner wants to see whether you can explain how proxy data supports **machine-learning optimisation**, not just basic cleaning.
+
+###### Resolver-style answer draft
+
+I would explain that proxy stock-market data can be used to train and improve a predictive model before restricted real data is accessed. The students can pre-process the proxy data, engineer features, compare models, and tune parameters in a safe environment. They can then evaluate performance and finally test whether the optimised model transfers well to a secure validation subset of the real data. This shows how proxy data supports model development, experimentation, and controlled generalisation testing.
+
+##### Resolver view - Question 4
+
+###### What the examiner is really testing
+
+The examiner wants to see whether you know the **core cleaning concepts** and can summarise them clearly without turning the answer into a disconnected list.
+
+###### Resolver-style answer draft
+
+I would explain that data cleaning techniques all aim to improve data quality before analysis. The main concepts are handling missing values, removing duplicates, standardising formats, reviewing outliers, validating values against rules, aligning inconsistent structures, and automating repeated cleaning tasks. Together, these techniques make data more accurate, consistent, complete, and reliable for later analysis or modelling.
+
+##### Resolver view - Question 5
+
+###### What the examiner is really testing
+
+The examiner wants to see whether you understand that proxy data can be used as a **controlled testing environment** for comparing cleaning methods.
+
+###### Resolver-style answer draft
+
+I would explain that proxy data helps evaluate cleaning effectiveness because analysts can deliberately introduce known errors and then test how well different cleaning methods fix them. By comparing data quality before and after cleaning, they can see which methods improve completeness, consistency, and reliability most effectively. This makes proxy data useful for safe experimentation, method comparison, and workflow improvement before the same techniques are applied to the real dataset.
+
+#### What did I Learn in This Lesson?
+
+This lesson provided the following key insights:
+
+- data cleaning means identifying and correcting errors, inconsistencies, and inaccuracies in data
+- data cleaning is also known as data cleansing or data scrubbing
+- data cleaning and pre-processing transform raw data into a cleaner, more structured, and more analysis-ready format
+- raw data from databases, surveys, sensors, and web scraping often contains imperfections
+- common problems include missing values, outliers, formatting inconsistencies, duplicate records, and invalid entries
+- data cleaning techniques vary depending on the data source, the type of data, the size of the dataset, and the specific issues present
+- there is no one-size-fits-all cleaning method, but the core techniques remain consistent across contexts
+- handling missing data may involve deletion or imputation using methods such as mean, median, or mode
+- duplicate handling depends on clear duplication rules based on key fields
+- standardisation is needed for consistent formats and category labels
+- inconsistent structures must be reconciled before combining datasets from multiple sources
+- automation can improve efficiency, consistency, and reusability in the cleaning workflow
+- poor-quality data can lead to biased insight, incorrect conclusions, and weak decision-making
+- data cleaning improves the quality of later analysis, prediction, reporting, and business intelligence
+- data cleaning and pre-processing improve data quality, reliability, decision-making, efficiency, compatibility, and model performance
+- strong data cleaning depends on both technical methods and real-world understanding of the data
+- proxy real-world data is useful because it allows analysts to simulate realistic data-cleaning and analysis tasks when original data is restricted, costly, or difficult to access
+- proxy data has strengths such as availability and safe testing value, but it may differ from actual data in accuracy, representativeness, and specificity
+- proxy data can also offer accessibility, lower cost, and privacy protection when real datasets are difficult or risky to use directly
+- proxy data also has limitations such as measurement bias, lack of granularity, dependence on assumptions, and weak generalisability
+- proxy data can be generated through methods such as random sampling, data augmentation, and synthetic data generation
+- synthetic proxy data is especially useful when the original data is limited, sensitive, private, or unavailable
+- good proxy datasets should also be judged by representativeness, preserved statistical properties, contextual relevance, and privacy protection
+- proxy data is also valuable for evaluating cleaning techniques, simulating common data-quality issues, and checking whether cleaning actually improves dataset quality
+- proxy data is also useful for applying analysis techniques, identifying patterns and trends, and assessing the scalability and performance of algorithms before using real data
+- healthcare research is a strong proxy-data example because correlated meteorological data can be used as a substitute for harder-to-access air-quality data in a public-health study
+- financial institutions are another strong proxy-data example because synthetic transaction data can support cleaning, fraud analysis, and privacy protection at the same time
+- strong proxy-data answers should also document the workflow step by step, from purpose and dataset creation through cleaning, evaluation, and later analysis use
+- traffic-congestion research is another strong proxy-data example because public probe-vehicle traffic data, commuting patterns, and flexible-working evidence can be combined to test whether peak demand could be spread more evenly
+- endangered-species whale tracking is another strong proxy-data example because a small clean subset of GPS records can be expanded through data augmentation to study movement patterns when full tracking data is missing
+- retail proxy-data case studies show how cleaned simulated transaction data can support segmentation, market basket analysis, and recommendation systems
+- healthcare EHR proxy-data case studies show how synthetic records can be used to assess completeness, accuracy, consistency, and timeliness before optimising cleaning pipelines
+- insurance proxy-data case studies show how synthetic policyholder data can support pre-processing, model training, model evaluation, and transferability assessment before controlled testing on real data
+- proxy-data task answers should be able to explain customer-behaviour analysis, EHR quality assessment, and machine-learning optimisation in a structured and privacy-aware way
+- strong task answers should also summarise the core cleaning concepts and explain how proxy data can be used to compare cleaning methods safely
+- online retail data is a strong real-world example because it often needs standardisation, missing-value handling, duplicate removal, outlier review, validation, structure reconciliation, and automation before analysis
+- telecommunications data is also a strong example because data from invoices, store systems, and customer-care calls must be cleaned and aligned before analysis
+- dental-practice data is another strong example because patient records, appointments, treatment history, invoices, and feedback must be consistent and reliable before analysis or reporting
+
+#### Exam Notes
+
+When revising this lesson for the semester exam, focus especially on these high-yield points:
+
+- define **data cleaning** clearly
+- know that data cleaning is also called **data cleansing** or **data scrubbing**
+- explain why dirty data creates weak analysis and poor decisions
+- explain why **pre-processing** matters as well as cleaning
+- identify common data-quality problems such as **missing values**, **duplicates**, **invalid entries**, **outliers**, and **formatting inconsistencies**
+- explain that different datasets may need different cleaning methods even though the core concepts stay the same
+- know the main cleaning techniques: **missing-data handling**, **duplicate removal**, **format standardisation**, **outlier management**, **validation**, **structure reconciliation**, and **automation**
+- explain that missing values may be handled by deletion or by **imputation** with techniques such as **mean**, **median**, or **mode**
+- explain that duplicate detection depends on defining the right key fields or duplication rules
+- explain that standardisation includes both format alignment and normalising category labels
+- explain why inconsistent structures can break dataset merging if field names, data types, or formats do not match
+- explain why automation with tools such as **Python**, **R**, or cleaning software improves repeatability and efficiency
+- explain that data cleaning supports better **accuracy**, **reliability**, and **fitness for analysis**
+- explain that cleaning and pre-processing improve **efficiency**, **compatibility**, **integration**, and **model performance**
+- remember that cleaning often combines **statistical methods**, **computational rules**, and **domain expertise**
+- explain what **proxy real-world data** means and why analysts may use it instead of original data
+- explain the key features of proxy data: **indirect representation**, **correlation**, **availability**, and **simplification**
+- explain the main differences between proxy data and actual data in terms of **accuracy**, **representativeness**, and **specificity**
+- explain why proxy data is useful for testing cleaning rules, validation checks, and analysis workflows before using real data
+- explain the advantages of proxy data such as **accessibility**, **cost-effectiveness**, and **privacy protection**
+- explain the limitations of proxy data such as **measurement bias**, **lack of granularity**, **assumption risk**, and **limited generalisability**
+- explain how proxy data can be generated through **random sampling**, **data augmentation**, and **synthetic data generation**
+- explain when **synthetic data** is especially useful, for example when original data is sensitive, limited, or unavailable
+- explain the key factors for creating strong proxy datasets: **representative sample**, **statistical properties**, **contextual relevance**, and **privacy/security**
+- explain how proxy data can be used to **evaluate cleaning techniques**, **simulate data-quality issues**, and **measure the impact of cleaning on dataset quality**
+- explain how proxy data can also be used for **statistical analysis**, **exploratory analysis**, **pattern identification**, and **algorithm-performance testing**
+- be ready to use a **healthcare research organisation** case to explain how proxy meteorological data can support cleaning and analysis when direct air-quality data is unavailable
+- be ready to use a **financial institution** case to explain how synthetic transaction data can support cleaning, fraud analysis, and privacy protection when direct access to transaction data is restricted
+- when asked for an example, document the steps clearly from **purpose**, to **proxy-data creation**, to **cleaning**, to **evaluation**, to **analysis use**
+- be ready to use a **traffic congestion** case to explain how probe-vehicle traffic data, commute-pattern data, and flexible-working evidence can be used as proxy data when direct employer-and-driver level data is unavailable
+- be ready to use an **endangered whale tracking** case to explain how **data augmentation** can extend incomplete GPS tracking data through realistic route, timing, speed, and gap scenarios
+- be ready to use a **retail transaction** case to explain how cleaned simulated proxy data can support segmentation, market basket analysis, and recommendation systems
+- be ready to use a **healthcare EHR** case to explain how synthetic proxy data can be used for data-quality assessment and cleaning optimisation
+- be ready to use an **insurance policyholder** case to explain how synthetic proxy data can support pre-processing, machine-learning model training, performance evaluation, and transferability testing
+- be ready to answer task-style questions where proxy data is applied to **customer-behaviour analysis**, **EHR quality assessment**, and **machine-learning model optimisation**
+- be ready to summarise the **core concepts of data cleaning techniques** clearly and then explain how proxy data can be used to test which cleaning methods work best
+- be ready to use an **online retail company** case to explain standardisation, handling missing data, duplicate removal, outlier review, validation, inconsistent structures, and automation
+- be ready to use a **telecommunications company** case to explain cleaning across invoices, in-store records, and customer-care data
+- be ready to use a **dental practice** case to explain cleaning across patient registration, appointments, treatment records, invoices, and feedback
+- in case questions, connect the cleaning step to the later model, report, or decision that depends on the cleaned data
+
+##### Strong exam answer rule
+
+A strong answer in this topic usually:
+
+1. defines the cleaning problem clearly
+2. identifies the type of data-quality issue
+3. explains how the issue could be corrected, removed, or reviewed
+4. links the cleaning step back to better analysis and better decisions
+            """,
+            "key_points": [
+                "Data cleaning means identifying and correcting errors, inconsistencies, and inaccuracies in data",
+                "Data cleaning is also called data cleansing or data scrubbing",
+                "Data cleaning and pre-processing transform raw data into a cleaner, more structured, and more reliable format for analysis",
+                "Raw data from databases, surveys, sensors, and web scraping often contains imperfections",
+                "Common issues include missing values, duplicates, outliers, invalid entries, and formatting inconsistencies",
+                "Data cleaning techniques vary by dataset, domain, size, and problem type, so there is no one-size-fits-all method",
+                "Despite this variation, core techniques include handling missing data, duplicates, standardisation, outlier management, validation, structure handling, and automation",
+                "Missing values may be handled through deletion or imputation using methods such as mean, median, or mode",
+                "Duplicate handling depends on defining the correct key fields or duplication criteria for the dataset",
+                "Standardisation helps align dates, phone numbers, addresses, names, and category labels into one consistent format",
+                "Inconsistent data structures must be reconciled before merging datasets from multiple sources",
+                "Automation with Python, R, or specialised tools can make cleaning faster, more reusable, and more reliable",
+                "Dirty data can lead to incorrect conclusions, biased insights, and erroneous decision-making",
+                "Data cleaning improves the quality of later analysis, predictive models, reporting, and business intelligence",
+                "Data cleaning and pre-processing improve data quality, reliable analysis, decision-making, efficiency, compatibility, integration, and model performance",
+                "Data cleaning uses a combination of statistical methods, computational rules, and domain expertise",
+                "Proxy real-world data is an artificial or substitute dataset that imitates real-world data closely enough to support testing, cleaning, and analysis practice",
+                "Proxy data is useful because it is often easier to access and safer to use than actual sensitive or restricted data",
+                "Important proxy-data ideas include indirect representation, correlation with the target data, availability, and simplification",
+                "Proxy data differs from actual data in accuracy, representativeness, and specificity, so it should not be treated as a perfect replacement",
+                "Proxy data is valuable for testing cleaning rules, simulating data-quality problems, and checking workflows before using live data",
+                "Additional proxy-data advantages include accessibility, lower cost, and stronger privacy protection when original data is difficult to use directly",
+                "Important proxy-data limitations include measurement bias, lack of granularity, dependence on correlation assumptions, and limited generalisability",
+                "Proxy real-world data can be generated through random sampling, data augmentation, and synthetic data generation",
+                "Synthetic data generation can use statistical models, simulation, or generative methods such as GANs or VAEs",
+                "Generated proxy data is especially useful when the original data is limited, sensitive, private, or unavailable",
+                "Strong proxy datasets should be representative, preserve important statistical properties, stay contextually relevant, and protect privacy where needed",
+                "Proxy data is also useful for evaluating cleaning techniques, simulating common data-quality issues, and measuring whether cleaning has improved dataset quality",
+                "Proxy data is also useful for applying analysis techniques, identifying patterns and trends, and testing algorithm scalability and performance before moving to real data",
+                "A healthcare research organisation is a strong proxy-data example because meteorological data may be cleaned and used as a substitute for harder-to-access air-quality data in lung-disease research",
+                "Financial institutions are another strong proxy-data example because synthetic transaction data can support cleaning, fraud analysis, and privacy protection without exposing real customer records",
+                "A strong proxy-data answer should document the workflow clearly: define the purpose, create the proxy dataset, clean it, evaluate the results, and explain how it supports later analysis",
+                "Traffic congestion research is another strong proxy-data example because public probe-vehicle traffic data, commuting statistics, and flexible-working evidence can be combined to evaluate whether peak-hour demand might be reduced",
+                "Endangered whale tracking is another strong proxy-data example because data augmentation can expand a small clean subset of GPS tracks into realistic proxy movement patterns for analysis",
+                "Retail proxy-data case studies show how cleaned simulated transaction data can support customer segmentation, market basket analysis, and recommendation systems",
+                "Healthcare EHR proxy-data case studies show how synthetic records can be used to assess completeness, accuracy, consistency, and timeliness before optimising cleaning pipelines",
+                "Insurance proxy-data case studies show how synthetic policyholder data can support pre-processing, machine-learning model training, model evaluation, and transferability testing before controlled use on real data",
+                "Strong proxy-data task answers should explain how proxy data supports customer-behaviour analysis, EHR data-quality assessment, and machine-learning model optimisation while staying privacy-aware",
+                "A strong answer should also summarise the core data-cleaning concepts and explain how proxy data can be used to compare and evaluate cleaning methods safely",
+                "An online retail company is a strong real-world example because customer data often needs standardisation, missing-data handling, duplicate removal, outlier review, validation, structure reconciliation, and automation",
+                "A telecommunications company is also a strong example because customer data from invoices, store systems, and customer-care calls often needs standardisation, deduplication, validation, and text cleaning before analysis",
+                "A dental practice is also a strong example because patient records, appointments, treatment history, invoices, and feedback often need standardisation, deduplication, validation, and structure alignment before analysis",
+                "A strong cleaning workflow identifies problems, checks them, corrects or flags them, documents the changes, and rechecks fitness for analysis",
+                "Data cleaning is a core part of trustworthy data analysis rather than a minor preparation step"
+            ],
+            "visual_elements": {
+                "diagrams": False,
+                "tables": False,
                 "highlighted_sections": True
             }
         }
@@ -38719,6 +45393,2917 @@ def render_data_types_exam_solver():
         key=f"{base_key}_download",
     )
 
+
+def render_course_exam_connector(course_code, course, context_key="default", answer_target_key=None, answer_widget_key=None):
+    safe_context_key = re.sub(r"[^a-z0-9_]+", "_", str(context_key).lower())
+    base_key = f"course_exam_connector_{course_code.lower()}_{safe_context_key}"
+
+    stopwords = {
+        "the", "and", "for", "with", "that", "this", "from", "into", "using", "used", "use",
+        "your", "their", "they", "them", "what", "when", "where", "which", "while", "would",
+        "should", "could", "about", "because", "through", "than", "then", "also", "have",
+        "will", "need", "needs", "into", "over", "under", "between", "across", "such", "only",
+        "each", "more", "most", "some", "many", "been", "being", "does", "doing", "done",
+        "very", "just", "both", "than", "them", "ours", "ourselves", "their", "theirs",
+        "within", "across", "after", "before", "during", "towards", "into", "onto", "like",
+        "course", "lesson", "subject", "student", "students",
+    }
+
+    def normalise_text(value):
+        return re.sub(r"[^a-z0-9\s\-]", " ", str(value).lower())
+
+    def tokenise(value):
+        return {
+            token for token in normalise_text(value).replace("-", " ").split()
+            if len(token) >= 3 and token not in stopwords
+        }
+
+    def infer_requested_diagram_types(prompt_text, selected_text):
+        combined = f"{prompt_text} {selected_text}".lower()
+        wants_visual = any(term in combined for term in [
+            "diagram", "diagrams", "draw", "depict", "visual", "visualise", "visualize",
+            "entity-relationship", "er modelling", "er model", "hierarchical modelling",
+            "hierarchical model", "relational modelling", "relational model",
+            "relationship modelling", "network modelling", "network model", "graph model",
+        ])
+        if not wants_visual:
+            return []
+
+        requested = []
+        if any(term in combined for term in [
+            "entity-relationship", "er modelling", "er model", "school management",
+            "university", "course management", "student", "professor", "instructor",
+            "department", "enrolls", "enrols",
+        ]):
+            requested.append("er")
+        if any(term in combined for term in [
+            "hierarchical", "hierarchy", "tree", "organisational structure",
+            "organizational structure", "bank", "banking", "branch", "head office",
+            "ceo", "team", "root node", "leaf node",
+        ]):
+            requested.append("hierarchical")
+        if any(term in combined for term in [
+            "relational", "relationship modelling", "table", "tables",
+            "primary key", "foreign key", "order", "orders", "customer", "customers",
+            "product", "products", "bookstore", "craft shop", "shop", "store",
+        ]):
+            requested.append("relational")
+        if any(term in combined for term in [
+            "network modelling", "network model", "graph-like structure", "graph like structure",
+            "graph structure", "node", "nodes", "link", "links", "set", "sets",
+            "sales person", "salesperson", "manager", "store", "network",
+        ]):
+            requested.append("network")
+
+        deduped = []
+        for item in requested:
+            if item not in deduped:
+                deduped.append(item)
+        return deduped
+
+    def build_er_diagram_spec(combined_text):
+        combined = combined_text.lower()
+        if any(term in combined for term in ["library", "borrower", "loan", "author"]):
+            return {
+                "title": "Suggested ER Diagram",
+                "caption": "This ER draft is designed for a library-style case.",
+                "code": """erDiagram
+    BORROWER {
+        int BorrowerID
+        string Name
+        string Email
+    }
+    BOOK {
+        int BookID
+        string Title
+        string ISBN
+    }
+    LOAN {
+        int LoanID
+        date IssueDate
+        date DueDate
+    }
+    AUTHOR {
+        int AuthorID
+        string AuthorName
+    }
+    CATEGORY {
+        int CategoryID
+        string CategoryName
+    }
+    BORROWER ||--o{ LOAN : borrows
+    BOOK ||--o{ LOAN : appears_in
+    AUTHOR }o--o{ BOOK : writes
+    CATEGORY ||--o{ BOOK : groups
+""",
+            }
+        return {
+            "title": "Suggested ER Diagram",
+            "caption": "This ER draft is designed for a school or course-management case.",
+            "code": """erDiagram
+    STUDENT {
+        int StudentID
+        string Name
+        string Email
+    }
+    COURSE {
+        int CourseID
+        string CourseName
+        int Credits
+    }
+    TEACHER {
+        int TeacherID
+        string TeacherName
+        string Email
+    }
+    DEPARTMENT {
+        int DepartmentID
+        string DepartmentName
+    }
+    STUDENT }o--o{ COURSE : ENROLLS_IN
+    TEACHER ||--o{ COURSE : TEACHES
+    DEPARTMENT ||--o{ STUDENT : HAS
+""",
+        }
+
+    def build_hierarchical_diagram_spec(combined_text):
+        combined = combined_text.lower()
+        if any(term in combined for term in ["bank", "banking", "branch", "head office"]):
+            return {
+                "title": "Suggested Hierarchical Diagram",
+                "caption": "This hierarchy draft is designed for a banking structure.",
+                "code": """flowchart TD
+    HO[Bank Head Office]
+    BA[Branch A]
+    BB[Branch B]
+    LA[Loans Department]
+    CS[Customer Service]
+    SA[Savings Department]
+    CR[Credit Department]
+    HO --> BA
+    HO --> BB
+    BA --> LA
+    BA --> CS
+    BB --> SA
+    BB --> CR
+""",
+            }
+        return {
+            "title": "Suggested Hierarchical Diagram",
+            "caption": "This hierarchy draft is designed for a top-down organisational or category structure.",
+            "code": """flowchart TD
+    ROOT[Root Node]
+    LEVEL1A[Department A]
+    LEVEL1B[Department B]
+    LEAF1[Team A1]
+    LEAF2[Team A2]
+    LEAF3[Team B1]
+    LEAF4[Team B2]
+    ROOT --> LEVEL1A
+    ROOT --> LEVEL1B
+    LEVEL1A --> LEAF1
+    LEVEL1A --> LEAF2
+    LEVEL1B --> LEAF3
+    LEVEL1B --> LEAF4
+""",
+        }
+
+    def build_relational_diagram_spec(combined_text):
+        combined = combined_text.lower()
+        if any(term in combined for term in ["bookstore", "book", "books"]):
+            return {
+                "title": "Suggested Relational Diagram",
+                "caption": "This relational draft is designed for an online bookstore.",
+                "code": """erDiagram
+    CUSTOMERS {
+        int CustomerID PK
+        string Name
+        string Email
+    }
+    BOOKS {
+        int BookID PK
+        string Title
+        decimal Price
+    }
+    ORDERS {
+        int OrderID PK
+        int CustomerID FK
+        int BookID FK
+        date OrderDate
+        int Quantity
+    }
+    CUSTOMERS ||--o{ ORDERS : places
+    BOOKS ||--o{ ORDERS : appears_in
+""",
+            }
+        if any(term in combined for term in ["craft shop", "craft", "handmade"]):
+            return {
+                "title": "Suggested Relational Diagram",
+                "caption": "This relational draft is designed for an online craft-shop case.",
+                "code": """erDiagram
+    CUSTOMERS {
+        int CustomerID PK
+        string Name
+        string Email
+    }
+    PRODUCTS {
+        int ProductID PK
+        string ProductName
+        decimal Price
+        string Category
+    }
+    ORDERS {
+        int OrderID PK
+        int CustomerID FK
+        int ProductID FK
+        date OrderDate
+        int Quantity
+    }
+    CUSTOMERS ||--o{ ORDERS : places
+    PRODUCTS ||--o{ ORDERS : appears_in
+""",
+            }
+        return {
+            "title": "Suggested Relational Diagram",
+            "caption": "This relational draft is designed for a simple customer-product-order database.",
+            "code": """erDiagram
+    CUSTOMERS {
+        int CustomerID PK
+        string Name
+        string Email
+    }
+    PRODUCTS {
+        int ProductID PK
+        string ProductName
+        decimal Price
+    }
+    ORDERS {
+        int OrderID PK
+        int CustomerID FK
+        int ProductID FK
+        date OrderDate
+    }
+    CUSTOMERS ||--o{ ORDERS : places
+    PRODUCTS ||--o{ ORDERS : contains
+""",
+        }
+
+    def build_network_diagram_spec(combined_text):
+        combined = combined_text.lower()
+        if any(term in combined for term in ["social network", "friend", "follower", "followers"]):
+            return {
+                "title": "Suggested Network Diagram",
+                "caption": "This network draft is designed for a social-network or relationship graph case.",
+                "code": """flowchart LR
+    U1[User A]
+    U2[User B]
+    U3[User C]
+    G1[Interest Group]
+    U1 -->|follows| U2
+    U2 -->|follows| U3
+    U1 -->|joins| G1
+    U3 -->|joins| G1
+""",
+            }
+        return {
+            "title": "Suggested Network Diagram",
+            "caption": "This network draft is designed for a business network-modelling case with interconnected nodes and links.",
+            "code": """flowchart LR
+    STORE[Store]
+    CUSTOMER[Customer]
+    MANAGER[Manager]
+    SALESPERSON[Sales Person]
+    ORDER[Order]
+    PRODUCTS[Products]
+    STORE --> CUSTOMER
+    STORE --> MANAGER
+    STORE --> SALESPERSON
+    CUSTOMER --> ORDER
+    MANAGER --> ORDER
+    SALESPERSON --> ORDER
+    SALESPERSON --> PRODUCTS
+""",
+        }
+
+    def build_er_google_sheets_spec(combined_text):
+        combined = combined_text.lower()
+        if any(term in combined for term in ["library", "borrower", "loan", "author"]):
+            return {
+                "title": "Google Sheets setup - ER case",
+                "caption": "Use one sheet per entity and one sheet for the borrowing relationship.",
+                "tabs": [
+                    "Books: BookID, Title, ISBN, CategoryID",
+                    "Borrowers: BorrowerID, Name, Email, Phone",
+                    "Loans: LoanID, BorrowerID, BookID, IssueDate, DueDate, ReturnDate",
+                    "Authors: AuthorID, AuthorName",
+                    "Categories: CategoryID, CategoryName",
+                ],
+                "formulas": [
+                    "Duplicate BookID check: =IF(COUNTIF(A:A,A2)=1,\"OK\",\"Duplicate ID\")",
+                    "Borrower lookup in Loans: =XLOOKUP(B2,Borrowers!A:A,Borrowers!B:B,\"Missing borrower\")",
+                    "Book lookup in Loans: =XLOOKUP(C2,Books!A:A,Books!B:B,\"Missing book\")",
+                    "Books borrowed per borrower: =COUNTIF(Loans!B:B,A2)",
+                ],
+                "notes": [
+                    "Put each entity from the exam task in its own tab.",
+                    "Use the relationship sheet to connect the entities instead of repeating text values everywhere.",
+                    "If the task gives different entity names, rename the tabs to match the wording in the question exactly.",
+                ],
+            }
+        return {
+            "title": "Google Sheets setup - ER case",
+            "caption": "This setup fits a school or course-management ER scenario.",
+            "tabs": [
+                "Students: StudentID, Name, Email, DepartmentID",
+                "Courses: CourseID, CourseName, Credits, TeacherID",
+                "Teachers: TeacherID, TeacherName, Email",
+                "Departments: DepartmentID, DepartmentName",
+                "Enrollments: EnrollmentID, StudentID, CourseID, Semester",
+            ],
+            "formulas": [
+                "Duplicate StudentID check: =IF(COUNTIF(A:A,A2)=1,\"OK\",\"Duplicate ID\")",
+                "Student name in Enrollments: =XLOOKUP(B2,Students!A:A,Students!B:B,\"Missing student\")",
+                "Course name in Enrollments: =XLOOKUP(C2,Courses!A:A,Courses!B:B,\"Missing course\")",
+                "Courses per student: =COUNTIF(Enrollments!B:B,A2)",
+                "Students per course: =COUNTIF(Enrollments!C:C,A2)",
+            ],
+            "notes": [
+                "Create one sheet tab per entity and one relationship sheet such as Enrollments.",
+                "Use IDs rather than repeated names when connecting the sheets.",
+                "This mirrors the entity-relationship logic from the exam task in a spreadsheet-friendly way.",
+            ],
+        }
+
+    def build_hierarchical_google_sheets_spec(combined_text):
+        combined = combined_text.lower()
+        if any(term in combined for term in ["bank", "banking", "branch", "head office"]):
+            return {
+                "title": "Google Sheets setup - Hierarchical case",
+                "caption": "This setup fits a banking hierarchy and stores the structure in one parent-child table.",
+                "tabs": [
+                    "Hierarchy: NodeID, NodeName, ParentNodeID, Level, NodeType, DisplayLabel",
+                ],
+                "formulas": [
+                    "Parent name: =IF(C2=\"\",\"Root\",XLOOKUP(C2,A:A,B:B,\"Missing parent\"))",
+                    "Level from parent: =IF(C2=\"\",0,1+XLOOKUP(C2,A:A,D:D,0))",
+                    "Indented display label: =REPT(\"  \",D2)&B2",
+                    "Child count: =COUNTIF(C:C,A2)",
+                ],
+                "notes": [
+                    "Enter the head office first, then branches, then departments or units underneath.",
+                    "Each row should point to one parent row through ParentNodeID.",
+                    "This is the easiest way to turn a hierarchy task into structured spreadsheet data.",
+                ],
+            }
+        return {
+            "title": "Google Sheets setup - Hierarchical case",
+            "caption": "Use one hierarchy table where every row stores one node and its parent.",
+            "tabs": [
+                "Hierarchy: NodeID, NodeName, ParentNodeID, Level, NodeType, DisplayLabel",
+            ],
+            "formulas": [
+                "Parent name: =IF(C2=\"\",\"Root\",XLOOKUP(C2,A:A,B:B,\"Missing parent\"))",
+                "Level from parent: =IF(C2=\"\",0,1+XLOOKUP(C2,A:A,D:D,0))",
+                "Indented display label: =REPT(\"  \",D2)&B2",
+                "Child count: =COUNTIF(C:C,A2)",
+            ],
+            "notes": [
+                "Use one row per node and one ParentNodeID column to capture the tree structure.",
+                "The root node should have a blank ParentNodeID.",
+                "This setup works for organisations, folders, product categories, and similar top-down cases.",
+            ],
+        }
+
+    def build_relational_google_sheets_spec(combined_text):
+        combined = combined_text.lower()
+        if any(term in combined for term in ["bookstore", "book", "books"]):
+            return {
+                "title": "Google Sheets setup - Relational case",
+                "caption": "This setup fits an online bookstore with connected customer, book, and order tables.",
+                "tabs": [
+                    "Customers: CustomerID, Name, Email, Address",
+                    "Books: BookID, Title, Author, Genre, Price",
+                    "Orders: OrderID, CustomerID, BookID, OrderDate, Quantity, UnitPrice, OrderTotal",
+                ],
+                "formulas": [
+                    "Duplicate CustomerID check: =IF(COUNTIF(A:A,A2)=1,\"OK\",\"Duplicate ID\")",
+                    "Customer exists in Orders: =IF(COUNTIF(Customers!A:A,B2)>0,\"OK\",\"Missing customer\")",
+                    "Book exists in Orders: =IF(COUNTIF(Books!A:A,C2)>0,\"OK\",\"Missing book\")",
+                    "Bring book price into Orders: =XLOOKUP(C2,Books!A:A,Books!E:E,0)",
+                    "Order total: =F2*E2",
+                ],
+                "notes": [
+                    "Keep each table from the exam answer on its own sheet tab.",
+                    "Use foreign keys in the Orders sheet instead of typing customer and book names repeatedly.",
+                    "This lets you mimic a relational model in a spreadsheet using lookups and validation checks.",
+                ],
+            }
+        if any(term in combined for term in ["craft shop", "craft", "handmade"]):
+            return {
+                "title": "Google Sheets setup - Relational case",
+                "caption": "This setup fits an online craft-shop order system.",
+                "tabs": [
+                    "Customers: CustomerID, Name, Email",
+                    "Products: ProductID, ProductName, Category, Price",
+                    "Orders: OrderID, CustomerID, ProductID, OrderDate, Quantity, UnitPrice, OrderTotal",
+                ],
+                "formulas": [
+                    "Duplicate ProductID check: =IF(COUNTIF(A:A,A2)=1,\"OK\",\"Duplicate ID\")",
+                    "Customer exists in Orders: =IF(COUNTIF(Customers!A:A,B2)>0,\"OK\",\"Missing customer\")",
+                    "Product exists in Orders: =IF(COUNTIF(Products!A:A,C2)>0,\"OK\",\"Missing product\")",
+                    "Bring product price into Orders: =XLOOKUP(C2,Products!A:A,Products!D:D,0)",
+                    "Order total: =F2*E2",
+                    "Orders per customer: =COUNTIF(Orders!B:B,A2)",
+                ],
+                "notes": [
+                    "Use one tab per table and connect them with IDs.",
+                    "If the task names more entities, add more tabs instead of mixing everything into one flat sheet.",
+                    "Lookups help you keep the spreadsheet relational even without a full database.",
+                ],
+            }
+        return {
+            "title": "Google Sheets setup - Relational case",
+            "caption": "Use separate tabs for each table and connect them with IDs and lookups.",
+            "tabs": [
+                "Customers: CustomerID, Name, Email",
+                "Products: ProductID, ProductName, Price",
+                "Orders: OrderID, CustomerID, ProductID, OrderDate",
+            ],
+            "formulas": [
+                "Duplicate ID check: =IF(COUNTIF(A:A,A2)=1,\"OK\",\"Duplicate ID\")",
+                "Customer exists in Orders: =IF(COUNTIF(Customers!A:A,B2)>0,\"OK\",\"Missing customer\")",
+                "Product exists in Orders: =IF(COUNTIF(Products!A:A,C2)>0,\"OK\",\"Missing product\")",
+                "Lookup product name: =XLOOKUP(C2,Products!A:A,Products!B:B,\"Missing product\")",
+            ],
+            "notes": [
+                "This is the easiest spreadsheet version of a simple relational model.",
+                "IDs act like primary and foreign keys across the tabs.",
+                "You can add data-validation dropdowns to reduce entry mistakes.",
+            ],
+        }
+
+    def build_network_google_sheets_spec(combined_text):
+        combined = combined_text.lower()
+        if any(term in combined for term in ["social network", "friend", "follower", "followers"]):
+            return {
+                "title": "Google Sheets setup - Network case",
+                "caption": "This setup fits a social-network style graph using nodes, links, and optional group membership.",
+                "tabs": [
+                    "Nodes: NodeID, NodeLabel, NodeType, Attributes",
+                    "Links: LinkID, FromNodeID, ToNodeID, RelationshipType, Weight",
+                    "Sets: SetID, SetName, MemberNodeID",
+                ],
+                "formulas": [
+                    "Duplicate NodeID check: =IF(COUNTIF(A:A,A2)=1,\"OK\",\"Duplicate ID\")",
+                    "Source node exists: =IF(COUNTIF(Nodes!A:A,B2)>0,\"OK\",\"Missing source\")",
+                    "Target node exists: =IF(COUNTIF(Nodes!A:A,C2)>0,\"OK\",\"Missing target\")",
+                    "Outgoing links per node: =COUNTIF(Links!B:B,A2)",
+                    "Incoming links per node: =COUNTIF(Links!C:C,A2)",
+                ],
+                "notes": [
+                    "Use a Nodes tab for entities and a Links tab for relationships between them.",
+                    "The Sets tab is optional and can be used for group membership or categories.",
+                    "This is the spreadsheet equivalent of a graph model.",
+                ],
+            }
+        return {
+            "title": "Google Sheets setup - Network case",
+            "caption": "This setup fits a business network-modelling case such as store, customer, manager, sales person, orders, and products.",
+            "tabs": [
+                "Nodes: NodeID, NodeLabel, NodeType, Attributes",
+                "Links: LinkID, FromNodeID, ToNodeID, RelationshipType, Weight",
+                "Sets: SetID, SetName, MemberNodeID",
+            ],
+            "formulas": [
+                "Duplicate NodeID check: =IF(COUNTIF(A:A,A2)=1,\"OK\",\"Duplicate ID\")",
+                "Source node exists: =IF(COUNTIF(Nodes!A:A,B2)>0,\"OK\",\"Missing source\")",
+                "Target node exists: =IF(COUNTIF(Nodes!A:A,C2)>0,\"OK\",\"Missing target\")",
+                "Outgoing links per node: =COUNTIF(Links!B:B,A2)",
+                "Incoming links per node: =COUNTIF(Links!C:C,A2)",
+            ],
+            "notes": [
+                "Store each entity as one node row and each relationship as one link row.",
+                "Use the RelationshipType column to describe connections such as manages, places, handles, or contains.",
+                "This makes the network model easy to analyse in Google Sheets before moving to a database or graph tool.",
+            ],
+        }
+
+    def parse_google_sheets_tab_entry(entry_text):
+        text = str(entry_text).strip()
+        if ":" not in text:
+            return text or "Sheet1", []
+        sheet_name, columns_text = text.split(":", 1)
+        columns = [column.strip() for column in columns_text.split(",") if column.strip()]
+        return sheet_name.strip() or "Sheet1", columns
+
+    def slugify_filename(value):
+        slug = re.sub(r"[^a-z0-9]+", "_", str(value).lower()).strip("_")
+        return slug or "template"
+
+    def build_google_sheets_template_pack(specs):
+        pack_payload = []
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(zip_buffer, "w", compression=zipfile.ZIP_DEFLATED) as zip_file:
+            readme_lines = [
+                "Google Sheets template pack",
+                "",
+                "How to use:",
+                "1. Unzip the folder.",
+                "2. Import each CSV into a separate Google Sheets tab.",
+                "3. Rename the tabs if the exam wording uses different entity names.",
+                "4. Add formulas from the resolver under the matching sheet tabs.",
+                "5. Treat the sample rows as a checked starting point, not as exam-truth. Verify them against the prompt before you submit an answer.",
+                "",
+            ]
+            for spec_index, spec in enumerate(specs, start=1):
+                spec_title = spec.get("title", f"Template {spec_index}")
+                spec_slug = slugify_filename(spec_title)
+                sheet_entries = []
+                sample_rows_map = spec.get("sample_rows", {})
+                readme_lines.append(f"{spec_index}. {spec_title}")
+                readme_lines.append(f"   {spec.get('caption', '').strip()}")
+                for tab_entry in spec.get("tabs", []):
+                    sheet_name, columns = parse_google_sheets_tab_entry(tab_entry)
+                    csv_buffer = io.StringIO()
+                    writer = csv.writer(csv_buffer)
+                    if columns:
+                        writer.writerow(columns)
+                    else:
+                        writer.writerow(["Column1"])
+                    for row in sample_rows_map.get(sheet_name, []):
+                        writer.writerow(row)
+                    safe_sheet_name = slugify_filename(sheet_name)
+                    zip_file.writestr(f"{spec_slug}/{safe_sheet_name}.csv", csv_buffer.getvalue())
+                    sheet_entries.append({
+                        "sheet_name": sheet_name,
+                        "columns": columns,
+                        "sample_row_count": len(sample_rows_map.get(sheet_name, [])),
+                    })
+                    sample_note = f" ({len(sample_rows_map.get(sheet_name, []))} sample rows)" if sample_rows_map.get(sheet_name) else ""
+                    readme_lines.append(f"   - {sheet_name}: {', '.join(columns) if columns else 'No columns defined'}{sample_note}")
+                if spec.get("formulas"):
+                    readme_lines.append("   Formulas:")
+                    for formula in spec["formulas"]:
+                        readme_lines.append(f"   - {formula}")
+                if spec.get("notes"):
+                    readme_lines.append("   Notes:")
+                    for note in spec["notes"]:
+                        readme_lines.append(f"   - {note}")
+                readme_lines.append("")
+                pack_payload.append({
+                    "title": spec_title,
+                    "caption": spec.get("caption", ""),
+                    "sheets": sheet_entries,
+                    "formulas": spec.get("formulas", []),
+                    "notes": spec.get("notes", []),
+                })
+
+            zip_file.writestr("README.txt", "\n".join(readme_lines).strip() + "\n")
+            zip_file.writestr(
+                "template_plan.json",
+                json.dumps({"templates": pack_payload}, indent=2, ensure_ascii=False),
+            )
+
+        return zip_buffer.getvalue(), {"templates": pack_payload}
+
+    def summarise_items(items, limit=3):
+        cleaned = [str(item).strip() for item in items if str(item).strip()]
+        return "; ".join(cleaned[:limit])
+
+    def short_bridge(unit):
+        if unit["kind"] == "Lesson":
+            return f"Use {unit['label']} to explain the idea clearly and connect it directly to the case."
+        if unit["kind"] == "Knowledge":
+            return f"Use {unit['label']} to define the concept accurately before applying it."
+        if unit["kind"] == "Skill":
+            return f"Use {unit['label']} to show how the method should be applied in practice."
+        return f"Use {unit['label']} to justify the recommendation, judgment, or professional action."
+
+    def unit_application_sentence(unit):
+        if unit["kind"] == "Lesson":
+            return f"{unit['label']} is relevant because it covers {unit['what_it_covers']}."
+        if unit["kind"] == "Knowledge":
+            return f"{unit['label']} gives the core theory needed for the answer."
+        if unit["kind"] == "Skill":
+            return f"{unit['label']} shows how the concept should be applied in practice."
+        return f"{unit['label']} strengthens the answer by showing professional judgment and expected action."
+
+    def build_source_units():
+        units = []
+        order_index = 0
+
+        detailed_lessons = course_lessons.get(course_code, [])
+        for lesson in detailed_lessons:
+            order_index += 1
+            lesson_number = lesson.get("lesson_number", str(order_index))
+            title = lesson.get("title", f"Lesson {lesson_number}")
+            key_points = lesson.get("key_points", [])
+            content_preview = re.sub(r"\s+", " ", lesson.get("content", ""))[:1800]
+            units.append({
+                "id": f"lesson::{lesson_number}",
+                "label": f"Lesson {lesson_number}: {title}",
+                "kind": "Lesson",
+                "title": title,
+                "order_index": order_index,
+                "what_it_covers": summarise_items(key_points, 4) or title,
+                "search_text": " ".join([course["name"], title, content_preview, " ".join(key_points)]),
+                "tokens": tokenise(" ".join([title, content_preview, " ".join(key_points)])),
+                "weight": 3.0,
+            })
+
+        for section_name, kind_label, weight in [
+            ("knowledge", "Knowledge", 1.8),
+            ("skills", "Skill", 1.9),
+            ("competence", "Competence", 1.6),
+        ]:
+            for idx, item in enumerate(course.get(section_name, []), start=1):
+                order_index += 1
+                item_text = str(item).strip()
+                units.append({
+                    "id": f"{section_name}::{idx}",
+                    "label": f"{kind_label} outcome {idx}: {item_text}",
+                    "kind": kind_label,
+                    "title": item_text,
+                    "order_index": 100 + order_index,
+                    "what_it_covers": item_text,
+                    "search_text": " ".join([course["name"], section_name, item_text]),
+                    "tokens": tokenise(item_text),
+                    "weight": weight,
+                })
+
+        return units
+
+    course_templates = {
+        "foundations": {
+            "label": "Foundational analysis template",
+            "must_include": [
+                "a correct definition of the concept",
+                "why it matters in analysis or decision-making",
+                "a realistic example or application",
+                "a clear final implication for the case",
+            ],
+            "answer_order": [
+                "Define the concept first, then explain why it matters before applying it.",
+                "Use a simple real-world example if the question is abstract.",
+            ],
+            "focus_sentence": "In this subject, strong answers usually move from clear theory to practical meaning and then to business relevance.",
+            "ending_focus": "End by showing why the concept improves understanding, analysis quality, or decision quality.",
+        },
+        "spreadsheet": {
+            "label": "Spreadsheet solution template",
+            "must_include": [
+                "the exact spreadsheet function, formula, or feature being used",
+                "the logic of the cell references, ranges, or steps",
+                "what result the spreadsheet output gives",
+                "how the result supports the decision or task",
+            ],
+            "answer_order": [
+                "Name the spreadsheet function, tool, or transformation first.",
+                "Explain the formula logic or workbook steps clearly.",
+                "Interpret the result rather than only giving the formula.",
+            ],
+            "focus_sentence": "In spreadsheet questions, the examiner usually wants both the practical spreadsheet step and the interpretation of the result.",
+            "ending_focus": "End by stating what the spreadsheet result means for the user, not only which formula was entered.",
+        },
+        "decision_making": {
+            "label": "Decision-making case template",
+            "must_include": [
+                "the business problem and decision that must be made",
+                "the relevant data or evidence",
+                "the method, model, or criterion used",
+                "a justified recommendation and how success will be measured",
+            ],
+            "answer_order": [
+                "Restate the business problem and the decision context clearly.",
+                "Explain which data, method, or criterion supports the recommendation.",
+                "Show how the recommendation would be evaluated in practice.",
+            ],
+            "focus_sentence": "In decision-making answers, the examiner expects a full chain from evidence to recommendation, not only isolated theory.",
+            "ending_focus": "End with the final decision, why it is justified, and what KPI or result would confirm that it worked.",
+        },
+        "statistics": {
+            "label": "Statistics exam template",
+            "must_include": [
+                "the correct test, formula, or statistic",
+                "the variables, assumptions, or conditions that matter",
+                "the calculation logic or interpretation of the numerical result",
+                "a plain-language conclusion linked to the scenario",
+            ],
+            "answer_order": [
+                "Identify the correct formula, test, or statistical concept first.",
+                "State the assumptions or data conditions if they matter.",
+                "Show or explain the calculation and then interpret the result in plain language.",
+            ],
+            "focus_sentence": "In statistics answers, the examiner usually wants both the quantitative logic and the interpretation of what the result means.",
+            "ending_focus": "End with a conclusion in plain language, not just the number, score, or formula result.",
+        },
+        "project": {
+            "label": "Project planning and delivery template",
+            "must_include": [
+                "the project objective and scope",
+                "the planned method or workflow",
+                "validation, testing, or review steps",
+                "the expected deliverable, stakeholder value, or professional outcome",
+            ],
+            "answer_order": [
+                "Start with the project goal and what must be delivered.",
+                "Explain the workflow, tools, or stages that will be used.",
+                "Include validation, documentation, and communication of results.",
+            ],
+            "focus_sentence": "In project-style answers, the examiner usually wants to see planning, execution, validation, and delivery thinking together.",
+            "ending_focus": "End by explaining how the project output would be validated and presented professionally.",
+        },
+        "evaluation_critical": {
+            "label": "Evaluation and critical thinking template",
+            "must_include": [
+                "data quality or source credibility",
+                "bias, limitations, or ethical risk",
+                "a justified evaluation of strengths and weaknesses",
+                "a balanced final judgment or improvement recommendation",
+            ],
+            "answer_order": [
+                "Evaluate the evidence before accepting the conclusion.",
+                "Explain quality, bias, ethics, and limitations directly.",
+                "Finish with a balanced judgment and a realistic improvement step.",
+            ],
+            "focus_sentence": "In evaluation-focused subjects, the strongest answers do not just describe data; they question quality, bias, ethics, and trustworthiness.",
+            "ending_focus": "End with a balanced judgment and explain what should be improved or checked next.",
+        },
+        "visualization": {
+            "label": "Visualisation and dashboard template",
+            "must_include": [
+                "the audience or decision-maker",
+                "the chart, dashboard, or visual choice",
+                "why that visual is suitable for the data and message",
+                "the insight or action the viewer should take from it",
+            ],
+            "answer_order": [
+                "Start with the communication goal and intended audience.",
+                "Choose the visual form and justify why it fits the data.",
+                "Explain the main insight the visual should make easy to see.",
+            ],
+            "focus_sentence": "In visualisation answers, the examiner is usually testing communication quality, visual fit, and insight clarity, not only chart names.",
+            "ending_focus": "End with what the audience should understand or do after seeing the visual.",
+        },
+        "reporting": {
+            "label": "Reporting and communication template",
+            "must_include": [
+                "the main finding or message",
+                "the evidence that supports it",
+                "clear structure for the intended audience",
+                "a recommendation, implication, or limitation",
+            ],
+            "answer_order": [
+                "Lead with the most important finding or message.",
+                "Support it with relevant evidence or analysis.",
+                "Tailor the explanation to the audience and end with a recommendation.",
+            ],
+            "focus_sentence": "In reporting answers, clarity, structure, audience awareness, and recommendation quality matter as much as the technical content.",
+            "ending_focus": "End with the implication for the stakeholder and any important limitation or next step.",
+        },
+        "database": {
+            "label": "Database and data-platform template",
+            "must_include": [
+                "the data sources, tables, or systems involved",
+                "the architecture, ETL flow, or SQL/data-model logic",
+                "data integrity, quality, or security considerations",
+                "why the chosen design fits the business need",
+            ],
+            "answer_order": [
+                "Identify the systems, tables, or sources first.",
+                "Explain the data flow, structure, or SQL/ETL logic clearly.",
+                "Mention integrity, security, and why the design is appropriate.",
+            ],
+            "focus_sentence": "In database answers, the examiner usually wants technical structure plus business justification, not only tool names.",
+            "ending_focus": "End by showing how the proposed database or data-platform choice supports reliable and efficient data use.",
+        },
+        "programming": {
+            "label": "Programming solution template",
+            "must_include": [
+                "the inputs, outputs, or required behaviour",
+                "the program logic or control flow",
+                "relevant data structures, functions, or API use",
+                "testing, documentation, or error handling where relevant",
+            ],
+            "answer_order": [
+                "State what the program must do and what input it uses.",
+                "Explain the program logic in a clear sequence.",
+                "Mention code quality, testing, or robustness if the question is practical.",
+            ],
+            "focus_sentence": "In programming answers, the examiner usually expects algorithmic logic, correctness, and clear explanation of how the solution works.",
+            "ending_focus": "End by explaining how the solution would be tested, validated, or made robust in practice.",
+        },
+        "programmatic_analysis": {
+            "label": "Programmatic data analysis template",
+            "must_include": [
+                "how the data is loaded, cleaned, or transformed",
+                "the reproducible analysis workflow",
+                "the analytical method or library logic",
+                "the result or output and what it means",
+            ],
+            "answer_order": [
+                "Explain the workflow from raw data to cleaned dataset first.",
+                "Describe the analytical transformation or code-based analysis clearly.",
+                "End with the output, interpretation, and reproducibility benefit.",
+            ],
+            "focus_sentence": "In programmatic analysis answers, the examiner usually wants to see repeatable workflow thinking, not only isolated code fragments.",
+            "ending_focus": "End by explaining how the code-based workflow improves efficiency, reproducibility, or reliability.",
+        },
+        "industry_tools": {
+            "label": "Industry tools template",
+            "must_include": [
+                "the tool or platform selected",
+                "why that tool fits the business or analytical need",
+                "how it integrates into the workflow",
+                "a realistic benefit, limitation, or implementation concern",
+            ],
+            "answer_order": [
+                "Identify the tool or platform choice clearly.",
+                "Explain why it is appropriate for the use case.",
+                "Show how it would be used in practice and what trade-offs exist.",
+            ],
+            "focus_sentence": "In industry-tools answers, the examiner usually wants tool choice to be justified by business fit, workflow fit, and limitations.",
+            "ending_focus": "End by showing how the chosen tool improves the workflow or decision process in practice.",
+        },
+        "big_data": {
+            "label": "Big data and advanced topics template",
+            "must_include": [
+                "why scale, velocity, or complexity matters",
+                "the storage, processing, or distributed approach",
+                "the trade-offs of the chosen architecture or method",
+                "when such an advanced solution is justified",
+            ],
+            "answer_order": [
+                "Start by explaining why a standard small-scale solution is not enough.",
+                "Describe the big-data or distributed approach clearly.",
+                "Explain the trade-offs and when the solution is worth using.",
+            ],
+            "focus_sentence": "In big-data answers, the examiner usually wants to see when advanced architecture is needed and what trade-offs come with it.",
+            "ending_focus": "End by explaining why the advanced approach is appropriate for the scale and analytical need of the case.",
+        },
+        "general": {
+            "label": "General course template",
+            "must_include": [
+                "the main concept or method",
+                "its purpose in the case",
+                "how it is applied",
+                "the final implication or recommendation",
+            ],
+            "answer_order": [
+                "Define the key idea first.",
+                "Apply it to the scenario clearly.",
+                "End with the implication, recommendation, or result.",
+            ],
+            "focus_sentence": "In general course answers, a strong response usually moves from concept to application to conclusion.",
+            "ending_focus": "End with the clearest practical implication of the answer.",
+        },
+    }
+
+    explicit_course_templates = {
+        "FI1BBDF05": "foundations",
+        "FI1BBSF05": "spreadsheet",
+        "FI1BBDD75": "decision_making",
+        "FI1BBST05": "statistics",
+        "FI1BBP175": "project",
+        "FI1BBEO10": "evaluation_critical",
+        "FI1BBDV75": "visualization",
+        "FI1BBAR05": "reporting",
+        "FI1BBP275": "project",
+        "FI2BCDC75": "database",
+        "FI2BCPP10": "programming",
+        "FI2BCPA05": "programmatic_analysis",
+        "FI2BCP175": "project",
+        "FI2BCIT75": "industry_tools",
+        "FI2BCCT05": "evaluation_critical",
+        "FI2BCBD05": "big_data",
+        "FI2BCID05": "visualization",
+        "FI2BCP275": "project",
+    }
+
+    def infer_course_template():
+        if course_code in explicit_course_templates:
+            return explicit_course_templates[course_code]
+
+        course_text = " ".join(
+            [
+                course.get("name", ""),
+                course.get("description", ""),
+                " ".join(course.get("knowledge", [])),
+                " ".join(course.get("skills", [])),
+                " ".join(course.get("competence", [])),
+            ]
+        ).lower()
+
+        if any(keyword in course_text for keyword in ["spreadsheet", "excel", "power query"]):
+            return "spreadsheet"
+        if any(keyword in course_text for keyword in ["database", "sql", "etl", "warehouse", "cloud"]):
+            return "database"
+        if any(keyword in course_text for keyword in ["python", "programming", "api", "control structures"]):
+            return "programming"
+        if any(keyword in course_text for keyword in ["pandas", "numpy", "reproducible", "programmatic"]):
+            return "programmatic_analysis"
+        if any(keyword in course_text for keyword in ["statistical", "statistics", "hypothesis", "regression", "correlation"]):
+            return "statistics"
+        if any(keyword in course_text for keyword in ["decision-making", "decision making", "kpi", "heuristic", "criterion"]):
+            return "decision_making"
+        if any(keyword in course_text for keyword in ["dashboard", "visualisation", "visualization", "tableau", "power bi"]):
+            return "visualization"
+        if any(keyword in course_text for keyword in ["report", "reporting", "presentation", "stakeholder"]):
+            return "reporting"
+        if any(keyword in course_text for keyword in ["ethical", "bias", "quality assessment", "credibility", "gdpr", "critical"]):
+            return "evaluation_critical"
+        if any(keyword in course_text for keyword in ["big data", "distributed", "data lakes", "machine learning basics"]):
+            return "big_data"
+        if any(keyword in course_text for keyword in ["industry tools", "bi tools", "tool selection"]):
+            return "industry_tools"
+        if any(keyword in course_text for keyword in ["project", "portfolio", "documentation", "capstone"]):
+            return "project"
+        return "general"
+
+    style_profiles = {
+        "Broad case question": {
+            "summary": "connect multiple parts of the course into one coherent applied answer",
+            "keywords": ["case", "scenario", "business", "organisation", "problem", "recommendation", "apply", "decision"],
+            "structure": [
+                "Restate the problem, the goal, and what decision must be made.",
+                "Select the most relevant concepts, methods, or outcomes from the course.",
+                "Apply them to the scenario in a logical order.",
+                "Finish with a recommendation, expected impact, or evaluation method.",
+            ],
+        },
+        "Definition or explanation": {
+            "summary": "define the concept correctly and explain why it matters",
+            "keywords": ["define", "explain", "what", "meaning", "concept", "purpose"],
+            "structure": [
+                "Name and define the concept clearly.",
+                "Explain its purpose or why it matters.",
+                "Add a realistic example from the course context.",
+                "Link it back to the case or likely decision impact.",
+            ],
+        },
+        "Method or model choice": {
+            "summary": "justify which method, model, or tool best fits the problem",
+            "keywords": ["method", "model", "technique", "tool", "algorithm", "choose", "best", "fit"],
+            "structure": [
+                "State the problem and the type of answer it requires.",
+                "Choose the most suitable method or model.",
+                "Explain why it fits better than weaker alternatives.",
+                "Describe how it would be used in the scenario.",
+            ],
+        },
+        "Data collection or process": {
+            "summary": "show how work should move from planning or collection to analysis and action",
+            "keywords": ["collect", "collection", "process", "lifecycle", "pipeline", "step", "plan", "workflow"],
+            "structure": [
+                "Start with the objective and the question to be answered.",
+                "Explain what data or evidence should be gathered.",
+                "Describe the process, stages, or workflow clearly.",
+                "End with how the result supports a decision or action.",
+            ],
+        },
+        "Comparison question": {
+            "summary": "compare ideas, methods, or data types clearly and explain when each is suitable",
+            "keywords": ["compare", "difference", "versus", "vs", "similarity", "contrast"],
+            "structure": [
+                "Define both sides of the comparison clearly.",
+                "Explain the main similarities and differences.",
+                "Show when each one is more suitable.",
+                "Apply the comparison back to the case or exam prompt.",
+            ],
+        },
+        "Evaluation or KPI question": {
+            "summary": "show how success, impact, or improvement should be measured",
+            "keywords": ["kpi", "measure", "evaluate", "success", "result", "impact", "before", "after"],
+            "structure": [
+                "State the goal or change being evaluated.",
+                "Name the KPI or evaluation measure.",
+                "Explain how results would be interpreted.",
+                "End with what the organisation should do next based on the evidence.",
+            ],
+        },
+        "Calculation or uncertainty question": {
+            "summary": "justify a decision using calculations, criteria, or structured comparison under uncertainty",
+            "keywords": ["calculate", "probability", "regret", "payoff", "uncertainty", "criterion", "expected", "matrix"],
+            "structure": [
+                "Identify the decision options and the uncertain conditions.",
+                "Name the correct rule, formula, or criterion.",
+                "Explain the calculation or comparison logic step by step.",
+                "State the final decision and why it fits that rule.",
+            ],
+        },
+        "Unsure - auto detect": {
+            "summary": "identify the hidden knowledge areas in the question and connect them clearly",
+            "keywords": [],
+            "structure": [
+                "Restate the problem and the likely exam focus.",
+                "Identify the most relevant sources from the course.",
+                "Connect them in a logical order.",
+                "End with a supported recommendation or conclusion.",
+            ],
+        },
+    }
+
+    source_units = build_source_units()
+    lesson_labels = [unit["label"] for unit in source_units if unit["kind"] == "Lesson"]
+    outcome_labels = [unit["label"] for unit in source_units if unit["kind"] != "Lesson"]
+    has_lessons = bool(lesson_labels)
+    course_template_key = infer_course_template()
+    course_template = course_templates[course_template_key]
+    course_template_signals = {
+        "foundations": ["data", "analysis", "decision", "evidence", "quality", "example", "insight"],
+        "spreadsheet": ["formula", "function", "cell", "range", "sheet", "lookup", "pivot", "result"],
+        "decision_making": ["problem", "decision", "data", "analysis", "criterion", "recommendation", "kpi"],
+        "statistics": ["formula", "test", "mean", "hypothesis", "regression", "correlation", "significance", "p-value", "standard deviation"],
+        "project": ["objective", "scope", "workflow", "validation", "testing", "documentation", "deliverable"],
+        "evaluation_critical": ["bias", "quality", "ethical", "limitation", "credibility", "source", "risk"],
+        "visualization": ["chart", "dashboard", "visual", "audience", "insight", "filter", "axis"],
+        "reporting": ["finding", "evidence", "audience", "summary", "recommendation", "limitation"],
+        "database": ["database", "table", "query", "sql", "etl", "schema", "warehouse", "integrity", "security"],
+        "programming": ["input", "output", "function", "variable", "logic", "loop", "api", "test"],
+        "programmatic_analysis": ["dataframe", "clean", "transform", "workflow", "reproducible", "analysis", "output"],
+        "industry_tools": ["tool", "platform", "workflow", "integration", "benefit", "limitation"],
+        "big_data": ["scale", "distributed", "storage", "processing", "architecture", "trade-off", "velocity"],
+        "general": ["concept", "method", "apply", "result", "recommendation"],
+    }
+
+    st.caption("Use this resolver with any course. It reads the selected course's lessons, knowledge outcomes, skills, and competence goals, then helps you connect them to an exam question or case.")
+
+    exam_prompt = st.text_area(
+        "Paste the exam question, case, or task prompt",
+        key=f"{base_key}_prompt",
+        placeholder=f"Example: Explain how {course['name']} knowledge can be used to solve a realistic case scenario.",
+        height=140,
+    )
+
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        resolver_mode = st.selectbox(
+            "Question style",
+            options=list(style_profiles.keys()),
+            key=f"{base_key}_mode",
+        )
+    with col2:
+        answer_depth = st.selectbox(
+            "Output depth",
+            options=["Fast exam plan", "Structured lesson connection", "Full exam answer scaffold"],
+            key=f"{base_key}_depth",
+        )
+    with col3:
+        source_pool_options = ["Lessons + learning outcomes"] if has_lessons else ["Learning outcomes only"]
+        if has_lessons:
+            source_pool_options.extend(["Lessons only", "Learning outcomes only"])
+        source_pool = st.selectbox(
+            "Source pool",
+            options=source_pool_options,
+            key=f"{base_key}_source_pool",
+        )
+
+    draft_style = st.selectbox(
+        "Direct answer style",
+        options=["Short paragraph", "Structured answer", "Detailed exam answer"],
+        key=f"{base_key}_draft_style",
+    )
+
+    scope_options = ["Whole course (auto-select best matches)", "Specific lesson or outcome", "Manual selection"]
+    scope_mode = st.selectbox(
+        "Resolver scope",
+        options=scope_options,
+        key=f"{base_key}_scope",
+    )
+
+    prompt_tokens = tokenise(exam_prompt)
+    prompt_lower = exam_prompt.lower()
+    detected_focus = []
+    structure_terms = [
+        "data structure", "data structures", "datastruktur", "datastrukturer",
+        "array", "arrays", "linked list", "singly-linked", "doubly-linked",
+        "list", "lists", "tree", "trees", "bst", "binary search tree",
+        "b-tree", "b trees", "avl", "red-black", "file system", "file systems",
+    ]
+    structure_selection_terms = [
+        "choose", "select", "best", "right", "appropriate", "suitable",
+        "most suitable", "fit", "fits", "selection",
+    ]
+    structure_selection_prompt = (
+        any(term in prompt_lower for term in structure_terms)
+        and any(term in prompt_lower for term in structure_selection_terms)
+    )
+    focus_checks = {
+        "comparison": ["compare", "difference", "versus", "vs"],
+        "data collection": ["collect", "gather", "sample", "survey", "interview"],
+        "process or lifecycle": ["process", "step", "lifecycle", "pipeline", "workflow"],
+        "evaluation": ["measure", "evaluate", "kpi", "result", "impact", "success"],
+        "uncertainty or criteria": ["uncertainty", "payoff", "regret", "probability", "criterion", "expected"],
+        "method choice": ["method", "model", "technique", "tool", "algorithm"],
+    }
+    for label, keywords in focus_checks.items():
+        if any(keyword in prompt_lower for keyword in keywords):
+            detected_focus.append(label)
+    if structure_selection_prompt:
+        detected_focus.append("data structure selection")
+
+    if detected_focus:
+        st.markdown(f"**Detected focus from the prompt:** {', '.join(detected_focus)}")
+
+    def eligible_units():
+        if source_pool == "Lessons only":
+            return [unit for unit in source_units if unit["kind"] == "Lesson"]
+        if source_pool == "Learning outcomes only":
+            return [unit for unit in source_units if unit["kind"] != "Lesson"]
+        return source_units[:]
+
+    available_units = eligible_units()
+    profile = style_profiles[resolver_mode]
+
+    def unit_score(unit):
+        score = unit["weight"]
+        overlap = len(prompt_tokens & unit["tokens"])
+        title_overlap = len(prompt_tokens & tokenise(unit["title"]))
+        profile_hits = sum(1 for keyword in profile["keywords"] if keyword in unit["search_text"].lower())
+        if exam_prompt.strip():
+            score += overlap * 4
+            score += title_overlap * 5
+            score += profile_hits * 2
+        else:
+            score += profile_hits
+        return score
+
+    ranked_units = sorted(available_units, key=lambda unit: (-unit_score(unit), unit["order_index"]))
+    default_units = ranked_units[: min(6, len(ranked_units))]
+    default_labels = [unit["label"] for unit in default_units]
+
+    source_label_map = {unit["label"]: unit for unit in available_units}
+
+    selected_labels = []
+    if scope_mode == "Specific lesson or outcome":
+        selected_label = st.selectbox(
+            "Choose the lesson or outcome to focus on",
+            options=list(source_label_map.keys()),
+            key=f"{base_key}_specific_source",
+        )
+        selected_labels = [selected_label]
+    else:
+        selected_labels = st.multiselect(
+            "Sources to connect in your answer",
+            options=list(source_label_map.keys()),
+            default=default_labels,
+            key=f"{base_key}_selected_sources",
+        )
+
+    selected_units = [source_label_map[label] for label in selected_labels if label in source_label_map]
+    selected_units = sorted(selected_units, key=lambda unit: unit["order_index"])
+
+    if not selected_units:
+        st.warning("Select at least one lesson or learning outcome so the resolver can build a connection guide.")
+        return
+
+    selected_unit_text = " ".join(
+        [
+            unit["label"]
+            + " "
+            + unit["title"]
+            + " "
+            + unit["what_it_covers"]
+            + " "
+            + unit["search_text"]
+            for unit in selected_units
+        ]
+    ).lower()
+    structure_topic_selected = (
+        any(term in selected_unit_text for term in structure_terms)
+        or "selecting the right data structure" in selected_unit_text
+    )
+    structure_selection_case = (
+        structure_selection_prompt
+        or (
+            structure_topic_selected
+            and any(term in prompt_lower for term in structure_selection_terms + ["why", "because", "trade-off", "trade-offs"])
+        )
+    )
+    subject_must_include = course_template["must_include"][:]
+    if structure_selection_case:
+        for item in [
+            "the required operations in the case, such as search, insertion, deletion, traversal, or hierarchical routing",
+            "a comparison of at least two candidate data structures",
+            "time or space efficiency, memory constraints, and flexibility",
+            "a clear justification for why the chosen structure fits better than weaker alternatives",
+        ]:
+            if item not in subject_must_include:
+                subject_must_include.append(item)
+
+    connection_rows = []
+    for unit in selected_units:
+        matched_terms = sorted((prompt_tokens & unit["tokens"]))[:6]
+        why_it_matters = short_bridge(unit)
+        if matched_terms:
+            why_it_matters = f"Relevant because the prompt overlaps with: {', '.join(matched_terms)}. {why_it_matters}"
+        connection_rows.append(
+            {
+                "Source": unit["label"],
+                "Type": unit["kind"],
+                "Why it matters": why_it_matters,
+                "Pull into the answer": unit["what_it_covers"],
+            }
+        )
+
+    st.markdown("**How this exam prompt connects to the selected course**")
+    st.dataframe(pd.DataFrame(connection_rows), use_container_width=True, hide_index=True)
+
+    answer_order_lines = []
+    lesson_count = sum(1 for unit in selected_units if unit["kind"] == "Lesson")
+    outcome_count = len(selected_units) - lesson_count
+
+    answer_order_lines.append("Start by restating the case problem, goal, and decision that must be addressed.")
+    if resolver_mode in {"Definition or explanation", "Comparison question"}:
+        answer_order_lines.append("Define the core concept or concepts clearly before applying them.")
+    if any("data" in unit["title"].lower() or "collection" in unit["title"].lower() or "pipeline" in unit["title"].lower() or "lifecycle" in unit["title"].lower() for unit in selected_units):
+        answer_order_lines.append("Explain the data, process, or workflow needed to solve the case.")
+    if any("kpi" in unit["title"].lower() or "evaluat" in unit["title"].lower() for unit in selected_units):
+        answer_order_lines.append("Show how success or impact would be measured with the right KPI or evaluation logic.")
+    if any("decision" in unit["title"].lower() or "criterion" in unit["title"].lower() or "uncertainty" in unit["title"].lower() for unit in selected_units):
+        answer_order_lines.append("Justify the final choice, especially if the case involves uncertainty, alternatives, or trade-offs.")
+    if structure_selection_case:
+        answer_order_lines.append("Identify the required operations in the case, such as searching, insertion, deletion, traversal, or hierarchical routing.")
+        answer_order_lines.append("Compare at least two candidate data structures against efficiency, memory use, flexibility, and data size or type.")
+        answer_order_lines.append("Choose the most suitable data structure and justify why it fits better than weaker alternatives in this scenario.")
+    if outcome_count:
+        answer_order_lines.append("Use the learning outcomes to strengthen the answer with correct terminology, practical method use, and professional judgment.")
+    answer_order_lines.extend(course_template["answer_order"])
+    answer_order_lines.append("End with a recommendation, interpretation, or next action that fits the case.")
+
+    deduped_order_lines = []
+    for line in answer_order_lines:
+        if line not in deduped_order_lines:
+            deduped_order_lines.append(line)
+    answer_order_lines = deduped_order_lines
+
+    connector_lines = [f"From {unit['label']}, I would {short_bridge(unit).lower()}" for unit in selected_units]
+    if structure_selection_case:
+        connector_lines.append(
+            "From Selecting the Right Data Structure, I would justify the choice with required operations, efficiency, data size and type, memory constraints, flexibility, and implementation support."
+        )
+
+    st.markdown("**Recommended answer order**")
+    for index, line in enumerate(answer_order_lines, start=1):
+        st.markdown(f"{index}. {line}")
+
+    examiner_testing_text = (
+        f"The examiner is mainly testing whether you can {profile['summary']} using the relevant parts of **{course['name']}**."
+    )
+    if has_lessons:
+        course_bridge = f"This answer is stronger when you connect the selected lessons with the course outcomes instead of treating each lesson as isolated theory."
+    else:
+        course_bridge = f"This course does not yet have detailed lesson blocks in the app, so the resolver is using the course knowledge, skills, and competence outcomes as the connection framework."
+
+    st.markdown("**What the examiner is really testing**")
+    st.markdown(f"- {examiner_testing_text}")
+    st.markdown(f"- {course_bridge}")
+    if structure_selection_case:
+        st.markdown("- In this prompt, you should explicitly compare candidate data structures and explain why one is the best fit for the case.")
+
+    st.markdown("**Course-specific answer template in use**")
+    st.markdown(f"- Template: **{course_template['label']}**")
+    st.markdown(f"- Subject focus: {course_template['focus_sentence']}")
+    st.markdown("- Strong answers in this subject usually include:")
+    for item in subject_must_include:
+        st.markdown(f"  - {item}")
+
+    fast_plan = "\n".join(
+        [
+            f"Course: {course['name']}",
+            f"Question style: {resolver_mode}",
+            f"Course-specific template: {course_template['label']}",
+            f"Sources to connect: {', '.join(unit['label'] for unit in selected_units)}",
+            "Answer order:",
+            *[f"- {line}" for line in answer_order_lines],
+        ]
+    )
+
+    structured_plan = "\n".join(
+        [
+            f"What the examiner is testing: {profile['summary']}.",
+            f"Selected course: {course['name']} ({course_code}).",
+            f"Course-specific template: {course_template['label']}.",
+            f"Sources to connect: {', '.join(unit['label'] for unit in selected_units)}.",
+            "",
+            "How to connect the selected sources:",
+            *[f"- {line}" for line in connector_lines],
+            "",
+            "Recommended answer order:",
+            *[f"- {line}" for line in answer_order_lines],
+        ]
+    )
+
+    scaffold_lines = [
+        "Exam answer scaffold",
+        f"Course: {course['name']} ({course_code})",
+        f"Question style: {resolver_mode}",
+        f"Course-specific template: {course_template['label']}",
+        f"What the examiner is testing: {profile['summary']}.",
+        "",
+        "Selected sources to connect:",
+        *[f"- {unit['label']}: {unit['what_it_covers']}" for unit in selected_units],
+        "",
+        "Subject-specific points to include:",
+        *[f"- {item}" for item in subject_must_include],
+        "",
+        "How to connect them in the answer:",
+        *[f"- {line}" for line in connector_lines],
+        "",
+        "Model answer order:",
+        *[f"{index}. {line}" for index, line in enumerate(answer_order_lines, start=1)],
+        "",
+        "Bridge sentence you can adapt:",
+        f"This exam answer should combine the most relevant ideas from {course['name']} and apply them directly to the case instead of listing isolated definitions.",
+    ]
+    full_scaffold = "\n".join(scaffold_lines)
+
+    output_text = {
+        "Fast exam plan": fast_plan,
+        "Structured lesson connection": structured_plan,
+        "Full exam answer scaffold": full_scaffold,
+    }[answer_depth]
+
+    selected_source_sentence = ", ".join(unit["label"] for unit in selected_units[:4])
+    selected_application_sentences = [unit_application_sentence(unit) for unit in selected_units[:4]]
+    evaluator_tail = "Finally, I would end with a clear recommendation, conclusion, or next action that fits the case."
+    if any("kpi" in unit["title"].lower() or "evaluat" in unit["title"].lower() for unit in selected_units):
+        evaluator_tail = "Finally, I would show how the result or recommendation should be evaluated, including the KPI or success measure that proves whether the action worked."
+    if resolver_mode == "Comparison question":
+        evaluator_tail = "Finally, I would state which option is more suitable in the case and explain why that choice is stronger than the alternative."
+    elif resolver_mode == "Calculation or uncertainty question":
+        evaluator_tail = "Finally, I would show the calculation or decision-criterion logic clearly, state the final choice, and explain why that choice fits the rule under uncertainty."
+    if structure_selection_case:
+        evaluator_tail = "Finally, I would recommend the most suitable data structure and explain why it fits the required operations, efficiency needs, memory constraints, and flexibility requirements better than the alternatives."
+        selected_application_sentences.append(
+            "For this kind of case, I would not only name a structure. I would compare candidates such as arrays, lists, trees, or file-system structures against the case requirements before choosing one."
+        )
+
+    opening_sentence = (
+        f"In this question, I would answer by drawing on {selected_source_sentence} from {course['name']}."
+        if selected_source_sentence
+        else f"In this question, I would answer by using the most relevant parts of {course['name']}."
+    )
+    focus_sentence = f"The examiner is mainly testing whether I can {profile['summary']}."
+    if exam_prompt.strip() and detected_focus:
+        focus_sentence += f" The prompt especially points toward {', '.join(detected_focus)}."
+    subject_template_sentence = f"In this subject, I would make sure the answer includes {', '.join(subject_must_include[:3])}."
+
+    short_answer_draft = " ".join(
+        [
+            opening_sentence,
+            focus_sentence,
+            course_template["focus_sentence"],
+            subject_template_sentence,
+            selected_application_sentences[0] if selected_application_sentences else "",
+            selected_application_sentences[1] if len(selected_application_sentences) > 1 else "",
+            course_template["ending_focus"],
+            evaluator_tail,
+        ]
+    ).strip()
+
+    structured_answer_lines = [
+        f"1. I would begin by restating the problem and identifying what the question is asking me to do.",
+        f"2. I would use {selected_units[0]['label']} because it covers {selected_units[0]['what_it_covers']}." if selected_units else "2. I would use the most relevant course concept first.",
+    ]
+    if len(selected_units) > 1:
+        structured_answer_lines.append(f"3. I would then bring in {selected_units[1]['label']} to strengthen the application to the case.")
+    if len(selected_units) > 2:
+        structured_answer_lines.append(f"4. I would also connect {selected_units[2]['label']} so the answer includes both theory and applied reasoning.")
+    if structure_selection_case:
+        structured_answer_lines.append(
+            f"{len(structured_answer_lines) + 1}. I would compare the candidate structures using required operations, efficiency, data size and type, memory constraints, flexibility, and support before making the final choice."
+        )
+    structured_answer_lines.append(f"{len(structured_answer_lines) + 1}. In this subject, I would make sure to include {', '.join(subject_must_include)}.")
+    structured_answer_lines.append(f"{len(structured_answer_lines) + 1}. I would organise the answer in this order: " + " -> ".join(answer_order_lines) + ".")
+    structured_answer_lines.append(f"{len(structured_answer_lines) + 1}. {course_template['ending_focus']}")
+    structured_answer_lines.append(f"{len(structured_answer_lines) + 1}. {evaluator_tail}")
+    structured_answer_draft = "\n".join(structured_answer_lines)
+
+    detailed_answer_parts = [
+        opening_sentence,
+        focus_sentence,
+        course_template["focus_sentence"],
+        "First, I would restate the case clearly and show that I understand the business, analytical, or theoretical problem that must be addressed.",
+    ]
+    detailed_answer_parts.extend(selected_application_sentences)
+    detailed_answer_parts.append(
+        "Because this course has a specific subject pattern, I would make sure the answer explicitly includes: "
+        + ", ".join(subject_must_include)
+        + "."
+    )
+    if structure_selection_case:
+        detailed_answer_parts.append(
+            "Because this is a data-structure selection case, I would explicitly compare the candidate structures before choosing one. I would discuss the required operations, the expected efficiency, the size and type of the data, the memory constraints, and how flexible the structure needs to be in practice."
+        )
+    detailed_answer_parts.append(
+        "To keep the answer coherent, I would move through the case in a structured order: "
+        + " ".join(f"{idx + 1}) {line}" for idx, line in enumerate(answer_order_lines))
+        + "."
+    )
+    detailed_answer_parts.append(
+        "This approach is stronger than listing definitions alone because it connects the selected course content directly to the exam task and shows how the ideas work together in practice."
+    )
+    detailed_answer_parts.append(course_template["ending_focus"])
+    detailed_answer_parts.append(evaluator_tail)
+    detailed_answer_draft = "\n\n".join(detailed_answer_parts)
+
+    model_answer_text = {
+        "Short paragraph": short_answer_draft,
+        "Structured answer": structured_answer_draft,
+        "Detailed exam answer": detailed_answer_draft,
+    }[draft_style]
+
+    combined_diagram_context = f"{exam_prompt} {selected_unit_text}"
+    requested_diagram_types = infer_requested_diagram_types(exam_prompt, selected_unit_text)
+    diagram_specs = []
+    google_sheets_specs = []
+    if "er" in requested_diagram_types:
+        diagram_specs.append(build_er_diagram_spec(combined_diagram_context))
+        google_sheets_specs.append(build_er_google_sheets_spec(combined_diagram_context))
+    if "hierarchical" in requested_diagram_types:
+        diagram_specs.append(build_hierarchical_diagram_spec(combined_diagram_context))
+        google_sheets_specs.append(build_hierarchical_google_sheets_spec(combined_diagram_context))
+    if "relational" in requested_diagram_types:
+        diagram_specs.append(build_relational_diagram_spec(combined_diagram_context))
+        google_sheets_specs.append(build_relational_google_sheets_spec(combined_diagram_context))
+    if "network" in requested_diagram_types:
+        diagram_specs.append(build_network_diagram_spec(combined_diagram_context))
+        google_sheets_specs.append(build_network_google_sheets_spec(combined_diagram_context))
+
+    stats_guardrail_needed = (
+        course_template_key == "statistics"
+        or any(keyword in prompt_lower for keyword in [
+            "t-test", "t test", "independent t-test", "independent t test",
+            "paired t-test", "paired t test", "z-test", "z test",
+            "z-score", "z score", "chi-square", "chi square", "anova",
+            "likert", "hypothesis", "p-value", "p value", "standard deviation",
+        ])
+    )
+    formal_hypothesis_question = any(keyword in prompt_lower for keyword in [
+        "hypothesis", "h0", "null hypothesis", "alternative hypothesis",
+        "t-test", "t test", "z-test", "z test", "chi-square", "chi square", "anova",
+    ])
+
+    st.markdown("**Exam draft**")
+    st.text_area(
+        "Adapt this guide into your own exam wording",
+        value=output_text,
+        height=280,
+        key=f"{base_key}_draft",
+    )
+
+    st.markdown("**Direct model answer draft**")
+    st.text_area(
+        "Use this as a starting answer, then adapt it to the exact wording of the question",
+        value=model_answer_text,
+        height=280,
+        key=f"{base_key}_model_answer",
+    )
+
+    if diagram_specs:
+        st.markdown("**Suggested visual diagrams**")
+        st.caption("The resolver can now draft Mermaid diagrams for common data-modelling exam cases. You can use them as-is or adapt the labels to match the exact wording of the question.")
+        for index, spec in enumerate(diagram_specs, start=1):
+            with st.expander(spec["title"], expanded=(len(diagram_specs) == 1)):
+                st.markdown(spec["caption"])
+                render_mermaid_diagram(spec["code"], key_suffix=f"{base_key}_diagram_{index}", height=430)
+                st.markdown("**Mermaid code**")
+                st.code(spec["code"], language="text")
+
+    if google_sheets_specs:
+        st.markdown("**How to build the same case in Google Sheets**")
+        st.caption("Use the entities, tables, or hierarchy from the exam question as separate sheet tabs or structured columns. Then connect them with IDs, lookups, and validation checks.")
+        for index, spec in enumerate(google_sheets_specs, start=1):
+            with st.expander(spec["title"], expanded=(len(google_sheets_specs) == 1 and not diagram_specs)):
+                st.markdown(spec["caption"])
+                if spec.get("tabs"):
+                    st.markdown("**Suggested sheet tabs / layout**")
+                    for item in spec["tabs"]:
+                        st.markdown(f"- {item}")
+                if spec.get("formulas"):
+                    st.markdown("**Useful Google Sheets formulas**")
+                    for formula in spec["formulas"]:
+                        st.code(formula, language="text")
+                if spec.get("notes"):
+                    st.markdown("**Notes**")
+                    for item in spec["notes"]:
+                        st.markdown(f"- {item}")
+
+        template_zip_bytes, template_payload = build_google_sheets_template_pack(google_sheets_specs)
+        st.markdown("**Downloadable Google Sheets templates**")
+        st.caption("The resolver builds these template files automatically from the detected case type, so you can import the CSV tabs straight into Google Sheets.")
+        template_download_cols = st.columns(2)
+        with template_download_cols[0]:
+            st.download_button(
+                "Download Google Sheets template pack (ZIP)",
+                data=template_zip_bytes,
+                file_name=f"{course_code.lower()}_google_sheets_templates.zip",
+                mime="application/zip",
+                key=f"{base_key}_download_sheets_zip",
+            )
+        with template_download_cols[1]:
+            st.download_button(
+                "Download Google Sheets template plan as JSON",
+                data=json.dumps(template_payload, indent=2, ensure_ascii=False),
+                file_name=f"{course_code.lower()}_google_sheets_template_plan.json",
+                mime="application/json",
+                key=f"{base_key}_download_sheets_json",
+            )
+
+    if stats_guardrail_needed:
+        import math
+        from statistics import NormalDist
+
+        try:
+            from scipy import stats as scipy_stats
+        except Exception:
+            scipy_stats = None
+
+        def t_test_tail_result(test_value, degrees_freedom, alpha, tail_type):
+            p_value = None
+            decision_text = "Critical-value comparison unavailable"
+            critical_text = "SciPy not available for t critical values in this environment."
+            if scipy_stats is not None:
+                if tail_type == "Two-tailed":
+                    critical_value = scipy_stats.t.ppf(1 - alpha / 2, degrees_freedom)
+                    reject_null = abs(test_value) > critical_value
+                    p_value = 2 * (1 - scipy_stats.t.cdf(abs(test_value), degrees_freedom))
+                    critical_text = f"Reject H0 if |t| > {critical_value:.3f}"
+                elif tail_type == "Right-tailed":
+                    critical_value = scipy_stats.t.ppf(1 - alpha, degrees_freedom)
+                    reject_null = test_value > critical_value
+                    p_value = 1 - scipy_stats.t.cdf(test_value, degrees_freedom)
+                    critical_text = f"Reject H0 if t > {critical_value:.3f}"
+                else:
+                    critical_value = scipy_stats.t.ppf(alpha, degrees_freedom)
+                    reject_null = test_value < critical_value
+                    p_value = scipy_stats.t.cdf(test_value, degrees_freedom)
+                    critical_text = f"Reject H0 if t < {critical_value:.3f}"
+                decision_text = "Reject H0" if reject_null else "Fail to reject H0"
+            return p_value, decision_text, critical_text
+
+        def z_test_tail_result(test_value, alpha, tail_type):
+            dist = NormalDist()
+            if tail_type == "Two-tailed":
+                critical_value = dist.inv_cdf(1 - alpha / 2)
+                reject_null = abs(test_value) > critical_value
+                p_value = 2 * (1 - dist.cdf(abs(test_value)))
+                critical_text = f"Reject H0 if |z| > {critical_value:.3f}"
+            elif tail_type == "Right-tailed":
+                critical_value = dist.inv_cdf(1 - alpha)
+                reject_null = test_value > critical_value
+                p_value = 1 - dist.cdf(test_value)
+                critical_text = f"Reject H0 if z > {critical_value:.3f}"
+            else:
+                critical_value = dist.inv_cdf(alpha)
+                reject_null = test_value < critical_value
+                p_value = dist.cdf(test_value)
+                critical_text = f"Reject H0 if z < {critical_value:.3f}"
+            decision_text = "Reject H0" if reject_null else "Fail to reject H0"
+            return p_value, decision_text, critical_text
+
+        def render_google_sheets_guide(columns, formulas, notes):
+            with st.expander("How to set this up in Google Sheets"):
+                if columns:
+                    st.markdown("**Suggested columns / layout**")
+                    for item in columns:
+                        st.markdown(f"- {item}")
+                if formulas:
+                    st.markdown("**Useful formulas**")
+                    for formula in formulas:
+                        st.code(formula, language="text")
+                if notes:
+                    st.markdown("**Notes**")
+                    for item in notes:
+                        st.markdown(f"- {item}")
+
+        def make_stats_template_spec(title, caption, tabs, formulas, notes, sample_rows):
+            return {
+                "title": title,
+                "caption": caption,
+                "tabs": tabs,
+                "formulas": formulas,
+                "notes": notes,
+                "sample_rows": sample_rows,
+            }
+
+        def extract_prompt_numbers(prompt_text):
+            cleaned_prompt = re.sub(r"(?<=\d),(?=\d)", ".", prompt_text)
+            return [float(match) for match in re.findall(r"\d+(?:\.\d+)?", cleaned_prompt)]
+
+        def infer_alpha_from_prompt(default_alpha=0.05):
+            if "0.01" in prompt_lower or "1%" in prompt_lower:
+                return 0.01
+            if "0.10" in prompt_lower or "10%" in prompt_lower:
+                return 0.10
+            if "0.05" in prompt_lower or "5%" in prompt_lower:
+                return 0.05
+            return default_alpha
+
+        def infer_tail_type_from_prompt():
+            if any(term in prompt_lower for term in ["greater than", "higher than", "more than", "increase", "improve", "above"]):
+                return "Right-tailed"
+            if any(term in prompt_lower for term in ["less than", "lower than", "fewer than", "decrease", "reduce", "below"]):
+                return "Left-tailed"
+            return "Two-tailed"
+
+        def infer_likert_scale_from_prompt():
+            scale_match = re.search(r"(\d+)\s*(?:to|-)\s*(\d+)\s*(?:likert|scale)?", prompt_lower)
+            if scale_match:
+                return int(scale_match.group(1)), int(scale_match.group(2))
+            return 1, 5
+
+        def build_numeric_sample_series(center, spread=None, count=5, decimals=2, minimum=None, maximum=None):
+            center = float(center)
+            if spread in (None, 0):
+                spread = max(abs(center) * 0.05, 1.0)
+            spread = abs(float(spread))
+            base_offsets = [-1.1, -0.45, 0.0, 0.5, 1.05]
+            if count > len(base_offsets):
+                step = 2.15 / max(count - 1, 1)
+                base_offsets = [(-1.1 + (step * idx)) for idx in range(count)]
+            values = []
+            for offset in base_offsets[:count]:
+                value = center + (offset * spread)
+                if minimum is not None:
+                    value = max(minimum, value)
+                if maximum is not None:
+                    value = min(maximum, value)
+                values.append(round(value, decimals))
+            return values
+
+        def build_integer_sample_series(center, spread=None, count=5, minimum=0, maximum=None):
+            integer_values = []
+            for value in build_numeric_sample_series(center, spread=spread, count=count, decimals=0, minimum=minimum, maximum=maximum):
+                safe_value = int(round(value))
+                if minimum is not None:
+                    safe_value = max(minimum, safe_value)
+                if maximum is not None:
+                    safe_value = min(maximum, safe_value)
+                integer_values.append(safe_value)
+            return integer_values
+
+        def build_grouped_rows(*series):
+            return [list(row) for row in zip(*series)]
+
+        def build_paired_sample_rows(mean_before, mean_after, sd_diff, count=5):
+            before_series = build_numeric_sample_series(mean_before, spread=max(sd_diff * 0.45, 1.0), count=count)
+            diff_series = build_numeric_sample_series(mean_before - mean_after, spread=max(sd_diff * 0.35, 0.5), count=count)
+            rows = []
+            for before_value, diff_value in zip(before_series, diff_series):
+                after_value = round(before_value - diff_value, 2)
+                rows.append([before_value, after_value, ""])
+            return rows
+
+        def suggest_calc_type_from_prompt():
+            if "likert" in prompt_lower:
+                return "Likert scale and realistic hypotheses"
+            if "paired" in prompt_lower or "before and after" in prompt_lower or "before/after" in prompt_lower or "pre-test" in prompt_lower or "pretest" in prompt_lower or "same group" in prompt_lower:
+                return "Paired t-test"
+            if "independent t-test" in prompt_lower or "independent t test" in prompt_lower:
+                return "Independent t-test"
+            if "chi-square" in prompt_lower or "chi square" in prompt_lower:
+                return "Chi-square test of independence (2x2)"
+            if "anova" in prompt_lower or "three groups" in prompt_lower or "3 groups" in prompt_lower:
+                return "One-way ANOVA (3 groups)"
+            if "z-score" in prompt_lower or "z score" in prompt_lower:
+                return "Z-score"
+            if "proportion" in prompt_lower or "conversion rate" in prompt_lower or "click-through rate" in prompt_lower or "success rate" in prompt_lower:
+                return "Two-proportion z-test"
+            if "population standard deviation" in prompt_lower or "known sigma" in prompt_lower or "known standard deviation" in prompt_lower:
+                return "One-sample z-test"
+            if "z-test" in prompt_lower or "z test" in prompt_lower:
+                return "One-sample z-test"
+            return "One-sample t-test"
+
+        def set_alpha_key(alpha_key):
+            if alpha_key in st.session_state:
+                st.session_state[alpha_key] = infer_alpha_from_prompt(st.session_state[alpha_key])
+            else:
+                st.session_state[alpha_key] = infer_alpha_from_prompt()
+
+        def apply_autofill_to_widgets(calc_type, extracted_numbers):
+            st.session_state[f"{base_key}_stats_calc_type"] = calc_type
+            tail_guess = infer_tail_type_from_prompt()
+            if calc_type == "Likert scale and realistic hypotheses":
+                likert_min, likert_max = infer_likert_scale_from_prompt()
+                st.session_state[f"{base_key}_likert_min"] = likert_min
+                st.session_state[f"{base_key}_likert_max"] = likert_max
+                st.session_state[f"{base_key}_likert_claim"] = exam_prompt.strip()[:500] or st.session_state.get(f"{base_key}_likert_claim", "")
+                if "sample of" in prompt_lower or "respondents" in prompt_lower or "participants" in prompt_lower:
+                    if extracted_numbers:
+                        guessed_n = int(round(extracted_numbers[-1]))
+                        if guessed_n >= 5:
+                            st.session_state[f"{base_key}_likert_n"] = guessed_n
+            elif calc_type == "One-sample t-test":
+                if len(extracted_numbers) >= 4:
+                    st.session_state[f"{base_key}_t_sample_mean"] = extracted_numbers[0]
+                    st.session_state[f"{base_key}_t_hyp_mean"] = extracted_numbers[1]
+                    st.session_state[f"{base_key}_t_sample_sd"] = max(0.0001, extracted_numbers[2])
+                    st.session_state[f"{base_key}_t_sample_size"] = max(2, int(round(extracted_numbers[3])))
+                st.session_state[f"{base_key}_t_tail"] = tail_guess
+                set_alpha_key(f"{base_key}_t_alpha")
+            elif calc_type == "Independent t-test":
+                if len(extracted_numbers) >= 6:
+                    st.session_state[f"{base_key}_it_mean_a"] = extracted_numbers[0]
+                    st.session_state[f"{base_key}_it_sd_a"] = max(0.0001, extracted_numbers[1])
+                    st.session_state[f"{base_key}_it_n_a"] = max(2, int(round(extracted_numbers[2])))
+                    st.session_state[f"{base_key}_it_mean_b"] = extracted_numbers[3]
+                    st.session_state[f"{base_key}_it_sd_b"] = max(0.0001, extracted_numbers[4])
+                    st.session_state[f"{base_key}_it_n_b"] = max(2, int(round(extracted_numbers[5])))
+                st.session_state[f"{base_key}_it_tail"] = tail_guess
+                set_alpha_key(f"{base_key}_it_alpha")
+            elif calc_type == "Paired t-test":
+                if len(extracted_numbers) >= 4:
+                    st.session_state[f"{base_key}_pt_before"] = extracted_numbers[0]
+                    st.session_state[f"{base_key}_pt_after"] = extracted_numbers[1]
+                    st.session_state[f"{base_key}_pt_sd_diff"] = max(0.0001, extracted_numbers[2])
+                    st.session_state[f"{base_key}_pt_n"] = max(2, int(round(extracted_numbers[3])))
+                st.session_state[f"{base_key}_pt_tail"] = tail_guess
+                set_alpha_key(f"{base_key}_pt_alpha")
+            elif calc_type == "One-sample z-test":
+                if len(extracted_numbers) >= 4:
+                    st.session_state[f"{base_key}_z_sample_mean"] = extracted_numbers[0]
+                    st.session_state[f"{base_key}_z_hyp_mean"] = extracted_numbers[1]
+                    st.session_state[f"{base_key}_z_pop_sd"] = max(0.0001, extracted_numbers[2])
+                    st.session_state[f"{base_key}_z_sample_size"] = max(1, int(round(extracted_numbers[3])))
+                st.session_state[f"{base_key}_z_tail"] = tail_guess
+                set_alpha_key(f"{base_key}_z_alpha")
+            elif calc_type == "Z-score":
+                if len(extracted_numbers) >= 3:
+                    st.session_state[f"{base_key}_zs_value"] = extracted_numbers[0]
+                    st.session_state[f"{base_key}_zs_mean"] = extracted_numbers[1]
+                    st.session_state[f"{base_key}_zs_sd"] = max(0.0001, extracted_numbers[2])
+            elif calc_type == "Two-proportion z-test":
+                if len(extracted_numbers) >= 4:
+                    st.session_state[f"{base_key}_zp_success_a"] = max(0, int(round(extracted_numbers[0])))
+                    st.session_state[f"{base_key}_zp_total_a"] = max(1, int(round(extracted_numbers[1])))
+                    st.session_state[f"{base_key}_zp_success_b"] = max(0, int(round(extracted_numbers[2])))
+                    st.session_state[f"{base_key}_zp_total_b"] = max(1, int(round(extracted_numbers[3])))
+            elif calc_type == "Chi-square test of independence (2x2)":
+                if len(extracted_numbers) >= 4:
+                    st.session_state[f"{base_key}_chi_11"] = max(0, int(round(extracted_numbers[0])))
+                    st.session_state[f"{base_key}_chi_12"] = max(0, int(round(extracted_numbers[1])))
+                    st.session_state[f"{base_key}_chi_21"] = max(0, int(round(extracted_numbers[2])))
+                    st.session_state[f"{base_key}_chi_22"] = max(0, int(round(extracted_numbers[3])))
+            elif calc_type == "One-way ANOVA (3 groups)":
+                if len(extracted_numbers) >= 9:
+                    st.session_state[f"{base_key}_anova_mean_1"] = extracted_numbers[0]
+                    st.session_state[f"{base_key}_anova_sd_1"] = max(0.0001, extracted_numbers[1])
+                    st.session_state[f"{base_key}_anova_n_1"] = max(2, int(round(extracted_numbers[2])))
+                    st.session_state[f"{base_key}_anova_mean_2"] = extracted_numbers[3]
+                    st.session_state[f"{base_key}_anova_sd_2"] = max(0.0001, extracted_numbers[4])
+                    st.session_state[f"{base_key}_anova_n_2"] = max(2, int(round(extracted_numbers[5])))
+                    st.session_state[f"{base_key}_anova_mean_3"] = extracted_numbers[6]
+                    st.session_state[f"{base_key}_anova_sd_3"] = max(0.0001, extracted_numbers[7])
+                    st.session_state[f"{base_key}_anova_n_3"] = max(2, int(round(extracted_numbers[8])))
+                set_alpha_key(f"{base_key}_anova_alpha")
+
+        def render_confidence_interval(label, lower_bound, upper_bound):
+            st.markdown(f"**{label}:** [{lower_bound:.3f}, {upper_bound:.3f}]")
+
+        st.markdown("**Verified calculation panel for statistical questions**")
+        st.warning("For statistical calculations, use this verified panel instead of trusting a text draft alone. The draft should explain the method, but the numbers should come from a deterministic calculator.")
+
+        calc_options = [
+            "Likert scale and realistic hypotheses",
+            "One-sample t-test",
+            "Independent t-test",
+            "Paired t-test",
+            "One-sample z-test",
+            "Z-score",
+            "Two-proportion z-test",
+            "Chi-square test of independence (2x2)",
+            "One-way ANOVA (3 groups)",
+        ]
+        calc_type_key = f"{base_key}_stats_calc_type"
+        prompt_numbers = extract_prompt_numbers(exam_prompt)
+        suggested_calc_type = suggest_calc_type_from_prompt()
+        if calc_type_key not in st.session_state:
+            st.session_state[calc_type_key] = suggested_calc_type
+        prompt_signature_key = f"{base_key}_stats_prompt_signature"
+        prompt_signature = (
+            f"{suggested_calc_type}|"
+            f"{normalise_text(exam_prompt)[:400]}|"
+            f"{'|'.join(format(num, '.6g') for num in prompt_numbers[:16])}"
+        )
+        if exam_prompt.strip() and st.session_state.get(prompt_signature_key) != prompt_signature:
+            apply_autofill_to_widgets(suggested_calc_type, prompt_numbers)
+            st.session_state[prompt_signature_key] = prompt_signature
+
+        chooser_col, autofill_col = st.columns(2)
+        with chooser_col:
+            with st.expander("Test chooser"):
+                chooser_question_type = st.selectbox(
+                    "What kind of data or question do you have?",
+                    options=[
+                        "Likert scale / agreement score",
+                        "Mean / continuous value",
+                        "Proportion / yes-no rate",
+                        "Categorical count table",
+                        "Standardised single value",
+                    ],
+                    key=f"{base_key}_chooser_data_type",
+                )
+                chooser_comparison = st.selectbox(
+                    "What are you comparing?",
+                    options=[
+                        "One sample against a target",
+                        "Two independent groups",
+                        "Same group before and after",
+                        "Three groups",
+                        "Association between two categorical variables",
+                    ],
+                    key=f"{base_key}_chooser_comparison",
+                )
+                chooser_known_sigma = st.checkbox(
+                    "Population standard deviation is known",
+                    value=False,
+                    key=f"{base_key}_chooser_known_sigma",
+                )
+                chooser_mapping = {
+                    ("Likert scale / agreement score", "One sample against a target"): "Likert scale and realistic hypotheses",
+                    ("Likert scale / agreement score", "Two independent groups"): "Likert scale and realistic hypotheses",
+                    ("Mean / continuous value", "One sample against a target"): "One-sample z-test" if chooser_known_sigma else "One-sample t-test",
+                    ("Mean / continuous value", "Two independent groups"): "Independent t-test",
+                    ("Mean / continuous value", "Same group before and after"): "Paired t-test",
+                    ("Mean / continuous value", "Three groups"): "One-way ANOVA (3 groups)",
+                    ("Proportion / yes-no rate", "Two independent groups"): "Two-proportion z-test",
+                    ("Categorical count table", "Association between two categorical variables"): "Chi-square test of independence (2x2)",
+                    ("Standardised single value", "One sample against a target"): "Z-score",
+                }
+                chooser_suggestion = chooser_mapping.get((chooser_question_type, chooser_comparison), "One-sample t-test")
+                st.markdown(f"- Suggested test: **{chooser_suggestion}**")
+                if st.button("Use chooser suggestion", key=f"{base_key}_use_chooser"):
+                    st.session_state[calc_type_key] = chooser_suggestion
+                    st.rerun()
+
+        with autofill_col:
+            with st.expander("Auto-fill from exam prompt"):
+                st.markdown(f"- Suggested test from prompt: **{suggested_calc_type}**")
+                if prompt_numbers:
+                    preview_numbers = ", ".join(
+                        str(int(num)) if float(num).is_integer() else f"{num:.3f}".rstrip("0").rstrip(".")
+                        for num in prompt_numbers[:12]
+                    )
+                    st.markdown(f"- Numbers found in prompt: {preview_numbers}")
+                else:
+                    st.markdown("- No obvious numbers were found in the prompt.")
+                st.caption("Best-effort parser: it works best when the exam question presents the statistics in a clean order.")
+                if st.button("Auto-fill fields from exam prompt", key=f"{base_key}_autofill_from_prompt"):
+                    apply_autofill_to_widgets(suggested_calc_type, prompt_numbers)
+                    st.rerun()
+
+        calc_type = st.selectbox("Calculation type", options=calc_options, key=calc_type_key)
+
+        stats_summary_text = ""
+        sheets_columns = []
+        sheets_formulas = []
+        sheets_notes = []
+        ci_summary_text = ""
+        stats_template_spec = None
+
+        if calc_type == "Likert scale and realistic hypotheses":
+            col1, col2 = st.columns(2)
+            with col1:
+                outcome_name = st.text_input("Outcome or statement being measured", value="customer satisfaction", key=f"{base_key}_likert_outcome")
+                group_a_name = st.text_input("Group A / baseline label", value="current process", key=f"{base_key}_likert_group_a")
+                group_b_name = st.text_input("Group B / intervention label", value="new process", key=f"{base_key}_likert_group_b")
+                scale_min = st.number_input("Likert scale minimum", min_value=1, value=1, step=1, key=f"{base_key}_likert_min")
+                scale_max = st.number_input("Likert scale maximum", min_value=2, value=5, step=1, key=f"{base_key}_likert_max")
+                baseline_mean = st.number_input("Expected average for group A", value=3.40, step=0.05, key=f"{base_key}_likert_base_mean")
+                target_mean = st.number_input("Expected average for group B", value=3.90, step=0.05, key=f"{base_key}_likert_target_mean")
+            with col2:
+                items_in_scale = st.number_input("Number of Likert items in the scale", min_value=1, value=5, step=1, key=f"{base_key}_likert_items")
+                sample_size_per_group = st.number_input("Planned sample size per group", min_value=5, value=60, step=1, key=f"{base_key}_likert_n")
+                directional_hypothesis = st.checkbox("Use a directional alternative hypothesis", value=True, key=f"{base_key}_likert_directional")
+                single_item_only = st.checkbox("This is only one Likert item", value=False, key=f"{base_key}_likert_single_item")
+                business_justification = st.text_area("Why do you expect this direction?", value="The new process reduces waiting time and improves service consistency.", height=90, key=f"{base_key}_likert_justification")
+                claim_text = st.text_area("Draft claim you want to test", value="The new process improves customer satisfaction.", height=90, key=f"{base_key}_likert_claim")
+
+            scale_span = scale_max - scale_min
+            expected_difference = target_mean - baseline_mean
+            absolute_terms = ["always", "never", "everyone", "all customers", "all users", "prove", "guarantee", "100%"]
+            warnings = []
+            strengths = []
+
+            if scale_max <= scale_min:
+                warnings.append("The scale maximum must be larger than the scale minimum.")
+            if not (scale_min <= baseline_mean <= scale_max):
+                warnings.append("The expected average for group A is outside the Likert scale range.")
+            if not (scale_min <= target_mean <= scale_max):
+                warnings.append("The expected average for group B is outside the Likert scale range.")
+            if abs(expected_difference) > max(1.0, scale_span * 0.35):
+                warnings.append("The expected change is large for a Likert scale. Check whether the claim is too ambitious for one intervention.")
+            elif abs(expected_difference) < 0.15 and sample_size_per_group < 100:
+                warnings.append("The expected effect is small, so the planned sample may be too limited to detect it reliably.")
+            if directional_hypothesis and len(business_justification.strip()) < 20:
+                warnings.append("A directional hypothesis should have a specific business or research reason behind it.")
+            if any(term in claim_text.lower() for term in absolute_terms):
+                warnings.append("Avoid absolute wording such as 'always', 'never', or 'prove' in hypotheses. Hypotheses should be testable and realistic.")
+            if single_item_only:
+                warnings.append("A single Likert item is ordinal. A mean-based t-test can be debated, so distribution tables or non-parametric alternatives may be safer.")
+            if items_in_scale >= 4 and sample_size_per_group >= 30:
+                strengths.append("A multi-item Likert scale with at least moderate sample size is often treated more comfortably as a scale score.")
+            if abs(expected_difference) >= 0.25:
+                strengths.append("The expected difference is large enough to be practically noticeable if the intervention truly works.")
+            if len(business_justification.strip()) >= 20:
+                strengths.append("The directional claim has a stated rationale, which makes the alternative hypothesis more defensible.")
+
+            if directional_hypothesis:
+                if expected_difference >= 0:
+                    suggested_h1 = f"H1: The average {outcome_name} score is higher for {group_b_name} than for {group_a_name}."
+                else:
+                    suggested_h1 = f"H1: The average {outcome_name} score is lower for {group_b_name} than for {group_a_name}."
+            else:
+                suggested_h1 = f"H1: The average {outcome_name} score differs between {group_a_name} and {group_b_name}."
+            suggested_h0 = f"H0: The average {outcome_name} score is the same for {group_a_name} and {group_b_name}."
+
+            realism_status = "Looks realistic"
+            if len(warnings) >= 3:
+                realism_status = "Needs major revision"
+            elif warnings:
+                realism_status = "Needs caution"
+
+            metric_cols = st.columns(4)
+            metric_cols[0].metric("Expected change", f"{expected_difference:.2f}")
+            metric_cols[1].metric("Scale width", f"{scale_span:.0f}")
+            metric_cols[2].metric("n per group", f"{sample_size_per_group}")
+            metric_cols[3].metric("Realism check", realism_status)
+
+            st.markdown("**Suggested hypotheses**")
+            st.markdown(f"- {suggested_h0}")
+            st.markdown(f"- {suggested_h1}")
+
+            if warnings:
+                st.markdown("**What to check before using this hypothesis**")
+                for item in warnings:
+                    st.markdown(f"- {item}")
+            if strengths:
+                st.markdown("**What already looks strong**")
+                for item in strengths:
+                    st.markdown(f"- {item}")
+
+            st.info("Likert rule of thumb: one single Likert item is ordinal. An averaged score from several similar items is often treated more like a scale variable, especially with larger samples.")
+
+            stats_summary_text = (
+                f"Likert and hypothesis planning summary: outcome = {outcome_name}, group A = {group_a_name}, "
+                f"group B = {group_b_name}, scale = {scale_min}-{scale_max}, expected mean A = {baseline_mean:.2f}, "
+                f"expected mean B = {target_mean:.2f}, expected difference = {expected_difference:.2f}, items in scale = {items_in_scale}, "
+                f"n per group = {sample_size_per_group}, realism status = {realism_status}. "
+                f"Suggested H0: {suggested_h0} Suggested H1: {suggested_h1}"
+            )
+
+            sheets_columns = [
+                "Column A: respondent_id",
+                "Column B: group (for example control / intervention)",
+                "Columns C:G: Likert items scored from 1 to 5",
+                "Column H: average scale score per respondent",
+            ]
+            sheets_formulas = [
+                "H2: =AVERAGE(C2:G2)",
+                "Overall average: =AVERAGE(H2:H101)",
+                f"Average for {group_a_name}: =AVERAGEIF(B2:B101,\"{group_a_name}\",H2:H101)",
+                f"Average for {group_b_name}: =AVERAGEIF(B2:B101,\"{group_b_name}\",H2:H101)",
+                "Count of score 5 on one item: =COUNTIF(C2:C101,5)",
+            ]
+            sheets_notes = [
+                "Use Data validation to create a dropdown with the allowed Likert values.",
+                "If you only have one Likert item, inspect counts and distributions carefully before treating the mean as your main evidence.",
+                "For a group comparison, keep one row per respondent and one column that labels the group.",
+            ]
+            stats_template_spec = make_stats_template_spec(
+                "Google Sheets template - Likert scale and hypotheses",
+                "This template gives you a respondent-level sheet for Likert data plus a hypothesis sheet you can adapt to the exam wording.",
+                [
+                    "Responses: respondent_id, group, item_1, item_2, item_3, item_4, item_5, average_score",
+                    "Hypotheses: hypothesis_type, statement",
+                ],
+                sheets_formulas,
+                sheets_notes,
+                {
+                    "Responses": [
+                        [1, group_a_name, 4, 4, 3, 4, 5, ""],
+                        [2, group_a_name, 3, 3, 4, 3, 4, ""],
+                        [3, group_b_name, 4, 5, 4, 4, 5, ""],
+                        [4, group_b_name, 5, 4, 4, 5, 4, ""],
+                    ],
+                    "Hypotheses": [
+                        ["H0", suggested_h0],
+                        ["H1", suggested_h1],
+                    ],
+                },
+            )
+
+        elif calc_type == "One-sample t-test":
+            calc_col1, calc_col2 = st.columns(2)
+            with calc_col1:
+                sample_mean = st.number_input("Sample mean (x̄)", value=200.0, step=1.0, key=f"{base_key}_t_sample_mean")
+                hypoth_mean = st.number_input("Hypothesised mean (μ₀)", value=220.0, step=1.0, key=f"{base_key}_t_hyp_mean")
+                sample_sd = st.number_input("Sample standard deviation (s)", min_value=0.0001, value=15.0, step=0.5, key=f"{base_key}_t_sample_sd")
+            with calc_col2:
+                sample_size = st.number_input("Sample size (n)", min_value=2, value=50, step=1, key=f"{base_key}_t_sample_size")
+                alpha = st.selectbox("Alpha (α)", options=[0.10, 0.05, 0.01], index=1, format_func=lambda x: f"{x:.2f}", key=f"{base_key}_t_alpha")
+                tail_type = st.selectbox("Tail type", options=["Two-tailed", "Right-tailed", "Left-tailed"], key=f"{base_key}_t_tail")
+
+            standard_error = sample_sd / math.sqrt(sample_size)
+            t_value = (sample_mean - hypoth_mean) / standard_error
+            degrees_freedom = sample_size - 1
+            p_value, decision_text, critical_text = t_test_tail_result(t_value, degrees_freedom, alpha, tail_type)
+
+            stats_metric_cols = st.columns(4)
+            stats_metric_cols[0].metric("SE", f"{standard_error:.3f}")
+            stats_metric_cols[1].metric("t-value", f"{t_value:.3f}")
+            stats_metric_cols[2].metric("df", f"{degrees_freedom}")
+            stats_metric_cols[3].metric("Decision", decision_text)
+            st.latex(rf"t = \frac{{\bar{{x}} - \mu_0}}{{s / \sqrt{{n}}}} = \frac{{{sample_mean:.3f} - {hypoth_mean:.3f}}}{{{sample_sd:.3f} / \sqrt{{{sample_size}}}}} = {t_value:.3f}")
+            st.markdown(f"**Critical rule:** {critical_text}")
+            if p_value is not None:
+                st.markdown(f"**p-value:** {p_value:.4f}")
+            if scipy_stats is not None:
+                ci_critical = scipy_stats.t.ppf(1 - alpha / 2, degrees_freedom)
+                ci_lower = sample_mean - (ci_critical * standard_error)
+                ci_upper = sample_mean + (ci_critical * standard_error)
+                render_confidence_interval(f"{int((1 - alpha) * 100)}% confidence interval for the mean", ci_lower, ci_upper)
+                ci_summary_text = f" {int((1 - alpha) * 100)}% CI for the mean = [{ci_lower:.3f}, {ci_upper:.3f}]."
+
+            stats_summary_text = (
+                f"One-sample t-test summary: x̄ = {sample_mean:.3f}, μ0 = {hypoth_mean:.3f}, s = {sample_sd:.3f}, "
+                f"n = {sample_size}, SE = {standard_error:.3f}, t = {t_value:.3f}, df = {degrees_freedom}, "
+                f"alpha = {alpha:.2f}, tail = {tail_type}, decision = {decision_text}."
+            )
+            if p_value is not None:
+                stats_summary_text += f" p-value = {p_value:.4f}."
+            stats_summary_text += ci_summary_text
+
+            sheets_columns = [
+                "Cells for sample mean, hypothesised mean, sample standard deviation, sample size, alpha, and tail type.",
+            ]
+            sheets_formulas = [
+                "SE: =sample_sd/SQRT(sample_size)",
+                "t-value: =(sample_mean-hyp_mean)/(sample_sd/SQRT(sample_size))",
+                "If you have raw data in B2:B51, compute mean with =AVERAGE(B2:B51) and sample SD with =STDEV.S(B2:B51)",
+            ]
+            sheets_notes = [
+                "Google Sheets does not have a single simple one-sample t-test button, so summary-statistic formulas are usually the easiest setup.",
+                "Write H0 and H1 in text cells so your decision stays tied to the original hypothesis.",
+            ]
+            stats_template_spec = make_stats_template_spec(
+                "Google Sheets template - One-sample t-test",
+                "This template includes a raw-data sheet and a summary sheet for a one-sample t-test setup.",
+                [
+                    "RawData: observation",
+                    "Summary: sample_mean, hypoth_mean, sample_sd, sample_size, alpha, tail_type",
+                ],
+                sheets_formulas,
+                sheets_notes,
+                {
+                    "RawData": [[value] for value in build_numeric_sample_series(sample_mean, spread=max(sample_sd * 0.6, 1.0))],
+                    "Summary": [
+                        [round(sample_mean, 3), round(hypoth_mean, 3), round(sample_sd, 3), int(sample_size), alpha, tail_type],
+                    ],
+                },
+            )
+
+        elif calc_type == "Independent t-test":
+            calc_col1, calc_col2 = st.columns(2)
+            with calc_col1:
+                mean_a = st.number_input("Group A mean", value=72.0, step=1.0, key=f"{base_key}_it_mean_a")
+                sd_a = st.number_input("Group A standard deviation", min_value=0.0001, value=10.0, step=0.5, key=f"{base_key}_it_sd_a")
+                n_a = st.number_input("Group A sample size", min_value=2, value=35, step=1, key=f"{base_key}_it_n_a")
+                mean_b = st.number_input("Group B mean", value=78.0, step=1.0, key=f"{base_key}_it_mean_b")
+            with calc_col2:
+                sd_b = st.number_input("Group B standard deviation", min_value=0.0001, value=11.0, step=0.5, key=f"{base_key}_it_sd_b")
+                n_b = st.number_input("Group B sample size", min_value=2, value=37, step=1, key=f"{base_key}_it_n_b")
+                equal_variance = st.checkbox("Assume equal variances", value=False, key=f"{base_key}_it_equal_var")
+                alpha = st.selectbox("Alpha (α)", options=[0.10, 0.05, 0.01], index=1, format_func=lambda x: f"{x:.2f}", key=f"{base_key}_it_alpha")
+                tail_type = st.selectbox("Tail type", options=["Two-tailed", "Right-tailed", "Left-tailed"], key=f"{base_key}_it_tail")
+
+            if equal_variance:
+                pooled_variance = (((n_a - 1) * (sd_a ** 2)) + ((n_b - 1) * (sd_b ** 2))) / (n_a + n_b - 2)
+                standard_error = math.sqrt(pooled_variance * ((1 / n_a) + (1 / n_b)))
+                degrees_freedom = n_a + n_b - 2
+            else:
+                variance_piece_a = (sd_a ** 2) / n_a
+                variance_piece_b = (sd_b ** 2) / n_b
+                standard_error = math.sqrt(variance_piece_a + variance_piece_b)
+                numerator = (variance_piece_a + variance_piece_b) ** 2
+                denominator = ((variance_piece_a ** 2) / (n_a - 1)) + ((variance_piece_b ** 2) / (n_b - 1))
+                degrees_freedom = numerator / denominator if denominator else 1
+            t_value = (mean_a - mean_b) / standard_error
+            p_value, decision_text, critical_text = t_test_tail_result(t_value, degrees_freedom, alpha, tail_type)
+
+            stats_metric_cols = st.columns(4)
+            stats_metric_cols[0].metric("Mean diff", f"{(mean_a - mean_b):.3f}")
+            stats_metric_cols[1].metric("SE", f"{standard_error:.3f}")
+            stats_metric_cols[2].metric("t-value", f"{t_value:.3f}")
+            stats_metric_cols[3].metric("df", f"{degrees_freedom:.2f}")
+            st.markdown(f"**Critical rule:** {critical_text}")
+            if p_value is not None:
+                st.markdown(f"**p-value:** {p_value:.4f}")
+            st.info("Use equal variances only if that assumption is reasonable. If you are unsure, Welch's independent t-test is often the safer choice.")
+            if scipy_stats is not None:
+                ci_critical = scipy_stats.t.ppf(1 - alpha / 2, degrees_freedom)
+                mean_difference = mean_a - mean_b
+                ci_lower = mean_difference - (ci_critical * standard_error)
+                ci_upper = mean_difference + (ci_critical * standard_error)
+                render_confidence_interval(f"{int((1 - alpha) * 100)}% confidence interval for the mean difference", ci_lower, ci_upper)
+                ci_summary_text = f" {int((1 - alpha) * 100)}% CI for the mean difference = [{ci_lower:.3f}, {ci_upper:.3f}]."
+
+            stats_summary_text = (
+                f"Independent t-test summary: mean A = {mean_a:.3f}, mean B = {mean_b:.3f}, "
+                f"sd A = {sd_a:.3f}, sd B = {sd_b:.3f}, nA = {n_a}, nB = {n_b}, "
+                f"SE = {standard_error:.3f}, t = {t_value:.3f}, df = {degrees_freedom:.2f}, "
+                f"equal variances assumed = {'yes' if equal_variance else 'no'}, alpha = {alpha:.2f}, "
+                f"tail = {tail_type}, decision = {decision_text}."
+            )
+            if p_value is not None:
+                stats_summary_text += f" p-value = {p_value:.4f}."
+            stats_summary_text += ci_summary_text
+
+            sheets_columns = [
+                "Column B: Group A raw scores",
+                "Column C: Group B raw scores",
+                "Summary cells for means, standard deviations, and counts if you want to show the manual setup",
+            ]
+            sheets_formulas = [
+                "Group A mean: =AVERAGE(B2:B36)",
+                "Group B mean: =AVERAGE(C2:C38)",
+                "Group A SD: =STDEV.S(B2:B36)",
+                "Group B SD: =STDEV.S(C2:C38)",
+                "Welch-style t-value from summary cells: =(mean_A-mean_B)/SQRT((sd_A^2/n_A)+(sd_B^2/n_B))",
+                "Two-sample t-test directly on raw data: =T.TEST(B2:B36,C2:C38,2,3)",
+            ]
+            sheets_notes = [
+                "In Google Sheets, T.TEST with type 3 is the unequal-variance version and type 2 is equal-variance.",
+                "Keep the two groups in separate columns if you want to use the direct T.TEST formula on raw data.",
+            ]
+            stats_template_spec = make_stats_template_spec(
+                "Google Sheets template - Independent t-test",
+                "This template keeps the two groups in separate columns so you can use direct Google Sheets t-test formulas.",
+                [
+                    "Data: group_a, group_b",
+                    "Summary: mean_a, sd_a, n_a, mean_b, sd_b, n_b, alpha, tail_type, equal_variance",
+                ],
+                sheets_formulas,
+                sheets_notes,
+                {
+                    "Data": build_grouped_rows(
+                        build_numeric_sample_series(mean_a, spread=max(sd_a * 0.55, 1.0)),
+                        build_numeric_sample_series(mean_b, spread=max(sd_b * 0.55, 1.0)),
+                    ),
+                    "Summary": [
+                        [round(mean_a, 3), round(sd_a, 3), int(n_a), round(mean_b, 3), round(sd_b, 3), int(n_b), alpha, tail_type, "Yes" if equal_variance else "No"],
+                    ],
+                },
+            )
+
+        elif calc_type == "Paired t-test":
+            calc_col1, calc_col2 = st.columns(2)
+            with calc_col1:
+                mean_before = st.number_input("Mean before", value=68.0, step=1.0, key=f"{base_key}_pt_before")
+                mean_after = st.number_input("Mean after", value=74.0, step=1.0, key=f"{base_key}_pt_after")
+                sd_diff = st.number_input("Standard deviation of differences", min_value=0.0001, value=8.0, step=0.5, key=f"{base_key}_pt_sd_diff")
+            with calc_col2:
+                sample_size = st.number_input("Number of pairs (n)", min_value=2, value=30, step=1, key=f"{base_key}_pt_n")
+                alpha = st.selectbox("Alpha (α)", options=[0.10, 0.05, 0.01], index=1, format_func=lambda x: f"{x:.2f}", key=f"{base_key}_pt_alpha")
+                tail_type = st.selectbox("Tail type", options=["Two-tailed", "Right-tailed", "Left-tailed"], key=f"{base_key}_pt_tail")
+
+            mean_diff = mean_before - mean_after
+            standard_error = sd_diff / math.sqrt(sample_size)
+            t_value = mean_diff / standard_error
+            degrees_freedom = sample_size - 1
+            p_value, decision_text, critical_text = t_test_tail_result(t_value, degrees_freedom, alpha, tail_type)
+
+            stats_metric_cols = st.columns(4)
+            stats_metric_cols[0].metric("Mean diff", f"{mean_diff:.3f}")
+            stats_metric_cols[1].metric("SE", f"{standard_error:.3f}")
+            stats_metric_cols[2].metric("t-value", f"{t_value:.3f}")
+            stats_metric_cols[3].metric("df", f"{degrees_freedom}")
+            st.markdown(f"**Critical rule:** {critical_text}")
+            if p_value is not None:
+                st.markdown(f"**p-value:** {p_value:.4f}")
+            st.info("A paired t-test is for matched observations such as before/after scores for the same participants, not two independent groups.")
+            if scipy_stats is not None:
+                ci_critical = scipy_stats.t.ppf(1 - alpha / 2, degrees_freedom)
+                ci_lower = mean_diff - (ci_critical * standard_error)
+                ci_upper = mean_diff + (ci_critical * standard_error)
+                render_confidence_interval(f"{int((1 - alpha) * 100)}% confidence interval for the mean difference", ci_lower, ci_upper)
+                ci_summary_text = f" {int((1 - alpha) * 100)}% CI for the mean difference = [{ci_lower:.3f}, {ci_upper:.3f}]."
+
+            stats_summary_text = (
+                f"Paired t-test summary: mean before = {mean_before:.3f}, mean after = {mean_after:.3f}, "
+                f"mean difference = {mean_diff:.3f}, sd of differences = {sd_diff:.3f}, n = {sample_size}, "
+                f"SE = {standard_error:.3f}, t = {t_value:.3f}, df = {degrees_freedom}, alpha = {alpha:.2f}, "
+                f"tail = {tail_type}, decision = {decision_text}."
+            )
+            if p_value is not None:
+                stats_summary_text += f" p-value = {p_value:.4f}."
+            stats_summary_text += ci_summary_text
+
+            sheets_columns = [
+                "Column B: before scores",
+                "Column C: after scores",
+                "Column D: row-wise difference (before - after)",
+            ]
+            sheets_formulas = [
+                "D2: =B2-C2",
+                "Mean difference: =AVERAGE(D2:D31)",
+                "SD of differences: =STDEV.S(D2:D31)",
+                "n: =COUNT(D2:D31)",
+                "t-value: =(AVERAGE(D2:D31))/(STDEV.S(D2:D31)/SQRT(COUNT(D2:D31)))",
+                "Paired t-test directly on raw data: =T.TEST(B2:B31,C2:C31,2,1)",
+            ]
+            sheets_notes = [
+                "Keep paired observations on the same row, because each row represents the same person, product, or case before and after.",
+            ]
+            stats_template_spec = make_stats_template_spec(
+                "Google Sheets template - Paired t-test",
+                "This template stores before-and-after values on the same row so the paired differences are easy to calculate.",
+                [
+                    "Data: before, after, difference",
+                    "Summary: mean_before, mean_after, sd_diff, sample_size, alpha, tail_type",
+                ],
+                sheets_formulas,
+                sheets_notes,
+                {
+                    "Data": build_paired_sample_rows(mean_before, mean_after, sd_diff),
+                    "Summary": [
+                        [round(mean_before, 3), round(mean_after, 3), round(sd_diff, 3), int(sample_size), alpha, tail_type],
+                    ],
+                },
+            )
+
+        elif calc_type == "One-sample z-test":
+            calc_col1, calc_col2 = st.columns(2)
+            with calc_col1:
+                sample_mean = st.number_input("Sample mean (x̄)", value=102.0, step=1.0, key=f"{base_key}_z_sample_mean")
+                hypoth_mean = st.number_input("Hypothesised mean (μ₀)", value=100.0, step=1.0, key=f"{base_key}_z_hyp_mean")
+                population_sd = st.number_input("Population standard deviation (σ)", min_value=0.0001, value=10.0, step=0.5, key=f"{base_key}_z_pop_sd")
+            with calc_col2:
+                sample_size = st.number_input("Sample size (n)", min_value=1, value=64, step=1, key=f"{base_key}_z_sample_size")
+                alpha = st.selectbox("Alpha (α)", options=[0.10, 0.05, 0.01], index=1, format_func=lambda x: f"{x:.2f}", key=f"{base_key}_z_alpha")
+                tail_type = st.selectbox("Tail type", options=["Two-tailed", "Right-tailed", "Left-tailed"], key=f"{base_key}_z_tail")
+
+            standard_error = population_sd / math.sqrt(sample_size)
+            z_value = (sample_mean - hypoth_mean) / standard_error
+            p_value, decision_text, critical_text = z_test_tail_result(z_value, alpha, tail_type)
+
+            stats_metric_cols = st.columns(4)
+            stats_metric_cols[0].metric("SE", f"{standard_error:.3f}")
+            stats_metric_cols[1].metric("z-value", f"{z_value:.3f}")
+            stats_metric_cols[2].metric("p-value", f"{p_value:.4f}")
+            stats_metric_cols[3].metric("Decision", decision_text)
+            st.latex(rf"z = \frac{{\bar{{x}} - \mu_0}}{{\sigma / \sqrt{{n}}}} = \frac{{{sample_mean:.3f} - {hypoth_mean:.3f}}}{{{population_sd:.3f} / \sqrt{{{sample_size}}}}} = {z_value:.3f}")
+            st.markdown(f"**Critical rule:** {critical_text}")
+            ci_critical = NormalDist().inv_cdf(1 - alpha / 2)
+            ci_lower = sample_mean - (ci_critical * standard_error)
+            ci_upper = sample_mean + (ci_critical * standard_error)
+            render_confidence_interval(f"{int((1 - alpha) * 100)}% confidence interval for the mean", ci_lower, ci_upper)
+            ci_summary_text = f" {int((1 - alpha) * 100)}% CI for the mean = [{ci_lower:.3f}, {ci_upper:.3f}]."
+
+            stats_summary_text = (
+                f"One-sample z-test summary: x̄ = {sample_mean:.3f}, μ0 = {hypoth_mean:.3f}, σ = {population_sd:.3f}, "
+                f"n = {sample_size}, SE = {standard_error:.3f}, z = {z_value:.3f}, alpha = {alpha:.2f}, "
+                f"tail = {tail_type}, p-value = {p_value:.4f}, decision = {decision_text}."
+            )
+            stats_summary_text += ci_summary_text
+
+            sheets_columns = [
+                "Cells for sample mean, hypothesised mean, population SD, sample size, alpha, and tail type.",
+            ]
+            sheets_formulas = [
+                "SE: =population_sd/SQRT(sample_size)",
+                "z-value: =(sample_mean-hyp_mean)/(population_sd/SQRT(sample_size))",
+                "If you have raw data and known population SD, use summary-statistic cells instead of trying to force a one-click Sheets test.",
+            ]
+            sheets_notes = [
+                "Use a z-test only when the population standard deviation is known or the course specifically tells you to use z.",
+            ]
+            stats_template_spec = make_stats_template_spec(
+                "Google Sheets template - One-sample z-test",
+                "This template gives you a simple summary-based z-test setup with optional raw observations.",
+                [
+                    "RawData: observation",
+                    "Summary: sample_mean, hypoth_mean, population_sd, sample_size, alpha, tail_type",
+                ],
+                sheets_formulas,
+                sheets_notes,
+                {
+                    "RawData": [[value] for value in build_numeric_sample_series(sample_mean, spread=max(population_sd * 0.5, 1.0))],
+                    "Summary": [
+                        [round(sample_mean, 3), round(hypoth_mean, 3), round(population_sd, 3), int(sample_size), alpha, tail_type],
+                    ],
+                },
+            )
+
+        elif calc_type == "Z-score":
+            calc_col1, calc_col2 = st.columns(2)
+            with calc_col1:
+                value = st.number_input("Observed value (x)", value=110.0, step=1.0, key=f"{base_key}_zs_value")
+                mean_value = st.number_input("Mean (μ)", value=100.0, step=1.0, key=f"{base_key}_zs_mean")
+            with calc_col2:
+                sd_value = st.number_input("Standard deviation (σ)", min_value=0.0001, value=10.0, step=0.5, key=f"{base_key}_zs_sd")
+
+            z_score_value = (value - mean_value) / sd_value
+            interpretation = "far above the mean" if z_score_value >= 2 else "above the mean" if z_score_value > 0 else "far below the mean" if z_score_value <= -2 else "below the mean" if z_score_value < 0 else "equal to the mean"
+            stats_metric_cols = st.columns(3)
+            stats_metric_cols[0].metric("z-score", f"{z_score_value:.3f}")
+            stats_metric_cols[1].metric("Distance", f"{abs(z_score_value):.3f} SD")
+            stats_metric_cols[2].metric("Interpretation", interpretation)
+            st.latex(rf"z = \frac{{x - \mu}}{{\sigma}} = \frac{{{value:.3f} - {mean_value:.3f}}}{{{sd_value:.3f}}} = {z_score_value:.3f}")
+
+            stats_summary_text = (
+                f"Z-score summary: x = {value:.3f}, μ = {mean_value:.3f}, σ = {sd_value:.3f}, "
+                f"z = {z_score_value:.3f}, interpretation = {interpretation}."
+            )
+
+            sheets_columns = [
+                "Column B: observed values",
+                "A mean cell and a standard deviation cell to standardise each observation",
+            ]
+            sheets_formulas = [
+                "Mean: =AVERAGE(B2:B101)",
+                "Standard deviation: =STDEV.S(B2:B101)",
+                "Z-score for B2: =(B2-$E$2)/$E$3",
+            ]
+            sheets_notes = [
+                "Use absolute z-scores above about 2 as a first signal that a value is unusually far from the mean.",
+            ]
+            stats_template_spec = make_stats_template_spec(
+                "Google Sheets template - Z-score",
+                "This template stores observed values and a summary area for mean and standard deviation so each score can be standardised.",
+                [
+                    "Data: observation, z_score",
+                    "Summary: mean, standard_deviation, highlighted_value",
+                ],
+                sheets_formulas,
+                sheets_notes,
+                {
+                    "Data": [[sample, ""] for sample in build_numeric_sample_series(mean_value, spread=max(sd_value, 1.0), minimum=0 if mean_value >= 0 and value >= 0 else None)],
+                    "Summary": [
+                        [round(mean_value, 3), round(sd_value, 3), round(value, 3)],
+                    ],
+                },
+            )
+
+        elif calc_type == "Two-proportion z-test":
+            calc_col1, calc_col2 = st.columns(2)
+            with calc_col1:
+                success_a = st.number_input("Successes in group A", min_value=0, value=520, step=1, key=f"{base_key}_zp_success_a")
+                total_a = st.number_input("Total in group A", min_value=1, value=10000, step=1, key=f"{base_key}_zp_total_a")
+            with calc_col2:
+                success_b = st.number_input("Successes in group B", min_value=0, value=570, step=1, key=f"{base_key}_zp_success_b")
+                total_b = st.number_input("Total in group B", min_value=1, value=10050, step=1, key=f"{base_key}_zp_total_b")
+
+            p_a = success_a / total_a
+            p_b = success_b / total_b
+            pooled_p = (success_a + success_b) / (total_a + total_b)
+            standard_error = math.sqrt(pooled_p * (1 - pooled_p) * ((1 / total_a) + (1 / total_b)))
+            z_value = (p_a - p_b) / standard_error
+            p_value = 2 * (1 - NormalDist().cdf(abs(z_value)))
+
+            stats_metric_cols = st.columns(4)
+            stats_metric_cols[0].metric("pA", f"{p_a:.4f}")
+            stats_metric_cols[1].metric("pB", f"{p_b:.4f}")
+            stats_metric_cols[2].metric("z-value", f"{z_value:.3f}")
+            stats_metric_cols[3].metric("p-value", f"{p_value:.4f}")
+            st.latex(rf"z = \frac{{p_A - p_B}}{{\sqrt{{p(1-p)(1/n_A + 1/n_B)}}}} = {z_value:.3f}")
+            ci_alpha = 0.05
+            ci_critical = NormalDist().inv_cdf(1 - ci_alpha / 2)
+            unpooled_se = math.sqrt((p_a * (1 - p_a) / total_a) + (p_b * (1 - p_b) / total_b))
+            difference = p_a - p_b
+            ci_lower = difference - (ci_critical * unpooled_se)
+            ci_upper = difference + (ci_critical * unpooled_se)
+            render_confidence_interval("95% confidence interval for the proportion difference", ci_lower, ci_upper)
+            ci_summary_text = f" 95% CI for the proportion difference = [{ci_lower:.4f}, {ci_upper:.4f}]."
+
+            stats_summary_text = (
+                f"Two-proportion z-test summary: pA = {p_a:.4f}, pB = {p_b:.4f}, pooled p = {pooled_p:.4f}, "
+                f"SE = {standard_error:.5f}, z = {z_value:.3f}, p-value = {p_value:.4f}."
+            )
+            stats_summary_text += ci_summary_text
+
+            sheets_columns = [
+                "Cells for successes and totals in each group.",
+            ]
+            sheets_formulas = [
+                "pA: =success_A/total_A",
+                "pB: =success_B/total_B",
+                "pooled p: =(success_A+success_B)/(total_A+total_B)",
+                "SE: =SQRT(pooled_p*(1-pooled_p)*((1/total_A)+(1/total_B)))",
+                "z-value: =(pA-pB)/SE",
+            ]
+            sheets_notes = [
+                "This setup is useful for click-through rate, conversion rate, acceptance rate, or any yes/no proportion question.",
+            ]
+            stats_template_spec = make_stats_template_spec(
+                "Google Sheets template - Two-proportion z-test",
+                "This template stores successes and totals for two groups so you can compare conversion-style rates in Google Sheets.",
+                [
+                    "GroupSummary: group, successes, total, proportion",
+                ],
+                sheets_formulas,
+                sheets_notes,
+                {
+                    "GroupSummary": [
+                        ["Group A", min(int(success_a), int(total_a)), int(total_a), ""],
+                        ["Group B", min(int(success_b), int(total_b)), int(total_b), ""],
+                    ],
+                },
+            )
+
+        elif calc_type == "Chi-square test of independence (2x2)":
+            obs_cols = st.columns(2)
+            with obs_cols[0]:
+                observed_11 = st.number_input("Row 1, Column 1", min_value=0, value=45, step=1, key=f"{base_key}_chi_11")
+                observed_12 = st.number_input("Row 1, Column 2", min_value=0, value=30, step=1, key=f"{base_key}_chi_12")
+            with obs_cols[1]:
+                observed_21 = st.number_input("Row 2, Column 1", min_value=0, value=20, step=1, key=f"{base_key}_chi_21")
+                observed_22 = st.number_input("Row 2, Column 2", min_value=0, value=55, step=1, key=f"{base_key}_chi_22")
+
+            row_1_total = observed_11 + observed_12
+            row_2_total = observed_21 + observed_22
+            col_1_total = observed_11 + observed_21
+            col_2_total = observed_12 + observed_22
+            grand_total = row_1_total + row_2_total
+
+            expected_11 = (row_1_total * col_1_total) / grand_total if grand_total else 0
+            expected_12 = (row_1_total * col_2_total) / grand_total if grand_total else 0
+            expected_21 = (row_2_total * col_1_total) / grand_total if grand_total else 0
+            expected_22 = (row_2_total * col_2_total) / grand_total if grand_total else 0
+            expected_values = [expected_11, expected_12, expected_21, expected_22]
+            observed_values = [observed_11, observed_12, observed_21, observed_22]
+            chi_square_value = sum(((obs - exp) ** 2) / exp for obs, exp in zip(observed_values, expected_values) if exp > 0)
+            degrees_freedom = 1
+            p_value = scipy_stats.chi2.sf(chi_square_value, degrees_freedom) if scipy_stats is not None else None
+
+            stats_metric_cols = st.columns(4)
+            stats_metric_cols[0].metric("Chi-square", f"{chi_square_value:.3f}")
+            stats_metric_cols[1].metric("df", f"{degrees_freedom}")
+            stats_metric_cols[2].metric("Grand total", f"{grand_total}")
+            stats_metric_cols[3].metric("p-value", f"{p_value:.4f}" if p_value is not None else "SciPy needed")
+
+            st.markdown("**Expected counts**")
+            st.markdown(f"- Cell (1,1): {expected_11:.2f}")
+            st.markdown(f"- Cell (1,2): {expected_12:.2f}")
+            st.markdown(f"- Cell (2,1): {expected_21:.2f}")
+            st.markdown(f"- Cell (2,2): {expected_22:.2f}")
+            if any(value < 5 for value in expected_values):
+                st.warning("At least one expected count is below 5. The chi-square approximation may be weak, so interpret the result with caution.")
+
+            stats_summary_text = (
+                f"Chi-square test of independence summary: observed counts = [{observed_11}, {observed_12}; {observed_21}, {observed_22}], "
+                f"expected counts = [{expected_11:.2f}, {expected_12:.2f}; {expected_21:.2f}, {expected_22:.2f}], "
+                f"chi-square = {chi_square_value:.3f}, df = {degrees_freedom}."
+            )
+            if p_value is not None:
+                stats_summary_text += f" p-value = {p_value:.4f}."
+
+            sheets_columns = [
+                "Observed 2x2 table in B3:C4",
+                "Row totals in D3:D4, column totals in B5:C5, grand total in D5",
+                "Expected table in B8:C9",
+            ]
+            sheets_formulas = [
+                "D3: =SUM(B3:C3)",
+                "D4: =SUM(B4:C4)",
+                "B5: =SUM(B3:B4)",
+                "C5: =SUM(C3:C4)",
+                "D5: =SUM(B5:C5)",
+                "B8: =$D3*B$5/$D$5",
+                "C8: =$D3*C$5/$D$5",
+                "B9: =$D4*B$5/$D$5",
+                "C9: =$D4*C$5/$D$5",
+                "p-value from observed vs expected: =CHISQ.TEST(B3:C4,B8:C9)",
+            ]
+            sheets_notes = [
+                "Use chi-square for categorical count data, not for means.",
+                "Check that expected counts are not too small before trusting the result.",
+            ]
+            stats_template_spec = make_stats_template_spec(
+                "Google Sheets template - Chi-square 2x2",
+                "This template gives you a compact observed-count table for a 2x2 chi-square test.",
+                [
+                    "ObservedTable: category, column_1_count, column_2_count",
+                ],
+                sheets_formulas,
+                sheets_notes,
+                {
+                    "ObservedTable": [
+                        ["Row 1", int(observed_11), int(observed_12)],
+                        ["Row 2", int(observed_21), int(observed_22)],
+                    ],
+                },
+            )
+
+        else:
+            anova_col1, anova_col2, anova_col3 = st.columns(3)
+            with anova_col1:
+                mean_1 = st.number_input("Group 1 mean", value=64.0, step=1.0, key=f"{base_key}_anova_mean_1")
+                sd_1 = st.number_input("Group 1 SD", min_value=0.0001, value=8.0, step=0.5, key=f"{base_key}_anova_sd_1")
+                n_1 = st.number_input("Group 1 n", min_value=2, value=25, step=1, key=f"{base_key}_anova_n_1")
+            with anova_col2:
+                mean_2 = st.number_input("Group 2 mean", value=70.0, step=1.0, key=f"{base_key}_anova_mean_2")
+                sd_2 = st.number_input("Group 2 SD", min_value=0.0001, value=9.0, step=0.5, key=f"{base_key}_anova_sd_2")
+                n_2 = st.number_input("Group 2 n", min_value=2, value=24, step=1, key=f"{base_key}_anova_n_2")
+            with anova_col3:
+                mean_3 = st.number_input("Group 3 mean", value=75.0, step=1.0, key=f"{base_key}_anova_mean_3")
+                sd_3 = st.number_input("Group 3 SD", min_value=0.0001, value=8.5, step=0.5, key=f"{base_key}_anova_sd_3")
+                n_3 = st.number_input("Group 3 n", min_value=2, value=26, step=1, key=f"{base_key}_anova_n_3")
+                alpha = st.selectbox("Alpha (α)", options=[0.10, 0.05, 0.01], index=1, format_func=lambda x: f"{x:.2f}", key=f"{base_key}_anova_alpha")
+
+            total_n = n_1 + n_2 + n_3
+            overall_mean = ((mean_1 * n_1) + (mean_2 * n_2) + (mean_3 * n_3)) / total_n
+            ss_between = (n_1 * ((mean_1 - overall_mean) ** 2)) + (n_2 * ((mean_2 - overall_mean) ** 2)) + (n_3 * ((mean_3 - overall_mean) ** 2))
+            ss_within = ((n_1 - 1) * (sd_1 ** 2)) + ((n_2 - 1) * (sd_2 ** 2)) + ((n_3 - 1) * (sd_3 ** 2))
+            df_between = 2
+            df_within = total_n - 3
+            ms_between = ss_between / df_between
+            ms_within = ss_within / df_within if df_within else 0
+            f_value = ms_between / ms_within if ms_within else 0
+            p_value = scipy_stats.f.sf(f_value, df_between, df_within) if scipy_stats is not None else None
+
+            stats_metric_cols = st.columns(4)
+            stats_metric_cols[0].metric("Overall mean", f"{overall_mean:.3f}")
+            stats_metric_cols[1].metric("F-value", f"{f_value:.3f}")
+            stats_metric_cols[2].metric("df", f"{df_between}, {df_within}")
+            stats_metric_cols[3].metric("p-value", f"{p_value:.4f}" if p_value is not None else "SciPy needed")
+            st.info("ANOVA tells you whether at least one group mean differs. It does not tell you which groups differ until you run a post-hoc comparison.")
+            pairwise_lines = []
+            if scipy_stats is not None and p_value is not None and p_value < alpha:
+                st.markdown("**Simple post-hoc screen (pairwise Welch comparisons with Bonferroni correction)**")
+                bonferroni_alpha = alpha / 3
+                pairwise_inputs = [
+                    ("Group 1 vs Group 2", mean_1, sd_1, n_1, mean_2, sd_2, n_2),
+                    ("Group 1 vs Group 3", mean_1, sd_1, n_1, mean_3, sd_3, n_3),
+                    ("Group 2 vs Group 3", mean_2, sd_2, n_2, mean_3, sd_3, n_3),
+                ]
+                for label, mean_a, sd_a, n_a, mean_b, sd_b, n_b in pairwise_inputs:
+                    variance_piece_a = (sd_a ** 2) / n_a
+                    variance_piece_b = (sd_b ** 2) / n_b
+                    pair_se = math.sqrt(variance_piece_a + variance_piece_b)
+                    pair_t = (mean_a - mean_b) / pair_se
+                    numerator = (variance_piece_a + variance_piece_b) ** 2
+                    denominator = ((variance_piece_a ** 2) / (n_a - 1)) + ((variance_piece_b ** 2) / (n_b - 1))
+                    pair_df = numerator / denominator if denominator else 1
+                    pair_p = 2 * (1 - scipy_stats.t.cdf(abs(pair_t), pair_df))
+                    pair_decision = "Likely different" if pair_p < bonferroni_alpha else "No strong pairwise evidence"
+                    st.markdown(f"- {label}: t = {pair_t:.3f}, df = {pair_df:.2f}, p = {pair_p:.4f}, decision = {pair_decision}")
+                    pairwise_lines.append(f"{label}: t = {pair_t:.3f}, df = {pair_df:.2f}, p = {pair_p:.4f}, decision = {pair_decision}")
+            elif p_value is not None and p_value >= alpha:
+                st.markdown("**Post-hoc note:** The ANOVA is not statistically significant at the selected alpha level, so pairwise follow-up tests are usually not the main next step.")
+
+            stats_summary_text = (
+                f"One-way ANOVA summary: means = [{mean_1:.3f}, {mean_2:.3f}, {mean_3:.3f}], "
+                f"SDs = [{sd_1:.3f}, {sd_2:.3f}, {sd_3:.3f}], ns = [{n_1}, {n_2}, {n_3}], overall mean = {overall_mean:.3f}, "
+                f"SS_between = {ss_between:.3f}, SS_within = {ss_within:.3f}, F = {f_value:.3f}, df = ({df_between}, {df_within}), alpha = {alpha:.2f}."
+            )
+            if p_value is not None:
+                stats_summary_text += f" p-value = {p_value:.4f}."
+            if pairwise_lines:
+                stats_summary_text += " Post-hoc screen (Bonferroni-adjusted pairwise tests): " + " | ".join(pairwise_lines)
+
+            sheets_columns = [
+                "Raw data in separate columns for Group 1, Group 2, and Group 3",
+                "Summary rows for means, counts, and SDs under each group column",
+            ]
+            sheets_formulas = [
+                "Group 1 mean: =AVERAGE(B2:B26)",
+                "Group 2 mean: =AVERAGE(C2:C25)",
+                "Group 3 mean: =AVERAGE(D2:D27)",
+                "Group counts: =COUNT(B2:B26), =COUNT(C2:C25), =COUNT(D2:D27)",
+                "Overall mean: =AVERAGE(B2:D27)",
+                "SS_between example: =SUMPRODUCT(B30:D30,(B29:D29-$B$31)^2)",
+                "Within-group SS example: =SUM(ArrayFormula((FILTER(B2:B26,ISNUMBER(B2:B26))-$B$29)^2))+SUM(ArrayFormula((FILTER(C2:C25,ISNUMBER(C2:C25))-$C$29)^2))+SUM(ArrayFormula((FILTER(D2:D27,ISNUMBER(D2:D27))-$D$29)^2))",
+            ]
+            sheets_notes = [
+                "In basic Google Sheets, a manual ANOVA setup is often clearer than relying on a hidden add-on.",
+                "If the ANOVA is significant, add a post-hoc comparison step before claiming which exact groups differ.",
+            ]
+            stats_template_spec = make_stats_template_spec(
+                "Google Sheets template - One-way ANOVA",
+                "This template stores three groups in separate columns so you can build a manual ANOVA setup in Google Sheets.",
+                [
+                    "Data: group_1, group_2, group_3",
+                    "Summary: mean_1, sd_1, n_1, mean_2, sd_2, n_2, mean_3, sd_3, n_3, alpha",
+                ],
+                sheets_formulas,
+                sheets_notes,
+                {
+                    "Data": build_grouped_rows(
+                        build_numeric_sample_series(mean_1, spread=max(sd_1 * 0.5, 1.0)),
+                        build_numeric_sample_series(mean_2, spread=max(sd_2 * 0.5, 1.0)),
+                        build_numeric_sample_series(mean_3, spread=max(sd_3 * 0.5, 1.0)),
+                    ),
+                    "Summary": [
+                        [round(mean_1, 3), round(sd_1, 3), int(n_1), round(mean_2, 3), round(sd_2, 3), int(n_2), round(mean_3, 3), round(sd_3, 3), int(n_3), alpha],
+                    ],
+                },
+            )
+
+        st.text_area(
+            "Verified stats / hypothesis summary to use in your answer",
+            value=stats_summary_text,
+            height=150,
+            key=f"{base_key}_stats_summary",
+        )
+        render_google_sheets_guide(sheets_columns, sheets_formulas, sheets_notes)
+        if stats_template_spec:
+            stats_template_zip, stats_template_payload = build_google_sheets_template_pack([stats_template_spec])
+            st.markdown("**Downloadable Google Sheets template for this statistical method**")
+            st.caption("This template is generated automatically from the selected test, so you can import the CSV tabs into Google Sheets and then apply the suggested formulas.")
+            stats_template_cols = st.columns(2)
+            with stats_template_cols[0]:
+                st.download_button(
+                    "Download stats Google Sheets template (ZIP)",
+                    data=stats_template_zip,
+                    file_name=f"{slugify_filename(calc_type)}_google_sheets_template.zip",
+                    mime="application/zip",
+                    key=f"{base_key}_download_stats_sheets_zip",
+                )
+            with stats_template_cols[1]:
+                st.download_button(
+                    "Download stats template plan as JSON",
+                    data=json.dumps(stats_template_payload, indent=2, ensure_ascii=False),
+                    file_name=f"{slugify_filename(calc_type)}_google_sheets_template.json",
+                    mime="application/json",
+                    key=f"{base_key}_download_stats_sheets_json",
+                )
+
+        if answer_target_key:
+            if st.button("Send verified stats or hypothesis summary to answer box", key=f"{base_key}_send_stats_summary"):
+                if "exam_answers" not in st.session_state:
+                    st.session_state.exam_answers = {}
+                existing_answer = st.session_state.exam_answers.get(answer_target_key, "")
+                combined_answer = (existing_answer.strip() + "\n\n" + stats_summary_text).strip() if existing_answer.strip() else stats_summary_text
+                st.session_state.exam_answers[answer_target_key] = combined_answer
+                if answer_widget_key:
+                    st.session_state[answer_widget_key] = combined_answer
+                st.success("The verified stats or hypothesis summary has been inserted into the answer box.")
+
+    def signal_match_count(answer_lower, answer_tokens, candidates):
+        matches = 0
+        for candidate in candidates:
+            candidate = str(candidate).strip().lower()
+            if not candidate:
+                continue
+            if " " in candidate:
+                if candidate in answer_lower:
+                    matches += 1
+            else:
+                if candidate in answer_tokens:
+                    matches += 1
+        return matches
+
+    style_signal_map = {
+        "Broad case question": ["problem", "goal", "decision", "recommend", "impact", "evidence"],
+        "Definition or explanation": ["is", "means", "refers", "purpose", "matters", "example"],
+        "Method or model choice": ["method", "model", "technique", "approach", "because", "suitable"],
+        "Data collection or process": ["collect", "gather", "data", "process", "step", "workflow", "stage"],
+        "Comparison question": ["compare", "difference", "whereas", "while", "both", "however", "more suitable"],
+        "Evaluation or KPI question": ["kpi", "measure", "metric", "evaluate", "result", "impact", "outcome"],
+        "Calculation or uncertainty question": ["calculate", "formula", "probability", "regret", "payoff", "expected", "criterion"],
+        "Unsure - auto detect": ["problem", "concept", "method", "result"],
+    }
+
+    source_reference_tokens = set()
+    for unit in selected_units:
+        source_reference_tokens.update(tokenise(unit["title"]))
+        source_reference_tokens.update(tokenise(unit["what_it_covers"]))
+
+    quality_default = model_answer_text
+    if answer_target_key and "exam_answers" in st.session_state and st.session_state.exam_answers.get(answer_target_key):
+        quality_default = st.session_state.exam_answers.get(answer_target_key)
+
+    st.markdown("**Answer quality checklist**")
+    quality_button_cols = st.columns([1, 1, 1, 1] if stats_guardrail_needed else [1, 1, 1])
+    with quality_button_cols[0]:
+        if st.button("Load model draft into checker", key=f"{base_key}_load_model_checker"):
+            st.session_state[f"{base_key}_quality_answer"] = model_answer_text
+            st.rerun()
+    with quality_button_cols[1]:
+        if answer_target_key and st.button("Load current answer into checker", key=f"{base_key}_load_current_checker"):
+            current_answer = ""
+            if "exam_answers" in st.session_state:
+                current_answer = st.session_state.exam_answers.get(answer_target_key, "")
+            st.session_state[f"{base_key}_quality_answer"] = current_answer or model_answer_text
+            st.rerun()
+    with quality_button_cols[2]:
+        st.caption("Heuristic self-check")
+    if stats_guardrail_needed:
+        with quality_button_cols[3]:
+            if st.button("Load verified stats into checker", key=f"{base_key}_load_stats_checker"):
+                verified_summary = st.session_state.get(f"{base_key}_stats_summary", "").strip()
+                merged_text = "\n\n".join(part for part in [verified_summary, model_answer_text] if part.strip())
+                st.session_state[f"{base_key}_quality_answer"] = merged_text or model_answer_text
+                st.rerun()
+
+    quality_answer = st.text_area(
+        "Paste or edit your answer here to self-check it",
+        value=quality_default,
+        height=220,
+        key=f"{base_key}_quality_answer",
+    )
+
+    if quality_answer.strip():
+        answer_lower = quality_answer.lower()
+        answer_tokens = tokenise(quality_answer)
+        sentence_count = len([part for part in re.split(r"[.!?]+", quality_answer) if part.strip()])
+        prompt_overlap = prompt_tokens & answer_tokens
+        source_overlap = source_reference_tokens & answer_tokens
+        prompt_minimum = 1 if len(prompt_tokens) < 6 else 2 if len(prompt_tokens) < 12 else 3
+        justification_phrases = ["because", "therefore", "which means", "this means", "so that", "this is why", "in order to"]
+        conclusion_phrases = ["recommend", "recommendation", "conclude", "conclusion", "therefore", "finally", "in summary", "should"]
+        structure_minimum = 2 if draft_style == "Short paragraph" else 4 if draft_style == "Structured answer" else 5
+
+        checklist_items = [
+            {
+                "label": "Addresses the prompt directly",
+                "passed": (not prompt_tokens) or len(prompt_overlap) >= prompt_minimum,
+                "tip": "Mention more of the key words or ideas from the prompt so the answer is visibly tied to the exact question.",
+            },
+            {
+                "label": "Uses relevant course concepts",
+                "passed": len(source_overlap) >= max(1, min(3, len(selected_units))),
+                "tip": "Bring in more lesson or learning-outcome terminology from the selected course sources.",
+            },
+            {
+                "label": "Shows explanation or justification",
+                "passed": any(phrase in answer_lower for phrase in justification_phrases),
+                "tip": "Use reasoning words like 'because', 'therefore', or 'which means' so the answer explains why, not just what.",
+            },
+            {
+                "label": "Ends with a clear conclusion or recommendation",
+                "passed": any(phrase in answer_lower for phrase in conclusion_phrases),
+                "tip": "End with a recommendation, conclusion, implication, or next action.",
+            },
+            {
+                "label": "Has enough structure for an exam answer",
+                "passed": sentence_count >= structure_minimum,
+                "tip": "Add a clearer step-by-step structure or a few more complete sentences.",
+            },
+            {
+                "label": "Matches the subject-specific course template",
+                "passed": signal_match_count(answer_lower, answer_tokens, course_template_signals.get(course_template_key, [])) >= 2,
+                "tip": f"Include more subject-specific signals such as: {', '.join(course_template_signals.get(course_template_key, [])[:6])}.",
+            },
+            {
+                "label": "Matches the selected question style",
+                "passed": signal_match_count(answer_lower, answer_tokens, style_signal_map.get(resolver_mode, [])) >= 2,
+                "tip": f"For this question style, include signals such as: {', '.join(style_signal_map.get(resolver_mode, [])[:6])}.",
+            },
+        ]
+
+        if structure_selection_case:
+            structure_selection_signals = [
+                "data structure", "array", "linked list", "list", "tree", "b-tree", "bst",
+                "operations", "search", "insert", "delete", "traversal", "time complexity",
+                "space complexity", "memory", "flexibility", "suitable", "efficient",
+            ]
+            weaker_alternative_signals = [
+                "better than", "more suitable", "less suitable", "alternative", "compared with",
+                "whereas", "however", "trade-off", "trade-offs",
+            ]
+            checklist_items.extend([
+                {
+                    "label": "Explains the data-structure selection criteria",
+                    "passed": signal_match_count(answer_lower, answer_tokens, structure_selection_signals) >= 3,
+                    "tip": "Show how you chose the structure by mentioning operations, efficiency, memory, flexibility, or data size and type.",
+                },
+                {
+                    "label": "Compares the chosen structure with at least one weaker alternative",
+                    "passed": signal_match_count(answer_lower, answer_tokens, weaker_alternative_signals) >= 1,
+                    "tip": "Compare the chosen structure with at least one weaker option so the examiner can see why your choice is justified.",
+                },
+            ])
+
+        if stats_guardrail_needed:
+            stats_method_terms = [
+                "t-test", "t test", "independent t-test", "independent t test",
+                "paired t-test", "paired t test", "z-test", "z test",
+                "z-score", "z score", "chi-square", "chi square", "anova",
+                "likert", "test statistic", "standard error", "sample mean",
+                "proportion", "null hypothesis",
+            ]
+            stats_decision_terms = [
+                "p-value", "p value", "alpha", "significance", "significant",
+                "reject h0", "fail to reject h0", "reject the null", "fail to reject the null",
+            ]
+            stats_interpretation_terms = [
+                "this means", "which means", "therefore", "in practice", "so we conclude", "plain language",
+            ]
+            unrealistic_hypothesis_terms = [
+                "always", "never", "prove", "guarantee", "everyone", "all customers", "100%",
+            ]
+            checklist_items.extend([
+                {
+                    "label": "Names the correct statistical test or statistic",
+                    "passed": signal_match_count(answer_lower, answer_tokens, stats_method_terms) >= 1,
+                    "tip": "Name the exact method, such as independent t-test, paired t-test, chi-square, ANOVA, z-test, z-score, or a Likert-based comparison.",
+                },
+                {
+                    "label": "Includes a statistical decision or significance statement",
+                    "passed": signal_match_count(answer_lower, answer_tokens, stats_decision_terms) >= 1,
+                    "tip": "State the decision clearly, for example with p-value, alpha, and whether you reject or fail to reject H0.",
+                },
+                {
+                    "label": "Separates the calculation from the real-world interpretation",
+                    "passed": (
+                        signal_match_count(answer_lower, answer_tokens, stats_decision_terms + ["t =", "z =", "test statistic"]) >= 1
+                        and signal_match_count(answer_lower, answer_tokens, stats_interpretation_terms) >= 1
+                    ),
+                    "tip": "After the calculation, add a plain-language sentence explaining what the result means in the scenario.",
+                },
+            ])
+            if formal_hypothesis_question:
+                checklist_items.append(
+                    {
+                        "label": "Uses realistic hypotheses",
+                        "passed": (
+                            signal_match_count(answer_lower, answer_tokens, ["h0", "h1", "null hypothesis", "alternative hypothesis"]) >= 1
+                            and not any(term in answer_lower for term in unrealistic_hypothesis_terms)
+                        ),
+                        "tip": "Write H0 and H1 in a testable way. Avoid absolute claims like 'prove', 'always', or 'everyone'.",
+                    }
+                )
+
+        passed_count = sum(1 for item in checklist_items if item["passed"])
+        total_count = len(checklist_items)
+        checklist_score = int(round((passed_count / total_count) * 100)) if total_count else 0
+
+        score_cols = st.columns([1, 2])
+        score_cols[0].metric("Checklist score", f"{checklist_score}%")
+        if checklist_score >= 85:
+            score_cols[1].success("Strong draft. It covers most of the expected answer features.")
+        elif checklist_score >= 60:
+            score_cols[1].warning("Decent draft, but it still needs a few stronger exam signals.")
+        else:
+            score_cols[1].error("This answer is still missing several high-value exam features.")
+
+        st.markdown("**Checklist results**")
+        for item in checklist_items:
+            icon = "✅" if item["passed"] else "⚠️"
+            st.markdown(f"- {icon} **{item['label']}**")
+
+        failed_items = [item for item in checklist_items if not item["passed"]]
+        if failed_items:
+            st.markdown("**What to improve next**")
+            for item in failed_items:
+                st.markdown(f"- {item['tip']}")
+
+        missing_prompt_terms = sorted(prompt_tokens - answer_tokens)[:6]
+        missing_source_terms = sorted(source_reference_tokens - answer_tokens)[:6]
+        if missing_prompt_terms or missing_source_terms:
+            st.markdown("**Useful terms you may still want to include**")
+            if missing_prompt_terms:
+                st.markdown(f"- From the prompt: {', '.join(missing_prompt_terms)}")
+            if missing_source_terms:
+                st.markdown(f"- From the selected course sources: {', '.join(missing_source_terms)}")
+
+        if answer_target_key:
+            if st.button("Send checked answer to answer box", key=f"{base_key}_send_checked_answer"):
+                if "exam_answers" not in st.session_state:
+                    st.session_state.exam_answers = {}
+                st.session_state.exam_answers[answer_target_key] = quality_answer
+                if answer_widget_key:
+                    st.session_state[answer_widget_key] = quality_answer
+                st.success("Your checked answer has been inserted into the answer box.")
+
+    action_cols = st.columns([1, 1])
+    with action_cols[0]:
+        st.download_button(
+            "Download model answer draft as TXT",
+            data=model_answer_text,
+            file_name=f"{course_code.lower()}_exam_model_answer.txt",
+            mime="text/plain",
+            key=f"{base_key}_model_download",
+        )
+    with action_cols[1]:
+        if answer_target_key:
+            if st.button("Send model answer to answer box", key=f"{base_key}_send_to_answer"):
+                if "exam_answers" not in st.session_state:
+                    st.session_state.exam_answers = {}
+                st.session_state.exam_answers[answer_target_key] = model_answer_text
+                if answer_widget_key:
+                    st.session_state[answer_widget_key] = model_answer_text
+                st.success("The model answer draft has been inserted into the current answer box.")
+
+    if course_code == "FI1BBDD75" and any(unit["id"] == "lesson::2.3" for unit in selected_units) and exam_prompt.strip():
+        st.info("This case also touches Lesson 2.3. You can reuse the same prompt in the Lesson 2.3 data-types solver below if the question is specifically about qualitative, quantitative, or mixed methods.")
+        if st.button("Send this prompt to the Lesson 2.3 exam solver", key=f"{base_key}_send_to_l23"):
+            st.session_state["m2_l23_exam_solver_question"] = exam_prompt
+            st.success("The prompt has been copied into the Lesson 2.3 exam solver.")
+
+    st.download_button(
+        "Download exam connection guide as TXT",
+        data=output_text,
+        file_name=f"{course_code.lower()}_exam_connection_guide.txt",
+        mime="text/plain",
+        key=f"{base_key}_download",
+    )
+
 all_pages = [
     "Overview", "Course Plan", "Training Center", "Playground", "Learn & Practice",
     "Study Notes", "Flashcards", "Exam Simulator", "Code Library", "Formula Reference",
@@ -40158,6 +49743,12 @@ elif page == "Learn & Practice":
         
         st.markdown("---")
         
+        st.markdown("### Semester Exam Connector")
+        st.markdown("Use this tool to connect the selected course's lessons or learning outcomes to an exam case, task, or theory question.")
+        with st.expander("Universal Exam Resolver", expanded=True):
+            render_course_exam_connector(course_code, course, context_key="learn_practice")
+        st.markdown("---")
+
         # Check if course has lessons
         if course_code in course_lessons:
             st.markdown("### 📖 Course Lessons")
@@ -42418,6 +52009,12 @@ elif page == "Exam Simulator":
     st.title("📋 Exam Simulator")
     st.markdown("*Practice for your exams with timed simulations*")
     st.markdown("---")
+
+    def parse_exam_question_text(raw_question):
+        if "ANSWER:" in raw_question:
+            parts = raw_question.split("ANSWER:")
+            return parts[0].strip()
+        return raw_question
     
     if not st.session_state.exam_mode:
         st.subheader("Configure Your Exam")
@@ -42443,10 +52040,16 @@ elif page == "Exam Simulator":
             st.info(f"Curated exam bank available for {exam_course}: {curated_exam_count} questions aligned to the course learning outcomes.")
         elif client is None:
             st.warning("No curated bank is available for this course, and AI question generation is disabled.")
+
+        selected_course = next(c for c in courses_data if c['code'] == exam_course)
+
+        st.markdown("### Course-aware exam support")
+        st.markdown("Use the resolver below to connect the selected course to a likely exam case before you start the timed simulation.")
+        with st.expander("Universal Exam Resolver", expanded=False):
+            render_course_exam_connector(exam_course, selected_course, context_key="exam_setup")
         
         if st.button("🚀 Start Exam", type="primary"):
             # Generate exam questions
-            selected_course = next(c for c in courses_data if c['code'] == exam_course)
             exam_questions_list = []
             
             type_map = {
@@ -42514,20 +52117,32 @@ elif page == "Exam Simulator":
             
             current_idx = st.session_state.current_question_idx
             current_q = st.session_state.exam_questions[current_idx]
+            current_exam_course = next(c for c in courses_data if c['code'] == st.session_state.exam_course)
+            answer_key = f"exam_answer_{current_idx}"
+            answer_widget_key = f"answer_input_{current_idx}"
             
             st.markdown(f"### Question {current_idx + 1} of {len(st.session_state.exam_questions)}")
             
             # Parse question
-            if "ANSWER:" in current_q['question']:
-                parts = current_q['question'].split("ANSWER:")
-                question_text = parts[0].strip()
-            else:
-                question_text = current_q['question']
+            question_text = parse_exam_question_text(current_q['question'])
             
             st.markdown(f"**{question_text}**")
+
+            resolver_prompt_key = f"course_exam_connector_{st.session_state.exam_course.lower()}_exam_simulator_prompt"
+            with st.expander("Use Universal Exam Resolver on this question", expanded=False):
+                st.caption("Load the current exam question into the resolver if you want a course-aware connection guide while you practice.")
+                if st.button("Load current question into resolver", key=f"load_exam_question_{current_idx}"):
+                    st.session_state[resolver_prompt_key] = question_text
+                    st.success("The current question has been copied into the resolver below.")
+                render_course_exam_connector(
+                    st.session_state.exam_course,
+                    current_exam_course,
+                    context_key="exam_simulator",
+                    answer_target_key=answer_key,
+                    answer_widget_key=answer_widget_key,
+                )
             
             # Answer input
-            answer_key = f"exam_answer_{current_idx}"
             if answer_key not in st.session_state.exam_answers:
                 st.session_state.exam_answers[answer_key] = ""
             
@@ -42535,7 +52150,7 @@ elif page == "Exam Simulator":
                 "Your Answer:",
                 value=st.session_state.exam_answers[answer_key],
                 height=150,
-                key=f"answer_input_{current_idx}"
+                key=answer_widget_key
             )
             st.session_state.exam_answers[answer_key] = user_answer
             
@@ -42554,13 +52169,32 @@ elif page == "Exam Simulator":
         
         else:
             # All questions view
+            current_exam_course = next(c for c in courses_data if c['code'] == st.session_state.exam_course)
+            resolver_prompt_key = f"course_exam_connector_{st.session_state.exam_course.lower()}_exam_simulator_prompt"
+            question_labels = [f"Question {idx + 1}" for idx in range(len(st.session_state.exam_questions))]
+
+            with st.expander("Use Universal Exam Resolver on a selected exam question", expanded=False):
+                resolver_idx = st.selectbox(
+                    "Choose which exam question to load",
+                    options=list(range(len(st.session_state.exam_questions))),
+                    format_func=lambda idx: question_labels[idx],
+                    key="exam_simulator_resolver_question_select",
+                )
+                resolver_question_text = parse_exam_question_text(st.session_state.exam_questions[resolver_idx]['question'])
+                if st.button("Load selected question into resolver", key="load_selected_exam_question"):
+                    st.session_state[resolver_prompt_key] = resolver_question_text
+                    st.success("The selected question has been copied into the resolver below.")
+                render_course_exam_connector(
+                    st.session_state.exam_course,
+                    current_exam_course,
+                    context_key="exam_simulator",
+                    answer_target_key=f"exam_answer_{resolver_idx}",
+                    answer_widget_key=f"answer_all_{resolver_idx}",
+                )
+
             for idx, q in enumerate(st.session_state.exam_questions):
                 with st.expander(f"Question {idx + 1}"):
-                    if "ANSWER:" in q['question']:
-                        parts = q['question'].split("ANSWER:")
-                        question_text = parts[0].strip()
-                    else:
-                        question_text = q['question']
+                    question_text = parse_exam_question_text(q['question'])
                     
                     st.markdown(f"**{question_text}**")
                     
