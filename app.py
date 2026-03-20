@@ -194,19 +194,71 @@ This means customers spend $50 on average per order.
                 "question": "What does KPI stand for?",
                 "options": ["Key Performance Index", "Key Performance Indicator", "Knowledge Process Integration", "Key Process Information"],
                 "correct": 1,
-                "explanation": "KPI stands for Key Performance Indicator - a measurable value that shows business performance."
+                "explanation": "KPI stands for Key Performance Indicator because it is a chosen measure that helps a business judge whether performance is improving, declining, or staying on target.",
+                "scenario_explanation": "Scenario: A customer-service manager tracks customer satisfaction, first-response time, and churn. These are KPIs because they show whether the service strategy is actually working, not just whether data exists.",
+                "visual_explanation": "**Visual why:**\n\n`Business goal -> KPI -> performance check -> decision`\n\n| Goal | Example KPI |\n|---|---|\n| Improve service | CSAT |\n| Reduce delay | Resolution time |\n| Keep customers | Churn rate |\n"
             },
             {
                 "question": "If sales were 100, 200, 300, 400, 500, what is the median?",
                 "options": ["300", "280", "350", "250"],
                 "correct": 0,
-                "explanation": "The median is the middle value when sorted. In 100, 200, 300, 400, 500, the middle value is 300."
+                "explanation": "The median is 300 because, once the values are arranged in order, the middle observation is the third number in the list.",
+                "scenario_explanation": "Scenario: A retail manager wants the typical daily sales figure for five days of 100, 200, 300, 400, and 500 units. The middle day is 300, so that is the median and a simple summary of the center of the data.",
+                "visual_explanation": "**Visual why:**\n\n`100, 200, 300, 400, 500`\n\nMiddle value = **300**\n\nSo the median is the center of the ordered list."
             },
             {
                 "question": "Revenue went from $80,000 to $100,000. What is the percentage increase?",
                 "options": ["20%", "25%", "15%", "30%"],
                 "correct": 1,
-                "explanation": "((100,000 - 80,000) / 80,000) × 100 = (20,000 / 80,000) × 100 = 25%"
+                "explanation": "The increase is 25% because the change is $20,000 and $20,000 divided by the original $80,000 equals 0.25, or 25%.",
+                "scenario_explanation": "Scenario: A telecom company compares this month's revenue with last month's revenue after a new sales campaign. Showing the percentage increase helps management judge whether the campaign improved business performance meaningfully.",
+                "visual_explanation": "**Visual why:**\n\n`80,000 -> 100,000`\n`Change = 20,000`\n`20,000 / 80,000 = 0.25 = 25%`\n\nThis is the standard percentage-increase flow."
+            },
+            {
+                "question": "State whether the following is True or False: KPIs are only used in the finance department and have no relevance in other areas like marketing, IT, supply chain management, customer service, sales, and HR.",
+                "options": ["True", "False"],
+                "correct": 1,
+                "explanation": "This statement is false because KPIs are used across the whole organisation, wherever performance needs to be measured against goals.",
+                "scenario_explanation": "Scenario: Marketing may track ROI, IT may track uptime, customer service may track CSAT or resolution time, and HR may track turnover. That shows KPIs are not limited to finance.",
+                "visual_explanation": "**Visual why:**\n\n| Area | Example KPI |\n|---|---|\n| Finance | Revenue growth |\n| Marketing | ROI |\n| IT | System uptime |\n| Customer service | CSAT |\n| HR | Turnover rate |\n\n`KPI use != finance only`"
+            },
+            {
+                "question": "In the context of business performance, what are two primary roles that Key Performance Indicators (KPIs) play? Choose two correct answers.",
+                "options": [
+                    "KPIs are used to diversify a company's investment portfolio and are not related to operational performance.",
+                    "KPIs allow senior management to assess the company’s status quickly, enabling them to make informed decisions.",
+                    "KPIs are mainly used for external reporting and have limited use in internal decision-making.",
+                    "KPIs are valuable tools for tracking daily activities, helping managers maintain control over their teams.",
+                    "KPIs primarily focus on past performance and are not useful for future planning."
+                ],
+                "correct": [1, 3],
+                "explanation": "The two correct answers are that KPIs help senior management assess company status quickly and that they help managers track daily activities and maintain operational control. These are core business uses of KPIs because they support monitoring, accountability, and informed decision-making.",
+                "scenario_explanation": "Scenario: A retail company uses sales growth, customer retention, and CSAT on a dashboard. Senior leaders use those KPIs to see quickly whether the business is on track, while team managers use them daily to monitor service quality, sales performance, and emerging bottlenecks.",
+                "visual_explanation": "**Visual why:**\n\n| KPI role | Business use |\n|---|---|\n| Quick status check | Senior management decisions |\n| Daily activity tracking | Team control and monitoring |\n\nThese are the two core roles tested here."
+            },
+            {
+                "question": "State whether the following is True or False: A straightforward strategy for defining and implementing KPIs should involve setting clear goals, defining Key Performance Questions (KPQs), evaluating the available data, determining the most effective way to communicate KPIs, and continuously improving them.",
+                "options": ["True", "False"],
+                "correct": 0,
+                "explanation": "This statement is true because that sequence reflects the standard KPI workflow: start from goals, turn them into KPQs, check what data is available, communicate the KPIs clearly, and then keep reviewing and improving them over time.",
+                "scenario_explanation": "Scenario: A telecom company wants to improve sales and customer satisfaction. It first defines those goals, turns them into KPQs about churn, conversion, and service quality, checks CRM and support data, builds a dashboard, and then keeps refining the KPIs as business needs change.",
+                "visual_explanation": "**Visual why:**\n\n`Goals -> KPQs -> Data review -> KPI communication -> Continuous improvement`\n\nThis is the standard KPI workflow described in the lesson."
+            },
+            {
+                "question": "State whether the following is True or False: KPIs can only be classified as either strategic or operational, and they don't provide insights into specific functional units within a company.",
+                "options": ["True", "False"],
+                "correct": 1,
+                "explanation": "This statement is false because KPIs can also be classified as functional-unit KPIs, and they can provide focused insight into how a specific department or business unit is performing.",
+                "scenario_explanation": "Scenario: An IT department may track system uptime, ticket backlog, and database capacity. Those KPIs are not only strategic or operational in a broad sense; they also give direct insight into the performance of one functional unit inside the company.",
+                "visual_explanation": "**Visual why:**\n\n| KPI type | Example |\n|---|---|\n| Strategic | Revenue growth |\n| Operational | Monthly sales cost |\n| Functional unit | IT uptime |\n| Leading / lagging | Safety-equipment use / incident count |\n\nSo KPI classification is broader than only strategic vs operational."
+            },
+            {
+                "question": "State whether the following is True or False: One of the reasons for utilizing KPIs is to enable senior management to assess the company's status quickly, avoiding the need for spending extensive time aggregating and analyzing data.",
+                "options": ["True", "False"],
+                "correct": 0,
+                "explanation": "This statement is true because one major purpose of KPIs is to give senior management a quick, focused view of business performance without forcing them to manually review large amounts of raw data.",
+                "scenario_explanation": "Scenario: A leadership team can open a dashboard showing revenue growth, customer retention, service quality, and churn. Instead of reading thousands of rows of operational data, they can quickly see whether the business is healthy and where attention is needed.",
+                "visual_explanation": "**Visual why:**\n\n`raw transactions -> KPI dashboard -> quick management view`\n\n| Without KPIs | With KPIs |\n|---|---|\n| Slow manual aggregation | Fast status overview |\n| Harder to spot issues | Easier to act quickly |\n"
             }
         ]
     },
@@ -6025,6 +6077,391 @@ This tells the full story: significant, meaningful, and practical!
             }
         ]
     },
+    "Data Structures Basics": {
+        "course": "Data Structures",
+        "description": "Learn the basic ideas behind arrays, indexing, and simple structured storage.",
+        "lessons": [
+            {
+                "title": "Array Basics and Indexing",
+                "content": """
+**Arrays** store elements in ordered positions, and those positions are usually accessed through an **index**.
+
+In most programming contexts used in basic data-structure teaching, arrays are **zero-indexed**:
+
+- first element -> index `0`
+- second element -> index `1`
+- third element -> index `2`
+
+This means the index starts at `0`, not `1`.
+
+**Example:**
+
+```python
+scores = [88, 91, 76]
+```
+
+Here:
+
+- `scores[0]` is `88`
+- `scores[1]` is `91`
+- `scores[2]` is `76`
+
+This is an important exam point because students often confuse **position number** with **index number**.
+                """,
+                "key_points": [
+                    "Arrays commonly use zero-based indexing",
+                    "The first element usually has index 0",
+                    "Exam questions often test the difference between human counting and array indexing"
+                ]
+            }
+        ],
+        "exercises": [],
+        "quiz": [
+            {
+                "question": "What is the starting index for the first element in an array?",
+                "options": ["The array's size", "-1", "Undefined", "0", "1"],
+                "correct": 3,
+                "explanation": "The correct answer is 0. In standard zero-based indexing, the first element in an array is stored at index 0, the second at index 1, and so on.",
+                "scenario_explanation": "Scenario: If a game stores player scores in an array like `[1200, 950, 1430]`, the first player's score is accessed at index `0`, not `1`. So the first element starts at index 0.",
+                "visual_explanation": "**Visual why:**\n\n| Element | Value | Index |\n|---|---|---|\n| First | 1200 | 0 |\n| Second | 950 | 1 |\n| Third | 1430 | 2 |\n\nSo the **starting index** for the first element is **0**."
+            },
+            {
+                "question": "What is the first step in organizing a data structure effectively?",
+                "options": ["Choose the data structure", "Implement the data structure", "Test and debug", "Identify the data", "Document and maintain"],
+                "correct": 3,
+                "explanation": "The correct answer is Identify the data. Before choosing or implementing any structure, you must first understand what kind of data you have, including its size, type, and relationships. That understanding guides every later design choice.",
+                "scenario_explanation": "Scenario: If a company wants to organise customer-support records, it first needs to understand whether the data is linear, hierarchical, frequently updated, or heavily searched. Only after identifying the data properly can it decide whether a list, tree, hash table, or another structure is the best fit.",
+                "visual_explanation": "**Visual why:**\n\n`1. Identify the data`\n`2. Choose the structure`\n`3. Define the structure`\n`4. Define operations`\n`5. Implement`\n`6. Test and debug`\n`7. Optimise if needed`\n`8. Document and maintain`\n\nSo the **first** step is **Identify the data**."
+            }
+        ]
+    },
+    "DDM Data Sources": {
+        "course": "Data Driven Decision-Making",
+        "description": "Learn the main data source types used in data-driven decision-making and how they support business analysis.",
+        "lessons": [
+            {
+                "title": "Core Data Source Types",
+                "content": """
+**In this DDM lesson, four main data source types are highlighted:**
+
+1. **Internal databases**
+2. **External datasets**
+3. **Surveys and interviews**
+4. **Sensor data**
+
+These source types give analysts a balanced view of operations, customers, markets, and real-world conditions.
+
+**Why they matter:**
+- **Internal databases** show business-specific activity such as transactions, CRM records, and operational history.
+- **External datasets** add outside context such as market conditions, demographics, traffic, or weather.
+- **Surveys and interviews** capture direct opinions, preferences, and experiences from people.
+- **Sensor data** provides live or near-real-time physical measurements such as GPS, temperature, or machine status.
+
+The key exam point is to recognise the exact categories listed in the lesson, not just other useful examples of data.
+                """,
+                "key_points": [
+                    "The four named data source types are internal databases, external datasets, surveys and interviews, and sensor data",
+                    "Exam questions may test the exact listed categories",
+                    "Useful data examples are not always the same as the named source categories"
+                ]
+            }
+        ],
+        "exercises": [],
+        "quiz": [
+            {
+                "question": "In the module, four types of data sources are listed. Pick the one that is NOT a listed data source as per the module.",
+                "options": [
+                    "Sensor data",
+                    "Web Traffic",
+                    "Internal databases",
+                    "External datasets",
+                    "Surveys and interviews"
+                ],
+                "correct": 1,
+                "explanation": "The correct answer is Web Traffic. In the lesson, the four named data source types are Internal databases, External datasets, Surveys and interviews, and Sensor data. Web traffic can still be useful data, but it is not one of the four source categories explicitly listed in that module section.",
+                "scenario_explanation": "Scenario: A grocery-delivery company may use internal databases for orders and refunds, external datasets for weather and traffic, surveys and interviews for customer feedback, and sensor data for GPS and temperature. Website or app traffic might also be useful, but in that lesson it was not one of the four named source categories being tested.",
+                "visual_explanation": "**Visual why:**\n\n| Option | Listed as one of the four source types? |\n|---|---|\n| Sensor data | Yes |\n| Web Traffic | No |\n| Internal databases | Yes |\n| External datasets | Yes |\n| Surveys and interviews | Yes |\n\nSo the only option that is **not** one of the four listed types is **Web Traffic**."
+            }
+        ]
+    },
+    "Data Models": {
+        "course": "Data Driven Decision-Making",
+        "description": "Learn how conceptual, logical, and physical data models organise information and support accurate decision-making.",
+        "lessons": [
+            {
+                "title": "Why Data Models Matter",
+                "content": """
+**Data models** help analysts organise information so it can be stored, understood, retrieved, and used consistently.
+
+They are important because they help teams:
+- identify important entities
+- define attributes clearly
+- establish relationships between entities
+- improve consistency and data quality
+- support later database design and reporting
+
+**Example: University System**
+- Entity: Student
+- Attributes: StudentID, Name, Email
+- Relationship: Student enrolls in Course
+
+This kind of structure makes data easier to manage and much safer to use in analysis and decision-making.
+                """,
+                "key_points": ["Data models organise information", "They define entities, attributes, and relationships", "They support consistency and later analysis"]
+            },
+            {
+                "title": "Conceptual, Logical, and Physical Models",
+                "content": """
+**Conceptual model**
+- High-level business view
+- Focuses on major entities and relationships
+
+**Logical model**
+- Adds more detail such as attributes, keys, and relationship rules
+- Still independent of a specific database system
+
+**Physical model**
+- Turns the design into real tables, columns, data types, and constraints
+- Used for actual implementation inside a DBMS
+
+**Why this matters**
+Logical models do more than prepare databases. They also improve clarity, reduce duplication, and support stronger data quality and consistency before implementation begins.
+                """,
+                "key_points": ["Conceptual = business view", "Logical = detailed structure", "Physical = implementation", "Logical models also support data quality and consistency"]
+            },
+            {
+                "title": "What Hierarchical Modeling Is",
+                "content": """
+**Hierarchical modeling** is a way of organising data in a **tree-like structure**.
+
+In this structure:
+- there is usually one **root** or top-level parent
+- each parent can have one or more **children**
+- each child normally belongs to **one parent only**
+
+This makes hierarchical modeling useful when the data naturally follows levels or ranks.
+
+**Common examples:**
+- organisational charts
+- folder structures
+- category and subcategory trees
+
+**Simple example:**
+- CEO
+  - Sales Department
+    - Regional Team
+  - IT Department
+    - Support Team
+
+This is different from a network-style model, where one child could connect to several parents. In hierarchical modeling, the structure is stricter and more top-down.
+                """,
+                "key_points": ["Hierarchical modeling uses a tree-like parent-child structure", "Each child usually belongs to one parent", "Useful for folders, org charts, and category trees"]
+            }
+        ],
+        "exercises": [
+            {
+                "title": "Choose the Right Model Type",
+                "type": "scenario",
+                "question": "A company wants a high-level overview of customers, products, and orders before discussing tables or data types. Which type of data model should the analyst start with, and why?",
+                "answer": "The analyst should start with a conceptual data model. This is because the task is still focused on business understanding and the main entities and relationships, not on detailed keys, columns, or implementation decisions.",
+                "hint": "Think about whether the task is high-level business understanding or technical implementation."
+            }
+        ],
+        "quiz": [
+            {
+                "question": "Which type of data model is most suitable when stakeholders need a high-level business overview before technical database design begins?",
+                "options": ["Conceptual data model", "Logical data model", "Physical data model", "Operational KPI model"],
+                "correct": 0,
+                "explanation": "A conceptual data model is correct because it gives a high-level view of the main business entities and relationships before detailed implementation choices are made.",
+                "scenario_explanation": "Scenario: A university wants to understand students, courses, departments, and enrollments before discussing keys or data types. That early business-level view is conceptual modelling.",
+                "visual_explanation": "**Visual why:**\n\n`University system`\n`Student <-> Enrollment <-> Course`\n\n| Model type | Focus |\n|---|---|\n| Conceptual | Big-picture business view |\n| Not yet | Data types, indexes, DBMS details |\n"
+            },
+            {
+                "question": "State whether the following is True or False: Logical data models are primarily used for designing and implementing databases, but they do not play a significant role in enhancing data quality and consistency.",
+                "options": ["True", "False"],
+                "correct": 1,
+                "explanation": "This statement is false because logical data models help with database design and also improve data quality and consistency by defining clear entities, attributes, keys, and relationships.",
+                "scenario_explanation": "Scenario: In a library system, a logical model with Book, Borrower, and Loan helps reduce duplication, clarify relationships, and keep records consistent before the physical database is built.",
+                "visual_explanation": "**Visual why:**\n\n`Conceptual -> Logical -> Physical`\n\n| Model stage | Main role |\n|---|---|\n| Conceptual | Business overview |\n| Logical | Detailed entities, keys, consistency |\n| Physical | Implementation in DBMS |\n\nLogical models help both design and data quality."
+            },
+            {
+                "question": "Which of the following best describes the primary functions of data models in the decision-making journey?",
+                "options": [
+                    "Data models only help in the visualization of data but do not organize it",
+                    "Data models only serve to establish relationships between entities but do not identify entities or their attributes.",
+                    "Data models assist primarily in efficient data storage but not in retrieval or manipulation.",
+                    "Data models are crucial for organizing data, identifying entities and their attributes, and establishing relationships between entities, enabling efficient storage, retrieval, and manipulation of information.",
+                    "Data models are mainly used for setting up firewalls and ensuring data security."
+                ],
+                "correct": 3,
+                "explanation": "This is correct because data models do more than store data. They organise information, define entities and attributes, show relationships, and support efficient storage, retrieval, and manipulation.",
+                "scenario_explanation": "Scenario: In a university system, a data model defines Student, Course, and Enrollment. That structure makes it easier to store records correctly, retrieve them for reporting, and manage who is enrolled in which course.",
+                "visual_explanation": "**Visual why:**\n\n`Entity: Student`\n`Attributes: StudentID, Name`\n`Relationship: Student -> Enrollment -> Course`\n\nThis shows organisation, attributes, and relationships together."
+            },
+            {
+                "question": "State whether the following is True or False: In hierarchical modeling, a child element can be associated with multiple parent elements.",
+                "options": ["True", "False"],
+                "correct": 1,
+                "explanation": "This statement is false because hierarchical modeling is a tree-like parent-child structure. In that structure, each child normally belongs to one parent, not multiple parents.",
+                "scenario_explanation": "Scenario: In an organisational chart, one employee usually reports to one manager in the hierarchy. That is hierarchical modeling: a top-down structure with clear levels. If the same child node had multiple parents, that would move away from a pure hierarchical model and fit a more flexible network-style structure instead.",
+                "visual_explanation": "**Visual why:**\n\n`CEO`\n`├── Sales`\n`│   └── Team A`\n`└── IT`\n`    └── Support`\n\nEach child sits under one parent in a strict hierarchy."
+            },
+            {
+                "question": "State whether the following is True or False: Physical data models are only used for guiding the implementation of the database structure and have no role in database administration and maintenance.",
+                "options": ["True", "False"],
+                "correct": 1,
+                "explanation": "This statement is false because physical data models help with implementation and also support database administration, maintenance, performance optimisation, and long-term control of the database structure.",
+                "scenario_explanation": "Scenario: In a hospital stock database, the physical model defines tables, data types, indexes, and constraints. Those choices help not only with building the database, but also with maintaining it, improving performance, and supporting administrators over time.",
+                "visual_explanation": "**Visual why:**\n\n| Physical model role | Included? |\n|---|---|\n| Table and field setup | Yes |\n| Indexes and constraints | Yes |\n| Administration and maintenance support | Yes |\n| Performance tuning | Yes |\n"
+            },
+            {
+                "question": "Which of the following is NOT a function served by data models in the context of data-driven decision-making?",
+                "options": [
+                    "Facilitating efficient storage, retrieval, and manipulation of information",
+                    "Serving as a blueprint for database system development and maintenance",
+                    "Ensuring data accuracy, consistency, and validity",
+                    "Enabling efficient data querying, aggregation, and analysis",
+                    "Promoting team-building and social interaction among employees"
+                ],
+                "correct": 4,
+                "explanation": "The correct answer is promoting team-building and social interaction among employees. Data models are used to organise information, support storage and retrieval, guide database design, improve consistency and quality, and make querying and analysis more reliable. They are not a team-building tool.",
+                "scenario_explanation": "Scenario: A university database model helps define students, courses, and enrollments so reports can be generated accurately and the system can be built correctly. That improves structure, quality, and analysis, but it does not exist to improve social interaction among staff.",
+                "visual_explanation": "**Visual why:**\n\n| Possible function of a data model | Yes/No |\n|---|---|\n| Storage and retrieval support | Yes |\n| Database blueprint | Yes |\n| Accuracy and consistency support | Yes |\n| Querying and analysis support | Yes |\n| Team-building and social interaction | No |\n\nSo the option that is **not** a data-model function is **Promoting team-building and social interaction among employees**."
+            },
+            {
+                "question": "Which of the following are characteristics of conceptual data modeling? (Choose two.)",
+                "options": [
+                    "Conceptual data modeling starts by deeply understanding the business processes, entities, and the relationships among them.",
+                    "Conceptual data modeling primarily focuses on the technical implementation details of the database.",
+                    "Cardinality in conceptual data modeling defines the number of instances of one entity that can be associated with another.",
+                    "Conceptual data models provide a high-level view of data requirements and relationships, without focusing on how data will be stored or accessed.",
+                    "Conceptual data modeling is used primarily to estimate the cost and time required to build a database."
+                ],
+                "correct": [0, 3],
+                "explanation": "The two correct answers are business understanding and high-level abstraction. Conceptual data modeling starts by understanding the business domain, key entities, and their relationships, and it provides a high-level view of data requirements without focusing on storage or implementation details.",
+                "scenario_explanation": "Scenario: A university wants to map Students, Courses, Instructors, and Enrollments before anyone discusses tables, indexes, or data types. At that stage, the team is identifying the main business entities and relationships and creating a high-level conceptual model, not designing the technical database yet.",
+                "visual_explanation": "**Visual why:**\n\n| Statement | Fits conceptual modeling? |\n|---|---|\n| Understand business processes, entities, and relationships | Yes |\n| Focus on technical implementation details | No |\n| High-level view without storage details | Yes |\n| Estimate project cost and time | No |\n\nSo the two safest conceptual-model characteristics are **business understanding** and **high-level view**."
+            },
+            {
+                "question": "State whether the following is True or False: SQuirreL SQL Client is a tool specifically designed for MySQL database design and administration tasks.",
+                "options": ["True", "False"],
+                "correct": 1,
+                "explanation": "This statement is false because SQuirreL SQL Client is a general SQL client that works with multiple database systems through JDBC, not a MySQL-only design and administration tool.",
+                "scenario_explanation": "Scenario: An analyst working with PostgreSQL one day and MySQL the next could still use SQuirreL SQL Client to connect to both. A tool designed specifically for MySQL would be more narrowly focused on that one database platform.",
+                "visual_explanation": "**Visual why:**\n\n| Tool | Scope |\n|---|---|\n| SQuirreL SQL Client | Multi-database via JDBC |\n| MySQL-specific tool | One database platform |\n\nSo SQuirreL is not MySQL-only."
+            }
+        ]
+    },
+    "Data Cleaning": {
+        "course": "Data Driven Decision-Making",
+        "description": "Learn how data cleaning, proxy data, and preprocessing improve data quality and analytical reliability.",
+        "lessons": [
+            {
+                "title": "Why Data Cleaning Matters",
+                "content": """
+**Data cleaning** improves the quality, reliability, and consistency of data before analysis begins.
+
+Analysts often work with:
+- missing data
+- duplicates
+- inconsistent formats
+- outliers
+- proxy or synthetic data
+
+Cleaning and preprocessing matter because weak-quality data can produce misleading insight, weak forecasts, and poor decisions.
+                """,
+                "key_points": ["Data cleaning improves reliability", "Proxy data can support testing and analysis", "Preprocessing is part of trustworthy analysis"]
+            },
+            {
+                "title": "Proxy Data and Data Augmentation",
+                "content": """
+**Proxy real-world data** is used when direct access to real-world data is difficult, expensive, sensitive, or incomplete.
+
+One way to create useful proxy data is **data augmentation**, where analysts modify or extend existing data to create realistic new examples.
+
+Examples include:
+- adding small controlled variations
+- simulating missing transmissions
+- shifting timing patterns
+- creating realistic route variations
+
+This is useful in scenarios such as wildlife tracking, finance, healthcare, and other domains where real-world data is limited or difficult to collect fully.
+                """,
+                "key_points": ["Proxy data can stand in for difficult-to-access real data", "Data augmentation creates realistic variations", "Useful in wildlife, finance, and healthcare scenarios"]
+            }
+        ],
+        "exercises": [
+            {
+                "title": "Identify a Cleaning Step",
+                "type": "scenario",
+                "question": "A telecom dataset contains duplicate customers, missing phone numbers, and mixed date formats. Name two cleaning steps you would apply first and explain why.",
+                "answer": "A strong first answer would be to remove or merge duplicate customer records and standardise the date format. Duplicate handling is important because repeated records distort counts and analysis. Date standardisation is important because mixed formats can break sorting, filtering, and later time-based analysis.",
+                "hint": "Think about which problems would most immediately distort analysis or break consistency."
+            }
+        ],
+        "quiz": [
+            {
+                "question": "State whether the following is True or False: In the wildlife research organization's study on the movement patterns of endangered migratory birds, data augmentation techniques were used to generate proxy real-world data based on existing GPS data from a subset of birds.",
+                "options": ["True", "False"],
+                "correct": 0,
+                "explanation": "This statement is true because the scenario describes using existing GPS data from a subset of tracked birds and then applying data augmentation techniques to create realistic proxy data.",
+                "scenario_explanation": "Scenario: Researchers cannot collect complete live GPS data for every endangered bird, so they take the high-quality tracking data they do have and create realistic variations from it. That is exactly how proxy data through augmentation is used in this kind of study.",
+                "visual_explanation": "**Visual why:**\n\n`subset of real GPS data -> data augmentation -> proxy dataset -> analysis`\n\nThat is the exact workflow described in the case."
+            },
+            {
+                "question": "State whether the following is True or False: An insurance company aiming to develop a predictive model for risk assessment uses synthetic data for training and optimizing the machine learning model due to data privacy regulations.",
+                "options": ["True", "False"],
+                "correct": 0,
+                "explanation": "This statement is true because synthetic data is often used when privacy regulations prevent direct access to sensitive real-world records, while still allowing analysts to train and refine a model safely.",
+                "scenario_explanation": "Scenario: An insurance company wants to build a risk-assessment model using policyholder-like data, but privacy rules restrict access to the real customer records. A synthetic dataset that mimics the original patterns can therefore be used to train and optimize the model before testing it more carefully on real validation data.",
+                "visual_explanation": "**Visual why:**\n\n`Sensitive real policyholder data -> restricted`\n`Synthetic proxy data -> training and optimisation`\n`Real validation later -> careful testing`\n"
+            },
+            {
+                "question": "State whether the following is True or False: In the healthcare research organization's study on the impact of air pollution on lung diseases, the use of meteorological data as a proxy for air quality was based on scientific research and domain knowledge showing a high correlation between weather conditions and air pollution level.",
+                "options": ["True", "False"],
+                "correct": 0,
+                "explanation": "This statement is true because the proxy-data example depends on the idea that weather conditions such as wind, temperature, and humidity are meaningfully correlated with air pollution levels, based on scientific research and domain knowledge.",
+                "scenario_explanation": "Scenario: If direct air-quality measurements are difficult to collect from every station in a city, researchers may use nearby meteorological data as a proxy. That only makes sense if prior research shows those weather variables are strongly related to pollution patterns.",
+                "visual_explanation": "**Visual why:**\n\n`weather data (wind, humidity, temperature) -> strong correlation -> proxy for air quality`\n\nIf the correlation is meaningful, the proxy can support analysis."
+            },
+            {
+                "question": "State whether the following is True or False: In the financial institution's approach to analyzing customer spending patterns, the use of proxy real-world data allowed them to perform analysis without having to directly access sensitive customer transaction data.",
+                "options": ["True", "False"],
+                "correct": 0,
+                "explanation": "This statement is true because proxy real-world data is specifically useful when privacy or security restrictions make direct access to raw customer transaction data difficult or inappropriate.",
+                "scenario_explanation": "Scenario: A bank or financial institution may create a proxy dataset that resembles real spending behaviour while protecting personal transaction details. That lets analysts explore patterns, segment customers, and test models without exposing sensitive raw records.",
+                "visual_explanation": "**Visual why:**\n\n`Sensitive raw transactions -> blocked by privacy`\n`Proxy dataset -> safe analysis`\n\nThat is why proxy data is valuable in the finance case."
+            },
+            {
+                "question": "In the context of a retail company that collects customer data for analysis, which of the following steps are involved in the data cleaning and pre-processing process? Choose two correct answers.",
+                "options": [
+                    "Eliminating outdated marketing materials from the dataset.",
+                    "Applying 3D visualization techniques to assess the diversity of customer locations.",
+                    "Converting all customer names to title cases to standardize the data.",
+                    "Merging or eliminating duplicate entries to avoid data redundancy.",
+                    "Increasing the prices of items in the database to evaluate customer sensitivity to price changes."
+                ],
+                "correct": [2, 3],
+                "explanation": "The two correct answers are standardising customer names and handling duplicate records. Standardisation improves consistency, while merging or removing duplicates reduces redundancy and prevents distorted analysis.",
+                "scenario_explanation": "Scenario: A retail company may find one customer recorded as 'john smith', 'John Smith', and 'JOHN SMITH', and may also discover the same customer entered twice with the same email address. Cleaning the dataset means standardising the names and merging or removing duplicate records before analysis.",
+                "visual_explanation": "**Visual why:**\n\n| Before cleaning | After cleaning |\n|---|---|\n| `john smith`, `JOHN SMITH` | `John Smith` |\n| Duplicate customer rows | One clean record |\n\nThese are classic cleaning steps."
+            },
+            {
+                "question": "When it comes to data analysis and data cleaning, what are two characteristics or uses of proxy real-world data? Choose two correct answers.",
+                "options": [
+                    "Proxy real-world data serves as an indirect representation of the actual data it substitutes.",
+                    "Proxy data is typically less accessible than real-world data, making it challenging to obtain.",
+                    "Proxy data is primarily used to inflate the volume of the dataset for big data analytics.",
+                    "Proxy data automatically cleans itself, eliminating the need for data cleaning techniques.",
+                    "Proxy data is chosen based on its correlation or association with the desired real-world data."
+                ],
+                "correct": [0, 4],
+                "explanation": "The two correct answers are that proxy data acts as an indirect representation of real-world data and that it is selected because it has a meaningful correlation or association with the target data.",
+                "scenario_explanation": "Scenario: If a healthcare research team cannot access direct air-pollution readings from every location, it may use meteorological data as a proxy. That works because the proxy data stands in for the unavailable real data and is chosen because research shows it is strongly related to pollution levels.",
+                "visual_explanation": "**Visual why:**\n\n| Proxy-data characteristic | Meaning |\n|---|---|\n| Indirect representation | Stands in for missing real data |\n| Correlation-based choice | Chosen because it relates to target data |\n"
+            }
+        ]
+    },
     "Four Data Analysis Philosophies": {
         "course": "Data Driven Decision-Making",
         "description": "Master the four fundamental approaches to data analysis: Descriptive, Diagnostic, Predictive, and Prescriptive analytics.",
@@ -6265,31 +6702,91 @@ A delivery company uses prescriptive analytics:
                 "question": "Which analytics type answers 'What should we do?'",
                 "options": ["Descriptive", "Diagnostic", "Predictive", "Prescriptive"],
                 "correct": 3,
-                "explanation": "Prescriptive analytics recommends specific actions to achieve desired outcomes. It goes beyond prediction to optimization."
+                "explanation": "Prescriptive analytics is correct because it recommends the best action rather than only describing the past or predicting the future.",
+                "scenario_explanation": "Scenario: A hospital wants the best operating-room schedule to reduce wait times and improve resource use. That requires a recommendation about what schedule should be used, so it is prescriptive.",
+                "visual_explanation": "**Visual why:**\n\n`Descriptive -> What happened?`\n`Diagnostic -> Why did it happen?`\n`Predictive -> What is likely to happen?`\n`Prescriptive -> What should we do?`\n"
             },
             {
                 "question": "'Our website had 50,000 visitors last month, with 2% conversion rate' is an example of:",
                 "options": ["Descriptive analytics", "Diagnostic analytics", "Predictive analytics", "Prescriptive analytics"],
                 "correct": 0,
-                "explanation": "This is descriptive analytics - it summarizes what happened (visitors, conversion rate) without explaining why or predicting future."
+                "explanation": "This is descriptive analytics because it reports what happened using historical numbers, without explaining causes or forecasting future outcomes.",
+                "scenario_explanation": "Scenario: An e-commerce manager opens a monthly dashboard and sees visitors and conversion rate for the previous month. That is a summary of past performance, which is descriptive.",
+                "visual_explanation": "**Visual why:**\n\n`Last month: 50,000 visitors`\n`Last month: 2% conversion`\n\nThis is a past-performance summary, so it is **descriptive**."
             },
             {
                 "question": "Using drill-down analysis to find why sales dropped in a specific region is:",
                 "options": ["Descriptive analytics", "Diagnostic analytics", "Predictive analytics", "Prescriptive analytics"],
                 "correct": 1,
-                "explanation": "Diagnostic analytics investigates root causes using techniques like drill-down analysis to understand WHY something happened."
+                "explanation": "Diagnostic analytics is correct because drill-down analysis is used to investigate causes and explain why a result changed.",
+                "scenario_explanation": "Scenario: A retailer sees that sales fell in the West region, then drills into pricing, stock levels, campaigns, and customer complaints to find the reason. That is diagnostic analysis.",
+                "visual_explanation": "**Visual why:**\n\n`Sales dropped in West region`\n`-> drill into price`\n`-> drill into stock`\n`-> drill into campaign`\n`-> find root cause`\n\nThat is **diagnostic** analysis."
             },
             {
                 "question": "A model that forecasts '85% probability this customer will churn' is:",
                 "options": ["Descriptive analytics", "Diagnostic analytics", "Predictive analytics", "Prescriptive analytics"],
                 "correct": 2,
-                "explanation": "Predictive analytics uses statistical models to forecast future outcomes with probabilities."
+                "explanation": "Predictive analytics is correct because the model is estimating a future outcome and expressing it as a probability.",
+                "scenario_explanation": "Scenario: A subscription business uses customer history to estimate who is likely to cancel next month. That is prediction about future churn, so it is predictive analytics.",
+                "visual_explanation": "**Visual why:**\n\n`Customer history -> predictive model -> 85% churn probability`\n\nBecause it estimates a future outcome, it is **predictive** analytics."
             },
             {
                 "question": "Which analytics type is the foundation for all others?",
                 "options": ["Descriptive", "Diagnostic", "Predictive", "Prescriptive"],
                 "correct": 0,
-                "explanation": "Descriptive analytics is the foundation - you must understand what happened before analyzing why, predicting future, or recommending actions."
+                "explanation": "Descriptive analytics is the foundation because analysts usually need to understand what happened before moving on to causes, forecasts, or recommendations.",
+                "scenario_explanation": "Scenario: A coffee shop first confirms that afternoon sales dropped by 20%. Only after that can it ask why sales fell, what will happen next, and what should be done.",
+                "visual_explanation": "**Visual why:**\n\n`Descriptive -> Diagnostic -> Predictive -> Prescriptive`\n\nYou normally start with **what happened** before moving to cause, forecast, and action."
+            },
+            {
+                "question": "State whether the following is True or False: Data summarization techniques, such as measures of central tendency and measures of variability, are mainly used in predictive analysis to forecast future trends.",
+                "options": ["True", "False"],
+                "correct": 1,
+                "explanation": "This statement is false because measures of central tendency and variability are mainly descriptive-analysis tools. They summarise what the data looks like now or in the past, rather than primarily forecasting future outcomes.",
+                "scenario_explanation": "Scenario: If a teacher calculates the mean, median, range, and standard deviation of exam scores, that helps describe student performance and data spread. It does not by itself forecast next term's scores, so it is descriptive rather than predictive.",
+                "visual_explanation": "**Visual why:**\n\n`mean / median / standard deviation -> describe dataset`\n`time series / smoothing -> forecast future values`\n\nSo summarisation belongs mainly to descriptive analysis."
+            },
+            {
+                "question": "In the context of data visualisation techniques used in descriptive analysis, which two techniques are particularly useful for displaying the distribution of continuous and categorical data, respectively? Choose two correct answers.",
+                "options": [
+                    "Venn diagrams are used to display the distribution of a continuous variable by dividing the data into overlapping circles.",
+                    "Bar charts are used to display categorical or discrete data, where each category is represented by a bar.",
+                    "Box plots are ideal for illustrating the frequency or proportion of observations in each category of categorical data.",
+                    "Histograms are used to visualize the distribution of a continuous variable by dividing the data into bins or intervals.",
+                    "Scatter plots are primarily used for displaying the relationship between two continuous variables."
+                ],
+                "correct": [1, 3],
+                "explanation": "The two correct answers are bar charts and histograms. Bar charts are used for categorical or discrete data, while histograms are used to show the distribution of a continuous variable across bins or intervals.",
+                "scenario_explanation": "Scenario: If a company wants to show customer satisfaction categories such as satisfied, neutral, and unsatisfied, a bar chart is appropriate. If the same company wants to show how salary values or order amounts are distributed across ranges, a histogram is the better choice.",
+                "visual_explanation": "**Visual why:**\n\n| Data type | Best visual |\n|---|---|\n| Categorical | Bar chart |\n| Continuous | Histogram |\n"
+            },
+            {
+                "question": "In the realm of predictive analysis for forecasting and trend analysis, which two techniques are commonly used for identifying underlying trends and estimating future values? Choose two correct answers.",
+                "options": [
+                    "Regression analysis is mainly used for data visualization and does not assist in predictive modelling.",
+                    "Box plots are commonly used to identify and quantify a dataset’s overall direction or pattern of change.",
+                    "Time series analysis focuses on analyzing historical data to identify trends, seasonality, and other patterns for making forecasts.",
+                    "Trend analysis primarily aims at summarizing and interpreting data rather than forecasting future values.",
+                    "Smoothing techniques, like moving averages or exponential smoothing, are used to eliminate noise and make more accurate forecasts."
+                ],
+                "correct": [2, 4],
+                "explanation": "The two correct answers are time series analysis and smoothing techniques. Time series analysis identifies trends, seasonality, and time-based patterns, while smoothing techniques reduce noise so the underlying pattern is easier to see and forecast.",
+                "scenario_explanation": "Scenario: A retailer wants to forecast monthly demand for winter clothing. Time series analysis helps detect recurring seasonal peaks, while moving averages or exponential smoothing help remove short-term noise so the future demand estimate becomes more reliable.",
+                "visual_explanation": "**Visual why:**\n\n`historical monthly data -> time series analysis -> smoothing -> forecast`\n\nThese two techniques work together to reveal trend and estimate future values."
+            },
+            {
+                "question": "In the context of data analysis philosophies, which two types of analysis focus on understanding underlying reasons and providing future recommendations, respectively? Choose two correct answers.",
+                "options": [
+                    "Prescriptive analysis provides recommendations or solutions for optimizing decision-making processes.",
+                    "Descriptive analysis focuses on summarizing and interpreting historical data to understand its features and patterns.",
+                    "Predictive analysis is used primarily for presenting data in a visual and easily understandable format.",
+                    "Data visualisation is a philosophy of data analysis that replaces the need for predictive analysis.",
+                    "Diagnostic analysis delves deeper into data to identify the causes or factors influencing specific outcomes."
+                ],
+                "correct": [0, 4],
+                "explanation": "The two correct answers are diagnostic analysis and prescriptive analysis. Diagnostic analysis focuses on understanding why something happened, while prescriptive analysis focuses on recommending what should be done next.",
+                "scenario_explanation": "Scenario: A retailer investigates why customer satisfaction dropped by analysing complaints, delays, and service issues. That is diagnostic analysis. After understanding the cause, management recommends staffing changes, process fixes, or loyalty actions. That is prescriptive analysis.",
+                "visual_explanation": "**Visual why:**\n\n`Why did this happen? -> Diagnostic`\n`What should we do next? -> Prescriptive`\n\nThat is the distinction being tested."
             }
         ]
     },
@@ -6615,7 +7112,16 @@ Convert insights into decisions and monitor results.
                 "options": ["Small-scale processing is essential", "Large-scale real-time processing is essential", "Real-time processing is essential", "Real-time processing is not essential"],
                 "correct": 3,
                 "explanation": "The correct answer is Real-time processing is not essential. Batch methods are useful when the business can wait until a scheduled run, such as daily payroll, overnight reporting, or end-of-day sales aggregation. If the decision must happen instantly, streaming or real-time processing is more suitable.",
+                "scenario_explanation": "Scenario: A company may wait until the end of the day to process all sales transactions together for reporting and reconciliation. That is fine because the business does not need each record processed instantly the second it arrives.",
                 "visual_explanation": "**Visual why:**\n\n| Question to ask | If answer is yes | Processing choice |\n|---|---|---|\n| Must the result happen immediately? | Yes | Real-time |\n| Can the business wait for a scheduled run? | Yes | Batch |\n\n`can wait -> batch`\n\n`cannot wait -> real-time`"
+            },
+            {
+                "question": "State whether the following is True or False: Batch processing is designed for scenarios where real-time processing is essential.",
+                "options": ["True", "False"],
+                "correct": 1,
+                "explanation": "False. Batch processing is designed for scenarios where immediate processing is not essential. It works best when data can be collected and processed later at scheduled times rather than handled instantly as events happen.",
+                "scenario_explanation": "Scenario: Payroll, overnight reporting, and end-of-day transaction summaries are good batch-processing examples because the organisation can wait for a scheduled run. If fraud detection or live navigation updates were required, real-time processing would be more suitable.",
+                "visual_explanation": "**Visual why:**\n\n`data arrives -> wait -> scheduled run -> result` = batch\n`data arrives -> process now -> result now` = real-time\n\n| Need | Best fit |\n|---|---|\n| Immediate response essential | Real-time |\n| Can wait for later processing | Batch |\n"
             },
             {
                 "question": "Processing time in batch processing is:",
@@ -7322,31 +7828,36 @@ Every KPI review should end with:
                 "question": "Which of these is a LEADING indicator?",
                 "options": ["Last month's revenue", "Customer satisfaction score", "Sales pipeline value", "Annual profit"],
                 "correct": 2,
-                "explanation": "Sales pipeline value is a leading indicator - it predicts future revenue. Revenue, satisfaction, and profit are lagging indicators that measure past outcomes."
+                "explanation": "Sales pipeline value is a leading indicator because it gives an early signal about future revenue rather than only reporting results that have already happened.",
+                "scenario_explanation": "Scenario: A sales director checks the value of open deals this month to judge whether next quarter's revenue target is realistic. That future-facing signal is a leading KPI."
             },
             {
                 "question": "A KPI is at 87% of target. What RAG status should it show?",
                 "options": ["Green - on track", "Amber - at risk", "Red - off track", "Depends on the KPI"],
                 "correct": 1,
-                "explanation": "87% falls in the Amber zone (80-95% of target), indicating the KPI is at risk and requires attention and possible plan adjustment."
+                "explanation": "Amber is correct because 87% sits inside the at-risk range of 80-95% of target, meaning performance is below plan but not yet in the critical red zone.",
+                "scenario_explanation": "Scenario: A logistics team wants 98% on-time delivery but is currently at 87% of target achievement. Management should treat that as a warning sign and investigate before performance worsens."
             },
             {
                 "question": "How many KPIs should each business function typically track?",
                 "options": ["1-2", "5-7", "15-20", "As many as possible"],
                 "correct": 1,
-                "explanation": "Best practice is 5-7 KPIs per function. Too few miss important aspects; too many cause 'dashboard overload' and dilute focus."
+                "explanation": "Best practice is usually 5-7 KPIs because that gives enough coverage to monitor performance without overwhelming decision-makers with too many numbers.",
+                "scenario_explanation": "Scenario: If a customer-service dashboard shows 25 different measures, managers may miss the few indicators that really matter, such as CSAT, first response time, resolution time, and churn-related complaints."
             },
             {
                 "question": "CLV/CAC ratio of 4:1 means:",
                 "options": ["Company is losing money on each customer", "Each customer is worth 4× what it costs to acquire them", "4% of customers are profitable", "Acquisition takes 4 months"],
                 "correct": 1,
-                "explanation": "CLV/CAC of 4:1 means Customer Lifetime Value is 4× Customer Acquisition Cost. This is excellent - typically 3:1 or higher is considered healthy."
+                "explanation": "A 4:1 ratio means customer lifetime value is four times the acquisition cost, which usually signals strong and healthy unit economics.",
+                "scenario_explanation": "Scenario: If a SaaS company spends $100 to acquire a customer and expects $400 in lifetime value, that 4:1 ratio suggests the growth model is financially attractive."
             },
             {
                 "question": "For strategic KPIs like annual revenue, the typical review frequency is:",
                 "options": ["Hourly", "Daily", "Weekly/Monthly", "Annually"],
                 "correct": 2,
-                "explanation": "Strategic KPIs are typically reviewed weekly or monthly. Daily is for operational metrics, and annual-only reviews don't allow time to course-correct."
+                "explanation": "Weekly or monthly review is best for strategic KPIs because it gives leaders enough cadence to monitor progress and adjust plans without overreacting to hourly noise.",
+                "scenario_explanation": "Scenario: A leadership team tracking annual revenue growth would usually review it in weekly or monthly management meetings, not every hour, because strategy-level movement is monitored over longer periods."
             }
         ]
     },
@@ -8708,7 +9219,9 @@ Keep a decision log linking KPIs to actions for:
                 "question": "True or False: To facilitate the consensus-building process, a team should consider the following five steps as part of the Consensus data quality metric: 1. Assign a leader to the group responsible for facilitating the discussion and keeping the conversation on track. 2. Examine the research data from each source and identify discrepancies. 3. Discuss each discrepancy and identify potential solutions to reconcile the differences. 4. Reach a consensus on the accuracy of the data. 5. Record the findings and report to management.",
                 "options": ["True", "False"],
                 "correct": 1,
-                "explanation": "False. The lesson explains consensus as the level of agreement and alignment among sources or teams. It says teams should define the decision objective clearly, compare the evidence from each source, identify discrepancies, and agree on which figures are most trustworthy. It does not define the Consensus metric as this exact five-step formal process, and it does not specifically include assigning a leader or reporting to management as required steps of the metric."
+                "explanation": "False. The lesson explains consensus as the level of agreement and alignment among sources or teams. It says teams should define the decision objective clearly, compare the evidence from each source, identify discrepancies, and agree on which figures are most trustworthy. It does not define the Consensus metric as this exact five-step formal process, and it does not specifically include assigning a leader or reporting to management as required steps of the metric.",
+                "scenario_explanation": "Scenario: A research team compares data from several sources and notices conflicting values. The important point is to reconcile the evidence and agree on the most trustworthy figures. That is different from claiming the metric itself is formally defined by this exact five-step management workflow.",
+                "visual_explanation": "**Visual why:**\n\n`Source A + Source B + Source C -> compare evidence -> identify discrepancies -> agree on most trustworthy value`\n\n| What consensus focuses on | What this statement incorrectly adds |\n|---|---|\n| Agreement across sources | A fixed formal five-step metric |\n| Reconciling discrepancies | Required leader assignment |\n| Selecting trustworthy figures | Required report to management |\n"
             },
             {
                 "question": "True or False: A customer service team upgrades its CRM system and reviews existing customer records. The analyst finds incomplete customer records, duplicate records, faulty spelling of names, and invalid contact details. These types of data quality issues are usually labelled as Consistency issues.",
@@ -8733,6 +9246,14 @@ Keep a decision log linking KPIs to actions for:
                 "options": ["True", "False"],
                 "correct": 0,
                 "explanation": "True. The lesson states that the Expected Loss of Opportunity criterion assesses the quality of a decision by considering the potential losses associated with different outcomes. In practice, those losses are expressed as regret values, and the rule selects the option with the smallest expected regret or missed opportunity."
+            },
+            {
+                "question": "Decision-Making Criterion: When we choose a scenario that generates the best possible outcome, meaning we only look at which outcomes generate the most significant profit and the decision-maker does not consider any repercussions, what is this criterion called?",
+                "options": ["Minimax", "AbsoluteMax", "Wald's Maximin", "Maximax Criterion"],
+                "correct": 3,
+                "explanation": "The correct answer is Maximax Criterion. This is the optimistic decision rule that focuses only on the best possible payoff for each option and then chooses the largest of those best-case outcomes. It does not give much weight to downside risk or negative consequences.",
+                "scenario_explanation": "Scenario: A manager compares several projects and only asks, 'Which one could make the highest profit if everything goes well?' If they ignore the weaker or risky outcomes and choose based only on the biggest possible gain, they are using the Maximax criterion.",
+                "visual_explanation": "**Visual why:**\n\n| Option | Best possible payoff |\n|---|---|\n| A | 40 |\n| B | 90 |\n| C | 60 |\n\n`look only at the maximum value in each row -> pick the biggest maximum`\n\nBecause the rule chooses the **best of the best**, it is the **Maximax Criterion**."
             },
             {
                 "question": "A telecommunications company wants to optimise customer service by analysing customer interactions, service requests, and satisfaction ratings. Which phase of the data analysis lifecycle involves gathering data from phone calls, emails, chat logs, social media interactions, service request types, timestamps, customer profiles, and satisfaction ratings?",
@@ -10821,7 +11342,24 @@ CHANGELOG ENTRY
                 "options": ["True", "False"],
                 "correct": 1,
                 "explanation": "The correct answer is False. Data pipelines are not limited to immediate processing and delivery. They can also move data into long-term archival storage for compliance, governance, historical analysis, and disaster recovery.",
+                "scenario_explanation": "Scenario: A company may use one branch of a data pipeline to feed live dashboards, while another branch stores historical records in archival storage for audits, compliance, and future analysis. That shows pipelines support both immediate use and long-term retention.",
                 "visual_explanation": "**Visual why:**\n\n`source -> pipeline -> dashboard`\n`source -> pipeline -> archive storage`\n\n| Pipeline role | Exists? |\n|---|---|\n| Immediate delivery | Yes |\n| Long-term archival | Yes |\n\nBecause both paths exist, the statement is False."
+            },
+            {
+                "question": "State whether the following is True or False: Data ingestion in the data analysis pipeline is only responsible for connecting various data sources, but it does not automate, schedule, or scale the data acquisition process.",
+                "options": ["True", "False"],
+                "correct": 1,
+                "explanation": "The correct answer is False. Data ingestion does more than connect sources. It is also concerned with extracting data and supporting automation, scheduling, and scaling of data acquisition so the pipeline can collect data reliably over time.",
+                "scenario_explanation": "Scenario: An e-commerce company may ingest data from APIs, databases, and files on a schedule every hour or every night. That is not just source connection. It is a managed acquisition process designed to automate and scale data collection.",
+                "visual_explanation": "**Visual why:**\n\n`database / API / file -> ingestion layer -> scheduled extraction -> pipeline`\n\n| Ingestion role | Included? |\n|---|---|\n| Connect to sources | Yes |\n| Extract data | Yes |\n| Automate acquisition | Yes |\n| Schedule runs | Yes |\n| Scale collection | Yes |\n\nSo the statement is False."
+            },
+            {
+                "question": "State whether the following is True or False: Data analysis pipelines do not contribute to the reproducibility of analyses, as they are mainly designed for automating tasks.",
+                "options": ["True", "False"],
+                "correct": 1,
+                "explanation": "The correct answer is False. Data analysis pipelines contribute strongly to reproducibility because they standardise steps, automate repeated workflows, and ensure the same process can be rerun consistently on the same or updated data.",
+                "scenario_explanation": "Scenario: If a team reruns a sales analysis every week using the same pipeline, the cleaning, transformation, and reporting steps happen in the same order each time. That makes the analysis easier to repeat, audit, explain, and trust.",
+                "visual_explanation": "**Visual why:**\n\n`raw data -> clean -> transform -> analyze -> report`\n`same pipeline rerun next week -> same steps again`\n\n| Pipeline benefit | Included? |\n|---|---|\n| Automation | Yes |\n| Reproducibility | Yes |\n| Consistency | Yes |\n| Easier auditing | Yes |\n\nSo pipelines support more than automation alone."
             },
             {
                 "question": "State whether the following is True or False: Automated monitoring in the operationalising phase only serves the purpose of updating customer data, and does not involve retraining of models or real-time evaluation of performance.",
@@ -26984,6 +27522,154 @@ The overall goal is to move from an idea to an evidence-based decision. At the e
 2. How data would be collected: through a structured discovery and evidence-gathering process.
 3. Which data sources would be used: primary sources and secondary sources.
 
+#### Question 4
+
+You are a teacher and want to determine if your students' test scores are significantly different from the national average test score. You have collected the test scores of **30** of your students. The average test score of your students is **80**, and the standard deviation of their test scores is **12**. The national average test score is **75**, with a standard deviation of **10**.
+
+Your task is to calculate the **z-score** for this scenario and determine if the average test score of your students is significantly different from the national average test score. Use a significance level of **0.05**.
+
+Using this scenario, calculate the following values:
+
+- **X̄**
+- **μ**
+- **σ**
+- **Z-Score**
+- **Conclusion**
+
+**Worked answer:**
+
+- **X̄ = 80**
+- **μ = 75**
+- **σ = 10**
+- **Z-Score = 2.74**
+- **Conclusion = Reject the null hypothesis. The average test score of the students is significantly different from the national average at the 0.05 level. Since the sample mean is higher than the national mean, the students appear to score significantly higher than the national average.**
+
+**Why this is the correct method:**
+
+This is a **one-sample z-test** because:
+
+1. the question asks whether one sample mean differs from a benchmark mean
+2. the sample size is **30**
+3. the problem gives a known standard deviation to use as **σ = 10**
+4. the question asks for significance testing at **α = 0.05**
+
+The sample standard deviation of **12** is descriptive information here, but for the z-test we use the known standard deviation given for the comparison value.
+
+**How to solve it step by step:**
+
+1. State the hypotheses:
+   - **H₀: μ = 75**
+   - **H₁: μ ≠ 75**
+2. Identify the values:
+   - **X̄ = 80**
+   - **μ = 75**
+   - **σ = 10**
+   - **n = 30**
+3. Use the z-test formula:
+
+$$
+Z = \frac{\bar{x} - \mu}{\sigma / \sqrt{n}}
+$$
+
+4. Substitute the values:
+
+$$
+Z = \frac{80 - 75}{10 / \sqrt{30}} = \frac{5}{1.826} \approx 2.739
+$$
+
+5. Compare the result with the critical values for a **two-tailed test** at **α = 0.05**:
+   - critical values are about **-1.96** and **1.96**
+6. Since **2.739 > 1.96**, reject **H₀**
+7. Conclusion: the class average is **significantly different** from the national average, and in practice it is **higher**
+
+**Why this matters in an exam:**
+
+A stronger exam answer does not stop at the z-score. It also:
+
+- names the correct test
+- explains why that test fits
+- shows the formula
+- substitutes the values clearly
+- compares the result with the critical value
+- translates the statistical result into plain language
+
+**How to make the answer more detailed in an exam:**
+
+If this appears as a fuller exam question, you can expand the answer beyond the short calculation. A stronger long-form answer could include:
+
+- **why the z-test is appropriate**
+- **the null and alternative hypotheses**
+- **the full substitution into the formula**
+- **the critical value or p-value logic**
+- **a plain-language interpretation of the result**
+- **what the conclusion means in practice for the teacher or school**
+
+For example, a more complete exam-style conclusion could be:
+
+"A one-sample z-test is appropriate because I am comparing one sample mean with a known benchmark mean using a known standard deviation and a sample size of 30. After substituting the values into the z-test formula, I get a z-score of approximately 2.74. Since this is greater than the critical value of 1.96 for a two-tailed test at the 0.05 level, I reject the null hypothesis. This means the students' average score is significantly different from the national average. Because the sample mean is 80 and the benchmark mean is 75, the practical conclusion is that this class scored significantly higher than the national average."
+
+So in a short-answer task, writing the final result may be enough. In a fuller exam answer, it is better to show the method, justify the test choice, and explain what the result means.
+
+**Short answer version:**
+
+"Using a one-sample z-test, I get `z = 2.74`. Since this is greater than the critical value of `1.96` at the `0.05` level, I reject the null hypothesis. Therefore, the students score significantly higher than the national average."
+
+**Fast exam template you can reuse:**
+
+- **Given:** sample mean, benchmark mean, known standard deviation, sample size, and significance level
+- **Method:** one-sample z-test
+- **Calculation:** show the formula and substitute the values
+- **Decision:** compare the z-score with the critical value or p-value rule
+- **Interpretation:** explain what the result means in plain language
+
+**Visual decision aid:**
+
+```text
+Two-tailed z-test at alpha = 0.05
+
+Reject H0          Fail to reject H0          Reject H0
+-----|-------------------|-------------------|-----
+   -1.96                0                  1.96
+                                              ^
+                                           z = 2.74
+
+z = 2.74 is in the rejection region, so reject H0.
+```
+
+**If the exam gives these two conclusion options:**
+
+1. the students does not score significantly more than the national average
+2. the students scores significantly more than the national average
+
+the correct choice is **Option 2**.
+
+That is because the calculated z-score is positive and large enough to reject the null hypothesis, so the evidence supports the conclusion that the students scored **significantly higher** than the national average.
+
+**Google Sheets guide - One-sample z-test example**
+
+You can solve this quickly in **Google Sheets** with a small summary table:
+
+| Cell | Meaning | Value / formula |
+|------|---------|-----------------|
+| `B1` | Sample mean `X̄` | `80` |
+| `B2` | Benchmark mean `μ` | `75` |
+| `B3` | Population standard deviation `σ` | `10` |
+| `B4` | Sample size `n` | `30` |
+| `B5` | Alpha `α` | `0.05` |
+| `B6` | Standard error | `=B3/SQRT(B4)` |
+| `B7` | Z-score | `=(B1-B2)/(B3/SQRT(B4))` |
+| `B8` | Critical z-value | `=NORM.S.INV(1-B5/2)` |
+| `B9` | Two-tailed p-value | `=2*(1-NORM.S.DIST(ABS(B7),TRUE))` |
+| `B10` | Decision | `=IF(ABS(B7)>B8,"Reject H0","Fail to reject H0")` |
+
+**How to explain it in an exam if you used Google Sheets:**
+
+"I entered the sample mean, benchmark mean, known standard deviation, sample size, and significance level into Google Sheets. I then calculated the standard error and used the one-sample z-test formula to get the z-score. After that, I compared the absolute z-score with the two-tailed critical value at the 0.05 level. Because the calculated z-score was greater than the critical value, I rejected the null hypothesis and concluded that the students' average score was significantly different from the national average."
+
+**Resolver-style answer draft:**
+
+This scenario should be solved with a **one-sample z-test** because the goal is to compare one sample mean with a known benchmark mean using a known standard deviation. The values are **X̄ = 80**, **μ = 75**, **σ = 10**, and **n = 30**. Using the formula `z = (X̄ - μ) / (σ / √n)`, the result is `z ≈ 2.74`. Because this is a two-tailed test at **α = 0.05**, the critical values are **±1.96**. Since **2.74** is greater than **1.96**, the null hypothesis is rejected. Therefore, the class average is significantly different from the national average, and because the sample mean is higher, it suggests the students scored significantly above the national benchmark. If the exam presents the conclusion as a multiple-choice option between "not significantly more" and "significantly more", the correct option is **the students score significantly more than the national average**.
+
 ### What Did I Learn in This Lesson?
 
 This lesson provided the following insights:
@@ -35095,6 +35781,10 @@ What common visualisation techniques are used for data pipelines, and what infor
 
 What are the benefits of data pipeline visualisation in data-driven organisations?
 
+##### Question 6
+
+What are the differences between the **Data Analysis Life Cycle** and the **Data Analysis Pipeline**? Provide **five key differences**.
+
 #### Lesson Tasks - Suggested Solutions
 
 ##### Solution 1
@@ -35146,6 +35836,20 @@ A good pipeline visualisation should usually include:
 
 Data pipeline visualisation benefits data-driven organisations because it promotes transparency, collaboration, and shared understanding. By visualising the pipeline, teams can communicate more clearly, improve data operations, spot issues earlier, support better data quality, and make data processing and analysis more efficient.
 
+##### Solution 6
+
+The **Data Analysis Life Cycle** and the **Data Analysis Pipeline** are closely related, but they are not the same. The lifecycle is the wider end-to-end analytical framework, while the pipeline is the more technical data flow that operates inside that wider framework.
+
+| Difference area | Data Analysis Life Cycle | Data Analysis Pipeline |
+|-----------------|--------------------------|------------------------|
+| Purpose | Guides the full analytical journey from business problem to decision-making | Moves data through technical steps so it becomes usable for analysis |
+| Scope | Broad and end-to-end | Narrower and more process-focused |
+| Main focus | Solving a business or research problem | Ingesting, cleaning, transforming, integrating, and delivering data |
+| Main users | Analysts, managers, stakeholders, and decision-makers | Data engineers, analysts, developers, and technical teams |
+| End result | Insights, conclusions, recommendations, and action | Clean, transformed, analysis-ready data or delivered outputs |
+
+In short, the lifecycle explains the **whole decision-making journey**, while the pipeline explains **how data flows through the technical stages** that support that journey.
+
 ##### Exam tip - Lesson 2.2 tasks
 
 For processing questions, focus on **timing**:
@@ -35154,6 +35858,22 @@ For processing questions, focus on **timing**:
 - if the system collects data and processes it later on a schedule, it is usually **batch processing**
 
 For visualisation questions, remember the five core ideas: **sources, transformations, flow, dependencies, and outputs**.
+
+For comparison questions, make the contrast very clear:
+
+- the **lifecycle** is the broader analytical framework
+- the **pipeline** is the technical workflow inside that framework
+
+#### Resolver-style supplement
+
+##### Resolver view - Question 6
+
+**Question style:** Comparison question
+
+**What the examiner is really testing:** Whether the student can clearly distinguish between the broader analytical framework and the technical data-flow process without confusing their roles.
+
+**Resolver-style answer draft:**
+The **Data Analysis Life Cycle** is the broader framework that guides a project from defining the business problem to using the final results in practice. In contrast, the **Data Analysis Pipeline** is the technical workflow that moves data through stages such as ingestion, cleaning, transformation, integration, and delivery. One difference is **purpose**: the lifecycle supports the full analysis journey, while the pipeline supports the technical movement and preparation of data. Another difference is **scope**: the lifecycle is broad and end-to-end, while the pipeline is narrower and process-focused. A third difference is **focus**: the lifecycle centres on problem-solving and decision-making, whereas the pipeline centres on data flow and preparation. A fourth difference is **main users**: the lifecycle is useful for analysts, managers, and decision-makers, while pipelines are often designed or maintained by engineers and technical analysts. A fifth difference is the **end result**: the lifecycle produces insight and action, whereas the pipeline produces clean, usable, analysis-ready data or delivered outputs. Therefore, the pipeline should be seen as one important operational part inside the wider lifecycle rather than as a replacement for it.
 
 #### Real case scenario
 
@@ -42842,6 +43562,29 @@ Because the issues in the proxy data are controlled, analysts can measure how we
 
 This process helps analysts identify which techniques are most effective, where certain methods fail, and what adjustments are needed before working on the real dataset. Proxy data is therefore valuable because it allows safe experimentation, comparison, and optimisation of cleaning workflows without risking sensitive live data.
 
+##### Question 6
+
+Provide 5 key reasons for why data cleaning and pre-processing are essential and give a short description of each.
+
+###### Suggested answer
+
+Five key reasons why data cleaning and pre-processing are essential are:
+
+1. **Improved data quality**  
+   Cleaning improves accuracy, consistency, and trustworthiness by correcting errors, inconsistencies, and invalid records.
+
+2. **Reliable analysis**  
+   Pre-processing reduces distortion caused by missing values, duplicates, outliers, and inconsistent formats, making the results more dependable.
+
+3. **Enhanced decision-making**  
+   Clean data gives managers and analysts stronger evidence, so decisions are less likely to be based on incomplete, misleading, or incorrect information.
+
+4. **Increased efficiency**  
+   By fixing quality issues early, analysts save time later and can focus more on analysis, interpretation, and business insight.
+
+5. **Compatibility and integration**  
+   Standardised and pre-processed data is easier to merge, compare, share, and use across systems, departments, and analytical tools.
+
 #### Resolver-style supplement
 
 The following answers show how an exam resolver would frame the same tasks.
@@ -42895,6 +43638,16 @@ The examiner wants to see whether you understand that proxy data can be used as 
 ###### Resolver-style answer draft
 
 I would explain that proxy data helps evaluate cleaning effectiveness because analysts can deliberately introduce known errors and then test how well different cleaning methods fix them. By comparing data quality before and after cleaning, they can see which methods improve completeness, consistency, and reliability most effectively. This makes proxy data useful for safe experimentation, method comparison, and workflow improvement before the same techniques are applied to the real dataset.
+
+##### Resolver view - Question 6
+
+###### What the examiner is really testing
+
+The examiner wants to see whether you can identify the **main practical reasons** for cleaning and pre-processing data and explain each one briefly rather than giving a vague definition.
+
+###### Resolver-style answer draft
+
+I would explain that data cleaning and pre-processing are essential for five main reasons. First, they improve **data quality** by correcting errors and inconsistencies. Second, they support **reliable analysis** by reducing distortion from missing values, duplicates, outliers, and poor formatting. Third, they improve **decision-making** because analysts and managers can rely on stronger evidence. Fourth, they increase **efficiency** by solving data problems early instead of repeatedly fixing them during analysis. Fifth, they improve **compatibility and integration** because standardised data is easier to combine, compare, and use across different systems. Together, these reasons show that cleaning and pre-processing are a core part of trustworthy data analysis rather than an optional extra step.
 
 #### What did I Learn in This Lesson?
 
@@ -43038,6 +43791,4958 @@ A strong answer in this topic usually:
                 "A dental practice is also a strong example because patient records, appointments, treatment history, invoices, and feedback often need standardisation, deduplication, validation, and structure alignment before analysis",
                 "A strong cleaning workflow identifies problems, checks them, corrects or flags them, documents the changes, and rechecks fitness for analysis",
                 "Data cleaning is a core part of trustworthy data analysis rather than a minor preparation step"
+            ],
+            "visual_elements": {
+                "diagrams": False,
+                "tables": False,
+                "highlighted_sections": True
+            }
+        },
+        {
+            "lesson_number": "3.3",
+            "title": "Lesson - Data Analysis Philosophies",
+            "content": """
+### 3.3. Lesson - Data Analysis Philosophies
+
+#### Introduction
+
+This lesson explores the four main **data analysis philosophies**.
+
+Data analysis is a systematic approach to extracting valuable insight and knowledge from raw data. To analyse data effectively, analysts often rely on different philosophies that help them understand what kind of question they are answering and what kind of value they want to create from the data.
+
+The four key data analysis philosophies are:
+
+- **descriptive**
+- **diagnostic**
+- **predictive**
+- **prescriptive**
+
+Each of these philosophies has a different purpose, but all of them support stronger decision-making.
+
+Throughout this lesson, we will examine these four analysis types in more detail and use examples to show how they help organisations move from basic observation to stronger action.
+
+#### Why data analysis philosophies matter
+
+These philosophies matter because they help analysts choose the right approach for the right problem.
+
+For example:
+
+- some questions ask what has already happened
+- some ask why it happened
+- some ask what is likely to happen next
+- some ask what action should be taken
+
+If an analyst uses the wrong philosophy, the final answer may not help the business or decision-maker in the way it needs.
+
+Understanding the four philosophies makes it easier to:
+
+- ask better questions
+- choose the correct analytical approach
+- interpret results more clearly
+- support better decisions
+
+#### Various Data Analysis Philosophies
+
+The four main data analysis philosophies each focus on a different type of analytical question and support decision-making in different ways.
+
+#### The four philosophies at a glance
+
+##### Descriptive analysis
+
+**Descriptive analysis** focuses on summarising and interpreting data to understand its main features and patterns.
+
+It often uses:
+
+- totals
+- averages
+- mean
+- median
+- mode
+- percentages
+- dashboards
+- charts
+- graphs
+- histograms
+- trend summaries
+
+Data visualisation techniques are especially important in descriptive analysis because they present data in a format that is easier to understand quickly.
+
+Descriptive analysis provides a strong foundation for understanding historical data and for identifying past trends and behaviours.
+
+##### Diagnostic analysis
+
+**Diagnostic analysis** focuses on investigating data more deeply to understand why something happened.
+
+It looks for the causes, relationships, and contributing factors behind a specific outcome. This may involve:
+
+- comparisons
+- drill-down analysis
+- correlation checks
+- root-cause investigation
+- relationship analysis between variables
+
+By examining historical data and patterns, diagnostic analysis helps answer questions such as:
+
+- why did this happen
+- what factors influenced the outcome
+
+This makes it useful for moving beyond surface-level observation and uncovering the reasons behind trends or events.
+
+##### Predictive analysis
+
+**Predictive analysis** focuses on forecasting future outcomes or events based on historical data and patterns.
+
+It often uses:
+
+- forecasting
+- probability estimates
+- trend projection
+- statistical models
+- data mining techniques
+- machine-learning models
+
+The goal is to identify patterns that can be used to predict future results.
+
+Predictive analysis enables organisations to make more informed decisions and take proactive action before an event happens.
+
+It is especially useful in areas such as:
+
+- sales forecasting
+- demand planning
+- risk assessment
+
+#### Prescriptive Data Analysis
+
+**Prescriptive analysis** is a sophisticated branch of data analysis that goes beyond simply describing what has happened or predicting what may happen.
+
+Its central focus is on recommending **what should be done next** in order to support optimal decision-making.
+
+Prescriptive analysis helps decision-makers identify the best course of action in complex and dynamic situations by combining:
+
+- historical data
+- predictive models
+- optimisation techniques
+- decision modelling
+
+Its main purpose is to guide organisations toward decisions that maximise desired outcomes while still taking into account:
+
+- constraints
+- objectives
+- trade-offs
+- uncertainty
+
+This makes prescriptive analysis especially valuable in business settings where several alternatives are possible and the organisation must decide which one is most effective.
+
+It often uses:
+
+- optimisation algorithms
+- simulation techniques
+- decision modelling
+
+These methods help organisations compare alternatives, assess likely outcomes, and choose the most favourable option.
+
+Prescriptive analysis is therefore strongly action-oriented because it does not stop at insight alone. It connects analysis directly to better decisions and practical business improvement.
+
+#### Visual guide - Prescriptive analysis
+
+Prescriptive analysis is often easiest to understand when it is shown as a decision flow.
+
+##### Visual idea - Prescriptive flow
+
+The basic logic can be shown like this:
+
+`problem or opportunity -> compare options -> check constraints -> choose best action`
+
+This means the analyst does not stop at predicting what may happen. The analyst goes further and recommends what the organisation should do.
+
+<div class="mermaid">
+flowchart LR
+    A[Problem or Opportunity] --> B[Generate Options]
+    B --> C[Check Constraints<br/>Budget, time, staff]
+    C --> D[Compare Outcomes]
+    D --> E[Recommend Best Action]
+
+    style A fill:#e3f2fd,stroke:#2196F3,stroke-width:2px
+    style B fill:#fff3cd,stroke:#ffc107,stroke-width:2px
+    style C fill:#ffebee,stroke:#f44336,stroke-width:2px
+    style D fill:#ede7f6,stroke:#7E57C2,stroke-width:2px
+    style E fill:#c8e6c9,stroke:#4CAF50,stroke-width:2px
+</div>
+
+##### Visual example - Prescriptive decision table
+
+Imagine a retailer expects a stock shortage for a popular product before a holiday period.
+
+| Option | Cost | Speed | Likely result | Simple recommendation logic |
+| --- | --- | --- | --- | --- |
+| Increase production | High | Medium | More stock available | Good if demand is very strong |
+| Reallocate stock from another region | Medium | Fast | Quick local fix | Good if another region has surplus |
+| Offer substitute products | Low | Fast | Reduces lost sales | Good if stock cannot be replaced in time |
+
+This kind of table makes prescriptive analysis easier to understand because it shows that the best action depends on:
+
+- objectives
+- constraints
+- trade-offs between options
+
+#### Examples of prescriptive analysis
+
+##### Example: Supply chain optimisation
+
+**Purpose**
+
+Optimising supply chain operations in order to minimise costs while still meeting customer demand and service requirements.
+
+**Optimisation technique**
+
+The analyst could use:
+
+- **Linear Programming (LP)**
+- **Mixed-Integer Linear Programming (MILP)**
+
+These techniques help determine the optimal allocation of resources such as:
+
+- production capacity
+- warehouse locations
+- transportation routes
+- inventory levels
+
+**Decision modelling**
+
+A mathematical model would include constraints such as:
+
+- production capacity
+- transportation costs
+- inventory holding costs
+- customer service levels
+
+The objective function could be defined to:
+
+- minimise total cost
+- maximise profit
+
+**Implementation**
+
+The recommended supply chain plan would then be implemented and monitored over time. Adjustments could be made if market conditions, customer demand, or operational constraints change.
+
+This makes supply chain optimisation a strong prescriptive example because it does not stop at analysing demand or predicting shortages. It recommends the best operational action under real business constraints.
+
+##### Example: Portfolio optimisation
+
+**Purpose**
+
+Optimising an investment portfolio in order to achieve the best possible balance between risk and return.
+
+**Optimisation technique**
+
+The analyst could use:
+
+- **quadratic programming**
+- **mean-variance optimisation**
+
+These techniques help identify the most suitable asset allocation across different investments.
+
+**Decision modelling**
+
+A mathematical model would include:
+
+- expected asset returns
+- risk measures such as standard deviation or Value-at-Risk (VaR)
+- correlations between assets
+- budget constraints
+- asset allocation limits
+
+The aim is to recommend an allocation that gives the best risk-return trade-off while respecting the investor's constraints and objectives.
+
+**Implementation**
+
+The recommended asset allocation strategy would then be implemented while taking into account:
+
+- market conditions
+- investment goals
+- risk tolerance
+
+The portfolio should also be monitored regularly so that the allocation can be adjusted when conditions, objectives, or risk exposure change over time.
+
+This makes portfolio optimisation a strong prescriptive example because it helps decision-makers choose the most suitable action from several competing alternatives rather than just describing performance or predicting returns.
+
+#### Visual guide - Standard deviation and Value-at-Risk
+
+These two measures are easier to understand when they are shown with small examples.
+
+##### Visual example - Standard deviation
+
+**Standard deviation** shows how spread out values are from the average.
+
+You can think of it like this:
+
+- **low standard deviation** = values stay close to the average
+- **high standard deviation** = values move far away from the average
+
+Imagine two portfolios with the same average return.
+
+| Portfolio | Example returns | Average return | Visual spread | Interpretation |
+| --- | --- | --- | --- | --- |
+| Portfolio A | 4%, 5%, 5%, 6%, 5% | 5% | Tight spread | Lower standard deviation, so lower volatility and lower risk |
+| Portfolio B | -2%, 1%, 5%, 9%, 12% | 5% | Wide spread | Higher standard deviation, so higher volatility and higher risk |
+
+This means that even if two portfolios have the same average return, the one with the wider spread is usually considered riskier.
+
+<div class="mermaid">
+flowchart LR
+    A[Same Average Return] --> B[Values stay close to average]
+    A --> C[Values spread far from average]
+    B --> D[Low Standard Deviation]
+    C --> E[High Standard Deviation]
+    D --> F[Usually Lower Risk]
+    E --> G[Usually Higher Risk]
+
+    style A fill:#e3f2fd,stroke:#2196F3,stroke-width:2px
+    style B fill:#c8e6c9,stroke:#4CAF50,stroke-width:2px
+    style C fill:#ffebee,stroke:#f44336,stroke-width:2px
+    style D fill:#c8e6c9,stroke:#4CAF50,stroke-width:2px
+    style E fill:#ffebee,stroke:#f44336,stroke-width:2px
+</div>
+
+##### Visual example - Value-at-Risk (VaR)
+
+**Value-at-Risk (VaR)** estimates the maximum expected loss over a chosen time period at a chosen confidence level.
+
+For example:
+
+| Portfolio value | Time period | Confidence level | VaR | Simple meaning |
+| --- | --- | --- | --- | --- |
+| 100,000 | 1 day | 95% | 4,000 | On 95% of days, the loss is expected to be no more than 4,000 |
+
+That gives a practical interpretation:
+
+- there is a **95% confidence level**
+- the portfolio is not expected to lose **more than 4,000** over **one day**
+- but there is still a **5% chance** that the loss could be worse than that
+
+So VaR is often used as a quick way to describe the **worst likely loss** under normal conditions for a chosen confidence level.
+
+<div class="mermaid">
+flowchart LR
+    A[Portfolio Value 100,000] --> B[95% One-Day VaR = 4,000]
+    B --> C[Most likely loss should stay within 4,000]
+    B --> D[5% chance of a worse loss]
+
+    style A fill:#e3f2fd,stroke:#2196F3,stroke-width:2px
+    style B fill:#fff3cd,stroke:#ffc107,stroke-width:2px
+    style C fill:#c8e6c9,stroke:#4CAF50,stroke-width:2px
+    style D fill:#ffebee,stroke:#f44336,stroke-width:2px
+</div>
+
+#### Google Sheets guide - Standard deviation and Value-at-Risk
+
+If you need to calculate these in **Google Sheets**, the most important first step is to make sure your data is organised correctly.
+
+For portfolio-style examples, a simple setup could look like this:
+
+| Column | Content |
+| --- | --- |
+| A | Date |
+| B | Historical return for each period |
+| E2 | Portfolio value |
+
+For example, the values in column **B** might be weekly or daily returns such as:
+
+`-0.03, 0.01, 0.02, -0.01, 0.04`
+
+That means returns should normally be stored as **decimals**:
+
+- `0.05` means `5%`
+- `-0.02` means `-2%`
+
+##### How to calculate standard deviation in Google Sheets
+
+If you are working with a sample of observed returns, you would usually use:
+
+```text
+=STDEV.S(B2:B101)
+```
+
+If you are treating the whole dataset as the full population, you can use:
+
+```text
+=STDEV.P(B2:B101)
+```
+
+##### What to look for when interpreting standard deviation
+
+When you calculate standard deviation, look for:
+
+- whether the value is **small**, meaning returns are clustered closely around the average
+- whether the value is **large**, meaning returns move more widely around the average
+- whether the spread makes sense compared with the scale of your return values
+
+In simple terms:
+
+- smaller standard deviation usually suggests **lower volatility**
+- larger standard deviation usually suggests **higher volatility**
+
+##### Signs that the standard deviation setup may be wrong
+
+Common warning signs include:
+
+- returns entered as `5` instead of `0.05`
+- mixing percentages and decimals in the same column
+- using price values instead of return values
+- getting a standard deviation of `0` even though the numbers clearly vary
+- getting an extremely large result that does not match the scale of the data
+
+##### How to calculate historical VaR in Google Sheets
+
+For a simple **historical 95% VaR**, first find the lower-tail percentile of the return distribution:
+
+```text
+=PERCENTILE(B2:B101,0.05)
+```
+
+This gives the 5th percentile return, which is the downside threshold used for a 95% confidence interpretation.
+
+If the portfolio value is stored in `E2`, a simple loss-style VaR formula is:
+
+```text
+=-MIN(PERCENTILE(B2:B101,0.05),0)*E2
+```
+
+This converts the downside return into a positive money-loss estimate.
+
+##### What to look for when interpreting VaR
+
+When interpreting VaR, check:
+
+- the **time period** used, such as daily, weekly, or monthly
+- the **confidence level**, such as 95% or 99%
+- whether the result is being interpreted as a **loss amount**
+- whether the VaR seems realistic compared with the portfolio size
+
+For example, if VaR is `4,000`, that means the expected loss should not exceed `4,000` over the chosen period in about 95% of normal cases.
+
+##### Signs that the VaR setup may be wrong
+
+Common warning signs include:
+
+- using `0.95` instead of `0.05` inside the percentile formula for a 95% downside VaR
+- calculating VaR from prices instead of returns
+- mixing daily and monthly returns in the same dataset
+- getting a negative VaR loss figure when you expected a positive loss amount
+- getting a VaR that is unrealistically huge compared with the portfolio value
+- using too little historical data to get a stable estimate
+
+##### How to fix common problems
+
+If the result looks wrong, check these points in order:
+
+1. confirm that returns are stored consistently as decimals or percentages
+2. confirm that all data points use the same time interval
+3. confirm that you are using **returns**, not raw prices
+4. confirm that the percentile is the correct downside tail for the chosen confidence level
+5. confirm that the portfolio value cell reference is correct
+6. check for outliers, blanks, or formatting errors in the return column
+
+##### Why this matters in exam answers
+
+If you explain this well in an exam, you show that you understand not only the theory, but also:
+
+- how to calculate the measures in practice
+- how to interpret them
+- how to detect when the setup is wrong
+- how to correct the problem before making a decision
+
+##### Example: Pricing optimisation
+
+**Purpose**
+
+Optimising pricing strategies in order to maximise revenue or profit.
+
+**Optimisation technique**
+
+The analyst could use:
+
+- **revenue management techniques**
+- **dynamic pricing models**
+- **revenue optimisation algorithms**
+
+These techniques help determine the most suitable pricing decision across changing market conditions.
+
+**Decision modelling**
+
+A pricing model would include factors such as:
+
+- demand elasticity
+- market competition
+- production costs
+- customer segments
+- capacity constraints
+
+The objective function could be designed to:
+
+- maximise revenue
+- maximise profit
+
+**Implementation**
+
+The recommended pricing strategy would then be implemented, regularly evaluated, and adjusted as market dynamics, customer behaviour, and the competitive landscape change.
+
+This makes pricing optimisation a strong prescriptive example because it does not only estimate customer behaviour. It recommends the best pricing action under real market constraints.
+
+##### Example: Resource allocation in healthcare
+
+**Purpose**
+
+Optimising the allocation of healthcare resources such as hospital beds, staff, and medical equipment in order to improve patient outcomes and operational efficiency.
+
+**Optimisation technique**
+
+The analyst could use:
+
+- **mathematical programming**
+- **queuing models**
+
+These techniques help determine the most suitable allocation and scheduling of healthcare resources.
+
+**Decision modelling**
+
+A mathematical model would include:
+
+- patient demand
+- resource availability
+- staff capacity
+- service-level targets
+- budget constraints
+
+The objective function could be designed to:
+
+- minimise wait times
+- maximise resource utilisation
+- improve patient satisfaction
+
+**Implementation**
+
+The recommended resource-allocation plan would then be implemented and monitored over time. Adjustments could be made as patient needs, resource availability, and quality-of-care requirements evolve.
+
+This makes healthcare resource allocation a strong prescriptive example because it recommends the best operational action under competing service, quality, and budget constraints.
+
+#### Why these prescriptive examples matter
+
+These examples show that **prescriptive analysis** is used when organisations need more than insight alone. They need a recommendation about the best action to take.
+
+The exact optimisation method may vary depending on the domain, but the core logic is similar:
+
+- define the objective
+- identify the constraints
+- compare possible alternatives
+- recommend the most effective option
+
+This helps improve:
+
+- efficiency
+- cost control
+- resource allocation
+- strategic decision-making
+
+They also show that prescriptive analysis can be applied in very different domains, such as:
+
+- supply chains
+- investments
+- pricing
+- healthcare operations
+
+That means the specific optimisation technique may change from one case to another, but the problem-solving logic is still similar:
+
+- define the objective
+- identify the constraints
+- model the alternatives
+- recommend the best action
+
+#### Exam resolver - Supply chain optimisation scenario
+
+##### What the examiner is really testing
+
+In a prompt built around **supply chain optimisation**, the examiner usually wants to see whether you can:
+
+- identify that this is a **prescriptive analysis** case
+- explain which resources, constraints, and objectives matter
+- name a suitable optimisation technique
+- connect the model to a practical operational recommendation
+
+##### Resolver-style answer draft - Supply chain optimisation scenario
+
+If I were asked to solve a **supply chain optimisation** scenario, I would explain that this is a form of **prescriptive data analysis** because the aim is to recommend the best operational decision, not just describe the supply chain or predict future demand.
+
+I would begin by defining the purpose clearly: the organisation wants to minimise total supply chain cost while still meeting customer demand and service requirements.
+
+Next, I would explain that I would build a decision model using operational data such as:
+
+- production capacity
+- warehouse availability
+- transportation routes
+- inventory levels
+- customer demand requirements
+
+This is important because supply chain decisions are always affected by constraints. The organisation cannot simply choose the cheapest option if that option causes delays, stockouts, or lower service quality.
+
+To solve the problem, I would use an optimisation technique such as:
+
+- **Linear Programming (LP)**
+- **Mixed-Integer Linear Programming (MILP)**
+
+I would then explain that the mathematical model includes constraints such as:
+
+- production capacity limits
+- transport costs
+- inventory holding costs
+- service-level requirements
+
+The objective function would normally be designed to **minimise total cost** or **maximise profit**.
+
+Finally, I would explain the prescriptive recommendation. The model would identify the most effective supply chain plan, for example:
+
+- how much to produce
+- where to store products
+- which routes to use
+- how much inventory to hold
+
+This gives the organisation a clear recommended action that can then be implemented and monitored over time.
+
+##### Why this is a strong exam answer
+
+This is a strong answer because it:
+
+- identifies the correct philosophy as **prescriptive analysis**
+- explains the objective, constraints, and trade-offs clearly
+- names appropriate optimisation methods
+- ends with a practical operational recommendation
+
+#### Exam resolver - Portfolio optimisation scenario
+
+##### What the examiner is really testing
+
+In a prompt built around **portfolio optimisation**, the examiner usually wants to see whether you can:
+
+- identify that this is a **prescriptive analysis** case
+- explain the balance between risk and return
+- name a suitable optimisation technique
+- connect the analysis to a concrete investment recommendation
+
+##### Resolver-style answer draft - Portfolio optimisation scenario
+
+If I were asked to solve a **portfolio optimisation** scenario, I would explain that this is a form of **prescriptive data analysis** because the purpose is to recommend the best portfolio allocation from several investment choices.
+
+I would begin by defining the purpose clearly: the investor wants to achieve the best possible balance between expected return and acceptable risk.
+
+Next, I would explain that I would use data such as:
+
+- expected asset returns
+- measures of risk such as standard deviation or Value-at-Risk
+- correlations between assets
+- budget limits
+- allocation constraints
+
+This is important because investment decisions are not based on return alone. A high-return portfolio may also involve high risk, so the model must compare both outcomes together.
+
+To solve the problem, I would use optimisation techniques such as:
+
+- **quadratic programming**
+- **mean-variance optimisation**
+
+I would then explain that the model searches for the asset allocation that gives the most suitable risk-return trade-off while staying within the investor's constraints.
+
+The result is a prescriptive recommendation about:
+
+- how much to allocate to each asset
+- which assets should be weighted more heavily
+- how risk should be controlled within the portfolio
+
+Overall, this is a strong prescriptive case because it moves from data and constraints to a clear recommended investment decision.
+
+##### Why this is a strong exam answer
+
+This is a strong answer because it:
+
+- identifies the correct philosophy as **prescriptive analysis**
+- shows that the problem involves trade-offs between objectives
+- names suitable optimisation techniques
+- turns the analysis into a clear recommended decision
+
+#### Exam resolver - Pricing optimisation scenario
+
+##### What the examiner is really testing
+
+In a prompt built around **pricing optimisation**, the examiner usually wants to see whether you can:
+
+- identify that this is a **prescriptive analysis** case
+- explain which pricing factors and constraints matter
+- name suitable optimisation techniques
+- connect the analysis to a clear pricing recommendation
+
+##### Resolver-style answer draft - Pricing optimisation scenario
+
+If I were asked to solve a **pricing optimisation** scenario, I would explain that this is a form of **prescriptive data analysis** because the organisation is not only trying to understand demand. It is trying to decide what price it should set.
+
+I would begin by defining the purpose clearly: the business wants to choose pricing strategies that maximise revenue or profit.
+
+Next, I would explain that I would build a pricing model using data such as:
+
+- demand elasticity
+- market competition
+- production costs
+- customer segments
+- capacity constraints
+
+This is important because the best price does not depend on one factor alone. A higher price may increase margin but reduce demand, while a lower price may increase demand but reduce profit per unit.
+
+To solve the problem, I would use techniques such as:
+
+- **revenue management techniques**
+- **dynamic pricing models**
+- **revenue optimisation algorithms**
+
+I would then explain that the model compares pricing options and identifies the one that best meets the objective function, such as **maximising revenue** or **maximising profit**.
+
+Finally, I would explain the recommendation. The business can implement the selected pricing strategy, monitor customer response and competitor behaviour, and adjust the price when market conditions change.
+
+Overall, this is a strong prescriptive case because it moves from market data and business constraints to a clear action-oriented pricing decision.
+
+##### Why this is a strong exam answer
+
+This is a strong answer because it:
+
+- identifies the correct philosophy as **prescriptive analysis**
+- explains the trade-off between price, demand, and profit
+- names suitable pricing-optimisation methods
+- ends with a practical recommendation that can be monitored and adjusted
+
+#### Exam resolver - Resource allocation in healthcare scenario
+
+##### What the examiner is really testing
+
+In a prompt built around **resource allocation in healthcare**, the examiner usually wants to see whether you can:
+
+- identify that this is a **prescriptive analysis** case
+- explain which healthcare constraints and service goals matter
+- name suitable optimisation techniques
+- connect the model to a clear operational recommendation
+
+##### Resolver-style answer draft - Resource allocation in healthcare scenario
+
+If I were asked to solve a **resource allocation in healthcare** scenario, I would explain that this is a form of **prescriptive data analysis** because the organisation needs to decide how resources should be allocated, not only describe current performance.
+
+I would begin by defining the purpose clearly: the healthcare organisation wants to allocate hospital beds, staff, and equipment in a way that improves patient outcomes and operational efficiency.
+
+Next, I would explain that I would build a decision model using data such as:
+
+- patient demand
+- resource availability
+- staff capacity
+- service-level targets
+- budget constraints
+
+This is important because healthcare systems must balance several competing needs at the same time. For example, increasing service levels in one area may reduce capacity in another.
+
+To solve the problem, I would use techniques such as:
+
+- **mathematical programming**
+- **queuing models**
+
+I would then explain that the model compares possible allocation plans and recommends the one that best meets the objective function, such as **minimising wait times**, **maximising resource utilisation**, or **improving patient satisfaction**.
+
+Finally, I would explain the recommendation. The organisation can implement the chosen allocation plan, monitor performance and utilisation, and adjust the allocation as patient demand, staffing levels, or quality requirements change.
+
+Overall, this is a strong prescriptive case because it turns constraints, objectives, and operational data into a clear recommended action for healthcare delivery.
+
+##### Why this is a strong exam answer
+
+This is a strong answer because it:
+
+- identifies the correct philosophy as **prescriptive analysis**
+- explains the tension between demand, capacity, service, and budget
+- names suitable optimisation techniques
+- ends with a practical resource-allocation recommendation
+
+#### Exam resolver - Broad prescriptive case
+
+##### What the examiner is really testing
+
+In a prompt like **"Select a scenario and use prescriptive analysis techniques to gain insight"**, the examiner usually wants to see whether you can:
+
+- choose a realistic scenario where a decision must be made
+- identify that the correct philosophy is **prescriptive analysis**
+- explain the objective, constraints, and trade-offs clearly
+- choose a suitable optimisation or decision-modelling approach
+- finish with a concrete recommended action rather than theory only
+
+##### Resolver-style answer draft - Select a scenario and use prescriptive analysis techniques to gain insight
+
+If I were asked to select a scenario and use prescriptive analysis techniques to gain insight, I would choose an **online retail company that needs to decide how much stock to allocate to different warehouses before a major sales period**.
+
+This is a strong prescriptive scenario because the company does not only want to understand past sales or predict future demand. It wants to decide **what it should do next**.
+
+I would begin by defining the purpose clearly: the organisation wants to allocate stock in a way that minimises costs and stock shortages while still meeting customer demand and delivery expectations.
+
+Next, I would explain that I would use relevant data such as:
+
+- historical sales patterns
+- forecasted demand by region
+- warehouse capacity
+- transportation costs
+- current inventory levels
+- delivery-time targets
+
+This is important because the best decision depends on several constraints at the same time. For example, the cheapest allocation may not be the one that gives the fastest delivery or the lowest risk of stockouts.
+
+To solve the problem, I would use a **prescriptive analysis** approach with techniques such as:
+
+- **Linear Programming (LP)**
+- **Mixed-Integer Linear Programming (MILP)**
+- decision modelling based on cost and service constraints
+
+I would then explain the decision model clearly. The model would include:
+
+- an **objective function**, such as minimising total logistics and inventory cost
+- **constraints**, such as warehouse capacity, transport availability, service-level targets, and expected demand
+- **trade-offs**, such as lower cost versus faster delivery or lower inventory versus lower stockout risk
+
+The insight from this analysis would not just be a prediction. It would be a **recommended action**, for example:
+
+- how much stock should be sent to each warehouse
+- which regions should receive priority allocation
+- where the business should hold buffer stock
+
+Finally, I would explain that the recommendation should be implemented and then monitored over time. If demand changes, transport costs rise, or warehouse capacity shifts, the allocation plan should be adjusted.
+
+Overall, this is a strong prescriptive-analysis case because it moves from business objectives and operational constraints to a clear recommended decision that improves performance.
+
+##### What you should be careful about in the exam
+
+When answering a broad prescriptive question, be careful to:
+
+- clearly state that the task is about **recommending the best action**
+- avoid stopping at prediction only, because that would stay at **predictive** analysis
+- mention both the **objective** and the **constraints**
+- show at least one suitable optimisation or decision method
+- finish with a practical recommendation and not just a model description
+
+##### How to use module knowledge in your answer
+
+The strongest way to use the module knowledge is to structure your answer like this:
+
+1. identify the philosophy as **prescriptive**
+2. define the scenario and business objective
+3. name the main constraints and trade-offs
+4. choose the optimisation or decision-modelling technique
+5. explain the recommended action
+6. mention implementation and monitoring
+
+That lets you actively use the main prescriptive ideas from the module:
+
+- optimisation
+- decision modelling
+- constraints
+- objectives
+- trade-offs
+- implementation
+- monitoring
+
+##### Why this is a strong exam answer
+
+This is a strong answer because it:
+
+- selects a realistic scenario where a decision must be made
+- uses the correct prescriptive logic from the module
+- explains objective, constraints, and optimisation clearly
+- ends with a specific recommended action and monitoring step
+
+#### Exam resolver - Prescriptive scenarios at a glance
+
+The most useful way to compare prescriptive scenarios is to keep the same answer structure and only change the business context, constraints, and optimisation method.
+
+| Scenario | Main objective | Typical constraints | Useful method | Final recommendation should focus on |
+| --- | --- | --- | --- | --- |
+| Supply chain optimisation | Minimise total cost while meeting demand | Capacity, transport, service level, inventory | LP / MILP | Production, routing, warehousing, stock levels |
+| Portfolio optimisation | Achieve the best risk-return balance | Budget, risk tolerance, allocation limits | Quadratic programming / mean-variance optimisation | Asset allocation and risk control |
+| Pricing optimisation | Maximise revenue or profit | Demand elasticity, competition, costs, capacity | Revenue optimisation / dynamic pricing | Best price or pricing strategy |
+| Resource allocation in healthcare | Improve service and efficiency | Staff, beds, equipment, budget, patient demand | Mathematical programming / queuing models | Best allocation and scheduling of resources |
+
+##### How to solve these scenarios with the same exam logic
+
+Across these scenarios, the best exam-resolver pattern is:
+
+1. identify the case as **prescriptive analysis**
+2. define the **objective**
+3. identify the **constraints**
+4. name the **optimisation or decision-modelling technique**
+5. explain the **recommended action**
+6. mention **implementation and monitoring**
+
+This comparison is useful because it shows that even when the domain changes, the solving logic remains similar.
+
+#### Descriptive Data Analysis
+
+**Descriptive analysis** is an essential component of data analysis because it focuses on summarising and describing the main characteristics of a dataset.
+
+Its main purpose is to:
+
+- provide an overview of the data
+- show how the data is distributed
+- identify patterns or trends
+
+Descriptive analysis helps analysts understand the data's:
+
+- central tendency
+- variability
+- shape
+
+This gives organisations a stronger basis for drawing meaningful conclusions and making data-driven decisions.
+
+#### Data summarisation techniques
+
+Data summarisation techniques are used in descriptive analysis to condense large datasets into concise and meaningful statistics.
+
+Some of the most common techniques fall into two main groups:
+
+- measures of central tendency
+- measures of variability
+
+##### Measures of central tendency
+
+Measures of central tendency help describe the typical or central value in a dataset.
+
+###### Mean
+
+The **mean** is the mathematical average of a set of values.
+
+It is calculated by:
+
+1. summing all values
+2. dividing the total by the number of observations
+
+The mean is useful when analysts want a general average, although it can be affected strongly by extreme values.
+
+###### Median
+
+The **median** is the middle value in a dataset when the data is arranged in ascending or descending order.
+
+It is especially useful when the dataset contains outliers because it is less affected by extreme values than the mean.
+
+###### Mode
+
+The **mode** is the value, or values, that occur most often in a dataset.
+
+It is useful when analysts want to identify the most common category or most frequent observation.
+
+##### Measures of variability
+
+Measures of variability describe how spread out the data is around the centre.
+
+###### Range
+
+The **range** is the difference between the maximum and minimum values in a dataset.
+
+It gives a simple measure of overall spread.
+
+###### Variance
+
+The **variance** is the average squared deviation of each value from the mean.
+
+It helps analysts understand how far the data tends to spread from the average.
+
+###### Standard deviation
+
+The **standard deviation** is the square root of the variance.
+
+It provides a more interpretable measure of dispersion by showing how far values tend to vary around the mean.
+
+##### Percentiles and quartiles
+
+###### Percentiles
+
+**Percentiles** are values that divide a dataset into equal parts and show the relative position of a particular value within the dataset.
+
+For example, the **75th percentile** shows the value below which 75 percent of the observations fall.
+
+Percentiles help analysts understand how a value compares to the rest of the dataset.
+
+###### Quartiles
+
+**Quartiles** are values that divide a dataset into four equal parts.
+
+They provide useful information about the spread and distribution of the data.
+
+Quartiles are especially helpful when analysts want to understand how the dataset is distributed across lower, middle, and upper sections.
+
+#### Data visualisation techniques
+
+Data visualisation is a powerful tool in descriptive analysis because it represents data visually and makes it easier to understand patterns, distributions, and relationships.
+
+Some common data visualisation techniques are listed below.
+
+##### Histograms
+
+A **histogram** is a graphical representation of the distribution of a continuous variable.
+
+The data is divided into bins or intervals, and the height of each bar shows the frequency or relative frequency of values inside that interval.
+
+Histograms are useful for understanding:
+
+- distribution shape
+- concentration of values
+- spread
+- possible skewness
+
+##### Bar charts
+
+**Bar charts** are used to display categorical or discrete data.
+
+Each category is represented by a bar, and the height of the bar corresponds to the frequency or proportion of observations in that category.
+
+Bar charts are useful when analysts want to compare categories clearly.
+
+##### Scatter plots
+
+**Scatter plots** are used to visualise the relationship between two continuous variables.
+
+Each observation is shown as a dot on a two-dimensional graph:
+
+- the x-axis represents one variable
+- the y-axis represents the other
+
+Scatter plots help analysts explore possible relationships, clusters, or trends between variables.
+
+##### Box plots
+
+**Box plots** provide a summary of the distribution of a dataset.
+
+They usually include:
+
+- minimum value
+- maximum value
+- quartiles
+- possible outliers
+
+Box plots help analysts identify spread, skewness, and unusual values in the data.
+
+#### Interpreting descriptive statistics and visualisations
+
+Interpreting descriptive statistics and visualisations means understanding the main insights they provide about the dataset.
+
+This often includes the following areas.
+
+##### Central tendency
+
+Descriptive statistics such as:
+
+- mean
+- median
+- mode
+
+help show the typical or main value in the data.
+
+##### Variability
+
+Measures such as:
+
+- range
+- variance
+- standard deviation
+
+help explain how spread out or dispersed the data points are.
+
+##### Distribution
+
+Visualisations such as:
+
+- histograms
+- box plots
+
+help show the overall shape and distribution of the data, for example whether it appears:
+
+- symmetric
+- skewed
+- multimodal
+
+##### Outliers
+
+Descriptive statistics and box plots can help identify **outliers**, which are values that differ strongly from most of the rest of the dataset.
+
+These unusual values may be:
+
+- data-entry errors
+- rare but valid observations
+- important signals for further investigation
+
+##### Relationships
+
+Visualisations such as **scatter plots** can reveal relationships and trends between variables.
+
+For example, they may show:
+
+- a positive relationship
+- a negative relationship
+- little or no clear relationship
+
+#### Why interpretation matters
+
+When analysts interpret descriptive statistics and visualisations correctly, they can:
+
+- understand the data more clearly
+- detect anomalies or unusual patterns
+- generate early hypotheses
+- prepare for deeper diagnostic, predictive, or prescriptive analysis
+
+Descriptive analysis therefore provides a foundation for the later stages of the analysis process by helping analysts understand historical trends, distributions, and basic behaviour in the dataset before moving into more advanced methods.
+
+#### Examples of descriptive analysis
+
+The following example shows how descriptive analysis can combine summarisation and visualisation.
+
+##### Example - Salary data analysis
+
+###### Purpose
+
+The purpose is to analyse employee salary data in a company in order to understand:
+
+- the salary distribution
+- the typical salary level
+- how much salaries vary
+
+###### Data summarisation
+
+The analyst may calculate:
+
+- the **mean**
+- the **median**
+- the **mode**
+
+to identify the typical salary level.
+
+The analyst may also calculate the **standard deviation** to measure the variability in salaries.
+
+###### Data visualisation
+
+The analyst can then create a **histogram** to visualise the salary distribution.
+
+In this chart:
+
+- salary ranges appear on the x-axis
+- employee frequency appears on the y-axis
+
+This helps the organisation see whether salaries are concentrated in a narrow range, widely spread, or affected by high or low extremes.
+
+##### Example - Customer satisfaction survey analysis
+
+###### Purpose
+
+The purpose is to analyse customer satisfaction survey responses in order to:
+
+- understand the overall satisfaction level
+- identify areas that may need improvement
+
+###### Data summarisation
+
+The analyst can calculate the percentage of customers who selected:
+
+- satisfied
+- neutral
+- unsatisfied
+
+The analyst can also calculate the **mode** to identify the most common satisfaction rating.
+
+###### Data visualisation
+
+The analyst can create a **bar chart** to show the distribution of satisfaction ratings.
+
+In this chart:
+
+- the satisfaction categories appear on the x-axis
+- the percentage of customers appears on the y-axis
+
+This helps the organisation compare customer opinions clearly and see which satisfaction category is most common.
+
+##### Example - Sales analysis by region
+
+###### Purpose
+
+The purpose is to analyse sales across different regions in order to:
+
+- identify the highest-selling areas
+- identify the lowest-selling areas
+- understand variation in regional sales performance
+
+###### Data summarisation
+
+The analyst can calculate the total sales for each region and identify which region has:
+
+- the highest sales
+- the lowest sales
+
+The analyst can also calculate the **range** to understand the spread of sales across regions.
+
+###### Data visualisation
+
+The analyst can create:
+
+- a **bar chart**
+- or a **pie chart**
+
+to show the distribution of sales by region.
+
+This makes it easier to compare regions and see how sales are distributed across the business.
+
+##### Example - Exam score analysis
+
+###### Purpose
+
+The purpose is to analyse students' exam scores in order to:
+
+- understand performance levels
+- assess the spread of results
+- judge how difficult the exam may have been
+
+###### Data summarisation
+
+The analyst can calculate:
+
+- the **mean**
+- the **median**
+
+to understand average and middle performance.
+
+The analyst can also calculate:
+
+- the **range**
+- the **standard deviation**
+
+to assess how spread out the exam scores are.
+
+###### Data visualisation
+
+The analyst can create a **box plot** to show the score distribution.
+
+This allows the analyst to visualise:
+
+- minimum value
+- maximum value
+- quartiles
+- possible outliers
+
+The plot helps show whether performance is tightly grouped, widely spread, or affected by unusual scores.
+
+#### Exam resolver - Descriptive analysis scenarios
+
+##### What the examiner is really testing
+
+In these kinds of descriptive-analysis cases, the examiner usually wants to see whether you can:
+
+- identify the purpose of the analysis clearly
+- choose the correct descriptive statistics
+- choose a suitable visualisation
+- explain what the chosen statistics and visualisations help the organisation understand
+
+##### Resolver-style answer draft - Salary data analysis
+
+In this scenario, I would explain that the purpose of the descriptive analysis is to understand how employee salaries are distributed and what the typical salary level looks like. I would use the **mean**, **median**, and **mode** to describe the central tendency of salaries, because these measures help show the average salary, the middle salary, and the most common salary level. I would also calculate the **standard deviation** to understand how much variation exists across the salary data. For the visualisation, I would use a **histogram** because salaries are a continuous variable, and a histogram makes it easier to see whether salaries are concentrated in one range, spread widely, or affected by unusually high or low values.
+
+##### Resolver-style answer draft - Customer satisfaction survey analysis
+
+In this scenario, I would explain that the purpose is to understand the overall satisfaction level of customers and identify whether improvement is needed. I would calculate the percentage of customers who answered **satisfied**, **neutral**, and **unsatisfied** so the organisation can compare the response categories clearly. I would also calculate the **mode** to identify the most common satisfaction rating. For the visualisation, I would use a **bar chart** because the satisfaction responses are categorical. A bar chart makes it easy to compare the share of responses in each category and see whether customer satisfaction is mainly positive, mixed, or negative.
+
+##### Resolver-style answer draft - Sales analysis by region
+
+In this scenario, I would explain that the goal is to compare regional sales performance and identify which regions perform best and worst. I would calculate the **total sales** for each region and then identify the highest-selling and lowest-selling regions. I would also calculate the **range** to show how large the spread in sales is across regions. For the visualisation, I would use a **bar chart** because it makes comparisons between regions clearer. A **pie chart** could also be used if the aim is to show each region as a share of total sales, but a bar chart is usually stronger when the task is direct comparison.
+
+##### Resolver-style answer draft - Exam score analysis
+
+In this scenario, I would explain that the aim is to understand student performance and assess how spread out the exam scores are. I would calculate the **mean** and **median** to describe the average and middle performance, and I would calculate the **range** and **standard deviation** to show how much the scores vary. For the visualisation, I would use a **box plot** because it shows the minimum, maximum, quartiles, and possible outliers in one view. This makes it easier to judge whether most students performed similarly, whether the scores are widely spread, and whether there are unusually low or high results that might need further interpretation.
+
+##### Why these are strong exam answers
+
+These are strong answers because they:
+
+- connect the purpose of the case to the correct descriptive method
+- choose statistics that fit the data type and question
+- choose visuals that match the structure of the data
+- explain what the organisation can learn from the results
+
+#### Exam resolver - Broad descriptive case using all techniques
+
+##### What the examiner is really testing
+
+In a prompt like **"Select a scenario and use descriptive analysis techniques to gain insight"**, the examiner usually wants to see whether you can:
+
+- choose a realistic scenario that fits descriptive analysis
+- use more than one descriptive technique, not just one statistic
+- combine summary measures and visualisations in a logical way
+- interpret what the results would tell the organisation
+
+##### Resolver-style answer draft - Select a scenario and use descriptive analysis techniques to gain insight
+
+If I were asked to select a scenario and use descriptive analysis techniques to gain insight, I would choose an **online retail order dataset**.
+
+The reason this is a strong scenario is that it contains both continuous and categorical data, which means I can use a wide range of descriptive-analysis techniques in one answer.
+
+I would begin by stating the purpose of the analysis: to understand customer purchasing behaviour, typical order value, variation in spending, category patterns, and any unusual results that may need attention.
+
+First, I would use measures of **central tendency** on order value data:
+
+- **mean** to show the average order value
+- **median** to show the middle order value
+- **mode** to show the most common order value or most common product category, depending on the variable
+
+Next, I would use measures of **variability**:
+
+- **range** to show the difference between the smallest and largest order values
+- **variance** to measure how spread out the order values are around the mean
+- **standard deviation** to give a more interpretable measure of that spread
+
+I would also use **percentiles** and **quartiles** to understand relative position and distribution. For example, I could identify the 25th, 50th, and 75th percentiles of order value to see how customer spending is distributed across lower, middle, and higher spenders.
+
+For **data visualisation**, I would use several charts because each one gives a different insight:
+
+- a **histogram** to show the distribution of order values and reveal whether spending is concentrated or skewed
+- a **box plot** to show quartiles and identify possible outliers, such as unusually large purchases
+- a **bar chart** to compare sales or order counts by category or region
+- a **scatter plot** to examine the relationship between two continuous variables, such as discount level and order value
+
+By interpreting these statistics and visualisations together, I could answer descriptive questions such as:
+
+- what is the typical order value
+- how much do customer purchases vary
+- are there any unusual outliers
+- which product categories or regions perform best
+- whether two variables appear to move together
+
+This would give the organisation a strong first understanding of its dataset and help generate initial hypotheses before moving into diagnostic, predictive, or prescriptive analysis.
+
+##### Why this is a strong exam answer
+
+This is a strong answer because it:
+
+- selects a scenario with enough variety in the data
+- uses both numerical summaries and visualisations
+- applies **all major descriptive techniques** in one coherent structure
+- explains the business insight gained rather than only naming methods
+
+#### Why descriptive analysis matters
+
+Descriptive analysis is important because it gives analysts a first structured understanding of the dataset before they move into deeper investigation, prediction, or decision recommendations.
+
+It helps them:
+
+- summarise large amounts of data clearly
+- spot patterns and trends
+- understand whether the data appears concentrated or widely spread
+- communicate findings in charts, graphs, and statistics
+
+This makes descriptive analysis a foundation for the rest of the analytical process.
+
+#### Error detection, elimination, and correction
+
+Errors are inevitable in data analysis, so analysts need to identify, eliminate, and correct them in order to protect the accuracy and reliability of their results.
+
+This part of the analytical process matters because even a strong model or visualisation can become misleading if the underlying data contains serious errors.
+
+Common data-quality problems include:
+
+- missing data
+- outliers
+- measurement errors
+- data entry errors
+
+#### Common error types
+
+##### Missing data
+
+**Missing data** refers to data points or values that are missing or incomplete in a dataset.
+
+This can happen because of:
+
+- data collection errors
+- system failures
+- participant non-response
+
+Analysts need to decide whether missing values should be:
+
+- removed
+- left blank and documented
+- imputed with a sensible estimate
+
+The correct decision depends on the amount of missing data, the importance of the variable, and the purpose of the analysis.
+
+##### Outliers
+
+**Outliers** are values that differ strongly from the rest of the dataset.
+
+They may result from:
+
+- data entry mistakes
+- measurement problems
+- genuinely extreme observations
+
+Analysts should not remove outliers automatically. They should first investigate whether the value reflects:
+
+- a real but unusual observation
+- an error in recording or measurement
+- a special event that needs separate interpretation
+
+##### Measurement errors
+
+**Measurement errors** occur during data collection or measurement and lead to inaccurate recorded values.
+
+These errors may come from:
+
+- human error
+- faulty equipment
+- inconsistent measurement procedures
+
+Measurement errors can distort summary statistics, relationships between variables, and final business conclusions if they are not identified and corrected.
+
+##### Data entry errors
+
+**Data entry errors** happen when values are entered incorrectly during manual input.
+
+Common examples include:
+
+- typographical errors
+- transposition errors
+- incorrect units
+- misplaced decimal points
+
+These errors are especially dangerous because they may look like valid values unless the analyst checks carefully.
+
+#### Techniques for detecting errors
+
+##### Visual inspection
+
+**Visual inspection** means examining the data using charts and graphs in order to spot suspicious patterns or unusual values.
+
+Useful visuals include:
+
+- scatter plots
+- box plots
+- histograms
+
+These visuals can help analysts notice:
+
+- extreme outliers
+- strange clusters
+- unusual gaps
+- unexpected distribution shapes
+
+##### Descriptive statistics
+
+**Descriptive statistics** can also help detect unusual values or possible errors.
+
+Analysts may calculate:
+
+- mean
+- median
+- standard deviation
+- range
+
+If these values look inconsistent with the expected scale or context of the data, that may suggest extreme values, entry problems, or other quality issues that need investigation.
+
+##### Data profiling
+
+**Data profiling** involves examining the structure and distribution of the data in a systematic way.
+
+Common profiling methods include:
+
+- frequency analysis
+- value distributions
+- cross-tabulations
+
+These methods help analysts detect:
+
+- missing values
+- inconsistent categories
+- unexpected codes
+- unusual combinations of values
+
+##### Statistical tests
+
+**Statistical tests** can help analysts evaluate whether the data behaves as expected.
+
+For example, analysts may use:
+
+- hypothesis testing
+- goodness-of-fit tests
+- normality checks
+
+These methods can help reveal whether the data distribution, pattern, or relationship differs from what should normally be expected.
+
+#### How analysts eliminate and correct errors
+
+After detecting a possible error, the analyst must decide how to respond.
+
+Common actions include:
+
+- correcting obvious data-entry mistakes
+- standardising inconsistent formats
+- removing clearly invalid records
+- imputing missing values where appropriate
+- flagging suspicious observations for separate review
+
+A strong analyst does not delete data blindly. The better approach is to:
+
+1. detect the issue
+2. investigate the likely cause
+3. choose the most defensible correction method
+4. document what was changed
+
+#### Google Sheets guide - Finding and fixing common data errors
+
+If you need to do this in **Google Sheets**, the easiest approach is to check the dataset in a fixed order instead of jumping straight to editing values.
+
+A simple workflow is:
+
+1. scan for blanks and obvious formatting problems
+2. look for strange extreme values
+3. check whether categories and labels are consistent
+4. identify duplicates or obvious input mistakes
+5. correct only the values you can justify
+
+##### What to look for first
+
+In Google Sheets, be especially alert to:
+
+- blank cells in important columns
+- numbers stored as text
+- inconsistent date formats
+- category labels that should match but do not, such as `Male`, `male`, and `M`
+- values that are far too large or far too small for the context
+- duplicate IDs, names, or transaction rows
+
+These are often the first signs that the dataset needs cleaning before analysis begins.
+
+##### How to find missing data in Google Sheets
+
+You can detect missing values by:
+
+- filtering a column and checking for blanks
+- using conditional formatting to highlight empty cells
+- counting blanks with a formula such as:
+
+```text
+=COUNTBLANK(B2:B100)
+```
+
+What to be careful about:
+
+- a blank cell may mean truly missing data, not necessarily an error
+- some cells may look blank but actually contain spaces
+- removing rows too quickly may reduce your sample size too much
+
+How to fix it:
+
+- leave the value blank if that is the most honest choice
+- replace obvious placeholders such as `N/A` or `unknown` with a consistent missing-value label
+- use imputation only if you can justify it clearly
+
+##### How to find outliers in Google Sheets
+
+Outliers are easiest to spot by combining visuals with simple calculations.
+
+You can:
+
+- create a **box plot** or **scatter plot**
+- sort the column from largest to smallest
+- compare the value to the mean and standard deviation
+
+Helpful formulas include:
+
+```text
+=AVERAGE(B2:B100)
+=STDEV.S(B2:B100)
+=MIN(B2:B100)
+=MAX(B2:B100)
+```
+
+What to be careful about:
+
+- not every outlier is an error
+- some outliers are real and important, especially in finance, healthcare, or operations
+- deleting real extreme values can distort the truth of the dataset
+
+How to fix it:
+
+- first check the source record
+- correct it if it is a typo or misplaced decimal
+- keep it if it is genuine but document that it is extreme
+- analyse it separately if it represents a special case
+
+##### How to find measurement or data-entry errors in Google Sheets
+
+These errors often appear as values that are valid in format but wrong in context.
+
+Examples:
+
+- an age of `250`
+- a sales value of `9999999` in a small-store dataset
+- a date that falls outside the study period
+- the same person entered twice with slightly different spelling
+
+Useful checks include:
+
+- sorting columns to bring unusual values to the top or bottom
+- using filters to isolate one category at a time
+- checking frequency counts with:
+
+```text
+=COUNTIF(C2:C100,"Male")
+```
+
+- checking duplicates with conditional formatting or:
+
+```text
+=COUNTIF(A:A,A2)
+```
+
+If this returns a value greater than `1`, the ID or value appears more than once.
+
+What to be careful about:
+
+- duplicated values are not always duplicated records
+- repeated names may refer to different people
+- the same category may be written in several ways, which can make frequencies look wrong
+
+How to fix it:
+
+- standardise spellings and formats
+- correct obvious typos
+- confirm suspected duplicates using more than one field, such as ID plus email or date
+- remove duplicate rows only when you are confident they are true duplicates
+
+##### How to use descriptive statistics and profiling in Google Sheets
+
+Google Sheets can help you profile a dataset quickly with:
+
+- `AVERAGE`
+- `MEDIAN`
+- `MODE`
+- `MIN`
+- `MAX`
+- `STDEV.S`
+- pivot tables
+- filters
+
+These help you see whether:
+
+- the data range looks realistic
+- one category appears far more often than expected
+- unusual combinations of values appear together
+- the spread of the data makes sense
+
+This is useful because errors often become visible when the summary looks unrealistic.
+
+##### Indications that something is probably wrong
+
+Strong warning signs include:
+
+- a mean that looks impossible for the context
+- a minimum or maximum value that is unrealistic
+- categories that should match but appear separately
+- a standard deviation that is far larger than expected
+- too many blanks in a key column
+- IDs that repeat when they should be unique
+- dates outside the expected time period
+- charts that show isolated points far away from the rest of the data
+
+If you see one of these signs, pause before analysing further.
+
+##### A simple Google Sheets correction routine
+
+A practical correction routine is:
+
+1. make a copy of the raw sheet before changing anything
+2. highlight blanks, duplicates, and suspicious values
+3. sort and filter the data to inspect unusual cases
+4. correct clear typos, inconsistent labels, and obvious invalid values
+5. document what was changed in a notes column or separate cleaning log
+
+This is important because in an exam or in real work, you should be able to explain not just **what** you changed, but **why** you changed it.
+
+#### Why this matters for analysis
+
+Error detection, elimination, and correction improve:
+
+- data accuracy
+- reliability
+- consistency
+- trust in the final analysis
+
+This strengthens every later stage of data analysis because cleaner data leads to more reliable descriptive, diagnostic, predictive, and prescriptive insights.
+
+#### Exam resolver - Error detection and correction scenario
+
+##### What the examiner is really testing
+
+In a prompt about **error detection, elimination, and correction**, the examiner usually wants to see whether you can:
+
+- identify common data-quality problems clearly
+- explain how those problems can be detected
+- explain how they can be corrected in a defensible way
+- show practical understanding by linking the process to tools such as **Google Sheets**
+
+##### Resolver-style answer draft - Explain how you would detect, eliminate, and correct errors in a dataset
+
+If I were asked to explain how I would detect, eliminate, and correct errors in a dataset, I would begin by stating that this process is important because reliable analysis depends on clean and trustworthy data.
+
+I would first identify the most common error types:
+
+- **missing data**
+- **outliers**
+- **measurement errors**
+- **data-entry errors**
+
+Next, I would explain how I would detect these problems.
+
+I would use **visual inspection** with charts such as scatter plots, box plots, and histograms to look for unusual values, strange gaps, or suspicious patterns.
+
+I would also use **descriptive statistics** such as the mean, median, range, minimum, maximum, and standard deviation to check whether the numbers look realistic for the context of the dataset.
+
+In addition, I would use **data profiling** methods such as frequency analysis, value distributions, and cross-tabulations to identify missing values, inconsistent labels, repeated values, or unexpected category combinations.
+
+If necessary, I could also use **statistical tests** to check whether the data distribution or pattern differs from what would normally be expected.
+
+After detecting possible errors, I would not delete values immediately. I would first investigate whether the unusual value is:
+
+- a genuine observation
+- a measurement problem
+- a data-entry mistake
+- a special case that should be kept but noted separately
+
+To correct the data, I would:
+
+- fix obvious typos and formatting errors
+- standardise inconsistent labels and units
+- remove clearly invalid records only when justified
+- leave some values blank if that is the most honest choice
+- use imputation only when it can be defended logically
+
+If I were doing this in **Google Sheets**, I would use:
+
+- **filters** and **sorting** to bring suspicious values to the top or bottom
+- **conditional formatting** to highlight blanks or duplicates
+- **COUNTBLANK** to count missing values
+- **COUNTIF** to check repeated IDs or category counts
+- formulas such as **AVERAGE**, **MEDIAN**, **MIN**, **MAX**, and **STDEV.S** to profile the data
+
+For example, if I saw repeated IDs, unrealistic ages, inconsistent category labels, or extreme values far outside the expected range, I would pause and investigate them before continuing with the analysis.
+
+Overall, the strongest approach is to detect the issue, investigate the cause, apply the most suitable correction, and document what was changed. That ensures the final analysis is based on data that is more accurate, consistent, and reliable.
+
+##### What you should be careful about in the exam
+
+When answering this kind of question, be especially careful to:
+
+- avoid saying that all outliers should be removed automatically
+- avoid saying that all missing values should simply be replaced with averages
+- explain both **how to find the issue** and **how to correct it**
+- show that correction decisions depend on context, not just on formulas
+- mention documentation, because good data cleaning should be traceable
+
+##### How to use module knowledge in your answer
+
+The strongest way to use the module knowledge is to structure your answer like this:
+
+1. explain why clean data matters
+2. name the common error types
+3. explain the detection methods
+4. explain the correction logic
+5. add practical Google Sheets checks
+6. finish by linking the process to more reliable analysis and decision-making
+
+##### Why this is a strong exam answer
+
+This is a strong answer because it:
+
+- identifies the main data-quality problems clearly
+- explains more than one detection method
+- shows practical Google Sheets understanding
+- avoids oversimplified correction advice
+- links data cleaning directly to trustworthy analysis
+
+#### Exam resolver - Concrete customer dataset case
+
+##### What the examiner is really testing
+
+In a concrete prompt built around a **customer list**, **sales sheet**, or **online retail customer dataset**, the examiner usually wants to see whether you can:
+
+- recognise the specific data problems in the table
+- explain how you would inspect the sheet systematically
+- use practical **Google Sheets** methods rather than theory only
+- justify why a value should be corrected, kept, flagged, or removed
+
+##### Resolver-style answer draft - Customer list / online retail dataset
+
+If I were given a customer dataset in an exam, I would begin by explaining that my first step would be to protect the original data by making a copy of the raw sheet before I changed anything.
+
+I would then inspect the main columns, such as:
+
+- customer ID
+- customer name
+- email
+- age
+- city
+- purchase amount
+- signup date
+
+I would look for four main types of problems.
+
+First, I would check for **missing data**. For example, if some customers have no email address or no age recorded, I would use filters or **COUNTBLANK** to identify how many values are missing. I would then decide whether those blanks should remain blank, be standardised as missing values, or be excluded only if the field is essential for the analysis.
+
+Second, I would check for **duplicates**. If two rows have the same customer ID, or if the same name and email appear more than once, I would use **COUNTIF** and sorting to investigate whether they are true duplicates or separate customers with similar details.
+
+Third, I would check for **outliers** and suspicious numeric values. For example, if most purchase amounts are between `10` and `500` but one row shows `50000`, I would calculate the mean, minimum, maximum, and standard deviation, and I would inspect the source row to see whether this is a genuine large purchase or a typing error such as a misplaced zero.
+
+Fourth, I would check for **inconsistent labels and formatting**. For example, the city column might contain `Cape Town`, `cape town`, and `CPT`, or a gender column might contain `Male`, `male`, and `M`. In this case I would standardise the labels so that the categories are consistent before doing any frequency analysis or charts.
+
+If I were doing this in **Google Sheets**, I would use:
+
+- **filters** to isolate blanks and unusual categories
+- **sorting** to bring very large or very small values into view
+- **conditional formatting** to highlight duplicates or empty cells
+- **COUNTBLANK** to count missing cells
+- **COUNTIF** to check duplicates or category frequencies
+- **AVERAGE**, **MIN**, **MAX**, and **STDEV.S** to profile numeric fields
+
+I would also explain that I would not remove values blindly. For example:
+
+- if an age is `250`, I would treat that as an obvious error and correct or remove it if the source cannot be verified
+- if a purchase amount is unusually high, I would first check whether it is a real premium order
+- if a category label is inconsistent, I would standardise it instead of deleting the row
+
+Overall, I would conclude that the best way to solve this case is to identify the problem type, investigate the row carefully, apply the most defensible correction, and document the change. This gives the organisation a cleaner customer dataset and makes later analysis more accurate and trustworthy.
+
+##### Why this is a strong exam answer
+
+This is a strong answer because it:
+
+- uses a realistic dataset with typical exam-style errors
+- explains exactly what the analyst would look for in the sheet
+- shows practical Google Sheets methods
+- distinguishes between correcting, standardising, removing, and keeping values
+
+#### Diagnostic Data Analysis
+
+**Diagnostic analysis** is the form of analysis that aims to investigate and understand the relationships, patterns, and causes behind specific outcomes or events.
+
+Its main purpose is to:
+
+- identify factors that contributed to an outcome
+- understand why a result occurred
+- support troubleshooting and better decision-making
+
+Instead of only describing what happened, diagnostic analysis looks more deeply into the data to explain the reasons behind the result.
+
+#### Identifying patterns, trends, and anomalies in data
+
+Diagnostic analysis often involves identifying patterns, trends, and anomalies in order to gain insight into the factors influencing the observed outcome.
+
+Some key techniques used in this process are listed below.
+
+##### Trend analysis
+
+**Trend analysis** examines data over time in order to identify patterns and long-term movements.
+
+This can show whether the data:
+
+- increases over time
+- decreases over time
+- follows a cyclical pattern
+- shows seasonality
+
+Trend analysis is useful when analysts want to understand whether an outcome is part of a wider pattern rather than a one-off event.
+
+##### Comparative analysis
+
+**Comparative analysis** compares different groups, categories, or data segments to identify important variations and differences.
+
+This can help analysts understand why one group performs differently from another.
+
+For example, an organisation may compare:
+
+- regions
+- customer segments
+- product categories
+- time periods
+
+to identify what factors may be linked to stronger or weaker outcomes.
+
+##### Deviation analysis
+
+**Deviation analysis** focuses on identifying anomalies, exceptions, or outliers that do not follow the expected pattern in the data.
+
+These unusual values may point to:
+
+- data-entry errors
+- measurement issues
+- operational problems
+- exceptional circumstances that need further investigation
+
+#### Correlation and causation analysis
+
+Diagnostic analysis also involves examining the relationships between variables in order to understand whether they move together and whether one factor may help explain another.
+
+##### Correlation analysis
+
+**Correlation analysis** assesses the strength and direction of the relationship between two or more variables.
+
+It helps analysts understand whether variables:
+
+- move in the same direction
+- move in opposite directions
+- show little or no clear relationship
+
+Correlation coefficients, such as **Pearson's correlation coefficient**, are often used to measure the degree of association between variables.
+
+This is useful when analysts want to identify meaningful relationships in the data, but correlation alone does **not** prove that one variable causes the other.
+
+##### Causation analysis
+
+**Causation analysis** aims to determine whether one variable actually influences or produces change in another variable.
+
+This is more demanding than correlation analysis because a relationship between variables does not automatically mean that one causes the other.
+
+To infer causation, analysts usually need stronger evidence such as:
+
+- experimental design
+- causal modelling
+- hypothesis testing
+- control of other influencing variables
+
+Causation analysis is important because it helps organisations avoid weak conclusions and supports more reliable decision-making.
+
+#### Root cause analysis and troubleshooting
+
+The diagnostic analysis process often aims to identify the **root causes** of a specific outcome or problem.
+
+That means analysts do not stop at observing the effect. Instead, they investigate the underlying factors that contributed to it.
+
+Some common steps in root cause analysis and troubleshooting are listed below.
+
+##### Problem identification
+
+The first step is to define the problem clearly.
+
+This helps ensure that the analysis stays focused on the exact issue that needs to be explained or improved.
+
+##### Data collection and analysis
+
+The next step is to gather relevant data connected to the problem and analyse it carefully.
+
+This may involve:
+
+- reviewing historical data
+- comparing groups or time periods
+- conducting experiments
+- collecting additional evidence
+
+##### Hypothesis generation and testing
+
+Analysts then develop possible explanations for the problem and test those explanations against the available data.
+
+This helps narrow the list of possible causes and identify which explanations are most likely to be valid.
+
+##### Validation and solution implementation
+
+Once likely root causes are identified, they should be validated and used to support action.
+
+This step is important because it turns diagnostic insight into practical improvements, interventions, or decisions.
+
+##### The 5 Whys technique
+
+The **5 Whys** is a simple but powerful diagnostic method used to uncover the root cause of a problem.
+
+The analyst starts with the problem statement and then repeatedly asks **"Why?"**
+
+The answer to the first question becomes the starting point for the next **"Why?"**, and this process continues through a chain of causes.
+
+The purpose is to peel back each layer of the problem until the most likely root cause is identified.
+
+The technique is useful because it helps organisations move beyond surface symptoms and focus on the deeper issue that needs to be solved.
+
+##### Fishbone diagrams
+
+**Fishbone diagrams**, also called **Ishikawa diagrams**, are a visual tool used in root cause analysis to organise and classify possible causes of a problem.
+
+In this method:
+
+- the **head** of the fish represents the problem or effect
+- the **bones** represent major categories of possible causes
+
+These categories can include, for example:
+
+- people or personnel
+- procedures or processes
+- technology or equipment
+- materials
+- environment
+
+The purpose of the fishbone diagram is to help analysts structure their thinking and group possible causes clearly before testing which cause is most likely to be the true root issue.
+
+Using tools such as the **5 Whys** or **fishbone diagrams** in root cause analysis helps ensure that the foundational issues are examined carefully.
+
+This creates a stronger basis for productive corrective or remedial action.
+
+Diagnostic analysis is especially useful when organisations want to move beyond observation and understand what is driving success, failure, or unusual results.
+
+#### Examples of diagnostic analysis
+
+##### Example - Customer churn analysis
+
+###### Purpose
+
+The purpose is to analyse customer churn in order to understand the underlying factors that are contributing to customer loss.
+
+###### Identifying patterns
+
+The analyst can explore the data to identify patterns and trends linked to churn.
+
+For example, they may examine:
+
+- customer demographics
+- purchase history
+- contract type
+- service usage
+- interactions with customer support
+
+###### Correlation analysis
+
+The analyst can investigate whether there are meaningful correlations between churn and specific behaviours, such as:
+
+- low engagement
+- complaint history
+- repeated service issues
+- falling purchase frequency
+
+###### Root cause analysis
+
+The analyst can then investigate the likely root causes of churn by using customer feedback, surveys, complaints, and customer satisfaction data.
+
+This helps the organisation move from simply observing churn to understanding why customers leave and what actions may reduce churn in the future.
+
+##### Example - Website conversion analysis
+
+###### Purpose
+
+The purpose is to analyse website conversion rates in order to understand why visitors are not converting into customers.
+
+###### Identifying patterns
+
+The analyst can examine website traffic data to identify behavioural patterns, such as:
+
+- high bounce rates
+- low conversion rates on specific pages
+- abandonment at certain steps in the customer journey
+
+###### Comparative analysis
+
+The analyst can compare conversion rates across:
+
+- user segments
+- traffic sources
+- device types
+- landing pages
+
+This helps reveal where performance differs and where potential barriers to conversion may exist.
+
+###### Troubleshooting
+
+The analyst can use usability testing, user feedback, and evaluation of website elements such as:
+
+- calls-to-action
+- forms
+- page design
+- content layout
+
+They can also use **A/B testing** to compare different versions of content or page design in order to identify which changes improve conversion.
+
+##### Example - Production line performance analysis
+
+###### Purpose
+
+The purpose is to analyse production line performance in order to identify factors affecting efficiency and product quality.
+
+###### Identifying patterns
+
+The analyst can monitor production data to identify patterns related to:
+
+- delays
+- defects
+- bottlenecks
+- variation in output
+
+###### Deviation analysis
+
+The analyst can identify outliers or abnormal performance data that may signal:
+
+- equipment malfunction
+- operator error
+- process instability
+- other unusual operating conditions
+
+###### Root cause analysis
+
+The analyst can then carry out detailed investigation through:
+
+- equipment inspection
+- process analysis
+- operator interviews
+
+They may also use structured troubleshooting tools such as the **5 Whys** or a **fishbone diagram** to identify the underlying causes of the performance problem.
+
+##### Example - Sales performance analysis
+
+###### Purpose
+
+The purpose is to analyse sales performance in order to understand the factors influencing sales growth or decline.
+
+###### Identifying patterns
+
+The analyst can examine historical sales data to identify patterns and trends such as:
+
+- seasonal fluctuations
+- variation across products
+- variation across regions
+- periods of growth or decline
+
+###### Correlation analysis
+
+The analyst can investigate whether sales performance is associated with factors such as:
+
+- marketing campaigns
+- pricing changes
+- competitor activity
+- promotional timing
+
+###### Comparative analysis
+
+The analyst can compare the performance of:
+
+- sales teams
+- products
+- regions
+- market segments
+
+They can also examine related factors such as customer demographics, purchase patterns, and sales strategies to identify possible reasons for performance differences and areas for improvement.
+
+#### Illustration - How diagnostic analysis works across scenarios
+
+These examples show that diagnostic analysis is applied in different industries, but the underlying logic is often similar.
+
+A simple diagnostic flow can be illustrated like this:
+
+1. identify the problem or outcome
+2. look for patterns, trends, or anomalies
+3. test relationships through correlation or comparison
+4. investigate likely root causes
+5. use the findings to support targeted improvement
+
+The exact techniques and data sources may vary depending on the problem.
+
+For example:
+
+- a churn case may rely on customer history, complaints, and satisfaction data
+- a website case may rely on traffic data, behaviour data, and A/B testing
+- a production case may rely on machine data, inspections, and operator interviews
+- a sales case may rely on regional data, pricing history, and campaign data
+
+The core idea is that diagnostic analysis helps organisations move from **observing a result** to **understanding the factors behind it**, so they can take focused action for improvement.
+
+#### Visual guide - Diagnostic analysis
+
+Diagnostic analysis is easier to understand when it is shown as a problem-solving flow.
+
+##### Visual idea - Diagnostic flow
+
+The basic logic can be shown like this:
+
+`problem -> identify pattern -> compare causes -> investigate root issue -> improve`
+
+This shows that diagnostic analysis is not mainly about describing what happened. It is about explaining why it happened.
+
+<div class="mermaid">
+flowchart LR
+    A[Problem Detected] --> B[Find Patterns or Trends]
+    B --> C[Compare Groups or Factors]
+    C --> D[Investigate Root Cause]
+    D --> E[Targeted Improvement]
+
+    style A fill:#ffebee,stroke:#f44336,stroke-width:2px
+    style B fill:#fff3cd,stroke:#ffc107,stroke-width:2px
+    style C fill:#e3f2fd,stroke:#2196F3,stroke-width:2px
+    style D fill:#ede7f6,stroke:#7E57C2,stroke-width:2px
+    style E fill:#c8e6c9,stroke:#4CAF50,stroke-width:2px
+</div>
+
+##### Visual example - Diagnostic technique map
+
+| Situation | Diagnostic technique | What it helps explain |
+| --- | --- | --- |
+| Sales drop over several months | Trend analysis | Whether the decline is sudden, gradual, or seasonal |
+| One region performs worse than others | Comparative analysis | Where the biggest differences appear |
+| Unusual values appear in production data | Deviation analysis | Whether the issue may be an error, anomaly, or special event |
+| Complaints rise when delivery times increase | Correlation analysis | Whether two factors seem connected |
+| Business wants to know the underlying cause | Root cause analysis | Which deeper factor is driving the issue |
+
+#### Exam resolver - Broad diagnostic case
+
+##### What the examiner is really testing
+
+In a prompt like **"Select a scenario and use diagnostic analysis techniques to gain insight"**, the examiner usually wants to see whether you can:
+
+- choose a realistic scenario where something needs explanation
+- identify the right diagnostic techniques for that case
+- move from surface symptoms to likely causes
+- connect the analysis to practical improvement
+
+##### Resolver-style answer draft - Select a scenario and use diagnostic analysis techniques to gain insight
+
+If I were asked to select a scenario and use diagnostic analysis techniques to gain insight, I would choose an **online retail company experiencing a sales decline in one region**.
+
+This is a strong diagnostic scenario because the business already knows that performance has worsened, but it does not yet know **why**.
+
+I would begin by defining the problem clearly: sales have declined in one region even though the company is still operating in the same market. The purpose of the diagnostic analysis is therefore to identify the factors influencing this decline.
+
+First, I would use **trend analysis** to examine how sales changed over time. This would help me see whether the decline was sudden, gradual, seasonal, or linked to a specific period.
+
+Next, I would use **comparative analysis** to compare:
+
+- the weak region with stronger regions
+- current sales with earlier sales periods
+- product categories within the region
+- customer segments within the region
+
+This would help identify where the biggest differences are and narrow down the likely causes.
+
+I would then use **correlation analysis** to explore whether the sales decline is associated with factors such as:
+
+- reduced marketing activity
+- pricing changes
+- lower customer engagement
+- competitor promotions
+
+Here I could mention that correlation can show a meaningful relationship, but it does not automatically prove causation.
+
+After that, I would apply **root cause analysis**. I would review customer feedback, complaint data, campaign results, and operational issues in the region. I could also use the **5 Whys** or a **fishbone diagram** to structure possible causes such as people, process, pricing, promotion, or local market conditions.
+
+By combining these techniques, I could move from the basic observation that sales declined to a deeper explanation of why it happened. That would allow the organisation to take targeted action, such as adjusting campaigns, reviewing pricing, improving customer service, or changing the regional sales strategy.
+
+##### Why this is a strong exam answer
+
+This is a strong answer because it:
+
+- chooses a realistic business problem that needs explanation
+- uses several diagnostic techniques together instead of naming only one
+- clearly separates observation from likely causes
+- ends with action-oriented business insight
+
+#### Predictive Data Analysis
+
+**Predictive analysis** is the form of analysis that uses historical data and statistical techniques to make predictions or forecasts about future outcomes or events.
+
+Its main purpose is to:
+
+- use past patterns to estimate future outcomes
+- anticipate future trends, behaviours, or occurrences
+- support more informed and proactive decision-making
+
+Predictive analysis helps organisations prepare for possible future scenarios instead of reacting only after events have already happened.
+
+#### Techniques for forecasting and trend analysis
+
+Forecasting and trend analysis are important techniques in predictive analysis because they help analysts estimate future values and identify meaningful patterns in the data.
+
+Some common techniques are listed below.
+
+##### Time series analysis
+
+**Time series analysis** involves analysing historical data over time in order to identify:
+
+- trends
+- seasonality
+- recurring patterns
+- time-based movement
+
+This helps analysts understand how variables change over time and supports forecasting of future values.
+
+##### Trend analysis
+
+**Trend analysis** in predictive work focuses on identifying and measuring the overall direction of change in a dataset.
+
+This helps analysts understand whether the data is:
+
+- increasing
+- decreasing
+- stable
+- following a pattern such as linear, exponential, or logarithmic change
+
+Trend analysis is useful because future estimates often depend on understanding the direction and shape of past movement.
+
+##### Smoothing techniques
+
+**Smoothing techniques** are used to reduce noise and short-term fluctuations in the data so the underlying trend becomes clearer.
+
+Examples include:
+
+- moving averages
+- exponential smoothing
+
+These methods help analysts identify the deeper pattern in the data and improve the quality of forecasts.
+
+#### Common predictive modelling methods
+
+Two commonly used predictive methods are:
+
+- **regression analysis**
+- **time series forecasting**
+
+These methods are often used to estimate future outcomes, test predictive relationships, and support forecasting tasks in business settings.
+
+##### Regression analysis
+
+**Regression analysis** is a statistical technique used to model and analyse the relationship between:
+
+- one **dependent variable**
+- one or more **independent variables**
+
+Regression models help analysts predict the value of the dependent variable based on the values of the independent variables.
+
+This makes regression useful when organisations want to estimate future outcomes and understand which variables are most strongly associated with the result being predicted.
+
+##### Time series forecasting
+
+**Time series forecasting** is a predictive technique used to estimate future values from historical data that is ordered over time.
+
+These models can take into account:
+
+- trend
+- seasonality
+- recurring patterns
+- time-based variation
+
+This makes time series forecasting especially useful when analysts want to forecast sales, demand, traffic, or other variables that change over time.
+
+#### Evaluating and validating predictive models
+
+To ensure that predictive models are accurate and reliable, analysts also need to evaluate and validate their performance.
+
+Some common approaches are listed below.
+
+##### Cross-validation
+
+**Cross-validation** involves splitting the dataset into training and testing subsets in order to assess how well the model performs on unseen data.
+
+This helps analysts evaluate the model's ability to generalise and detect issues such as:
+
+- overfitting
+- underfitting
+
+##### Metrics and error measures
+
+Predictive models are often evaluated using measures that compare predicted values with actual values.
+
+Common examples include:
+
+- **Mean Squared Error (MSE)**
+- **Mean Absolute Error (MAE)**
+- **R-squared**
+
+These measures help analysts understand prediction error, model fit, and predictive power.
+
+##### Model comparison
+
+Analysts may also compare different predictive models in order to identify the most accurate and reliable option.
+
+This may involve:
+
+- comparing evaluation metrics
+- conducting hypothesis testing
+- using criteria such as **Akaike Information Criterion (AIC)** or **Bayesian Information Criterion (BIC)**
+
+Model comparison helps organisations choose the most suitable predictive approach for the problem they are trying to solve.
+
+###### Akaike Information Criterion (AIC)
+
+The **Akaike Information Criterion (AIC)** is a statistical measure used for model selection.
+
+It helps analysts compare different models by balancing:
+
+- goodness-of-fit
+- model complexity
+
+The goal is to find a model that explains the data well without becoming unnecessarily complex or overfitting the noise in the data.
+
+A **lower AIC value** usually indicates a better model among the candidate models being compared.
+
+###### Bayesian Information Criterion (BIC)
+
+The **Bayesian Information Criterion (BIC)** is another model-selection measure that is similar to AIC.
+
+Like AIC, it balances:
+
+- goodness-of-fit
+- model complexity
+
+However, BIC applies a stronger penalty for complexity, which makes it a more conservative approach.
+
+This can be especially useful with relatively large datasets when analysts want to favour the simplest model that still explains the data well.
+
+As with AIC, a **lower BIC value** usually indicates a better model among the models being compared.
+
+##### Backtesting
+
+**Backtesting** validates a predictive model by comparing the forecasted values with the actual outcomes over a chosen historical period.
+
+This helps analysts judge whether the model would have performed well in a realistic setting instead of only looking good in theory.
+
+Backtesting is useful because it helps assess:
+
+- forecast accuracy
+- model reliability
+- practical real-world performance
+
+By using backtesting together with cross-validation, evaluation metrics, and model comparison, organisations can build predictive models that are more trustworthy and useful in decision-making.
+
+#### Visual guide - Predictive analysis with simple examples
+
+The ideas in predictive analysis are often easier to understand when they are shown as small visual examples.
+
+##### Visual idea - Predictive flow
+
+The basic logic of predictive analysis can be shown like this:
+
+`historical data -> find pattern -> build model -> forecast future outcome`
+
+That means analysts first study past behaviour, then identify patterns, and finally use those patterns to estimate what may happen next.
+
+<div class="mermaid">
+flowchart LR
+    A[Historical Data] --> B[Find Pattern]
+    B --> C[Build Model]
+    C --> D[Forecast Future Outcome]
+
+    style A fill:#e3f2fd,stroke:#2196F3,stroke-width:2px
+    style B fill:#fff3cd,stroke:#ffc107,stroke-width:2px
+    style C fill:#c8e6c9,stroke:#4CAF50,stroke-width:2px
+    style D fill:#f3e5f5,stroke:#9C27B0,stroke-width:2px
+</div>
+
+##### Visual example - Regression analysis
+
+Imagine a company wants to predict **sales** from **marketing spend**.
+
+| Marketing Spend | Sales |
+| --- | --- |
+| 10 | 100 |
+| 20 | 140 |
+| 30 | 180 |
+| 40 | 220 |
+
+In a simple regression example, the pattern suggests that as **marketing spend increases**, **sales also increase**.
+
+The regression model then draws a best-fit relationship between the variables and can be used to estimate future sales if marketing spend changes.
+
+<div class="mermaid">
+xychart-beta
+    title "Regression Example: Marketing Spend vs Sales"
+    x-axis [10, 20, 30, 40]
+    y-axis "Sales" 0 --> 240
+    line [100, 140, 180, 220]
+</div>
+
+##### Visual example - Time series forecasting
+
+Imagine a shop wants to forecast monthly demand.
+
+| Month | Sales |
+| --- | --- |
+| Jan | 100 |
+| Feb | 110 |
+| Mar | 120 |
+| Apr | 140 |
+| May | 150 |
+
+This kind of data is ordered over time, so analysts can look for:
+
+- an upward trend
+- repeating seasonal peaks
+- temporary fluctuations
+
+If the pattern continues, the model can estimate likely sales in the next months.
+
+<div class="mermaid">
+xychart-beta
+    title "Time Series Example: Monthly Sales"
+    x-axis [Jan, Feb, Mar, Apr, May]
+    y-axis "Sales" 0 --> 180
+    line [100, 110, 120, 140, 150]
+</div>
+
+##### Visual example - AIC and BIC comparison
+
+Imagine analysts are comparing three candidate models.
+
+| Model | Complexity | Fit | AIC | BIC | Quick interpretation |
+| --- | --- | --- | --- | --- | --- |
+| Model A | Low | Moderate | 120 | 125 | Simple, but may miss some patterns |
+| Model B | Medium | Strong | 112 | 118 | Good balance between fit and complexity |
+| Model C | High | Very strong | 111 | 130 | Fits well, but may be too complex |
+
+This helps illustrate two important ideas:
+
+- **lower AIC** is usually better
+- **lower BIC** is usually better
+
+In this example:
+
+- **AIC** slightly prefers Model C because of its fit
+- **BIC** prefers Model B because it penalises complexity more strongly
+
+This makes it easier to see why analysts do not only ask which model fits best. They also ask whether the model is simple enough to generalise well.
+
+<div class="mermaid">
+flowchart TD
+    A[Model A<br/>Simple<br/>AIC 120<br/>BIC 125]
+    B[Model B<br/>Balanced<br/>AIC 112<br/>BIC 118]
+    C[Model C<br/>Complex<br/>AIC 111<br/>BIC 130]
+
+    A --> D[AIC prefers lower value]
+    B --> D
+    C --> D
+
+    B --> E[BIC prefers simpler good models]
+    C --> E
+
+    D --> F[AIC leans toward Model C]
+    E --> G[BIC leans toward Model B]
+
+    style A fill:#e3f2fd,stroke:#2196F3,stroke-width:2px
+    style B fill:#c8e6c9,stroke:#4CAF50,stroke-width:2px
+    style C fill:#ffebee,stroke:#f44336,stroke-width:2px
+    style D fill:#fff3cd,stroke:#ffc107,stroke-width:2px
+    style E fill:#ede7f6,stroke:#7E57C2,stroke-width:2px
+</div>
+
+#### Examples of predictive analysis
+
+##### Example: Sales forecasting
+
+**Purpose**
+
+Predicting future sales based on historical sales data and other relevant information.
+
+**Data analysis**
+
+The analyst would examine past sales data and consider factors such as:
+
+- seasonality
+- marketing campaigns
+- pricing changes
+- economic indicators
+
+This helps reveal patterns that may influence future sales performance.
+
+**Technique**
+
+The analyst could use **time series forecasting** methods such as:
+
+- **Autoregressive Integrated Moving Average (ARIMA)**
+- **exponential smoothing**
+
+These models are useful because they can detect trends, smooth short-term noise, and generate future sales forecasts from historical patterns.
+
+**Application**
+
+The forecasted sales can support:
+
+- demand planning
+- inventory management
+- resource allocation
+- sales target setting
+
+This makes sales forecasting a strong predictive example because it shows how historical patterns can be turned into practical forward-looking business decisions.
+
+##### Example: Customer churn prediction
+
+**Purpose**
+
+Identifying customers who are likely to churn or cancel their subscriptions.
+
+**Data analysis**
+
+The analyst would examine customer data such as:
+
+- demographics
+- purchase history
+- customer interactions
+- behaviour patterns
+
+This helps identify patterns linked to churn risk, such as lower engagement, complaint history, reduced usage, or weaker purchasing activity.
+
+**Technique**
+
+The analyst could build predictive models such as:
+
+- **logistic regression**
+- **decision trees**
+
+These models help identify which variables are most strongly associated with churn and which customers are most likely to leave.
+
+**Application**
+
+The predictive model can help the organisation:
+
+- target at-risk customers early
+- offer personalised retention campaigns
+- improve proactive customer service
+- reduce churn rates and improve loyalty
+
+This makes customer churn prediction a strong predictive example because it turns historical customer behaviour into forward-looking retention decisions.
+
+##### Example: Credit risk assessment
+
+**Purpose**
+
+Assessing the creditworthiness of loan applicants in order to predict their likelihood of default.
+
+**Data analysis**
+
+The analyst would examine applicant data such as:
+
+- income
+- credit history
+- employment status
+- other relevant financial indicators
+
+This helps identify patterns associated with higher or lower default risk.
+
+**Technique**
+
+The analyst could build predictive models such as:
+
+- **logistic regression**
+- **random forests**
+
+These models help estimate default risk, identify important contributing factors, and support the assignment of credit scores or risk categories.
+
+**Application**
+
+The predictive model can help lenders make better decisions about:
+
+- loan approvals
+- interest rates
+- credit limits
+
+This makes credit risk assessment a strong predictive example because it turns historical financial behaviour into forward-looking lending decisions.
+
+##### Example: Demand forecasting
+
+**Purpose**
+
+Predicting future demand for products or services in order to optimise production, supply chain activity, and inventory management.
+
+**Data analysis**
+
+The analyst would examine data such as:
+
+- historical sales data
+- market trends
+- promotional activities
+- external factors such as economic indicators
+
+This helps reveal recurring patterns, demand shifts, and external influences that may affect future demand levels.
+
+**Technique**
+
+The analyst could use:
+
+- **time series forecasting models**
+- **machine learning algorithms**
+
+These techniques help estimate future demand patterns by learning from historical movement, seasonality, promotions, and broader market conditions.
+
+**Application**
+
+Demand forecasts can support:
+
+- production planning
+- inventory optimisation
+- pricing strategies
+- resource allocation
+
+This makes demand forecasting a strong predictive example because it turns historical and market-based patterns into forward-looking operational decisions.
+
+#### Why these predictive examples matter
+
+These examples show that **predictive analysis** can be used across many domains to anticipate future outcomes, support better decisions, and improve business performance.
+
+The exact **techniques** and **data sources** may vary depending on the context and objective of the analysis. In some cases, analysts may rely more on time series forecasting, while in other cases they may use regression models, decision trees, random forests, or broader machine-learning methods.
+
+Even though the methods may differ, the underlying logic is the same: organisations use **historical data** and **statistical models** to identify future trends and patterns.
+
+This helps improve:
+
+- efficiency
+- decision-making
+- strategic planning
+
+#### Exam resolver - Sales forecast scenario
+
+##### What the examiner is really testing
+
+In a prompt built around **sales forecasting**, the examiner usually wants to see whether you can:
+
+- identify that this is a **predictive analysis** case
+- explain what historical data should be analysed
+- choose a sensible forecasting technique
+- show how the forecast supports real business planning
+
+##### Resolver-style answer draft - Sales forecast scenario
+
+If I were asked to solve a **sales forecast scenario**, I would explain that this is a form of **predictive data analysis** because the goal is to estimate future sales from historical data.
+
+I would begin by defining the purpose clearly: the organisation wants to predict future sales so that it can prepare its operations more effectively.
+
+Next, I would explain that I would analyse **historical sales data** over time and also consider important influencing factors such as:
+
+- seasonal demand patterns
+- marketing campaigns
+- pricing changes
+- wider economic conditions
+
+This is important because sales rarely change at random. They often follow trends, repeat seasonal behaviour, or respond to business actions such as promotions.
+
+To make the forecast, I would use a **time series forecasting technique**. Two suitable examples are:
+
+- **ARIMA**, which is useful for modelling patterns and movement in time-ordered sales data
+- **exponential smoothing**, which is useful for revealing the underlying trend while reducing short-term fluctuation
+
+After building the model, I would validate it using measures such as **MAE** or **MSE**, and I would also mention **backtesting** to compare the forecasted values with the actual historical outcomes over a known period.
+
+Finally, I would explain the business application of the forecast. A sales forecast can help the organisation with:
+
+- demand planning
+- stock and inventory decisions
+- staffing and resource allocation
+- setting realistic sales targets
+
+Overall, this is a strong predictive case because it uses past sales behaviour to estimate future demand and supports more informed planning and decision-making.
+
+##### Why this is a strong exam answer
+
+This is a strong answer because it:
+
+- identifies the correct philosophy as **predictive analysis**
+- links the forecast to historical data and influencing variables
+- names suitable predictive techniques
+- connects the forecast directly to practical business action
+
+#### Exam resolver - Customer churn prediction scenario
+
+##### What the examiner is really testing
+
+In a prompt built around **customer churn prediction**, the examiner usually wants to see whether you can:
+
+- identify that this is a **predictive analysis** case
+- explain what customer data should be analysed
+- choose suitable predictive techniques
+- connect the model to practical retention decisions
+
+##### Resolver-style answer draft - Customer churn prediction scenario
+
+If I were asked to solve a **customer churn prediction** scenario, I would explain that this is a form of **predictive data analysis** because the aim is to estimate which customers are likely to leave in the future.
+
+I would begin by defining the purpose clearly: the organisation wants to identify at-risk customers before they cancel so that it can take early action.
+
+Next, I would explain that I would analyse relevant **historical customer data**, including:
+
+- demographics
+- purchase history
+- customer interactions
+- behaviour patterns
+
+This is important because churn often follows recognisable patterns. For example, customers may become less active, raise more complaints, stop purchasing regularly, or reduce their overall engagement before they leave.
+
+To build the prediction, I would use models such as:
+
+- **logistic regression**, which is useful for estimating the probability that a customer will churn
+- **decision trees**, which are useful for identifying clear churn rules and the factors that split high-risk and low-risk customers
+
+I would then validate the model using measures such as **accuracy**, **precision**, **recall**, or **MAE/MSE** where appropriate, and I would also mention **cross-validation** and **backtesting** to check whether the model performs well on unseen or historical comparison data.
+
+Finally, I would explain the practical application. The organisation can use the churn prediction model to:
+
+- identify at-risk customers early
+- offer personalised retention incentives
+- improve proactive customer support
+- reduce customer loss and improve long-term loyalty
+
+Overall, this is a strong predictive case because it uses past customer behaviour to estimate future churn risk and helps the organisation act before the customer is lost.
+
+##### Why this is a strong exam answer
+
+This is a strong answer because it:
+
+- identifies the correct philosophy as **predictive analysis**
+- explains which customer variables are relevant
+- names appropriate predictive models
+- connects the prediction to retention strategy and business value
+
+#### Exam resolver - Credit risk assessment scenario
+
+##### What the examiner is really testing
+
+In a prompt built around **credit risk assessment**, the examiner usually wants to see whether you can:
+
+- identify that this is a **predictive analysis** case
+- explain which applicant variables should be analysed
+- choose suitable predictive techniques
+- connect the model to practical lending decisions
+
+##### Resolver-style answer draft - Credit risk assessment scenario
+
+If I were asked to solve a **credit risk assessment** scenario, I would explain that this is a form of **predictive data analysis** because the goal is to estimate the likelihood that a loan applicant will default in the future.
+
+I would begin by defining the purpose clearly: the lender wants to assess the applicant's creditworthiness before approving a loan.
+
+Next, I would explain that I would analyse relevant applicant data, including:
+
+- income
+- credit history
+- employment status
+- other financial indicators
+
+This is important because default risk often follows measurable patterns. For example, weaker credit history, unstable employment, or poor financial indicators may be associated with a greater chance of default.
+
+To build the prediction, I would use models such as:
+
+- **logistic regression**, which is useful for estimating the probability that an applicant will default
+- **random forests**, which are useful for capturing more complex patterns and interactions between financial variables
+
+I would then validate the model using measures such as **accuracy**, **precision**, **recall**, or **MAE/MSE** where appropriate, and I would also mention **cross-validation** and **backtesting** to assess whether the model performs reliably on comparison data.
+
+Finally, I would explain the practical application. The lender can use the model to support:
+
+- loan approval decisions
+- setting suitable interest rates
+- assigning appropriate credit limits
+- reducing lending risk while improving decision consistency
+
+Overall, this is a strong predictive case because it uses historical applicant and financial data to estimate future default risk and supports more informed lending decisions.
+
+##### Why this is a strong exam answer
+
+This is a strong answer because it:
+
+- identifies the correct philosophy as **predictive analysis**
+- explains which financial variables are relevant
+- names appropriate predictive models
+- connects the prediction directly to lending strategy and risk control
+
+#### Exam resolver - Demand forecasting scenario
+
+##### What the examiner is really testing
+
+In a prompt built around **demand forecasting**, the examiner usually wants to see whether you can:
+
+- identify that this is a **predictive analysis** case
+- explain which historical and market variables should be analysed
+- choose suitable forecasting techniques
+- connect the forecast to operational planning and decision-making
+
+##### Resolver-style answer draft - Demand forecasting scenario
+
+If I were asked to solve a **demand forecasting** scenario, I would explain that this is a form of **predictive data analysis** because the goal is to estimate future demand for products or services.
+
+I would begin by defining the purpose clearly: the organisation wants to predict future demand so that it can prepare production, inventory, and supply chain activities more effectively.
+
+Next, I would explain that I would analyse relevant data such as:
+
+- historical sales data
+- market trends
+- promotional activities
+- external factors such as economic indicators
+
+This is important because demand usually follows patterns influenced by time, seasonality, promotions, and changes in the wider market. For example, demand may rise during campaigns, fall after seasonal peaks, or shift because of economic conditions.
+
+To build the forecast, I would use:
+
+- **time series forecasting models**, which are useful for capturing trend and seasonality in demand over time
+- **machine learning algorithms**, which can be useful when demand is influenced by several interacting factors
+
+I would then validate the forecast using measures such as **MAE** or **MSE**, and I would also mention **cross-validation** and **backtesting** so that the organisation can check whether the model performs well against known outcomes.
+
+Finally, I would explain the practical application. Demand forecasts can help the organisation with:
+
+- production planning
+- inventory optimisation
+- pricing decisions
+- resource allocation
+
+Overall, this is a strong predictive case because it uses historical and market data to estimate future demand and supports more efficient operational planning.
+
+##### Why this is a strong exam answer
+
+This is a strong answer because it:
+
+- identifies the correct philosophy as **predictive analysis**
+- explains which demand-related variables are relevant
+- names suitable forecasting methods
+- connects the forecast directly to planning, pricing, and operational efficiency
+
+#### Exam resolver - Broad predictive case
+
+##### What the examiner is really testing
+
+In a prompt like **"Select a scenario and use predictive analysis techniques to gain insight"**, the examiner usually wants to see whether you can:
+
+- choose a realistic scenario where future outcomes matter
+- identify that the task belongs to **predictive analysis**
+- select suitable predictive techniques and relevant data
+- show how the prediction supports a business decision
+
+##### Resolver-style answer draft - Select a scenario and use predictive analysis techniques to gain insight
+
+If I were asked to select a scenario and use predictive analysis techniques to gain insight, I would choose an **online retail company that wants to predict future demand for one product category before a major sales period**.
+
+This is a strong predictive scenario because the business wants to understand **what is likely to happen next**, not only what has already happened.
+
+I would begin by defining the purpose clearly: the organisation wants to forecast future demand so that it can prepare inventory, staffing, pricing, and supply chain activity more effectively.
+
+Next, I would explain that I would analyse relevant **historical data**, such as:
+
+- past sales volumes
+- seasonal patterns
+- promotional activity
+- pricing changes
+- market or economic indicators
+
+This is important because future demand often depends on patterns already visible in past data. For example, the business may see repeated seasonal peaks, demand changes during promotions, or shifts linked to wider market conditions.
+
+To carry out the predictive analysis, I would use suitable techniques such as:
+
+- **time series analysis** to identify trends and seasonality
+- **time series forecasting** to estimate future demand values
+- **smoothing techniques** such as moving averages or exponential smoothing to reduce short-term noise
+
+If the case involves several interacting variables, I could also mention **regression analysis** or wider **machine learning models**.
+
+I would then explain that the model must be validated. I would mention:
+
+- **cross-validation**
+- **error measures** such as **MAE** or **MSE**
+- **backtesting** by comparing forecasted values with actual known outcomes over a previous period
+
+This strengthens the answer because predictive analysis is not only about making a forecast. It is also about checking whether the model is reliable.
+
+The insight gained from this analysis would help the organisation:
+
+- prepare stock levels
+- allocate staff and resources
+- plan pricing or campaign decisions
+- reduce the risk of understocking or overstocking
+
+Overall, this is a strong predictive-analysis case because it uses historical patterns and statistical techniques to estimate future demand and support better planning.
+
+##### What you should be careful about in the exam
+
+When answering a broad predictive question, be especially careful to:
+
+- clearly state that predictive analysis is about **forecasting future outcomes**
+- avoid confusing **predictive** analysis with **diagnostic** analysis, which asks why something happened
+- avoid jumping straight to recommendations, because that becomes more **prescriptive**
+- mention both the **data used** and the **technique used**
+- mention **validation** such as MAE, MSE, cross-validation, or backtesting
+- avoid writing as if the model guarantees the future, because predictive analysis estimates likelihood rather than certainty
+
+##### How to use knowledge from this module in your answer
+
+The strongest way to use the module knowledge is to build your answer in this order:
+
+1. identify the correct philosophy as **predictive**
+2. define the business goal or future-oriented question
+3. name the relevant historical data
+4. choose the most suitable predictive technique
+5. mention how the model is validated
+6. finish with the business insight or decision benefit
+
+That lets you actively use the main ideas from the module:
+
+- historical data
+- trend analysis
+- time series analysis
+- smoothing techniques
+- regression or forecasting models
+- evaluation measures
+- backtesting
+
+##### Why this is a strong exam answer
+
+This is a strong answer because it:
+
+- selects a realistic scenario with a clear future-oriented business goal
+- uses the correct predictive concepts from the module
+- explains both modelling and validation
+- ends with practical decision support rather than theory only
+
+#### How the philosophies build on each other
+
+These four philosophies are often connected rather than isolated.
+
+A simple flow may look like this:
+
+1. **Descriptive** analysis shows what happened
+2. **Diagnostic** analysis explains why it happened
+3. **Predictive** analysis estimates what may happen next
+4. **Prescriptive** analysis recommends what should be done
+
+This means data analysis can move from understanding the past to shaping future action.
+
+#### Real-world example - Online retail business
+
+An online retail business can use all four philosophies together.
+
+- **Descriptive analysis** can show total sales, most popular products, and average order value
+- **Diagnostic analysis** can investigate why sales dropped in one region or why cart abandonment increased
+- **Predictive analysis** can estimate future demand, likely churn, or seasonal sales trends
+- **Prescriptive analysis** can recommend targeted discounts, stock adjustments, or marketing actions
+
+This example shows that the four philosophies are not abstract theory only. They are practical ways of supporting real business decisions.
+
+#### The Task
+
+Answer the question below thoroughly.
+
+##### Question 1
+
+Look at the scenarios below and identify which **data analysis philosophy** is being discussed.
+
+###### Suggested answer
+
+###### Scenario 1
+
+**Philosophy:** **Descriptive analysis**
+
+This is descriptive because the task is to calculate **mean**, **median**, and **standard deviation** in order to summarise student performance and understand the overall characteristics of the class results.
+
+###### Scenario 2
+
+**Philosophy:** **Diagnostic analysis**
+
+This is diagnostic because the company wants to understand **why** website traffic decreased. The analysis connects the drop in traffic to a likely cause, which is the recent website update.
+
+###### Scenario 3
+
+**Philosophy:** **Predictive analysis**
+
+This is predictive because the retail store uses historical data and external factors to **forecast future product demand** so it can plan inventory more effectively.
+
+###### Scenario 4
+
+**Philosophy:** **Prescriptive analysis**
+
+This is prescriptive because the healthcare organisation builds a mathematical model to find the **best operating room schedule**. The focus is not only on prediction, but on choosing the best action.
+
+###### Scenario 5
+
+**Philosophy:** **Diagnostic analysis**
+
+This is diagnostic because the company wants to identify the **root causes** of employee dissatisfaction and turnover by analysing surveys, performance records, and exit interviews.
+
+###### Scenario 6
+
+**Philosophy:** **Prescriptive analysis**
+
+This is prescriptive because the manufacturing plant uses **linear programming** to decide how to allocate labour and raw materials in the best possible way while meeting production targets.
+
+###### Scenario 7
+
+**Philosophy:** **Predictive analysis**
+
+This is predictive because the transportation company uses historical GPS data and traffic patterns to **forecast future truck arrival times**.
+
+###### Scenario 8
+
+**Philosophy:** **Predictive analysis**
+
+This is best classified as predictive because the recommendation system uses browsing and purchase history to estimate which products a customer is **most likely to prefer or buy**. Even though the output is a recommendation, the underlying logic is based on prediction.
+
+##### Question 2
+
+Analyse the scenario below and summarise how you would approach the error that was made by the student.
+
+###### Suggested answer
+
+This scenario contains a **data entry error**. The value **35** study hours is likely incorrect because it was meant to be **3.5**. I would first detect the issue by sorting the spreadsheet, reviewing descriptive statistics, and using a scatter plot of **study hours versus exam scores** to see whether one value is unusually far away from the rest of the dataset.
+
+Next, I would verify the suspicious value against the original data source, such as the student questionnaire or the raw data collection sheet. If the original value is confirmed to be **3.5**, I would correct the spreadsheet entry, document that the error was changed, and then re-run the analysis.
+
+This is important because the incorrect value could distort the analysis by affecting the **mean**, the spread of the study-hours data, and any **correlation** or **regression** used to study the relationship between study hours and exam scores. A small typing mistake can therefore lead to misleading conclusions if it is not checked carefully.
+
+##### Question 3
+
+Write a short summary of what data summarisation techniques can be used when using the descriptive analysis approach to data analysis.
+
+###### Suggested answer
+
+In descriptive analysis, data summarisation techniques are used to reduce a dataset into clear and meaningful statistics. Common techniques include **measures of central tendency** such as **mean**, **median**, and **mode**, which describe the typical value in the data.
+
+Descriptive analysis also uses **measures of variability** such as **range**, **variance**, and **standard deviation** to show how spread out the data is. In addition, **percentiles** and **quartiles** help explain the relative position and distribution of values within the dataset.
+
+Together, these summarisation techniques help analysts understand the centre, spread, and general shape of the data before moving on to deeper forms of analysis.
+
+#### Resolver-style supplement
+
+The following answer shows how an exam resolver would frame the same task.
+
+##### Resolver view - Question 1
+
+###### What the examiner is really testing
+
+The examiner wants to see whether you can quickly recognise the **main purpose** of each scenario and match it to the correct philosophy:
+
+- **descriptive** = what happened
+- **diagnostic** = why it happened
+- **predictive** = what is likely to happen
+- **prescriptive** = what should be done
+
+###### Resolver-style answer draft
+
+I would identify the philosophies as follows:
+
+- **Scenario 1:** **Descriptive analysis**, because the task uses mean, median, and standard deviation to summarise exam performance
+- **Scenario 2:** **Diagnostic analysis**, because the company wants to understand why website traffic dropped
+- **Scenario 3:** **Predictive analysis**, because the store is forecasting future product demand
+- **Scenario 4:** **Prescriptive analysis**, because the organisation is choosing the best operating room schedule
+- **Scenario 5:** **Diagnostic analysis**, because the company is looking for the root causes of employee turnover
+- **Scenario 6:** **Prescriptive analysis**, because linear programming is being used to optimise resource allocation
+- **Scenario 7:** **Predictive analysis**, because time series methods are used to estimate future truck arrival times
+- **Scenario 8:** **Predictive analysis**, because the recommendation system predicts likely customer preferences from browsing and purchase history
+
+This is a strong answer because it does not only label each scenario. It also links the scenario to the defining question of the philosophy: description, explanation, prediction, or recommendation.
+
+##### Resolver view - Question 2
+
+###### What the examiner is really testing
+
+The examiner wants to see whether you can recognise a **data entry error**, explain **how you would detect it**, show **how you would verify and correct it**, and explain **why it matters for the final analysis**.
+
+###### Resolver-style answer draft
+
+The mistake in this scenario is a likely **data entry error**, because **35** study hours is very different from the intended value **3.5**. I would first inspect the dataset by sorting the study-hours column, checking summary statistics, and plotting a scatter plot to see whether one observation looks unrealistic compared with the other students.
+
+I would then compare the suspicious value with the original source, such as the raw questionnaire or data-collection sheet. If the true value is **3.5**, I would correct the spreadsheet, document the correction, and then repeat the analysis.
+
+This step matters because an incorrect value like **35** could create an outlier that distorts the **mean**, affects the spread of the data, and weakens the accuracy of correlation or regression analysis. Therefore, the correct approach is **detect -> verify -> correct -> document -> reanalyse**.
+
+##### Resolver view - Question 3
+
+###### What the examiner is really testing
+
+The examiner wants to see whether you know the **main data summarisation techniques** used in **descriptive analysis** and whether you can explain their purpose clearly and briefly.
+
+###### Resolver-style answer draft
+
+In descriptive analysis, data summarisation techniques are used to condense raw data into statistics that are easier to interpret. The main techniques are:
+
+- **measures of central tendency** such as **mean**, **median**, and **mode**
+- **measures of variability** such as **range**, **variance**, and **standard deviation**
+- **relative position measures** such as **percentiles** and **quartiles**
+
+These techniques help analysts understand the **typical value**, the **spread**, and the **distribution** of the dataset. They provide the foundation for interpreting the data before moving into diagnostic, predictive, or prescriptive analysis.
+
+#### What did I Learn in This Lesson?
+
+This lesson provided the following key insights:
+
+- data analysis philosophies help analysts understand what kind of question they are answering
+- data analysis is a systematic approach to extracting insight and knowledge from raw data
+- the four main data analysis philosophies are descriptive, diagnostic, predictive, and prescriptive
+- descriptive analysis uses summaries, statistical measures, and visualisations to explain historical patterns
+- descriptive analysis also focuses on central tendency, variability, and the general shape of the data
+- common descriptive measures of central tendency are mean, median, and mode
+- common descriptive measures of variability are range, variance, and standard deviation
+- percentiles and quartiles are also important descriptive tools because they show relative position, spread, and distribution within a dataset
+- common descriptive visualisations include histograms, bar charts, scatter plots, and box plots
+- interpreting descriptive analysis involves central tendency, variability, distribution, outliers, and relationships between variables
+- descriptive analysis helps analysts detect anomalies, identify patterns, and generate early hypotheses for further investigation
+- salary analysis is a useful example because mean, median, mode, standard deviation, and a histogram can be combined to describe salary distribution clearly
+- customer satisfaction survey analysis is a useful descriptive example because category percentages, mode, and a bar chart can show the overall satisfaction pattern clearly
+- sales-by-region analysis is a useful descriptive example because totals, range, and regional charts can show performance differences between areas
+- exam score analysis is a useful descriptive example because mean, median, range, standard deviation, and a box plot can show both performance level and score spread
+- strong descriptive case answers should connect the purpose, the correct summary measures, the right visual, and the insight gained from the chart
+- a broad descriptive case can combine central tendency, variability, percentiles, quartiles, histograms, bar charts, scatter plots, and box plots in one coherent answer
+- error detection, elimination, and correction are essential because flawed data can weaken the accuracy and reliability of the final analysis
+- common data-quality problems include missing data, outliers, measurement errors, and data entry errors
+- visual inspection, descriptive statistics, data profiling, and statistical tests are useful ways to detect suspicious values or patterns in a dataset
+- strong analytical practice means investigating unusual values before removing them and documenting how errors were corrected
+- Google Sheets can help detect data problems through filters, sorting, conditional formatting, COUNTBLANK, COUNTIF, descriptive formulas, and pivot-style profiling
+- strong error handling in Google Sheets means checking whether unusual values are real before correcting, deleting, or imputing them
+- a strong exam answer on error detection should move from error types, to detection methods, to correction logic, to practical Google Sheets checks
+- a concrete customer-list or online-retail dataset is a strong exam case because it can include blanks, duplicates, inconsistent labels, and suspicious purchase values in one sheet
+- diagnostic analysis investigates causes, relationships, and influencing factors behind an outcome
+- diagnostic analysis also looks for patterns, trends, and anomalies in order to explain why something happened
+- trend analysis is useful in diagnostic work because it shows whether an outcome is rising, falling, cyclical, or seasonal over time
+- comparative analysis is useful in diagnostic work because it helps explain differences between groups, segments, regions, or time periods
+- deviation analysis is useful in diagnostic work because it highlights anomalies or outliers that may point to errors or exceptional events
+- correlation analysis is useful in diagnostic work because it shows the strength and direction of relationships between variables
+- causation analysis is important because it goes beyond correlation and asks whether one variable actually influences another
+- Pearson's correlation coefficient is one common way of measuring association between variables
+- analysts should remember that correlation alone does not prove causation
+- root cause analysis helps analysts move from symptoms to underlying causes
+- problem identification, data collection, hypothesis testing, and validation are important steps in diagnostic troubleshooting
+- the 5 Whys technique is a practical way to drill down from a visible problem to its root cause by repeatedly asking why
+- fishbone diagrams, or Ishikawa diagrams, help analysts organise possible causes visually into categories
+- using the 5 Whys or fishbone diagrams strengthens root cause analysis and supports more effective remedial action
+- customer churn is a strong diagnostic example because analysts can investigate patterns, behaviour, correlations, and likely root causes of customer loss
+- website conversion analysis is a strong diagnostic example because it combines patterns, comparisons, troubleshooting, and A/B testing
+- production line performance analysis is a strong diagnostic example because it combines patterns, deviation analysis, and root cause investigation
+- sales performance analysis is a strong diagnostic example because it combines trends, correlations, comparisons, and business improvement opportunities
+- tools like the 5 Whys and fishbone diagrams can strengthen diagnostic root cause analysis
+- across different scenarios, diagnostic analysis usually follows a similar pattern: identify the problem, examine patterns, test relationships, find root causes, and support improvement
+- a broad diagnostic case answer should move from the observed problem to patterns, comparisons, relationships, likely causes, and targeted action
+- predictive analysis uses patterns, models, and forecasting to estimate future outcomes
+- predictive analysis uses historical data and statistical techniques to forecast future outcomes or events
+- time series analysis is important in predictive analysis because it helps identify trends, seasonality, and recurring patterns over time
+- trend analysis is useful in predictive analysis because it helps quantify the overall direction of change in the data
+- smoothing techniques such as moving averages and exponential smoothing help reduce noise and reveal underlying patterns
+- regression analysis and time series forecasting are common predictive modelling methods
+- regression analysis models the relationship between a dependent variable and one or more independent variables
+- time series forecasting predicts future values from time-ordered historical data
+- cross-validation helps assess whether a predictive model performs well on unseen data
+- common evaluation measures include MSE, MAE, and R-squared
+- model comparison may use metrics as well as AIC or BIC to compare predictive performance
+- AIC helps compare models by balancing goodness-of-fit against model complexity
+- BIC is similar to AIC but penalises model complexity more strongly and is therefore more conservative
+- backtesting compares forecasted values with actual outcomes over a historical period to assess predictive accuracy and reliability
+- small visual examples can make predictive ideas easier to understand, especially for regression, time series, and model comparison
+- sales forecasting is a strong predictive example because it uses historical sales patterns to estimate future sales and support planning
+- ARIMA and exponential smoothing are useful predictive techniques for sales forecasting because they can model trends, seasonality, and short-term fluctuation
+- customer churn prediction is a strong predictive example because it uses customer history and behaviour to estimate future churn risk
+- logistic regression and decision trees are useful predictive techniques for churn prediction because they help identify at-risk customers and the factors linked to churn
+- credit risk assessment is a strong predictive example because it uses applicant and financial history to estimate future default risk
+- logistic regression and random forests are useful predictive techniques in credit risk assessment because they help estimate default probability and support credit decisions
+- demand forecasting is a strong predictive example because it uses historical and market-related patterns to estimate future product or service demand
+- time series forecasting models and machine learning algorithms are useful predictive techniques in demand forecasting because they help capture trend, seasonality, and multiple influencing factors
+- predictive analysis can be applied in many different domains, even when the techniques and data sources differ
+- the specific predictive method depends on the scenario, the available data, and the objective of the analysis
+- despite these differences, predictive analysis always aims to use historical data and statistical models to anticipate future trends and patterns
+- strong predictive analysis supports efficiency, decision-making, and strategic planning
+- a broad predictive exam answer should move clearly from scenario, to historical data, to modelling technique, to validation, to business insight
+- in predictive exam answers, students should be careful not to confuse forecasting with explanation or recommendation
+- strong use of module knowledge means naming the philosophy, the data, the technique, the validation method, and the practical benefit
+- strong predictive case answers should explain the purpose, the data analysed, the forecasting technique, the validation approach, and the practical application of the forecast
+- visual diagnostic flows can make it easier to understand how analysts move from a problem to patterns, root causes, and improvement
+- visual prescriptive flows can make it easier to understand how analysts move from options and constraints to a recommended action
+- prescriptive analysis is a more advanced branch of analysis because it goes beyond description and prediction and recommends what should be done
+- prescriptive analysis combines historical data, predictive models, optimisation techniques, and decision modelling
+- prescriptive analysis helps decision-makers choose the best action while considering constraints, objectives, trade-offs, and uncertainty
+- prescriptive analysis uses optimisation, simulation, and decision modelling to recommend the best action
+- supply chain optimisation is a strong prescriptive example because it recommends the best resource allocation while balancing cost, capacity, service level, and demand
+- LP and MILP are useful prescriptive techniques in supply chain optimisation because they help allocate production, warehousing, transport, and inventory under constraints
+- portfolio optimisation is a strong prescriptive example because it recommends the best asset allocation under risk-return trade-offs
+- quadratic programming and mean-variance optimisation are useful prescriptive techniques in portfolio optimisation because they help balance expected return, risk, and allocation constraints
+- portfolio optimisation also requires implementation and monitoring, because allocations may need adjustment as market conditions, goals, or risk tolerance change
+- pricing optimisation is a strong prescriptive example because it recommends the best pricing action under demand, cost, and competition constraints
+- revenue management, dynamic pricing, and revenue optimisation methods are useful prescriptive techniques in pricing optimisation
+- healthcare resource allocation is a strong prescriptive example because it recommends the best use of beds, staff, and equipment under service and budget constraints
+- mathematical programming and queuing models are useful prescriptive techniques in healthcare resource allocation
+- prescriptive analysis can be applied across different domains even when the exact optimisation methods differ
+- the general prescriptive logic is still the same: define the objective, identify constraints, model alternatives, and recommend the best action
+- a broad prescriptive exam answer should move clearly from scenario, to objective, to constraints, to optimisation method, to recommended action, to monitoring
+- in broad prescriptive questions, students should be careful not to stop at prediction; they must explain what action should be taken
+- a useful revision strategy is to compare prescriptive scenarios side by side and match each one to its objective, constraints, method, and recommended action
+- in portfolio optimisation, standard deviation is a useful risk measure because it shows how widely returns move around the average
+- in portfolio optimisation, low standard deviation usually means lower volatility and lower risk, while high standard deviation usually means higher volatility and higher risk
+- Value-at-Risk (VaR) is useful because it estimates the worst likely loss over a chosen time period at a chosen confidence level
+- Google Sheets can calculate standard deviation with **STDEV.S** or **STDEV.P**
+- a simple historical VaR in Google Sheets can be estimated with **PERCENTILE** on historical returns and then converted into a loss amount
+- common warning signs of a wrong setup include mixed percentages and decimals, using prices instead of returns, using the wrong percentile tail, or unrealistic output values
+- strong prescriptive case answers should explain the objective, the constraints, the optimisation method, and the final recommended action
+- descriptive analysis focuses on what happened
+- diagnostic analysis focuses on why something happened
+- predictive analysis focuses on what is likely to happen
+- prescriptive analysis focuses on what should be done
+- scenario-identification questions can often be solved by matching the wording of the task to the philosophy: summaries = descriptive, causes = diagnostic, forecasts = predictive, optimisation and best action = prescriptive
+- recommendation systems based on behaviour history are usually best treated as predictive because they estimate what users are most likely to want next
+- a simple typing error such as entering **35** instead of **3.5** can create a misleading outlier and should be handled through detection, verification, correction, documentation, and reanalysis
+- in descriptive analysis, summarisation techniques include **mean**, **median**, **mode**, **range**, **variance**, **standard deviation**, **percentiles**, and **quartiles**
+- the four philosophies support stronger decision-making in different ways
+- analysts need to match the philosophy to the analytical question
+- the philosophies are often connected and can build on one another in sequence
+- organisations can use the four philosophies together to move from observation to action
+- online retail is a useful example because it can apply all four philosophies in one business setting
+
+#### Exam Notes
+
+When revising this lesson for the semester exam, focus especially on these high-yield points:
+
+- define **data analysis philosophies** clearly
+- know the four main philosophies: **descriptive**, **diagnostic**, **predictive**, and **prescriptive**
+- explain that **descriptive** analysis often uses **mean**, **median**, **mode**, charts, graphs, and histograms
+- explain that descriptive analysis also helps analysts understand **central tendency**, **variability**, and the overall **shape** of the data
+- know the descriptive measures of variability: **range**, **variance**, and **standard deviation**
+- know that **percentiles** and **quartiles** are also descriptive measures that help explain relative position, spread, and distribution
+- know the common descriptive visualisations: **histograms**, **bar charts**, **scatter plots**, and **box plots**
+- be ready to interpret descriptive statistics and visualisations in terms of **central tendency**, **variability**, **distribution**, **outliers**, and **relationships**
+- be ready to use a **salary analysis** example to explain how summarisation and visualisation work together in descriptive analysis
+- be ready to use a **customer satisfaction survey** example to explain percentages, mode, and bar-chart interpretation
+- be ready to use a **sales by region** example to explain regional totals, range, and comparison charts
+- be ready to use an **exam score** example to explain mean, median, range, standard deviation, and box-plot interpretation
+- in descriptive case questions, connect the **purpose**, **summary statistics**, **chart choice**, and **business interpretation** in one structured answer
+- if the prompt says **use all techniques**, choose a scenario with both continuous and categorical variables so you can justify central tendency, variability, percentiles, quartiles, and multiple chart types in one answer
+- explain that **error detection, elimination, and correction** are necessary to protect the accuracy and reliability of analysis results
+- be ready to describe common data-quality problems such as **missing data**, **outliers**, **measurement errors**, and **data entry errors**
+- be ready to explain detection methods such as **visual inspection**, **descriptive statistics**, **data profiling**, and **statistical tests**
+- avoid saying that outliers should always be removed; explain that they should first be checked to see whether they are genuine extreme values or data errors
+- be ready to explain simple **Google Sheets** checks such as **COUNTBLANK**, **COUNTIF**, filters, sorting, conditional formatting, and summary formulas like **AVERAGE** and **STDEV.S**
+- mention warning signs such as impossible averages, unrealistic minima or maxima, repeated IDs, too many blanks, inconsistent categories, or dates outside the expected period
+- in a broad error-detection answer, structure the response as: **problem types -> detection methods -> Google Sheets checks -> justified corrections -> why it improves reliability**
+- use a **customer list / online retail sheet** as a strong example when you need one dataset that can show missing values, duplicates, outliers, and inconsistent labels together
+- explain that **diagnostic** analysis looks for causes, relationships, and influencing factors behind outcomes
+- explain that diagnostic analysis may use **trend analysis**, **comparative analysis**, and **deviation analysis**
+- be ready to explain that diagnostic analysis looks for **patterns**, **trends**, and **anomalies** in order to understand why an outcome occurred
+- explain that diagnostic analysis may also use **correlation analysis** and **causation analysis**
+- be ready to explain that **correlation** measures association, while **causation** requires stronger evidence
+- be ready to mention **Pearson's correlation coefficient** as a common measure of relationship strength and direction
+- avoid claiming that correlation automatically proves causation
+- be ready to explain the main steps in **root cause analysis**: problem identification, data collection, hypothesis generation, testing, validation, and solution implementation
+- be ready to explain that the **5 Whys** technique starts from the problem statement and repeatedly asks **why** until the likely root cause is found
+- be ready to explain that a **fishbone diagram / Ishikawa diagram** is a visual root-cause tool where the head is the problem and the bones are categories of possible causes
+- explain that using the **5 Whys** or **fishbone diagrams** helps analysts examine foundational issues more rigorously and supports better remedial action
+- use **customer churn** as a strong diagnostic example when you need to explain patterns, correlation, and root causes in one answer
+- use **website conversion analysis** as a strong diagnostic example when you need to explain patterns, comparisons, troubleshooting, and A/B testing
+- use **production line performance analysis** as a strong diagnostic example when you need to explain deviation analysis and structured root cause investigation
+- use **sales performance analysis** as a strong diagnostic example when you need to explain trends, correlation, comparative analysis, and areas for improvement
+- be ready to mention tools such as the **5 Whys** and **fishbone diagrams** in diagnostic troubleshooting answers
+- explain that the exact methods and data sources may vary by scenario, but the overall diagnostic logic stays similar
+- in a broad diagnostic exam answer, show a clear chain from problem identification to targeted improvement
+- explain that **predictive** analysis uses historical patterns, statistical modelling, data mining, and machine learning to estimate future outcomes
+- be ready to explain that predictive analysis uses **historical data** and **statistical techniques** to forecast future outcomes
+- know that **time series analysis**, **trend analysis**, and **smoothing techniques** are common predictive tools
+- mention **moving averages** and **exponential smoothing** as examples of smoothing techniques
+- be ready to explain that **regression analysis** and **time series forecasting** are common predictive modelling methods
+- explain that **regression analysis** models the relationship between dependent and independent variables
+- explain that **time series forecasting** predicts future values from time-ordered historical data
+- be ready to explain **cross-validation** as a way to test model performance on unseen data
+- know common predictive evaluation measures such as **MSE**, **MAE**, and **R-squared**
+- mention **AIC** and **BIC** as model-comparison criteria when relevant
+- explain that **AIC** balances goodness-of-fit and model complexity, and that lower values are preferred
+- explain that **BIC** is similar to AIC but penalises complexity more strongly, making it more conservative
+- be ready to explain **backtesting** as comparing forecasted values with actual outcomes over a past period to assess predictive performance
+- use **sales forecasting** as a strong predictive example when you need to explain how historical data can be used to estimate future demand
+- be ready to mention factors such as **seasonality**, **marketing campaigns**, **pricing changes**, and **economic indicators** in a sales forecast case
+- mention **ARIMA** and **exponential smoothing** as suitable time series forecasting techniques in a sales forecast scenario
+- in a predictive case answer, connect the forecast to business uses such as **demand planning**, **inventory management**, **resource allocation**, and **sales target setting**
+- use **customer churn prediction** as a strong predictive example when you need to explain how historical customer data can be used to estimate future customer loss
+- be ready to mention **demographics**, **purchase history**, **customer interactions**, and **behaviour patterns** in a churn prediction case
+- mention **logistic regression** and **decision trees** as suitable predictive techniques for churn prediction
+- in a churn prediction answer, connect the model to **retention strategies**, **personalised offers**, **proactive customer service**, and lower churn rates
+- use **credit risk assessment** as a strong predictive example when you need to explain how applicant and financial data can be used to estimate future default risk
+- be ready to mention **income**, **credit history**, **employment status**, and other **financial indicators** in a credit risk case
+- mention **logistic regression** and **random forests** as suitable predictive techniques for credit risk assessment
+- in a credit risk answer, connect the model to **loan approvals**, **interest rates**, **credit limits**, and better risk control
+- use **demand forecasting** as a strong predictive example when you need to explain how historical sales and market data can be used to estimate future demand
+- be ready to mention **historical sales data**, **market trends**, **promotional activities**, and **economic indicators** in a demand forecasting case
+- mention **time series forecasting models** and **machine learning algorithms** as suitable predictive techniques for demand forecasting
+- in a demand forecasting answer, connect the model to **production planning**, **inventory optimisation**, **pricing strategies**, and **resource allocation**
+- explain that predictive analysis can be applied across different domains, even when the exact methods and datasets vary
+- explain that the chosen predictive technique depends on the context, available data, and business objective
+- finish broad predictive answers by linking predictive analysis to **future trends**, **better decisions**, **efficiency**, and **strategic planning**
+- in a broad predictive question, structure the answer as: **scenario -> data -> technique -> validation -> business insight**
+- do not confuse **predictive** with **diagnostic** or **prescriptive** analysis in case answers
+- do not present forecasts as certainty; explain them as estimates based on historical patterns and models
+- use module terminology actively: **trend analysis**, **time series**, **smoothing**, **regression**, **cross-validation**, **MAE/MSE**, and **backtesting**
+- use simple mini-examples or small tables when explaining predictive analysis, because they make regression, forecasting, and model comparison easier to understand
+- use simple visual flows or mini tables when explaining **diagnostic** or **prescriptive** analysis, because they make cause-finding and decision logic easier to understand
+- explain that **prescriptive** analysis goes beyond descriptive and predictive analysis by recommending the best course of action
+- explain that **prescriptive** analysis uses optimisation algorithms, simulation techniques, and decision modelling to recommend actions
+- explain that prescriptive analysis can combine **historical data**, **predictive models**, and **decision modelling** in one decision process
+- explain that prescriptive analysis compares alternatives, constraints, and likely outcomes before recommending the best action
+- explain that prescriptive analysis helps decision-makers maximise desired outcomes while handling objectives, constraints, and uncertainty
+- use **supply chain optimisation** as a strong prescriptive example when you need to explain recommendations under cost and service constraints
+- mention **LP** or **MILP** when the case is about resource allocation, routing, production, warehouses, or inventory
+- use **portfolio optimisation** as a strong prescriptive example when you need to explain decisions under risk-return trade-offs
+- mention **quadratic programming** or **mean-variance optimisation** when the case is about choosing the best asset allocation
+- mention that the recommended allocation should be **implemented, monitored, and adjusted** when market conditions, investment goals, or risk tolerance change
+- use **pricing optimisation** as a strong prescriptive example when you need to explain recommendations under demand, cost, and competition constraints
+- mention **revenue management**, **dynamic pricing**, or **revenue optimisation algorithms** in pricing cases
+- use **resource allocation in healthcare** as a strong prescriptive example when you need to explain recommendations under patient demand, staff limits, and service targets
+- mention **mathematical programming** or **queuing models** in healthcare-allocation cases
+- explain that prescriptive analysis can be used in different domains even when the exact optimisation method changes
+- in prescriptive answers, the solving pattern is usually: **objective -> constraints -> optimisation method -> recommendation -> monitoring**
+- in a broad prescriptive question, structure the response as: **scenario -> objective -> constraints -> optimisation method -> recommendation -> monitoring**
+- do not confuse **prescriptive** analysis with **predictive** analysis; prescriptive answers must recommend a best action, not only estimate what may happen
+- use a quick **scenario map** in revision: supply chain = LP/MILP, portfolio = mean-variance / quadratic programming, pricing = revenue optimisation, healthcare allocation = mathematical programming / queuing
+- be ready to explain **standard deviation** in simple terms as spread around the average and to connect lower spread with lower investment risk
+- be ready to explain **Value-at-Risk (VaR)** as the worst likely loss over a chosen time period at a chosen confidence level
+- be ready to show simple **Google Sheets** formulas such as **STDEV.S**, **STDEV.P**, and **PERCENTILE**
+- if the calculation looks wrong, check whether returns are stored correctly, whether the confidence tail is correct, and whether you are using returns instead of prices
+- in prescriptive case answers, always move from **objective and constraints** to **recommended action**
+- explain that **descriptive** analysis answers the question **what happened**
+- explain that **diagnostic** analysis answers the question **why it happened**
+- explain that **predictive** analysis answers the question **what is likely to happen**
+- explain that **prescriptive** analysis answers the question **what should be done**
+- in scenario-identification questions, use keyword clues: **mean/median/std** = descriptive, **root cause/why** = diagnostic, **forecast/predict** = predictive, **optimise/best schedule/resource allocation** = prescriptive
+- if a recommendation system uses historical behaviour to estimate likely preferences, it is usually safest to classify it as **predictive**
+- in typo or spreadsheet-error scenarios, explain that the value should be checked through sorting, visual inspection, descriptive statistics, source verification, correction, documentation, and reanalysis
+- in short descriptive-theory questions, summarise the techniques as: **central tendency + variability + relative position**
+- be ready to compare the four philosophies clearly in one answer
+- explain how the philosophies can be used together rather than as isolated ideas
+- connect each philosophy to decision-making
+- use a realistic business example, such as online retail, to show the difference between the four philosophies
+
+##### Strong exam answer rule
+
+A strong answer in this topic usually:
+
+1. identifies the correct philosophy
+2. explains the main question it answers
+3. links it to a realistic business use
+4. shows how it supports decision-making
+            """,
+            "key_points": [
+                "Data analysis philosophies help analysts understand what kind of question they are answering",
+                "Data analysis is a systematic approach to extracting valuable insight and knowledge from raw data",
+                "The four main philosophies are descriptive, diagnostic, predictive, and prescriptive",
+                "Descriptive analysis often uses summaries, statistical measures such as mean, median, and mode, and visualisations to explain historical patterns",
+                "Descriptive analysis also helps analysts understand central tendency, variability, and the overall shape of the data",
+                "Common descriptive measures of central tendency are mean, median, and mode",
+                "Common descriptive measures of variability are range, variance, and standard deviation",
+                "Percentiles and quartiles are also important descriptive measures because they show relative position, spread, and distribution in a dataset",
+                "Common descriptive visualisations include histograms, bar charts, scatter plots, and box plots",
+                "Interpreting descriptive analysis involves central tendency, variability, distribution, outliers, and relationships between variables",
+                "Descriptive analysis helps analysts detect anomalies, identify patterns, and generate early hypotheses for deeper analysis",
+                "Salary analysis is a strong descriptive example because mean, median, mode, standard deviation, and a histogram can be combined to explain salary distribution clearly",
+                "Customer satisfaction survey analysis is a strong descriptive example because percentages, mode, and a bar chart can show the overall satisfaction pattern clearly",
+                "Sales-by-region analysis is a strong descriptive example because totals, range, and regional charts can show performance differences across areas",
+                "Exam score analysis is a strong descriptive example because mean, median, range, standard deviation, and a box plot can show score distribution clearly",
+                "Strong descriptive case answers should connect the purpose of the case, the correct summary measures, the right chart choice, and the insight gained from the results",
+                "A broad descriptive case can combine central tendency, variability, percentiles, quartiles, histograms, bar charts, scatter plots, and box plots in one coherent answer",
+                "Error detection, elimination, and correction are essential because unreliable data can weaken the accuracy and trustworthiness of the analysis",
+                "Common data-quality problems include missing data, outliers, measurement errors, and data entry errors",
+                "Visual inspection, descriptive statistics, data profiling, and statistical tests are useful ways to detect suspicious values or unexpected patterns",
+                "Analysts should investigate unusual values before removing them and document how data errors were corrected",
+                "Google Sheets can help detect data problems through filters, sorting, conditional formatting, COUNTBLANK, COUNTIF, and summary formulas such as AVERAGE and STDEV.S",
+                "Strong cleaning practice in Google Sheets means checking whether unusual values are real before deleting, correcting, or imputing them",
+                "A strong exam answer on error detection should move from error types, to detection methods, to correction logic, to practical Google Sheets checks",
+                "A customer-list or online-retail dataset is a strong exam case because it can show blanks, duplicates, inconsistent labels, and suspicious purchase values in one sheet",
+                "Diagnostic analysis investigates causes, relationships, and influencing factors behind specific outcomes",
+                "Diagnostic analysis also looks for patterns, trends, and anomalies in order to explain why something happened",
+                "Trend analysis helps analysts see whether results increase, decrease, repeat cyclically, or show seasonality over time",
+                "Comparative analysis helps analysts explain why one group, region, category, or segment performs differently from another",
+                "Deviation analysis helps analysts identify anomalies or outliers that may indicate errors, unusual events, or exceptional circumstances",
+                "Correlation analysis helps analysts measure the strength and direction of association between variables",
+                "Causation analysis goes beyond correlation and asks whether one variable actually influences another",
+                "Pearson's correlation coefficient is a common way to measure the degree of association between variables",
+                "Analysts should remember that correlation alone does not prove causation",
+                "Root cause analysis helps analysts move from symptoms to the underlying causes of a problem",
+                "Problem identification, data collection, hypothesis testing, validation, and solution implementation are important steps in diagnostic troubleshooting",
+                "The 5 Whys technique is a simple but effective way to drill down from the visible problem to the root cause by repeatedly asking why",
+                "Fishbone diagrams, also called Ishikawa diagrams, help analysts organise possible causes visually into categories during root cause analysis",
+                "Using the 5 Whys or fishbone diagrams strengthens root cause analysis and supports more effective remedial action",
+                "Customer churn is a strong diagnostic example because it allows analysts to investigate patterns, correlations, and root causes of customer loss",
+                "Website conversion analysis is a strong diagnostic example because it can combine pattern identification, comparative analysis, troubleshooting, and A/B testing",
+                "Production line performance analysis is a strong diagnostic example because it can combine pattern identification, deviation analysis, and root cause investigation",
+                "Sales performance analysis is a strong diagnostic example because it can combine trend analysis, correlation analysis, comparative analysis, and improvement-focused interpretation",
+                "The 5 Whys and fishbone diagrams are useful tools in diagnostic troubleshooting and root cause analysis",
+                "Across different scenarios, diagnostic analysis often follows the same pattern: identify the problem, examine patterns, test relationships, investigate root causes, and support improvement",
+                "A broad diagnostic case answer should move clearly from the observed problem to patterns, comparisons, relationships, likely causes, and targeted improvement",
+                "Predictive analysis uses historical patterns, statistical models, data mining, and machine learning to estimate future outcomes",
+                "Predictive analysis also uses historical data and statistical techniques to forecast future outcomes or events",
+                "Time series analysis helps analysts identify trends, seasonality, and recurring patterns over time",
+                "Trend analysis in predictive work helps analysts quantify the overall direction of change in the data",
+                "Smoothing techniques such as moving averages and exponential smoothing help reduce noise and reveal underlying patterns",
+                "Regression analysis and time series forecasting are common predictive modelling methods",
+                "Regression analysis models the relationship between a dependent variable and one or more independent variables",
+                "Time series forecasting predicts future values from historical data arranged over time",
+                "Cross-validation helps analysts test how well predictive models perform on unseen data",
+                "Common predictive evaluation measures include MSE, MAE, and R-squared",
+                "AIC and BIC can be used when comparing predictive models",
+                "AIC compares models by balancing goodness-of-fit with model complexity, and lower values are usually preferred",
+                "BIC is similar to AIC but penalises complex models more strongly and is therefore more conservative",
+                "Backtesting compares forecasted values with actual outcomes over a historical period in order to assess predictive accuracy and reliability",
+                "Sales forecasting is a strong predictive example because it uses historical sales patterns to estimate future sales and support planning",
+                "ARIMA and exponential smoothing are useful predictive techniques in sales forecasting because they can model patterns, trends, and short-term fluctuation in time-based data",
+                "Customer churn prediction is a strong predictive example because it uses customer history and behaviour to estimate future churn risk",
+                "Logistic regression and decision trees are useful predictive techniques in churn prediction because they help identify at-risk customers and the factors linked to churn",
+                "Credit risk assessment is a strong predictive example because it uses applicant and financial history to estimate future default risk",
+                "Logistic regression and random forests are useful predictive techniques in credit risk assessment because they help estimate default probability and support credit decisions",
+                "Demand forecasting is a strong predictive example because it uses historical and market-related patterns to estimate future product or service demand",
+                "Time series forecasting models and machine learning algorithms are useful predictive techniques in demand forecasting because they help capture trend, seasonality, and multiple influencing factors",
+                "Predictive analysis can be applied across many domains even when the exact techniques and datasets differ",
+                "The chosen predictive technique depends on the context, the available data, and the objective of the analysis",
+                "Despite these differences, predictive analysis always uses historical data and statistical models to anticipate future trends and patterns",
+                "Strong predictive analysis improves efficiency, decision-making, and strategic planning",
+                "A broad predictive exam answer should move clearly from scenario, to historical data, to modelling technique, to validation, to business insight",
+                "In predictive exam answers, students should be careful not to confuse forecasting with explanation or recommendation",
+                "Strong use of module knowledge means naming the philosophy, the data, the technique, the validation method, and the practical benefit",
+                "Strong predictive case answers should explain the forecasting purpose, the data analysed, the chosen technique, the validation approach, and the practical application of the forecast",
+                "Small visual examples and comparison tables can make predictive concepts such as regression, time series forecasting, and model comparison much easier to understand",
+                "Visual diagnostic flows can make it easier to understand how analysts move from a detected problem to patterns, root causes, and improvement",
+                "Visual prescriptive flows can make it easier to understand how analysts move from options and constraints to a recommended action",
+                "Prescriptive analysis is a more advanced branch of analysis because it goes beyond description and prediction and recommends what should be done",
+                "Prescriptive analysis combines historical data, predictive models, optimisation techniques, and decision modelling",
+                "Prescriptive analysis helps decision-makers choose the best action while considering constraints, objectives, trade-offs, and uncertainty",
+                "Prescriptive analysis uses optimisation algorithms, simulation techniques, and decision modelling to recommend the best action",
+                "Prescriptive analysis compares alternatives, constraints, and likely outcomes before recommending the best action",
+                "Supply chain optimisation is a strong prescriptive example because it recommends the best resource allocation while balancing cost, capacity, service level, and demand",
+                "LP and MILP are useful prescriptive techniques in supply chain optimisation because they help allocate production, warehousing, transport, and inventory under constraints",
+                "Portfolio optimisation is a strong prescriptive example because it recommends the best asset allocation under risk-return trade-offs",
+                "Quadratic programming and mean-variance optimisation are useful prescriptive techniques in portfolio optimisation because they help balance expected return, risk, and allocation constraints",
+                "Portfolio optimisation also requires implementation and monitoring, because allocations may need adjustment as market conditions, goals, or risk tolerance change",
+                "Pricing optimisation is a strong prescriptive example because it recommends the best pricing action under demand, cost, and competition constraints",
+                "Revenue management, dynamic pricing, and revenue optimisation methods are useful prescriptive techniques in pricing optimisation",
+                "Healthcare resource allocation is a strong prescriptive example because it recommends the best use of beds, staff, and equipment under service and budget constraints",
+                "Mathematical programming and queuing models are useful prescriptive techniques in healthcare resource allocation",
+                "Prescriptive analysis can be applied across different domains even when the exact optimisation methods differ",
+                "The general prescriptive logic is still the same: define the objective, identify constraints, model alternatives, and recommend the best action",
+                "A broad prescriptive exam answer should move from scenario, to objective, to constraints, to optimisation method, to recommended action, and then to monitoring",
+                "In broad prescriptive questions, analysts should not stop at prediction; they must explain what action should be taken",
+                "A useful revision strategy is to compare prescriptive scenarios side by side and match each one to its objective, constraints, method, and recommended action",
+                "In portfolio optimisation, standard deviation is a useful risk measure because it shows how widely returns move around the average",
+                "Low standard deviation usually means lower volatility and lower risk, while high standard deviation usually means higher volatility and higher risk",
+                "Value-at-Risk is useful because it estimates the worst likely loss over a chosen time period at a chosen confidence level",
+                "Google Sheets can calculate standard deviation with STDEV.S or STDEV.P",
+                "A simple historical VaR in Google Sheets can be estimated with PERCENTILE on historical returns and then converted into a loss amount",
+                "Common warning signs of a wrong setup include mixed percentages and decimals, using prices instead of returns, using the wrong percentile tail, or unrealistic output values",
+                "Strong prescriptive case answers should explain the objective, the constraints, the optimisation method, and the final recommended action",
+                "Descriptive analysis focuses on what happened",
+                "Diagnostic analysis focuses on why something happened",
+                "Predictive analysis focuses on what is likely to happen",
+                "Prescriptive analysis focuses on what should be done",
+                "Scenario-identification questions can often be solved by matching the wording of the task to the philosophy: summaries = descriptive, causes = diagnostic, forecasts = predictive, optimisation and best action = prescriptive",
+                "Recommendation systems based on behaviour history are usually best classified as predictive because they estimate likely future preferences",
+                "A simple typing error such as entering 35 instead of 3.5 can create a misleading outlier and should be handled through detection, verification, correction, documentation, and reanalysis",
+                "In descriptive analysis, summarisation techniques include mean, median, mode, range, variance, standard deviation, percentiles, and quartiles",
+                "The four philosophies help analysts choose the correct analytical approach for the problem",
+                "The philosophies often build on one another from observation to action",
+                "An online retail business is a useful example because all four philosophies can be applied in one scenario",
+                "A strong exam answer should identify the philosophy, explain the question it answers, and link it to decision-making"
+            ],
+            "visual_elements": {
+                "diagrams": False,
+                "tables": False,
+                "highlighted_sections": True
+            }
+        },
+        {
+            "lesson_number": "3.4",
+            "title": "Lesson - Key Performance Indicators (KPIs)",
+            "content": """
+### 3.4. Lesson - Key Performance Indicators (KPIs)
+
+#### Introduction
+
+**Key Performance Indicators (KPIs)** play an important role in data analysis because they help organisations measure performance in a structured and meaningful way.
+
+As analysts work with data, they need clear ways to judge whether a process, strategy, or intervention is successful. KPIs provide those measurement points. They act as benchmarks for tracking progress, spotting patterns, identifying change, and supporting evidence-based decisions.
+
+KPIs can be used in many different contexts, for example:
+
+- customer satisfaction
+- production efficiency
+- sales performance
+- marketing effectiveness
+- service quality
+
+This means KPIs are not only numbers on a dashboard. They are practical tools that connect data analysis to goals, objectives, and decision-making.
+
+#### The Role of Key Performance Indicators (KPIs)
+
+In the pursuit of stronger performance, organisations rely on many different performance measures. Among these, **Key Performance Indicators (KPIs)** are especially important because they help evaluate whether an organisation, a project, or a specific activity is succeeding.
+
+KPIs act as structured indicators of achievement. They help analysts and managers judge whether progress is being made and whether the organisation is moving in the right direction.
+
+KPIs also provide:
+
+- targets
+- milestones
+- performance signals
+- support for the organisation's goals and mission
+
+This means a KPI is not just a measurement for reporting. It is a focused measure that should connect directly to what the organisation is trying to achieve.
+
+For example, a KPI such as **the number of faulty products** can support a production goal of reducing material waste. If the number of faulty products goes down, that suggests the organisation is improving quality and reducing waste. In this way, the KPI becomes a practical way to track whether the strategy is working.
+
+#### Understanding the Concept of KPIs and Their Role in Measuring Business Performance
+
+##### Developing successful KPIs
+
+In earlier parts of this module, we explored what **Key Performance Indicators (KPIs)** are and why they matter. The next step is understanding how to design KPIs that are genuinely useful for a business.
+
+For a KPI to be effective, it should meet a number of important criteria.
+
+##### Simple
+
+A KPI should be simple to understand and easy to measure. It should answer a clear question instead of creating more confusion. A strong way to design a KPI is to begin with the question the organisation wants answered. Once that question is clear, it becomes easier to choose the right indicator and the right action to improve it.
+
+##### Relevant
+
+A KPI should focus on a question that actually matters to the business. For example, if a company runs a computer store, an important question might be whether customers are buying computers together with a keyboard, mouse, and monitor. A useful KPI could then be the **percentage of bundled PC purchases compared with all PC purchases**.
+
+##### Aligned
+
+KPIs should align with the organisation's wider goals. If a company wants to broaden its product offer, a suitable KPI could be the **number of distinct products available to customers**. This makes sure the measurement supports the current strategic direction of the company.
+
+##### Actionable
+
+KPIs should lead to meaningful action. A KPI should not be created only because the organisation wants to display more numbers on a dashboard. Instead, it should point toward practical and achievable improvements that help the business move forward.
+
+##### Measurable
+
+KPIs need to be specific enough to track properly. They should avoid vague wording and have a solid connection to a real target or problem statement. For example, a measurable KPI target might be **reducing company power consumption by 10% in the next quarter**.
+
+When these points are combined, it becomes clear that strong KPIs depend heavily on the organisation using them. A software company and a restaurant chain will not use the same KPI set, because they operate differently and pursue different goals. Even businesses in the same industry may need different KPIs if their priorities, strategies, or challenges are not the same.
+
+#### A systematic approach to defining and implementing KPIs
+
+Because KPI design can easily become confusing or unfocused, it is important to follow a **systematic approach** when defining and implementing KPIs.
+
+##### Step 1: Start with a clear list of goals and objectives
+
+The first step is to identify the goals and objectives that actually matter to the organisation. Without a clear list of priorities, KPI design can become cluttered with weak or pointless indicators that do not support the business.
+
+To stay focused, organisations can use simple strategies such as:
+
+- the **KISS principle**: *Keep It Simple*
+- the **one-page technique**: keep goals short, focused, and limited to what really matters
+
+This step is important because KPIs should always be built around meaningful objectives rather than around random available data.
+
+##### Step 2: Define your Key Performance Questions (KPQs)
+
+Once the goals are clear, the next step is to create **Key Performance Questions (KPQs)**. These are open-ended questions that help clarify what success looks like and what the organisation needs to understand.
+
+For example, if the goal is to reduce faulty products in manufacturing, useful KPQs might include:
+
+- In which part of manufacturing do we have the most failures?
+- How can we achieve that objective?
+- How do we define success for that objective?
+- What is a reasonable timeframe for that success?
+
+These questions help shape KPIs that are focused, relevant, and easier to justify.
+
+##### Step 3: Evaluate the data you already have and identify whether more data is needed
+
+After defining the KPQs, the organisation should review the data that is already available.
+
+This may involve asking questions such as:
+
+- Do we have data from each step of the manufacturing process?
+- What data can we already access inside the company?
+- What is already being measured?
+
+This step helps avoid duplication and prevents teams from re-inventing the wheel. It also helps identify where extra data may be needed to answer the KPQs properly.
+
+##### Step 4: Determine the most effective way to communicate KPIs
+
+Even a strong KPI project can fail if decision-makers do not understand the results. For that reason, organisations must decide how best to present KPIs to managers, sponsors, or other stakeholders.
+
+Depending on the audience, the communication method might include:
+
+- a spreadsheet with charts and plots
+- a dashboard
+- a short presentation that tells a clear business story
+
+The key point is that KPIs must be presented in a way that is clear, simple, and easy to interpret.
+
+##### Step 5: Continuous improvement
+
+Once a KPI is in use, the work is not finished. Organisations should monitor the KPI continuously and check whether it is still helping to achieve the intended objective.
+
+If the business context changes, or if the KPI becomes less useful, it may need to be adjusted. In that case, the organisation should revisit the earlier steps and refine the KPI again. This makes KPI use an ongoing improvement process rather than a one-time setup task.
+
+#### Reasons for utilising KPIs
+
+There are many reasons why organisations use KPIs in practice.
+
+##### Keeping a hand on the pulse
+
+Well-defined KPIs help senior management understand the organisation's current position quickly. Instead of spending a large amount of time manually reviewing raw data, managers can use KPIs as fast performance signals.
+
+##### Adjusting quicker
+
+By monitoring KPIs over time, management can identify changes quickly and make faster adjustments. For example, if one team takes much longer than others to complete a task, managers may decide to reallocate staff in order to reduce bottlenecks.
+
+##### Holding teams accountable
+
+KPIs also make it easier to track the work of teams or departments. This allows managers to monitor whether daily activities are aligned with expectations and whether responsibilities are being met.
+
+##### Ensuring team direction
+
+KPIs help senior management make sure that different teams are moving in the same direction. If all teams are measured against the right indicators, it becomes easier to keep the organisation aligned with shared objectives.
+
+##### Aligning agent and principal goals
+
+KPIs can also support alignment between **agents** such as employees and **principals** such as company owners or senior management. When the same KPI is used across different levels of the organisation, it becomes easier to align behaviour and decision-making with company goals.
+
+#### Common types of KPIs
+
+KPIs can be grouped into four common types.
+
+##### Strategic KPIs
+
+These focus on the organisation's broader goals and long-term direction. They often relate to high-level results such as:
+
+- revenue
+- market share
+- Return on Investment (**ROI**)
+
+##### Operational KPIs
+
+These focus more on short-term performance and efficiency. They are often used to monitor day-to-day or month-to-month activity. Examples include:
+
+- sales in a specific region
+- average monthly costs
+- production speed
+
+##### Functional unit KPIs
+
+These are tied to specific departments or functions such as finance, IT, operations, marketing, or customer service. A functional-unit KPI may be strategic or operational, depending on the context, but its purpose is to show how one unit is performing.
+
+##### Leading and lagging KPIs
+
+Regardless of whether a KPI is strategic, operational, or tied to a functional unit, KPIs can also be described as **leading** or **lagging**.
+
+- **Leading KPIs** help predict future outcomes. For example, the use of safety equipment in a factory may act as a leading indicator of safer operations.
+- **Lagging KPIs** measure outcomes that have already happened. For example, the number of fatal incidents in a factory is a lagging KPI because it records past events.
+
+A strong KPI system usually combines both leading and lagging indicators so the organisation can monitor both early warning signs and final results.
+
+#### KPI measurement and input-output thinking
+
+No matter which KPI type is used, KPI measurement relies on data from past events.
+
+To measure performance effectively, analysts usually focus on specific parts of an activity. A useful way to think about this is to break an activity into **input** and **output**.
+
+For example:
+
+- **input**: a wood block is placed into a machine
+- **output**: a plank is produced
+
+This kind of thinking helps analysts decide what should be measured. The KPI may focus on:
+
+- the quality of the input
+- the speed of the process
+- the efficiency of the transformation
+- the quality or quantity of the output
+
+This makes KPI design more practical, because it links the indicator directly to the activity being analysed.
+
+#### Looking deeper at KPI measurement
+
+To gain deeper insight into performance, analysts can look beyond simple input and output and examine additional elements of the activity.
+
+##### Activity
+
+This is the transformation itself. In the wood example, the activity is the process of sawing the wood block into a plank.
+
+##### Mechanism
+
+This is what enables the activity to happen. The mechanism may be:
+
+- human-based
+- system-based
+- machine-based
+
+##### Control
+
+Control ensures that the activity follows the required standards, rules, or procedures. It helps analysts assess whether the process is being carried out correctly and consistently.
+
+##### Time
+
+Time refers to the temporal element of the activity. It may involve:
+
+- how long the process takes
+- when it happens
+- whether delays or bottlenecks occur
+
+Each of these elements can be measured and turned into a performance indicator. For example, a business might measure:
+
+- the time needed to process wood
+- the amount of timber needed to produce a plank
+- the rate of output from a machine
+- the number of defects created during the transformation
+
+By analysing these indicators together, organisations can understand performance more fully and make better adjustments to improve efficiency, quality, and overall results.
+
+#### KPI measurement breakdown - Practical examples
+
+To measure performance effectively, analysts often break an activity down into its main elements and then decide which of those elements should become indicators.
+
+For example:
+
+##### Activity example
+
+In a construction project, the time taken to complete a task such as **pouring concrete** can be used as a performance indicator. This helps project managers identify bottlenecks and improve workflow.
+
+##### Mechanism example
+
+In a customer service department, the **average response time for customer inquiries** can act as a KPI. This helps managers assess how efficient the support mechanism is and where service improvements may be needed.
+
+##### Control example
+
+In a financial institution, the **percentage of loan applications rejected because documentation is incomplete** can be used as a control-related KPI. This helps the company monitor whether staff and applicants are complying with the required process.
+
+##### Time example
+
+In a marketing campaign, the **time between launching the campaign and achieving a target number of sales** can act as a KPI. This allows marketers to assess campaign effectiveness and make timely adjustments if results are too slow.
+
+These examples show that KPIs do not only measure final outcomes. They can also measure the activity itself, the supporting mechanism, the level of control, and the time involved. This gives organisations more detailed insight and supports stronger decision-making.
+
+#### Why KPIs matter in data analysis
+
+KPIs matter because they give analysts a focused way to evaluate results.
+
+Without KPIs, an organisation may collect large amounts of data without having a clear way to judge whether performance is improving, declining, or staying stable. With KPIs, the analyst can connect the data directly to business priorities.
+
+KPIs help analysts:
+
+- measure progress over time
+- compare actual results with targets
+- detect positive or negative trends
+- evaluate whether a strategy is working
+- support better decisions with evidence
+
+That is why KPIs are central to **data-driven decision-making**. They turn raw data into measurable signals that help the organisation decide what to continue, what to improve, and what to change.
+
+#### Real-world relevance of KPIs
+
+KPIs are useful across many different organisational settings.
+
+For example:
+
+- in customer analysis, a KPI might measure satisfaction, retention, or complaint rate
+- in production, a KPI might measure output, defect rate, or downtime
+- in marketing, a KPI might measure conversions, engagement, or campaign return
+
+In each case, the KPI provides a clear performance signal that analysts and managers can monitor. This makes it easier to identify trends, evaluate actions, and stay aligned with organisational goals.
+
+#### Real-world example of a strategic KPI - Revenue growth
+
+For an organisation with the broad goal of increasing revenue, a useful **strategic KPI** is the **percentage of revenue growth over a specific period**.
+
+This KPI helps senior management evaluate whether the company is progressing toward its long-term financial objective. By monitoring revenue trends and comparing the actual results against targets, management gains a clearer understanding of:
+
+- the company's financial health
+- whether growth goals are being achieved
+- whether the strategy is moving the organisation in the right direction
+
+This is a strong example of a strategic KPI because it focuses on an overarching organisational objective rather than only on short-term operational activity.
+
+#### Real-world example of an operational KPI - Customer retention rate
+
+For a retail business that wants to strengthen customer loyalty, a useful **operational KPI** is the **customer retention rate**.
+
+By calculating the percentage of customers who stay with the company over a given period, the organisation can evaluate:
+
+- customer satisfaction
+- the strength of customer relationships
+- whether retention strategies are working
+
+This is a strong operational KPI because it focuses on ongoing short-term performance and helps the business monitor whether day-to-day customer relationship activity is producing the desired result.
+
+#### Real-world example of a functional unit KPI - IT system uptime
+
+In an IT department, system reliability is often critical. A useful **functional unit KPI** is the **percentage of uptime for critical systems**.
+
+This KPI helps IT managers:
+
+- track system performance
+- assess whether maintenance work is effective
+- identify weaknesses or recurring issues
+
+This is a strong functional unit KPI because it is tied directly to one department and helps that unit evaluate how well it is supporting the wider organisation.
+
+#### Real-world example of leading and lagging KPI - Workplace safety incidents
+
+In a manufacturing plant, workplace safety is a high priority. A combination of **leading** and **lagging** KPIs can be used to monitor safety more effectively.
+
+For example:
+
+- a **leading KPI** could be the percentage of employees using safety equipment correctly
+- a **lagging KPI** could be the number of workplace safety incidents
+
+This is a strong example because it shows why both KPI types matter. The leading KPI helps management act early and reduce risk, while the lagging KPI helps the organisation learn from past outcomes and improve future safety practice.
+
+#### Examples of Key Performance Indicators
+
+In earlier parts of this lesson, we saw that KPI choice depends on the organisation's goals, context, and business area. Some KPIs are especially common in certain departments, although some of them can also be applied across multiple areas.
+
+For example, **Return on Investment (ROI)** can be used in marketing, IT, and other areas where the organisation wants to evaluate whether an investment produced enough value.
+
+##### Finance
+
+One common financial KPI is **Earnings Per Share (EPS)**.
+
+EPS is a profitability measure that shows how much net income a company generates per share of stock. It is commonly measured over a yearly period and helps analysts judge:
+
+- company profitability
+- the value generated per share
+- how attractive the shares may appear to investors
+
+##### Marketing
+
+In marketing, an important KPI is often **Return on Investment (ROI)**.
+
+Marketing ROI compares the money gained from a campaign with the money spent on it. In simple terms, the team looks at the sales growth linked to the campaign, subtracts the marketing costs, and then compares that result with the investment cost.
+
+This helps the business judge whether a campaign can be considered:
+
+- effective
+- inefficient
+- worth repeating or adjusting
+
+##### IT
+
+IT departments can use many different KPIs depending on the problem they are trying to monitor.
+
+Examples include:
+
+- **Total tickets vs open tickets**, which helps assess workload and issue complexity
+- **database usage versus capacity**, which helps determine whether the environment should be scaled or old data reduced
+- **IT cost breakdown**, where costs are separated into areas such as staff, software, and hardware
+
+These KPIs help IT managers balance technical reliability, service quality, and cost control.
+
+##### Supply Chain Management (SCM)
+
+An important KPI in **Supply Chain Management** is **on-time delivery**.
+
+This KPI shows the percentage of deliveries that arrive on or before the required time. It is calculated by dividing the number of on-time deliveries by the total number of deliveries.
+
+The higher the percentage, the better the supply chain is performing in relation to customer need and operational timing.
+
+##### Customer service
+
+Customer service often relies on KPIs such as:
+
+- **Average Handle Time (AHT)**, which shows the average amount of time a representative spends on each customer contact
+- **Average Resolution Time (ART)**, which measures the average time from the moment an issue is reported to the moment it is fully resolved
+
+These KPIs are useful because they help the organisation understand both service efficiency and the workload hidden behind support operations.
+
+##### Sales
+
+In sales, a useful KPI is **sales per employee, region, branch, or team**.
+
+This helps the business compare the performance of different units and identify:
+
+- strengths
+- weaknesses
+- areas that may need support, coaching, or strategic adjustment
+
+##### HR
+
+HR departments use KPIs to monitor workforce-related strengths and weaknesses.
+
+Examples include:
+
+- **female-to-male ratio**, which may support diversity goals
+- **employee turnover rate**, which helps identify whether staff retention is becoming a problem
+
+These KPIs are especially important in organisations where onboarding new employees is slow, expensive, or dependent on specialised skills.
+
+#### Pitfalls of KPIs
+
+Although KPIs are very useful, they must be applied carefully. If they are designed or managed poorly, they can create confusion, waste resources, and even encourage harmful behaviour.
+
+##### Step 1: Measuring everything that can be measured
+
+Not everything that can be measured should become a KPI.
+
+If a business tracks too many measurements at the same time, the KPI system becomes overloaded and difficult to interpret. Instead of clarity, the organisation gets noise and distraction. This is why simple thinking such as the **KISS principle** is important.
+
+##### Step 2: Collecting the same measures as others
+
+Organisations should not copy KPIs simply because competitors or admired companies use them.
+
+Every KPI should be questioned. A measure that makes sense in another company may not fit your own strategy, data, or challenges. Copying other organisations blindly can lead to irrelevant measurement rather than better performance.
+
+##### Step 3: Not linking KPIs to strategy
+
+This is one of the most serious KPI mistakes.
+
+If KPIs are not connected to the organisation's main strategy and goals, then the business may spend time and money measuring activity without gaining any meaningful strategic insight.
+
+##### Step 4: Hardwiring KPIs to incentives
+
+If KPIs are linked too directly to bonuses or incentives, people may begin to treat the KPI itself as the goal rather than using it as a guide.
+
+That can create distorted behaviour such as:
+
+- manipulating data
+- gaming the process
+- chasing a metric instead of solving the real problem
+
+For example, a support agent might close a ticket too early just to improve a quick-resolution KPI, even though the issue is not actually solved.
+
+##### Step 5: Not involving decision-makers in KPI selection
+
+KPI design should not happen in isolation.
+
+If the people with strategic responsibility are not involved, the business may end up selecting indicators that look useful on paper but do not actually support the organisation's direction. Consulting senior or experienced decision-makers helps reduce this risk.
+
+##### Step 6: Not analysing KPIs
+
+Collecting KPIs is not enough on its own.
+
+If an organisation creates dashboards and reports but never analyses what the indicators mean, then the KPI work produces little real value. KPIs only become useful when they are interpreted and turned into action.
+
+##### Step 7: Keeping outdated KPIs
+
+KPIs should not remain fixed forever.
+
+As business needs, strategy, markets, or operations change, KPI systems must also be reviewed and updated. Otherwise, a KPI that was once useful may become irrelevant or misleading over time.
+
+#### Exam resolver - Copied KPI / strategy mismatch scenario
+
+##### What the examiner is really testing
+
+In a prompt like this, the examiner usually wants to see whether you can:
+
+- identify that copying another company's KPI blindly is a common KPI pitfall
+- explain why a KPI must be aligned with the organisation's own strategy and sales model
+- show that irrelevant measurement can waste money, time, and engineering effort
+- recommend more suitable KPIs that reflect how the business actually creates value
+
+##### Resolver-style answer draft - Copied KPI / strategy mismatch scenario
+
+If I were asked to analyse this scenario, I would explain that the main mistake is **not** that the KPI comes from Facebook. The main mistake is that the KPI does not fit the software house's own strategy, objectives, or sales process.
+
+The software house copied **mean time spent on page** because it is used by a very successful technology company. However, this KPI is weak in this case because the software house does not depend mainly on website engagement for sales. Its main sales channel is **direct contact with potential buyers**, while the website is mostly there to showcase solutions. That means the business spent money on monitoring and engineering effort without generating insight that supports its real goals.
+
+I would therefore describe this as a KPI pitfall in two ways. First, it shows the danger of **collecting the same measures as others** simply because they are used by a famous company. Second, it shows the danger of **not linking KPIs to strategy**, because the company measured website engagement even though website engagement is not the key driver of revenue in this business model.
+
+To solve the problem, I would recommend returning to the normal KPI design process. The company should first restate its real goals, for example:
+
+- generating more qualified leads
+- increasing the number of demos or meetings from outbound contact
+- improving conversion from proposal to signed software deal
+
+Then I would turn those goals into **Key Performance Questions (KPQs)** such as:
+
+- How many qualified leads are created each month through direct outreach?
+- What percentage of calls or emails turns into a meeting or product demo?
+- How many demos turn into proposals and completed sales?
+- How long does the average sales cycle take?
+
+After that, I would recommend KPIs that fit the real business model better, for example:
+
+- **qualified leads generated**
+- **meeting or demo conversion rate**
+- **proposal-to-sale conversion rate**
+- **average sales cycle length**
+- **customer acquisition cost**
+
+If the website still plays a supporting role, it may also be useful to track secondary KPIs such as contact-form submissions or demo requests. However, **mean time spent on page** should not be treated as a core KPI unless the company can clearly show that it supports the real sales strategy.
+
+Overall, I would conclude that the mistake was choosing a KPI based on imitation rather than strategic relevance. The best correction is to replace the copied KPI with indicators linked directly to the company's real goals, sales channel, and decision-making needs.
+
+##### What you should be careful about in the exam
+
+When answering this kind of KPI case, be careful to:
+
+- avoid saying a KPI is good just because a famous company uses it
+- explain clearly why the KPI is misaligned with the company's own strategy
+- mention the wasted cost, time, or resource effort involved in irrelevant measurement
+- recommend better-aligned KPIs instead of only criticising the weak one
+
+##### Why this is a strong exam answer
+
+This is a strong answer because it:
+
+- identifies the specific KPI pitfall clearly
+- links the problem to strategy and sales-channel fit
+- explains the business cost of measuring the wrong thing
+- replaces the weak KPI with more suitable, goal-based alternatives
+
+#### Exam resolver - Incident-count KPI / unfair incentive scenario
+
+##### What the examiner is really testing
+
+In a prompt like this, the examiner usually wants to see whether you can:
+
+- explain why a simple incident-count KPI may be unfair across junior, mid, and senior engineers
+- show that work volume alone is a weak measure when complexity, severity, and business impact are very different
+- identify the risk of **hardwiring KPIs to incentives**
+- recommend a more balanced KPI approach that reflects operational reality
+
+##### Resolver-style answer draft - Incident-count KPI / unfair incentive scenario
+
+If I were asked to analyse this case, I would begin by explaining that it would **not** be fully just to introduce a KPI based only on how many incidents each engineer handles and then link it directly to an annual incentive.
+
+The reason is that the engineers do not perform equivalent work. Junior engineers solve a high volume of relatively simple incidents, which is valuable because it keeps the team efficient and prevents unnecessary escalation. Mid-level engineers usually handle fewer incidents, but those incidents are more complex and often require stronger troubleshooting ability. Senior engineers may resolve only a small number of incidents, but those incidents are frequently connected to mission-critical systems where failure could cost the bank millions of dollars per minute.
+
+This means that a raw incident-count KPI would reward **quantity** rather than **value, complexity, or criticality**. A junior engineer might appear to perform best by closing hundreds of simple incidents, while a senior engineer handling three or four critical incidents could look weak on the dashboard even though the senior engineer may be protecting the bank from the largest operational and financial risks.
+
+I would therefore say that all three roles are important, but they are important in **different ways**. Junior engineers are critical for throughput and day-to-day stability. Mid engineers are critical for solving harder incidents and supporting escalations. Senior engineers are critical because they protect mission-critical services, handle the highest-risk failures, and often provide the knowledge needed for the hardest technical situations. Because of that, it is misleading to compare them with one identical KPI based only on incident volume.
+
+I would also explain that linking this KPI directly to incentives could create harmful behaviour. Engineers might:
+
+- focus on easy incidents to increase their numbers
+- avoid difficult or long-running cases
+- escalate too quickly or close tickets too fast
+- optimise for the metric instead of the bank's real operational needs
+
+To solve the problem, I would recommend a more balanced KPI design. Instead of one crude volume KPI, the bank should use a **role-aware** or **weighted** approach. For example, KPI evaluation could include:
+
+- number of incidents handled
+- incident severity or business criticality
+- complexity level
+- quality of resolution
+- SLA compliance
+- escalation quality
+- collaboration, mentoring, or knowledge-sharing
+
+I would also say that if incentives are used at all, they should not rely on a single count-based KPI. A better system would combine team-based performance with role-appropriate measures, so that each engineer is assessed fairly according to the type of work they are expected to perform.
+
+Overall, I would conclude that the proposed KPI is unfair because it treats unequal work as if it were identical. A stronger answer is to explain that KPI design must reflect complexity, impact, and strategic value, especially when incentives are involved.
+
+##### What you should be careful about in the exam
+
+When answering this kind of KPI case, be careful to:
+
+- avoid assuming that more completed incidents automatically means more value
+- explain why complexity and business criticality matter
+- mention the danger of linking KPIs too directly to bonuses or incentives
+- recommend a fairer, more balanced KPI approach instead of only criticising the bad one
+
+##### Why this is a strong exam answer
+
+This is a strong answer because it:
+
+- identifies the incentive problem clearly
+- explains why one KPI cannot be used fairly across unequal roles
+- connects KPI design to complexity, criticality, and business impact
+- recommends a realistic alternative rather than stopping at criticism
+
+#### Real-world example of KPIs - Retail store
+
+Imagine a **retail store** whose main goal is to **increase overall sales and improve customer satisfaction**.
+
+This kind of example is useful because it shows how KPI design should move from goals and questions to practical metrics and business action.
+
+##### Goal
+
+The primary goal is to increase sales and improve customer satisfaction.
+
+Secondary objectives may include:
+
+- improving customer retention
+- optimising inventory management
+
+##### Step 1: Clear list of goals and objectives
+
+The first step is to define the goals clearly. In this case, the business wants to:
+
+- increase overall sales
+- improve customer satisfaction
+- strengthen customer retention
+- make inventory decisions more effective
+
+This is important because KPI design only becomes useful when it is tied directly to real business priorities.
+
+##### Step 2: Define Key Performance Questions (KPQs)
+
+Once the goals are clear, the store can ask **Key Performance Questions (KPQs)** such as:
+
+- Which products have the highest sales volume and profit margins?
+- How many repeat customers are there, and what percentage of sales comes from loyal customers?
+- What is the average transaction value per customer?
+- Are there any visible patterns in customer feedback and satisfaction ratings?
+- How well are products and inventory aligned with customer demand?
+
+These questions help the business move from broad goals to focused measures.
+
+##### Step 3: Evaluate available data and identify additional needs
+
+The retail store may already have access to:
+
+- sales data
+- customer transaction histories
+- customer feedback records
+
+However, to answer the KPQs more effectively, the business may also need:
+
+- customer demographic information
+- competitor pricing information
+- competitor promotion data
+
+This step is useful because it helps the organisation understand what can already be measured and where extra evidence may still be required.
+
+##### Step 4: Communication strategy
+
+To communicate KPIs effectively, the retail store could use:
+
+- an interactive dashboard that shows sales performance
+- customer satisfaction scores
+- customer loyalty trends
+- inventory signals
+
+Regular meetings with management can also help the organisation interpret the KPI results and make sure they remain aligned with the company's goals.
+
+##### Step 5: Monitoring and continuous adjustment
+
+KPI work does not stop once the dashboard has been created. The store should monitor the KPIs continuously and analyse whether the current strategy is producing the intended result.
+
+For example, if **customer satisfaction scores** begin to decline, the business should investigate the reason and take corrective action, such as:
+
+- improving customer service
+- improving product quality
+- adjusting stock availability
+
+##### Example KPIs for the retail store
+
+Some useful KPIs in this scenario could include:
+
+- **Sales growth rate**: percentage increase in sales compared with the previous period
+- **Customer retention rate**: percentage of repeat customers over a defined period
+- **Average transaction value**: average amount spent per customer transaction
+- **Customer Satisfaction Score (CSAT)**: customer rating after the shopping experience
+- **Inventory turnover ratio**: number of times inventory is sold and replaced in a specific period
+
+By designing, monitoring, and adjusting these KPIs carefully, the retail store can gain meaningful insight into performance, improve decision-making, and take more targeted action to increase sales and customer satisfaction.
+
+#### Exam resolver - Retail store KPI scenario
+
+##### What the examiner is really testing
+
+In a prompt built around a **retail store KPI scenario**, the examiner usually wants to see whether you can:
+
+- connect KPIs directly to business goals and objectives
+- turn broad goals into **Key Performance Questions (KPQs)**
+- identify which data is available and what additional data may be needed
+- choose realistic KPIs and explain how they support decision-making
+- show that KPI work includes communication, monitoring, and continuous improvement
+
+##### Resolver-style answer draft - Retail store KPI scenario
+
+If I were asked to solve a **retail store KPI** scenario, I would begin by explaining that KPIs should be designed around the organisation's real business goals, not chosen at random.
+
+In this case, the main goal is to **increase sales and improve customer satisfaction**, while secondary objectives may include improving customer retention and making inventory management more efficient.
+
+My first step would be to define the **Key Performance Questions (KPQs)** that translate these goals into something measurable. For example, I would ask:
+
+- Which products generate the highest sales volume and profit margins?
+- How many repeat customers do we have?
+- What percentage of total sales comes from loyal customers?
+- What is the average transaction value?
+- Are customer feedback patterns showing satisfaction problems or improvement areas?
+- Is inventory aligned with actual customer demand?
+
+Next, I would evaluate the available data. I would explain that the business can already use:
+
+- sales records
+- transaction histories
+- customer feedback data
+
+I would also mention that more detailed analysis may require extra data such as:
+
+- customer demographics
+- competitor pricing
+- competitor promotions
+
+After that, I would define the actual KPIs. In this scenario, I would recommend KPIs such as:
+
+- **sales growth rate**
+- **customer retention rate**
+- **average transaction value**
+- **Customer Satisfaction Score (CSAT)**
+- **inventory turnover ratio**
+
+I would then explain how these KPIs should be communicated. For example, they could be displayed in an **interactive dashboard** with charts and trend indicators, and then reviewed in regular meetings with management.
+
+Finally, I would explain that KPI work must include continuous monitoring. If a KPI weakens, such as a drop in customer satisfaction or retention, the business should investigate the cause and respond with corrective action, for example improving customer service, adjusting stock levels, or refining promotions.
+
+Overall, this is a strong KPI case because it moves from business goals to KPQs, then to available data, measurable KPIs, communication, and continuous improvement.
+
+##### What you should be careful about in the exam
+
+When answering this kind of KPI question, be careful to:
+
+- avoid listing KPIs without linking them to business goals
+- explain **why** each KPI matters instead of just naming it
+- include **KPQs** if the question is about KPI design
+- mention both existing data and possible missing data
+- show that KPIs must be monitored and adjusted over time
+
+##### How to use module knowledge in your answer
+
+The strongest way to use the module knowledge is to structure your answer like this:
+
+1. define the business goal
+2. turn the goal into **KPQs**
+3. review the available data
+4. choose the most suitable KPIs
+5. explain how the KPIs will be communicated
+6. finish with monitoring, review, and continuous improvement
+
+That lets you actively use the main KPI ideas from the module:
+
+- goals and objectives
+- KPQs
+- available versus needed data
+- communication strategy
+- KPI monitoring
+- continuous improvement
+
+##### Why this is a strong exam answer
+
+This is a strong answer because it:
+
+- starts with the business goal instead of random metrics
+- uses KPQs to shape the KPI design
+- links KPIs to available data and business decisions
+- includes communication and monitoring, not only calculation
+- shows how KPI use supports practical business improvement
+
+#### Exam resolver - Telecommunications KPI design scenario
+
+##### What the examiner is really testing
+
+In a prompt like this, the examiner usually wants to see whether you can:
+
+- move from a broad telecom business goal to specific **KPQs** and practical KPIs
+- identify which data sources a telecommunications company would need
+- choose KPIs that support both **sales growth** and **customer satisfaction**
+- explain how KPI monitoring should support ongoing improvement rather than one-off reporting
+
+##### Resolver-style answer draft - Telecommunications KPI design scenario
+
+If I were asked to determine KPIs for a **telecommunications company** whose goal is to **increase overall sales and customer satisfaction**, I would begin by explaining that KPI design should start with the business objective, not with random metrics.
+
+In this case, the company wants to grow revenue while also improving the customer experience. That means the KPIs should cover both **commercial performance** and **service quality**.
+
+My first step would be to define the **Key Performance Questions (KPQs)**. For example:
+
+- Which products or plans generate the strongest sales growth?
+- Which channels bring in the highest number of new customers?
+- What causes customer dissatisfaction, complaints, or cancellations?
+- How quickly and effectively are customer issues being resolved?
+- Which services or locations are linked to weak satisfaction scores?
+
+The second step would be to review the available data. In a telecom company, I would expect useful data sources such as:
+
+- sales records
+- CRM and customer account data
+- billing and subscription data
+- customer service tickets and complaint logs
+- customer satisfaction surveys such as **CSAT** or **NPS**
+- service quality or outage data
+- campaign and channel performance data
+
+The third step would be to choose KPIs that match the goal. For **sales growth**, I would suggest KPIs such as:
+
+- **sales growth rate**
+- **new subscriptions or new customers acquired**
+- **conversion rate by sales channel**
+- **average revenue per user (ARPU)**
+
+For **customer satisfaction**, I would suggest KPIs such as:
+
+- **Customer Satisfaction Score (CSAT)**
+- **Net Promoter Score (NPS)**
+- **customer retention rate** or **churn rate**
+- **first-contact resolution rate**
+- **average resolution time**
+- **complaint rate**
+
+I would also explain that some telecom companies may include a service-quality KPI such as **network uptime** or **service availability**, because network problems can strongly affect satisfaction and retention.
+
+The next step would be communication. I would recommend a dashboard that shows sales KPIs, customer-service KPIs, and customer-satisfaction trends side by side so management can see whether commercial growth is happening at the expense of service quality or whether both are improving together.
+
+Finally, I would explain that KPI work must continue after implementation. The company should monitor the KPIs regularly, compare them with targets, and take corrective action if performance weakens. For example, if sales rise but satisfaction falls, the business may need to improve onboarding, support quality, or service reliability rather than focusing only on selling more subscriptions.
+
+Overall, this is a strong KPI answer because it moves from goals, to KPQs, to available data, to KPI choice, to communication, and then to continuous improvement.
+
+##### What you should be careful about in the exam
+
+When answering this kind of telecom KPI question, be careful to:
+
+- avoid naming KPIs without linking them to the company's goals
+- include both sales and satisfaction measures, not only one side
+- mention realistic telecom data sources
+- show how KPI monitoring should lead to action if performance changes
+
+##### Why this is a strong exam answer
+
+This is a strong answer because it:
+
+- starts with the business goal
+- uses KPQs to structure the KPI design
+- chooses KPIs that match the telecom context
+- includes data sources, communication, and continuous review
+
+#### The Task
+
+##### Question 1
+
+**Write a summary of how to develop a successful KPI for an organisation.**
+
+A successful KPI should be **simple, relevant, aligned, actionable, and measurable**. The organisation should first define its goals and objectives, then turn them into **Key Performance Questions (KPQs)**. After that, it should review what data is already available, select the KPI that best answers the business question, communicate it clearly, and monitor it over time so it can be adjusted when needed.
+
+##### Question 2
+
+**What is the purpose of using KPIs in business?**
+
+The purpose of KPIs is to help a business measure performance, track progress against targets, identify trends, and support data-driven decisions. KPIs help managers understand whether strategies are working and whether corrective action is required.
+
+##### Question 3
+
+**How are KPIs selected for a business?**
+
+KPIs are selected by starting with the company's goals and strategy. The business then defines KPQs, reviews available data, and chooses the indicators that best reflect the outcomes it wants to improve. Good KPI selection also involves decision-makers and avoids copying measures that are not relevant to the business context.
+
+##### Question 4
+
+**What is the difference between KPIs and metrics?**
+
+A **metric** is any measurement used to describe activity or performance. A **KPI** is a specific metric that is considered especially important because it is directly linked to a strategic goal or critical business objective. In short, all KPIs are metrics, but not all metrics are KPIs.
+
+##### Question 5
+
+**How can KPIs be used for employee performance evaluation?**
+
+KPIs can be used to evaluate employee performance by showing whether targets are being met, but they must be used carefully. The KPI should reflect the employee's real responsibilities and should consider quality, complexity, and impact, not only quantity. If used badly, KPIs can become unfair or encourage people to optimise for the number rather than the real objective.
+
+##### Question 6
+
+**What are some common KPIs used in sales?**
+
+Common sales KPIs include:
+
+- **sales growth rate**
+- **sales per employee, team, or region**
+- **conversion rate**
+- **average transaction value**
+- **customer retention rate**
+
+These KPIs help businesses understand sales performance, customer behaviour, and where improvements are needed.
+
+##### Question 7
+
+**How can KPIs be used in the context of customer service?**
+
+In customer service, KPIs are used to measure service speed, quality, and customer experience. Common examples include **Average Handle Time (AHT)**, **Average Resolution Time (ART)**, **first-contact resolution rate**, **CSAT**, and complaint rate. These help the business see whether customer issues are being solved efficiently and satisfactorily.
+
+##### Question 8
+
+**How can KPIs help in identifying performance bottlenecks in a process?**
+
+KPIs help identify bottlenecks by showing where a process becomes slow, overloaded, or inefficient. For example, long handling time, low throughput, high queue size, repeated defects, or excessive waiting time can signal that a particular part of the process is causing delay or waste. That allows managers to investigate and improve the weak point.
+
+##### Question 9
+
+**What should a company do if a KPI consistently falls short of the target?**
+
+If a KPI repeatedly misses its target, the company should investigate the root cause, check the quality of the data, review the process behind the KPI, and take corrective action. It should also decide whether the target is realistic and whether the KPI is still relevant to the current business context.
+
+##### Question 10
+
+**Can KPIs be used for personal goal tracking?**
+
+Yes. KPIs can also be used for personal goal tracking as long as the goals are clear and measurable. For example, someone could track study hours, savings rate, exercise frequency, or project completion time. The same principles still apply: the KPI should be meaningful, measurable, and linked to a real goal.
+
+##### Question 11
+
+**Come up with a scenario and detail the steps required to determine the KPIs for a large logistics company. Goal: Effectively managing truck routes and delivery vehicles' dispatch points.**
+
+In this scenario, I would explain that the logistics company wants to improve route efficiency, reduce delays, and manage dispatch points more effectively.
+
+The first step would be to define the main goals clearly, such as:
+
+- improving on-time delivery
+- reducing fuel waste and unnecessary travel
+- improving vehicle utilisation
+- reducing dispatch delays
+
+The second step would be to define **KPQs**, for example:
+
+- Which routes experience the most delays?
+- Which dispatch points create the most waiting time?
+- Are some vehicles underused while others are overloaded?
+- Where are fuel costs or empty miles highest?
+
+The third step would be to review available data, such as:
+
+- GPS and route data
+- dispatch records
+- delivery times
+- fuel usage
+- maintenance records
+- driver schedules
+- traffic or depot congestion data
+
+The fourth step would be to choose the KPIs. In this case, useful KPIs could include:
+
+- **on-time delivery rate**
+- **average route time**
+- **vehicle utilisation rate**
+- **fuel consumption per route or kilometre**
+- **dispatch turnaround time**
+- **empty miles percentage**
+- **delivery cost per route**
+
+The fifth step would be communication. I would recommend a dashboard showing route efficiency, delay hotspots, and dispatch-point performance so the company can compare regions, vehicles, and depots quickly.
+
+The final step would be continuous monitoring and improvement. If one dispatch point or route consistently performs badly, the company should investigate and improve staffing, scheduling, routing logic, or vehicle allocation.
+
+###### Visual guide - How to show the logistics KPI data
+
+In an exam answer, I would not only list the KPIs. I would also explain **how the data should be shown visually** so managers can identify patterns quickly.
+
+For this logistics case, I would suggest visuals such as:
+
+- **Bar chart: average delay by dispatch point**
+- **Line chart: on-time delivery rate by week**
+- **Bar chart: fuel consumption by route or vehicle**
+- **Table with conditional formatting: routes with the highest empty miles or longest dispatch delays**
+- **Summary KPI cards: on-time delivery rate, average route time, vehicle utilisation, dispatch turnaround time**
+
+These visuals help because:
+
+- a **bar chart** makes it easy to compare depots, routes, or trucks
+- a **line chart** shows whether performance is improving or getting worse over time
+- a **highlighted table** helps management find bottlenecks fast
+- **KPI cards** give a quick overview for decision-makers
+
+###### How to explain the visuals in an exam
+
+If I were describing these visuals in an exam situation, I would say something like this:
+
+- the **bar chart of delay by dispatch point** helps identify which dispatch locations create the biggest bottlenecks
+- the **line chart of on-time delivery** shows whether operational changes are improving delivery performance over time
+- the **fuel-consumption chart** helps identify inefficient routes, driving patterns, or vehicle allocation problems
+- the **empty-miles table** helps the company explain where route planning is inefficient
+
+That allows me to connect each visual directly to a decision:
+
+- if one depot has much longer delays, management may need to change staffing or dispatch procedures
+- if one route has high fuel use, the company may need route redesign or better truck assignment
+- if on-time delivery is falling week by week, the company may need to investigate traffic planning, scheduling, or maintenance issues
+
+###### Google Sheets guide - Logistics KPI case
+
+If I were building this in **Google Sheets**, I would organise it like this:
+
+**Sheet 1: `Raw_Data`**
+
+Columns:
+
+- `Date`
+- `Route_ID`
+- `Dispatch_Point`
+- `Truck_ID`
+- `Planned_Departure`
+- `Actual_Departure`
+- `Planned_Arrival`
+- `Actual_Arrival`
+- `Distance_KM`
+- `Empty_KM`
+- `Fuel_Litres`
+- `Deliveries`
+- `On_Time` (`Yes` / `No`)
+
+I would then add calculated columns such as:
+
+- `Dispatch_Delay_Min`
+- `Route_Time_Min`
+- `Fuel_per_KM`
+
+Useful formulas:
+
+- `Dispatch_Delay_Min`: `=(F2-E2)*1440`
+- `Route_Time_Min`: `=(H2-F2)*1440`
+- `Fuel_per_KM`: `=K2/I2`
+
+**Sheet 2: `KPI_Summary`**
+
+Here I would calculate the main KPIs:
+
+- **On-time delivery rate**: `=COUNTIF(M2:M1000,"Yes")/COUNTA(M2:M1000)`
+- **Average route time**: `=AVERAGE(O2:O1000)`
+- **Average dispatch delay**: `=AVERAGE(N2:N1000)`
+- **Fuel per KM**: `=SUM(K2:K1000)/SUM(I2:I1000)`
+- **Empty miles percentage**: `=SUM(J2:J1000)/SUM(I2:I1000)`
+
+If needed, I could also calculate:
+
+- **Deliveries per truck** with a pivot table
+- **Average delay by dispatch point** with a pivot table
+- **Average fuel use by route** with a pivot table
+
+**Sheet 3: `Dashboard`**
+
+In Google Sheets, I would insert:
+
+- a **scorecard or highlighted cell** for on-time delivery rate
+- a **bar chart** for average delay by dispatch point
+- a **line chart** for on-time delivery by week
+- a **bar chart** for fuel use by route
+- a **pivot table** with conditional formatting for worst-performing routes
+
+###### What to say in the exam if asked about Google Sheets
+
+In an exam, I would explain that Google Sheets can be used to:
+
+- store the raw logistics data
+- calculate KPIs using formulas
+- summarise route or depot performance using pivot tables
+- create charts that make bottlenecks and trends visible
+- support management decisions with a simple dashboard
+
+A strong exam explanation would be:
+
+"I would first organise the raw route and dispatch data in Google Sheets, then calculate KPI columns such as delay minutes, route time, fuel per kilometre, and on-time status. After that, I would use formulas and pivot tables to build summary KPIs such as on-time delivery rate, average dispatch delay, and empty miles percentage. Finally, I would create charts and a dashboard so the logistics company can visually identify weak routes, overloaded dispatch points, and areas for operational improvement."
+
+###### Fast exam recipe - KPI case in Google Sheets
+
+If I needed to solve a KPI exam task quickly in **Google Sheets**, I would use this simple recipe:
+
+**Step 1: Read the prompt and find the goal**
+
+Ask:
+
+- What is the company trying to improve?
+- Is the focus on sales, customer satisfaction, efficiency, quality, or delay reduction?
+
+**Step 2: Build a `Raw_Data` sheet**
+
+Create one row per event, transaction, route, customer, or service case.
+
+Typical columns:
+
+- `Date`
+- `Category` or `Location`
+- `Quantity` or `Value`
+- `Status`
+- `Time-related field`
+- any extra field linked to the goal
+
+**Step 3: Build a `KPI_Summary` sheet**
+
+Calculate the 3 to 5 KPIs that best answer the exam question.
+
+Typical formulas:
+
+- `=AVERAGE(...)`
+- `=COUNTIF(...)`
+- `=SUM(...)`
+- `=SUMIF(...)`
+- `=COUNTIF(...)/COUNTA(...)`
+
+**Step 4: Build a `Dashboard` sheet**
+
+Add:
+
+- 2 to 4 KPI summary cells
+- 1 bar chart for comparison
+- 1 line chart for trend over time
+- 1 table or pivot table for detailed breakdown
+
+**Step 5: Explain the insight**
+
+In the exam, explain:
+
+- what the KPI measures
+- what the chart shows
+- what problem or improvement area it reveals
+- what action the company should take next
+
+**Simple exam answer structure**
+
+If I needed a very short exam-ready structure, I would say:
+
+"First, I would identify the business goal. Second, I would organise the raw data in Google Sheets with the columns needed for the case. Third, I would calculate the most relevant KPIs in a summary sheet using formulas such as average, sum, count, and percentage calculations. Fourth, I would create a dashboard with KPI cards, a comparison chart, and a trend chart. Finally, I would explain what the results show and what action the company should take based on the evidence."
+
+###### Fast exam recipe - How to show the calculation in your answer
+
+In many exam answers, it is not enough to give the final number. You usually need to show:
+
+1. **what you are calculating**
+2. **the formula or rule**
+3. **the numbers used**
+4. **the result**
+5. **what the result means**
+
+**Simple calculation template**
+
+You can structure it like this:
+
+"To calculate [measure], I would use [formula or method]. I would insert the values [x, y, z]. This gives [result]. This means that [interpretation]."
+
+###### Example 1 - Statistics answer
+
+If the question asks for the **mean** of `12, 14, 15, 18, 21, 24`, a strong exam answer could look like this:
+
+"To calculate the mean, I add all values and divide by the number of observations. The total is `12 + 14 + 15 + 18 + 21 + 24 = 104`. There are `6` observations. Therefore, the mean is `104 / 6 = 17.33`. This means the average value in the dataset is about `17.33`."
+
+If the question also asks for the **median**, I could add:
+
+"To calculate the median, I place the values in order and find the middle. Because there are `6` values, I take the average of the two middle values, which are `15` and `18`. Therefore, the median is `(15 + 18) / 2 = 16.5`. This means the central value of the dataset is `16.5`."
+
+###### Example 2 - KPI answer
+
+If the question asks for **on-time delivery rate**, a strong KPI answer could look like this:
+
+"To calculate the on-time delivery rate, I divide the number of on-time deliveries by the total number of deliveries. If `92` deliveries were on time out of `100`, the formula is `92 / 100 = 0.92`. Converted to a percentage, the on-time delivery rate is `92%`. This means the company is meeting its delivery target in most cases, but `8%` of deliveries are still late and should be investigated."
+
+##### Question 12
+
+**What are the 5 criteria a KPI needs to meet to be considered adequate? Discuss each briefly.**
+
+An adequate KPI should meet **five main criteria**:
+
+- **Simple**: it should be easy to understand and easy to measure, so it answers a clear question rather than creating confusion
+- **Relevant**: it should focus on something that actually matters to the business and helps answer an important performance question
+- **Aligned**: it should match the company's goals and strategy, so the KPI supports the direction the organisation wants to move in
+- **Actionable**: it should lead to useful action, meaning the business can respond to the result and make improvements
+- **Measurable**: it should be possible to track it clearly with data, targets, or a baseline, rather than using vague statements that are hard to assess
+
+Together, these five criteria help ensure that a KPI is practical, meaningful, and useful for decision-making.
+
+###### What exam resolver can help you do
+
+`Exam resolver` helps by making this structure easier to follow:
+
+- for statistics, it can give you the verified result and summary in [app.py](/workspaces/Study-buddy/app.py#L53584)
+- for KPI cases, it can help you identify which formula should be used and how to explain the result in a business context
+- for Google Sheets cases, it helps you move from `Raw_Data` to `KPI_Summary` to `Dashboard`
+
+So the simplest rule is:
+
+`formula -> numbers -> answer -> meaning`
+
+#### Resolver-style supplement
+
+##### Resolver view - Question 1
+
+Start with the strong-KPI criteria, then move through goals, KPQs, data, communication, and monitoring.
+
+##### Resolver view - Question 2
+
+Explain that KPIs are used to measure success, track progress, and support decisions.
+
+##### Resolver view - Question 3
+
+Move from strategy to KPQs to available data, then justify why the final KPI fits the business.
+
+##### Resolver view - Question 4
+
+Define **metrics** broadly, then explain that **KPIs** are the strategically important subset.
+
+##### Resolver view - Question 5
+
+Show that KPI-based performance review must be fair and matched to the employee's real role and impact.
+
+##### Resolver view - Question 6
+
+Name several realistic sales KPIs and briefly explain what each one tells the business.
+
+##### Resolver view - Question 7
+
+Use customer-service KPI examples such as **AHT**, **ART**, **CSAT**, or resolution rate, then explain how they guide improvement.
+
+##### Resolver view - Question 8
+
+Explain that bottlenecks become visible when KPIs reveal slow, overloaded, or weak steps in a process.
+
+##### Resolver view - Question 9
+
+Explain investigation, root-cause analysis, corrective action, and KPI review rather than just saying "work harder".
+
+##### Resolver view - Question 10
+
+State that KPIs can be used personally if they are goal-based, measurable, and meaningful.
+
+##### Resolver view - Question 11
+
+Move in this order: logistics goal -> KPQs -> data sources -> KPI selection -> dashboard communication -> continuous improvement.
+
+##### Resolver view - Question 12
+
+Name the five criteria first: **simple, relevant, aligned, actionable, and measurable**. Then give one brief explanation of what each means in practice and end by stating that these criteria make a KPI clearer, more useful, and more connected to business decisions.
+
+#### What did I Learn in This Lesson?
+
+This lesson provided the following key insights:
+
+- KPIs are important in data analysis because they help organisations measure performance and success
+- KPIs play a central role because they help evaluate the success of an organisation, project, or activity
+- KPIs act as benchmarks for tracking progress, identifying trends, and supporting decision-making
+- KPIs provide targets, milestones, and performance signals that support organisational goals and mission
+- KPIs help senior management keep a hand on the pulse of the organisation and make faster adjustments
+- KPIs also support accountability, team direction, and alignment between employees and organisational goals
+- KPIs connect raw data to goals, objectives, and business performance
+- effective KPIs should be simple, relevant, aligned with company goals, actionable, and measurable
+- a strong KPI should answer a clear business question rather than create confusion
+- KPI design should begin with the business question the organisation wants answered
+- strong KPIs must lead to practical action rather than exist only for reporting purposes
+- measurable KPIs need a specific target, baseline, or problem statement
+- KPI choice depends on the organisation, because different businesses and industries pursue different goals
+- KPI implementation should follow a systematic process rather than being created in an ad hoc way
+- a strong KPI workflow often moves from goals, to KPQs, to available data, to communication, and then to continuous improvement
+- KPQs help turn broad objectives into focused questions that can guide KPI design
+- good KPI design also depends on checking what data already exists before collecting more
+- KPI communication matters because even a good KPI can fail if decision-makers do not understand it
+- common KPI categories include strategic, operational, functional unit, and leading/lagging indicators
+- leading KPIs help predict future outcomes, while lagging KPIs measure outcomes that have already happened
+- KPI measurement often relies on input-output thinking, where analysts focus on what goes into an activity, what happens during the process, and what comes out
+- deeper KPI measurement can also examine the activity, the mechanism behind it, the controls around it, and the time involved
+- these extra elements can each be measured as indicators, such as process time, required material, or defect level
+- construction-task completion time is a useful activity-based KPI because it helps reveal workflow bottlenecks
+- customer-service response time is a useful mechanism-based KPI because it helps assess support efficiency
+- rejected loan applications due to incomplete documentation is a useful control-based KPI because it helps track compliance with process rules
+- campaign-to-sales timing is a useful time-based KPI because it helps evaluate how quickly a campaign creates results
+- KPIs can be used in areas such as customer satisfaction, production, sales, marketing, and service quality
+- a KPI should be linked to a specific objective, such as reducing faulty products or improving customer satisfaction
+- common departmental KPI examples include EPS in finance, ROI in marketing, ticket and capacity metrics in IT, on-time delivery in supply chain, AHT/ART in customer service, sales per unit in sales, and turnover/diversity measures in HR
+- some KPIs can be reused across business areas, such as ROI in marketing, IT, or other investment-heavy contexts
+- KPI pitfalls include measuring too much, copying other companies blindly, failing to link KPIs to strategy, hardwiring KPIs to incentives, excluding decision-makers, failing to analyse KPIs, and keeping outdated indicators
+- a KPI should guide improvement, not become a distorted target that encourages people to game the system
+- a copied KPI from a famous company can still be a bad KPI if it does not match the smaller organisation's strategy, sales channel, or decision needs
+- tracking an irrelevant KPI can waste money, engineering effort, and management attention without improving decisions
+- a raw incident-count KPI can be unfair if engineers handle very different levels of complexity, severity, and business-critical work
+- tying one simple KPI directly to incentives can encourage people to chase easy tickets instead of the most valuable or urgent work
+- a retail store KPI case can be built by starting with goals, turning them into KPQs, reviewing available data, and then choosing measurable indicators
+- useful retail KPIs can include sales growth rate, customer retention rate, average transaction value, CSAT, and inventory turnover ratio
+- a telecommunications KPI case can be built by combining sales KPIs such as growth rate or subscriptions with satisfaction KPIs such as CSAT, NPS, churn, and resolution quality
+- telecom KPI design often depends on combining CRM, billing, support, survey, service-quality, and channel-performance data
+- KPI tasks often ask you to explain successful KPI development, KPI purpose, KPI selection, KPI versus metric, and how KPIs work in business areas such as sales or customer service
+- a logistics KPI case can be solved by moving from route and dispatch goals to KPQs, data sources, KPI choice, dashboard communication, and continuous improvement
+- a strong logistics KPI answer becomes clearer when it includes visuals such as bar charts, line charts, KPI cards, and highlighted route tables
+- Google Sheets can be used in logistics KPI cases to store raw route data, calculate KPI formulas, build pivot tables, and create dashboards
+- a simple KPI exam recipe in Google Sheets is: identify the goal, build `Raw_Data`, build `KPI_Summary`, build `Dashboard`, then explain the insight and action
+- in exam answers that require calculations, a strong structure is: formula, numbers used, result, and then interpretation
+- KPI communication can use dashboards and management review meetings so the results are easier to interpret and act on
+- KPI monitoring should lead to investigation and corrective action when performance declines
+- revenue growth over a chosen period is a strong example of a strategic KPI because it reflects broader organisational progress
+- customer retention rate is a strong example of an operational KPI because it helps measure customer loyalty and the effectiveness of relationship strategies
+- IT system uptime is a strong example of a functional unit KPI because it helps one department measure reliability and maintenance effectiveness
+- workplace safety can be measured with both leading and lagging KPIs, such as safety-equipment use and the number of incidents
+- strong KPI use helps organisations make evidence-based and informed decisions
+
+#### Exam Notes
+
+When revising this lesson for the semester exam, focus especially on these high-yield points:
+
+- define **KPI** clearly as a measurable indicator of performance
+- explain that KPIs are used to evaluate the success of an organisation, a project, or a business activity
+- explain that KPIs are used to track progress, compare results with targets, and support data-driven decisions
+- explain that strong KPIs provide targets, milestones, and alignment with organisational goals or mission
+- be ready to explain why organisations use KPIs: quick overview, quicker adjustment, accountability, team direction, and goal alignment
+- connect KPIs to real organisational goals rather than describing them as isolated numbers
+- know the main criteria for a strong KPI: **simple**, **relevant**, **aligned**, **actionable**, and **measurable**
+- explain that a strong KPI should answer a clear business question and support a real business decision
+- be ready to explain that KPI design depends on the organisation's strategy, priorities, and industry context
+- be ready to explain a systematic KPI process: goals and objectives, KPQs, data review, communication, and continuous improvement
+- define **KPQs** as key performance questions that help translate objectives into measurable indicators
+- explain that a good KPI project should check what data already exists before collecting more
+- explain that KPI communication is important because senior management must understand the result clearly
+- be ready to use examples such as customer satisfaction, production efficiency, or marketing performance
+- be ready to use a production-quality example such as **faulty products** to show how a KPI supports waste reduction or efficiency improvement
+- know the common KPI types: **strategic**, **operational**, **functional unit**, and **leading / lagging**
+- explain that **leading KPIs** help predict outcomes, while **lagging KPIs** track outcomes that have already occurred
+- be ready to explain KPI measurement using an **input-output** example such as raw material going into a machine and a finished product coming out
+- be ready to explain the deeper KPI elements: **activity**, **mechanism**, **control**, and **time**
+- explain that these extra elements can also become performance indicators when analysts want more detailed process insight
+- be ready to use practical examples for each KPI element, such as construction-task time, customer-service response time, incomplete-loan-document rejections, or campaign-to-sales timing
+- be ready to use departmental KPI examples such as **EPS** in finance, **ROI** in marketing, **ticket/capacity metrics** in IT, **on-time delivery** in supply chain, **AHT/ART** in customer service, **sales per unit** in sales, and **turnover/diversity metrics** in HR
+- explain that some KPIs can be used in more than one department when the business problem is similar, such as ROI across several investment areas
+- be ready to explain the main KPI pitfalls, especially measuring too much, copying others blindly, failing to link KPIs to strategy, hardwiring them to incentives, and keeping outdated KPIs
+- explain that KPIs should support strategic improvement rather than encourage manipulation or target-chasing
+- be ready to explain a case where a company copies a KPI from a famous organisation even though it does not fit its own strategy or sales channel
+- explain that KPI choice should be based on strategic relevance, not prestige, imitation, or the availability of extra data
+- be ready to explain why a simple count-based KPI may be unfair when team members handle work with different complexity, severity, or operational impact
+- explain that incentive-linked KPIs can distort behaviour by pushing people toward easy tasks instead of the highest-value work
+- be ready to solve a realistic KPI design case, such as a retail store that wants to increase sales and improve customer satisfaction
+- be ready to solve a telecom KPI design case by moving from goals to KPQs, then to data sources, KPI selection, dashboard communication, and continuous review
+- for telecom scenarios, be ready to combine commercial KPIs such as sales growth, new subscriptions, conversion rate, or ARPU with satisfaction KPIs such as CSAT, NPS, churn, or resolution quality
+- be ready to explain the difference between a KPI and a general metric
+- be ready to explain how KPIs can be used in sales, customer service, employee evaluation, bottleneck detection, and even personal goal tracking
+- be ready to solve a logistics KPI case by moving from route and dispatch objectives to KPQs, data sources, KPI selection, dashboard design, and corrective action
+- for logistics scenarios, be ready to explain which visuals you would use, such as delay-by-dispatch bar charts, on-time-delivery line charts, and highlighted route tables
+- be ready to explain how Google Sheets could be used to store raw data, calculate KPI columns, build pivot tables, and create a simple dashboard
+- remember the simple Google Sheets exam flow: `Raw_Data` -> `KPI_Summary` -> `Dashboard` -> explain the insight and next action
+- when showing a calculation in the exam, do not stop at the final number; show the formula, the values, the result, and what it means
+- in KPI-design cases, move from goals to **KPQs**, then to available data, then to specific KPIs, then to communication and monitoring
+- use retail KPI examples such as **sales growth rate**, **customer retention rate**, **average transaction value**, **CSAT**, and **inventory turnover ratio**
+- use **revenue growth** as a strong example of a **strategic KPI**
+- use **customer retention rate** as a strong example of an **operational KPI**
+- use **IT system uptime** as a strong example of a **functional unit KPI**
+- use **workplace safety** as a strong example for combining **leading** and **lagging** KPIs
+- explain that KPIs help analysts identify trends and evaluate whether strategies are effective
+
+##### Strong exam answer rule
+
+A strong answer in this topic usually:
+
+1. defines what a KPI is
+2. explains why KPIs matter in data analysis
+3. links KPIs to goals, targets, or strategy
+4. uses at least one realistic business example
+            """,
+            "key_points": [
+                "KPIs are measurable indicators used to track performance and success",
+                "KPIs help evaluate the success of an organisation, project, or specific activity",
+                "KPIs serve as benchmarks for measuring progress and identifying trends",
+                "KPIs provide targets, milestones, and performance signals that support organisational goals and mission",
+                "KPIs help management keep a hand on the pulse of the organisation and adjust more quickly when needed",
+                "KPIs also support accountability, team direction, and alignment between employees and company goals",
+                "KPIs support evidence-based and data-driven decision-making",
+                "KPIs connect analysis results to business goals and objectives",
+                "Strong KPIs should be simple, relevant, aligned, actionable, and measurable",
+                "A strong KPI should answer a clear business question instead of creating confusion",
+                "Good KPI design starts by defining the question the business wants the indicator to answer",
+                "Useful KPIs should lead to practical action rather than existing only for reporting",
+                "KPI choice depends on the organisation because different businesses have different goals, contexts, and problems",
+                "KPI implementation should follow a systematic process rather than an ad hoc approach",
+                "A strong KPI workflow often moves from goals and objectives to KPQs, data review, communication, and continuous improvement",
+                "KPQs are key performance questions that help turn broad objectives into focused measurement questions",
+                "Good KPI design includes checking what data already exists before collecting more",
+                "KPIs must be communicated clearly so decision-makers can understand and act on them",
+                "Copying a KPI from a famous company is weak practice if the KPI does not fit the organisation's own strategy, sales channel, or goals",
+                "A weak KPI can waste time, money, engineering effort, and management attention when it measures something that does not improve decisions",
+                "A retail KPI scenario can be solved by linking goals, KPQs, available data, KPI selection, communication, and monitoring",
+                "Useful retail KPIs include sales growth rate, customer retention rate, average transaction value, CSAT, and inventory turnover ratio",
+                "KPI design should lead to corrective action when performance indicators weaken",
+                "Common departmental KPI examples include EPS in finance, ROI in marketing, ticket and capacity metrics in IT, on-time delivery in supply chain, AHT or ART in customer service, sales per unit in sales, and turnover or diversity measures in HR",
+                "Some KPIs can be reused across multiple departments when the underlying decision problem is similar, such as ROI across different investment areas",
+                "Common KPI pitfalls include measuring too much, copying competitors blindly, disconnecting KPIs from strategy, linking KPIs too tightly to incentives, failing to analyse them, and keeping outdated indicators",
+                "KPIs should guide improvement and strategy, not become distorted targets that people learn to game",
+                "A raw incident-count KPI can be unfair if different engineers handle very different complexity levels, severity levels, or business-critical issues",
+                "Incentive-linked KPIs should be designed carefully so they do not reward easy work at the expense of higher-value or higher-risk work",
+                "A telecommunications KPI case should combine sales KPIs and customer-satisfaction KPIs rather than focusing on only one side of performance",
+                "Telecom KPI design often depends on combining CRM, billing, support, survey, service-quality, and sales-channel data",
+                "A KPI is a strategically important metric, while a metric is any measurement used to describe activity or performance",
+                "A logistics KPI case should move from route and dispatch goals to KPQs, data sources, KPI selection, dashboard communication, and continuous improvement",
+                "Logistics KPI answers become stronger when they explain which visuals should be used to reveal delay hotspots, route inefficiency, and dispatch bottlenecks",
+                "Google Sheets can be used to store logistics data, calculate KPIs with formulas, summarise results with pivot tables, and present them in a dashboard",
+                "A simple KPI exam flow in Google Sheets is: Raw_Data sheet, KPI_Summary sheet, Dashboard sheet, then explain what the KPIs show and what action should follow",
+                "A strong exam calculation usually shows the formula, the numbers used, the result, and the interpretation instead of only giving the final answer",
+                "Common KPI categories include strategic, operational, functional unit, and leading or lagging indicators",
+                "Leading KPIs help predict future outcomes, while lagging KPIs measure outcomes that have already happened",
+                "KPI measurement often uses input-output thinking so analysts can decide what part of an activity should be measured",
+                "Deeper KPI analysis can also examine the activity, mechanism, control, and time involved in a process",
+                "These extra elements can also be measured as performance indicators, such as processing time, material use, or defect levels",
+                "Construction-task completion time is a useful activity-based KPI",
+                "Customer-service response time is a useful mechanism-based KPI",
+                "Rejected loan applications due to incomplete documentation is a useful control-based KPI",
+                "Campaign-to-sales timing is a useful time-based KPI",
+                "KPIs can be applied in areas such as customer satisfaction, production, sales, marketing, and service quality",
+                "A KPI should be linked to a specific business objective, such as reducing faulty products or improving customer satisfaction",
+                "Revenue growth over a chosen period is a strong example of a strategic KPI",
+                "Customer retention rate is a strong example of an operational KPI",
+                "IT system uptime is a strong example of a functional unit KPI",
+                "Workplace safety can be monitored with both leading and lagging KPIs"
             ],
             "visual_elements": {
                 "diagrams": False,
@@ -45418,6 +51123,90 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             if len(token) >= 3 and token not in stopwords
         }
 
+    def clean_whitespace(value):
+        return re.sub(r"\s+", " ", str(value)).strip()
+
+    def strip_markup(value):
+        text = re.sub(r"<[^>]+>", " ", str(value))
+        text = re.sub(r"`([^`]*)`", r"\1", text)
+        text = re.sub(r"[*_]+", " ", text)
+        return clean_whitespace(text)
+
+    def dedupe_keep_order(items, limit=None):
+        deduped = []
+        seen = set()
+        for item in items:
+            cleaned = clean_whitespace(item)
+            if not cleaned:
+                continue
+            key = cleaned.lower()
+            if key in seen:
+                continue
+            seen.add(key)
+            deduped.append(cleaned)
+            if limit and len(deduped) >= limit:
+                break
+        return deduped
+
+    def extract_lesson_headings(content, limit=10):
+        headings = []
+        content_text = str(content)
+        for raw_line in content_text.splitlines():
+            line = raw_line.strip()
+            if line.startswith("#"):
+                headings.append(re.sub(r"^#+\s*", "", line))
+        for match in re.findall(r"<h[1-6][^>]*>(.*?)</h[1-6]>", content_text, flags=re.IGNORECASE | re.DOTALL):
+            headings.append(strip_markup(match))
+        return dedupe_keep_order(headings, limit=limit)
+
+    def build_lesson_segments(title, key_points, content, limit=18):
+        segments = [title]
+        segments.extend(key_points)
+        segments.extend(extract_lesson_headings(content, limit=8))
+        content_text = strip_markup(content)
+        for paragraph in re.split(r"\n\s*\n", str(content)):
+            cleaned = strip_markup(paragraph)
+            if len(cleaned) < 35:
+                continue
+            segments.append(cleaned[:280] + ("..." if len(cleaned) > 280 else ""))
+            if len(segments) >= limit:
+                break
+        if len(segments) < limit and content_text:
+            sentence_parts = re.split(r"(?<=[.!?])\s+", content_text)
+            for sentence in sentence_parts:
+                cleaned = clean_whitespace(sentence)
+                if len(cleaned) < 45:
+                    continue
+                segments.append(cleaned[:220] + ("..." if len(cleaned) > 220 else ""))
+                if len(segments) >= limit:
+                    break
+        return dedupe_keep_order(segments, limit=limit)
+
+    def select_best_unit_fragments(unit, prompt_tokens, prompt_lower, limit=2):
+        ranked = []
+        seen = set()
+        for fragment in unit.get("cue_phrases", []) + unit.get("content_segments", []):
+            cleaned = clean_whitespace(fragment)
+            if not cleaned:
+                continue
+            key = cleaned.lower()
+            if key in seen:
+                continue
+            seen.add(key)
+            fragment_tokens = tokenise(cleaned)
+            score = len(prompt_tokens & fragment_tokens) * 4
+            if len(key.split()) >= 2 and key in prompt_lower:
+                score += 8
+            if cleaned in unit.get("cue_phrases", []):
+                score += 3
+            ranked.append((score, cleaned))
+        ranked.sort(key=lambda item: (-item[0], len(item[1])))
+        picked = [item[1] for item in ranked[:limit] if item[0] > 0]
+        if not picked:
+            fallback = dedupe_keep_order(unit.get("cue_phrases", []) + [unit.get("what_it_covers", "")], limit=limit)
+            return fallback
+        return picked
+
     def infer_requested_diagram_types(prompt_text, selected_text):
         combined = f"{prompt_text} {selected_text}".lower()
         wants_visual = any(term in combined for term in [
@@ -45460,6 +51249,337 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             if item not in deduped:
                 deduped.append(item)
         return deduped
+
+    def infer_requested_chart_types(prompt_text, selected_text):
+        prompt_only = prompt_text.lower()
+        combined = f"{prompt_text} {selected_text}".lower()
+
+        requested = []
+        if any(term in prompt_only for term in [
+            "data visualisation", "data visualization", "visualisation techniques", "visualization techniques",
+            "descriptive data analysis", "descriptive analysis charts", "descriptive analysis graphs",
+        ]):
+            requested.extend(["histogram", "bar", "scatter", "box"])
+
+        if any(term in combined for term in [
+            "histogram", "histograms", "distribution of a continuous variable", "frequency distribution",
+        ]):
+            requested.append("histogram")
+        if any(term in combined for term in [
+            "bar chart", "bar charts", "bar graph", "bar graphs",
+        ]):
+            requested.append("bar")
+        if any(term in combined for term in [
+            "scatter plot", "scatter plots", "scatterplot", "scatterplots",
+            "relationship between two continuous variables",
+        ]):
+            requested.append("scatter")
+        if any(term in combined for term in [
+            "box plot", "box plots", "boxplot", "boxplots",
+            "quartile", "quartiles", "five-point summary", "outlier", "outliers",
+        ]):
+            requested.append("box")
+
+        deduped = []
+        for item in requested:
+            if item not in deduped:
+                deduped.append(item)
+        return deduped
+
+    def parse_numeric_token(raw_value):
+        text = str(raw_value).strip()
+        if not text:
+            return None
+
+        text = text.replace("%", "")
+        text = text.replace("$", "").replace("€", "").replace("£", "")
+        text = text.replace("(", "-").replace(")", "")
+        text = text.strip()
+
+        multiplier = 1.0
+        if text.lower().endswith("k"):
+            multiplier = 1_000.0
+            text = text[:-1]
+        elif text.lower().endswith("m"):
+            multiplier = 1_000_000.0
+            text = text[:-1]
+        elif text.lower().endswith("b"):
+            multiplier = 1_000_000_000.0
+            text = text[:-1]
+
+        text = text.replace(" ", "")
+        if "," in text and "." not in text and re.search(r"\d,\d", text):
+            text = text.replace(",", ".")
+        else:
+            text = text.replace(",", "")
+
+        try:
+            return float(text) * multiplier
+        except ValueError:
+            return None
+
+    def format_chart_number(value):
+        if float(value).is_integer():
+            return str(int(value))
+        return f"{float(value):g}"
+
+    def prompt_segments(prompt_text):
+        return [
+            segment.strip(" -•\t")
+            for segment in re.split(r"(?<!\d),\s+|;\s*|\n+", prompt_text)
+            if segment.strip(" -•\t")
+        ]
+
+    def extract_univariate_values_from_prompt(prompt_text, limit=20):
+        matches = re.findall(r"[$€£]?\d[\d,.\s]*[%KkMmBb]?", prompt_text)
+        values = []
+        seen = set()
+        for match in matches:
+            numeric_value = parse_numeric_token(match)
+            if numeric_value is None:
+                continue
+            if numeric_value in seen:
+                continue
+            seen.add(numeric_value)
+            values.append(numeric_value)
+            if len(values) >= limit:
+                break
+        return values
+
+    def extract_label_value_pairs_from_prompt(prompt_text, limit=12):
+        pairs = []
+        seen_labels = set()
+        patterns = [
+            re.compile(r"^([A-Za-z][A-Za-z0-9 /&()_-]{0,40})\s*[:=-]\s*([$€£]?\d[\d,.\s]*[%KkMmBb]?)$"),
+            re.compile(r"^([A-Za-z][A-Za-z0-9 /&()_-]{0,40})\s+([$€£]?\d[\d,.\s]*[%KkMmBb]?)$"),
+        ]
+
+        for segment in prompt_segments(prompt_text):
+            for pattern in patterns:
+                match = pattern.match(segment)
+                if not match:
+                    continue
+                label = match.group(1).strip()
+                numeric_value = parse_numeric_token(match.group(2))
+                if numeric_value is None:
+                    continue
+                label_key = label.lower()
+                if label_key in seen_labels:
+                    continue
+                seen_labels.add(label_key)
+                pairs.append((label, numeric_value))
+                break
+            if len(pairs) >= limit:
+                break
+        return pairs
+
+    def extract_xy_pairs_from_prompt(prompt_text, limit=20):
+        pairs = []
+        for line in prompt_text.splitlines():
+            stripped = line.strip(" -•\t")
+            if not stripped:
+                continue
+            numeric_matches = re.findall(r"[$€£]?\d[\d,.\s]*[%KkMmBb]?", stripped)
+            numeric_values = [
+                value for value in (parse_numeric_token(match) for match in numeric_matches)
+                if value is not None
+            ]
+            if len(numeric_values) == 2:
+                pairs.append((numeric_values[0], numeric_values[1]))
+            if len(pairs) >= limit:
+                break
+
+        if not pairs:
+            numeric_values = extract_univariate_values_from_prompt(prompt_text, limit=20)
+            if len(numeric_values) >= 6 and len(numeric_values) % 2 == 0:
+                pairs = list(zip(numeric_values[::2], numeric_values[1::2]))[:limit]
+        return pairs
+
+    def build_chart_input_from_prompt(chart_type, prompt_text):
+        if chart_type in {"histogram", "box"}:
+            values = extract_univariate_values_from_prompt(prompt_text, limit=20)
+            if len(values) >= 5:
+                return "value\n" + "\n".join(format_chart_number(value) for value in values)
+            return ""
+
+        if chart_type == "bar":
+            pairs = extract_label_value_pairs_from_prompt(prompt_text, limit=12)
+            if len(pairs) >= 2:
+                rows = ["Category,Value"]
+                rows.extend(f"{label},{format_chart_number(value)}" for label, value in pairs)
+                return "\n".join(rows)
+            return ""
+
+        if chart_type == "scatter":
+            pairs = extract_xy_pairs_from_prompt(prompt_text, limit=20)
+            if len(pairs) >= 3:
+                rows = ["X,Y"]
+                rows.extend(f"{format_chart_number(x_value)},{format_chart_number(y_value)}" for x_value, y_value in pairs)
+                return "\n".join(rows)
+            return ""
+
+        return ""
+
+    def parse_csv_like_rows(raw_text):
+        cleaned_lines = [line for line in str(raw_text).splitlines() if line.strip()]
+        if not cleaned_lines:
+            return []
+        normalised_text = "\n".join(re.sub(r"[\t;|]", ",", line) for line in cleaned_lines)
+        return [row for row in csv.reader(io.StringIO(normalised_text)) if any(cell.strip() for cell in row)]
+
+    def parse_univariate_chart_input(raw_text):
+        values = []
+        rows = parse_csv_like_rows(raw_text)
+        if not rows:
+            return None
+
+        start_index = 0
+        if rows and rows[0] and parse_numeric_token(rows[0][0]) is None:
+            start_index = 1
+
+        for row in rows[start_index:]:
+            for cell in row:
+                numeric_value = parse_numeric_token(cell)
+                if numeric_value is not None:
+                    values.append(numeric_value)
+        if len(values) < 3:
+            return None
+        return pd.DataFrame({"value": values})
+
+    def parse_bar_chart_input(raw_text):
+        rows = parse_csv_like_rows(raw_text)
+        if not rows:
+            return None
+
+        data_rows = []
+        for index, row in enumerate(rows):
+            if len(row) < 2:
+                continue
+            if index == 0 and parse_numeric_token(row[1]) is None:
+                continue
+            label = str(row[0]).strip()
+            numeric_value = parse_numeric_token(row[1])
+            if label and numeric_value is not None:
+                data_rows.append((label, numeric_value))
+        if len(data_rows) < 2:
+            return None
+        return pd.DataFrame(data_rows, columns=["Category", "Value"])
+
+    def parse_scatter_chart_input(raw_text):
+        rows = parse_csv_like_rows(raw_text)
+        if not rows:
+            return None
+
+        data_rows = []
+        for index, row in enumerate(rows):
+            if len(row) < 2:
+                continue
+            if index == 0 and (parse_numeric_token(row[0]) is None or parse_numeric_token(row[1]) is None):
+                continue
+            x_value = parse_numeric_token(row[0])
+            y_value = parse_numeric_token(row[1])
+            if x_value is not None and y_value is not None:
+                data_rows.append((x_value, y_value))
+        if len(data_rows) < 3:
+            return None
+        return pd.DataFrame(data_rows, columns=["X", "Y"])
+
+    def parse_chart_input(raw_text, chart_type):
+        if chart_type in {"histogram", "box"}:
+            return parse_univariate_chart_input(raw_text)
+        if chart_type == "bar":
+            return parse_bar_chart_input(raw_text)
+        if chart_type == "scatter":
+            return parse_scatter_chart_input(raw_text)
+        return None
+
+    def build_chart_spec(chart_type, prompt_text):
+        base_specs = {
+            "histogram": {
+                "title": "Suggested Histogram",
+                "caption": "Use a histogram when the question is about the distribution of one continuous variable.",
+                "input_label": "Histogram data (one value per line or CSV)",
+                "placeholder": "value\n12\n14\n15\n18\n21",
+                "notes": [
+                    "Describe the shape of the distribution.",
+                    "Mention whether values look concentrated, spread out, or skewed.",
+                    "Use the chart to support a descriptive-analysis explanation.",
+                ],
+            },
+            "bar": {
+                "title": "Suggested Bar Chart",
+                "caption": "Use a bar chart when the question compares categories or discrete groups.",
+                "input_label": "Bar chart data (Category,Value)",
+                "placeholder": "Category,Value\nNorth,12\nSouth,18\nEast,15",
+                "notes": [
+                    "Explain which category is highest or lowest.",
+                    "Use the chart to compare groups clearly.",
+                    "Connect the comparison back to the business or exam case.",
+                ],
+            },
+            "scatter": {
+                "title": "Suggested Scatter Plot",
+                "caption": "Use a scatter plot when the question is about the relationship between two continuous variables.",
+                "input_label": "Scatter plot data (X,Y)",
+                "placeholder": "X,Y\n1,2\n2,3\n3,5\n4,7",
+                "notes": [
+                    "Describe whether the relationship looks positive, negative, or unclear.",
+                    "Mention any visible clusters or unusual points.",
+                    "Use the chart to support discussion of correlation or relationship patterns.",
+                ],
+            },
+            "box": {
+                "title": "Suggested Box Plot",
+                "caption": "Use a box plot when the question is about spread, quartiles, skewness, or outliers.",
+                "input_label": "Box plot data (one value per line or CSV)",
+                "placeholder": "value\n12\n14\n15\n18\n21",
+                "notes": [
+                    "Use the plot to discuss quartiles and spread.",
+                    "Mention any visible outliers.",
+                    "Explain whether the distribution looks symmetric or skewed.",
+                ],
+            },
+        }
+        spec = base_specs[chart_type].copy()
+        spec["chart_type"] = chart_type
+        spec["default_input"] = build_chart_input_from_prompt(chart_type, prompt_text)
+        return spec
+
+    def render_chart_preview(chart_type, chart_df, chart_key):
+        import altair as alt
+
+        if chart_type == "histogram":
+            chart = alt.Chart(chart_df).mark_bar().encode(
+                alt.X("value:Q", bin=alt.Bin(maxbins=10), title="Value"),
+                y=alt.Y("count():Q", title="Frequency"),
+                tooltip=[alt.Tooltip("count():Q", title="Count")],
+            ).properties(height=320)
+            st.altair_chart(chart, width="stretch")
+            return
+
+        if chart_type == "bar":
+            chart = alt.Chart(chart_df).mark_bar().encode(
+                x=alt.X("Category:N", sort=None),
+                y=alt.Y("Value:Q", title="Value"),
+                tooltip=["Category:N", alt.Tooltip("Value:Q", format=",.2f")],
+            ).properties(height=320)
+            st.altair_chart(chart, width="stretch")
+            return
+
+        if chart_type == "scatter":
+            chart = alt.Chart(chart_df).mark_circle(size=90).encode(
+                x=alt.X("X:Q", title="X"),
+                y=alt.Y("Y:Q", title="Y"),
+                tooltip=[alt.Tooltip("X:Q", format=",.2f"), alt.Tooltip("Y:Q", format=",.2f")],
+            ).properties(height=320)
+            st.altair_chart(chart, width="stretch")
+            return
+
+        if chart_type == "box":
+            chart = alt.Chart(chart_df).mark_boxplot().encode(
+                y=alt.Y("value:Q", title="Value"),
+            ).properties(height=320)
+            st.altair_chart(chart, width="stretch")
 
     def build_er_diagram_spec(combined_text):
         combined = combined_text.lower()
@@ -45999,6 +52119,9 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             title = lesson.get("title", f"Lesson {lesson_number}")
             key_points = lesson.get("key_points", [])
             content_preview = re.sub(r"\s+", " ", lesson.get("content", ""))[:1800]
+            lesson_headings = extract_lesson_headings(lesson.get("content", ""), limit=8)
+            cue_phrases = dedupe_keep_order([title] + lesson_headings + key_points, limit=12)
+            content_segments = build_lesson_segments(title, key_points, lesson.get("content", ""), limit=18)
             units.append({
                 "id": f"lesson::{lesson_number}",
                 "label": f"Lesson {lesson_number}: {title}",
@@ -46006,9 +52129,11 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 "title": title,
                 "order_index": order_index,
                 "what_it_covers": summarise_items(key_points, 4) or title,
-                "search_text": " ".join([course["name"], title, content_preview, " ".join(key_points)]),
-                "tokens": tokenise(" ".join([title, content_preview, " ".join(key_points)])),
+                "search_text": " ".join([course["name"], title, " ".join(lesson_headings), content_preview, " ".join(key_points)]),
+                "tokens": tokenise(" ".join([title, " ".join(lesson_headings), content_preview, " ".join(key_points)])),
                 "weight": 3.0,
+                "cue_phrases": cue_phrases,
+                "content_segments": content_segments,
             })
 
         for section_name, kind_label, weight in [
@@ -46029,6 +52154,8 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                     "search_text": " ".join([course["name"], section_name, item_text]),
                     "tokens": tokenise(item_text),
                     "weight": weight,
+                    "cue_phrases": [item_text],
+                    "content_segments": [item_text],
                 })
 
         return units
@@ -46333,7 +52460,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         },
         "Definition or explanation": {
             "summary": "define the concept correctly and explain why it matters",
-            "keywords": ["define", "explain", "what", "meaning", "concept", "purpose"],
+            "keywords": ["define", "explain", "what", "meaning", "concept", "purpose", "provide", "summary", "summarise", "summarize", "reasons", "essential", "importance"],
             "structure": [
                 "Name and define the concept clearly.",
                 "Explain its purpose or why it matters.",
@@ -46373,7 +52500,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         },
         "Evaluation or KPI question": {
             "summary": "show how success, impact, or improvement should be measured",
-            "keywords": ["kpi", "measure", "evaluate", "success", "result", "impact", "before", "after"],
+            "keywords": ["kpi", "kpq", "key performance question", "measure", "evaluate", "success", "result", "impact", "before", "after", "customer retention", "customer satisfaction", "csat", "inventory turnover", "sales growth"],
             "structure": [
                 "State the goal or change being evaluated.",
                 "Name the KPI or evaluation measure.",
@@ -46403,6 +52530,27 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         },
     }
 
+    tone_profiles = {
+        "Exam-safe academic": {
+            "summary": "Clear, structured, and slightly formal wording suited to assessments.",
+        },
+        "More formal": {
+            "summary": "A more formal academic register with slightly more polished phrasing.",
+        },
+        "Natural and direct": {
+            "summary": "Plainer wording with shorter, less repetitive sentences.",
+        },
+        "More student-like": {
+            "summary": "A clearer first-person student voice while keeping the same academic content.",
+        },
+        "Simple and concise": {
+            "summary": "Shorter answers with cleaner phrasing and less filler.",
+        },
+        "Very concise exam tone": {
+            "summary": "Compressed exam-style wording that stays direct and focused on the point.",
+        },
+    }
+
     source_units = build_source_units()
     lesson_labels = [unit["label"] for unit in source_units if unit["kind"] == "Lesson"]
     outcome_labels = [unit["label"] for unit in source_units if unit["kind"] != "Lesson"]
@@ -46412,7 +52560,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
     course_template_signals = {
         "foundations": ["data", "analysis", "decision", "evidence", "quality", "example", "insight"],
         "spreadsheet": ["formula", "function", "cell", "range", "sheet", "lookup", "pivot", "result"],
-        "decision_making": ["problem", "decision", "data", "analysis", "criterion", "recommendation", "kpi"],
+        "decision_making": ["problem", "decision", "data", "analysis", "criterion", "recommendation", "kpi", "kpq", "dashboard", "objective", "measure"],
         "statistics": ["formula", "test", "mean", "hypothesis", "regression", "correlation", "significance", "p-value", "standard deviation"],
         "project": ["objective", "scope", "workflow", "validation", "testing", "documentation", "deliverable"],
         "evaluation_critical": ["bias", "quality", "ethical", "limitation", "credibility", "source", "risk"],
@@ -46458,10 +52606,21 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             key=f"{base_key}_source_pool",
         )
 
-    draft_style = st.selectbox(
-        "Direct answer style",
-        options=["Short paragraph", "Structured answer", "Detailed exam answer"],
-        key=f"{base_key}_draft_style",
+    draft_col_1, draft_col_2 = st.columns(2)
+    with draft_col_1:
+        draft_style = st.selectbox(
+            "Direct answer style",
+            options=["Short paragraph", "Structured answer", "Detailed exam answer"],
+            key=f"{base_key}_draft_style",
+        )
+    with draft_col_2:
+        answer_tone = st.selectbox(
+            "Answer tone",
+            options=list(tone_profiles.keys()),
+            key=f"{base_key}_answer_tone",
+        )
+    st.caption(
+        f"Tone changes wording, not the academic content or answer structure. Current tone: {tone_profiles[answer_tone]['summary']}"
     )
 
     scope_options = ["Whole course (auto-select best matches)", "Specific lesson or outcome", "Manual selection"]
@@ -46492,7 +52651,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         "comparison": ["compare", "difference", "versus", "vs"],
         "data collection": ["collect", "gather", "sample", "survey", "interview"],
         "process or lifecycle": ["process", "step", "lifecycle", "pipeline", "workflow"],
-        "evaluation": ["measure", "evaluate", "kpi", "result", "impact", "success"],
+        "evaluation": ["measure", "evaluate", "kpi", "kpq", "key performance question", "result", "impact", "success", "customer retention", "customer satisfaction", "csat", "inventory turnover", "sales growth"],
         "uncertainty or criteria": ["uncertainty", "payoff", "regret", "probability", "criterion", "expected"],
         "method choice": ["method", "model", "technique", "tool", "algorithm"],
     }
@@ -46505,6 +52664,56 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
     if detected_focus:
         st.markdown(f"**Detected focus from the prompt:** {', '.join(detected_focus)}")
 
+    def detect_question_style_from_prompt():
+        scores = {
+            mode_name: 0
+            for mode_name in style_profiles.keys()
+            if mode_name != "Unsure - auto detect"
+        }
+
+        for mode_name, mode_profile in style_profiles.items():
+            if mode_name == "Unsure - auto detect":
+                continue
+            for keyword in mode_profile["keywords"]:
+                keyword = str(keyword).strip().lower()
+                if not keyword:
+                    continue
+                if " " in keyword:
+                    if keyword in prompt_lower:
+                        scores[mode_name] += 4
+                elif keyword in prompt_tokens:
+                    scores[mode_name] += 3
+
+        if structure_selection_prompt:
+            scores["Method or model choice"] += 12
+        if "comparison" in detected_focus:
+            scores["Comparison question"] += 10
+        if "data collection" in detected_focus or "process or lifecycle" in detected_focus:
+            scores["Data collection or process"] += 10
+        if "evaluation" in detected_focus:
+            scores["Evaluation or KPI question"] += 12
+        if "uncertainty or criteria" in detected_focus:
+            scores["Calculation or uncertainty question"] += 12
+        if "method choice" in detected_focus:
+            scores["Method or model choice"] += 8
+
+        if any(term in prompt_lower for term in ["state whether", "true or false", "what does", "what is", "define", "explain the concept", "write a summary", "provide", "summarise", "summarize", "key reasons", "why are", "why is"]):
+            scores["Definition or explanation"] += 5
+        if any(term in prompt_lower for term in ["scenario", "case", "organisation", "organization", "company", "business", "recommend"]):
+            scores["Broad case question"] += 4
+
+        best_mode = max(scores.items(), key=lambda item: item[1])[0] if scores else "Broad case question"
+        if scores.get(best_mode, 0) <= 0:
+            best_mode = "Broad case question"
+        return best_mode, scores
+
+    effective_resolver_mode = resolver_mode
+    auto_mode_scores = {}
+    if resolver_mode == "Unsure - auto detect":
+        effective_resolver_mode, auto_mode_scores = detect_question_style_from_prompt()
+        if exam_prompt.strip():
+            st.markdown(f"**Auto-detected question style:** {effective_resolver_mode}")
+
     def eligible_units():
         if source_pool == "Lessons only":
             return [unit for unit in source_units if unit["kind"] == "Lesson"]
@@ -46513,17 +52722,111 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         return source_units[:]
 
     available_units = eligible_units()
-    profile = style_profiles[resolver_mode]
+    profile = style_profiles[effective_resolver_mode]
+
+    def apply_replacements(text, replacements):
+        updated = text
+        for old, new in replacements:
+            updated = updated.replace(old, new)
+        updated = re.sub(r" +", " ", updated)
+        updated = re.sub(r" ?\n ?", "\n", updated)
+        return updated.strip()
+
+    def adapt_text_to_tone(text, tone_name):
+        if not text.strip() or tone_name == "Exam-safe academic":
+            return text
+
+        formal_replacements = [
+            ("In this question, I would answer by ", "In addressing this question, I would answer by "),
+            ("The examiner is mainly testing whether I can ", "The examiner is primarily assessing whether I can "),
+            ("The examiner is mainly testing whether ", "The examiner is primarily assessing whether "),
+            ("I would begin by ", "I would first begin by "),
+            ("I would use ", "I would draw on "),
+            ("I would then ", "I would subsequently "),
+            ("I would also ", "I would additionally "),
+            ("I would explain that ", "I would clarify that "),
+            ("I would make sure the answer explicitly includes: ", "I would ensure the answer explicitly includes: "),
+            ("Finally, I would ", "Finally, I would conclude by "),
+            ("This approach is stronger than listing definitions alone because ", "This approach is academically stronger than listing isolated definitions because "),
+        ]
+
+        natural_replacements = [
+            ("In this question, I would answer by ", "A strong way to answer this is to "),
+            ("The examiner is mainly testing whether I can ", "The main thing to show is that you can "),
+            ("The examiner is mainly testing whether ", "The main thing to show is that "),
+            ("First, I would ", "First, "),
+            ("I would begin by ", "Start by "),
+            ("I would use ", "Use "),
+            ("I would then ", "Then "),
+            ("I would also ", "Also "),
+            ("I would explain that ", "Explain that "),
+            ("I would make sure the answer explicitly includes: ", "Make sure the answer includes: "),
+            ("I would move from ", "Move from "),
+            ("Finally, I would ", "Finally, "),
+            ("This approach is stronger than listing definitions alone because ", "This works better than just listing definitions because "),
+            ("This answer is stronger when you connect the selected lessons with the course outcomes instead of treating each lesson as isolated theory.", "The answer is stronger when you connect the selected lessons with the course outcomes instead of treating each lesson as isolated theory."),
+        ]
+
+        concise_replacements = natural_replacements + [
+            ("A strong way to answer this is to ", ""),
+            ("The main thing to show is that you can ", "Show that you can "),
+            ("Because this course has a specific subject pattern, I would make sure the answer explicitly includes: ", "Include: "),
+            ("To keep the answer coherent, I would move through the case in a structured order: ", "Use this order: "),
+            ("This works better than just listing definitions because ", "This is stronger because "),
+            ("I would answer by drawing on ", "Use "),
+        ]
+
+        student_replacements = [
+            ("In this question, I would answer by ", "A good way to answer this would be to "),
+            ("The examiner is mainly testing whether I can ", "What matters most here is showing that I can "),
+            ("The examiner is mainly testing whether ", "What matters most here is showing that "),
+            ("I would begin by ", "I would start by "),
+            ("I would use ", "I would use "),
+            ("I would then ", "Then I would "),
+            ("I would also ", "I would also "),
+            ("I would explain that ", "I would explain that "),
+            ("I would make sure the answer explicitly includes: ", "I would make sure the answer includes: "),
+            ("Finally, I would ", "At the end, I would "),
+            ("This approach is stronger than listing definitions alone because ", "This is better than just listing definitions because "),
+        ]
+
+        very_concise_replacements = concise_replacements + [
+            ("The answer is stronger when you connect the selected lessons with the course outcomes instead of treating each lesson as isolated theory.", "Connect lesson points to course outcomes."),
+            ("This is stronger because it connects the selected course content directly to the exam task and shows how the ideas work together in practice.", "Link the course content directly to the task."),
+            ("End with a recommendation, interpretation, or next action that fits the case.", "End with the clearest recommendation or conclusion."),
+            ("End with a recommendation, conclusion, or next action that fits the case.", "End with the clearest recommendation or conclusion."),
+            ("End with the clearest practical implication of the answer.", "End with the clearest practical implication."),
+            ("Use this order: ", "Order: "),
+        ]
+
+        if tone_name == "More formal":
+            return apply_replacements(text, formal_replacements)
+        if tone_name == "Natural and direct":
+            return apply_replacements(text, natural_replacements)
+        if tone_name == "More student-like":
+            return apply_replacements(text, student_replacements)
+        if tone_name == "Simple and concise":
+            return apply_replacements(text, concise_replacements)
+        if tone_name == "Very concise exam tone":
+            return apply_replacements(text, very_concise_replacements)
+        return text
 
     def unit_score(unit):
         score = unit["weight"]
         overlap = len(prompt_tokens & unit["tokens"])
         title_overlap = len(prompt_tokens & tokenise(unit["title"]))
         profile_hits = sum(1 for keyword in profile["keywords"] if keyword in unit["search_text"].lower())
+        unit_text_lower = unit["search_text"].lower()
         if exam_prompt.strip():
             score += overlap * 4
             score += title_overlap * 5
             score += profile_hits * 2
+            if any(term in prompt_lower for term in ["kpi", "kpis", "kpq", "kpqs", "key performance indicator", "key performance question"]):
+                if any(term in unit_text_lower for term in ["kpi", "kpis", "key performance indicator", "key performance question", "customer retention", "sales growth", "inventory turnover", "csat"]):
+                    score += 30
+            if "retail" in prompt_lower and any(term in prompt_lower for term in ["customer satisfaction", "sales", "retention"]):
+                if any(term in unit_text_lower for term in ["retail", "customer satisfaction", "sales growth", "customer retention", "inventory turnover"]):
+                    score += 12
         else:
             score += profile_hits
         return score
@@ -46542,13 +52845,20 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             key=f"{base_key}_specific_source",
         )
         selected_labels = [selected_label]
-    else:
+    elif scope_mode == "Manual selection":
         selected_labels = st.multiselect(
             "Sources to connect in your answer",
             options=list(source_label_map.keys()),
             default=default_labels,
             key=f"{base_key}_selected_sources",
         )
+    else:
+        selected_labels = default_labels[:]
+        st.caption("The resolver is auto-selecting the best-matching lessons and outcomes from the current prompt.")
+        if selected_labels:
+            st.markdown("**Auto-selected sources**")
+            for label in selected_labels:
+                st.markdown(f"- {label}")
 
     selected_units = [source_label_map[label] for label in selected_labels if label in source_label_map]
     selected_units = sorted(selected_units, key=lambda unit: unit["order_index"])
@@ -46580,6 +52890,56 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             and any(term in prompt_lower for term in structure_selection_terms + ["why", "because", "trade-off", "trade-offs"])
         )
     )
+    kpi_design_terms = [
+        "kpi", "kpis", "key performance indicator", "key performance indicators",
+        "kpq", "kpqs", "key performance question", "key performance questions",
+    ]
+    kpi_case_terms = [
+        "sales growth", "customer retention", "customer satisfaction", "csat",
+        "inventory turnover", "average transaction value", "loyal customer",
+        "loyal customers", "dashboard",
+    ]
+    kpi_pitfall_terms = [
+        "copy", "copied", "copying", "copied from", "competitor", "competitors",
+        "facebook", "role model", "famous company", "admired company",
+        "strategy", "sales channel", "does not fit", "doesn't fit",
+        "does not reflect", "doesn't reflect", "irrelevant", "useless",
+        "wasted", "waste", "not needed", "nobody needed",
+    ]
+    kpi_incentive_terms = [
+        "incentive", "incentives", "bonus", "bonuses", "annual incentive",
+        "ticket", "tickets", "incident", "incidents", "ticketing system",
+        "junior engineer", "mid engineer", "senior engineer", "expert",
+        "complexity", "complex", "simple incidents", "critical incident",
+        "mission-critical", "fair", "just", "justice", "fairness",
+        "millions of dollars", "global bank",
+    ]
+    kpi_design_prompt = (
+        any(term in prompt_lower for term in kpi_design_terms)
+        or (
+            any(term in prompt_lower for term in kpi_case_terms)
+            and any(term in prompt_lower for term in ["goal", "goals", "objective", "objectives", "measure", "monitor", "improve", "increase", "retail"])
+        )
+    )
+    kpi_topic_selected = any(term in selected_unit_text for term in kpi_design_terms)
+    kpi_design_case = (
+        kpi_design_prompt
+        or (
+            kpi_topic_selected
+            and any(term in prompt_lower for term in [
+                "goal", "goals", "objective", "objectives", "measure", "monitor", "dashboard",
+                "retention", "satisfaction", "sales growth", "inventory", "retail",
+            ])
+        )
+    )
+    kpi_pitfall_case = (
+        any(term in prompt_lower for term in kpi_design_terms)
+        and any(term in prompt_lower for term in kpi_pitfall_terms)
+    )
+    kpi_incentive_case = (
+        any(term in prompt_lower for term in kpi_design_terms)
+        and any(term in prompt_lower for term in kpi_incentive_terms)
+    )
     subject_must_include = course_template["must_include"][:]
     if structure_selection_case:
         for item in [
@@ -46590,10 +52950,36 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         ]:
             if item not in subject_must_include:
                 subject_must_include.append(item)
+    if kpi_design_case:
+        for item in [
+            "the business goals or objectives the KPI work must support",
+            "the Key Performance Questions (KPQs) that turn the goal into measurable questions",
+            "the available data and any additional data that may be needed",
+            "the selected KPIs, how they will be communicated, and how they will be monitored over time",
+        ]:
+            if item not in subject_must_include:
+                subject_must_include.append(item)
+    if kpi_pitfall_case:
+        for item in [
+            "why the chosen KPI is misaligned with the organisation's real strategy, sales model, or decision needs",
+            "the wasted time, cost, or engineering effort that can come from measuring the wrong thing",
+            "a recommendation for more suitable KPIs that match the company's actual goals and value-creation process",
+        ]:
+            if item not in subject_must_include:
+                subject_must_include.append(item)
+    if kpi_incentive_case:
+        for item in [
+            "why a raw count-based KPI can be unfair when roles handle very different complexity, severity, or criticality levels",
+            "how linking the KPI directly to incentives can distort behaviour and push people toward easy work",
+            "a fairer KPI design that considers complexity, business impact, quality, collaboration, or role-adjusted expectations",
+        ]:
+            if item not in subject_must_include:
+                subject_must_include.append(item)
 
     connection_rows = []
     for unit in selected_units:
         matched_terms = sorted((prompt_tokens & unit["tokens"]))[:6]
+        best_fragments = select_best_unit_fragments(unit, prompt_tokens, prompt_lower, limit=2)
         why_it_matters = short_bridge(unit)
         if matched_terms:
             why_it_matters = f"Relevant because the prompt overlaps with: {', '.join(matched_terms)}. {why_it_matters}"
@@ -46602,6 +52988,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 "Source": unit["label"],
                 "Type": unit["kind"],
                 "Why it matters": why_it_matters,
+                "Best lesson cue": best_fragments[0] if best_fragments else unit["what_it_covers"],
                 "Pull into the answer": unit["what_it_covers"],
             }
         )
@@ -46609,17 +52996,53 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
     st.markdown("**How this exam prompt connects to the selected course**")
     st.dataframe(pd.DataFrame(connection_rows), use_container_width=True, hide_index=True)
 
+    lesson_evidence_map = {
+        unit["id"]: select_best_unit_fragments(unit, prompt_tokens, prompt_lower, limit=2)
+        for unit in selected_units
+    }
+    lesson_evidence_rows = []
+    for unit in selected_units:
+        if unit["kind"] != "Lesson":
+            continue
+        evidence_fragments = lesson_evidence_map.get(unit["id"], [])
+        if not evidence_fragments:
+            continue
+        lesson_evidence_rows.append(
+            {
+                "Lesson": unit["label"],
+                "Best matching lesson evidence": evidence_fragments[0],
+                "How to reuse it in the answer": "Turn this lesson cue into a sentence that directly explains or justifies the case answer.",
+            }
+        )
+
+    if lesson_evidence_rows:
+        st.markdown("**Lesson evidence the resolver is pulling from**")
+        st.dataframe(pd.DataFrame(lesson_evidence_rows), use_container_width=True, hide_index=True)
+
     answer_order_lines = []
     lesson_count = sum(1 for unit in selected_units if unit["kind"] == "Lesson")
     outcome_count = len(selected_units) - lesson_count
 
     answer_order_lines.append("Start by restating the case problem, goal, and decision that must be addressed.")
-    if resolver_mode in {"Definition or explanation", "Comparison question"}:
+    if effective_resolver_mode in {"Definition or explanation", "Comparison question"}:
         answer_order_lines.append("Define the core concept or concepts clearly before applying them.")
     if any("data" in unit["title"].lower() or "collection" in unit["title"].lower() or "pipeline" in unit["title"].lower() or "lifecycle" in unit["title"].lower() for unit in selected_units):
         answer_order_lines.append("Explain the data, process, or workflow needed to solve the case.")
     if any("kpi" in unit["title"].lower() or "evaluat" in unit["title"].lower() for unit in selected_units):
         answer_order_lines.append("Show how success or impact would be measured with the right KPI or evaluation logic.")
+    if kpi_design_case:
+        answer_order_lines.append("Start with the business goals and objectives before naming any KPI.")
+        answer_order_lines.append("Turn the goals into Key Performance Questions (KPQs) that clarify what the organisation needs to know.")
+        answer_order_lines.append("Review which data is already available and whether extra data is needed.")
+        answer_order_lines.append("Choose the most suitable KPIs, explain how they will be communicated, and show how they will be monitored over time.")
+    if kpi_pitfall_case:
+        answer_order_lines.append("Diagnose why the chosen KPI is weak or irrelevant in this specific business context.")
+        answer_order_lines.append("Link the critique to strategy, sales channel, decision needs, and the cost of collecting irrelevant data.")
+        answer_order_lines.append("Recommend better-aligned KPIs that match how the organisation actually creates value.")
+    if kpi_incentive_case:
+        answer_order_lines.append("Assess whether the KPI is fair across different roles, complexity levels, and business-critical responsibilities.")
+        answer_order_lines.append("Explain how linking the KPI to incentives could distort behaviour or encourage engineers to chase easy work.")
+        answer_order_lines.append("Recommend a weighted, role-aware, or multi-KPI alternative that reflects true operational value.")
     if any("decision" in unit["title"].lower() or "criterion" in unit["title"].lower() or "uncertainty" in unit["title"].lower() for unit in selected_units):
         answer_order_lines.append("Justify the final choice, especially if the case involves uncertainty, alternatives, or trade-offs.")
     if structure_selection_case:
@@ -46638,9 +53061,27 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
     answer_order_lines = deduped_order_lines
 
     connector_lines = [f"From {unit['label']}, I would {short_bridge(unit).lower()}" for unit in selected_units]
+    for unit in selected_units:
+        evidence_fragments = lesson_evidence_map.get(unit["id"], [])
+        if unit["kind"] == "Lesson" and evidence_fragments:
+            connector_lines.append(
+                f"From {unit['label']}, I would explicitly reuse the lesson cue '{evidence_fragments[0]}' so the answer is anchored in the actual lesson content."
+            )
     if structure_selection_case:
         connector_lines.append(
             "From Selecting the Right Data Structure, I would justify the choice with required operations, efficiency, data size and type, memory constraints, flexibility, and implementation support."
+        )
+    if kpi_design_case:
+        connector_lines.append(
+            "From the KPI lesson, I would structure the answer around goals and objectives, KPQs, available data, communication strategy, and continuous improvement."
+        )
+    if kpi_pitfall_case:
+        connector_lines.append(
+            "From the KPI pitfalls section, I would explain why copying a famous company's KPI can be weak if it does not fit the organisation's own strategy, sales channel, or decision needs."
+        )
+    if kpi_incentive_case:
+        connector_lines.append(
+            "From the KPI pitfalls section, I would explain why a simple incident-count KPI becomes unfair when different engineers handle work with different complexity, severity, and business impact."
         )
 
     st.markdown("**Recommended answer order**")
@@ -46660,6 +53101,12 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
     st.markdown(f"- {course_bridge}")
     if structure_selection_case:
         st.markdown("- In this prompt, you should explicitly compare candidate data structures and explain why one is the best fit for the case.")
+    if kpi_design_case:
+        st.markdown("- In this prompt, you should move from goals to KPQs, then to data, KPI choice, communication, and monitoring rather than listing metrics without context.")
+    if kpi_pitfall_case:
+        st.markdown("- In this prompt, you should explicitly explain why the copied KPI is strategically weak, what resources were wasted, and which replacement KPIs would fit the business better.")
+    if kpi_incentive_case:
+        st.markdown("- In this prompt, you should explicitly explain why a raw count-based KPI is unfair across different roles, how incentives could distort behaviour, and what a fairer KPI design would look like.")
 
     st.markdown("**Course-specific answer template in use**")
     st.markdown(f"- Template: **{course_template['label']}**")
@@ -46671,7 +53118,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
     fast_plan = "\n".join(
         [
             f"Course: {course['name']}",
-            f"Question style: {resolver_mode}",
+            f"Question style: {effective_resolver_mode}",
             f"Course-specific template: {course_template['label']}",
             f"Sources to connect: {', '.join(unit['label'] for unit in selected_units)}",
             "Answer order:",
@@ -46684,6 +53131,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             f"What the examiner is testing: {profile['summary']}.",
             f"Selected course: {course['name']} ({course_code}).",
             f"Course-specific template: {course_template['label']}.",
+            f"Question style used: {effective_resolver_mode}.",
             f"Sources to connect: {', '.join(unit['label'] for unit in selected_units)}.",
             "",
             "How to connect the selected sources:",
@@ -46697,12 +53145,18 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
     scaffold_lines = [
         "Exam answer scaffold",
         f"Course: {course['name']} ({course_code})",
-        f"Question style: {resolver_mode}",
+        f"Question style: {effective_resolver_mode}",
         f"Course-specific template: {course_template['label']}",
         f"What the examiner is testing: {profile['summary']}.",
         "",
         "Selected sources to connect:",
         *[f"- {unit['label']}: {unit['what_it_covers']}" for unit in selected_units],
+        "",
+        "Lesson evidence to reuse:",
+        *[
+            f"- {unit['label']}: {' | '.join(lesson_evidence_map.get(unit['id'], [])[:2])}"
+            for unit in selected_units if unit["kind"] == "Lesson" and lesson_evidence_map.get(unit["id"])
+        ],
         "",
         "Subject-specific points to include:",
         *[f"- {item}" for item in subject_must_include],
@@ -46729,15 +53183,45 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
     evaluator_tail = "Finally, I would end with a clear recommendation, conclusion, or next action that fits the case."
     if any("kpi" in unit["title"].lower() or "evaluat" in unit["title"].lower() for unit in selected_units):
         evaluator_tail = "Finally, I would show how the result or recommendation should be evaluated, including the KPI or success measure that proves whether the action worked."
-    if resolver_mode == "Comparison question":
+    if kpi_design_case:
+        evaluator_tail = "Finally, I would explain how the selected KPIs would be monitored over time, how they would be presented to decision-makers, and what corrective action the organisation should take if performance weakens."
+    if kpi_pitfall_case:
+        evaluator_tail = "Finally, I would recommend removing, downgrading, or replacing the weak KPI and explain which better-aligned KPIs should be monitored instead so the business measures what actually drives performance."
+    if kpi_incentive_case:
+        evaluator_tail = "Finally, I would explain why the KPI should not be linked blindly to incentives, and I would recommend a fairer, role-aware KPI set that reflects complexity, criticality, and real business value."
+    if effective_resolver_mode == "Comparison question":
         evaluator_tail = "Finally, I would state which option is more suitable in the case and explain why that choice is stronger than the alternative."
-    elif resolver_mode == "Calculation or uncertainty question":
+    elif effective_resolver_mode == "Calculation or uncertainty question":
         evaluator_tail = "Finally, I would show the calculation or decision-criterion logic clearly, state the final choice, and explain why that choice fits the rule under uncertainty."
     if structure_selection_case:
         evaluator_tail = "Finally, I would recommend the most suitable data structure and explain why it fits the required operations, efficiency needs, memory constraints, and flexibility requirements better than the alternatives."
         selected_application_sentences.append(
             "For this kind of case, I would not only name a structure. I would compare candidates such as arrays, lists, trees, or file-system structures against the case requirements before choosing one."
         )
+    if kpi_design_case:
+        selected_application_sentences.insert(
+            0,
+            "For this kind of KPI case, I would not begin with random metrics. I would move from business goals to KPQs, then to available data, KPI choice, dashboard communication, and continuous monitoring."
+        )
+    if kpi_pitfall_case:
+        selected_application_sentences.insert(
+            0,
+            "For this kind of KPI pitfall case, I would explain why copying another company's KPI can waste effort if it does not match the organisation's own strategy, sales channel, or decision needs."
+        )
+    if kpi_incentive_case:
+        selected_application_sentences.insert(
+            0,
+            "For this kind of KPI incentive case, I would explain why one simple volume metric can be unfair when engineers perform very different types of work with very different business impact."
+        )
+    lesson_reuse_sentence = ""
+    lesson_reuse_fragments = []
+    for unit in selected_units:
+        if unit["kind"] != "Lesson":
+            continue
+        for fragment in lesson_evidence_map.get(unit["id"], [])[:1]:
+            lesson_reuse_fragments.append(f"from {unit['label']}: {fragment}")
+    if lesson_reuse_fragments:
+        lesson_reuse_sentence = "The strongest lesson evidence I would actively reuse includes " + "; ".join(lesson_reuse_fragments[:2]) + "."
 
     opening_sentence = (
         f"In this question, I would answer by drawing on {selected_source_sentence} from {course['name']}."
@@ -46747,7 +53231,28 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
     focus_sentence = f"The examiner is mainly testing whether I can {profile['summary']}."
     if exam_prompt.strip() and detected_focus:
         focus_sentence += f" The prompt especially points toward {', '.join(detected_focus)}."
-    subject_template_sentence = f"In this subject, I would make sure the answer includes {', '.join(subject_must_include[:3])}."
+    if resolver_mode == "Unsure - auto detect" and exam_prompt.strip():
+        focus_sentence += f" The resolver has auto-detected this as a **{effective_resolver_mode}** question."
+    subject_template_items = subject_must_include[:3]
+    if kpi_design_case:
+        subject_template_items = [
+            "the business goals or objectives the KPI work must support",
+            "the Key Performance Questions (KPQs) that turn the goal into measurable questions",
+            "the available data and any additional data that may be needed",
+        ]
+    if kpi_pitfall_case:
+        subject_template_items = [
+            "why the chosen KPI is misaligned with the organisation's real strategy or sales model",
+            "the wasted time, cost, or effort involved in collecting irrelevant data",
+            "the better-aligned KPIs that should replace the weak metric",
+        ]
+    if kpi_incentive_case:
+        subject_template_items = [
+            "why a simple count-based KPI is unfair across different roles or complexity levels",
+            "how incentive-linked KPIs can distort behaviour and encourage easy work over valuable work",
+            "the fairer KPI design that should replace the crude count metric",
+        ]
+    subject_template_sentence = f"In this subject, I would make sure the answer includes {', '.join(subject_template_items)}."
 
     short_answer_draft = " ".join(
         [
@@ -46757,6 +53262,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             subject_template_sentence,
             selected_application_sentences[0] if selected_application_sentences else "",
             selected_application_sentences[1] if len(selected_application_sentences) > 1 else "",
+            lesson_reuse_sentence,
             course_template["ending_focus"],
             evaluator_tail,
         ]
@@ -46770,6 +53276,8 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         structured_answer_lines.append(f"3. I would then bring in {selected_units[1]['label']} to strengthen the application to the case.")
     if len(selected_units) > 2:
         structured_answer_lines.append(f"4. I would also connect {selected_units[2]['label']} so the answer includes both theory and applied reasoning.")
+    if lesson_reuse_sentence:
+        structured_answer_lines.append(f"{len(structured_answer_lines) + 1}. {lesson_reuse_sentence}")
     if structure_selection_case:
         structured_answer_lines.append(
             f"{len(structured_answer_lines) + 1}. I would compare the candidate structures using required operations, efficiency, data size and type, memory constraints, flexibility, and support before making the final choice."
@@ -46787,6 +53295,8 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         "First, I would restate the case clearly and show that I understand the business, analytical, or theoretical problem that must be addressed.",
     ]
     detailed_answer_parts.extend(selected_application_sentences)
+    if lesson_reuse_sentence:
+        detailed_answer_parts.append(lesson_reuse_sentence)
     detailed_answer_parts.append(
         "Because this course has a specific subject pattern, I would make sure the answer explicitly includes: "
         + ", ".join(subject_must_include)
@@ -46813,10 +53323,13 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         "Structured answer": structured_answer_draft,
         "Detailed exam answer": detailed_answer_draft,
     }[draft_style]
+    model_answer_text = adapt_text_to_tone(model_answer_text, answer_tone)
 
     combined_diagram_context = f"{exam_prompt} {selected_unit_text}"
     requested_diagram_types = infer_requested_diagram_types(exam_prompt, selected_unit_text)
+    requested_chart_types = infer_requested_chart_types(exam_prompt, selected_unit_text)
     diagram_specs = []
+    chart_specs = [build_chart_spec(chart_type, exam_prompt) for chart_type in requested_chart_types]
     google_sheets_specs = []
     if "er" in requested_diagram_types:
         diagram_specs.append(build_er_diagram_spec(combined_diagram_context))
@@ -46831,8 +53344,20 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         diagram_specs.append(build_network_diagram_spec(combined_diagram_context))
         google_sheets_specs.append(build_network_google_sheets_spec(combined_diagram_context))
 
+    descriptive_stats_phrase_hits = any(phrase in prompt_lower for phrase in [
+        "mean and median",
+        "calculate the mean",
+        "calculate mean",
+        "calculate the median",
+        "calculate median",
+        "calculate the average",
+        "average and median",
+        "descriptive statistics",
+        "central tendency",
+    ])
     stats_guardrail_needed = (
         course_template_key == "statistics"
+        or descriptive_stats_phrase_hits
         or any(keyword in prompt_lower for keyword in [
             "t-test", "t test", "independent t-test", "independent t test",
             "paired t-test", "paired t test", "z-test", "z test",
@@ -46854,6 +53379,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
     )
 
     st.markdown("**Direct model answer draft**")
+    st.caption(f"Current answer tone: {answer_tone}")
     st.text_area(
         "Use this as a starting answer, then adapt it to the exact wording of the question",
         value=model_answer_text,
@@ -46870,6 +53396,32 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 render_mermaid_diagram(spec["code"], key_suffix=f"{base_key}_diagram_{index}", height=430)
                 st.markdown("**Mermaid code**")
                 st.code(spec["code"], language="text")
+
+    if chart_specs:
+        st.markdown("**Suggested data visuals**")
+        st.caption("The resolver can now suggest and render common descriptive-analysis charts. If the prompt contains usable values, it will try to prefill them automatically. If not, paste simple CSV or one-column values directly below.")
+        for index, spec in enumerate(chart_specs, start=1):
+            input_seed = spec.get("default_input", "")
+            input_key = f"{base_key}_chart_input_{spec['chart_type']}_{abs(hash((spec['chart_type'], exam_prompt))) % 100000}"
+            with st.expander(spec["title"], expanded=(len(chart_specs) == 1 and not diagram_specs)):
+                st.markdown(spec["caption"])
+                if input_seed:
+                    st.caption("The resolver auto-filled this data from the prompt. Check the values before using the chart in your exam answer.")
+                chart_input = st.text_area(
+                    spec["input_label"],
+                    value=input_seed,
+                    placeholder=spec["placeholder"],
+                    height=140,
+                    key=input_key,
+                )
+                chart_df = parse_chart_input(chart_input, spec["chart_type"])
+                if chart_df is not None:
+                    render_chart_preview(spec["chart_type"], chart_df, chart_key=f"{base_key}_chart_{index}")
+                    st.markdown("**How to describe this chart in an exam answer**")
+                    for note in spec.get("notes", []):
+                        st.markdown(f"- {note}")
+                else:
+                    st.info("Paste data in the suggested format to render this chart inside the resolver.")
 
     if google_sheets_specs:
         st.markdown("**How to build the same case in Google Sheets**")
@@ -46913,7 +53465,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
 
     if stats_guardrail_needed:
         import math
-        from statistics import NormalDist
+        from statistics import NormalDist, median as statistics_median, multimode
 
         try:
             from scipy import stats as scipy_stats
@@ -47002,11 +53554,99 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             return default_alpha
 
         def infer_tail_type_from_prompt():
-            if any(term in prompt_lower for term in ["greater than", "higher than", "more than", "increase", "improve", "above"]):
+            if any(
+                term in prompt_lower
+                for term in [
+                    "different from",
+                    "significantly different",
+                    "is there a difference",
+                    "whether there is a difference",
+                    "not equal",
+                    "not equals",
+                    "≠",
+                    "differs from",
+                ]
+            ):
+                return "Two-tailed"
+            if any(
+                term in prompt_lower
+                for term in [
+                    "greater than",
+                    "higher than",
+                    "more than",
+                    "increase",
+                    "improve",
+                    "above",
+                    "significantly more",
+                    "significantly higher",
+                    "exceeds",
+                ]
+            ):
                 return "Right-tailed"
-            if any(term in prompt_lower for term in ["less than", "lower than", "fewer than", "decrease", "reduce", "below"]):
+            if any(
+                term in prompt_lower
+                for term in [
+                    "less than",
+                    "lower than",
+                    "fewer than",
+                    "decrease",
+                    "reduce",
+                    "below",
+                    "significantly less",
+                    "significantly lower",
+                    "under",
+                ]
+            ):
                 return "Left-tailed"
             return "Two-tailed"
+
+        def get_normal_critical_value(alpha, tail_type):
+            dist = NormalDist()
+            if tail_type == "Two-tailed":
+                return dist.inv_cdf(1 - alpha / 2)
+            if tail_type == "Right-tailed":
+                return dist.inv_cdf(1 - alpha)
+            return dist.inv_cdf(alpha)
+
+        def build_hypothesis_test_visual(test_value, alpha, tail_type, test_label="z"):
+            critical_value = get_normal_critical_value(alpha, tail_type)
+            if tail_type == "Two-tailed":
+                region_text = "rejection region" if abs(test_value) > critical_value else "fail-to-reject region"
+                visual = "\n".join(
+                    [
+                        f"Two-tailed {test_label}-test at alpha = {alpha:.2f}",
+                        "",
+                        "Reject H0          Fail to reject H0          Reject H0",
+                        "-----|-------------------|-------------------|-----",
+                        f"{-critical_value:>8.3f}                0{critical_value:>22.3f}",
+                        f"{test_label} = {test_value:.3f} lies in the {region_text}.",
+                    ]
+                )
+            elif tail_type == "Right-tailed":
+                region_text = "rejection region" if test_value > critical_value else "fail-to-reject region"
+                visual = "\n".join(
+                    [
+                        f"Right-tailed {test_label}-test at alpha = {alpha:.2f}",
+                        "",
+                        "Fail to reject H0                Reject H0",
+                        "-----------|------------------------->",
+                        f"        critical {test_label} = {critical_value:.3f}",
+                        f"{test_label} = {test_value:.3f} lies in the {region_text}.",
+                    ]
+                )
+            else:
+                region_text = "rejection region" if test_value < critical_value else "fail-to-reject region"
+                visual = "\n".join(
+                    [
+                        f"Left-tailed {test_label}-test at alpha = {alpha:.2f}",
+                        "",
+                        "Reject H0                 Fail to reject H0",
+                        "<-------------------------|-----------",
+                        f"        critical {test_label} = {critical_value:.3f}",
+                        f"{test_label} = {test_value:.3f} lies in the {region_text}.",
+                    ]
+                )
+            return visual, critical_value
 
         def infer_likert_scale_from_prompt():
             scale_match = re.search(r"(\d+)\s*(?:to|-)\s*(\d+)\s*(?:likert|scale)?", prompt_lower)
@@ -47056,6 +53696,24 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 rows.append([before_value, after_value, ""])
             return rows
 
+        def parse_descriptive_values(raw_text):
+            normalised_text = raw_text.replace(";", ",").replace("\t", ",").replace("\n", ",")
+            values = []
+            for chunk in normalised_text.split(","):
+                cleaned = chunk.strip()
+                if not cleaned:
+                    continue
+                try:
+                    values.append(float(cleaned))
+                except ValueError:
+                    continue
+            return values
+
+        def format_display_number(value):
+            if float(value).is_integer():
+                return str(int(value))
+            return f"{value:.3f}".rstrip("0").rstrip(".")
+
         def suggest_calc_type_from_prompt():
             if "likert" in prompt_lower:
                 return "Likert scale and realistic hypotheses"
@@ -47068,6 +53726,22 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             if "anova" in prompt_lower or "three groups" in prompt_lower or "3 groups" in prompt_lower:
                 return "One-way ANOVA (3 groups)"
             if "z-score" in prompt_lower or "z score" in prompt_lower:
+                if any(
+                    signal in prompt_lower
+                    for signal in [
+                        "significance level",
+                        "alpha",
+                        "hypothesis",
+                        "sample mean",
+                        "sample size",
+                        "national average",
+                        "benchmark mean",
+                        "known sigma",
+                        "population standard deviation",
+                        "known standard deviation",
+                    ]
+                ):
+                    return "One-sample z-test"
                 return "Z-score"
             if "proportion" in prompt_lower or "conversion rate" in prompt_lower or "click-through rate" in prompt_lower or "success rate" in prompt_lower:
                 return "Two-proportion z-test"
@@ -47075,6 +53749,8 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 return "One-sample z-test"
             if "z-test" in prompt_lower or "z test" in prompt_lower:
                 return "One-sample z-test"
+            if descriptive_stats_phrase_hits:
+                return "Descriptive statistics (raw values)"
             return "One-sample t-test"
 
         def set_alpha_key(alpha_key):
@@ -47086,7 +53762,12 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         def apply_autofill_to_widgets(calc_type, extracted_numbers):
             st.session_state[f"{base_key}_stats_calc_type"] = calc_type
             tail_guess = infer_tail_type_from_prompt()
-            if calc_type == "Likert scale and realistic hypotheses":
+            if calc_type == "Descriptive statistics (raw values)":
+                if extracted_numbers:
+                    st.session_state[f"{base_key}_desc_values"] = "\n".join(
+                        format_display_number(number) for number in extracted_numbers
+                    )
+            elif calc_type == "Likert scale and realistic hypotheses":
                 likert_min, likert_max = infer_likert_scale_from_prompt()
                 st.session_state[f"{base_key}_likert_min"] = likert_min
                 st.session_state[f"{base_key}_likert_max"] = likert_max
@@ -47163,10 +53844,11 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         def render_confidence_interval(label, lower_bound, upper_bound):
             st.markdown(f"**{label}:** [{lower_bound:.3f}, {upper_bound:.3f}]")
 
-        st.markdown("**Verified calculation panel for statistical questions**")
-        st.warning("For statistical calculations, use this verified panel instead of trusting a text draft alone. The draft should explain the method, but the numbers should come from a deterministic calculator.")
+        st.markdown("**Verified calculation panel for descriptive and statistical questions**")
+        st.warning("For numerical exam questions, use this verified panel instead of trusting a text draft alone. The draft should explain the method, but the numbers should come from a deterministic calculator.")
 
         calc_options = [
+            "Descriptive statistics (raw values)",
             "Likert scale and realistic hypotheses",
             "One-sample t-test",
             "Independent t-test",
@@ -47198,6 +53880,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 chooser_question_type = st.selectbox(
                     "What kind of data or question do you have?",
                     options=[
+                        "Raw values / descriptive stats",
                         "Likert scale / agreement score",
                         "Mean / continuous value",
                         "Proportion / yes-no rate",
@@ -47223,6 +53906,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                     key=f"{base_key}_chooser_known_sigma",
                 )
                 chooser_mapping = {
+                    ("Raw values / descriptive stats", "One sample against a target"): "Descriptive statistics (raw values)",
                     ("Likert scale / agreement score", "One sample against a target"): "Likert scale and realistic hypotheses",
                     ("Likert scale / agreement score", "Two independent groups"): "Likert scale and realistic hypotheses",
                     ("Mean / continuous value", "One sample against a target"): "One-sample z-test" if chooser_known_sigma else "One-sample t-test",
@@ -47264,7 +53948,138 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         ci_summary_text = ""
         stats_template_spec = None
 
-        if calc_type == "Likert scale and realistic hypotheses":
+        if calc_type == "Descriptive statistics (raw values)":
+            default_values_text = st.session_state.get(
+                f"{base_key}_desc_values",
+                "\n".join(format_display_number(number) for number in prompt_numbers) if prompt_numbers else "12\n14\n15\n18\n21\n24",
+            )
+            raw_values_text = st.text_area(
+                "Enter one value per line or comma-separated values",
+                value=default_values_text,
+                height=160,
+                key=f"{base_key}_desc_values",
+            )
+            descriptive_values = parse_descriptive_values(raw_values_text)
+
+            if descriptive_values:
+                sorted_values = sorted(descriptive_values)
+                count_values = len(sorted_values)
+                mean_value = sum(sorted_values) / count_values
+                median_value = statistics_median(sorted_values)
+                mode_values = multimode(sorted_values)
+                sample_variance = (
+                    sum((value - mean_value) ** 2 for value in sorted_values) / (count_values - 1)
+                    if count_values > 1 else 0.0
+                )
+                sample_sd = math.sqrt(sample_variance)
+                minimum_value = sorted_values[0]
+                maximum_value = sorted_values[-1]
+                range_value = maximum_value - minimum_value
+                if count_values % 2 == 0:
+                    lower_half = sorted_values[: count_values // 2]
+                    upper_half = sorted_values[count_values // 2 :]
+                else:
+                    lower_half = sorted_values[: count_values // 2]
+                    upper_half = sorted_values[(count_values // 2) + 1 :]
+                q1_value = statistics_median(lower_half) if lower_half else median_value
+                q3_value = statistics_median(upper_half) if upper_half else median_value
+                iqr_value = q3_value - q1_value
+                useful_modes = [] if len(mode_values) == count_values else mode_values
+
+                metric_cols = st.columns(4)
+                metric_cols[0].metric("Count", f"{count_values}")
+                metric_cols[1].metric("Mean", f"{mean_value:.3f}")
+                metric_cols[2].metric("Median", f"{median_value:.3f}")
+                metric_cols[3].metric("Std Dev", f"{sample_sd:.3f}")
+
+                secondary_metric_cols = st.columns(4)
+                secondary_metric_cols[0].metric("Minimum", f"{minimum_value:.3f}")
+                secondary_metric_cols[1].metric("Maximum", f"{maximum_value:.3f}")
+                secondary_metric_cols[2].metric("Range", f"{range_value:.3f}")
+                secondary_metric_cols[3].metric("IQR", f"{iqr_value:.3f}")
+
+                st.markdown("**Sorted values**")
+                st.code(", ".join(format_display_number(value) for value in sorted_values), language="text")
+                if useful_modes:
+                    st.markdown(f"**Mode:** {', '.join(format_display_number(value) for value in useful_modes)}")
+                else:
+                    st.markdown("**Mode:** No single useful mode was found because the values are all unique or all tied.")
+
+                if count_values >= 3 and abs(mean_value - median_value) > max(sample_sd * 0.35, 0.5):
+                    st.info("The mean and median are noticeably different. That usually suggests skewness or an outlier, so mention which measure better represents the typical value.")
+                else:
+                    st.info("The mean and median are fairly close. That usually suggests the distribution is not strongly skewed.")
+
+                stats_summary_text = (
+                    f"Descriptive statistics summary: n = {count_values}, mean = {mean_value:.3f}, median = {median_value:.3f}, "
+                    f"minimum = {minimum_value:.3f}, maximum = {maximum_value:.3f}, range = {range_value:.3f}, "
+                    f"sample variance = {sample_variance:.3f}, sample standard deviation = {sample_sd:.3f}, "
+                    f"Q1 = {q1_value:.3f}, Q3 = {q3_value:.3f}, IQR = {iqr_value:.3f}."
+                )
+                if useful_modes:
+                    stats_summary_text += " Mode = " + ", ".join(format_display_number(value) for value in useful_modes) + "."
+                else:
+                    stats_summary_text += " No single useful mode was found."
+
+                sheets_columns = [
+                    "Column B: raw numeric values",
+                    "Summary cells for count, mean, median, min, max, range, variance, standard deviation, quartiles, and IQR",
+                ]
+                sheets_formulas = [
+                    "Count: =COUNT(B2:B101)",
+                    "Mean: =AVERAGE(B2:B101)",
+                    "Median: =MEDIAN(B2:B101)",
+                    "Mode: =MODE(B2:B101)",
+                    "Minimum: =MIN(B2:B101)",
+                    "Maximum: =MAX(B2:B101)",
+                    "Range: =MAX(B2:B101)-MIN(B2:B101)",
+                    "Sample variance: =VAR.S(B2:B101)",
+                    "Sample standard deviation: =STDEV.S(B2:B101)",
+                    "Q1: =QUARTILE(B2:B101,1)",
+                    "Q3: =QUARTILE(B2:B101,3)",
+                    "IQR: =QUARTILE(B2:B101,3)-QUARTILE(B2:B101,1)",
+                ]
+                sheets_notes = [
+                    "Use mean when the data is roughly symmetric and not dominated by outliers.",
+                    "Use median when the data is skewed or when one or two extreme values pull the mean away from the typical value.",
+                    "If Google Sheets returns an error for MODE, the dataset may have no repeated values.",
+                ]
+                stats_template_spec = make_stats_template_spec(
+                    "Google Sheets template - Descriptive statistics",
+                    "This template stores one raw numeric column and a summary area for the main descriptive statistics used in exam answers.",
+                    [
+                        "Data: value",
+                        "Summary: count, mean, median, mode, min, max, range, variance, standard_deviation, q1, q3, iqr",
+                    ],
+                    sheets_formulas,
+                    sheets_notes,
+                    {
+                        "Data": [[value] for value in sorted_values],
+                        "Summary": [
+                            [
+                                count_values,
+                                round(mean_value, 3),
+                                round(median_value, 3),
+                                ", ".join(format_display_number(value) for value in useful_modes) if useful_modes else "No single mode",
+                                round(minimum_value, 3),
+                                round(maximum_value, 3),
+                                round(range_value, 3),
+                                round(sample_variance, 3),
+                                round(sample_sd, 3),
+                                round(q1_value, 3),
+                                round(q3_value, 3),
+                                round(iqr_value, 3),
+                            ]
+                        ],
+                    },
+                )
+            else:
+                st.info("Enter at least one numeric value to calculate mean, median, and the other descriptive statistics.")
+                sheets_notes = [
+                    "Paste the raw values from the exam question first, then the resolver can calculate the descriptive statistics for you.",
+                ]
+
+        elif calc_type == "Likert scale and realistic hypotheses":
             col1, col2 = st.columns(2)
             with col1:
                 outcome_name = st.text_input("Outcome or statement being measured", value="customer satisfaction", key=f"{base_key}_likert_outcome")
@@ -47649,14 +54464,81 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             standard_error = population_sd / math.sqrt(sample_size)
             z_value = (sample_mean - hypoth_mean) / standard_error
             p_value, decision_text, critical_text = z_test_tail_result(z_value, alpha, tail_type)
+            visual_block, critical_value = build_hypothesis_test_visual(z_value, alpha, tail_type, test_label="z")
+            tail_hint = infer_tail_type_from_prompt()
+            benchmark_direction = "higher than" if sample_mean > hypoth_mean else "lower than" if sample_mean < hypoth_mean else "equal to"
+            plain_language_conclusion = (
+                f"The sample mean is statistically significantly {benchmark_direction} the benchmark mean."
+                if decision_text == "Reject H0"
+                else "There is not enough evidence to say the sample mean is statistically different from the benchmark mean."
+            )
+            common_mistakes = [
+                "Do not confuse a z-score for one value with a one-sample z-test for a sample mean.",
+                "Use the known population or benchmark standard deviation for a z-test, not the sample SD, unless the course tells you otherwise.",
+                "Match the tail type to the wording of the question: 'different' usually means two-tailed, 'higher' means right-tailed, and 'lower' means left-tailed.",
+                "Do not stop at 'Reject H0' or 'Fail to reject H0'. Explain what that means in plain language.",
+            ]
+            direct_answer_text = (
+                f"x̄ = {sample_mean:.3f}, μ0 = {hypoth_mean:.3f}, σ = {population_sd:.3f}, n = {sample_size}, "
+                f"z = {z_value:.3f}. Decision: {decision_text}. {plain_language_conclusion}"
+            )
+            exam_paragraph_text = (
+                f"A one-sample z-test is appropriate because this question compares one sample mean with a known benchmark mean using a known population standard deviation. "
+                f"Here, x̄ = {sample_mean:.3f}, μ0 = {hypoth_mean:.3f}, σ = {population_sd:.3f}, and n = {sample_size}. "
+                f"Using the formula z = (x̄ - μ0) / (σ / √n), the calculated z-value is {z_value:.3f}. "
+                f"For a {tail_type.lower()} test at alpha = {alpha:.2f}, the critical rule is: {critical_text}. "
+                f"Because the result is {z_value:.3f}, the decision is to {decision_text}. "
+                f"In plain language, this means {plain_language_conclusion.lower()}"
+            )
+            structured_template_text = "\n".join(
+                [
+                    f"Given: x̄ = {sample_mean:.3f}, μ0 = {hypoth_mean:.3f}, σ = {population_sd:.3f}, n = {sample_size}, α = {alpha:.2f}",
+                    "Find: whether the sample mean is statistically different from the benchmark mean",
+                    "Method: one-sample z-test",
+                    f"Calculation: z = (x̄ - μ0) / (σ / √n) = ({sample_mean:.3f} - {hypoth_mean:.3f}) / ({population_sd:.3f} / √{sample_size}) = {z_value:.3f}",
+                    f"Decision: {decision_text} because {critical_text}",
+                    f"Interpretation: {plain_language_conclusion}",
+                ]
+            )
+            sheets_explanation_text = (
+                f"In Google Sheets, I would enter the sample mean ({sample_mean:.3f}), the benchmark mean ({hypoth_mean:.3f}), "
+                f"the known standard deviation ({population_sd:.3f}), the sample size ({sample_size}), and alpha ({alpha:.2f}). "
+                f"I would calculate the standard error, then use the one-sample z-test formula to get z = {z_value:.3f}. "
+                f"After that, I would compare the result with the critical z-value for a {tail_type.lower()} test and write the decision as {decision_text}. "
+                f"That gives the plain-language conclusion: {plain_language_conclusion}"
+            )
+            multiple_choice_text = (
+                f"If the exam gives two choices such as 'not significantly different' versus 'significantly different', the correct choice here is the option that matches '{plain_language_conclusion}'."
+            )
 
             stats_metric_cols = st.columns(4)
             stats_metric_cols[0].metric("SE", f"{standard_error:.3f}")
             stats_metric_cols[1].metric("z-value", f"{z_value:.3f}")
             stats_metric_cols[2].metric("p-value", f"{p_value:.4f}")
             stats_metric_cols[3].metric("Decision", decision_text)
+            st.caption(f"Tail-type hint from the prompt: {tail_hint}")
             st.latex(rf"z = \frac{{\bar{{x}} - \mu_0}}{{\sigma / \sqrt{{n}}}} = \frac{{{sample_mean:.3f} - {hypoth_mean:.3f}}}{{{population_sd:.3f} / \sqrt{{{sample_size}}}}} = {z_value:.3f}")
             st.markdown(f"**Critical rule:** {critical_text}")
+            st.markdown("**Plain-language conclusion:**")
+            st.markdown(f"- {plain_language_conclusion}")
+            with st.expander("Visual rejection-region guide"):
+                st.code(visual_block, language="text")
+            with st.expander("Common mistakes to avoid"):
+                for warning in common_mistakes:
+                    st.markdown(f"- {warning}")
+                if "sample standard deviation" in prompt_lower and any(term in prompt_lower for term in ["known sigma", "known standard deviation", "population standard deviation", "national average"]):
+                    st.warning("This prompt includes both a sample SD and a known comparison SD. For the z-test, use the known SD unless the course instructions say otherwise.")
+            answer_tabs = st.tabs(["Direct answer", "Exam paragraph", "Structured template", "Google Sheets wording", "Multiple-choice wording"])
+            with answer_tabs[0]:
+                st.text_area("Direct answer", value=direct_answer_text, height=120, key=f"{base_key}_z_direct_answer")
+            with answer_tabs[1]:
+                st.text_area("Exam paragraph", value=exam_paragraph_text, height=180, key=f"{base_key}_z_exam_paragraph")
+            with answer_tabs[2]:
+                st.text_area("Given / Find / Method / Calculation / Decision / Interpretation", value=structured_template_text, height=200, key=f"{base_key}_z_structured_template")
+            with answer_tabs[3]:
+                st.text_area("Google Sheets explanation", value=sheets_explanation_text, height=180, key=f"{base_key}_z_sheets_explanation")
+            with answer_tabs[4]:
+                st.text_area("Multiple-choice wording", value=multiple_choice_text, height=120, key=f"{base_key}_z_mc_text")
             ci_critical = NormalDist().inv_cdf(1 - alpha / 2)
             ci_lower = sample_mean - (ci_critical * standard_error)
             ci_upper = sample_mean + (ci_critical * standard_error)
@@ -47669,31 +54551,44 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 f"tail = {tail_type}, p-value = {p_value:.4f}, decision = {decision_text}."
             )
             stats_summary_text += ci_summary_text
+            stats_summary_text += f" Plain-language conclusion: {plain_language_conclusion}"
 
             sheets_columns = [
                 "Cells for sample mean, hypothesised mean, population SD, sample size, alpha, and tail type.",
+                "Optional text cells for H0, H1, decision, and plain-language conclusion.",
             ]
             sheets_formulas = [
                 "SE: =population_sd/SQRT(sample_size)",
                 "z-value: =(sample_mean-hyp_mean)/(population_sd/SQRT(sample_size))",
+                "Critical z-value for two-tailed: =NORM.S.INV(1-alpha/2)",
+                "Critical z-value for right-tailed: =NORM.S.INV(1-alpha)",
+                "Critical z-value for left-tailed: =NORM.S.INV(alpha)",
+                "Two-tailed p-value: =2*(1-NORM.S.DIST(ABS(z_value),TRUE))",
+                "Right-tailed p-value: =1-NORM.S.DIST(z_value,TRUE)",
+                "Left-tailed p-value: =NORM.S.DIST(z_value,TRUE)",
+                "Decision text (two-tailed): =IF(ABS(z_value)>critical_z,\"Reject H0\",\"Fail to reject H0\")",
+                "Plain-language conclusion: =IF(decision_cell=\"Reject H0\",\"The sample mean is significantly \"&IF(sample_mean>hyp_mean,\"higher\",\"lower\")&\" than the benchmark mean.\",\"There is not enough evidence to say the sample mean differs significantly from the benchmark mean.\")",
                 "If you have raw data and known population SD, use summary-statistic cells instead of trying to force a one-click Sheets test.",
             ]
             sheets_notes = [
                 "Use a z-test only when the population standard deviation is known or the course specifically tells you to use z.",
+                "If the question gives both a sample SD and a known benchmark or population SD, use the known SD for the z-test unless the course tells you otherwise.",
+                "If the wording says 'different', choose a two-tailed test. If it says 'higher', choose right-tailed. If it says 'lower', choose left-tailed.",
+                "Add small text cells for H0 and H1 if you want your sheet to double as an exam working page.",
             ]
             stats_template_spec = make_stats_template_spec(
                 "Google Sheets template - One-sample z-test",
                 "This template gives you a simple summary-based z-test setup with optional raw observations.",
                 [
                     "RawData: observation",
-                    "Summary: sample_mean, hypoth_mean, population_sd, sample_size, alpha, tail_type",
+                    "Summary: sample_mean, hypoth_mean, population_sd, sample_size, alpha, tail_type, standard_error, z_value, critical_value, p_value, decision, plain_language_conclusion",
                 ],
                 sheets_formulas,
                 sheets_notes,
                 {
                     "RawData": [[value] for value in build_numeric_sample_series(sample_mean, spread=max(population_sd * 0.5, 1.0))],
                     "Summary": [
-                        [round(sample_mean, 3), round(hypoth_mean, 3), round(population_sd, 3), int(sample_size), alpha, tail_type],
+                        [round(sample_mean, 3), round(hypoth_mean, 3), round(population_sd, 3), int(sample_size), alpha, tail_type, round(standard_error, 3), round(z_value, 3), round(critical_value, 3), round(p_value, 4), decision_text, plain_language_conclusion],
                     ],
                 },
             )
@@ -48151,8 +55046,8 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             },
             {
                 "label": "Matches the selected question style",
-                "passed": signal_match_count(answer_lower, answer_tokens, style_signal_map.get(resolver_mode, [])) >= 2,
-                "tip": f"For this question style, include signals such as: {', '.join(style_signal_map.get(resolver_mode, [])[:6])}.",
+                "passed": signal_match_count(answer_lower, answer_tokens, style_signal_map.get(effective_resolver_mode, [])) >= 2,
+                "tip": f"For this question style, include signals such as: {', '.join(style_signal_map.get(effective_resolver_mode, [])[:6])}.",
             },
         ]
 
@@ -48652,6 +55547,11 @@ if page == "Overview":
                     st.warning(_message)
                 else:
                     st.info(_message)
+            if any(item["code"] == "DDM" for item in _assessment_upcoming):
+                st.info(
+                    "DDM assessment note: In **Data Driven Decision-Making**, the assessment is quiz-based, while the **CA should be treated like an exam task**. "
+                    "Use the **Exam Resolver** to build answers in exam style: direct answer first, then **Why**, then **Scenario/Application**, and add a **simple visual/table/chart** where it strengthens the explanation."
+                )
         else:
             st.success("Ingen kommende assessments registrert.")
 
@@ -49066,6 +55966,13 @@ elif page == "Training Center":
     st.markdown(f"**📅 {topic_semester}** | **📚 {topic_code} - {topic_course}**")
     st.markdown(f"*{module['description']}*")
 
+    if topic_course == "Data Driven Decision-Making":
+        st.info(
+            "DDM assessment mode: treat the **assessment as quiz-based practice**, but treat the **CA like an exam**. "
+            "When you use the **Exam Resolver**, aim for this structure: **direct answer -> Why -> Scenario/Application -> simple visual/table/chart when useful**. "
+            "In the Quiz tab, review the built-in **Why**, **Scenario**, and **Visual** explanations after submitting."
+        )
+
     # ── Progression Plan reminder banner ─────────────────────────────────────
     if topic_course in COURSE_PROGRESSION_MAP:
         from datetime import date as _pp_date, datetime as _pp_dt
@@ -49471,9 +56378,10 @@ elif page == "Training Center":
                         correct_answer = q['options'][q['correct']]
                     icon = "✅" if correct else "❌"
                     st.markdown(f"{icon} **Q{i+1}:** {q['question']}")
-                    if not correct:
-                        st.markdown(f"   Correct answer: {correct_answer}")
-                    st.markdown(f"   *{q['explanation']}*")
+                    st.markdown(f"   **Answer:** {correct_answer}")
+                    st.markdown(f"   **Why:** {q['explanation']}")
+                    if q.get('scenario_explanation'):
+                        st.markdown(f"   **Scenario:** {q['scenario_explanation']}")
                     if q.get('visual_explanation'):
                         st.markdown(q['visual_explanation'])
 

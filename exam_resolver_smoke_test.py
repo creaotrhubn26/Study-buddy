@@ -12,6 +12,22 @@ def expander_labels(app_test):
     return [element.label for element in app_test.expander]
 
 
+def set_exam_prompt(app_test, prompt):
+    for text_area in app_test.text_area:
+        if text_area.label == "Paste the exam question, case, or task prompt":
+            text_area.set_value(prompt)
+            return
+    raise AssertionError("Exam prompt text area was not found.")
+
+
+def set_selectbox_value(app_test, label, value):
+    for selectbox in app_test.selectbox:
+        if selectbox.label == label:
+            selectbox.set_value(value)
+            return
+    raise AssertionError(f"Selectbox with label {label!r} was not found.")
+
+
 def run_initial_smoke():
     app_test = AppTest.from_file(APP_PATH)
     app_test.run(timeout=90)
@@ -29,7 +45,7 @@ def run_stats_smoke():
     )
     app_test = AppTest.from_file(APP_PATH)
     app_test.run(timeout=90)
-    app_test.text_area[0].set_value(prompt)
+    set_exam_prompt(app_test, prompt)
     app_test.run(timeout=90)
 
     assert len(app_test.exception) == 0, f"Stats prompt run has exceptions: {app_test.exception}"
@@ -64,7 +80,7 @@ def run_data_model_smoke():
     )
     app_test = AppTest.from_file(APP_PATH)
     app_test.run(timeout=90)
-    app_test.text_area[0].set_value(prompt)
+    set_exam_prompt(app_test, prompt)
     app_test.run(timeout=90)
 
     assert len(app_test.exception) == 0, f"Data-model prompt run has exceptions: {app_test.exception}"
@@ -88,10 +104,160 @@ def run_data_model_smoke():
     assert "Downloadable Google Sheets templates" in joined_markdown
 
 
+def run_chart_smoke():
+    prompt = (
+        "In descriptive data analysis, create a histogram, bar chart, scatter plot, and box plot. "
+        "Use these values for the histogram and box plot: 12, 14, 15, 18, 21, 24. "
+        "Use these category values for the bar chart: North 12, South 18, East 15. "
+        "Use these pairs for the scatter plot:\n"
+        "1,2\n"
+        "2,3\n"
+        "3,5\n"
+        "4,7\n"
+    )
+    app_test = AppTest.from_file(APP_PATH)
+    app_test.run(timeout=90)
+    set_exam_prompt(app_test, prompt)
+    app_test.run(timeout=90)
+
+    assert len(app_test.exception) == 0, f"Chart prompt run has exceptions: {app_test.exception}"
+
+    labels = expander_labels(app_test)
+    for required_label in [
+        "Suggested Histogram",
+        "Suggested Bar Chart",
+        "Suggested Scatter Plot",
+        "Suggested Box Plot",
+    ]:
+        assert required_label in labels, f"Missing expected chart expander: {required_label}"
+
+    joined_markdown = "\n".join(markdown_values(app_test))
+    assert "Suggested data visuals" in joined_markdown
+
+
+def run_descriptive_stats_smoke():
+    prompt = "Calculate the mean and median for these values: 12, 14, 15, 18, 21, 24."
+    app_test = AppTest.from_file(APP_PATH)
+    app_test.run(timeout=90)
+    set_exam_prompt(app_test, prompt)
+    app_test.run(timeout=90)
+
+    assert len(app_test.exception) == 0, f"Descriptive stats prompt run has exceptions: {app_test.exception}"
+
+    calc_type_value = None
+    for selectbox in app_test.selectbox:
+        if selectbox.label == "Calculation type":
+            calc_type_value = selectbox.value
+            break
+    assert calc_type_value == "Descriptive statistics (raw values)", f"Expected descriptive statistics calculator, got {calc_type_value!r}"
+
+    stats_summary = None
+    for text_area in app_test.text_area:
+        if text_area.label == "Verified stats / hypothesis summary to use in your answer":
+            stats_summary = text_area.value
+            break
+    assert stats_summary is not None, "Verified descriptive stats summary text area was not rendered."
+    assert "mean = 17.333" in stats_summary, stats_summary
+    assert "median = 16.500" in stats_summary, stats_summary
+
+
+def run_kpi_resolver_smoke():
+    prompt = (
+        "A small software house copied Facebook's KPI of mean time spent on page. "
+        "The company sells mainly through direct calls to potential buyers, and the website is only used "
+        "to show some previous solutions. Explain why this KPI is weak, what pitfall it shows, and which "
+        "KPIs would fit the company better."
+    )
+    app_test = AppTest.from_file(APP_PATH)
+    app_test.run(timeout=90)
+    set_selectbox_value(app_test, "Select a course to study:", "FI1BBDD75 - Data Driven Decision-Making")
+    app_test.run(timeout=90)
+    set_selectbox_value(app_test, "Question style", "Evaluation or KPI question")
+    set_exam_prompt(app_test, prompt)
+    app_test.run(timeout=90)
+
+    assert len(app_test.exception) == 0, f"KPI resolver prompt run has exceptions: {app_test.exception}"
+
+    joined_markdown = "\n".join(markdown_values(app_test)).lower()
+    assert "copied" in joined_markdown, joined_markdown
+    assert "strategy" in joined_markdown, joined_markdown
+
+
+def run_kpi_incentive_resolver_smoke():
+    prompt = (
+        "A global bank wants to introduce a KPI based on how many incidents each engineer handles and "
+        "link it to an annual incentive. Junior engineers solve many simple incidents, while senior "
+        "engineers solve only a few mission-critical incidents with very high business impact. Explain "
+        "whether this KPI would be fair and what KPI approach would be better."
+    )
+    app_test = AppTest.from_file(APP_PATH)
+    app_test.run(timeout=90)
+    set_selectbox_value(app_test, "Select a course to study:", "FI1BBDD75 - Data Driven Decision-Making")
+    app_test.run(timeout=90)
+    set_selectbox_value(app_test, "Question style", "Evaluation or KPI question")
+    set_exam_prompt(app_test, prompt)
+    app_test.run(timeout=90)
+
+    assert len(app_test.exception) == 0, f"KPI incentive prompt run has exceptions: {app_test.exception}"
+
+    joined_markdown = "\n".join(markdown_values(app_test)).lower()
+    assert "fair" in joined_markdown, joined_markdown
+    assert "incentive" in joined_markdown, joined_markdown
+    assert "complexity" in joined_markdown or "critical" in joined_markdown, joined_markdown
+
+
+def run_kpi_telecom_resolver_smoke():
+    prompt = (
+        "Come up with a scenario and detail the steps required to determine the KPIs for a "
+        "telecommunications company. Goal: increase overall sales and customer satisfaction."
+    )
+    app_test = AppTest.from_file(APP_PATH)
+    app_test.run(timeout=90)
+    set_selectbox_value(app_test, "Select a course to study:", "FI1BBDD75 - Data Driven Decision-Making")
+    app_test.run(timeout=90)
+    set_selectbox_value(app_test, "Question style", "Evaluation or KPI question")
+    set_exam_prompt(app_test, prompt)
+    app_test.run(timeout=90)
+
+    assert len(app_test.exception) == 0, f"Telecom KPI prompt run has exceptions: {app_test.exception}"
+
+    joined_markdown = "\n".join(markdown_values(app_test)).lower()
+    assert "telecommunications" in joined_markdown or "telecom" in joined_markdown, joined_markdown
+    assert "customer satisfaction" in joined_markdown, joined_markdown
+    assert "sales" in joined_markdown, joined_markdown
+
+
+def run_auto_detect_and_lesson_evidence_smoke():
+    prompt = (
+        "Come up with a scenario and detail the steps required to determine the KPIs for a "
+        "telecommunications company. Goal: increase overall sales and customer satisfaction."
+    )
+    app_test = AppTest.from_file(APP_PATH)
+    app_test.run(timeout=90)
+    set_selectbox_value(app_test, "Select a course to study:", "FI1BBDD75 - Data Driven Decision-Making")
+    app_test.run(timeout=90)
+    set_selectbox_value(app_test, "Question style", "Unsure - auto detect")
+    set_exam_prompt(app_test, prompt)
+    app_test.run(timeout=90)
+
+    assert len(app_test.exception) == 0, f"Auto-detect lesson-evidence run has exceptions: {app_test.exception}"
+
+    joined_markdown = "\n".join(markdown_values(app_test))
+    assert "Auto-detected question style" in joined_markdown, joined_markdown
+    assert "Lesson evidence the resolver is pulling from" in joined_markdown, joined_markdown
+    assert "How this exam prompt connects to the selected course" in joined_markdown, joined_markdown
+
+
 def main():
     run_initial_smoke()
     run_stats_smoke()
     run_data_model_smoke()
+    run_chart_smoke()
+    run_descriptive_stats_smoke()
+    run_kpi_resolver_smoke()
+    run_kpi_incentive_resolver_smoke()
+    run_kpi_telecom_resolver_smoke()
+    run_auto_detect_and_lesson_evidence_smoke()
     print("exam_resolver_smoke_test: PASS")
 
 
