@@ -5,11 +5,13 @@ import os
 import random
 import re
 import zipfile
+from collections import Counter
 from datetime import datetime, timedelta
 
 import numpy as np
 import pandas as pd
 import streamlit as st
+import mistune
 from openai import OpenAI
 from streamlit.components.v1 import html
 
@@ -25,6 +27,98 @@ AI_NOT_CONFIGURED_MESSAGE = "OpenAI API is not configured. Add `OPENAI_API_KEY` 
 
 _openai_api_key = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=_openai_api_key) if _openai_api_key else None
+
+_markdown_with_tables = mistune.create_markdown(plugins=["table", "strikethrough"])
+
+
+def estimate_mathjax_preview_height(text, min_height=220, max_height=900):
+    text = str(text or "")
+    line_count = max(1, len(text.splitlines()))
+    table_bonus = 120 if "|" in text else 0
+    formula_bonus = 120 if any(token in text for token in ["$$", "\\(", "\\[", "\\frac", "\\sum", "\\bar"]) else 0
+    estimated = 120 + line_count * 20 + table_bonus + formula_bonus
+    return max(min_height, min(max_height, estimated))
+
+
+def render_markdown_with_mathjax(markdown_text, key_suffix="default", height=None):
+    markdown_text = str(markdown_text or "").strip()
+    if not markdown_text:
+        return
+
+    if height is None:
+        height = estimate_mathjax_preview_height(markdown_text)
+
+    rendered_html = _markdown_with_tables(markdown_text)
+
+    preview_html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8" />
+        <script>
+            window.MathJax = {{
+                tex: {{
+                    inlineMath: [['$', '$'], ['\\\\(', '\\\\)']],
+                    displayMath: [['$$', '$$'], ['\\\\[', '\\\\]']]
+                }},
+                options: {{
+                    skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+                }}
+            }};
+        </script>
+        <script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+        <style>
+            body {{
+                margin: 0;
+                padding: 0;
+                background: white;
+                color: #111827;
+                font-family: Arial, sans-serif;
+            }}
+            .preview-shell {{
+                padding: 16px;
+                border: 1px solid #e5e7eb;
+                border-radius: 10px;
+                box-sizing: border-box;
+            }}
+            .preview-shell h1, .preview-shell h2, .preview-shell h3, .preview-shell h4 {{
+                margin-top: 0.8rem;
+                margin-bottom: 0.4rem;
+            }}
+            .preview-shell p, .preview-shell li {{
+                line-height: 1.5;
+            }}
+            .preview-shell table {{
+                border-collapse: collapse;
+                width: 100%;
+                margin: 0.8rem 0;
+            }}
+            .preview-shell th, .preview-shell td {{
+                border: 1px solid #d1d5db;
+                padding: 6px 8px;
+                text-align: left;
+            }}
+            .preview-shell code {{
+                background: #f3f4f6;
+                padding: 2px 4px;
+                border-radius: 4px;
+            }}
+            .preview-shell pre {{
+                background: #f9fafb;
+                padding: 12px;
+                border-radius: 8px;
+                overflow-x: auto;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="preview-shell">
+            {rendered_html}
+        </div>
+    </body>
+    </html>
+    """
+    html(preview_html, height=height, scrolling=True)
 
 
 def render_mermaid_diagram(mermaid_code, key_suffix="default", height=420):
@@ -48749,6 +48843,11032 @@ A strong answer in this topic usually:
                 "tables": False,
                 "highlighted_sections": True
             }
+        },
+        {
+            "lesson_number": "3.5",
+            "title": "Complete Course Assessment Review and Exam Resolver",
+            "content": """
+### 3.5. Complete Course Assessment Review and Exam Resolver
+
+#### Attempt 1 summary
+
+- **Status:** Finished
+- **Started:** Friday, 20 March 2026, 6:15 PM
+- **Completed:** Friday, 20 March 2026, 8:17 PM
+- **Duration:** 2 hours 1 min
+
+This review treats the **Complete Course Assessment** as an exam-style revision bank for the whole **Data Driven Decision-Making** course. The attempt shown above was fully correct, so the purpose of this lesson is not only to confirm the right answers, but also to explain **why** they are right and how the same ideas should be used in a stronger exam answer.
+
+#### How to use this review in the exam
+
+For short questions, use this mini-resolver pattern:
+
+1. state the correct answer directly
+2. name the core concept
+3. explain why the wrong option is wrong
+4. connect it to one realistic analytical or business use case
+
+For longer questions, use this full pattern:
+
+1. direct answer
+2. clear concept explanation
+3. structured points or a comparison table
+4. short business or case connection
+5. final sentence showing why the answer matters for decision-making
+
+#### Question 1
+
+**Correct answer:** `False`
+
+**Why this is correct:** Measures of central tendency and variability are mainly **descriptive-analysis** tools. They summarise what the data looks like by showing its centre and spread. Predictive analysis is more concerned with techniques such as forecasting, trend analysis, smoothing, regression, or time series modelling.
+
+**How to use this in an exam answer:** Write that descriptive analysis explains what the data looks like now or in the past, while predictive analysis estimates what is likely to happen next. A short contrast sentence is often enough to secure the mark.
+
+#### Question 2
+
+**Correct answer:** `False`
+
+**Why this is correct:** Logical data models do more than support later database implementation. They also improve data quality and consistency by defining clearer entities, attributes, keys, and relationships. This reduces duplication, ambiguity, and structural error.
+
+**How to use this in an exam answer:** If the examiner asks about logical models, explain both sides: they support database design **and** improve consistency and integrity. That dual explanation is stronger than describing them as design documents only.
+
+#### Question 3
+
+**Correct answer:** `False`
+
+**Why this is correct:** The question wrongly presents consensus as a fixed five-step formal metric. In this course, consensus is better understood as agreement across sources or analysts after comparing evidence and resolving discrepancies. The exact items listed in the statement are not defined as the formal consensus metric itself.
+
+**How to use this in an exam answer:** In a short answer, say that consensus focuses on comparing evidence, identifying disagreements, and agreeing on the most trustworthy interpretation. Avoid inventing extra compulsory steps unless the lesson explicitly defines them.
+
+#### Question 4
+
+**Correct answer:** `True`
+
+**Why this is correct:** The proxy-data example depends on a meaningful correlation between meteorological conditions and air-pollution levels. That is exactly why weather variables can be used as a proxy in that healthcare case.
+
+**How to use this in an exam answer:** The key phrase is that proxy data must be chosen because it has a relevant relationship with the real-world variable of interest. In this case, the answer becomes stronger if you mention both **scientific research** and **domain knowledge**.
+
+#### Question 5
+
+**Correct answer:** `False`
+
+**Why this is correct:** Data pipelines are not limited to immediate processing and delivery. They can also move data into long-term archival storage for compliance, governance, historical analysis, and disaster recovery.
+
+**How to use this in an exam answer:** If asked about pipelines, explain that one pipeline may support live dashboards while another branch supports archive storage. That comparison shows that pipelines support both current use and long-term retention.
+
+#### Question 6
+
+**Correct answer:** `False`
+
+**Why this is correct:** Batch processing works on accumulated data at scheduled times. It is not designed for situations where immediate or real-time processing is essential.
+
+**How to use this in an exam answer:** A very safe exam contrast is: `batch = scheduled groups`, `real-time = immediate events`. That single contrast usually removes confusion.
+
+#### Question 7
+
+**Correct answer:** `True`
+
+**Why this is correct:** The wildlife case explicitly uses existing GPS data from a subset of birds and then applies data-augmentation techniques to create realistic proxy data. That is a valid example of proxy real-world data generation.
+
+**How to use this in an exam answer:** Mention the workflow clearly: real subset -> augmentation -> proxy dataset -> analysis. Examiners often reward answers that show the method as a process rather than as a vague definition.
+
+#### Question 8
+
+**Correct answer:** `False`
+
+**Why this is correct:** Data ingestion does more than connect sources. It also supports extraction, automation, scheduling, and scaling so data can enter the pipeline reliably over time.
+
+**How to use this in an exam answer:** If the examiner asks about ingestion, explain it as the entry stage of the pipeline and mention at least two practical functions such as automation and scheduling.
+
+#### Question 9
+
+**Correct answer:** `False`
+
+**Why this is correct:** Pipelines improve reproducibility because they standardise repeated steps, document workflow logic, and allow the same process to be run again consistently on the same or updated data.
+
+**How to use this in an exam answer:** A strong phrase is that pipelines improve **automation, consistency, and reproducibility** together. These three benefits often appear as a connected cluster in exam tasks.
+
+#### Question 10
+
+**Correct answer:** `False`
+
+**Why this is correct:** The listed issues do not belong only to consistency. Incomplete records relate to **completeness**, duplicate records relate to **uniqueness**, faulty spelling often relates to **accuracy**, and invalid contact details usually relate to **validity** or **accuracy**. Consistency is only one data-quality dimension.
+
+**How to use this in an exam answer:** This kind of question is strongest when you classify each error by dimension instead of giving one vague label to everything. That shows more precise knowledge of data-quality terminology.
+
+#### Question 11
+
+**Correct answer:** Data models act as a conceptual framework that defines the structure, storage, and manipulation of data, enabling efficient storage, retrieval, and manipulation of information.
+
+**Why this is correct:** This option captures the core role of data models: they organise information so it can be stored, queried, and used properly in systems and analysis. The distractors describe other activities such as visualisation, hardware selection, or market valuation, which are not the primary role of a data model.
+
+**How to use this in an exam answer:** Define the model first, then explain its function. A good sentence is: "A data model gives structure to information so it can be stored, related, retrieved, and analysed in a controlled way."
+
+#### Question 12
+
+**Correct answers:** `Histograms` and `Bar charts`
+
+**Why this is correct:** Histograms are used for the distribution of **continuous** variables by grouping values into bins or intervals. Bar charts are used for **categorical or discrete** data where each category is shown as a separate bar.
+
+**How to use this in an exam answer:** Use the words **continuous** and **categorical** explicitly. Examiners often build distractors around chart types, so naming the data type is the safest justification.
+
+#### Question 13
+
+**Correct answers:** `Diagnostic analysis` and `Prescriptive analysis`
+
+**Why this is correct:** Diagnostic analysis asks **why** something happened. Prescriptive analysis asks **what should be done next** and provides recommendations for action.
+
+**How to use this in an exam answer:** When you compare analysis philosophies, tie each one to its core question:
+
+- descriptive = what happened
+- diagnostic = why it happened
+- predictive = what may happen
+- prescriptive = what should be done
+
+#### Question 14
+
+**Correct answer:** `Web Traffic`
+
+**Why this is correct:** The four source types named in the lesson are **Internal databases**, **External datasets**, **Surveys and interviews**, and **Sensor data**. Web traffic may still be useful data, but it is not one of the four categories listed in that module section.
+
+**How to use this in an exam answer:** If a source-category question appears, repeat the exact named list from the module before choosing the option that does not belong.
+
+#### Question 15
+
+**Correct answer:** `Maximax Criterion`
+
+**Why this is correct:** Maximax is the optimistic rule. It looks only at the best possible payoff for each alternative and then chooses the largest of those best-case outcomes, without focusing on downside risk.
+
+**How to use this in an exam answer:** Always connect the rule to the decision-maker's attitude. A concise exam phrase is: "Maximax suits a strongly optimistic decision-maker because it focuses on the best possible payoff."
+
+#### Question 16
+
+**Correct answer:** `0`
+
+**Why this is correct:** Standard array indexing begins at zero in the normal zero-based model. That means the first element is stored at index `0`, not `1`.
+
+**How to use this in an exam answer:** Keep it direct. This is usually a fact-recall question, so one short sentence is enough.
+
+#### Question 17
+
+**Correct answers:** `Time series analysis` and `Smoothing techniques`
+
+**Why this is correct:** Time series analysis looks for trend, seasonality, and other patterns over time, while smoothing techniques such as moving averages or exponential smoothing reduce noise and support clearer forecasting.
+
+**How to use this in an exam answer:** If forecasting is mentioned, explain that these tools help estimate future values from historical patterns. That connects the method to predictive analysis instead of just naming techniques.
+
+#### Question 18
+
+**Correct answer:** `Identify the data`
+
+**Why this is correct:** Before choosing or implementing any structure, you must first understand what kind of data you have, its size, type, relationships, and the operations that matter most.
+
+**How to use this in an exam answer:** A stronger answer says that structure choice comes **after** understanding the data. That shows design reasoning, not just memorisation.
+
+#### Question 19
+
+**Correct answer:** `Promoting team-building and social interaction among employees`
+
+**Why this is correct:** Data models support storage, retrieval, consistency, design, querying, and analysis. They are not primarily social or team-building tools.
+
+**How to use this in an exam answer:** In multiple-choice elimination, remove options that clearly belong to organisational culture rather than information structure or analysis.
+
+#### Question 20
+
+**Correct answers:**
+
+- Conceptual data modeling starts by deeply understanding the business processes, entities, and the relationships among them.
+- Conceptual data models provide a high-level view of data requirements and relationships, without focusing on how data will be stored or accessed.
+
+**Why this is correct:** Conceptual modelling is the high-level, business-facing stage. It focuses on understanding the domain and its main entities and relationships before implementation detail is introduced.
+
+**How to use this in an exam answer:** If the examiner asks you to compare model types, say:
+
+- conceptual = business overview
+- logical = more detailed structure
+- physical = implementation in a specific DBMS
+
+That three-level contrast is very exam safe.
+
+#### Question 21
+
+**Correct answer summary:** The five reasons given in the attempt are correct and well aligned with the module.
+
+**Resolver-style answer draft:**
+
+Five key reasons why data cleaning and pre-processing are essential are:
+
+1. **Improved data quality**  
+   Cleaning corrects errors, inconsistencies, duplicates, and invalid values. This makes the dataset more accurate, complete, and trustworthy.
+
+2. **Reliable analysis**  
+   Pre-processing handles missing values, outliers, inconsistent formats, and structural problems. This reduces distortion and makes the analytical result more dependable.
+
+3. **Enhanced decision-making**  
+   Managers and analysts make better decisions when the evidence is based on clean and trustworthy data rather than incomplete or misleading records.
+
+4. **Increased efficiency**  
+   Solving data-quality problems early saves time later. Analysts can spend more time generating insight and less time repeatedly fixing the same data issues.
+
+5. **Compatibility and integration**  
+   Standardised formats, labels, and structures make it easier to combine data across systems, compare records, and support cross-functional analysis.
+
+An extra valid reason is **improved model performance**, but if the question asks for five reasons, the five above are already strong and sufficient.
+
+**Why this is correct:** This answer covers the core benefits named in the course and explains each one briefly instead of listing them without explanation.
+
+**How to use this in an exam answer:** The safest structure is:
+
+1. name the reason
+2. give a one-sentence explanation
+3. end with one short concluding sentence such as "Together, these reasons show that cleaning is a foundation of trustworthy analysis."
+
+#### Question 22
+
+**Correct answer summary:** The five differences given in the attempt are correct. The wording can be made sharper for exam use.
+
+**Resolver-style answer draft:**
+
+The **Data Analysis Life Cycle** and the **Data Analysis Pipeline** are closely related, but they are not the same.
+
+| Difference area | Data Analysis Life Cycle | Data Analysis Pipeline |
+|-----------------|--------------------------|------------------------|
+| **Purpose** | Guides the full analytical journey from problem definition to action | Moves and prepares data through technical processing stages |
+| **Scope** | Broad and end-to-end | Narrower and process-focused |
+| **Focus** | Business problem-solving, interpretation, and decision-making | Data flow, transformation, integration, and delivery |
+| **Main users** | Analysts, managers, and decision-makers | Engineers, developers, and technical analysts |
+| **End result** | Insight, conclusions, and action | Clean, usable, analysis-ready data or delivered outputs |
+
+So the life cycle is the broader framework, while the pipeline is the technical workflow operating inside that broader framework.
+
+**Why this is correct:** It gives exactly five clear contrasts and makes the relationship between the two concepts easy to see.
+
+**How to use this in an exam answer:** Comparison questions are strongest when you answer in pairs. Move line by line across the two concepts instead of describing one in a long paragraph and the other afterwards.
+
+#### Question 23
+
+**Correct answer summary:** The five KPI criteria in the attempt are correct.
+
+**Resolver-style answer draft:**
+
+A KPI should meet five main criteria to be considered adequate:
+
+1. **Simple**  
+   It should be easy to understand and easy to measure, so it answers a clear question rather than causing confusion.
+
+2. **Relevant**  
+   It should focus on something that actually matters to the business and supports an important performance question.
+
+3. **Aligned**  
+   It should match the organisation's goals and strategy so the KPI supports the direction the business wants to move in.
+
+4. **Actionable**  
+   It should lead to useful action. A KPI should help the organisation decide what to improve, change, or investigate.
+
+5. **Measurable**  
+   It should be possible to track the KPI clearly with data, a target, or a baseline rather than vague wording.
+
+Together, these five criteria make a KPI clearer, more practical, and more useful for decision-making.
+
+**Why this is correct:** This structure matches the KPI lesson very closely and shows both definition and practical meaning.
+
+**How to use this in an exam answer:** Name all five criteria first, then explain each one briefly. That ensures the examiner can immediately see that you know the full framework before you expand.
+
+#### Question 24
+
+**Correct answer summary:** The calculation is correct. The conclusion is also correct, but it becomes stronger when it is written more precisely.
+
+**Resolver-style answer draft:**
+
+First, identify the values:
+
+- `Xbar = 80`
+- `mu = 75`
+- `sigma = 10`
+- `n = 30`
+- `alpha = 0.05`
+
+Use the one-sample z-test formula:
+
+`z = (Xbar - mu) / (sigma / sqrt(n))`
+
+Substitute the values:
+
+`z = (80 - 75) / (10 / sqrt(30))`
+
+`z = 5 / 1.826`
+
+`z = 2.74`
+
+For a two-tailed test at the `0.05` significance level, the critical z-value is about `+/-1.96`.
+
+Because `2.74 > 1.96`, we reject the null hypothesis.
+
+**Conclusion:** The students' average score is **significantly different** from the national average. Because the sample mean is higher than the benchmark mean, the practical conclusion is that the students scored **significantly higher** than the national average.
+
+**Why this is correct:** The numerical result is correct, and the interpretation is correct. The only improvement is wording: in formal exam language, it is better to say **significantly higher** rather than "significantly more."
+
+**How to use this in an exam answer:** For calculation questions, do not stop at the z-score. Show:
+
+1. the formula
+2. the values used
+3. the numerical result
+4. the decision rule
+5. the final interpretation in words
+
+That full chain is what makes the answer exam-ready.
+
+#### Resolver-style supplement
+
+The strongest exam pattern for this complete assessment is:
+
+##### Pattern 1 - True/False questions
+
+Start with the answer directly, then explain the concept in one or two sentences, then contrast it with the wrong concept.
+
+Example:
+
+- descriptive statistics summarise data
+- predictive analysis forecasts future outcomes
+
+##### Pattern 2 - Multiple-choice concept questions
+
+Eliminate distractors by asking:
+
+- does this option describe the real purpose of the method?
+- is it the right level of abstraction?
+- is it a business concept or a technical concept?
+
+##### Pattern 3 - Comparison questions
+
+Compare line by line:
+
+- purpose
+- scope
+- focus
+- users
+- result
+
+That structure is especially strong for life cycle versus pipeline and conceptual versus logical versus physical modelling.
+
+##### Pattern 4 - Calculation questions
+
+Always move in this order:
+
+`formula -> numbers -> result -> decision rule -> interpretation`
+
+##### Pattern 5 - Five-point theory questions
+
+When the examiner asks for five reasons, five criteria, or five differences:
+
+1. list all five clearly
+2. give one short explanation for each
+3. end with one summary sentence about why the framework matters in decision-making
+
+#### Why this assessment matters for the semester exam
+
+This assessment is useful because it combines many of the course's most exam-relevant ideas:
+
+- descriptive versus predictive thinking
+- data models and modelling levels
+- proxy data and data quality
+- pipelines and lifecycle thinking
+- decision criteria under uncertainty
+- KPI design and KPI quality
+- short statistical calculation and interpretation
+
+If you can explain not only the answer, but also **why it is correct**, **why the wrong option is wrong**, and **how the concept should be used in a realistic case**, then you are answering in the same style the exam resolver is designed to support.
+            """,
+            "key_points": [
+                "This complete assessment works well as an exam-style revision set for the full DDDM course",
+                "Short-answer questions are strongest when you state the answer directly, name the concept, explain why it is correct, and contrast it with the wrong idea",
+                "Life cycle versus pipeline questions become clearer when answered through five paired differences: purpose, scope, focus, users, and end result",
+                "KPI adequacy should be explained through the five criteria: simple, relevant, aligned, actionable, and measurable",
+                "For calculation questions, the strongest exam structure is formula, numbers used, result, decision rule, and interpretation",
+                "The z-test example is correct with z = 2.74, and the strongest written conclusion is that the class scored significantly higher than the national average",
+                "Proxy data, data cleaning, data models, analysis philosophies, decision criteria, and KPIs should be connected to realistic business use cases in exam answers"
+            ],
+            "visual_elements": {
+                "diagrams": False,
+                "tables": True,
+                "highlighted_sections": True
+            }
+        }
+    ],
+    "FI1BBST05": [
+        {
+            "lesson_number": "1.0",
+            "title": "Course Overview and Exam Strategy",
+            "content": """
+### 1.0. Statistical Tools - Course Overview and Exam Strategy
+
+### Module 1: Lessons and Tasks
+
+#### Module Overview
+
+##### Introduction
+
+This module introduces us to various spreadsheet tools and statistical analysis.
+
+We begin to understand **KPIs** and why they are essential. Additionally, we look into using multiple advanced data analysis tool packs. We also learn about **Solver** and its ability to support linear regression and related analytical tasks.
+
+The module also introduces industry-required analysis techniques such as:
+
+- **ANOVA**
+- **regression**
+- **correlation**
+- **covariance**
+- **histogram-based analysis**
+
+Above all, the goal is to build confidence with these tools in a practical and useful way.
+
+Check your progression plan and/or contact a tutor if anything is unclear.
+
+#### Learning Outcomes
+
+In this module, we are covering the following **knowledge** learning outcomes:
+
+- The candidate has knowledge of spreadsheet data tools to perform statistical analysis on data sets using built-in functions.
+- The candidate has knowledge of statistical methodologies used to extract Key Performance Indicators from numerical values.
+- The candidate has knowledge of concepts and processes required to execute advanced data analytics tool packs exclusive to spreadsheet software.
+- The candidate has knowledge of processes and tools required to perform industry-required analysis, specifically: correlation, regression, ANOVA, histogram and covariance analysis.
+- The candidate has knowledge of Power Query and how to automate time-consuming tasks in spreadsheet software.
+
+In this module, we are covering the following **skill** learning outcomes:
+
+- The candidate can apply knowledge to perform statistical analysis on data sets using built-in spreadsheet tools.
+- The candidate masters relevant techniques and tools to install and use the advanced data analysis suite.
+- The candidate masters advanced spreadsheet techniques such as Power Query to automate tasks.
+
+In this module, we are covering the following **general competence** learning outcome:
+
+- The candidate can carry out work using advanced spreadsheet tools to suit the needs of selected target groups.
+
+#### Course overview
+
+This course provides candidates with the knowledge of using **integrated spreadsheet tools** and **introductory statistical modelling software**.
+
+Candidates are expected to work with organised datasets and apply the **decision-making metrics** they have learned. The goal is not only to calculate values, but also to use those values to support better judgement, clearer analysis, and more reliable recommendations.
+
+The course also develops technical skill. By working with existing spreadsheet-based statistical tools and common industry practices, candidates build a strong foundation for creating more **bespoke solutions** to contextualised real-world problems later.
+
+This course builds directly on **Spreadsheet Fundamentals**. At this stage, the candidate should already be comfortable managing workbooks, organising data, and using spreadsheet functions. Statistical Tools then extends that foundation by teaching how spreadsheet tools can be used to:
+
+- analyse data more deeply
+- extract useful heuristics from datasets
+- improve data quality
+- reduce the effect of erroneous data points on the wider model
+
+#### What the course is really about
+
+This course is not just about formulas.
+
+It is about knowing:
+
+- which statistical tool fits the question
+- how to apply that tool inside a spreadsheet workflow
+- how to explain the output clearly
+- how to connect the result to a practical decision
+
+#### Main tool families in this course
+
+The course is built around several practical families of tools:
+
+| Tool family | Typical use |
+|-------------|-------------|
+| **Descriptive statistics** | Summarise centre, spread, shape, and distribution |
+| **Data-quality tools** | Improve reliability and reduce distortion from bad data |
+| **Spreadsheet statistical functions** | Perform calculations directly in built-in spreadsheet environments |
+| **Visual statistical tools** | Show patterns with histograms and related chart-based summaries |
+| **Relationship tools** | Explore correlation, covariance, and regression |
+| **Comparison tools** | Use methods such as ANOVA when comparing groups |
+| **Workflow tools** | Use tools such as Power Query to automate preparation and reduce manual repetition |
+
+#### Why this matters in the exam
+
+In the semester exam, the examiner will usually want more than a number.
+
+A strong answer in this course often needs to show:
+
+1. the correct tool or method
+2. the calculation or workflow
+3. the result
+4. the interpretation
+5. the practical meaning for decision-making
+
+#### Exam Notes
+
+When revising this course, focus especially on these high-yield points:
+
+- know that Statistical Tools builds directly on **Spreadsheet Fundamentals**
+- explain that built-in spreadsheet tools are used not only to calculate values, but also to improve analysis quality
+- be ready to explain why statistical tools help extract **heuristics** from organised datasets
+- be ready to connect spreadsheet outputs to business or analytical judgement
+- know that mathematical techniques can improve data quality and reduce the effect of erroneous data points
+- explain that existing tools can act as the starting point for more bespoke and contextualised solutions
+
+##### Strong exam answer rule
+
+A strong answer in this course usually:
+
+1. identifies the correct spreadsheet or statistical tool
+2. explains why that tool fits the problem
+3. shows the key calculation or workflow
+4. interprets the result in plain language
+5. ends with the practical decision or analytical implication
+            """,
+            "key_points": [
+                "Module 1 introduces KPI thinking, advanced data analysis tool packs, Solver, and core industry-required analysis methods",
+                "Module 1 links directly to learning outcomes about built-in statistical tools, KPI extraction, advanced tool packs, Power Query, and target-group-oriented spreadsheet work",
+                "Statistical Tools builds directly on Spreadsheet Fundamentals and extends workbook work into deeper statistical analysis",
+                "The course is about choosing the right tool, applying it correctly, and interpreting the result clearly",
+                "Spreadsheet statistical tools should be linked to heuristics and decision-making, not treated as isolated formulas",
+                "Data quality improvement and error reduction are core parts of the course, not side topics",
+                "Built-in spreadsheet tools are a foundation for later bespoke solutions to real-world problems"
+            ],
+            "visual_elements": {
+                "diagrams": False,
+                "tables": True,
+                "highlighted_sections": True
+            }
+        },
+        {
+            "lesson_number": "1.1",
+            "title": "An Exploration of Spreadsheet Data Tools and Statistical Analysis",
+            "content": """
+### 1.1. An Exploration of Spreadsheet Data Tools and Statistical Analysis
+
+#### Introduction
+
+A solid and grounded foundation in the various tools and functions available to us as data analysts is fundamental to success and growth.
+
+In the previous module, we developed a strong knowledge base in the basics of spreadsheets and Excel. That foundation now allows us to springboard into the statistical tools we will cover in this module.
+
+We therefore begin with the basics and then move, in later lessons, toward practical Excel work, real-world applications, and worked examples. Having a firm grasp of the basic logic behind statistical analysis is a skill and knowledge base we can always fall back on.
+
+This also means that **Excel and Google Sheets templates should be ready** from the start, so that formulas, statistical summaries, and interpretation can be built in a repeatable way rather than recreated from scratch each time.
+
+#### Statistical Methodologies for Extracting KPIs From Numerical Values
+
+Many, if not all, businesses use **Key Performance Indicators (KPIs)** to measure and quantify how well, or how poorly, the business is performing.
+
+KPIs are vital because they give us a value to compare against the company's current performance. They show clearly whether business goals are being reached. When a company implements KPIs, decision-makers can set goals, evaluate performance, and design strategies that improve the chance of reaching those goals.
+
+It therefore makes sense that KPIs are **quantifiable measures** used to assess performance and progress. They are usually derived from relevant numerical data and help identify success, risk, or areas for improvement. In data analysis, KPIs matter because they turn raw values into actionable insight.
+
+#### Why KPIs matter in data analysis
+
+The importance of KPIs in data analysis can be summarized through the following functions:
+
+| KPI role | Why it matters |
+|----------|----------------|
+| **Performance measurement** | KPIs act as benchmarks for evaluating how well the organization is performing against targets |
+| **Goal alignment** | KPIs connect daily activity to strategic objectives and keep teams focused on shared goals |
+| **Decision-making** | KPI trends and patterns support informed, data-driven decisions at different levels of the business |
+| **Performance improvement** | KPI analysis helps reveal underperformance, inefficiency, or root causes that need improvement |
+| **Accountability and transparency** | KPIs make expectations clearer and provide measurable criteria for judging performance |
+| **Communication and alignment** | KPIs create a common performance language across teams and departments |
+| **Continuous monitoring** | KPIs allow regular tracking so deviations can be spotted and corrected early |
+
+In summary, KPIs are crucial because they help organizations evaluate performance, align work with goals, support decision-making, improve operations, strengthen accountability, improve transparency, support communication, and enable continuous monitoring.
+
+#### Task-style 500-word summary
+
+If the task asks for a longer written answer, the following titled summary is a strong model:
+
+**Title: The Significance of KPIs in Data Analysis**
+
+Key Performance Indicators (KPIs) play a crucial role in modern businesses, providing quantifiable metrics to measure and evaluate performance. In this 500-word summary, we will explore the importance of KPIs in data analysis, examining how they align activities with strategic objectives, aid decision-making, drive performance improvement, foster accountability, enhance communication, and promote continuous monitoring.
+
+KPIs are vital for evaluating business performance, giving us value to compare against our current goals. By measuring and tracking relevant data, organizations can identify areas of success and those that need attention. These metrics provide valuable insights into the company's performance, enabling informed decisions for future growth.
+
+An essential purpose of KPIs is to align activities with strategic objectives. Defining and monitoring specific KPIs ensures that team members work towards shared goals, fostering a work culture driven by purpose and direction. KPIs act as guiding lights, steering individuals and teams towards the organization's vision.
+
+Moreover, KPIs facilitate informed decision-making. They offer actionable insights into trends, patterns, and areas for improvement. Armed with data-driven information, decision-makers can make well-informed choices at various organizational levels, ensuring their decisions align with strategic goals.
+
+KPIs also serve as early warning signals for performance improvement. By identifying areas of underperformance or inefficiency, KPIs help organizations implement targeted improvements. Regular monitoring and analysis of KPIs enable businesses to track the impact of these changes over time, fostering a culture of continuous improvement.
+
+Furthermore, KPIs foster a culture of accountability, transparency, and responsibility. By setting clear expectations and measuring performance against predefined metrics, KPIs hold individuals and teams accountable for their contributions. This transparency in performance evaluation promotes a culture of responsibility and ownership.
+
+In addition to promoting accountability, KPIs enhance communication and alignment across teams and departments. KPIs ensure that everyone is on the same page by providing a common language for performance metrics, goals, and progress. This alignment fosters effective communication and collaboration towards achieving shared objectives.
+
+Lastly, KPIs emphasize the importance of continuous monitoring. Regularly tracking KPIs allows organizations to detect deviations from desired outcomes and take prompt corrective actions. This real-time monitoring ensures that performance stays on track and allows timely interventions when necessary.
+
+In conclusion, KPIs are indispensable in data analysis as they provide quantifiable measures for evaluating performance, align activities with strategic goals, support decision-making, drive performance improvement, foster accountability, promote transparency, facilitate communication, and enable continuous monitoring. Implementing KPIs empowers organizations to navigate their journey towards success with data-driven insights and informed decision-making.
+
+#### Exam resolver for KPI summary tasks
+
+If this appears as an exam question, do not just write a long paragraph without structure. Build the answer in this order:
+
+1. define KPIs and explain their purpose in performance evaluation
+2. explain how KPIs align work with strategic objectives
+3. explain how KPIs support informed decision-making
+4. explain how KPI analysis helps improve performance
+5. explain how KPIs strengthen accountability, transparency, and responsibility
+6. explain how KPIs improve communication and alignment across departments
+7. end with continuous monitoring and timely intervention
+
+##### Exam-ready opening line
+
+`Key Performance Indicators are quantifiable measures used to evaluate whether an organisation is achieving its goals and performing in line with its targets.`
+
+##### Why this resolver works
+
+This structure works because it moves from:
+
+- definition
+- strategic meaning
+- analytical value
+- organisational impact
+- monitoring and action
+
+That makes the answer feel clear, complete, and exam-ready rather than repetitive.
+
+#### Overview of Statistical Methodologies Used for Extracting KPIs From Numerical Values
+
+Several statistical methodologies are used for extracting **Key Performance Indicators (KPIs)** from numerical values. As a refresher, it is useful to review the most common methods. Not all of these methodologies will form part of the following lessons, but they provide a strong foundation for further investigation and later learning.
+
+| Methodology | What it helps with |
+|-------------|--------------------|
+| **Descriptive statistics** | Summarizes mean, median, mode, standard deviation, range, and percentiles to show central tendency, spread, and distribution |
+| **Time series analysis** | Identifies patterns, trends, and seasonality over time using methods such as moving averages, exponential smoothing, and ARIMA |
+| **Regression analysis** | Explores the relationship between a dependent variable and one or more independent variables to quantify drivers of performance |
+| **Hypothesis testing** | Tests whether observed differences or relationships are statistically significant or likely due to chance |
+| **Data mining and machine learning** | Finds patterns, associations, clusters, and predictive structures in larger or more complex datasets |
+| **Statistical Process Control (SPC)** | Uses control charts, capability analysis, and control limits to monitor stability, variation, and process performance |
+| **Factor analysis** | Identifies latent factors behind correlated variables and can help derive composite or grouped KPIs |
+| **Statistical modelling** | Builds mathematical models, such as linear regression, logistic regression, or time series models, to explain or predict KPI behavior |
+
+##### Method overview in words
+
+Descriptive statistics are often the starting point because they summarize the main features of the data and help analysts understand the baseline behavior of a KPI. Time series analysis becomes useful when KPI performance changes over time and we want to identify trends, seasonality, or forecast future values.
+
+Temporal performance forecasting refers to evaluating how well a forecasting model predicts future values of a time-dependent variable over time. In practice, this means judging whether the model gives useful forward-looking KPI insight based on the historical pattern in the data.
+
+Regression analysis helps explain how one or more variables influence a KPI, while hypothesis testing helps determine whether differences in KPI performance are meaningful or just random variation. Data mining and machine learning become especially useful when datasets are large or complex and when the analyst needs to discover hidden patterns or build predictive models.
+
+SPC is especially useful in operational or process environments where performance stability matters, while factor analysis helps reduce complexity by identifying deeper underlying dimensions behind several observed variables. Statistical modelling brings several of these ideas together by creating formal mathematical representations of relationships and predictions.
+
+These methodologies are not exhaustive, and the best choice always depends on the type of data, the objective of the analysis, and the specific KPI being studied. In practice, a combination of methods often produces the most complete and reliable KPI insight.
+
+##### Exam use for methodology overview tasks
+
+If the task asks for an overview, do not only list the methods. For each one:
+
+1. name the methodology
+2. explain what it studies or measures
+3. explain what kind of KPI insight it can provide
+4. explain why it fits a certain type of data or objective
+
+#### Statistical Concepts and Processes
+
+We now move on to a range of statistical concepts and processes that are fundamental to meaningful data analysis. Whether we are conducting surveys, performing experiments, or making predictions, statistics gives us the tools and techniques needed to extract valuable insight from raw data.
+
+By applying statistical concepts, we can make informed decisions, identify patterns, and draw more reliable conclusions. These concepts include **sampling**, **probability**, **hypothesis testing**, and **regression analysis**. Together, they help create the foundation for data-driven decision-making and for understanding the patterns and trends that appear across many fields of study.
+
+Again, this section builds on foundational knowledge rather than trying to cover every idea in full depth. The goal is to strengthen the knowledge and skill base so that later lessons, practical spreadsheet tasks, and exam questions become easier to interpret.
+
+##### Key concepts in brief
+
+| Concept or process | Why it matters |
+|--------------------|----------------|
+| **Sampling** | Helps analysts work with a subset of data when studying the full population is impractical |
+| **Probability** | Helps estimate likelihood, uncertainty, and expected outcomes |
+| **Hypothesis testing** | Helps judge whether differences or relationships are statistically significant or likely due to chance |
+| **Regression analysis** | Helps explain and sometimes predict how one variable changes in relation to another |
+
+##### Why this matters in an exam
+
+In an exam, these concepts are often not tested as isolated definitions only. The examiner may want you to explain:
+
+- what the concept means
+- why it matters in data analysis
+- when it should be used
+- what kind of conclusion it helps support
+
+That means a strong answer should move from **definition -> function -> application -> conclusion**.
+
+##### Exam use for concepts and processes
+
+If the task asks for a short conceptual explanation, answer in this order:
+
+1. define the concept clearly
+2. explain its role in data analysis
+3. connect it to a realistic task such as surveys, experiments, or forecasting
+4. explain what kind of insight or decision it supports
+
+This helps your answer sound analytical rather than memorized.
+
+#### Foundation notes worth keeping from the freeCodeCamp article
+
+One useful beginner article for foundation revision is:
+
+`Statistics for Beginners – Top Stats Concepts to Know Before Getting into Data Science`
+
+For this course, the most useful ideas to keep from that article are these core foundations:
+
+1. **Descriptive vs inferential statistics**
+   Descriptive statistics summarize data, while inferential statistics use sample evidence to support decisions, claims, or predictions about a wider population.
+2. **Subject, population, and sample**
+   A subject or observation is the thing being studied, the population is the full group of interest, and the sample is the subset used for practical analysis.
+3. **Parameter vs statistic**
+   A parameter describes a population, while a statistic describes a sample. This distinction matters in exam questions about inference.
+4. **Quantitative vs qualitative data**
+   Quantitative data is numerical, while qualitative data is categorical. Choosing the wrong type can lead to the wrong method.
+5. **Levels of measurement**
+   Nominal, ordinal, interval, and ratio scales help determine how data should be handled, compared, or interpreted.
+6. **Mean, median, and mode**
+   These are core summary measures and remain essential for spreadsheet work, descriptive statistics, and exam explanations.
+7. **Outliers and standard deviation**
+   Outliers can distort conclusions, while standard deviation helps describe spread and can help signal unusual values.
+8. **Histograms and boxplots**
+   These visual tools help show the distribution of numerical data and can help reveal spread, quartiles, and possible outliers.
+
+What we do **not** need from that article for this part of the course is forecasting support, because the article does not actually cover:
+
+- time series analysis
+- moving averages
+- exponential smoothing
+- ARIMA
+- autocorrelation
+- regression
+
+That is why the forecasting and modelling parts of this lesson should continue to rely on the module material rather than that article.
+
+##### Why these foundation notes help in an exam
+
+These notes are useful because they help you answer early conceptual questions such as:
+
+- is this descriptive or inferential?
+- are we working with a sample or a population?
+- is this quantitative or qualitative data?
+- what level of measurement are we using?
+- which summary measure or visual should be chosen first?
+
+That gives you a stronger base before you move into more advanced methods such as hypothesis testing, correlation, regression, or forecasting.
+
+#### Introduction to Probability Theory
+
+Probability theory is the branch of mathematics that studies **chance**, **uncertainty**, and how likely different outcomes are. In data analysis, it matters because real data often includes uncertainty, randomness, and incomplete knowledge. Probability gives us a structured way to measure how likely an event is and to make better decisions when outcomes are not guaranteed.
+
+Put simply:
+
+- probability helps us measure **how likely** something is
+- it helps us reason about **uncertain outcomes**
+- it helps us make **educated predictions**
+- it helps us judge whether an observed result looks ordinary or unusual
+
+That is why probability theory is one of the foundations of modern data analysis.
+
+##### A very simple starting point
+
+If all outcomes are equally likely, probability can be written as:
+
+`Probability = favorable outcomes / total possible outcomes`
+
+Example 1:
+
+If you flip a fair coin, the probability of getting heads is:
+
+`1 / 2 = 0.5`
+
+Example 2:
+
+If you roll a fair six-sided die, the probability of getting a 4 is:
+
+`1 / 6 approx. 0.167`
+
+These simple examples matter because they show how analysts start thinking about chance in a structured way.
+
+##### Why probability theory matters in data analysis
+
+Probability theory helps analysts:
+
+- model uncertainty in data
+- estimate the likelihood of outcomes
+- compare expected versus observed events
+- support prediction and forecasting
+- build stronger inference from samples
+
+In practical terms, probability helps us say things like:
+
+- how likely a customer is to churn
+- how likely a machine is to fail
+- how likely a result is due to chance
+- how likely a future value falls within a certain range
+
+##### Key ideas you are likely to meet
+
+| Concept | Simple explanation | Why it is useful |
+|---------|--------------------|------------------|
+| **Probability distributions** | Show how likely different values or outcomes are | Help us understand the pattern and shape of uncertain data |
+| **Conditional probability** | Probability of one event given that another event has already happened | Useful when context or prior conditions matter |
+| **Bayes' theorem** | Updates probability when new information becomes available | Useful when we revise beliefs after seeing new evidence |
+| **Statistical inference** | Uses sample data to draw conclusions about a wider population | Helps analysts make claims even when full-population data is unavailable |
+| **Monte Carlo simulation** | Repeats random sampling many times to study possible outcomes | Useful when systems are complex and exact solutions are difficult |
+
+##### Probability distributions
+
+Probability distributions are mathematical functions that describe how likely different outcomes are in a random experiment or uncertain event. They help analysts understand uncertainty in a structured way and are widely used in statistics, mathematics, science, and business analysis.
+
+Every probability distribution has two basic parts:
+
+- the possible outcomes in the sample space
+- the probability attached to each outcome
+
+Those probabilities must follow basic rules:
+
+- probabilities cannot be negative
+- the total probability must add up to `1`
+
+In practical terms, a distribution tells us what outcomes are more likely, what outcomes are less likely, and what overall pattern the random data seems to follow.
+
+If you are new to this topic, the safest idea to remember is:
+
+`A probability distribution describes the pattern of uncertainty in a random variable.`
+
+Common examples:
+
+- **Normal distribution** for values that cluster around an average
+- **Binomial distribution** for repeated yes/no type outcomes
+- **Poisson distribution** for counts of events over time or space
+
+Why this matters:
+Distributions help analysts understand the expected behaviour of data and make predictions about future events.
+
+##### The normal distribution
+
+The **normal distribution** is one of the most important and widely used probability distributions. It is also called the **Gaussian distribution** or, more informally, the **bell curve**.
+
+It is:
+
+- continuous
+- symmetric
+- bell-shaped
+
+The normal distribution is defined by two parameters:
+
+- **mean** `mu` `(μ)` which shows the centre of the distribution
+- **standard deviation** `sigma` `(σ)` which shows how spread out the values are
+
+How to think about it:
+
+- the mean tells you where the distribution is centred
+- the standard deviation tells you whether the curve is narrow or wide
+
+Why this matters:
+Many real-world measurements tend to cluster around an average, so the normal distribution is often used to model scores, measurements, demand levels, error terms, and other naturally varying data.
+
+##### Normal distribution PDF
+
+When we need the **Probability Density Function (PDF)** of the normal distribution, we can write it as:
+
+`f(x) = (1 / (sigma * sqrt(2*pi))) * e^(-((x - mu)^2 / (2*sigma^2)))`
+
+Where:
+
+- `x` is the random variable
+- `mu` `(μ)` is the mean and shows the central location of the distribution
+- `sigma` `(σ)` is the standard deviation and shows the spread of the distribution
+- `pi` `(π)` is the mathematical constant approximately equal to `3.14159`
+- `e` is the base of the natural logarithm approximately equal to `2.71828`
+
+Important exam note:
+The PDF gives the **density** of the curve at a point. In continuous distributions, we usually use cumulative probability to answer questions about the probability of being **between** values.
+
+##### Properties of the normal distribution
+
+The normal distribution has several important properties:
+
+- **Symmetry**: the curve is symmetric around the mean, so values equally far to the left and right of the mean have matching shape and balance
+- **Bell-shaped form**: the peak is at the mean, and the density falls as we move further away
+- **Empirical rule**: about `68%` of the data lies within one standard deviation of the mean, about `95%` within two, and about `99.7%` within three
+- **Central limit theorem relevance**: sums or averages of many independent random variables tend toward a normal distribution, even if the original data is not perfectly normal
+
+These properties make the normal distribution especially useful in inference, hypothesis testing, estimation, and many real-world analytical settings.
+
+##### What data you need for an exam-relevant normal-distribution case
+
+If you want the exam resolver to solve a normal-distribution case clearly, you usually need:
+
+1. the **mean** `mu` `(μ)`
+2. the **standard deviation** `sigma` `(σ)`
+3. the value `x` or the interval being studied
+4. a statement that the variable is approximately **normally distributed**
+5. clarity about whether the task asks for **density at a point** or **probability over a range**
+
+If any of these are missing, the answer becomes weaker or more uncertain.
+
+##### Exam-relevant case
+
+A delivery company finds that package delivery times are approximately normally distributed with:
+
+- mean `mu = 40` minutes
+- standard deviation `sigma = 5` minutes
+
+Question:
+
+1. what does the distribution tell us?
+2. what proportion of deliveries are expected to take between `35` and `45` minutes?
+3. what does that mean in practice?
+
+Resolver-style answer:
+
+- because the distribution is normal, it is centered at `40` minutes and spread according to `5` minutes
+- the interval `35` to `45` is exactly one standard deviation below and above the mean
+- by the empirical rule, about `68%` of values lie within one standard deviation of the mean
+- therefore, about `68%` of deliveries are expected to take between `35` and `45` minutes
+
+Excel / Google Sheets version:
+
+- `=NORM.DIST(45,40,5,TRUE)-NORM.DIST(35,40,5,TRUE)` gives `approx. 0.6827`
+
+If the task asks for the PDF value at `x = 45`, you can use:
+
+- `=NORM.DIST(45,40,5,FALSE)` which gives `approx. 0.0484`
+
+Practical interpretation:
+This means delivery times are concentrated around the average, and most deliveries fall within a fairly predictable window. A manager can use this to plan staffing, customer expectations, and service targets.
+
+##### How you can use probability distributions
+
+You can use distributions to:
+
+1. describe the likely shape of uncertain data
+2. decide which model best fits the type of outcome you are studying
+3. estimate how likely a certain value or range is
+4. support forecasting, inference, and decision-making under uncertainty
+
+For example:
+
+- use a **normal distribution** when values cluster around an average
+- use a **binomial distribution** when the result is success/failure repeated many times
+- use a **Poisson distribution** when you count how often events happen in a fixed interval
+
+##### Beginner exam use
+
+If the question asks about probability distributions, you do not need to explain everything. A strong short answer can say:
+
+`Probability distributions describe how likely different outcomes are for a random variable. They help analysts model uncertainty, understand data behaviour, and make predictions. A normal distribution is a symmetric bell-shaped distribution defined by its mean and standard deviation.`
+
+##### Conditional probability
+
+Conditional probability measures the probability of one event happening **given that** another event has already happened.
+
+Formula:
+
+`P(A|B) = P(A and B) / P(B)`
+
+Simple example:
+
+If we want the probability that a customer buys Product A **given that** they already bought Product B, conditional probability is the right idea.
+
+Why this matters:
+It helps analysts work with context-dependent outcomes instead of treating every event as fully independent.
+
+##### Bayes' theorem
+
+Bayes' theorem helps us update a probability when new evidence becomes available.
+
+This is powerful because analysis often changes when new information arrives. For example:
+
+- a medical test result changes the estimated probability of a disease
+- a new customer action changes the estimated probability of churn
+- a new operational signal changes the estimated probability of failure
+
+Why this matters:
+Bayes' theorem teaches that probability is not always fixed. It can be revised when better evidence appears.
+
+##### Statistical inference
+
+Probability theory is the foundation of **statistical inference**, which means using a sample to make conclusions about a wider population.
+
+This is why ideas such as:
+
+- **hypothesis testing**
+- **confidence intervals**
+- **significance**
+
+depend on probability. They help analysts quantify uncertainty and judge how reliable the result is.
+
+Why this matters:
+Without probability, we could describe sample data, but we would struggle to justify what it suggests about the larger population.
+
+##### Monte Carlo simulations
+
+Monte Carlo simulation uses repeated random sampling to estimate how a complex system might behave.
+
+This is useful when:
+
+- the system is too complicated for a simple formula
+- many uncertain inputs affect the outcome
+- we want to test many possible future scenarios
+
+Why this matters:
+Monte Carlo methods help analysts explore uncertainty, risk, and possible ranges of outcomes.
+
+##### How you can use this
+
+If you are new to probability, focus first on these practical uses:
+
+1. use basic probability to express how likely an event is
+2. use conditional probability when the outcome depends on prior information
+3. use distributions to describe what kind of random behaviour the data seems to follow
+4. use inference to judge whether results are reliable
+5. use Monte Carlo ideas when a problem has many uncertain moving parts
+
+You do not need to master everything at once. The main skill is learning what kind of question probability helps you answer.
+
+##### Excel and Google Sheets probability tools
+
+| Task | Formula or tool |
+|------|------------------|
+| Random number between 0 and 1 | `=RAND()` |
+| Random whole number in a range | `=RANDBETWEEN(1,6)` |
+| Normal distribution | `=NORM.DIST(...)` |
+| Binomial probability | `=BINOM.DIST(...)` |
+| Poisson probability | `=POISSON.DIST(...)` |
+
+Exam use:
+You do not always need to calculate a complex probability in an exam, but it is useful to recognize which spreadsheet tools support random sampling and common distributions.
+
+##### How to use probability theory in an exam
+
+If the task is conceptual, answer in this order:
+
+1. define probability theory as the study of uncertainty and likelihood
+2. explain why it matters in data analysis
+3. name the concept asked for, such as conditional probability or Bayes' theorem
+4. explain what it helps the analyst do
+5. connect it to a practical scenario
+
+If the task is applied, add:
+
+6. the formula, distribution, or spreadsheet tool used
+7. the interpretation of the result
+
+That gives you a clear and exam-ready structure.
+
+#### Hypothesis Testing and Significance Levels
+
+Hypothesis testing is a core statistical process that helps us make assumptions and draw inferences about a wider population based on sample data. It works by setting up two competing statements:
+
+- the **null hypothesis** `H0`
+- the **alternative hypothesis** `Ha`
+
+The null hypothesis is the default position. It usually says that there is **no significant difference**, **no effect**, or **no association**. The alternative hypothesis says that there **is** a meaningful difference, effect, or association that we want to investigate.
+
+If you are new to this topic, the safest short explanation is:
+
+`Hypothesis testing helps us decide whether the evidence in sample data is strong enough to reject a default claim.`
+
+##### The standard process
+
+To conduct a hypothesis test, use this structure:
+
+1. **State the hypotheses**
+   Write the null hypothesis and the alternative hypothesis clearly.
+2. **Choose a significance level** `alpha` `(α)`
+   This is the threshold for deciding when evidence is strong enough to reject `H0`.
+3. **Select the test statistic**
+   The correct statistic depends on the type of data and the question being asked.
+4. **Determine the critical region or decision rule**
+   Decide whether you will compare the test statistic to a critical value or compare the p-value to `α`.
+5. **Calculate the test statistic**
+   Use the sample data to compute the test result.
+6. **Make the decision**
+   Reject `H0` or fail to reject `H0`.
+7. **State the conclusion**
+   Explain what the result means in context.
+
+##### Significance level `(α)`
+
+The significance level `α` is the cut-off for rejecting the null hypothesis.
+
+Common values are:
+
+- `0.05` `(5%)`
+- `0.01` `(1%)`
+
+Smaller `α` means we are being more cautious about rejecting `H0`.
+
+Why this matters:
+If we reject the null hypothesis when it is actually true, we make a **Type I error**. The significance level controls how willing we are to take that risk.
+
+Another way to think about it is this:
+
+- a **higher** significance level makes it easier to reject `H0`, which increases the risk of **Type I errors**
+- a **lower** significance level makes it harder to reject `H0`, which lowers the risk of **Type I errors** but increases the risk of **Type II errors**
+
+Type II error means failing to reject the null hypothesis when it is actually false.
+
+So there is always a balance:
+
+- stricter significance reduces false positives
+- looser significance reduces false negatives
+
+The best choice depends on the context and on the consequences of making each type of error.
+
+##### Common test statistics
+
+| Test statistic | Typical use |
+|---------------|-------------|
+| **t-statistic** | Means and average differences, especially when population standard deviation is unknown |
+| **chi-square statistic** | Categorical variables, counts, frequencies, or goodness-of-fit problems |
+| **f-statistic** | Variance comparisons and ANOVA-type questions |
+
+##### The safest decision rule
+
+Many exam questions become easier if you remember this rule:
+
+- if `p-value < α`, reject `H0`
+- if `p-value >= α`, fail to reject `H0`
+
+Very important exam wording:
+
+- say **fail to reject the null hypothesis**
+- do **not** say **accept the null hypothesis** unless the course specifically teaches that wording
+
+Also remember:
+Rejecting `H0` does not prove with absolute certainty that `Ha` is true. It means the evidence supports `Ha` more strongly than `H0`.
+
+##### Statistical significance versus practical significance
+
+This distinction is very important in exams and in real analysis.
+
+- **Statistical significance** means the evidence suggests that the observed difference or relationship is unlikely to be due to chance alone.
+- **Practical significance** means the size or importance of that difference actually matters in a real-world setting.
+
+For example, a result can be statistically significant but still too small to matter in practice. A business may find a measurable improvement, but if the improvement is tiny, expensive, or operationally unimportant, it may not justify action.
+
+That is why strong analysts do not stop at:
+
+`The result is statistically significant.`
+
+They also ask:
+
+- is the effect large enough to matter?
+- does it change a decision?
+- is it worth acting on?
+
+##### What data you need for an exam-relevant hypothesis test
+
+If you want the exam resolver to solve a hypothesis-testing case clearly, you usually need:
+
+1. the research question
+2. the null hypothesis and alternative hypothesis
+3. the significance level `α`
+4. the sample size and sample data, or sample summary values
+5. the correct test type
+6. either the test statistic, the p-value, or enough information to calculate them
+
+Without those pieces, the answer becomes incomplete.
+
+##### Exam-relevant case
+
+A training manager wants to know whether a new support-course has improved average test performance.
+
+Known information:
+
+- historical average score = `70`
+- sample of new students after the course has an average score of `75`
+- significance level `α = 0.05`
+
+Resolver-style answer:
+
+- `H0`: the course has not improved the average score significantly
+- `Ha`: the course has improved the average score significantly
+- choose a suitable mean-based test such as a **t-test** if population standard deviation is unknown
+- compare the p-value to `0.05`
+- if `p-value < 0.05`, reject `H0`
+- conclude that the sample provides evidence that the course improved average performance
+
+Practical meaning:
+This helps the manager decide whether the new course should be kept, expanded, or reviewed further.
+
+##### Excel and Google Sheets help
+
+| Task | Formula or tool |
+|------|------------------|
+| Two-sample t-test p-value | `=T.TEST(range1,range2,2,2)` |
+| Chi-square comparison | `=CHISQ.TEST(actual_range,expected_range)` |
+| Z-test style workflow | `=Z.TEST(...)` where available |
+
+Exam use:
+Even if the exam is mostly theoretical, it is useful to recognize which spreadsheet tools support mean tests, categorical tests, and p-value interpretation.
+
+##### How to use hypothesis testing in an exam
+
+If the task is conceptual, answer in this order:
+
+1. define hypothesis testing
+2. define `H0` and `Ha`
+3. explain what `α` means
+4. explain the decision rule
+5. explain how the conclusion should be written
+
+If the task is applied, add:
+
+6. the test type
+7. the p-value or test statistic
+8. the final conclusion in context
+
+If possible, finish with one more line:
+
+9. explain whether the result is only statistically significant or also practically significant
+
+This gives you a clear, safe, and exam-ready structure.
+
+#### How to Perform Basic Statistical Tests
+
+As data analysts, it is important to understand some basic statistical tests, especially **t-tests** and **chi-square tests**. These two tools serve different purposes, but both are central to statistical inference and evidence-based decision-making.
+
+The easiest way to remember the difference is:
+
+- **t-tests** are mainly for comparing **means**
+- **chi-square tests** are mainly for working with **categorical data, frequencies, and associations**
+
+##### The importance of t-tests
+
+###### Comparison of means
+
+T-tests are often used to compare the means of two groups. They help us judge whether the observed difference between the groups is likely to be meaningful or whether it may simply be due to random variation.
+
+###### Hypothesis testing
+
+T-tests are one of the most common tools used in hypothesis testing. They allow analysts to test claims about average values in populations using sample data.
+
+###### Experimental research
+
+T-tests are widely used in experiments when we want to compare a control group and an intervention group. This helps us evaluate whether a treatment, training program, or new method appears to have made a significant difference.
+
+###### Practical applications
+
+T-tests are used in medicine, psychology, education, social sciences, and business. In business settings, they can be used to compare average sales, average completion times, average customer scores, or average performance between two groups.
+
+##### The importance of chi-square tests
+
+###### Association testing
+
+Chi-square tests are used to examine whether two categorical variables appear to be associated. They help analysts identify whether patterns in the data suggest a relationship between categories.
+
+###### Independence testing
+
+Chi-square tests for independence help us investigate whether two categorical variables are independent or whether there may be a link between them in the wider population.
+
+###### Goodness-of-fit testing
+
+Chi-square tests can also be used to compare observed frequencies with expected frequencies. This is useful when checking whether real data fits an assumed distribution or expected pattern.
+
+###### Non-parametric testing
+
+Chi-square tests are non-parametric, which means they do not require the same kind of normal-distribution assumptions that some mean-based tests do. They are especially useful when the data is nominal or ordinal.
+
+##### Simple decision guide
+
+Use this fast rule in an exam:
+
+| Question type | Strong first choice |
+|--------------|---------------------|
+| Are the **means** of two groups different? | **t-test** |
+| Are two **categorical variables** associated? | **chi-square test** |
+| Do observed category counts match expected counts? | **chi-square goodness-of-fit** |
+
+##### What data you need
+
+For a **t-test**, you usually need:
+
+- two groups or one sample compared to a known value
+- numerical data
+- sample size
+- sample mean or raw observations
+- a significance level `α`
+
+For a **chi-square test**, you usually need:
+
+- categorical data
+- observed counts or a contingency table
+- expected counts if it is a goodness-of-fit problem
+- a significance level `α`
+
+##### Spreadsheet help
+
+| Task | Formula or tool |
+|------|------------------|
+| Compare two means | `=T.TEST(range1,range2,2,2)` |
+| Chi-square association / fit | `=CHISQ.TEST(actual_range,expected_range)` |
+
+Exam use:
+Even if the question is conceptual, it is useful to recognize that spreadsheets can perform these tests and return p-values that support the final decision.
+
+##### Exam-relevant mini-cases
+
+T-test case:
+
+A company wants to know whether a new onboarding method changed the average completion score of new staff. Because the problem is about comparing average scores, a **t-test** is the stronger choice.
+
+Chi-square case:
+
+A retailer wants to know whether purchase category is related to customer membership type. Because both variables are categorical, a **chi-square test** is the stronger choice.
+
+##### How to use this in an exam
+
+If you are unsure which test fits, ask:
+
+1. am I comparing averages or means?
+2. or am I comparing counts, categories, or associations?
+
+If it is about averages, think **t-test**.
+If it is about categories or frequencies, think **chi-square**.
+
+That one distinction solves many exam questions very quickly.
+
+#### Statistical Techniques
+
+In previous lessons, we covered the basics of datasets, spreadsheets, and their features, so we do not need to repeat that here. However, before moving on to later explanations and examples, it is useful to add a few more foundational statistical techniques to the toolkit.
+
+These techniques are not meant to be fully exhaustive here. The goal is to build a stronger base that can be expanded in future lessons, practical spreadsheet tasks, and exam questions.
+
+We will cover **linear regression** as part of these modules. We will **not** cover **k-nearest neighbours** in depth here, even though it is often mentioned as a non-parametric supervised learning method for classification and regression. For this course, the important point is that model-based ideas may appear in cleaning or estimation, but the spreadsheet-oriented focus stays on the methods we are actually studying.
+
+##### How to handle missing values and outliers
+
+Data cleaning is a vital step in preprocessing because poor-quality data can weaken the reliability of the whole analysis. Two of the most common issues are:
+
+- **missing values**
+- **outliers**
+
+If they are handled badly, the analysis may become misleading. If they are handled carefully, the data becomes more trustworthy and easier to interpret.
+
+##### Handling missing values
+
+Missing values happen when information is absent, incomplete, or not recorded.
+
+Common approaches include:
+
+| Technique | What it means | When it may be useful |
+|-----------|---------------|-----------------------|
+| **Deleting rows or columns** | Remove rows or columns that contain missing values | Useful when only a very small part of the dataset is affected and removal is unlikely to distort the analysis |
+| **Mean or median imputation** | Replace a missing value with the mean or median of the variable | Useful for simple numerical datasets when missing values are assumed to be roughly around the central tendency |
+| **Mode imputation** | Replace a missing categorical value with the most frequent category | Useful for simple categorical fields |
+| **Forward fill / backward fill** | Use nearby values in ordered or time-based data | Useful in time series or sequential records |
+| **Model-based imputation** | Estimate missing values from other features using a statistical model | Useful when relationships between variables are strong enough to support estimation; in this course, linear regression is the more relevant example |
+| **Flagging missingness** | Keep a note or extra variable showing which values were missing | Useful when missingness itself may matter analytically |
+
+Exam use:
+Do not just say "fill in the missing values". Explain which method is used and why it is appropriate for the data type and task.
+
+Spreadsheet examples:
+
+- mean imputation: `=IF(B2="",AVERAGE(B:B),B2)`
+- median imputation: `=IF(B2="",MEDIAN(B:B),B2)`
+- mode imputation: `Excel: =MODE.SNGL(B:B)` / `Google Sheets: =MODE(B:B)`
+- forward fill idea: `=IF(B3="",B2,B3)`
+
+Important course note:
+Model-based imputation can be done in many advanced settings, but for this module the safer exam-relevant reference is **linear regression**, not **k-nearest neighbours**.
+
+##### Data validation and formatting techniques
+
+Data cleaning is not only about blanks and extremes. It also includes making sure the structure and format of the data are reliable.
+
+Common approaches include:
+
+| Technique | What it means | Why it matters |
+|-----------|---------------|----------------|
+| **Consistency checks** | Identify and correct inconsistent formats or labels across similar fields | Prevents confusion and duplicated categories |
+| **Data type conversion** | Convert values into the correct type, such as text to number or text to date | Makes the data usable for calculation and analysis |
+| **Standardisation** | Bring values or formats to a consistent scale or style | Reduces distortion caused by different units, labels, or scales |
+
+Spreadsheet examples:
+
+- convert text to number: `=VALUE(A2)`
+- convert text to date where possible: `=DATEVALUE(A2)`
+- simple z-score standardisation: `=(B2-$E$2)/$E$3`
+
+Exam use:
+If the task mentions messy labels, mixed types, or different scales, explain these as validation and formatting problems before jumping into later analysis.
+
+##### Handling outliers
+
+Outliers are unusually extreme values that differ clearly from the rest of the dataset. They may represent:
+
+- a real but rare observation
+- a data-entry mistake
+- a measurement error
+- a special event that needs investigation
+
+Common approaches include:
+
+| Technique | What it means | When it may be useful |
+|-----------|---------------|-----------------------|
+| **Investigate first** | Check whether the outlier is real or an error | This should usually be the first step |
+| **Keep and explain** | Retain the value if it reflects a true event | Useful when the rare event is meaningful |
+| **Correct obvious errors** | Fix clearly invalid values | Useful when there is direct evidence of recording mistakes |
+| **Delete with caution** | Remove the outlier only if it is clearly caused by error or measurement problems | Useful when the value is provably invalid, but it should never be the default step |
+| **Capping / flooring** | Replace extreme values with a chosen upper or lower threshold | Useful when you want to limit distortion without fully deleting records |
+| **Winsorisation** | Replace extreme values with the nearest non-outlying threshold values | Useful when reducing the effect of outliers while keeping all observations |
+| **Transformations** | Apply a mathematical transformation such as log or power transformation | Useful when extreme values distort the scale or make the distribution highly skewed |
+| **Flag the value** | Mark the value for later analysis or reporting | Useful when the value is suspicious but should not be deleted immediately |
+| **Remove with justification** | Exclude the outlier if there is a clear reason | Useful only when the removal can be defended analytically |
+
+Exam use:
+A strong answer says that outliers should be investigated before removal. This shows judgement, not just mechanical calculation.
+
+Spreadsheet examples:
+
+- capping / flooring idea: `=MIN(MAX(B2,lower_limit),upper_limit)`
+- simple log transform when valid: `=LN(B2)`
+- z-score flag: `=IF(ABS(C2)>3,"Investigate","Keep")`
+
+Remember:
+The best choice depends on the dataset, the context, and the analytical goal. A cleaning method that is sensible for one dataset may be weak or misleading for another.
+
+##### Why these techniques matter
+
+Handling missing values and outliers well improves:
+
+- data quality
+- reliability of summary statistics
+- trustworthiness of later tests and models
+- quality of the final decision
+
+For example:
+
+- a missing sales value can distort an average if ignored carelessly
+- an extreme wrong entry can distort a mean, regression line, or KPI trend
+
+##### Spreadsheet support
+
+In Excel and Google Sheets, these techniques often use:
+
+- `=COUNTBLANK(...)` to detect missing values
+- filters and sorting to identify blanks or unusual values
+- `=AVERAGE(...)`, `=MEDIAN(...)`, or `=MODE(...)` for simple imputation
+- `=IF(...)` rules to flag suspicious values
+- z-score logic or conditional formatting to identify extreme cases
+
+##### How to use this in an exam
+
+If the task asks how to handle missing values or outliers, answer in this order:
+
+1. identify the data-quality issue
+2. name the technique used
+3. explain why it fits the situation
+4. explain how it affects the reliability of the analysis
+5. state the final action and justify it
+
+That structure makes the answer practical, analytical, and exam-ready.
+
+#### Explanation of Common Statistical Measures
+
+Statistical measures are essential in data analysis because they help us summarize, describe, and interpret a dataset clearly. They are used across research, business analytics, and operational reporting because they reveal central tendency, variability, and distribution.
+
+The most common measures are **mean**, **median**, **mode**, **range**, and **standard deviation**. Understanding them gives analysts a reliable foundation for interpreting data and building stronger KPI analysis.
+
+##### Mean
+
+The **mean**, also called the **average**, is found by summing all values in a dataset and dividing by the number of values. It is used to show the central tendency of the data.
+
+Example:
+
+Dataset: `[4, 6, 8, 10, 12]`
+
+Mean:
+
+`(4 + 6 + 8 + 10 + 12) / 5 = 8`
+
+Exam use:
+Use the mean when you want to show the typical overall level of a dataset, but mention that extreme values can pull it upward or downward.
+
+##### Median
+
+The **median** is the middle value when the dataset is arranged in ascending or descending order.
+
+- If there is an odd number of values, the median is the middle value.
+- If there is an even number of values, the median is the average of the two middle values.
+
+Example 1:
+
+Dataset: `[4, 6, 8, 10, 12]`
+
+Median:
+
+`8`
+
+Example 2:
+
+Dataset: `[4, 6, 8, 10, 12, 14]`
+
+Median:
+
+`(8 + 10) / 2 = 9`
+
+Exam use:
+Use the median when you want a central value that is less affected by outliers. This is often a stronger choice than the mean when the data is skewed.
+
+##### Mode
+
+The **mode** is the value that appears most frequently in a dataset. It shows the most common observation.
+
+Example:
+
+Dataset: `[4, 6, 8, 10, 8, 12, 8]`
+
+Mode:
+
+`8`
+
+Exam use:
+Use the mode when the question asks for the most common result, most frequent category, or repeated value.
+
+##### Range
+
+The **range** is the difference between the highest and lowest values in a dataset. It gives a simple measure of spread.
+
+Example:
+
+Dataset: `[4, 6, 8, 10, 12]`
+
+Range:
+
+`12 - 4 = 8`
+
+Exam use:
+Use the range when you need a quick description of variability, but explain that it only uses the minimum and maximum values and does not describe the full spread in detail.
+
+##### Standard deviation
+
+**Standard deviation** measures how far values typically spread out from the mean. A higher standard deviation means more variability, while a lower standard deviation means the values are closer to the mean.
+
+Example:
+
+Dataset: `[4, 6, 8, 10, 12]`
+
+Step 1:
+Calculate the mean:
+
+`(4 + 6 + 8 + 10 + 12) / 5 = 8`
+
+Step 2:
+Find the difference between each value and the mean:
+
+`(-4, -2, 0, 2, 4)`
+
+Step 3:
+Square each difference:
+
+`(16, 4, 0, 4, 16)`
+
+Step 4:
+Find the mean of the squared differences:
+
+`(16 + 4 + 0 + 4 + 16) / 5 = 8`
+
+Step 5:
+Take the square root:
+
+`sqrt(8) approx. 2.83`
+
+Exam use:
+Standard deviation is useful when you need to explain whether the data is tightly grouped or widely spread. It is stronger than range when you want a fuller measure of variability.
+
+##### Excel and Google Sheets formulas for common measures
+
+| Measure | Formula |
+|---------|---------|
+| **Mean** | `=AVERAGE(B2:B101)` |
+| **Median** | `=MEDIAN(B2:B101)` |
+| **Mode** | `Excel: =MODE.SNGL(B2:B101)` / `Google Sheets: =MODE(B2:B101)` |
+| **Range** | `=MAX(B2:B101)-MIN(B2:B101)` |
+| **Sample standard deviation** | `=STDEV.S(B2:B101)` |
+| **Population standard deviation** | `=STDEV.P(B2:B101)` |
+
+Be careful in exams:
+
+- use `STDEV.S` when the dataset is treated as a sample
+- use `STDEV.P` when the dataset is treated as the full population
+
+##### How to use common statistical measures in an exam
+
+If the question asks you to explain one of these measures, use this order:
+
+1. define the measure clearly
+2. show the formula, calculation, or spreadsheet function
+3. give the numerical result
+4. explain what the result says about the dataset
+5. explain why that measure is useful in that scenario
+
+That turns a basic definition into an exam-ready analytical answer.
+
+#### Activity: Exploring Statistical Measures in Data Analysis
+
+This activity reinforces our understanding of **mean**, **median**, **mode**, **range**, and **standard deviation** by working with three different datasets and linking the results to real-life applications.
+
+Datasets:
+
+- Dataset 1: `[10, 15, 20, 25, 30]`
+- Dataset 2: `[5, 10, 15, 20, 25, 30]`
+- Dataset 3: `[8, 12, 18, 20, 25, 30]`
+
+##### Calculations
+
+###### Mean
+
+- Dataset 1: `(10 + 15 + 20 + 25 + 30) / 5 = 20`
+- Dataset 2: `(5 + 10 + 15 + 20 + 25 + 30) / 6 = 17.5`
+- Dataset 3: `(8 + 12 + 18 + 20 + 25 + 30) / 6 = 18.83` `(`rounded to two decimal places`)`
+
+###### Median
+
+- Dataset 1: `Median = 20`
+- Dataset 2: `Median = (15 + 20) / 2 = 17.5`
+- Dataset 3: `Median = (18 + 20) / 2 = 19`
+
+###### Mode
+
+- Dataset 1: `Mode = No mode` `(no value appears more than once)`
+- Dataset 2: `Mode = No mode` `(no value appears more than once)`
+- Dataset 3: `Mode = No mode` `(no value appears more than once)`
+
+###### Range
+
+- Dataset 1: `Range = 30 - 10 = 20`
+- Dataset 2: `Range = 30 - 5 = 25`
+- Dataset 3: `Range = 30 - 8 = 22`
+
+###### Standard deviation
+
+For standard deviation, follow these steps:
+
+1. calculate the mean
+2. calculate the difference between each value and the mean
+3. square each difference
+4. calculate the mean of the squared differences
+5. take the square root of that value
+
+Dataset 1:
+
+Differences:
+
+`(10 - 20) = -10, (15 - 20) = -5, (20 - 20) = 0, (25 - 20) = 5, (30 - 20) = 10`
+
+Squared differences:
+
+`100, 25, 0, 25, 100`
+
+Mean of squared differences:
+
+`(100 + 25 + 0 + 25 + 100) / 5 = 50`
+
+Standard deviation:
+
+`sqrt(50) approx. 7.07`
+
+Similarly, calculate the standard deviation for Dataset 2 and Dataset 3.
+
+If you need the numerical approximations:
+
+- Dataset 2: `approx. 8.54`
+- Dataset 3: `approx. 7.40`
+
+##### Real-life scenario
+
+Understanding these statistical measures is highly beneficial in real-life settings such as **business** and **research**.
+
+For example:
+
+- companies can analyze sales data to identify average sales `(mean)`
+- companies can determine the most frequently sold product `(mode)`
+- companies can understand the variability in sales `(standard deviation)`
+- researchers can analyze survey responses to identify central trends `(mean and median)`
+- researchers can understand response patterns `(mode)`
+- researchers can assess data variability `(standard deviation)`
+
+##### Utilizing statistical measures
+
+Businesses and researchers can use these measures to gain insights and make informed decisions.
+
+- **Mean** gives an apparent average and shows central tendency.
+- **Median** helps reduce the influence of outliers and can give a more representative centre.
+- **Mode** highlights the most frequent occurrence and can reveal popular trends or preferences.
+- **Range** helps assess spread by showing the distance between the lowest and highest values.
+- **Standard deviation** quantifies dispersion and helps measure consistency or variability.
+
+In summary, statistical measures are essential tools in data analysis because they help businesses and researchers understand data patterns, make informed decisions, and gain valuable insight into different practical situations.
+
+##### How to write this in an exam
+
+If this appears in an exam, do not only list numbers. Write the answer in this order:
+
+1. state each measure
+2. show the calculation or spreadsheet formula
+3. give the result
+4. compare the datasets
+5. explain what the results mean in a real scenario
+
+A strong concluding line would be:
+
+`These measures show not only the central values of the datasets, but also how much the data varies, which helps analysts and decision-makers interpret performance more accurately.`
+
+##### How to reuse this with other datasets in another exam task
+
+If the examiner changes the numbers, the method stays the same. You only replace the dataset values and rerun the same structure.
+
+Use this swap-in pattern:
+
+1. write the new dataset clearly
+2. sort it if you need the median
+3. calculate mean
+4. identify mode or state that there is no mode
+5. calculate range with `max - min`
+6. calculate standard deviation using the method required in the question
+7. interpret the result in words
+8. compare it to the other dataset if the task includes more than one list
+
+##### Excel and Google Sheets swap-in template
+
+If a new exam task gives you different values, place them in a column such as `B2:B8` and use:
+
+| Goal | Formula |
+|------|---------|
+| Mean | `=AVERAGE(B2:B8)` |
+| Median | `=MEDIAN(B2:B8)` |
+| Mode | `Excel: =MODE.SNGL(B2:B8)` / `Google Sheets: =MODE(B2:B8)` |
+| Range | `=MAX(B2:B8)-MIN(B2:B8)` |
+| Sample SD | `=STDEV.S(B2:B8)` |
+| Population SD | `=STDEV.P(B2:B8)` |
+
+If the task contains several datasets, place them in separate columns, for example:
+
+- Dataset A in `B2:B8`
+- Dataset B in `C2:C8`
+- Dataset C in `D2:D8`
+
+Then repeat the same formulas column by column.
+
+##### Why the exam resolver helps here
+
+The exam resolver helps because it gives you a repeatable answer pattern:
+
+- calculate
+- compare
+- interpret
+- connect to a real context
+
+That means even if the numbers change, your answer structure does not collapse.
+
+#### The Task
+
+##### Question 1
+
+Please work along as we go through more examples of the basic tenets covered above.
+
+Use the dataset:
+
+`[12, 15, 17, 19, 22, 24, 26, 28, 30, 33]`
+
+Calculate:
+
+- the mean and interpret it
+- the median and interpret it
+- the mode and interpret it
+- the range and interpret it
+- the standard deviation by following these steps:
+  - calculate the mean
+  - calculate the difference between every value and the mean
+  - square each difference
+  - calculate the mean of the squared differences
+  - calculate the square root of that value
+  - interpret the result
+
+##### Solution 1
+
+###### Mean
+
+To calculate the mean, sum all values and divide by the number of values:
+
+`(12 + 15 + 17 + 19 + 22 + 24 + 26 + 28 + 30 + 33) / 10 = 226 / 10 = 22.6`
+
+Interpretation:
+The **mean** of the dataset is `22.6`, which gives the average level of the values.
+
+###### Median
+
+The dataset is already sorted:
+
+`[12, 15, 17, 19, 22, 24, 26, 28, 30, 33]`
+
+There are `10` values, so the median is the average of the `5th` and `6th` values:
+
+`(22 + 24) / 2 = 23`
+
+Interpretation:
+The **median** is `23`, which shows the middle point of the dataset.
+
+###### Mode
+
+There are no repeated values in the dataset.
+
+Interpretation:
+There is **no mode** in this dataset.
+
+###### Range
+
+Range = maximum - minimum
+
+`33 - 12 = 21`
+
+Interpretation:
+The **range** is `21`, which shows the spread between the smallest and largest values.
+
+###### Standard deviation `(population)`
+
+Step A. Mean:
+
+`22.6`
+
+Step B. Differences from the mean:
+
+`[-10.6, -7.6, -5.6, -3.6, -0.6, 1.4, 3.4, 5.4, 7.4, 10.4]`
+
+Step C. Squared differences:
+
+`[112.36, 57.76, 31.36, 12.96, 0.36, 1.96, 11.56, 29.16, 54.76, 108.16]`
+
+Step D. Mean of squared differences:
+
+`420.4 / 10 = 42.04`
+
+Step E. Square root of the variance:
+
+`sqrt(42.04) approx. 6.48`
+
+Interpretation:
+The **population standard deviation** is approximately `6.48`, which means the values typically vary by about `6.48` units around the mean.
+
+Spreadsheet note:
+Because this worked solution treats the dataset as the full population, the spreadsheet version would be:
+
+`=STDEV.P(B2:B11)`
+
+##### Question 2
+
+Create three datasets with different values and lengths, for example:
+
+- Dataset 1: `[15, 20, 25, 30, 35]`
+- Dataset 2: `[10, 20, 30, 40, 50, 60]`
+- Dataset 3: `[12, 15, 18, 21, 24, 27, 30]`
+
+Calculate each dataset's:
+
+- mean
+- median
+- mode
+- range
+- standard deviation
+
+##### Solution 2
+
+###### Dataset 1: `[15, 20, 25, 30, 35]`
+
+- Mean = `(15 + 20 + 25 + 30 + 35) / 5 = 25`
+- Median = `25`
+- Mode = `No mode`
+- Range = `35 - 15 = 20`
+
+Population standard deviation:
+
+- Differences: `[-10, -5, 0, 5, 10]`
+- Squared differences: `[100, 25, 0, 25, 100]`
+- Sum of squared differences: `250`
+- Variance: `250 / 5 = 50`
+- Standard deviation: `sqrt(50) approx. 7.07`
+
+Interpretation:
+Dataset 1 is centred around `25` and has a moderate spread.
+
+###### Dataset 2: `[10, 20, 30, 40, 50, 60]`
+
+- Mean = `210 / 6 = 35`
+- Median = `(30 + 40) / 2 = 35`
+- Mode = `No mode`
+- Range = `60 - 10 = 50`
+
+Population standard deviation:
+
+- Differences: `[-25, -15, -5, 5, 15, 25]`
+- Squared differences: `[625, 225, 25, 25, 225, 625]`
+- Sum of squared differences: `1750`
+- Variance: `1750 / 6 approx. 291.67`
+- Standard deviation: `sqrt(291.67) approx. 17.08`
+
+Interpretation:
+Dataset 2 has the widest spread of the three example datasets.
+
+###### Dataset 3: `[12, 15, 18, 21, 24, 27, 30]`
+
+- Mean = `147 / 7 = 21`
+- Median = `21`
+- Mode = `No mode`
+- Range = `30 - 12 = 18`
+
+Population standard deviation:
+
+- Differences: `[-9, -6, -3, 0, 3, 6, 9]`
+- Squared differences: `[81, 36, 9, 0, 9, 36, 81]`
+- Sum of squared differences: `252`
+- Variance: `252 / 7 = 36`
+- Standard deviation: `sqrt(36) = 6`
+
+Interpretation:
+Dataset 3 is centred at `21` and is less spread out than Dataset 2.
+
+##### Comparison of the three datasets
+
+- Dataset 1 has mean and median `25`, with moderate spread
+- Dataset 2 has mean and median `35`, with the largest spread
+- Dataset 3 has mean and median `21`, with the smallest standard deviation of the three
+- none of the datasets has a mode
+
+This type of comparison is useful in exams because it shows that you are not only calculating values, but also interpreting the differences between datasets.
+
+##### How to use this knowledge in an exam
+
+If you get this kind of task in an exam, do not only list answers. Use this order:
+
+1. write the dataset clearly
+2. calculate mean
+3. calculate median
+4. identify mode or say there is no mode
+5. calculate range
+6. calculate standard deviation step by step
+7. interpret each value
+8. compare datasets if more than one dataset is given
+9. end with what the results say about spread, centre, or consistency
+
+That structure makes the answer stronger because it shows:
+
+- correct method
+- clear working
+- interpretation
+- comparison
+- exam-ready reasoning
+
+##### Exam template you can reuse
+
+Use this template whenever the examiner changes the numbers:
+
+`Dataset: [ ... ]`
+
+`Mean = sum of values / number of values = ...`
+
+`Interpretation: The mean shows ...`
+
+`Median = ...`
+
+`Interpretation: The median shows ...`
+
+`Mode = ... / No mode`
+
+`Interpretation: The mode shows ...`
+
+`Range = maximum - minimum = ...`
+
+`Interpretation: The range shows ...`
+
+`Standard deviation:`
+
+`1. Mean = ...`
+
+`2. Differences from the mean = [...]`
+
+`3. Squared differences = [...]`
+
+`4. Variance = sum of squared differences / n or / (n-1) = ...`
+
+`5. Standard deviation = sqrt(variance) = ...`
+
+`Interpretation: The standard deviation shows ...`
+
+`Final comparison or conclusion:`
+
+`These results show the central value of the data, the spread of the data, and whether the dataset appears tightly grouped or widely dispersed.`
+
+##### Spreadsheet version for exam use
+
+If spreadsheet support is allowed, place the dataset in `B2:B11` and use:
+
+| Goal | Formula |
+|------|---------|
+| Mean | `=AVERAGE(B2:B11)` |
+| Median | `=MEDIAN(B2:B11)` |
+| Mode | `Excel: =MODE.SNGL(B2:B11)` / `Google Sheets: =MODE(B2:B11)` |
+| Range | `=MAX(B2:B11)-MIN(B2:B11)` |
+| Population SD | `=STDEV.P(B2:B11)` |
+| Sample SD | `=STDEV.S(B2:B11)` |
+
+Exam note:
+If the task tells you to divide by the total number of values, it is using the **population** version. If it treats the dataset as a sample, use the **sample** version instead.
+
+#### Excel and Google Sheets KPI templates
+
+Because this course is spreadsheet-based, KPI thinking should also be practical. Keep simple KPI templates ready in both **Excel** and **Google Sheets**.
+
+| KPI example | Formula idea | What it tells you |
+|-------------|--------------|-------------------|
+| **Average score / average sales** | `=AVERAGE(B2:B101)` | Typical level of performance |
+| **Completion rate** | `=COUNTIF(C2:C101,"Complete")/COUNTA(C2:C101)` | Share of tasks or cases completed |
+| **On-time rate** | `=COUNTIF(D2:D101,"On time")/COUNTA(D2:D101)` | Delivery or service reliability |
+| **Growth rate** | `=(B3-B2)/B2` | Change from one period to the next |
+| **Average per category** | `=AVERAGEIF(A2:A101,"Team A",B2:B101)` | Performance for one selected group |
+| **Target check** | `=IF(B2>=C2,"Target met","Below target")` | Whether a KPI meets its benchmark |
+
+These templates are useful because they help you move from:
+
+- raw numerical values
+- a calculated KPI
+- comparison against a target or benchmark
+- practical interpretation
+- exam-ready explanation
+
+#### Using spreadsheet tools as analytical tools
+
+In this course, spreadsheets are not treated as simple storage spaces. They are used as practical analytical environments where candidates can:
+
+- summarise data
+- compare values
+- detect patterns
+- reduce errors
+- create decision-support evidence
+
+This means the candidate must move beyond "which formula works?" and instead ask:
+
+- what is the analytical question?
+- which built-in tool or function helps answer it?
+- what does the output mean?
+
+#### Common built-in statistical uses
+
+Built-in spreadsheet tools can be used for:
+
+- **mean, median, mode, range, variance, and standard deviation**
+- **histograms** and other distribution summaries
+- **correlation** and **covariance**
+- **regression**
+- **ANOVA**
+- **z-score calculations**
+
+Each of these should be seen as part of a wider decision workflow.
+
+#### Core Excel and Google Sheets formulas
+
+Many of the most useful formulas in this course are the same in **Excel** and **Google Sheets**.
+
+| Task | Excel / Google Sheets formula or workflow |
+|------|-------------------------------------------|
+| **Mean** | `=AVERAGE(B2:B101)` |
+| **Median** | `=MEDIAN(B2:B101)` |
+| **Mode** | `Excel: =MODE.SNGL(B2:B101)` / `Google Sheets: =MODE(B2:B101)` |
+| **Range** | `=MAX(B2:B101)-MIN(B2:B101)` |
+| **Sample standard deviation** | `=STDEV.S(B2:B101)` |
+| **Population standard deviation** | `=STDEV.P(B2:B101)` |
+| **Sample variance** | `=VAR.S(B2:B101)` |
+| **Correlation** | `=CORREL(B2:B101,C2:C101)` |
+| **Covariance** | `=COVARIANCE.S(B2:B101,C2:C101)` |
+| **Slope for simple regression** | `=SLOPE(C2:C101,B2:B101)` |
+| **Intercept for simple regression** | `=INTERCEPT(C2:C101,B2:B101)` |
+| **Forecast from a known x-value** | `=FORECAST.LINEAR(E2,C2:C101,B2:B101)` |
+| **Histogram** | Insert chart and choose **Histogram** |
+| **ANOVA** | Use **Data Analysis ToolPak** in Excel or a dedicated statistical workflow in Google Sheets |
+
+The exam value of these formulas is not only that they calculate a number. It is that they let you explain:
+
+- what is being measured
+- which range was used
+- what the output means
+- what decision the output supports
+
+#### Excel and Google Sheets templates ready
+
+For this lesson, it is useful to keep simple templates ready in both **Excel** and **Google Sheets** so you can quickly move from:
+
+- raw data
+- built-in formulas
+- summary output
+- interpretation
+- exam explanation
+
+#### Mini spreadsheet template
+
+Use a simple structure like this when you want a clean exam-ready setup:
+
+| Cell or column | Purpose | Example |
+|----------------|---------|---------|
+| `B2:B101` | Main numeric variable | Waiting time, revenue, or score values |
+| `C2:C101` | Second variable | Satisfaction, fuel use, or output values |
+| `E2` | Mean of B | `=AVERAGE(B2:B101)` |
+| `E3` | Median of B | `=MEDIAN(B2:B101)` |
+| `E4` | Mode of B | `Excel: =MODE.SNGL(B2:B101)` / `Google Sheets: =MODE(B2:B101)` |
+| `E5` | Range of B | `=MAX(B2:B101)-MIN(B2:B101)` |
+| `E6` | SD of B | `=STDEV.S(B2:B101)` |
+| `E7` | Correlation B vs C | `=CORREL(B2:B101,C2:C101)` |
+| `E8` | Slope for B -> C | `=SLOPE(C2:C101,B2:B101)` |
+
+This kind of layout works well in both Excel and Google Sheets because it separates:
+
+- raw data
+- summary calculations
+- interpretation notes
+
+#### From calculation to heuristic
+
+A heuristic is a useful signal or rule that helps guide judgement.
+
+In this course, the point of the spreadsheet calculation is often to produce a practical insight such as:
+
+- whether the data looks stable or highly variable
+- whether two variables appear related
+- whether one group differs meaningfully from another
+- whether a result looks unusual enough to investigate further
+
+#### Spreadsheet workflow thinking
+
+A strong statistical spreadsheet workflow usually looks like this:
+
+`organised data -> chosen statistical tool -> result -> interpretation -> decision`
+
+That workflow is one of the most important habits to build for this course.
+
+#### Explanation of data visualisation methods
+
+Data visualisation methods are powerful tools because they turn raw numbers into shapes, patterns, and comparisons that are easier to understand. In statistical analysis, visualisation helps us detect:
+
+- distribution
+- spread
+- relationships
+- clusters
+- unusual values or outliers
+
+That means visualisation is not just for presentation. It is also part of the analysis itself.
+
+##### Outlier definition
+
+An **outlier** is an observation or data point that differs markedly from the rest of the dataset. It lies an unusually large distance from other similar values.
+
+Outliers may appear because of:
+
+- measurement errors
+- data-entry errors
+- unusual but real behaviour in the data
+- rare events that deserve further investigation
+
+Exam use:
+If the task mentions unusual values, do not immediately say the value must be deleted. First explain that it should be checked to decide whether it is an error, a rare but real observation, or a value that needs to be flagged for follow-up.
+
+##### Histograms
+
+A **histogram** is used to show the distribution of a numeric dataset. It uses bars, where each bar represents the frequency or count of values within a certain interval, also called a bin.
+
+Histograms help us understand:
+
+- the shape of the distribution
+- the centre of the data
+- the spread of the data
+- whether the data may be skewed
+- whether there may be possible outliers
+
+Exam use:
+Choose a histogram when the task asks you to describe how one continuous numeric variable is distributed.
+
+Spreadsheet use:
+
+- Excel: insert chart -> `Histogram`
+- Google Sheets: create a chart and choose a histogram-style distribution chart where available, or build bin counts and chart them as columns
+
+##### Scatter plots
+
+A **scatter plot** shows the relationship between two numerical variables. Each point on the graph represents one paired observation.
+
+A scatter plot is usually drawn on a **Cartesian plane**, which is a two-dimensional plane with:
+
+- an **x-axis** for the horizontal direction
+- a **y-axis** for the vertical direction
+
+These axes intersect at the origin `(0,0)`. Each observation is shown as an ordered pair `(x, y)`, where the `x` value shows the horizontal position and the `y` value shows the vertical position. This makes it easier to describe the position of points and the relationship between variables.
+
+Scatter plots help us identify:
+
+- positive relationships
+- negative relationships
+- weak or strong association
+- clusters
+- possible outliers
+
+Exam use:
+Choose a scatter plot when the task asks about association, relationship, or trend between two numerical variables. It is especially useful before talking about correlation or regression.
+
+Spreadsheet use:
+
+- place one variable on the x-axis
+- place the second variable on the y-axis
+- insert a scatter chart
+- if useful, add a trendline for visual support
+
+##### Box plots
+
+A **box plot**, also called a **box-and-whisker plot**, summarizes a dataset using:
+
+- the minimum
+- the first quartile `(Q1)`
+- the median
+- the third quartile `(Q3)`
+- the maximum
+
+It is called a **box-and-whisker plot** because:
+
+- the **box** shows the middle `50%` of the data
+- the **line inside the box** shows the median
+- the **whiskers** extend outward to show the wider range of the data
+
+This makes the box plot a compact way to summarize the distribution of a dataset without listing every value individually.
+
+Box plots are useful because they show:
+
+- spread
+- central location
+- skewness
+- possible outliers
+
+They are especially helpful when comparing the distribution of several groups side by side.
+
+Exam use:
+Choose a box plot when the task asks you to compare spread, median, quartiles, or outlier presence across one or more groups.
+
+##### Wider note on visualisation in this course
+
+These are only a few examples of data visualisation methods. Many other techniques exist, and each suits different data types and analysis goals.
+
+For this module, visualisation is only covered where it directly supports **Excel** or spreadsheet-based statistical work. Broader visualisation theory is developed more fully in later modules.
+
+##### Which visualisation should I choose?
+
+Use this fast rule:
+
+- **histogram** -> one numeric variable, focus on distribution
+- **scatter plot** -> two numeric variables, focus on relationship
+- **box plot** -> one or more groups, focus on spread, quartiles, and outliers
+
+That simple distinction solves many visualisation questions quickly in exams.
+
+##### Exam-relevant case
+
+A company wants to evaluate customer waiting times at three branches.
+
+- If the analyst wants to see the shape of waiting times at one branch, a **histogram** is a strong choice.
+- If the analyst wants to compare waiting time against customer satisfaction scores, a **scatter plot** is a strong choice.
+- If the analyst wants to compare waiting-time spread across Branch A, Branch B, and Branch C, a **box plot** is a strong choice.
+
+This is exam-relevant because the correct answer is not only the chart name. It is the reason why that chart fits the analytical question better than the alternatives.
+
+##### How to use this in an exam
+
+If the task asks you to explain a visualisation method, answer in this order:
+
+1. name the method
+2. state what kind of data it is used for
+3. explain what it helps the analyst see
+4. connect it to the scenario in the question
+5. if helpful, mention the spreadsheet workflow used to build it
+
+This makes the answer practical, visual, and decision-focused.
+
+#### Regression analysis and its applications in data analysis
+
+**Regression analysis** is a statistical technique used to model the relationship between:
+
+- a **dependent variable** `(the outcome we want to explain or predict)`
+- one or more **independent variables** `(the factors that may influence that outcome)`
+
+Its main purpose is to understand how changes in the independent variable or variables are associated with changes in the dependent variable.
+
+The central goal of regression analysis is to find the **best-fitting mathematical function** that represents the relationship between variables.
+
+##### Independent and dependent variables
+
+In exam language, the **independent variable** is the variable the analyst or researcher treats as the input, explanatory factor, or factor being changed. In a controlled study, this may be the variable intentionally changed or manipulated.
+
+The **dependent variable** is the variable that is measured or observed because it may depend on changes in the independent variable.
+
+Examples:
+
+- study hours -> exam score
+- advertising spend -> sales revenue
+- waiting time -> customer satisfaction
+
+Exam use:
+If the question asks you to identify variables in a regression case, name the factor being used to explain or predict something as the **independent variable**, and name the outcome being explained or predicted as the **dependent variable**.
+
+##### Simple linear regression
+
+In **simple linear regression**, there is:
+
+- one independent variable
+- one dependent variable
+- an assumed linear relationship between them
+
+The model estimates the equation of a straight line that best fits the data. In practical terms, this means the line is chosen to minimize the differences between:
+
+- the observed data points
+- the predicted values on the line
+
+That is why simple linear regression is useful when the relationship can reasonably be described as an upward or downward straight-line trend.
+
+##### Multiple linear regression
+
+**Multiple linear regression** extends the same idea by using:
+
+- one dependent variable
+- two or more independent variables
+
+This allows the analyst to study how several factors may influence the same outcome at the same time.
+
+Instead of estimating one simple line on a flat graph, the model estimates a best-fitting surface, often described mathematically as a **hyperplane** in a higher-dimensional space.
+
+Exam use:
+If the question includes one predictor, talk about **simple linear regression**. If the question includes several explanatory variables affecting one outcome, talk about **multiple linear regression**.
+
+##### Why regression matters
+
+Regression analysis is useful because it helps analysts:
+
+- explain relationships between variables
+- estimate how strongly one variable is associated with another
+- predict future or unknown values
+- support decision-making with evidence rather than guesswork
+
+For example, an analyst may study whether:
+
+- advertising spend helps explain sales
+- waiting time helps explain customer satisfaction
+- study hours help explain exam score
+
+##### Key applications of regression analysis
+
+Regression analysis has several important applications across business, research, and operational settings.
+
+**Predictive modelling**
+
+Regression is often used to predict future or unknown results from known historical data.
+
+Examples:
+
+- predict sales from advertising expenditure
+- estimate housing prices from location, size, and amenities
+- estimate student performance from study time, attendance, and similar factors
+
+**Trend analysis**
+
+Regression can be used to identify and analyse trends over time. This helps the analyst understand the direction and significance of change.
+
+Examples:
+
+- analysing how company revenue changes over several years
+- studying changes in temperature or climate indicators over time
+- checking whether customer demand is increasing or decreasing
+
+**Impact assessment**
+
+Regression helps assess how much one or more variables influence the dependent variable. This is useful when the goal is to understand which factors matter and how strongly they matter.
+
+Examples:
+
+- analysing the impact of price changes on product demand
+- studying the effect of education level on income
+- estimating how waiting time affects customer satisfaction
+
+**Risk assessment**
+
+Regression can help quantify relationships between risk factors and outcomes. That makes it useful when analysts need to estimate how changes in key variables may affect exposure, performance, or uncertainty.
+
+Examples:
+
+- estimating how debt level may relate to default risk
+- studying how delivery delays may affect refund rates
+- evaluating whether changes in process conditions increase operational risk
+
+**Quality control**
+
+Regression can also be used in quality control to analyse how process variables relate to product quality. This helps analysts identify which settings may improve performance and which factors may reduce consistency.
+
+Examples:
+
+- relating machine temperature to defect rate
+- relating processing time to output quality
+- studying whether pressure or speed changes alter product performance
+
+These applications show why regression is used across economics, finance, marketing, social sciences, healthcare, and operations.
+
+##### What data do I need for a basic regression case?
+
+For a simple spreadsheet-based regression task, you usually need:
+
+- one clearly defined **independent variable**
+- one clearly defined **dependent variable**
+- paired numerical observations for both variables
+- enough data points to see whether a relationship may exist
+
+In Excel or Google Sheets, that often means one numeric column for `x` and one numeric column for `y`.
+
+##### Spreadsheet support
+
+Useful spreadsheet formulas include:
+
+| Goal | Formula |
+|------|---------|
+| Correlation | `=CORREL(B2:B101,C2:C101)` |
+| Regression slope | `=SLOPE(C2:C101,B2:B101)` |
+| Regression intercept | `=INTERCEPT(C2:C101,B2:B101)` |
+| Forecast value | `=FORECAST.LINEAR(E2,C2:C101,B2:B101)` |
+
+A scatter plot is often the best visual starting point, because it lets you see whether the relationship looks upward, downward, weak, strong, or irregular before you interpret the regression output.
+
+##### Exam-relevant regression case
+
+A company wants to know whether advertising spend is related to sales revenue.
+
+- `Advertising spend` is the **independent variable**
+- `Sales revenue` is the **dependent variable**
+
+The analyst can:
+
+1. place advertising spend in one spreadsheet column
+2. place sales revenue in another column
+3. create a scatter plot
+4. calculate correlation, slope, and intercept
+5. explain whether the relationship appears positive, negative, or weak
+
+A strong exam answer would not stop at "there is a regression". It would explain what the regression helps the analyst understand, such as whether higher advertising spend tends to be associated with higher sales.
+
+##### How to use regression in an exam
+
+If the task asks you to explain or apply regression analysis, answer in this order:
+
+1. identify the dependent variable
+2. identify the independent variable
+3. state whether it is simple linear regression or multiple linear regression
+4. explain that regression models the relationship between the variables
+5. mention the spreadsheet tools or formulas used
+6. interpret the direction and meaning of the relationship
+7. explain what practical decision the result may support
+
+This keeps the answer analytical, spreadsheet-relevant, and clearly tied to the scenario.
+
+If the exam asks what regression is being used for, classify the case clearly:
+
+- prediction -> **predictive modelling**
+- change over time -> **trend analysis**
+- influence of one factor on another -> **impact assessment**
+- effect on uncertainty or exposure -> **risk assessment**
+- process settings and output quality -> **quality control**
+
+This helps you move from a vague definition to a scenario-based answer.
+
+#### Correlation analysis and how to interpret correlation coefficients
+
+**Correlation analysis** is used to measure the relationship between two variables. It helps the analyst describe:
+
+- the **strength** of the relationship
+- the **direction** of the relationship
+
+The most common correlation coefficient is written as **r**. It normally ranges from `-1` to `+1`.
+
+##### Interpreting the magnitude of the correlation coefficient
+
+The **magnitude** of the correlation coefficient tells us how strong the linear relationship appears to be.
+
+- values close to `+1` suggest a strong positive linear relationship
+- values close to `-1` suggest a strong negative linear relationship
+- values close to `0` suggest a weak or no linear relationship
+
+In exam language, the closer the coefficient is to either extreme, the stronger the relationship is likely to be.
+
+##### Interpreting the sign of the correlation coefficient
+
+The **sign** tells us the direction of the relationship.
+
+- a **positive correlation** `(r > 0)` means that as one variable increases, the other also tends to increase
+- a **negative correlation** `(r < 0)` means that as one variable increases, the other tends to decrease
+
+Examples:
+
+- hours studied and exam score may show a **positive** correlation
+- winter temperature and coat sales may show a **negative** correlation
+
+##### Important cautions
+
+Correlation is useful, but it has limits.
+
+- correlation mainly measures **linear** relationships
+- it may miss **non-linear** relationships
+- it does **not** prove causation
+
+That means even a strong correlation does not prove that one variable directly causes the other to change.
+
+Exam use:
+If the task gives a strong correlation, do not write that one variable definitely causes the other. Say that the data shows an association or relationship, not automatic proof of causation.
+
+##### Pearson and Spearman correlation
+
+The most common correlation method is **Pearson's correlation coefficient** `(r)`. It is mainly used when the relationship is approximately linear and the variables are numerical.
+
+**Spearman's rank correlation coefficient** `(ρ)` measures the strength and direction of the association between two variables by using the **ranks** of the values rather than their original numerical values. It is more suitable when the relationship is not necessarily linear but is still **monotonic**, meaning that one variable generally moves in one direction as the other changes.
+
+For this course, the main spreadsheet focus in later lessons will be **Pearson's correlation**.
+
+Exam use:
+
+- use **Pearson** when the task is about a linear relationship between two numerical variables
+- use **Spearman** when the task describes ranks, ordered data, or a monotonic but not clearly linear relationship
+
+##### Spreadsheet support
+
+For Pearson correlation in Excel and Google Sheets, a common formula is:
+
+`=CORREL(B2:B101,C2:C101)`
+
+If the task refers to Spearman correlation in a spreadsheet context, a common exam-safe explanation is:
+
+1. rank both variables
+2. apply correlation to the ranked values
+
+This is often enough in an exam unless the question specifically requires the full manual calculation.
+
+##### Exam-relevant correlation case
+
+A college wants to know whether study time is related to exam score.
+
+- `Study time` is one variable
+- `Exam score` is the second variable
+
+The analyst can:
+
+1. place study time in one spreadsheet column
+2. place exam score in another column
+3. create a scatter plot
+4. calculate `=CORREL(...)`
+5. interpret whether the relationship looks positive, negative, weak, or strong
+
+A strong exam answer would also add that correlation does not by itself prove that study time alone causes the exam result.
+
+##### How to use correlation in an exam
+
+If the task asks you to explain or interpret correlation, answer in this order:
+
+1. name the two variables
+2. state that correlation measures the strength and direction of their relationship
+3. report or interpret the sign of the coefficient
+4. report or interpret the magnitude of the coefficient
+5. explain whether the relationship appears weak, moderate, or strong
+6. state that correlation does not prove causation
+7. if relevant, explain whether Pearson or Spearman is more suitable
+
+This makes the answer careful, analytical, and exam-ready.
+
+Overall, correlation analysis helps analysts assess the relationship between variables and gives useful insight into how strongly and in what direction those variables appear to move together.
+
+#### Statistical modelling and forecasting
+
+Another important part of data analysis is **forecasting** and **time series analysis**. These methods are especially useful when data is collected over time and arranged in chronological order.
+
+The key idea is that past patterns may help us understand what is likely to happen next.
+
+##### Time series analysis and forecasting
+
+**Time series analysis** studies data points collected at regular intervals, such as:
+
+- daily
+- weekly
+- monthly
+- yearly
+
+Because the data is ordered over time, one observation may be related to earlier observations. This is what makes time series data different from ordinary unordered lists of values.
+
+Time series analysis aims to:
+
+- uncover meaningful patterns
+- identify long-term movement
+- detect repeating behaviour
+- separate useful signal from irregular noise
+- support future prediction
+
+**Forecasting** is the next step. It uses the patterns found in historical time series data to estimate future values.
+
+Forecasting can use methods such as:
+
+- moving averages
+- exponential smoothing
+- ARIMA models
+- other statistical or machine learning approaches
+
+For this course, the main goal is to understand the logic of forecasting and the kinds of patterns analysts look for before choosing a method.
+
+##### Key patterns in time series data
+
+When analysing a time series, analysts often look for:
+
+- **trend**
+- **seasonality**
+- **cyclicality**
+- **irregular variation**
+- **noise**
+
+These patterns help explain how the series behaves and how predictable it may be.
+
+##### Trend analysis
+
+**Trend analysis** is used to identify the long-term direction of a time series.
+
+The trend may be:
+
+- **upward** `(growth)`
+- **downward** `(decline)`
+- **flat** `(no strong long-term change)`
+
+Trend analysis helps the analyst understand the overall movement of the data and is often one of the first steps in forecasting.
+
+Exam use:
+If the task asks whether performance is improving, declining, or staying stable over time, trend analysis is one of the strongest ideas to mention.
+
+##### Seasonality
+
+**Seasonality** refers to repeating patterns that occur at fixed intervals.
+
+Examples:
+
+- higher retail sales every December
+- higher electricity use in winter
+- higher tourism demand in summer
+
+Seasonality matters because it explains regular short-term repetition in the data. If the analyst ignores seasonality, the forecast may be misleading.
+
+Exam use:
+If the pattern repeats at a known interval such as weekly, monthly, or yearly, describe it as **seasonality**, not just "fluctuation".
+
+##### Autocorrelation
+
+**Autocorrelation**, also called **serial correlation**, measures the relationship between a time series value and its earlier values, also called **lagged values**.
+
+- **positive autocorrelation** means nearby values tend to move in a similar way over time
+- **negative autocorrelation** means nearby values tend to move in opposite ways
+
+Autocorrelation is important because it helps the analyst judge whether the series has persistence, memory, or repeated structure. That can guide the choice of forecasting model.
+
+Exam use:
+If the task asks whether earlier values help explain later values, mention **autocorrelation**.
+
+##### Why time series analysis and forecasting matter
+
+Time series analysis and forecasting are widely used in:
+
+- finance
+- economics
+- weather forecasting
+- stock-market analysis
+- sales forecasting
+- demand planning
+- operations planning
+
+They are useful because understanding past behaviour can improve future planning and decision-making.
+
+##### Spreadsheet support
+
+A simple spreadsheet-based time series workflow may look like this:
+
+| Cell or column | Purpose | Example |
+|----------------|---------|---------|
+| `A2:A13` | Time index | months, weeks, or dates |
+| `B2:B13` | Observed values | sales, demand, temperature, or revenue |
+| `C4` | 3-period moving average | `=AVERAGE(B2:B4)` |
+| `D2` | Forecast for time index in `A14` | `=FORECAST.LINEAR(A14,B2:B13,A2:A13)` |
+
+This is not the only forecasting workflow, but it gives an exam-safe spreadsheet example that links:
+
+- chronological data
+- a simple smoothing idea
+- a forecast output
+
+##### Exam-relevant time series case
+
+A retailer has monthly sales data for the last three years and wants to estimate future demand.
+
+The analyst can:
+
+1. place the months in chronological order
+2. plot the sales values over time
+3. check for upward or downward trend
+4. check whether sales repeat seasonally
+5. use a simple forecasting approach such as a moving average or spreadsheet forecast function
+6. explain what the predicted pattern means for stock planning
+
+A strong exam answer would also mention that forecasting is based on historical patterns, so unexpected shocks or structural changes can reduce forecast accuracy.
+
+##### How to use time series and forecasting in an exam
+
+If the task asks you to explain time series analysis or forecasting, answer in this order:
+
+1. state that the data is chronological
+2. explain what pattern is being studied
+3. identify whether the task is mainly about trend, seasonality, autocorrelation, or forecasting
+4. mention the spreadsheet method or model if relevant
+5. explain what the pattern suggests about future values
+6. connect the result to a practical planning or decision need
+
+This makes the answer structured, practical, and exam-ready.
+
+#### What Did I Learn in This Lesson?
+
+This lesson provided the following insights:
+
+- a solid foundational knowledge of statistical tool-related methodologies, ideas, and concepts to build upon in future lessons
+- an understanding of various statistical techniques
+- how to potentially deal with outliers and missing data
+- the uses of statistical modelling and forecasting
+- what hypothesis testing is
+- what probability theory is and why it is important
+- standard statistical measures and why they matter
+- what a histogram is and why we use it
+
+This recap is useful before quizzes and exams because it reminds you that the lesson is not about memorising isolated terms. It is about building a toolkit of spreadsheet-relevant statistical ideas that you can explain, apply, and interpret.
+
+#### Exam Notes
+
+When revising this lesson, focus especially on these exam-use ideas:
+
+- explain that KPIs are quantifiable measures derived from relevant data, not vague business ambitions
+- connect KPI calculation to performance measurement, goal alignment, decision-making, and improvement
+- be ready to compare descriptive statistics, time series analysis, regression, hypothesis testing, SPC, factor analysis, and statistical modelling at a high level
+- explain that methodology choice depends on data type, analytical objective, and the KPI being investigated
+- be ready to explain sampling, probability, hypothesis testing, and regression analysis as core concepts that support meaningful data analysis
+- be ready to distinguish between descriptive statistics and inferential statistics
+- explain the difference between population, sample, parameter, and statistic
+- distinguish between quantitative and qualitative data before choosing a method
+- remember that nominal, ordinal, interval, and ratio scales affect how data can be interpreted
+- explain that these concepts are foundational tools for surveys, experiments, prediction, and reliable conclusions
+- be ready to explain basic probability, conditional probability, Bayes' theorem, statistical inference, and Monte Carlo simulation in simple language
+- connect probability theory to uncertainty, forecasting, and evidence-based decisions
+- be ready to explain what a probability distribution is and why the normal distribution is so important
+- explain that the normal distribution is defined by the mean `μ` and standard deviation `σ`
+- be ready to explain `H0`, `Ha`, significance level `α`, decision rules, and why we say fail to reject rather than automatically accept the null hypothesis
+- connect hypothesis testing to evidence-based conclusions from sample data
+- distinguish between statistical significance and practical significance in written conclusions
+- be ready to choose correctly between a t-test for means and a chi-square test for categorical associations or frequencies
+- explain why t-tests and chi-square tests support different kinds of research questions
+- be ready to explain how missing values and outliers can be handled and why the chosen technique affects data quality and later analysis
+- be ready to define mean, median, mode, range, and standard deviation and explain when each measure is most useful
+- explain why the median can be stronger than the mean when outliers are present
+- be ready to define an outlier clearly and explain why unusual values should be investigated before removal
+- choose visualisation methods by analytical purpose: histogram for distribution, scatter plot for relationship, and box plot for spread, quartiles, and outliers
+- explain what a Cartesian plane is when describing scatter plots and paired numerical data
+- explain why a box-and-whisker plot is named that way and what the box, median line, and whiskers represent
+- explain that charts are analytical tools, not only presentation tools
+- be ready to explain regression analysis as a method for modelling the relationship between a dependent variable and one or more independent variables
+- identify the independent variable, dependent variable, and spreadsheet workflow in simple regression cases
+- distinguish clearly between simple linear regression and multiple linear regression
+- explain that the best-fitting regression line is chosen to minimise the difference between observed and predicted values
+- recognise common regression applications such as predictive modelling, trend analysis, impact assessment, risk assessment, and quality control
+- be ready to explain correlation as a measure of strength and direction between two variables
+- interpret correlation coefficients by both sign and magnitude
+- explain that correlation measures association, not automatic causation
+- distinguish between Pearson correlation for linear relationships and Spearman correlation for monotonic rank-based relationships
+- remember that Spearman is based on ranks rather than original values, while Pearson is the main course focus in later spreadsheet lessons
+- be ready to explain time series analysis as the study of data collected in chronological order
+- distinguish clearly between time series analysis and forecasting
+- identify trend, seasonality, and autocorrelation as core time series ideas
+- explain that seasonality repeats at fixed intervals, while trend describes long-term direction
+- explain that autocorrelation is about the relationship between current values and lagged values
+- connect forecasting to planning uses such as demand, sales, operations, or finance
+- use spreadsheet formulas confidently when descriptive measures are asked for directly
+- be ready to explain why spreadsheets are used as integrated analytical tools
+- be ready to choose between descriptive, comparative, and relationship-based tools
+- explain that a statistical result becomes useful only when it is interpreted
+- connect spreadsheet output to a heuristic such as trend, spread, risk, or anomaly
+
+##### Strong exam answer rule
+
+If the question asks about a spreadsheet statistical tool, answer in this order:
+
+1. name the tool
+2. state what it measures or shows
+3. explain when it should be used
+4. explain what the result would help the analyst decide
+
+If the task is spreadsheet-based, add the actual formula if you know it. That makes the answer stronger and more practical.
+            """,
+            "key_points": [
+                "Lesson 1.1 starts from spreadsheet fundamentals and then extends that base into statistical analysis",
+                "Excel and Google Sheets templates should be ready so formulas, outputs, and interpretations can be reused quickly",
+                "KPIs are quantifiable measures derived from numerical data and used to compare current performance against goals or benchmarks",
+                "KPI analysis supports performance measurement, goal alignment, decision-making, improvement, accountability, communication, and continuous monitoring",
+                "A task-style KPI summary should explain definition, strategy alignment, decision-making, improvement, accountability, communication, and continuous monitoring in one connected answer",
+                "Different statistical methodologies support different KPI tasks, and the best method depends on the data, the objective, and whether the analyst needs description, comparison, explanation, monitoring, or prediction",
+                "Statistical concepts such as sampling, probability, hypothesis testing, and regression analysis provide the foundation for later spreadsheet analysis and decision-making",
+                "Descriptive statistics summarize data, while inferential statistics use sample evidence to support wider conclusions",
+                "Population, sample, parameter, and statistic are core foundation terms that often appear in early exam questions",
+                "Quantitative and qualitative data, together with nominal, ordinal, interval, and ratio scales, help determine which method fits the data",
+                "Probability theory helps analysts reason about uncertainty, likelihood, forecasting, and evidence-based conclusions",
+                "Probability distributions describe uncertainty patterns, and the normal distribution is especially important because it is centered by the mean and shaped by the standard deviation",
+                "Hypothesis testing helps analysts compare a default claim with an alternative claim using sample evidence, a significance level, and a clear decision rule",
+                "Strong hypothesis-testing answers explain both error trade-offs and the difference between statistical significance and practical significance",
+                "T-tests are mainly for comparing means, while chi-square tests are mainly for categorical relationships and frequencies",
+                "Missing values and outliers should be handled with clear justification because they directly affect data quality and model reliability",
+                "An outlier is an unusually distant observation that should be investigated before any removal decision is made",
+                "Mean, median, mode, range, and standard deviation should be explained with both definition and interpretation, not only as formulas",
+                "Solved activities should compare datasets, interpret the results, and connect the measures to a realistic business or research scenario",
+                "Histograms are strongest for one numeric distribution, scatter plots for relationships between two numeric variables, and box plots for spread, quartiles, and outliers",
+                "A scatter plot is read on a Cartesian plane, where paired values are plotted as ordered coordinates on the x-axis and y-axis",
+                "A box-and-whisker plot is named after the box that shows the middle 50 percent of the data and the whiskers that show the wider range",
+                "Regression analysis models the relationship between a dependent variable and one or more independent variables to explain or predict outcomes",
+                "The independent variable is the explanatory input, while the dependent variable is the outcome being explained or predicted",
+                "Simple linear regression uses one independent variable, while multiple linear regression uses several independent variables for one outcome",
+                "A best-fitting regression line is chosen to minimize the gap between observed data points and predicted values",
+                "Regression is commonly used for predictive modelling, trend analysis, impact assessment, risk assessment, and quality control",
+                "Correlation analysis measures the strength and direction of the relationship between two variables",
+                "The sign of the correlation coefficient shows direction, while the magnitude shows how strong the linear relationship appears to be",
+                "Correlation does not by itself prove causation",
+                "Pearson correlation is commonly used for linear numerical relationships, while Spearman correlation is used for monotonic or rank-based relationships",
+                "Spearman correlation is based on ranks rather than original values, while Pearson is the main correlation focus in later lessons",
+                "Time series analysis studies data collected over time in chronological order so patterns can be analysed and used for forecasting",
+                "Trend shows long-term direction, seasonality shows fixed repeating patterns, and autocorrelation shows how current values relate to earlier lagged values",
+                "Forecasting uses historical patterns to estimate future values and supports planning and decision-making",
+                "Spreadsheets in this course are analytical environments, not only storage spaces",
+                "The student should move from formula choice to analytical question, result, and interpretation",
+                "A useful heuristic can come from spread, relationship, group difference, or anomaly detection",
+                "The strongest spreadsheet workflow is organised data, chosen tool, result, interpretation, and decision",
+                "Core Excel and Google Sheets formulas such as AVERAGE, MEDIAN, STDEV.S, CORREL, and FORECAST.LINEAR should be ready for exam use"
+            ],
+            "visual_elements": {
+                "diagrams": False,
+                "tables": True,
+                "highlighted_sections": True
+            }
+        },
+        {
+            "lesson_number": "1.2",
+            "title": "Advanced Data Analysis in Spreadsheets",
+            "content": """
+### 1.2. Advanced Data Analysis in Spreadsheets
+
+#### Introduction
+
+Now that we have built a base from which to work in both the previous lesson and the earlier modules, we can move on to more advanced statistical tools and spreadsheet building blocks that enhance and amplify analytical skill.
+
+This lesson focuses on **advanced data analysis in spreadsheets** through practical logic, spreadsheet-ready structures, and real-world analytical thinking. The goal is not only to know the method, but to understand how it is applied in hands-on walkthroughs and realistic scenarios.
+
+One important part of advanced spreadsheet analysis is learning how to protect the quality of the model before drawing conclusions from it. That is why this lesson begins with data quality, outlier handling, and error reduction.
+
+#### Overview of selected financial functions
+
+To move into more advanced spreadsheet functionality, it is useful to start with some important **financial functions** that appear in Excel and Google Sheets.
+
+These functions help analysts compare loans, investments, repayment structures, and project cash flows. In practice, they are often used to answer questions such as:
+
+- how much a monthly payment will be
+- what interest rate is implied by a repayment plan
+- how many periods are needed to repay or grow an amount
+- how much of a payment is interest
+- what a future or present value is worth
+- whether an investment looks financially attractive
+
+The most important functions to recognize are:
+
+| Function | What it does |
+|----------|--------------|
+| **PMT** | Calculates the regular payment for a loan or investment based on a fixed interest rate and fixed number of periods |
+| **RATE** | Computes the interest rate per period for a loan or investment |
+| **NPER** | Calculates the number of periods needed for a loan or investment given rate and payment assumptions |
+| **IPMT** | Calculates the interest portion of a payment for a specific period |
+| **FV** | Calculates the future value of an investment or loan |
+| **PV** | Calculates the present value, or current worth, of future cash flows |
+| **IRR** | Calculates the internal rate of return for a series of cash flows |
+| **NPV** | Calculates the net present value of a stream of cash flows using a discount rate |
+
+Important note:
+The spreadsheet function is **NPER**, not `NPR`. If the course text or notes say `NPR`, treat that as the same idea, but use `NPER` in Excel or Google Sheets.
+
+##### A running example
+
+Assume we work for a financial institution and an investor wants to borrow:
+
+- `$100,000`
+- over `2` years
+- at `12%` annual interest
+- repaid **monthly**
+
+This kind of case is useful because one scenario can be used to demonstrate several different functions.
+
+##### Golden rule for signs
+
+When using financial functions, follow this sign rule:
+
+- **money you receive** -> enter as **positive**
+- **money you pay** -> enter as **negative**
+
+Excel will usually return the opposite sign for the result. That is normal and is the cleanest financially correct approach.
+
+Exam use:
+If a result is negative, do not panic. In many spreadsheet finance questions, the negative sign simply reflects cash leaving the borrower or investor.
+
+##### Spreadsheet-ready setup for the example
+
+If the loan is repaid monthly:
+
+- annual rate = `12%`
+- monthly rate = `12% / 12 = 1%`
+- total periods = `2 * 12 = 24`
+
+That means many formulas in the case will use:
+
+- rate per period = `12%/12`
+- number of periods = `24`
+- principal or present value = `100000`
+
+#### Financial function: Payment `(PMT)` function
+
+The **PMT** function is used to calculate the amount of one regular loan or investment payment.
+
+Function format:
+
+`PMT(rate, nper, pv, [fv], [type])`
+
+Where:
+
+- `rate` is the interest rate per period, here the **monthly** interest rate
+- `nper` is the total number of repayment periods
+- `pv` is the present value, here the loan amount
+- `fv` is optional and represents the future value after the final payment
+- `type` is optional, where `0` means payments are made at the end of the period and `1` means payments are made at the beginning
+
+Because this scenario uses **monthly** payments, we must convert the annual rate into a monthly rate and the total time into monthly periods.
+
+For this example:
+
+- annual interest rate = `12%`
+- monthly interest rate = `12% / 12 = 1%`
+- loan term = `2` years
+- number of monthly repayments = `2 * 12 = 24`
+- loan amount = `$100,000`
+
+That gives the spreadsheet formula:
+
+`=PMT(12%/12,24,100000)`
+
+Spreadsheet result:
+
+`approx. -4707.35`
+
+Interpretation:
+The borrower would make a monthly payment of about `$4,707.35`. The negative sign reflects money being **paid out**, which matches the sign rule for financial spreadsheet functions.
+
+Exam use:
+If the examiner asks for the monthly instalment, explain:
+
+1. why the annual rate must be divided by `12`
+2. why the number of years must be multiplied by `12`
+3. why the result is negative
+4. what the payment means in practical terms
+
+This is one of the safest ways to show both spreadsheet skill and financial understanding.
+
+#### Financial function: RATE function
+
+The **RATE** function is used to calculate the interest rate per period when we already know:
+
+- the number of periods
+- the repayment amount
+- the present value of the loan or investment
+
+Function format:
+
+`RATE(nper, pmt, pv, [fv], [type], [guess])`
+
+Where:
+
+- `nper` is the total number of periods
+- `pmt` is the repayment amount per period
+- `pv` is the present value, here the original loan amount
+- `fv` is optional and refers to the future value
+- `type` is optional, where `0` means payments at the end of the period and `1` means payments at the beginning
+- `guess` is optional and gives Excel or Google Sheets a starting estimate for the interest rate
+
+For this example:
+
+- number of monthly repayments = `24`
+- payment amount = `$4,707.35`
+- initial loan value = `$100,000`
+
+To remain consistent with the PMT example:
+
+- the loan is stored as **positive** in the table and negated inside the formula to preserve the correct cash-flow direction
+- the payment is entered as **positive**
+
+That gives the spreadsheet formula:
+
+`=RATE(24,4707.35,-100000)`
+
+Spreadsheet result:
+
+`approx. 0.01 per month`
+
+That means:
+
+- monthly interest rate `approx. 1%`
+- annual nominal rate `approx. 12%`
+
+Interpretation:
+The repayment plan is consistent with a monthly rate of about `1%`, which corresponds to an annual rate of about `12%`.
+
+Exam use:
+If the examiner asks for the interest rate, make sure you:
+
+1. explain that `RATE` returns the rate **per period**
+2. identify what the period is, here **monthly**
+3. convert the result back into an annual figure if the question wants an annual interpretation
+4. explain the sign handling used in the formula
+
+This helps prevent one of the most common finance-exam mistakes, which is reporting a monthly rate as if it were already annual.
+
+Workbook note:
+In the provided workbook, the RATE example keeps the table values positive and applies the minus sign to the **payment** inside the formula. That is also financially correct because the payment and the loan then have opposite cash-flow signs.
+
+#### Financial function: Number of periods `(NPER)` function
+
+The **NPER** function is used to calculate the number of repayment periods when we know:
+
+- the interest rate per period
+- the repayment amount
+- the loan value
+
+Function format:
+
+`NPER(rate, pmt, pv, [fv], [type])`
+
+Where:
+
+- `rate` is the interest rate per period
+- `pmt` is the repayment amount per period
+- `pv` is the present value, here the original loan amount
+- `fv` is optional and represents the future value
+- `type` is optional, where `0` means payments at the end of the period and `1` means payments at the beginning
+
+For this example:
+
+- annual interest rate = `12%`
+- monthly interest rate = `12% / 12 = 1%`
+- initial loan value = `$100,000`
+- monthly repayment amount = `$4,707.35`
+
+To remain consistent with the workbook style and with the finance sign rule:
+
+- keep the values **positive** in the table
+- apply the minus sign **inside the formula**
+- make sure Excel receives opposite cash-flow signs
+
+That gives the spreadsheet formula:
+
+`=NPER(12%/12,-4707.35,100000)`
+
+Spreadsheet result:
+
+`approx. 24`
+
+Interpretation:
+The loan will be fully repaid after about `24` monthly payments, which matches a repayment period of `2` years.
+
+Exam use:
+If the examiner asks for the repayment period, explain:
+
+1. why the annual rate must be converted to a monthly rate
+2. why the repayment amount and loan amount must have opposite signs
+3. that `NPER` returns the number of periods, here months
+4. how to convert the result back into years if needed
+
+This makes the answer clearer and helps avoid sign mistakes in spreadsheet finance tasks.
+
+Workbook note:
+In the provided workbook, the NPER example uses the same sign idea:
+
+`=NPER(rate,-payment,pv)`
+
+That is a strong exam-safe pattern whenever the table stores the visible amounts as positive values.
+
+#### Financial function: Interest payment `(IPMT)` function
+
+The **IPMT** function is used to calculate the **interest portion** of a loan payment for a specific period.
+
+Function format:
+
+`IPMT(rate, per, nper, pv, [fv], [type])`
+
+Where:
+
+- `rate` is the interest rate per period
+- `per` is the period number for which we want to calculate the interest amount
+- `nper` is the total number of repayment periods
+- `pv` is the present value, here the loan amount
+- `fv` is optional and represents the future value
+- `type` is optional, where `0` means payments at the end of the period and `1` means payments at the beginning
+
+For this example:
+
+- annual interest rate = `12%`
+- monthly interest rate = `12% / 12 = 1%`
+- loan amount = `$100,000`
+- total monthly repayments = `24`
+- monthly repayment = `$4,707.35`
+
+To remain consistent with the PMT, RATE, and NPER examples:
+
+- keep all visible values **positive** in the table
+- apply the minus sign **inside the formula**
+- make sure Excel receives opposite cash-flow directions
+
+If we want the **interest portion of the first payment**, we set:
+
+- `rate = 12%/12`
+- `per = 1`
+- `nper = 24`
+- `pv = -100000`
+
+That gives the spreadsheet formula:
+
+`=IPMT(12%/12,1,24,-100000)`
+
+Spreadsheet result:
+
+`1000`
+
+Interpretation:
+The interest portion of the **first monthly payment** is `$1,000`. This makes sense because the opening balance is `$100,000` and the monthly rate is `1%`, so the first period's interest is `100000 * 0.01 = 1000`.
+
+Exam use:
+If the examiner asks for the interest part of a specific payment, explain:
+
+1. that `IPMT` gives the **interest portion only**, not the full payment
+2. that `per` tells Excel which repayment period to inspect
+3. that the annual interest rate must be converted to the rate per payment period
+4. that the sign rule still matters, even when the question only asks for the interest part
+5. what the result means in practical repayment terms
+
+This is especially useful in exam tasks where you must separate the **interest component** from the **principal component** of a loan payment.
+
+#### Financial function: Future value `(FV)` function
+
+The **FV** function is used to calculate the **future value** of a series of payments based on a constant interest rate.
+
+Function format:
+
+`FV(rate, nper, pmt, [pv], [type])`
+
+Where:
+
+- `rate` is the interest rate per period
+- `nper` is the total number of cash-flow periods
+- `pmt` is the cash-flow value per period
+- `pv` is optional and represents the present value
+- `type` is optional, where `0` means payments at the end of the period and `1` means payments at the beginning
+
+Example:
+
+An investor establishes a business with:
+
+- initial cost = `$1,000`
+- annual return = `$225`
+- annual interest rate = `5%`
+- investment period = `5` years
+
+We want to calculate what the **five annual returns of `$225`** will be worth after `5` years at a `5%` annual interest rate.
+
+To remain consistent with the PMT, RATE, NPER, and IPMT examples:
+
+- keep the visible values **positive** in the table
+- apply the minus sign **inside the formula**
+- make sure Excel receives opposite cash-flow signs
+
+Here the initial cost gives the business context, but this specific FV calculation focuses on the **future value of the five annual returns**, not on combining them with the initial cost.
+
+That gives the spreadsheet formula:
+
+`=FV(5%,5,-225,0)`
+
+Spreadsheet result:
+
+`approx. 1243.27`
+
+Interpretation:
+The five annual payments of `$225` will be worth about `$1,243.27` after `5` years at a `5%` annual interest rate.
+
+Exam use:
+If the examiner asks for future value, explain:
+
+1. that `FV` is used when the question asks what repeated payments or an investment stream will be worth **later**
+2. that `rate` and `nper` must match the payment timing, here yearly
+3. that the minus sign is used so the payment stream and future result have opposite cash-flow signs
+4. whether `pv` is omitted or set to `0` because the question is valuing the payment stream only
+5. what the result means in practical financial terms after compounding
+
+This helps you avoid one of the most common finance-exam mistakes, which is mixing up **future value of the payment stream** with the separate issue of the original investment cost.
+
+#### Financial function: Present value `(PV)` function
+
+The **PV** function is used to calculate the **present value** of a series of future cash flows based on a constant interest rate.
+
+Function format:
+
+`PV(rate, nper, pmt, [fv], [type])`
+
+Where:
+
+- `rate` is the interest rate per period
+- `nper` is the total number of cash flows
+- `pmt` is the cash-flow value per period
+- `fv` is optional and represents the future value
+- `type` is optional, where `0` means payments at the end of the period and `1` means payments at the beginning
+
+Example:
+
+Using the same investment:
+
+- annual interest rate = `5%`
+- return on investment = `$225` per year
+- investment period = `5` years
+
+To remain consistent with the FV example:
+
+- keep all values **positive** in the table
+- apply the minus sign **inside the formula**
+- make sure Excel receives opposite cash-flow signs
+
+That gives the spreadsheet formula:
+
+`=PV(5%,5,-225,0)`
+
+Spreadsheet result:
+
+`approx. 974.13`
+
+Interpretation:
+The present value of receiving `$225` per year for `5` years at `5%` is about `$974.13`.
+
+Investment interpretation:
+Because this value is **lower** than the initial cost of `$1,000`, the investment would **not** be profitable under these assumptions. In simple exam language, the discounted value of the future returns is less than the amount paid today.
+
+Exam use:
+If the examiner asks for present value, explain:
+
+1. that `PV` discounts future cash flows back to their value **today**
+2. that `rate` and `nper` must match the timing of the cash flows, here yearly
+3. that the minus sign is used so the payment stream and present value have opposite cash-flow signs
+4. whether the question is valuing only the future payment stream or comparing it to a separate initial cost
+5. what the result means for investment attractiveness or financial decision-making
+
+This is especially useful in exam tasks where you must decide whether a future stream of returns is worth the amount that must be invested now.
+
+#### Financial function: Internal rate of return `(IRR)` function
+
+The **IRR** function is used to calculate the **internal rate of return** for a series of cash flows.
+
+Function format:
+
+`IRR(values, [guess])`
+
+Where:
+
+- `values` are the cash-flow values
+- cash outflows such as initial investment or extra costs are entered as **negative** values
+- cash inflows such as returns or profits are entered as **positive** values
+- `guess` is optional and gives Excel a starting estimate; if omitted, Excel assumes `10%`
+
+Let us evaluate the following investment project:
+
+| Item | Value |
+|------|-------|
+| Initial cost | `(100,000)` |
+| Cash Flow 1 | `50,000` |
+| Cash Flow 2 | `20,000` |
+| Cash Flow 3 | `(30,000)` |
+| Cash Flow 4 | `40,000` |
+
+The initial cost is shown in parentheses because it represents money paid out. Cash Flows `1`, `2`, and `4` are inflows, meaning money received. Cash Flow `3` is another outflow, indicating an additional cost during the project.
+
+This sequence of cash flows is what we use in the `IRR` function to determine whether the investment generates an acceptable return.
+
+Important difference to remember:
+Unlike `PMT`, `RATE`, `NPER`, `FV`, and `PV`, where we often keep values positive in the table and manage sign direction inside the formula, `IRR` requires the **real cash-flow signs in the data itself**:
+
+- money paid -> **negative**
+- money received -> **positive**
+
+That is because `IRR` evaluates the actual direction of cash flows over time. If the signs in the cash-flow series are wrong, the IRR interpretation will also be wrong.
+
+##### Spreadsheet-ready layout
+
+| Cell | Purpose | Formula or value |
+|------|---------|------------------|
+| `B2` | Initial cost | `-100000` |
+| `B3` | Cash Flow 1 | `50000` |
+| `B4` | Cash Flow 2 | `20000` |
+| `B5` | Cash Flow 3 | `-30000` |
+| `B6` | Cash Flow 4 | `40000` |
+| `B8` | IRR | `=IRR(B2:B6)` |
+| `B9` | IRR with guess | `=IRR(B2:B6,10%)` |
+
+Spreadsheet formula:
+
+`=IRR(B2:B6)`
+
+Spreadsheet result:
+
+`approx. -9.976%`
+
+Interpretation:
+The IRR of about `-9.976%` means the project's internal rate of return is negative. Practically, this indicates that the project does **not** generate sufficient returns to recover its initial investment when the time value of money is considered. Rather than creating value, the investment is reducing it.
+
+About the optional guess:
+Excel allows an optional `guess` argument. If no guess is provided, Excel assumes `10%`. This estimate does **not** change the financial meaning of the result. It only helps Excel start the iterative calculation process.
+
+Real-world decision use:
+In financial analysis, the IRR is often compared with a **required rate of return** or **hurdle rate**. If the IRR is lower than the required return, the project would usually be rejected. Since the IRR here is negative, it falls well below any reasonable required return, indicating that the project is not financially viable.
+
+Why IRR matters:
+IRR represents the discount rate at which the present value of future cash flows equals the initial investment. A negative IRR suggests that the project fails to break even in present-value terms.
+
+Exam use:
+If the examiner asks for IRR, explain:
+
+1. that IRR is used for a **series of cash flows**, not a single payment
+2. that all cash flows must be entered in **time order**
+3. that outflows are negative and inflows are positive
+4. that the `guess` argument is optional and mainly helps Excel begin the iterative search
+5. that a negative IRR means the project destroys value rather than creating it
+6. that IRR should be compared with a required return or hurdle rate
+
+This makes the answer financially correct, spreadsheet-relevant, and decision-oriented.
+
+#### Financial function: Net present value `(NPV)` function
+
+The **NPV** function is used to calculate the **net present value** of a series of future cash flows, discounted at a specified rate.
+
+Function format:
+
+`NPV(rate, value1, [value2], ...)`
+
+Where:
+
+- `rate` is the discount rate used to adjust future cash flows to today's value
+- `value1`, `value2`, and the remaining values represent the **future** cash flows over time
+- cash outflows are entered as **negative** values
+- cash inflows are entered as **positive** values
+
+NPV represents the present value of all future cash flows associated with an investment, discounted to reflect the time value of money.
+
+In simple terms:
+
+- a **positive** NPV means the investment is expected to generate returns greater than its cost
+- a **negative** NPV means the investment is expected to generate less than its cost
+- an NPV of **zero** means the investment exactly meets the required rate of return
+- the discount rate reflects the required rate of return or opportunity cost of capital
+
+Let us evaluate the following investment and assume a discount rate of `10%`:
+
+| Item | Value |
+|------|-------|
+| Initial cost | `(100,000)` |
+| Cash Flow 1 | `50,000` |
+| Cash Flow 2 | `20,000` |
+| Cash Flow 3 | `(30,000)` |
+| Cash Flow 4 | `40,000` |
+
+##### Spreadsheet-ready layout
+
+| Cell | Purpose | Formula or value |
+|------|---------|------------------|
+| `B2` | Initial cost | `-100000` |
+| `B3` | Cash Flow 1 | `50000` |
+| `B4` | Cash Flow 2 | `20000` |
+| `B5` | Cash Flow 3 | `-30000` |
+| `B6` | Cash Flow 4 | `40000` |
+| `B7` | Discount rate | `10%` |
+| `B8` | NPV | `=NPV(B7,B3:B6)+B2` |
+
+Important Excel rule:
+Excel's `NPV` function only discounts the **future cash flows**. It does **not** automatically include the initial investment if it occurs at time `0`. That is why the initial cost is added separately:
+
+`=NPV(B7,B3:B6)+B2`
+
+Spreadsheet result:
+
+`approx. -33235.43`
+
+Interpretation:
+At a `10%` discount rate, the present value of the expected future cash flows is **not** sufficient to recover the initial `$100,000` investment.
+
+The negative NPV of about `-33,235.43` means:
+
+- the project does **not** meet the required `10%` rate of return
+- the investment would reduce value rather than create it
+- under these assumptions, the project is not financially viable
+
+Why the discount rate matters:
+The choice of discount rate is critical because it reflects:
+
+- the risk of the investment
+- the opportunity cost of capital
+- the return required by investors
+
+A different discount rate could significantly change the NPV. That is why NPV analysis must always be interpreted in the context of the chosen rate.
+
+Exam use:
+If the examiner asks for NPV, explain:
+
+1. that `NPV` discounts future cash flows back to present value using a required return
+2. that the initial investment at time `0` is usually added separately
+3. that outflows are negative and inflows are positive
+4. that a positive NPV suggests value creation and a negative NPV suggests value destruction
+5. that the decision depends on the chosen discount rate as well as the cash flows
+
+This is one of the most important investment-analysis patterns in spreadsheet exams because the formula is short, but the interpretation must be financially precise.
+
+##### Example formulas you should recognize
+
+| Goal | Formula idea |
+|------|--------------|
+| Monthly payment | `=PMT(12%/12,24,100000)` |
+| Interest rate per period | `=RATE(24,-payment,100000)` |
+| Number of periods | `=NPER(12%/12,-payment,100000)` |
+| Interest part of payment 1 | `=IPMT(12%/12,1,24,-100000)` |
+| Future value of regular payments | `=FV(5%,5,-225,0)` |
+| Present value of regular payments | `=PV(5%,5,-225,0)` |
+
+For investment-style project evaluation:
+
+| Goal | Formula idea |
+|------|--------------|
+| Internal rate of return | `=IRR(cash_flow_range)` |
+| Net present value | `=NPV(discount_rate,future_cash_flow_range)+initial_cost` |
+
+Exam use:
+In NPV questions, remember that the initial investment is often entered separately because it happens at time `0`.
+
+##### Why these functions matter
+
+These functions are useful because they let you move from raw financial assumptions to practical decision support.
+
+They help answer:
+
+- whether a borrower can afford a repayment plan
+- whether a quoted rate matches the repayment pattern
+- how long repayment or saving will take
+- how much interest is paid early in a schedule
+- whether an investment project creates value
+
+##### How to use this in an exam
+
+If the question is about a spreadsheet financial function, answer in this order:
+
+1. identify the financial question
+2. choose the correct function
+3. convert the annual rate and period structure correctly
+4. apply the sign rule carefully
+5. state the formula
+6. interpret the output in words
+
+That structure is especially important in finance questions because many errors come from:
+
+- using yearly rate instead of monthly rate
+- using the wrong number of periods
+- forgetting the sign rule
+- interpreting the result without considering cash flow direction
+
+##### Swap-in finance template for any exam
+
+If the examiner changes the numbers, keep the same finance workflow and replace only the values:
+
+1. write the annual rate
+2. convert it to rate per period
+3. write the total time and convert it to the number of periods
+4. write the loan or investment value
+5. write the payment or target value
+6. apply opposite signs to the cash flows
+7. choose the function that answers the question
+8. interpret the result in words
+
+Common swap-in formulas:
+
+- `=PMT(rate_per_period,total_periods,-loan_value)`
+- `=RATE(total_periods,-payment,loan_value)`
+- `=NPER(rate_per_period,-payment,loan_value)`
+- `=IPMT(rate_per_period,period_number,total_periods,-loan_value)`
+- `=FV(rate_per_period,total_periods,-payment,0)`
+- `=PV(rate_per_period,total_periods,-payment,0)`
+- `=IRR(cash_flow_range)`
+- `=NPV(discount_rate,future_cash_flow_range)+initial_cost`
+
+Golden exam reminder:
+The exact argument you negate can vary by setup, but **one cash inflow and one cash outflow must have opposite signs**. That is the rule that keeps the finance function correct.
+
+#### Exam-style task: combined `PMT`, `RATE`, and `NPER`
+
+Say we work for a financial institution and an investor wants to take out a bank loan of `$150,000`. A particular bank offers:
+
+- a `3`-year loan
+- at `10%` annual interest
+- repaid **monthly**
+
+Use the **PMT**, **RATE**, and **NPER** functions to calculate:
+
+1. the amount of a single monthly instalment
+2. the interest rate based on the total repayments, the repayment value, and the initial loan value
+3. the number of repayments when we only know the rate, payment amount, and loan value
+
+##### Resolver-style solution
+
+###### Step 1. Convert the inputs to monthly values
+
+- annual interest rate = `10%`
+- monthly interest rate = `10% / 12 = 0.833333...%`
+- total periods = `3 * 12 = 36`
+- loan amount = `$150,000`
+
+This step is essential. The finance functions must use the **same period unit** throughout the formula.
+
+###### Step 2. Calculate the monthly instalment with `PMT`
+
+Spreadsheet formula:
+
+`=PMT(10%/12,3*12,150000)`
+
+Result:
+
+`approx. -4840.08`
+
+Interpretation:
+The monthly repayment is about `$4,840.08`. The negative sign reflects money being **paid out** each month.
+
+###### Step 3. Calculate the rate with `RATE`
+
+Using the clean sign rule:
+
+`=RATE(36,-4840.08,150000)`
+
+Result:
+
+`approx. 0.008333... per month`
+
+Annual interpretation:
+
+`0.008333... * 12 approx. 0.10 = 10% per year`
+
+Interpretation:
+The repayment structure is consistent with an interest rate of about `0.8333%` per month, which is about `10%` annually.
+
+Equivalent alternative sign setup:
+
+`=RATE(36,4840.08,-150000)`
+
+This is also correct, because the cash-flow signs are still opposite.
+
+###### Step 4. Calculate the number of repayments with `NPER`
+
+Using the clean sign rule:
+
+`=NPER(10%/12,-4840.08,150000)`
+
+Result:
+
+`approx. 36`
+
+Interpretation:
+The loan will be fully repaid after about `36` monthly repayments, which matches the `3`-year loan term.
+
+Equivalent alternative sign setup:
+
+`=NPER(10%/12,4840.08,-150000)`
+
+This is also correct for the same reason: the signs remain opposite.
+
+##### Why this is correct
+
+This combined case is correct because:
+
+- `PMT` answers the payment question
+- `RATE` answers the interest-rate question
+- `NPER` answers the repayment-length question
+- all three formulas use the same monthly period logic
+- the cash-flow signs are handled consistently
+
+##### Rounding note
+
+If you round the repayment to two decimals, small differences can appear in `RATE` or `NPER`, for example:
+
+- `35.99998...` instead of exactly `36`
+- `10.0000...%` instead of exactly `10%`
+
+That does **not** change the practical interpretation.
+
+##### Excel and Google Sheets template
+
+Use a simple structure like this:
+
+| Cell | Purpose | Formula or value |
+|------|---------|------------------|
+| `B2` | Loan amount | `150000` |
+| `B3` | Annual rate | `10%` |
+| `B4` | Years | `3` |
+| `B5` | Monthly rate | `=B3/12` |
+| `B6` | Total periods | `=B4*12` |
+| `B7` | Monthly payment | `=PMT(B5,B6,B2)` |
+| `B8` | Rate from payment | `=RATE(B6,B7,B2)` |
+| `B9` | Periods from payment | `=NPER(B5,B7,B2)` |
+
+If you want to store payment as a positive display value instead, use:
+
+- `=RATE(B6,ABS(B7),-B2)`
+- `=NPER(B5,ABS(B7),-B2)`
+
+Both methods are valid as long as the signs are opposite.
+
+##### How to use this in an exam
+
+If a finance exam gives you a loan case like this, answer in this order:
+
+1. convert annual rate to rate per period
+2. convert years to total number of periods
+3. choose the right function for each question
+4. apply the sign rule
+5. state the spreadsheet formula
+6. give the result
+7. interpret the result in words
+
+This is a strong exam pattern because it shows:
+
+- correct spreadsheet method
+- correct financial logic
+- correct period conversion
+- clear interpretation
+
+##### Fast swap-in template
+
+If the examiner changes the values, keep this structure and only replace the numbers:
+
+- `PMT(new_rate/periods_per_year,new_years*periods_per_year,new_loan)`
+- `RATE(new_total_periods,-new_payment,new_loan)`
+- `NPER(new_rate/periods_per_year,-new_payment,new_loan)`
+
+Or use the equivalent alternate sign convention:
+
+- `RATE(new_total_periods,new_payment,-new_loan)`
+- `NPER(new_rate/periods_per_year,new_payment,-new_loan)`
+
+That makes it easy to solve similar exam questions without rebuilding the method from scratch.
+
+#### Exam-style task: combined `FV` and `PV` investment case
+
+Let us move to a new investment example.
+
+An investor has established a business with:
+
+- initial cost = `$1,000`
+- annual return = `$300` each year
+- investment period = `5` years
+- annual interest rate = `6%`
+
+We want to answer two questions:
+
+1. what will the **five annual returns of `$300`** be worth after `5` years
+2. is the investment profitable when we compare the present value of those returns with the initial cost
+
+Workbook alignment note:
+The provided workbook uses the formulas:
+
+- `=FV(B3,B6,-B5)`
+- `=PV(B3,B6,-B5)`
+
+That shows the intended setup is a **series of five annual payments of `$300`**, not a single future lump sum of `$5,000`.
+
+##### Resolver-style solution
+
+###### Step 1. Identify the period structure
+
+- rate per period = `6%`
+- number of periods = `5`
+- payment per period = `$300`
+- initial cost for profitability comparison = `$1,000`
+
+Because the cash flow happens **once per year**, the annual rate and annual payment timing already match. No monthly conversion is needed here.
+
+###### Step 2. Calculate the future value with `FV`
+
+Spreadsheet formula:
+
+`=FV(6%,5,-300)`
+
+Result:
+
+`approx. 1691.13`
+
+Interpretation:
+The five annual payments of `$300` will accumulate to about `$1,691.13` after `5` years at `6%` annual interest.
+
+###### Step 3. Calculate the present value with `PV`
+
+Spreadsheet formula:
+
+`=PV(6%,5,-300)`
+
+Result:
+
+`approx. 1263.71`
+
+Interpretation:
+The present value of receiving `$300` per year for `5` years at `6%` is about `$1,263.71`.
+
+###### Step 4. Decide whether the investment is profitable
+
+Compare the present value with the initial cost:
+
+- present value of future returns = `$1,263.71`
+- initial cost = `$1,000`
+
+Difference:
+
+`1263.71 - 1000 = 263.71`
+
+Conclusion:
+Because the present value of the future returns is **greater** than the initial cost, the investment **is profitable** under these assumptions.
+
+##### Why this is correct
+
+This solution is correct because:
+
+- `FV` is used to find what the payment stream will be worth **in the future**
+- `PV` is used to discount that future payment stream back to **today's value**
+- both formulas use the same annual timing as the scenario
+- the payment sign is negative so the spreadsheet returns a positive value
+- profitability is judged by comparing `PV` with the upfront cost
+
+##### Excel and Google Sheets template
+
+Both Excel and Google Sheets use the same formula structure for this case.
+
+| Cell | Purpose | Formula or value |
+|------|---------|------------------|
+| `B2` | Initial cost | `1000` |
+| `B3` | Annual return | `300` |
+| `B4` | Annual rate | `6%` |
+| `B5` | Years | `5` |
+| `B6` | Future value | `=FV(B4,B5,-B3)` |
+| `B7` | Present value | `=PV(B4,B5,-B3)` |
+| `B8` | Profitability test | `=IF(B7>B2,\"Profitable\",\"Not profitable\")` |
+| `B9` | Value difference | `=B7-B2` |
+
+##### How to use this in an exam
+
+If the examiner gives an investment case with repeated annual returns, answer in this order:
+
+1. identify that the cash flow is a repeated payment stream
+2. check whether the rate and the cash-flow period already match
+3. use `FV` if the question asks what the stream is worth later
+4. use `PV` if the question asks what the stream is worth today
+5. compare `PV` with the initial cost if the task asks about profitability
+6. write the formula
+7. state the result
+8. interpret the financial meaning
+
+This is a strong exam pattern because it separates:
+
+- accumulation in the future
+- discounted value today
+- the final business decision
+
+##### Fast swap-in template
+
+If the examiner changes the values, keep the same structure and only replace the numbers:
+
+- `=FV(new_rate,new_years,-new_return_per_period)`
+- `=PV(new_rate,new_years,-new_return_per_period)`
+- compare `new_pv_result` with `new_initial_cost`
+
+If the cash flow is monthly instead of yearly, convert both the rate and the number of periods first:
+
+- `=FV(new_annual_rate/12,new_years*12,-new_monthly_return)`
+- `=PV(new_annual_rate/12,new_years*12,-new_monthly_return)`
+
+That makes it easy to reuse the same method in both Excel and Google Sheets during an exam.
+
+#### Exam-style task: break-even rate with `IRR` and project value with `NPV`
+
+Using the activity example, suppose we have:
+
+- initial cost = `$1,000`
+- annual cash flow for `5` years = `$300`
+- annual discount rate for the NPV part = `4%`
+
+We want to answer two questions:
+
+1. at which interest rate does the investment **break even**
+2. what is the **net present value** of the investment if the annual rate is `4%`
+
+##### Resolver-style solution
+
+###### Step 1. Recognise what each question is asking
+
+- the **break-even interest rate** is the rate where NPV becomes `0`
+- that is exactly what `IRR` gives us
+- the second part asks for project value at a chosen required return, so we use `NPV`
+
+###### Step 2. Write the cash flows in time order
+
+- Initial cost = `-1000`
+- Cash Flow 1 = `300`
+- Cash Flow 2 = `300`
+- Cash Flow 3 = `300`
+- Cash Flow 4 = `300`
+- Cash Flow 5 = `300`
+
+###### Step 3. Calculate the break-even rate with `IRR`
+
+Spreadsheet formula:
+
+`=IRR(B2:B7)`
+
+Result:
+
+`approx. 15.24%`
+
+Interpretation:
+The investment breaks even at an interest rate of about `15.24%`. This means that if the required return is exactly `15.24%`, the project's NPV is approximately `0`. At lower required returns, the project creates value. At higher required returns, it destroys value.
+
+###### Step 4. Calculate the `NPV` at `4%`
+
+Spreadsheet formula:
+
+`=NPV(4%,B3:B7)+B2`
+
+Result:
+
+`approx. 335.55`
+
+Interpretation:
+At a `4%` annual discount rate, the investment has a positive NPV of about `$335.55`. That means the discounted value of the five future cash flows is greater than the initial cost, so the investment is financially attractive under this required return.
+
+###### Step 5. Connect the two answers
+
+- break-even rate from `IRR` = `approx. 15.24%`
+- chosen required return for `NPV` = `4%`
+
+Because `4%` is well below the break-even rate, the NPV is positive. That is exactly what we would expect.
+
+##### Why this is correct
+
+This solution is correct because:
+
+- `IRR` gives the discount rate at which project NPV becomes `0`
+- `NPV` gives the project's value at a specific chosen rate
+- the cash flows are entered in time order with their true signs
+- the initial cost is handled separately in the `NPV` formula because it occurs at time `0`
+
+##### Excel and Google Sheets template
+
+Both Excel and Google Sheets use the same structure for this case.
+
+| Cell | Purpose | Formula or value |
+|------|---------|------------------|
+| `B2` | Initial cost | `-1000` |
+| `B3` | Cash Flow 1 | `300` |
+| `B4` | Cash Flow 2 | `300` |
+| `B5` | Cash Flow 3 | `300` |
+| `B6` | Cash Flow 4 | `300` |
+| `B7` | Cash Flow 5 | `300` |
+| `B8` | Discount rate | `4%` |
+| `B9` | Break-even rate | `=IRR(B2:B7)` |
+| `B10` | NPV at 4% | `=NPV(B8,B3:B7)+B2` |
+| `B11` | Decision | `=IF(B10>0,\"Profitable\",\"Not profitable\")` |
+
+##### How to use this in an exam
+
+If the examiner asks for a break-even interest rate, think:
+
+- "break-even NPV" -> `NPV = 0`
+- "rate where that happens" -> use `IRR`
+
+If the examiner then gives a separate discount rate and asks for value, think:
+
+- chosen required return -> use `NPV`
+- add the initial cost separately if it occurs at time `0`
+
+This is a strong exam pattern because it separates:
+
+- the project's **break-even rate**
+- the project's **value at a chosen rate**
+- the final investment judgement
+
+##### Fast swap-in template
+
+If the examiner changes the values, keep the same structure and only replace the numbers:
+
+- `=IRR(full_cash_flow_range)`
+- `=NPV(new_discount_rate,future_cash_flow_range)+initial_cost`
+
+If the task uses monthly cash flows instead of annual ones, make sure the rate and the periods use the same unit throughout.
+
+#### Overview of selected logical functions
+
+We will now move on to a few of the **logical functions** available in modern spreadsheets.
+
+This group of functions is useful when we want to:
+
+- write logical conditions
+- simplify long formulas
+- create reusable custom logic
+- apply calculations row by row or column by column
+- handle lookup or calculation errors cleanly
+
+The most important functions to recognise here are:
+
+| Function | What it does |
+|----------|--------------|
+| `LAMBDA` | Lets users create custom reusable functions using formulas and logic |
+| `LET` | Lets users define variables inside a formula so complex calculations become easier to read and manage |
+| `BYCOL` | Applies a calculation to each column and returns one result per column |
+| `BYROW` | Applies a calculation to each row and returns one result per row |
+| `IFERROR` | Returns a fallback value if a formula produces any error |
+| `IFNA` | Returns a fallback value only when the error is `#N/A` |
+
+##### Important note on version support
+
+`LAMBDA` and `LET` were introduced in newer Excel versions and are also available in modern Google Sheets.
+
+`BYROW` and `BYCOL` should be treated carefully in course notes:
+
+- in modern Microsoft 365 Excel and Google Sheets, they are **built-in helper functions**
+- in older Excel versions, they may be unavailable
+- in some course or exam wording, they may be described as "not standard Excel functions", which usually means their exact use depends on the spreadsheet version or the intended context
+
+So if a note says they are "not standard" or "not built-in", the safest exam interpretation is:
+
+1. explain the likely intended meaning
+2. show how you would solve it if the function is available
+3. if needed, explain the equivalent row-based or column-based logic in ordinary spreadsheet steps
+
+That way your answer stays useful even when the wording is a little ambiguous.
+
+##### Spreadsheet-ready examples
+
+`LET` example:
+
+`=LET(rate,B3/12,periods,B4*12,PMT(rate,periods,B2))`
+
+This makes a finance formula easier to read because `rate` and `periods` are named once and reused.
+
+`LAMBDA` example:
+
+`=LAMBDA(x,x*1.2)(100)`
+
+This is a simple example of a custom formula that increases a value by `20%`.
+
+`BYROW` example:
+
+`=BYROW(B2:E6,LAMBDA(r,AVERAGE(r)))`
+
+This calculates one average for each row in the range.
+
+`BYCOL` example:
+
+`=BYCOL(B2:E6,LAMBDA(c,MAX(c)))`
+
+This calculates one maximum value for each column in the range.
+
+If `BYROW` or `BYCOL` is not available in the spreadsheet version being used, the safe fallback idea is:
+
+- for `BYROW`, create one helper result per row, for example `=AVERAGE(B2:E2)` and copy downward
+- for `BYCOL`, create one helper result per column, for example `=MAX(B2:B6)` and copy across
+
+So even if the function name is unfamiliar or unavailable, you can still solve the analytical task by identifying whether the calculation is meant to happen **row by row** or **column by column**.
+
+`IFERROR` example:
+
+`=IFERROR(VLOOKUP(A2,$H$2:$J$10,2,FALSE),"Not found")`
+
+This catches any error and replaces it with a cleaner message.
+
+`IFNA` example:
+
+`=IFNA(VLOOKUP(A2,$H$2:$J$10,2,FALSE),"Not found")`
+
+This only catches the `#N/A` case, which is useful when the problem is specifically "value not found".
+
+##### Exam use
+
+If the examiner asks which logical function should be used, the fastest decision pattern is:
+
+1. use `LAMBDA` when the task is about building a custom reusable function
+2. use `LET` when the task is about simplifying or structuring a long formula
+3. use `BYROW` when the calculation should happen once for each row
+4. use `BYCOL` when the calculation should happen once for each column
+5. use `IFERROR` when any spreadsheet error should be replaced with a fallback value
+6. use `IFNA` when only missing-match errors should be replaced
+
+If the examiner mentions `BYROW` or `BYCOL` in an uncertain or version-dependent way, answer like this:
+
+1. explain that the task is about applying one calculation across each row or each column
+2. if the platform supports the function, show the direct `BYROW` or `BYCOL` formula
+3. if the platform does not support it, show the equivalent helper-column or helper-row method
+
+This is a very exam-safe approach because it shows that you understand the underlying spreadsheet logic, not just the exact function name.
+
+This is exam-useful because it shows not just what the function does, but **why it fits the exact spreadsheet problem**.
+
+#### Logical function: `LAMBDA`
+
+Function format:
+
+`LAMBDA([parameter1, parameter2, ...], calculation)`
+
+Where:
+
+- `parameter1`, `parameter2`, and the remaining items are the inputs of the custom function
+- `calculation` is the formula the function should perform
+
+The purpose of `LAMBDA` is to let the user create **custom reusable functions** with clear names and reusable logic inside a workbook.
+
+This is useful when the same calculation appears many times and you want:
+
+- a cleaner workbook
+- a more readable formula
+- less repeated logic
+- easier reuse across many cells
+
+The crucial role of `LAMBDA` in Excel is that it allows you to build your own function logic instead of relying only on built-in functions. In other words, you can define a personalised formula once and then reuse it throughout the workbook.
+
+##### How `LAMBDA` works in simple terms
+
+You can explain `LAMBDA` in three steps:
+
+1. define the function
+2. write the calculation
+3. use the custom function
+
+###### 1. Define the function
+
+First, decide what input values the function should accept. These are the parameters or arguments. You can choose user-friendly names as long as they are valid Excel names.
+
+###### 2. Write the calculation
+
+Inside `LAMBDA`, you then write the formula that tells Excel how to process those inputs. This can include:
+
+- arithmetic operations
+- logical conditions
+- built-in Excel functions
+- other spreadsheet formulas
+
+###### 3. Use the custom function
+
+Once the `LAMBDA` is defined, you can test it directly or assign it a friendly workbook name and use it like an ordinary Excel function.
+
+This means `LAMBDA` helps you encapsulate a longer or repeated calculation into one clean reusable function.
+
+##### Worked example
+
+Suppose we want to create a function that:
+
+1. divides a number by `2`
+2. adds `1`
+3. raises the result to the power of `3`
+
+If the input value is called `x`, the logic is:
+
+`((x/2)+1)^3`
+
+That gives the direct `LAMBDA` formula:
+
+`=LAMBDA(x,((x/2)+1)^3)`
+
+If we want to test it immediately on a value such as `4`, we can call it directly:
+
+`=LAMBDA(x,((x/2)+1)^3)(4)`
+
+Step-by-step result for `x = 4`:
+
+- `4/2 = 2`
+- `2 + 1 = 3`
+- `3^3 = 27`
+
+So the result is:
+
+`27`
+
+##### How to use it as a reusable custom function
+
+In Excel, a common workflow is:
+
+1. write the `LAMBDA` logic
+2. assign it a friendly name in the workbook's name manager
+3. call that name like an ordinary function later
+
+For example, if you name the function `TransformValue`, the custom logic would be:
+
+`=LAMBDA(x,((x/2)+1)^3)`
+
+Then the worksheet use becomes:
+
+`=TransformValue(4)`
+
+Result:
+
+`27`
+
+##### Second worked example: `CelsiusToFahrenheit`
+
+Another clear way to demonstrate `LAMBDA` is to build a temperature-conversion function.
+
+Suppose we want a custom function called `CelsiusToFahrenheit` that converts Celsius to Fahrenheit.
+
+The direct `LAMBDA` logic is:
+
+`=LAMBDA(celsius,(celsius*9/5)+32)`
+
+Here:
+
+- `celsius` is the input parameter
+- `(celsius*9/5)+32` is the conversion calculation
+
+If the function is named `CelsiusToFahrenheit` in the workbook, we can use it like this:
+
+`=CelsiusToFahrenheit(25)`
+
+Result:
+
+`77`
+
+##### Walkthrough
+
+The walkthrough is:
+
+1. identify the input value, here `25` degrees Celsius
+2. multiply by `9/5`
+3. add `32`
+4. return the Fahrenheit result
+
+Step by step:
+
+- `25 * 9/5 = 45`
+- `45 + 32 = 77`
+
+So:
+
+`25°C = 77°F`
+
+##### Exam-relevant case
+
+This is a strong exam-style case because it shows a practical spreadsheet problem:
+
+- the raw data is stored in Celsius
+- the report or stakeholder needs Fahrenheit
+- the same conversion may be needed many times across a worksheet
+
+Instead of rewriting the conversion formula in every cell, `LAMBDA` lets you create one reusable function and then apply it consistently.
+
+That makes the spreadsheet:
+
+- easier to read
+- easier to check
+- easier to reuse
+- less likely to contain repeated formula errors
+
+Using the `LAMBDA` function in this way allows us to create dynamic, reusable functions tailored to our needs, improving spreadsheet readability, efficiency, and flexibility.
+
+##### How to use this in an exam answer
+
+If the examiner gives a custom-function question like this, answer in this order:
+
+1. state that `LAMBDA` is used to create a custom reusable function
+2. define the parameter, here `celsius`
+3. write the custom formula
+4. test the function on one value
+5. show the result
+6. explain why the custom function is useful in a real workbook
+
+A strong exam answer can look like this:
+
+"I would use `LAMBDA` to create a reusable conversion function. The parameter is `celsius`, and the formula is `=LAMBDA(celsius,(celsius*9/5)+32)`. If I name the function `CelsiusToFahrenheit`, then `=CelsiusToFahrenheit(25)` returns `77`. This is useful when the same temperature conversion must be repeated across many cells because it improves consistency and readability."
+
+##### Third worked example: divide by `6`, add `4`, then raise to the power of `5`
+
+If the task says:
+
+"Use the `LAMBDA` function to create a function that divides a number by `6`, adds `4`, and then raises the result to the power of `5`"
+
+then the logic is:
+
+`((x/6)+4)^5`
+
+So the direct formula is:
+
+`=LAMBDA(x,((x/6)+4)^5)`
+
+If we test it on the value `6`, we get:
+
+`=LAMBDA(x,((x/6)+4)^5)(6)`
+
+Step by step:
+
+- `6/6 = 1`
+- `1 + 4 = 5`
+- `5^5 = 3125`
+
+So the result is:
+
+`3125`
+
+If we want to reuse it throughout the workbook, we could assign a friendly name such as `ScaleAndPower`, and then use:
+
+`=ScaleAndPower(6)`
+
+Result:
+
+`3125`
+
+##### When this is useful
+
+This kind of `LAMBDA` is useful when the same transformation must be applied repeatedly to many values, for example:
+
+- converting raw readings into a reporting score
+- applying the same scaling rule to performance data
+- transforming measurements in a model before later analysis
+- standardising a custom business rule so every row uses the same logic
+
+In other words, the exact arithmetic may change from one case to another, but the exam logic is the same: if one custom formula must be reused many times, `LAMBDA` is a strong choice.
+
+##### Exam-relevant case
+
+A realistic exam-style case could be:
+
+"A company uses a custom scoring rule for sensor values. Each value must be divided by `6`, increased by `4`, and then raised to the power of `5`. Create a reusable spreadsheet function and show the result when the input value is `6`."
+
+A strong answer would be:
+
+- use `LAMBDA` because the same rule may be repeated across many rows
+- write `=LAMBDA(x,((x/6)+4)^5)`
+- test it with `=LAMBDA(x,((x/6)+4)^5)(6)`
+- report the result `3125`
+- explain that the function can be named and reused
+
+##### Exam use
+
+If the examiner asks about `LAMBDA`, explain:
+
+1. that it is used to create a custom reusable function
+2. what the parameter or parameters represent
+3. what output the function is designed to return
+4. what calculation the function performs
+5. how the formula is structured
+6. how the function can be tested directly or named for reuse
+
+This is strong in an exam because it shows:
+
+- formula logic
+- custom-function understanding
+- practical spreadsheet reuse
+
+##### Fast swap-in template
+
+If the examiner changes the arithmetic steps, keep the same structure:
+
+- `=LAMBDA(x,new_calculation_with_x)`
+- direct test: `=LAMBDA(x,new_calculation_with_x)(test_value)`
+
+If there is more than one input, use more parameters, for example:
+
+- `=LAMBDA(x,y,new_calculation_with_x_and_y)`
+
+That makes it easy to adapt the same method if the exam changes the operation but still asks for a custom function.
+
+#### Logical function: `LET`
+
+Function format:
+
+`LET(name1, value1, [name2, value2], ..., calculation)`
+
+Where:
+
+- `name1`, `name2`, and the remaining names are the chosen variable names
+- `value1`, `value2`, and the remaining values are the expressions assigned to those names
+- `calculation` is the final part of the formula that uses the named variables
+
+The names should be valid Excel names, and the values can be:
+
+- numbers
+- cell references
+- formulas
+- logical expressions
+
+The `LET` function allows us to define and name variables inside one formula. This makes long formulas easier to read, easier to organise, and easier to understand.
+
+This is useful because:
+
+- intermediate results get meaningful names
+- repeated calculations do not need to be written many times
+- complex formulas become easier to audit
+- the final formula becomes more readable
+
+The function can handle up to `126` name/value pairs.
+
+##### How `LET` is similar to and different from `LAMBDA`
+
+`LET` is similar to `LAMBDA` because both functions make formulas cleaner and easier to manage.
+
+The difference is:
+
+- `LAMBDA` creates a **custom reusable function**
+- `LET` creates **named variables inside one formula**
+
+So if the task is about building a reusable named function, choose `LAMBDA`.
+
+If the task is about making one complex formula easier to read and manage, choose `LET`.
+
+##### Simple example
+
+Here is a very simple `LET` example:
+
+`=LET(x,5,y,10,x+y)`
+
+In this formula:
+
+- `x` is defined as `5`
+- `y` is defined as `10`
+- the final calculation is `x+y`
+
+So the result is:
+
+`15`
+
+This shows the core idea behind `LET`: break the formula into smaller named parts, and then use those names in the final calculation.
+
+##### Using a variable name, cell address, and calculation formula
+
+When using `LET`, the pattern is:
+
+- function name: `LET`
+- variable name: for example `x`
+- value source: a number or a cell address such as `B2`
+- final calculation: a formula that uses the variable name
+
+So if the value is stored in cell `B2`, a very clear pattern is:
+
+`=LET(x,B2,calculation_using_x)`
+
+For example, if we want to double the value in `B2` and then add `3`, we can write:
+
+`=LET(x,B2,(x*2)+3)`
+
+This means:
+
+- take the value from `B2`
+- call it `x` inside the formula
+- use `x` in the calculation
+
+This is exam-useful because many `LET` questions are really asking whether you understand how to replace a raw cell reference with a named variable and then use that variable in the final formula.
+
+##### Worked example
+
+Suppose we want to calculate a monthly loan payment, but we want the formula to be easier to read.
+
+Without `LET`, the formula could be:
+
+`=PMT(12%/12,2*12,100000)`
+
+With `LET`, we can write:
+
+`=LET(rate,12%/12,periods,2*12,loan,100000,PMT(rate,periods,loan))`
+
+Here:
+
+- `rate` means the monthly interest rate
+- `periods` means the total number of monthly repayments
+- `loan` means the loan amount
+
+This produces the same result as the ordinary formula, but it is clearer to read because the variable names explain what each value means.
+
+##### Walkthrough
+
+The walkthrough is:
+
+1. define the variable `rate`
+2. define the variable `periods`
+3. define the variable `loan`
+4. use those names in the final calculation
+
+So the logic becomes:
+
+- `rate = 12%/12`
+- `periods = 2*12`
+- `loan = 100000`
+- final calculation = `PMT(rate,periods,loan)`
+
+This is exactly why `LET` is useful. The formula still works as one formula, but the structure is much easier to follow.
+
+##### Exam-relevant case
+
+A realistic exam-style case could be:
+
+"A spreadsheet contains a complex finance formula with repeated rate and period calculations. Rewrite it using `LET` so that the variables are named and the formula is easier to understand."
+
+A strong answer would be:
+
+- state that `LET` is used to name variables inside one formula
+- identify the repeated parts, such as rate and periods
+- assign those values meaningful names
+- write the final calculation using those names
+- explain that the result is the same, but the formula is easier to read and maintain
+
+##### How to use this in an exam answer
+
+If the examiner asks about `LET`, answer in this order:
+
+1. state that `LET` defines variables inside a formula
+2. name the variables clearly
+3. assign the values or expressions
+4. write the final calculation using the named variables
+5. explain that `LET` improves readability and reduces repetition
+
+A strong exam answer can look like this:
+
+"I would use `LET` to define the repeated values as named variables inside the formula. For example, `=LET(rate,12%/12,periods,2*12,loan,100000,PMT(rate,periods,loan))` names the rate, periods, and loan amount before calculating the payment. This makes the formula easier to read and avoids repeating the same expressions."
+
+##### Fast swap-in template
+
+If the examiner changes the scenario, keep the same structure:
+
+- `=LET(name1,value1,name2,value2,...,final_calculation_using_names)`
+
+For example:
+
+- `=LET(rate,new_rate,periods,new_periods,loan,new_loan,PMT(rate,periods,loan))`
+
+This makes it easy to adapt the formula when the exam changes the numbers but still wants the same structured logic.
+
+#### Logical functions: `BYCOL` and `BYROW`
+
+These functions apply another function to a whole column or a whole row of a table.
+
+Function formats:
+
+`=BYCOL(array,LAMBDA(column,calculation_with_column))`
+
+`=BYROW(array,LAMBDA(row,calculation_with_row))`
+
+Where:
+
+- `array` refers to the table range
+- `LAMBDA(...)` is the function being applied
+- `column` is the current column being processed inside `BYCOL`
+- `row` is the current row being processed inside `BYROW`
+
+The main idea is simple:
+
+- use `BYCOL` when you want one result for each column
+- use `BYROW` when you want one result for each row
+
+##### Table example
+
+Suppose we create a table with two columns:
+
+| Row | `Value1` | `Value2` |
+|-----|----------|----------|
+| 2 | `1` | `10` |
+| 3 | `2` | `11` |
+| 4 | `3` | `12` |
+| 5 | `4` | `13` |
+| 6 | `5` | `14` |
+| 7 | `6` | `15` |
+
+So the table range is:
+
+`$B$2:$C$7`
+
+##### `BYCOL` example: sum of each column
+
+To calculate the sum of each column, we can use:
+
+`=BYCOL($B$2:$C$7,LAMBDA(table1,SUM(table1)))`
+
+Here:
+
+- `$B$2:$C$7` is the table range
+- `LAMBDA(table1,SUM(table1))` is the function being applied
+- `table1` is the temporary name for each column inside the formula
+- `SUM(table1)` adds the values in the current column
+
+The result is:
+
+- `Value1` sum = `1+2+3+4+5+6 = 21`
+- `Value2` sum = `10+11+12+13+14+15 = 75`
+
+So `BYCOL` returns one result for each column:
+
+- `21`
+- `75`
+
+##### `BYROW` example: sum of each row
+
+To repeat the same logic for rows, we use:
+
+`=BYROW($B$2:$C$7,LAMBDA(table1,SUM(table1)))`
+
+Here:
+
+- the same table range is used
+- `table1` now represents one row at a time
+- `SUM(table1)` adds the values across that row
+
+The row sums are:
+
+- row 2 -> `1+10 = 11`
+- row 3 -> `2+11 = 13`
+- row 4 -> `3+12 = 15`
+- row 5 -> `4+13 = 17`
+- row 6 -> `5+14 = 19`
+- row 7 -> `6+15 = 21`
+
+So `BYROW` returns:
+
+- `11`
+- `13`
+- `15`
+- `17`
+- `19`
+- `21`
+
+##### Walkthrough
+
+The safest walkthrough is:
+
+1. identify the full input table range
+2. decide whether the task wants one result per column or one result per row
+3. choose `BYCOL` or `BYROW`
+4. put the calculation inside `LAMBDA`
+5. interpret the returned results
+
+This means the exam logic is not really about memorising one formula. It is about recognising the direction of the calculation:
+
+- vertical summary -> `BYCOL`
+- horizontal summary -> `BYROW`
+
+##### Excel and Google Sheets templates
+
+In modern Excel and modern Google Sheets, the same formulas work.
+
+Excel or Google Sheets template for column sums:
+
+- headers in `B1:C1`
+- values in `B2:C7`
+- formula in `E2`
+- use `=BYCOL($B$2:$C$7,LAMBDA(col,SUM(col)))`
+
+Excel or Google Sheets template for row sums:
+
+- headers in `B1:C1`
+- values in `B2:C7`
+- formula in `D2`
+- use `=BYROW($B$2:$C$7,LAMBDA(row,SUM(row)))`
+
+If the exam changes the calculation, you can keep the same structure and only replace the inner function, for example:
+
+- column averages -> `=BYCOL(input_range,LAMBDA(col,AVERAGE(col)))`
+- row averages -> `=BYROW(input_range,LAMBDA(row,AVERAGE(row)))`
+- column maximums -> `=BYCOL(input_range,LAMBDA(col,MAX(col)))`
+- row maximums -> `=BYROW(input_range,LAMBDA(row,MAX(row)))`
+
+##### UI-ready swap-in pattern
+
+If you want a very simple pattern where you only enter values and let the formula solve the rest, keep this structure:
+
+- input the table values into one range
+- replace only the range reference
+- keep the same `BYCOL` or `BYROW` structure
+- change only the inner calculation if the task asks for `SUM`, `AVERAGE`, `MAX`, `MIN`, or another simple function
+
+The safest reusable patterns are:
+
+- `=BYCOL(input_range,LAMBDA(col,SUM(col)))`
+- `=BYROW(input_range,LAMBDA(row,SUM(row)))`
+- `=BYCOL(input_range,LAMBDA(col,AVERAGE(col)))`
+- `=BYROW(input_range,LAMBDA(row,AVERAGE(row)))`
+
+This is very exam-useful because if a question changes only the numbers, you do not need a new method. You only paste the new values into the range and keep the same formula logic.
+
+##### Exam-relevant case
+
+A realistic exam-style case could be:
+
+"A table contains monthly values for two performance measures. Calculate the total for each column and then calculate the total for each row."
+
+A strong answer would be:
+
+- identify the range
+- use `BYCOL` for the column totals
+- use `BYROW` for the row totals
+- write both formulas
+- show the returned results
+- explain what the column results and row results mean
+
+##### How to use this in an exam answer
+
+If the examiner asks about `BYCOL` or `BYROW`, answer in this order:
+
+1. state whether the task is column-based or row-based
+2. name the correct function
+3. write the formula with the table range
+4. show the `LAMBDA` part clearly
+5. state the returned values
+6. explain what the results mean for the table
+
+If the task only changes the values, keep the same structure and replace only:
+
+- the range
+- the numbers inside the table
+- the inner function if the task wants something other than `SUM`
+
+#### Logical functions: `IFERROR` and `IFNA`
+
+Quite often, it is helpful to protect spreadsheet formulas from errors and make the output easier to interpret. Two functions that do this are `IFERROR` and `IFNA`.
+
+Function formats:
+
+`IFERROR(value, value_if_error)`
+
+`IFNA(value, value_if_na)`
+
+Where:
+
+- `value` is the formula or argument being checked
+- `value_if_error` is the output returned if `IFERROR` finds an error
+- `value_if_na` is the output returned if `IFNA` finds the specific `#N/A` error
+
+The key difference is:
+
+- `IFERROR` catches many common spreadsheet errors
+- `IFNA` catches only the `#N/A` error
+
+`IFERROR` evaluates these error types:
+
+- `#N/A`
+- `#VALUE!`
+- `#REF!`
+- `#DIV/0!`
+- `#NUM!`
+- `#NAME?`
+- `#NULL!`
+
+So:
+
+- use `IFNA` when the issue is specifically "value not found"
+- use `IFERROR` when you want a wider safety net for many spreadsheet errors
+
+##### Worked comparison example
+
+Suppose the first row already contains examples of the error types across the range `B1:H1`.
+
+For example:
+
+- `B1` -> `#N/A`
+- `C1` -> `#VALUE!`
+- `D1` -> `#REF!`
+- `E1` -> `#DIV/0!`
+- `F1` -> `#NUM!`
+- `G1` -> `#NAME?`
+- `H1` -> `#NULL!`
+
+Now suppose the second row uses `IFNA`, and the third row uses `IFERROR`.
+
+##### `IFNA` example
+
+In `B2`, write:
+
+`=IFNA(B1,"IFNA outcome")`
+
+Then copy the formula across to `H2`.
+
+What happens:
+
+- when the original cell contains `#N/A`, `IFNA` returns `"IFNA outcome"`
+- when the original cell contains another error type, `IFNA` does **not** replace it
+
+So in this demonstration:
+
+- `B2` becomes `"IFNA outcome"`
+- `C2:H2` still show their original non-`#N/A` errors
+
+##### `IFERROR` example
+
+In `B3`, write:
+
+`=IFERROR(B1,"IFERROR outcome")`
+
+Then copy the formula across to `H3`.
+
+What happens:
+
+- every recognised error type is replaced with `"IFERROR outcome"`
+
+So in this demonstration:
+
+- `B3:H3` all become `"IFERROR outcome"`
+
+##### Walkthrough
+
+The safest walkthrough is:
+
+1. identify what kind of error the spreadsheet may return
+2. decide whether the task is specifically about `#N/A` or about any common error
+3. choose `IFNA` for `#N/A` only
+4. choose `IFERROR` for broader error handling
+5. write the fallback text clearly
+6. explain what the fallback message means for the user or report
+
+##### Excel and Google Sheets templates
+
+The same formulas work in modern Excel and modern Google Sheets.
+
+Excel or Google Sheets template for lookup-specific handling:
+
+- formula: `=IFNA(your_lookup_formula,"Not found")`
+- safe example: `=IFNA(VLOOKUP(A2,$H$2:$J$10,2,FALSE),"Not found")`
+
+Excel or Google Sheets template for broad error handling:
+
+- formula: `=IFERROR(your_formula,"Check input")`
+- safe example: `=IFERROR(A2/B2,"Check input")`
+
+##### UI-ready swap-in pattern
+
+If you want a reusable pattern where you only replace the live formula or reference, use:
+
+- `=IFNA(input_formula_or_cell,"your_message")`
+- `=IFERROR(input_formula_or_cell,"your_message")`
+
+This is very exam-useful because if the question changes only the formula or values, you do not need a new method. You only replace:
+
+- the inner formula or cell reference
+- the fallback message if needed
+
+##### Exam-relevant case
+
+A realistic exam-style case could be:
+
+"A lookup formula may return `#N/A` when a customer ID is missing. Another calculation may return different spreadsheet errors. Explain whether `IFNA` or `IFERROR` should be used."
+
+A strong answer would be:
+
+- use `IFNA` when only the missing-match case should be handled
+- use `IFERROR` when any common spreadsheet error should be replaced
+- show one formula example for each
+- explain why the broader function would be too wide if the task wants only `#N/A`
+
+##### How to use this in an exam answer
+
+If the examiner asks about `IFERROR` or `IFNA`, answer in this order:
+
+1. identify the type of error handling needed
+2. choose the correct function
+3. write the formula
+4. show the fallback output
+5. explain why that function fits better than the alternative
+
+If the task only changes the inner formula, keep the same structure and replace only:
+
+- the checked formula or cell
+- the fallback text
+
+#### Data quality, outliers, and error reduction
+
+#### Why data quality matters in Statistical Tools
+
+Statistical output is only as useful as the data that produced it.
+
+If the data includes:
+
+- wrong entries
+- extreme outliers
+- inconsistent formatting
+- duplicated records
+- missing or invalid values
+
+then the rest of the model can become weaker or misleading.
+
+That is why this course teaches techniques that improve data quality and reduce the effect of bad data points.
+
+#### Z-scores and outlier reduction
+
+One important example is the use of **z-scores**.
+
+A z-score helps show how far a value is from the mean in standard-deviation units. This makes it easier to identify values that may be unusually far from the rest of the dataset.
+
+But a strong analyst does **not** remove outliers automatically.
+
+Instead, the analyst should:
+
+1. calculate the z-score or other outlier indicator
+2. check whether the unusual value may be a real observation
+3. investigate possible entry error or measurement error
+4. decide whether to keep, correct, flag, or exclude the value
+5. explain how that choice affects the model
+
+#### Excel and Google Sheets template for outlier checks
+
+One clean spreadsheet setup is:
+
+| Cell or column | Purpose | Formula |
+|----------------|---------|---------|
+| `B2:B101` | Raw values | Source data |
+| `E2` | Mean | `=AVERAGE(B2:B101)` |
+| `E3` | Sample SD | `=STDEV.S(B2:B101)` |
+| `C2` | Z-score for first record | `=(B2-$E$2)/$E$3` |
+| `D2` | Flag | `=IF(ABS(C2)>3,"Investigate","Keep")` |
+
+Then copy the formulas in columns `C` and `D` down the sheet.
+
+This gives you a quick workflow in both Excel and Google Sheets:
+
+1. calculate the mean
+2. calculate the sample standard deviation
+3. standardise each value into a z-score
+4. flag unusually extreme values
+5. investigate before removing anything
+
+#### Why this template is exam-useful
+
+This template is strong in an exam because it lets you explain both the method and the judgement:
+
+- the formula shows how the z-score is calculated
+- the flagging rule shows a practical screening step
+- the written explanation shows that flagged values still need investigation
+
+You can also mention that **rounding can create small differences** in the displayed z-score without changing the practical interpretation.
+
+#### Error reduction in practice
+
+In real spreadsheet work, error reduction may involve:
+
+- standardising formats before analysis
+- checking unusual values
+- validating formulas and ranges
+- comparing summary statistics before and after cleaning
+- documenting what was corrected and why
+
+#### Why this matters for decision-making
+
+Bad data does not only create bad numbers. It can create bad decisions.
+
+If an outlier inflates an average, or if a wrong data point changes a regression pattern, the conclusion can shift in the wrong direction. Good data-quality work protects the rest of the model from that kind of distortion.
+
+#### The Task
+
+This task mixes several of the most important functions from Lesson `1.2`. That makes it very exam-useful, because many spreadsheet exams do not ask about only one tool in isolation.
+
+##### Question 1 - `PMT`
+
+Use the `PMT` function to calculate the value of a single monthly instalment when:
+
+- loan value = `$10,000`
+- loan term = `2` years
+- annual interest rate = `12%`
+
+###### Solution 1
+
+First convert the annual rate and time:
+
+- monthly rate = `12% / 12 = 1%`
+- total monthly repayments = `2 * 12 = 24`
+
+Spreadsheet formula:
+
+`=PMT(12%/12,24,-10000)`
+
+Spreadsheet result:
+
+`approx. 470.73`
+
+Interpretation:
+The monthly repayment is about `$470.73`. This workbook keeps the loan value positive in the table and applies the minus sign inside the formula, so Excel returns a positive payment amount.
+
+Exam-safe note:
+If you instead enter the loan directly as a positive `pv` inside `PMT`, Excel will return `-470.73`. The magnitude is the same, so the practical interpretation does not change.
+
+##### Question 2 - `RATE`
+
+Use the `RATE` function to calculate the monthly interest rate when:
+
+- repayment amount = `$750`
+- initial loan value = `$15,000`
+- loan term = `2` years
+
+Also calculate the annual interest rate.
+
+###### Solution 2
+
+Total number of periods:
+
+- `2 * 12 = 24`
+
+Spreadsheet formula:
+
+`=RATE(24,-750,15000)`
+
+Spreadsheet result:
+
+- monthly interest rate `approx. 0.0151308`
+- monthly interest rate `approx. 1.5131%`
+
+Annual interpretation:
+
+- annual rate used in the workbook solution `approx. 18.16%`
+
+Exam-safe interpretation:
+In this course, the safest annual interpretation is usually the **nominal annual rate**, so the answer is about `18.16% per year`.
+
+Extra note:
+If you compound the monthly rate instead of multiplying by `12`, the effective annual rate would be higher. The workbook solution here uses the simpler course-style annualisation by multiplying the monthly rate by `12`.
+
+##### Question 3 - `NPER`
+
+Use the `NPER` function to calculate the number of monthly repayments when:
+
+- monthly interest rate = `2%`
+- initial loan value = `$60,000`
+- repayment amount = `$1,258`
+
+###### Solution 3
+
+Spreadsheet formula:
+
+`=NPER(2%,-1258,60000)`
+
+Spreadsheet result:
+
+`approx. 155.38`
+
+Interpretation:
+The loan would take about `155.38` monthly repayments, which is about `12.95` years. If the answer must be interpreted in whole payment periods, it is safest to say **about 156 monthly payments**.
+
+##### Question 4 - `IRR`
+
+Calculate the Internal Rate of Return when:
+
+- initial investment = `$2,000`
+- annual cash flow = `$225`
+- duration = `5` years
+
+###### Solution 4
+
+Cash-flow layout:
+
+- time `0` -> `-2000`
+- years `1` to `5` -> `225`, `225`, `225`, `225`, `225`
+
+Spreadsheet formula:
+
+`=IRR(B2:B7)`
+
+if:
+
+- `B2 = -2000`
+- `B3:B7 = 225`
+
+Spreadsheet result:
+
+`approx. -16.55%`
+
+Interpretation:
+The IRR is negative, so the investment does not recover its cost in present-value terms. This makes sense because the total undiscounted inflows are only `$1,125`, which is still below the `$2,000` initial cost.
+
+##### Question 5 - `NPV`
+
+Calculate the Net Present Value for the same initial investment and cash flows, using a discount rate of `17.590%`.
+
+###### Solution 5
+
+Spreadsheet formula:
+
+`=NPV(17.590%,B3:B7)+B2`
+
+if:
+
+- `B2 = -2000`
+- `B3:B7 = 225`
+
+Spreadsheet result:
+
+`approx. -1289.80`
+
+Interpretation:
+At a discount rate of `17.590%`, the investment has a strongly negative NPV, so it destroys value under that required return.
+
+Important exam note:
+The stated rate of `17.590%` does **not** match the actual IRR of the stated cash-flow stream. The actual IRR is about `-16.55%`. This is a good exam-resolver check:
+
+- if a question gives the cash flows and says "calculate IRR", use the cash flows
+- if a later part separately tells you to use `17.590%`, then use that rate directly for the `NPV` formula
+- if you used the true IRR from Question 4 as the NPV discount rate, the NPV would be approximately `0` by definition
+
+##### Question 6 - `LAMBDA`
+
+Use the `LAMBDA` function to create a function that:
+
+- divides a number by `6`
+- adds `3`
+- raises the result to the power of `2`
+
+Note that `x = 4`. Then calculate the same function for a range of `14` numbers.
+
+###### Solution 6
+
+Function logic:
+
+`((x/6)+3)^2`
+
+Direct `LAMBDA`:
+
+`=LAMBDA(x,((x/6)+3)^2)`
+
+Direct test for `x = 4`:
+
+`=LAMBDA(x,((x/6)+3)^2)(4)`
+
+Result:
+
+`approx. 13.4444`
+
+Range-of-14 setup:
+
+- put values `4` to `17` in `A2:A15`
+- in `B2`, use `=LAMBDA(x,((x/6)+3)^2)(A2)`
+- fill down to `B15`
+
+Sample output table:
+
+| Input `x` | Output `f(x)` |
+|-----------|---------------|
+| `4` | `13.4444` |
+| `5` | `14.6944` |
+| `6` | `16.0000` |
+| `7` | `17.3611` |
+| `8` | `18.7778` |
+| `9` | `20.2500` |
+| `10` | `21.7778` |
+| `11` | `23.3611` |
+| `12` | `25.0000` |
+| `13` | `26.6944` |
+| `14` | `28.4444` |
+| `15` | `30.2500` |
+| `16` | `32.1111` |
+| `17` | `34.0278` |
+
+Exam use:
+If the examiner changes only the arithmetic rule or the input range, keep the same structure and replace only the inner logic or source cells.
+
+##### Question 7 - `LET`
+
+Repeat the same calculation using the `LET` function.
+
+###### Solution 7
+
+Direct formula for `x = 4`:
+
+`=LET(x,4,((x/6)+3)^2)`
+
+Result:
+
+`approx. 13.4444`
+
+Range-of-14 setup:
+
+- put values `4` to `17` in `A2:A15`
+- in `B2`, use `=LET(x,A2,((x/6)+3)^2)`
+- fill down to `B15`
+
+Interpretation:
+The result set is exactly the same as in the `LAMBDA` version. The difference is that `LET` creates named variables **inside one formula**, while `LAMBDA` creates reusable custom function logic.
+
+##### Question 8 - `IPMT`
+
+Using the information shown in the task image, calculate `IPMT`.
+
+###### Solution 8
+
+Given:
+
+- annual interest rate = `12%`
+- monthly interest rate = `1%`
+- number of monthly repayments = `73.07`
+- initial value of loan = `$65,000`
+- repayment amount = `$1,258`
+
+Important exam note:
+The image does not show the payment period number (`per`), and `IPMT` requires one. The safest interpretation is therefore the **first payment period**, which matches the earlier lesson pattern.
+
+Spreadsheet formula:
+
+`=IPMT(12%/12,1,73.07,-65000)`
+
+Spreadsheet result:
+
+`approx. 650.00`
+
+Interpretation:
+The interest portion of the first payment is about `$650.00`.
+
+If a later exam version changes the payment period, keep the same structure and replace only:
+
+- `per`
+- `nper`
+- `rate`
+- `loan value`
+
+##### Question 9 - `BYROW` and `BYCOL`
+
+Using the table shown in the task image, calculate the row sums and column sums.
+
+###### Solution 9
+
+Data:
+
+| Row | `Value 1` | `Value 2` |
+|-----|-----------|-----------|
+| `2` | `7` | `11` |
+| `3` | `8` | `58` |
+| `4` | `5` | `45` |
+| `5` | `6` | `11` |
+| `6` | `9` | `24` |
+| `7` | `7` | `5` |
+
+Assume the data range is:
+
+`B2:C7`
+
+Column sums with `BYCOL`:
+
+`=BYCOL(B2:C7,LAMBDA(col,SUM(col)))`
+
+Results:
+
+- `Value 1` total = `42`
+- `Value 2` total = `154`
+
+Row sums with `BYROW`:
+
+`=BYROW(B2:C7,LAMBDA(row,SUM(row)))`
+
+Results:
+
+- row `2` total = `18`
+- row `3` total = `66`
+- row `4` total = `50`
+- row `5` total = `17`
+- row `6` total = `33`
+- row `7` total = `12`
+
+Workbook-supported alternative exam template:
+The separate `Bycol and Byrol solution.xlsx` file shows the same method on a wider table:
+
+- data range `A2:D4`
+- rows: `[10,20,30,40]`, `[15,25,35,45]`, `[20,30,40,50]`
+- `=BYROW(A2:D4,LAMBDA(row,SUM(row)))` -> `100`, `120`, `140`
+- `=BYCOL(A2:D4,LAMBDA(col,SUM(col)))` -> `45`, `75`, `105`, `135`
+
+Exam use:
+This confirms that when the exam changes the table shape, you usually keep the same `BYROW` or `BYCOL` structure and replace only the range.
+
+##### Exam resolver for this mixed task
+
+If the examiner gives one task that mixes finance functions and logical functions, answer in this order:
+
+1. split the task into sub-questions by function
+2. identify which function each part is testing
+3. convert rate and time into matching periods where needed
+4. apply the sign rule for finance formulas
+5. write one spreadsheet formula per part
+6. show the result for each part
+7. interpret each result in plain business or spreadsheet language
+8. if the task contains inconsistent data, say so clearly and explain the safest interpretation
+
+##### Swap-in templates for new exam cases
+
+If the exam changes only the numbers, ranges, or case wording, keep the same function skeletons and replace only the inputs:
+
+| Goal | Reusable template |
+|------|-------------------|
+| `PMT` | `=PMT(rate_per_period,total_periods,-loan_value)` |
+| `RATE` | `=RATE(total_periods,-payment,loan_value)` |
+| `NPER` | `=NPER(rate_per_period,-payment,loan_value)` |
+| `IPMT` | `=IPMT(rate_per_period,period_number,total_periods,-loan_value)` |
+| `IRR` | `=IRR(cash_flow_range)` |
+| `NPV` | `=NPV(discount_rate,future_cash_flow_range)+initial_cost` |
+| `LAMBDA` | `=LAMBDA(x,new_logic)(input_value)` |
+| `LET` | `=LET(x,input_value,new_logic)` |
+| `BYCOL` | `=BYCOL(input_range,LAMBDA(col,SUM(col)))` |
+| `BYROW` | `=BYROW(input_range,LAMBDA(row,SUM(row)))` |
+
+Why this is exam-useful:
+When the exam changes the numbers, you should **not** invent a new method. Keep the structure, replace the values, and then interpret the new result.
+
+#### What Did I Learn in This Lesson?
+
+This lesson provided the following insights:
+
+- an understanding of various logical functions that enable the creation of conditions and custom functions or apply them under certain conditions
+- an understanding of different financial formulas that help us compare financial products or investments in various projects
+
+#### Exam Notes
+
+When revising this lesson, focus especially on these high-yield points:
+
+- explain that advanced spreadsheet analysis depends on both correct calculation and reliable data preparation
+- be ready to explain what PMT, RATE, NPER, IPMT, FV, PV, IRR, and NPV do at a practical level
+- be ready to explain what `LAMBDA`, `LET`, `BYROW`, `BYCOL`, `IFERROR`, and `IFNA` do and when each one fits best
+- convert annual rates and total time correctly into per-period spreadsheet inputs
+- follow the financial sign rule consistently in spreadsheet calculations
+- be ready to explain PMT specifically as the regular repayment function for loans with fixed rate and fixed periods
+- remember that RATE returns the rate per period, not automatically the annual rate
+- explain that data quality directly affects model reliability
+- explain that z-scores help identify unusual values, but do not automatically prove deletion is correct
+- show that error reduction requires judgement, not only formula use
+- explain how quality improvement protects later analysis and decision-making
+- connect advanced spreadsheet work to hands-on walkthroughs, structured workflows, and real-world use cases
+
+##### Strong exam answer rule
+
+For outlier or data-quality questions, answer in this order:
+
+1. identify the issue
+2. name the tool used to assess it
+3. explain what the result suggests
+4. state the action taken
+5. explain why that action improves the overall model
+
+If the task is spreadsheet-based, include the z-score setup or flagging formula as part of the answer.
+            """,
+            "key_points": [
+                "Advanced spreadsheet analysis builds on earlier spreadsheet and statistical foundations rather than replacing them",
+                "Financial spreadsheet functions such as PMT, RATE, NPER, IPMT, FV, PV, IRR, and NPV support loan, repayment, and investment analysis",
+                "In spreadsheet finance work, annual rates and total duration often need to be converted into per-period inputs such as monthly rate and total monthly periods",
+                "The sign rule matters: money received is entered as positive, and money paid is entered as negative",
+                "PMT is the key spreadsheet function for calculating a fixed regular repayment amount in loan-style exam questions",
+                "RATE returns the interest rate per period, so the analyst must still interpret whether that means monthly, yearly, or another period",
+                "Poor-quality data can weaken the whole model, not just one isolated value",
+                "Z-scores are useful for spotting unusual values, but strong analysis still requires judgement",
+                "Outlier handling should be explained, not treated as an automatic delete step",
+                "Data-quality work protects later analysis and decision-making from distortion",
+                "A clean Excel or Google Sheets outlier template uses AVERAGE, STDEV.S, a row-by-row z-score formula, and an investigation flag",
+                "Hands-on walkthroughs and real-world spreadsheet scenarios are a core part of advanced data analysis in this lesson"
+            ],
+            "visual_elements": {
+                "diagrams": False,
+                "tables": False,
+                "highlighted_sections": True
+            }
+        },
+        {
+            "lesson_number": "1.3",
+            "title": "Advanced Data Analytics Tool Packs in Spreadsheet Software",
+            "content": """
+### 1.3. Lesson - Advanced Data Analytics Tool Packs in Spreadsheet Software
+
+#### Introduction
+
+Now that we have built a base from which to work, we can move on to the various building blocks that will enhance and amplify our skills. This lesson will cover the **Data Analysis ToolPak**, **Solver**, and **advanced statistical functionalities in Excel** with some hands-on walkthroughs and real-world scenarios.
+
+This lesson builds naturally on the earlier spreadsheet and statistical foundations. The aim is not only to know that these tools exist, but to understand what kind of analytical problems they help solve and how they fit into a practical spreadsheet workflow.
+
+#### What this lesson focuses on
+
+This lesson is designed to strengthen three main areas:
+
+- **Data Analysis ToolPak** for built-in statistical procedures and faster analytical workflows
+- **Solver** for structured optimisation-style and model-based spreadsheet problems
+- **Advanced Excel statistical features** for more practical, applied analysis in real-world scenarios
+
+#### Why this matters
+
+As spreadsheet work becomes more advanced, the analyst often needs more than single-cell formulas. Tool packs and built-in analytical utilities make it easier to:
+
+- run structured analysis more efficiently
+- apply methods consistently across different cases
+- test assumptions or scenarios
+- move from raw spreadsheet work toward more professional analytical workflows
+
+This is especially useful in exam settings, because the examiner may not only test whether you know a function, but whether you can choose the right built-in spreadsheet tool for the problem.
+
+#### What to expect from the lesson
+
+You should expect this lesson to move from theory into more applied spreadsheet work. That means:
+
+- hands-on walkthroughs
+- realistic spreadsheet scenarios
+- clearer links between statistical tools and decision-making
+- a stronger focus on how Excel supports applied analytics
+
+#### Overview of the various add-ins available to us in Excel
+
+Excel already has many built-in spreadsheet features, but its capabilities can be extended further through **Add-ins** and advanced analysis features. These tools help users go beyond basic workbook calculations and move into more specialised data analysis, scenario testing, modelling, and optimisation.
+
+With the right add-ins and advanced Excel tools, users can:
+
+- perform more advanced statistical analysis
+- test scenarios and assumptions more quickly
+- automate parts of analytical work
+- build stronger spreadsheet-based decision support
+
+That is why these tools matter in this course. They expand Excel from a basic spreadsheet environment into a more capable analytical platform.
+
+#### Add-ins
+
+Many Excel add-ins are turned off by default because many users only need the program's most basic spreadsheet functions. For this course, however, it is important to know how to enable the analytical tools we want to use.
+
+The basic Excel path is:
+
+`File -> Options -> Add-Ins`
+
+That opens the **Excel Options** window and takes you to the **Add-Ins** area, where Excel shows which add-ins are active, inactive, or available.
+
+##### How to enable add-ins in Excel
+
+Use this process:
+
+1. open **File**
+2. choose **Options**
+3. select **Add-Ins** from the left-hand navigation panel
+4. go to the bottom of the window and find the **Manage** drop-down
+5. choose **Excel Add-ins**
+6. click **Go**
+7. wait for the **Add-ins** selection window to appear
+8. tick the add-ins you want, such as **Analysis ToolPak** or **Solver Add-in**
+9. click **OK**
+
+Once enabled, the tools become available for later analytical work in Excel.
+
+If the required add-in is not already active, this is the standard route to enable it:
+
+- go to the **Manage** menu at the bottom of the Add-Ins screen
+- make sure **Excel Add-ins** is highlighted
+- click **Go**
+- select the add-ins you want to activate
+- confirm with **OK**
+
+##### What appears after clicking Go
+
+After clicking **Go**, Excel should open the smaller **Add-ins** selection window.
+
+In that window, you can choose which available add-ins to enable. Common examples include:
+
+- **Analysis ToolPak**
+- **Analysis ToolPak - VBA**
+- **Solver Add-in**
+
+Once the correct choices have been made, click **OK**.
+
+This also means that if **Solver** has not already been activated, it can be enabled from the same window.
+
+##### Where the tools appear after activation
+
+After the add-ins have been enabled, return to Excel's main ribbon and open the **Data** tab.
+
+At that point, you should now be able to see:
+
+- **Data Analysis**
+- **Solver**
+
+on the **Data** tab, provided they have been activated correctly.
+
+This is the practical confirmation step. It shows that the setup process has worked and that Excel is now ready for the analytical tasks that follow later in the lesson.
+
+##### What you will see in the Add-Ins view
+
+After navigating to the **Add-Ins** area, Excel will show a list of add-ins that are already installed on the machine.
+
+At this point, some add-ins may:
+
+- already be **active**
+- be installed but still **inactive**
+- be available but not currently loaded
+
+This is useful because it tells the analyst which advanced tools are already ready to use and which ones still need to be activated.
+
+For example, the Add-Ins view may show that:
+
+- **Analysis ToolPak**
+- **Microsoft Power Pivot for Excel**
+- **Solver Add-in**
+
+are already active in the current Excel installation.
+
+That means those tools are available to the user without needing a fresh installation step.
+
+##### Why this matters
+
+This screen is not just technical detail. It helps the analyst confirm:
+
+- whether the required tool is already active
+- whether an add-in still needs to be enabled
+- whether Excel is ready for the next practical analysis step
+
+In other words, before starting a workbook-based task, it is often useful to check the Add-Ins view first.
+
+##### Important practical note
+
+The course content sometimes groups several advanced tools together, but not all of them behave the same way in Excel:
+
+- **Data Analysis ToolPak** is typically an add-in that may need to be enabled
+- **Solver** is also commonly enabled as an add-in
+- **Scenario Manager** and **Goal Seek** are usually built-in Excel features rather than separate add-ins
+
+That distinction matters because an exam may ask either:
+
+- how to enable an add-in, or
+- which advanced Excel feature should be used
+
+##### Why this matters
+
+If the tools are not enabled or understood correctly, the analyst may know the method in theory but still be unable to use it in practice. In other words, technical setup is part of analytical readiness.
+
+##### How to use this in an exam
+
+If the question asks how to activate advanced Excel analytical tools, a strong answer is:
+
+1. navigate to `File -> Options -> Add-Ins`
+2. go to the **Manage** menu at the bottom and choose `Excel Add-ins`
+3. click **Go**
+4. tick the relevant add-in in the pop-up list
+5. confirm with **OK**
+6. explain briefly why the add-in is needed
+
+If the question asks about `Goal Seek` or `Scenario Manager`, it is safer to describe them as **advanced Excel features** rather than as add-ins that must always be installed.
+
+#### Data Analysis ToolPak
+
+Perhaps the most important add-in in this part of the course is the **Data Analysis ToolPak**.
+
+This Excel add-in provides a range of powerful statistical and analytical tools inside the spreadsheet environment. It helps users perform more advanced analysis without having to build every procedure manually from scratch.
+
+The Data Analysis ToolPak is especially useful because it can support tasks such as:
+
+- regression analysis
+- hypothesis testing
+- histograms
+- summary statistics
+- sampling
+- other structured statistical procedures
+
+Why this matters:
+It simplifies and automates many advanced analytical tasks, which makes it easier to analyse larger datasets and derive meaningful insight more efficiently.
+
+Exam use:
+If the question asks for a built-in Excel tool for structured statistical analysis, the **Data Analysis ToolPak** is often the strongest answer.
+
+#### Solver
+
+**Solver** is another key Excel add-in. It is used to find the best solution to a problem by adjusting variables while respecting constraints.
+
+This makes Solver especially useful for:
+
+- optimisation problems
+- resource allocation
+- planning
+- constrained decision-making
+
+Solver works iteratively by changing selected input values to maximise, minimise, or target a chosen objective.
+
+Why this matters:
+Solver is valuable when the analyst is not simply describing data, but is trying to identify the best possible combination of choices under certain conditions.
+
+Exam use:
+If the task is about finding the best solution under constraints, **Solver** is usually the best tool to name.
+
+#### Scenario Manager
+
+**Scenario Manager** is an Excel feature used to create and compare different **what-if scenarios**.
+
+It helps the analyst change selected variables and observe how the results differ across multiple versions of the same model.
+
+This is useful when:
+
+- different assumptions need to be compared
+- best-case, worst-case, and expected-case outcomes are being explored
+- managers want to understand how sensitive a result is to changing inputs
+
+Exam use:
+If the task is about comparing several possible input combinations and their impact on the result, **Scenario Manager** is often the strongest answer.
+
+#### Goal Seek
+
+**Goal Seek** helps the user work backwards from a desired output.
+
+Instead of asking "what result do these inputs produce?", Goal Seek asks:
+
+`What input value is needed to produce this target result?`
+
+This is useful for:
+
+- reverse calculations
+- target-based planning
+- finding the required input to achieve a chosen output
+
+Exam use:
+If the question asks for the input needed to reach a specific target, **Goal Seek** is usually the clearest tool to mention.
+
+#### Data analysis functions in Excel
+
+Excel also supports analysis directly through built-in formulas and functions.
+
+These include:
+
+- mean
+- median
+- standard deviation
+- regression-related functions
+- hypothesis-testing support
+- sampling or summary-statistics workflows
+
+These functions allow users to extract insight and summarise data efficiently without always moving to a separate add-in window.
+
+Why this matters:
+Not every advanced analytical task requires a full tool pack. Sometimes the strongest workflow uses direct spreadsheet functions, especially when the analysis needs to remain visible and easy to audit inside the workbook itself.
+
+#### Data Analysis ToolPak vs long-form Excel
+
+In many cases, Excel gives the analyst two ways to perform a task:
+
+- the **long-form Excel** method
+- the **ToolPak** method
+
+The **long-form Excel** method means using ordinary spreadsheet formulas, step-by-step setup, and visible worksheet logic to produce the answer directly in cells.
+
+The **ToolPak** method means using a built-in analytical tool that performs the same kind of task in a shorter, more packaged way.
+
+Why this matters:
+Both methods are useful, and it is important to know both.
+
+The long-form Excel version is useful because:
+
+- it shows the logic clearly
+- it helps you understand what the calculation is doing
+- it keeps the method visible inside the worksheet
+
+The ToolPak version is useful because:
+
+- it is faster for structured analysis
+- it reduces manual setup
+- it can automate repeated analytical procedures more efficiently
+
+In this lesson, the safer learning path is:
+
+1. understand the Excel-only version first
+2. then move to the ToolPak version where appropriate
+
+That order matters because the ToolPak should support understanding, not replace it.
+
+##### How to use this in an exam
+
+If the examiner asks about a method that can be done in both ways, a strong answer can say:
+
+- the task can be performed in standard Excel step by step
+- the same task can often be done more quickly with the Data Analysis ToolPak
+- the Excel-only version is useful for understanding the logic
+- the ToolPak version is useful for speed, structure, and efficiency
+
+This is especially strong in exam answers because it shows both conceptual understanding and practical spreadsheet awareness.
+
+#### Simple regression using the `LINEST` function
+
+The `LINEST` function is used for **linear regression analysis**. This type of analysis helps us find the best-fit straight line that represents a set of data points.
+
+The basic syntax is:
+
+`=LINEST(known_y's,[known_x's],[const],[stats])`
+
+Where:
+
+- `known_y's` is the required range of dependent-variable values `(Y-values)`. These are the values we want to analyse or predict.
+- `known_x's` is the optional range of independent-variable values `(X-values)`. These are the values used to explain or influence the dependent variable.
+- `const` is an optional setting that controls whether the regression line is forced through the origin `(0,0)`.
+- `stats` is an optional setting that can return extra statistical output such as `R-squared` or standard error.
+
+For this lesson, the most important point is that `LINEST` can return core regression information such as:
+
+- slope
+- intercept
+- and, when more advanced settings are used, additional regression statistics
+
+##### What matters most in this lesson
+
+In this lesson:
+
+- focus on the basic purpose of `LINEST`
+- understand the role of dependent and independent variables
+- recognise that the function supports regression analysis and prediction
+
+We are **not** focusing in depth here on:
+
+- forcing the line through the origin with `const`
+- the fuller statistical output from `stats`
+
+Those ideas may appear later, but they are not the main focus of this lesson.
+
+##### Quick recap: dependent and independent variables
+
+The **dependent** or **explained** variable is the variable we are trying to understand, explain, or predict. It is the outcome or response that is influenced by one or more other variables.
+
+In practical terms:
+
+- it is the result we want to analyse
+- it is often shown on the **y-axis**
+- in regression language, it is the value represented by `known_y's`
+
+The **independent** or **explanatory** variable is the variable that is believed to influence the dependent variable.
+
+In practical terms:
+
+- it is the factor used to explain or predict the outcome
+- it is often shown on the **x-axis**
+- in regression language, it is the value represented by `known_x's`
+
+This distinction matters because one of the most common exam mistakes is mixing up the variable being predicted with the variable used to explain it.
+
+##### Important terminology note
+
+In regression and data-analysis work, several different terms are often used for the same idea.
+
+For the **dependent** or **explained** variable, you may also see:
+
+- `target variable`
+- `response variable`
+- `modelled variable`
+- `output variable`
+
+For the **independent** or **explanatory** variable, you may also see:
+
+- `input variable`
+- `control variable`
+- other similar terms depending on the context
+
+This means that if a later lesson, exam task, or workplace example switches terminology, the analyst should still recognise that the underlying regression roles are the same.
+
+The same flexibility applies to broader model language.
+
+For example:
+
+- `estimating the parameters`
+- `estimating the coefficients`
+- `building the model`
+- `estimating the model`
+- `running a regression`
+
+can overlap in meaning in everyday analytical language, especially in linear regression.
+
+For this course, it is useful to remember that in a linear regression context:
+
+- `parameters` and `coefficients` are often used interchangeably
+- `explained variable` and `response variable` usually refer to the same role
+- `explanatory variable` and `input variable` usually refer to the same role
+
+Why this matters:
+Different teachers, modules, software tools, and workplaces may prefer different wording, so a strong data analyst should stay comfortable with the terminology rather than relying on only one fixed label.
+
+##### How to use this in an exam
+
+If the wording in an exam changes, do not assume the concept has changed too.
+
+For example:
+
+- `target variable` can still be treated as the dependent variable
+- `response variable` can still be treated as the explained variable
+- `input variable` can still be treated as the explanatory variable
+
+This is a useful exam skill because many questions test whether you understand the idea, not whether you memorised one exact phrase.
+
+##### Basic ideas needed before going further
+
+Before going further, there are a few core ideas that help explain what a simple regression is showing us. These ideas will be covered in more detail later, but they are useful now because they make the `LINEST` output much easier to understand.
+
+###### Coefficient
+
+A **coefficient** is a number that quantifies the strength or impact of one variable on another in a mathematical equation or model.
+
+In simple terms:
+
+- it represents the relationship between variables
+- it helps show how changes in one variable affect another
+- in regression, it tells us how strongly the independent variable is linked to the dependent variable
+
+This matters because regression output often contains coefficients, and the analyst must be able to explain what those numbers mean rather than only copy them from Excel.
+
+###### `SLOPE`
+
+The **slope** shows the rate of change in the dependent variable `(Y)` in relation to the independent variable `(X)`.
+
+In simple terms:
+
+- it shows how much `Y` changes when `X` changes by one unit
+- it shows the direction of the relationship
+- it shows how steep the best-fit line is
+
+In regression output, the slope is the coefficient attached to the independent variable.
+
+###### `INTERCEPT`
+
+The **intercept** is the value where the regression line crosses the **y-axis**.
+
+In simple terms:
+
+- it is the starting point of the fitted line
+- it estimates the value of `Y` when `X = 0`
+
+In regression output, the intercept is the constant term.
+
+###### Best-fit line
+
+A **best-fit line** is the straight line that represents the overall trend in a scatter plot.
+
+It is positioned so that the distances between the line and the observed data points are as small as possible overall.
+
+In simple terms:
+
+- it summarises the relationship between the variables
+- it helps us describe the trend
+- it can be used for basic prediction
+
+###### `R-squared` value `(coefficient of determination)`
+
+The **R-squared** value shows how well the regression line fits the data.
+
+It is a value between `0` and `1`:
+
+- `0` means the independent variable explains none of the variability in the dependent variable
+- `1` means a perfect fit
+
+In practical terms, `R-squared` tells us how much of the variation in `Y` is explained by `X`.
+
+###### Standard Error `(SE)`
+
+The **standard error** shows how precise the estimated coefficients are.
+
+In practical terms:
+
+- it gives an idea of how far observed values tend to sit from the fitted regression line
+- a lower standard error usually suggests a more precise estimate
+
+###### Additional statistics
+
+`LINEST` can also return other statistics when required, depending on the setup. Examples include:
+
+- `t-statistics`
+- `p-values`
+- confidence intervals for coefficients
+
+These are useful for judging the reliability and significance of regression output, although they are not the main focus of this lesson.
+
+##### Why this matters
+
+`LINEST` is useful because it gives a more direct regression-oriented workflow inside Excel. It helps the analyst move from a table of `X` and `Y` values to a fitted line that can be used for interpretation or prediction.
+
+##### How to use this in an exam
+
+If the examiner asks about `LINEST`, a strong answer should:
+
+1. define it as a linear regression function
+2. identify `known_y's` as the dependent-variable range
+3. identify `known_x's` as the independent-variable range
+4. explain that the function helps find the best-fit straight line
+5. mention that results such as slope and intercept can be used for interpretation or prediction
+6. explain that regression coefficients show the impact of one variable on another
+7. explain that `R-squared` shows model fit and that standard error relates to estimation precision
+
+That makes the answer both spreadsheet-specific and statistically relevant.
+
+##### First practical setup in Excel
+
+Before calculating anything with `LINEST`, it is good practice to label the output cells clearly.
+
+In this example:
+
+- column `A` contains the independent variable `Age`
+- column `B` contains the dependent variable `Price_Eur`
+
+To make the regression output easier to read, add these titles first:
+
+- `D1` -> `Slope`
+- `E1` -> `Intercept`
+
+This creates a clean area where the estimated parameters can be displayed after the regression formula is entered.
+
+Why this matters:
+Even though this is a small setup step, it makes the worksheet easier to read and makes the regression output much clearer for later interpretation.
+
+##### Notice about Excel's built-in help here
+
+When `LINEST` is entered in the worksheet, Excel may also use its built-in worksheet intelligence to place the related regression result into the neighbouring output cell automatically.
+
+In practical terms, that means:
+
+- the `LINEST` result may begin in the `Slope` cell
+- Excel may then populate the next cell with the `Intercept`
+
+This happens because `LINEST` can return more than one value as part of the same regression output.
+
+Why this matters:
+It reminds the analyst that some Excel functions do not return only one single result. In regression tasks, the output may spill across adjacent cells, so the worksheet should be prepared with enough visible space.
+
+##### Older Excel vs newer Excel: array behaviour
+
+`LINEST` is one of the functions where older and newer Excel versions can behave differently.
+
+In **older versions of Excel**:
+
+- you normally select the output range first, for example `D2:E2`
+- then type the formula
+- then confirm it with `Ctrl + Shift + Enter`
+
+That creates a **legacy array formula**.
+
+In **newer versions of Excel**:
+
+- you usually enter the formula in the first output cell only, for example `D2`
+- then press **Enter**
+- Excel spills the remaining output into the neighbouring cells automatically if there is enough space
+
+That is why newer Excel often makes the process feel simpler.
+
+Example:
+
+- older Excel: select `D2:E2`, type `=LINEST($B$2:$B$14,$A$2:$A$14)`, then press `Ctrl + Shift + Enter`
+- newer Excel: enter `=LINEST($B$2:$B$14,$A$2:$A$14)` in `D2`, then press `Enter`
+
+If the legacy array version is used, Excel shows the formula with curly braces:
+
+`{=LINEST($B$2:$B$14,$A$2:$A$14)}`
+
+Important note:
+You normally do **not** type these curly braces yourself. Excel inserts them automatically when the legacy array formula is confirmed correctly.
+
+##### What an array formula means here
+
+An **array formula** allows one formula to return or process more than one value at the same time.
+
+For `LINEST`, that matters because the function can return a set of regression results rather than one single output.
+
+In practice, this means:
+
+- one formula can return both `Slope` and `Intercept`
+- the output may fill more than one adjacent cell
+- the worksheet should be prepared with enough visible output space
+
+##### Important accuracy note about arrays
+
+Excel can use curly braces for **array constants**, for example:
+
+`{1,2,3}`
+
+But a normal range reference is still written as a normal range reference, for example:
+
+`A1:A3`
+
+So for practical spreadsheet work in this lesson, the safest rule is:
+
+- let Excel add the braces for legacy array formulas
+- write ranges normally as `A1:A3`, not as `{A1:A3}`
+
+##### Excel and Google Sheets formula template for `LINEST`
+
+Use this reusable template:
+
+| Spreadsheet | Setup | Formula pattern |
+|-------------|-------|-----------------|
+| Newer Excel | enter in first output cell | `=LINEST(y_range,x_range)` |
+| Older Excel | select full output range first | `=LINEST(y_range,x_range)` then confirm with `Ctrl + Shift + Enter` |
+| Google Sheets | enter in first output cell | `=LINEST(y_range,x_range)` |
+
+Starter example:
+
+- `x_range` -> `$A$2:$A$14`
+- `y_range` -> `$B$2:$B$14`
+- formula -> `=LINEST($B$2:$B$14,$A$2:$A$14)`
+
+This template is exam-useful because if the numbers change, you usually keep the same formula structure and only replace the ranges.
+
+##### How to obtain additional regression statistics
+
+`LINEST` can also return additional regression statistics.
+
+We are not going into full detail on those values in this lesson, but it is useful to know how to request them.
+
+To do that, include the optional arguments for `const` and `stats`, for example:
+
+`=LINEST(B2:B14,A2:A14,TRUE,TRUE)`
+
+This tells Excel to:
+
+- use the normal intercept setting
+- return the wider statistical output, not only the core regression coefficients
+
+In practical terms, this is the version to use when you want more than just `Slope` and `Intercept`.
+
+If the model includes an intercept, the value of `const` can safely be set to `TRUE`, or it can simply be omitted because Excel assumes the intercept by default.
+
+Because we want the additional regression statistics to be returned here, the value of `stats` is set to `TRUE`.
+
+In the worksheet example, the larger regression output is shown across the range `D2:E6`.
+
+That means:
+
+- the top row still contains the core regression coefficients
+- the rows below contain additional statistics returned by the function
+
+We are not interpreting all of those values in detail yet. For this lesson, the important point is to understand how to request them and where they appear.
+
+In older Excel, the safe method is:
+
+- select the full output range first, for example `D2:E6`
+- type `=LINEST(B2:B14,A2:A14,TRUE,TRUE)`
+- confirm with `Ctrl + Shift + Enter`
+
+In newer Excel or Google Sheets, the result may spill automatically from the first output cell if there is enough space.
+
+##### Excel and Google Sheets template for extended `LINEST`
+
+Use this reusable pattern:
+
+| Goal | Setup | Formula |
+|------|-------|---------|
+| Core regression output | first output cell or coefficient range | `=LINEST(y_range,x_range)` |
+| Extended regression output | select enough output space for the returned statistics | `=LINEST(y_range,x_range,TRUE,TRUE)` |
+
+Starter example:
+
+- core: `=LINEST($B$2:$B$14,$A$2:$A$14)`
+- extended: `=LINEST($B$2:$B$14,$A$2:$A$14,TRUE,TRUE)`
+- older Excel extended-output range: `D2:E6`
+
+Exam use:
+If the task says to include additional regression statistics, this is the safer version to mention, even if the question does not ask you to interpret every returned value in full.
+
+##### Activity: add the additional statistics with `const` and `stats`
+
+Using the same dataset as in the first `LINEST` activity:
+
+- `Age` in `A2:A14`
+- `Price_Eur` in `B2:B14`
+
+we can request the wider regression output by using:
+
+`=LINEST(B2:B14,A2:A14,TRUE,TRUE)`
+
+For older Excel, the safe setup is:
+
+1. select `D2:E6`
+2. type `=LINEST(B2:B14,A2:A14,TRUE,TRUE)`
+3. confirm with `Ctrl + Shift + Enter`
+
+For newer Excel, the result may spill automatically if enough output space is available.
+
+##### Solution from the activity workbook
+
+The workbook output in `D2:E6` is:
+
+| Cell | Meaning | Value |
+|------|---------|-------|
+| `D2` | Slope | `1.020735576923077` |
+| `E2` | Intercept | `2593.9710432692304` |
+| `D3` | Standard error of slope | `22.49624769699549` |
+| `E3` | Standard error of intercept | `382.43621084892334` |
+| `D4` | `R-squared` | `0.00018712524131366928` |
+| `E4` | Standard error of `y` estimate | `648.8909966164474` |
+| `D5` | `F` statistic | `0.002058762900955011` |
+| `E5` | Degrees of freedom | `11` |
+| `D6` | Regression sum of squares | `866.8617301722988` |
+| `E6` | Residual sum of squares | `4631654.78038875` |
+
+This means the first row still gives the main coefficients, while the rows below give the extra regression statistics created by `stats=TRUE`.
+
+##### What this tells us at a basic level
+
+At this stage, the most important interpretation is:
+
+- the regression line has a **slope** of about `1.0207`
+- the **intercept** is about `2593.97`
+- the very small `R-squared` shows that this simple model explains almost none of the variation in `Price_Eur`
+
+We will go into more detail on the other returned statistics in later lessons.
+
+##### Excel and Google Sheets template for this kind of activity
+
+Use this reusable pattern:
+
+| Step | Template |
+|------|----------|
+| `X` range | `x_range` |
+| `Y` range | `y_range` |
+| Output range for extended statistics | `first_output_cell:last_output_cell` |
+| Formula | `=LINEST(y_range,x_range,TRUE,TRUE)` |
+
+Starter example:
+
+- `x_range` -> `$A$2:$A$14`
+- `y_range` -> `$B$2:$B$14`
+- older Excel output range -> `$D$2:$E$6`
+- formula -> `=LINEST($B$2:$B$14,$A$2:$A$14,TRUE,TRUE)`
+
+Exam use:
+If the examiner gives a new dataset and asks for the additional regression statistics, keep the same layout and replace only the ranges.
+
+#### Simple regression using the Analysis ToolPak
+
+The **Data Analysis ToolPak** lets us obtain more detailed information about a regression model.
+
+This matters because the `LINEST` function, while useful, does not present all regression details in the same structured reporting format that the ToolPak can provide. Some of those extra values become especially important later when discussing the **statistical significance** of regression parameters such as **Slope** and **Intercept**.
+
+In this lesson, we are **not** going into full detail about whether a parameter is statistically significant. That will come later. For now, the important point is to understand how to use the ToolPak to obtain the richer regression output.
+
+##### Basic workflow in Excel
+
+To run a regression with the Analysis ToolPak:
+
+1. go to the **Data** tab
+2. choose **Data Analysis**
+3. from the list of available **Analysis Tools**, select **Regression**
+4. click **OK**
+
+That opens the regression dialog where the input ranges and output options can be specified.
+
+##### What appears next
+
+After clicking **OK**, Excel opens the **Regression** dialog window.
+
+This is the main setup screen for the ToolPak regression procedure. It includes areas for:
+
+- `Input Y Range`
+- `Input X Range`
+- optional settings such as `Labels` and `Constant is Zero`
+- output choices such as `Output Range`, `New Worksheet Ply`, or `New Workbook`
+- optional extras such as residuals and plots
+
+At this stage, the important thing is not to memorise every checkbox, but to understand that this is where Excel asks for:
+
+- the dependent-variable range
+- the independent-variable range
+- where the regression output should be placed
+
+That means this dialog is the ToolPak equivalent of setting up the `LINEST` formula manually.
+
+##### The two main sections in the regression window
+
+There are two main sections in this window:
+
+###### Input
+
+This is where we define the input parameters for the regression.
+
+In practical terms, this includes:
+
+- the `Input Y Range` for the dependent variable
+- the `Input X Range` for the independent variable
+- whether labels are included in the selected ranges
+- whether the model should force the constant to zero
+
+This section is where we tell Excel what data the regression should actually use.
+
+###### `Input Y Range`
+
+This sets the range for the **explained** or **dependent** variable.
+
+In this car-price example, that means the range containing the car prices.
+
+There are two safe ways to think about it:
+
+- if you select only the values, use `B2:B14`
+- if you include the header and tick `Labels`, use `B1:B14`
+
+Because the illustrated ToolPak setup uses the `Labels` checkbox, the worksheet example is most consistent when the `Y` range is entered as:
+
+`$B$1:$B$14`
+
+###### `Input X Range`
+
+This sets the range for the **explanatory** or **independent** variable.
+
+In this simple-regression example, that means the range containing the car ages.
+
+Again, there are two safe ways to think about it:
+
+- if you select only the values, use `A2:A14`
+- if you include the header and tick `Labels`, use `A1:A14`
+
+Because the illustrated ToolPak setup uses the `Labels` checkbox, the worksheet example is most consistent when the `X` range is entered as:
+
+`$A$1:$A$14`
+
+Important rule:
+The `Input X Range` and the `Input Y Range` must contain the same number of observations.
+
+If the two ranges are not the same length, the Regression tool will return an error rather than a valid model.
+
+That means:
+
+- if `Y` contains 13 data rows, `X` must also contain 13 data rows
+- if headers are included in one range, they should also be included in the other range when `Labels` is checked
+
+###### `Labels`
+
+If the selected input ranges include the variable names in the first row, the `Labels` checkbox should be selected.
+
+That is why:
+
+- `A1:A14` and `B1:B14` should normally be paired with `Labels = checked`
+- `A2:A14` and `B2:B14` should normally be paired with `Labels = unchecked`
+
+This is a very common Excel detail to get wrong in exams, so it is worth stating clearly.
+
+###### `Constant is Zero`
+
+If this box is checked, Excel forces the constant term in the regression model to be zero.
+
+That means the fitted line is forced through the origin `(0,0)`.
+
+In practical terms, this assumes that when the independent variable is zero, the dependent variable is also expected to be zero. In other words, the model assumes there is no baseline or offset value when `X = 0`.
+
+This can be useful in some specific situations where a zero intercept is theoretically or practically justified.
+
+However, it is **not** appropriate by default for every dataset.
+
+Before selecting this option, it is better to consider:
+
+- whether the theory behind the data supports a zero intercept
+- whether forcing the line through the origin is realistic for the scenario
+- whether the fitted model becomes less sensible when that restriction is imposed
+
+For this example, we do **not** want to force a zero intercept, so this box should remain **unchecked**.
+
+###### `Confidence Level`
+
+This controls the confidence level used when Excel calculates parameter confidence intervals.
+
+The default is usually `95%`, which is fine for this example.
+
+Important note:
+Changing the confidence level does **not** change the estimated slope or intercept. It only affects the confidence-interval reporting around those estimates.
+
+###### Output options
+
+This is where we choose what regression-related information should be returned and where the results should appear.
+
+In practical terms, this includes:
+
+- where the output should be placed
+- whether it should appear in the current sheet, a new worksheet, or a new workbook
+- whether extra output such as residuals, residual plots, line fit plots, or normal probability plots should be included
+
+This means the output section controls both:
+
+- what additional analytical material Excel produces
+- where that output is placed in the workbook
+
+###### `Output Range`
+
+This allows you to choose the upper-left cell of the worksheet area where the regression output will begin.
+
+In the illustrated setup, the output starts at:
+
+`$G$1`
+
+That means Excel prints the regression report starting from that cell and expanding as needed.
+
+###### `New Worksheet Ply`
+
+This prints the regression output in a new worksheet inside the current workbook, using the chosen worksheet name.
+
+This is useful when you want the regression report separated from the raw data.
+
+###### `New Workbook`
+
+This prints the regression output into a completely new workbook.
+
+This can be useful when the analysis needs to be separated fully from the source workbook.
+
+###### Residuals and Normal Probability
+
+For this example, we are **not** selecting options in the **Residuals** section or in **Normal Probability Plots**.
+
+That means the basic output focuses on the main regression report rather than the extra diagnostic output.
+
+##### How the dialog should be populated in this example
+
+The safest exam-style setup for the figure shown is:
+
+- `Input Y Range` -> `$B$1:$B$14`
+- `Input X Range` -> `$A$1:$A$14`
+- `Labels` -> checked
+- `Constant is Zero` -> unchecked
+- `Confidence Level` -> leave at `95%`
+- `Output Range` -> `$G$1`
+- `Residuals` section -> leave unchecked
+- `Normal Probability Plots` -> leave unchecked
+
+This is a strong setup because it matches the worksheet layout and makes the output easy to find and read.
+
+##### A practical note about labels versus no labels
+
+There are two correct ways to populate the regression dialog, and the key is to stay consistent:
+
+- if the selected ranges include the headers, use `A1:A14` and `B1:B14` and tick `Labels`
+- if the selected ranges include only numeric values, use `A2:A14` and `B2:B14` and leave `Labels` unticked
+
+Because the illustrated figure includes the headers `Age` and `Price_Eur`, the version with:
+
+- `Input Y Range` -> `$B$1:$B$14`
+- `Input X Range` -> `$A$1:$A$14`
+- `Labels` -> checked
+
+is the most consistent setup for this example.
+
+##### Why this matters
+
+This method is useful because it produces a fuller regression report more directly than the basic `LINEST` setup.
+
+It is especially helpful when:
+
+- you want a structured regression summary
+- you want ANOVA-style regression output
+- you want coefficient tables presented more clearly
+- you plan to discuss model fit and significance later
+
+##### Excel template for opening a regression analysis
+
+Use this practical workflow template:
+
+| Step | Action |
+|------|--------|
+| 1 | Open the **Data** tab |
+| 2 | Click **Data Analysis** |
+| 3 | Select **Regression** |
+| 4 | Click **OK** |
+| 5 | Enter the `Y` input range |
+| 6 | Enter the `X` input range |
+| 7 | decide whether `Labels` should be checked |
+| 8 | Choose the output location |
+| 9 | Leave unneeded residual or probability options unchecked if the task does not ask for them |
+| 10 | Run the analysis |
+
+##### Excel regression dialog template
+
+Use this reusable ToolPak setup:
+
+| Field | Template |
+|-------|----------|
+| `Input Y Range` | `y_range` |
+| `Input X Range` | `x_range` |
+| `Labels` | checked if headers are included |
+| `Constant is Zero` | unchecked unless the task explicitly forces zero intercept |
+| `Confidence Level` | `95%` unless the task says otherwise |
+| `Output Range` | `top_left_output_cell` |
+| `Residuals / plots` | select only if the task asks for them |
+
+Starter example:
+
+- `Input Y Range` -> `$B$1:$B$14`
+- `Input X Range` -> `$A$1:$A$14`
+- `Labels` -> checked
+- `Constant is Zero` -> unchecked
+- `Confidence Level` -> `95%`
+- `Output Range` -> `$G$1`
+- `Residuals / plots` -> unchecked
+
+##### What the result screen shows in this example
+
+When the regression is run with this setup, Excel prints the result directly on the same worksheet starting from the chosen output cell.
+
+That output normally includes:
+
+- a `Regression Statistics` section
+- an `ANOVA` section
+- a coefficients table with values such as `Intercept`, the explanatory-variable coefficient, standard errors, `t Stat`, `P-value`, and confidence intervals
+
+In this example, the label option is selected because the chosen ranges include the headers `Age` and `Price_Eur`.
+
+We also leave `Constant is Zero` unticked because we want the regression model to include the **Intercept**.
+
+The output is left on the same worksheet for ease of reference, so the raw data, the `LINEST` output, and the ToolPak regression summary can be viewed together.
+
+That said, this is a workflow preference rather than a fixed rule. If a cleaner layout is needed, `New Worksheet Ply` or `New Workbook` can also be valid choices.
+
+##### Breaking down the regression output
+
+The output can be read in three main parts.
+
+###### `Regression Statistics`
+
+This section provides the basic statistics used to judge how well the model fits the data.
+
+The labels in this part are usually the easiest to read, and they give a quick overview of overall model fit.
+
+For this example, the main items can be read as follows:
+
+- `Multiple R` = `0.925447`
+- `R Square` = `0.856452`
+- `Adjusted R Square` = `0.843403`
+- `Standard Error` = `748.6994`
+- `Observations` = `13`
+
+`Multiple R` measures the strength of the linear relationship between the variables.
+
+Important note:
+In this simple-regression output, `Multiple R` is shown as a positive value, but the direction of the relationship should be read from the coefficient or slope.
+
+Because the `Age` coefficient is negative, the practical relationship in this example is **strong and negative**, not positive.
+
+`R Square` shows the proportion of the variation in `Price_Eur` explained by `Age`.
+
+Here, `0.856452` means that about `85.65%` of the variation in `Price_Eur` is explained by the model.
+
+`Adjusted R Square` is a slightly adjusted version of `R Square` that accounts for the number of predictors in the model.
+
+In this example, it is only a little lower than `R Square`, which suggests the model is still strong after adjustment.
+
+`Standard Error` measures the typical distance between the actual values and the fitted regression line.
+
+In general, a lower standard error means a better fit.
+
+`Observations` is simply the number of data points used in the analysis.
+
+###### `ANOVA`
+
+`ANOVA` stands for **Analysis of Variance**.
+
+In this context, it provides information that helps us judge whether the regression model as a whole fits the data well.
+
+Later lessons will go into more depth, but for now the important point is that this section helps us assess the model overall, not just the individual parameters.
+
+The labels in this part are slightly more technical:
+
+- `df` = **degrees of freedom**
+- `SS` = **sum of squares**
+- `MS` = **mean square**
+- `F` = **F-statistic**
+- `Significance F` = the model-level **p-value**
+
+For the worksheet example, this section reports values such as:
+
+- `df` = `1`
+- `SS` = `36,788,729.85`
+- `MS` = `36,788,729.85`
+- `F` = `65.6296149`
+- `Significance F` = `5.79507E-06`
+
+We are not interpreting statistical significance in full depth yet, but this is the part of the output that later helps verify whether the full regression model is statistically significant.
+
+At a practical level:
+
+- `df` tells us about the degrees of freedom in the model and residuals
+- `SS` shows how variability is split between explained and unexplained parts
+- `MS` is the average sum of squares
+- `F` tests the model overall
+- `Significance F` is the model-level `p-value`
+
+Because `Significance F` is extremely small here, the model would later be treated as statistically significant overall.
+
+###### The third section: parameter estimates
+
+The third section contains the parameter-estimate results.
+
+This is where Excel reports values related to:
+
+- the estimated coefficients
+- their standard errors
+- `t Stat`
+- `P-value`
+- confidence intervals
+
+These are the values that will later be used to discuss whether individual parameters are statistically significant.
+
+For this example, the key values are:
+
+- `Intercept` = `13902.06`
+- `Age` coefficient = `-752.762`
+- `Standard Error` values reported next to each coefficient
+- `t Stat` for each coefficient
+- `P-value` for each coefficient
+- `Lower 95%` and `Upper 95%` confidence intervals
+
+`Intercept` is the predicted value of `Price_Eur` when `Age = 0`.
+
+The `Age` coefficient shows the expected change in `Price_Eur` for a one-unit increase in `Age`.
+
+Here, the coefficient is about `-752.76`, which means that for each one-unit increase in `Age`, the model predicts that `Price_Eur` will decrease by about `752.76`.
+
+The `Standard Error` values show the uncertainty around the estimated coefficients.
+
+The `t Stat` values are used to test the importance of each coefficient.
+
+The `P-value` shows how strong the evidence is against the idea that a coefficient might really be zero.
+
+In this example, the `Age` variable has a very small `P-value`, which means it is acting as a statistically significant predictor of `Price_Eur`.
+
+The `Lower 95%` and `Upper 95%` columns show the confidence interval for each coefficient estimate.
+
+A very important connection in this example is that the original `LINEST` values match the ToolPak regression output:
+
+- `Slope` corresponds to the `Age` coefficient
+- `Intercept` corresponds to the `Intercept` row
+
+That means the coefficient for `Age` in the ToolPak output is the same value as the `Slope` returned by `LINEST`, and the `Intercept` row matches the `Intercept` value returned by `LINEST`.
+
+This is a very useful exam point because it shows that the ToolPak summary and the `LINEST` method are not competing answers. They are two different Excel routes to the same core regression estimates.
+
+Overall, this regression suggests a **strong negative linear relationship** between `Age` and `Price_Eur`.
+
+As `Age` increases, `Price_Eur` tends to decrease.
+
+The model explains a substantial share of the variation in price, and both the overall model output and the `Age` coefficient provide strong evidence that the relationship is meaningful in this example.
+
+##### Key terms for reading regression output
+
+###### `Coefficients`
+
+These numerical values represent the relationship between the independent and dependent variables.
+
+In a simple linear regression like this, there is one coefficient for each independent variable.
+
+The sign of a coefficient tells us the direction of the relationship:
+
+- positive coefficient -> as `X` increases, `Y` tends to increase
+- negative coefficient -> as `X` increases, `Y` tends to decrease
+
+The size of the coefficient tells us how strong the change is for a one-unit increase in the independent variable.
+
+###### `Residuals`
+
+Residuals are the differences between the actual values of the dependent variable and the values predicted by the regression model.
+
+In simple terms, they show how far the model's predictions are from the real observed data.
+
+Small residuals usually suggest that the fitted line is tracking the data more closely.
+
+###### `P-value`
+
+The `P-value` measures how likely it is to observe a result at least this extreme if there were no real relationship between the variables.
+
+In many practical settings, a value below `0.05` is treated as evidence that the result is unlikely to be due to chance alone.
+
+###### `R-squared`
+
+`R-squared` measures the proportion of the variation in the dependent variable that is explained by the independent variable or variables.
+
+A higher `R-squared` usually indicates that the model fits the data better.
+
+###### `Standard Error`
+
+`Standard Error` measures the average distance between predicted values and actual values.
+
+A lower standard error usually indicates a better fit.
+
+###### `F-statistic`
+
+The `F-statistic` is used to test the overall significance of the regression model.
+
+A high `F-statistic` together with a low model `p-value` or `Significance F` suggests that the regression model is statistically significant overall.
+
+##### Reading scientific notation in regression output
+
+At times, Excel may display values such as:
+
+- `1.78544E+11`
+- `1.96074E+11`
+- `4.88669E-29`
+
+These are scientific-notation representations of very large or very small numbers.
+
+The `E` stands for exponent and means that the number is being written in powers of `10`.
+
+That means:
+
+- `1.78544E+11` means `1.78544 x 10^11`
+- `1.96074E+11` means `1.96074 x 10^11`
+- `4.88669E-29` means `4.88669 x 10^-29`
+
+Written out more fully, these are approximately:
+
+- `1.78544E+11` = `178,544,000,000`
+- `1.96074E+11` = `196,074,000,000`
+- `4.88669E-29` = `0.000000000000000000000000000488669`
+
+In regression work, numbers like these may appear in coefficients, sums of squares, significance values, or other parts of the output.
+
+The key idea is that scientific notation does **not** mean the result is automatically wrong. It is often just Excel's compact way of displaying a number that is too large or too small to show neatly in ordinary decimal form.
+
+The exact interpretation still depends on:
+
+- which regression statistic the number belongs to
+- the scale of the variables in the dataset
+- the context of the model being analysed
+
+##### How to use this in an exam
+
+If the examiner asks how to obtain a fuller regression report in Excel, a strong answer is:
+
+- use the **Data Analysis ToolPak**
+- choose **Regression**
+- enter the dependent-variable range as the `Y` input
+- enter the independent-variable range as the `X` input
+- generate the summary output
+
+This is stronger than simply saying "use regression", because it shows that you understand the actual Excel workflow as well as the statistical idea.
+
+If the task gives a different dataset, keep the same dialog structure and replace only:
+
+- the `Y` range
+- the `X` range
+- whether `Labels` should be checked
+- the output cell or worksheet destination
+
+##### Google Sheets note
+
+Google Sheets does not have the same built-in **Data Analysis ToolPak** dialog as Excel.
+
+For Google Sheets, keep the same worksheet structure for `X` and `Y`, but use formulas such as `LINEST` instead of the Excel ToolPak window.
+
+##### Excel and Google Sheets starter template
+
+Use this simple layout:
+
+| Cell or range | Purpose | Example |
+|---------------|---------|---------|
+| `A1` | Independent variable title | `Age` |
+| `B1` | Dependent variable title | `Price_Eur` |
+| `A2:A14` | `X` values | ages |
+| `B2:B14` | `Y` values | prices |
+| `D1` | Output label | `Slope` |
+| `E1` | Output label | `Intercept` |
+
+This starter structure is useful in both Excel and Google Sheets because it keeps:
+
+- the explanatory variable in one column
+- the response variable in the next column
+- the regression output in a separate visible area
+
+##### How to use this in an exam
+
+If the examiner gives you a regression table, the safest first setup is:
+
+1. identify the `X` column and the `Y` column
+2. label the output cells clearly
+3. keep the regression results in a separate part of the sheet
+4. then enter the `LINEST` formula
+
+That makes the answer look organised, readable, and exam-ready before the actual calculation even begins.
+
+#### How to recognise which tool fits the task
+
+A simple exam-safe rule is:
+
+- use **Data Analysis ToolPak** for structured statistical procedures
+- use **Solver** for optimisation and constraint problems
+- use **Scenario Manager** for what-if comparisons
+- use **Goal Seek** for reverse calculations toward a target
+- use **built-in data analysis functions** for direct cell-based statistical work
+
+This type of classification is very useful in assessments because many questions are really testing tool choice, not just memory.
+
+#### How to use this in an exam
+
+If a question refers to advanced spreadsheet analytics, the safest first step is to identify whether the task is mainly about:
+
+1. a built-in statistical tool pack
+2. an optimisation or constraint problem
+3. a more advanced spreadsheet workflow in Excel
+
+Then explain:
+
+- which tool fits the task
+- what input it needs
+- what output it produces
+- what the result means in context
+
+That structure makes the answer much stronger than simply naming the tool.
+
+#### Running Many Simple Regressions
+
+So far, the lesson has focused on a very small regression example with only:
+
+- one explained variable
+- one explanatory variable
+
+That is a **simple linear regression**.
+
+In practice, analysts often work with datasets that contain several possible explanatory variables. That means the next useful step is to prepare a wider dataset so that different simple regressions can be run against the same dependent variable one at a time.
+
+For this lesson, the file `insurance.csv` contains seven original variables:
+
+- customer's `age`
+- customer's `sex`
+- customer's `bmi`
+- number of `children`
+- `smoker` status
+- `region`
+- insurance `charges`
+
+In this dataset, the variable we want to explain is:
+
+- `charges`
+
+That means `charges` is the **dependent** or **explained** variable.
+
+The other usable variables can potentially serve as **independent** or **explanatory** variables once the data has been prepared correctly.
+
+##### Why data preparation matters here
+
+Not every column in the raw dataset can go directly into a regression model in the same form.
+
+This is because some variables are categorical rather than numeric.
+
+In this file, the categorical variables are:
+
+- `sex` with values `male` and `female`
+- `smoker` with values `yes` and `no`
+- `region` with four distinct region names
+
+Categorical variables represent qualitative data grouped into categories.
+
+These categories can be:
+
+- **nominal**, where there is no natural order
+- **ordinal**, where the categories do have an order
+
+##### Which categorical variables can be used in this lesson
+
+For this course level, the two binary variables can be converted into numeric form:
+
+- `smoker`
+- `sex`
+
+That is possible because they each take only two distinct values.
+
+For this lesson, use the following coding:
+
+- `Smoker_Num` -> `yes = 1`, `no = 0`
+- `Sex_Num` -> `male = 1`, `female = 0`
+
+The `region` variable is different because it contains more than two categories:
+
+- `northeast`
+- `northwest`
+- `southeast`
+- `southwest`
+
+To include a variable like `region` in regression, **dummy variables** would normally be required.
+
+That is beyond the current course scope, so `region` should be excluded from the regression-ready dataset used here.
+
+The original text versions of `sex` and `smoker` can also be deleted once the numeric versions have been created.
+
+##### Import and format checks
+
+When importing the CSV file into Excel or Google Sheets, make sure the formats are sensible before building the model.
+
+The imported columns should behave like this:
+
+- `age` -> whole-number numeric
+- `bmi` -> decimal numeric
+- `children` -> whole-number numeric
+- `smoker` -> text before conversion
+- `sex` -> text before conversion
+- `region` -> text
+- `charges` -> decimal numeric
+
+For this file, the raw category values are:
+
+- `sex` -> `female`, `male`
+- `smoker` -> `no`, `yes`
+- `region` -> `northeast`, `northwest`, `southeast`, `southwest`
+
+This is important because regression setup becomes much easier when the analyst confirms the data types before transforming the sheet.
+
+##### Regression-ready dataset for this lesson
+
+After preparation, the worksheet should contain the following columns, from left to right:
+
+1. `age`
+2. `bmi`
+3. `children`
+4. `Smoker_Num`
+5. `Sex_Num`
+6. `charges`
+
+This creates a regression-ready table where:
+
+- `charges` remains the dependent variable
+- `age`, `bmi`, `children`, `Smoker_Num`, and `Sex_Num` can each be tested as explanatory variables in separate simple regressions
+
+The final worksheet view can then be sorted by `age` to make the structure easier to review.
+
+##### Practical workflow in Excel
+
+Use this sequence:
+
+1. import `insurance.csv`
+2. confirm that numeric columns are treated as numbers
+3. insert a new column called `Smoker_Num`
+4. insert a new column called `Sex_Num`
+5. convert the binary categories to `1` and `0`
+6. remove or ignore `region`
+7. remove or ignore the original `sex` and `smoker` text columns after conversion
+8. reorder the remaining columns to `age`, `bmi`, `children`, `Smoker_Num`, `Sex_Num`, `charges`
+9. sort the dataset by `age` for review
+
+##### Safe ways to create the binary columns
+
+There are two strong spreadsheet approaches:
+
+- use **Find and Replace** carefully
+- use explicit formulas
+
+###### Option 1: Find and Replace in Excel
+
+This can work well, but you should apply it only to the selected column.
+
+For `Smoker_Num`:
+
+1. copy the original `smoker` column into a new column
+2. rename the new column `Smoker_Num`
+3. replace `yes` with `1`
+4. replace `no` with `0`
+
+For `Sex_Num`:
+
+1. copy the original `sex` column into a new column
+2. rename the new column `Sex_Num`
+3. replace `female` with `0`
+4. replace `male` with `1`
+
+Important note:
+For the sex column, replacing `female` first is safer than replacing `male` first, because the word `male` appears inside `female`.
+
+###### Option 2: Formula-based conversion
+
+This is often safer and easier to audit.
+
+Use formulas such as:
+
+- `Smoker_Num` -> `=IF(E2=\"yes\",1,0)`
+- `Sex_Num` -> `=IF(B2=\"male\",1,0)`
+
+Then fill the formulas down the column.
+
+##### Excel and Google Sheets template for binary encoding
+
+Use this structure:
+
+| Original field | New field | Formula template |
+|----------------|-----------|------------------|
+| `smoker` | `Smoker_Num` | `=IF(smoker_cell=\"yes\",1,0)` |
+| `sex` | `Sex_Num` | `=IF(sex_cell=\"male\",1,0)` |
+
+Starter example:
+
+- original `sex` column -> `B`
+- original `smoker` column -> `E`
+- first `Sex_Num` formula -> `=IF(B2=\"male\",1,0)`
+- first `Smoker_Num` formula -> `=IF(E2=\"yes\",1,0)`
+
+This same logic works in both Excel and Google Sheets.
+
+##### Excel and Google Sheets template for the final regression-ready layout
+
+Use this final structure:
+
+| Column | Field | Type |
+|--------|-------|------|
+| `A` | `age` | numeric |
+| `B` | `bmi` | numeric |
+| `C` | `children` | numeric |
+| `D` | `Smoker_Num` | binary numeric |
+| `E` | `Sex_Num` | binary numeric |
+| `F` | `charges` | numeric |
+
+This layout is useful because any one of the first five columns can be paired with `charges` to run a simple regression.
+
+##### Why this matters before regression
+
+This preparation step is important because regression tools expect the analyst to think carefully about:
+
+- which variable is the dependent variable
+- which variables are usable as explanatory variables
+- which text variables need numeric encoding
+- which categorical variables are still outside the scope of the current model
+
+Without this preparation, the analyst may try to run a regression on raw text categories and get unusable output or misleading results.
+
+##### How to use this in an exam
+
+If the examiner asks how to prepare a dataset for running many simple regressions, a strong answer can say:
+
+1. identify the dependent variable
+2. identify candidate explanatory variables
+3. convert binary categorical variables into `0/1` numeric fields
+4. exclude multi-category variables if dummy variables are outside scope
+5. reorder the cleaned columns into a regression-ready layout
+6. sort and review the data before running the regressions
+
+This is a strong answer because it shows that regression begins with **data preparation**, not only with the final formula or ToolPak click sequence.
+
+##### From one multiple-regression goal to five simple regressions
+
+At this point, the dataset has:
+
+- one target variable -> `charges`
+- five candidate explanatory variables -> `age`, `bmi`, `children`, `Smoker_Num`, `Sex_Num`
+
+The long-term goal is to build a **multiple linear regression** model using all five explanatory variables together.
+
+However, a very useful intermediate step is to start with five separate **simple regressions**:
+
+1. `charges` explained by `age`
+2. `charges` explained by `bmi`
+3. `charges` explained by `children`
+4. `charges` explained by `Smoker_Num`
+5. `charges` explained by `Sex_Num`
+
+This makes the analysis easier to understand at the beginning because it lets the analyst examine one relationship at a time before moving to the fuller model.
+
+##### Why check correlation before building the regressions
+
+Before running those five regressions, it is helpful to check how `charges` moves together with each explanatory variable.
+
+That is what correlation helps us do.
+
+Correlation does **not** replace regression, and it does **not** prove causation.
+
+What it does provide is:
+
+- the direction of the linear relationship
+- the strength of the linear relationship
+- a quick screening step before building the models
+
+This makes correlation a useful first look before the separate regressions are estimated.
+
+##### What a correlation coefficient means
+
+Correlation coefficients show how closely two datasets are related.
+
+They range from `-1` to `1`.
+
+As a quick reading guide:
+
+- a value near `1` suggests a strong positive relationship
+- a value near `-1` suggests a strong negative relationship
+- a value near `0` suggests little or no linear relationship
+
+A correlation coefficient near `1` means that as one variable increases, the other variable also tends to increase.
+
+For example, if a person spends more time studying, their test scores may tend to be higher.
+
+A correlation coefficient near `-1` means that as one variable increases, the other variable tends to decrease.
+
+A correlation coefficient near `0` means that changes in one variable do not correspond to any strong linear change in the other variable.
+
+In practical terms, correlation coefficients help the analyst understand:
+
+- whether two variables move together positively or negatively
+- how strong that movement is
+- whether the relationship looks worth investigating further in regression
+
+This is why correlation is a useful screening tool before the regression models are built.
+
+##### Correlation between `charges` and each explanatory variable
+
+Using the prepared `insurance.csv` data, the Pearson correlations with `charges` are approximately:
+
+| Explanatory variable | Correlation with `charges` | Quick interpretation |
+|----------------------|----------------------------|----------------------|
+| `age` | `0.2990` | weak to moderate positive |
+| `bmi` | `0.1983` | weak positive |
+| `children` | `0.0680` | very weak positive |
+| `Smoker_Num` | `0.7873` | strong positive |
+| `Sex_Num` | `0.0573` | very weak positive |
+
+These values suggest that:
+
+- `Smoker_Num` has by far the strongest linear association with `charges`
+- `age` has a noticeable but much weaker positive relationship
+- `bmi` has a weak positive relationship
+- `children` and `Sex_Num` show very weak linear relationships in this dataset
+
+Important coding note:
+For binary variables, the sign of the correlation depends on the coding scheme.
+
+Because this lesson uses:
+
+- `Smoker_Num`: `yes = 1`, `no = 0`
+- `Sex_Num`: `male = 1`, `female = 0`
+
+a positive correlation means that the group coded as `1` tends to have higher charges.
+
+That means:
+
+- the positive correlation for `Smoker_Num` suggests smokers tend to have higher charges
+- the very small positive correlation for `Sex_Num` suggests only a very weak tendency for the `male = 1` group to have higher charges in this dataset
+
+##### Using the Correlation tool in the Data Analysis ToolPak
+
+Excel can also produce correlation coefficients through the **Data Analysis ToolPak**.
+
+To open it:
+
+1. go to the **Data** tab
+2. choose **Data Analysis**
+3. select **Correlation**
+4. click **OK**
+
+This opens the Correlation dialog, where the relevant worksheet range and output location can be set.
+
+Why this matters:
+The ToolPak method is useful when you want Excel to produce a structured correlation output table rather than calculating one pair at a time with separate `CORREL` formulas.
+
+##### What appears in the Correlation dialog
+
+After clicking **OK**, Excel opens the **Correlation** dialog.
+
+The main parts of this window are:
+
+- `Input Range`
+- `Grouped By`
+- `Labels in First Row`
+- output options such as `Output Range`, `New Worksheet Ply`, and `New Workbook`
+
+This is the setup screen where Excel needs to know:
+
+- which columns or rows contain the data
+- whether the data is arranged by columns or rows
+- whether the first row contains labels
+- where the correlation output should be printed
+
+##### Field-by-field guide to the Correlation dialog
+
+###### `Input Range`
+
+This is the full worksheet range that contains the variables whose correlations you want Excel to calculate.
+
+For the prepared insurance dataset, if the final table is arranged as:
+
+- `A` -> `age`
+- `B` -> `bmi`
+- `C` -> `children`
+- `D` -> `Smoker_Num`
+- `E` -> `Sex_Num`
+- `F` -> `charges`
+
+then a natural ToolPak input range is:
+
+`$A$1:$F$1339`
+
+if the header row is included.
+
+If the header row is not included, the numeric-only range would be:
+
+`$A$2:$F$1339`
+
+###### `Grouped By`
+
+This setting tells Excel whether each variable is arranged in a column or in a row.
+
+For this worksheet, the variables are arranged in **columns**, so:
+
+- `Grouped By` -> `Columns`
+
+is the correct choice.
+
+###### `Labels in First Row`
+
+If the selected input range includes the headers such as `age`, `bmi`, `children`, `Smoker_Num`, `Sex_Num`, and `charges`, then this box should be ticked.
+
+That means:
+
+- use `Labels in First Row = checked` with `$A$1:$F$1339`
+- use `Labels in First Row = unchecked` with `$A$2:$F$1339`
+
+###### Output options
+
+The output options work the same general way as in the regression ToolPak window.
+
+You can choose:
+
+- `Output Range` to print the result into the current worksheet
+- `New Worksheet Ply` to print it into a new worksheet in the same workbook
+- `New Workbook` to print it into a separate workbook
+
+For teaching and revision, it is often convenient to keep the correlation output close to the data or on a new worksheet in the same file.
+
+##### A strong setup for this lesson
+
+A clear exam-safe setup for this correlation task is:
+
+- `Input Range` -> `$A$1:$F$1339`
+- `Grouped By` -> `Columns`
+- `Labels in First Row` -> checked
+- output -> either `Output Range` in the current sheet or `New Worksheet Ply`
+
+This is a strong setup because it keeps all the candidate explanatory variables and the target variable together in one correlation matrix.
+
+##### Figure-style setup for this example
+
+The specific setup shown in the workbook-style example is:
+
+- `Input Range` -> `$A$1:$F$1339`
+- `Grouped By` -> `Columns`
+- `Labels in First Row` -> checked
+- `Output option` -> `New Worksheet Ply`
+- new worksheet name -> `Correlation_Calculation`
+
+This means Excel will place the correlation matrix on a separate worksheet called `Correlation_Calculation`.
+
+That is a useful choice because it keeps the main data sheet cleaner while still storing the correlation results in the same workbook.
+
+As with the regression output, the choice of output location is ultimately a workflow preference.
+
+For exam purposes, the most important thing is to:
+
+- select the correct input range
+- choose `Columns` for columnar data
+- set the labels option consistently
+- state clearly where the output will be printed
+
+After that, click **OK** to generate the correlation table.
+
+##### What the correlation output shows
+
+After Excel runs the ToolPak correlation procedure, it produces a **correlation matrix**.
+
+This matrix shows the pairwise correlation coefficients between all the selected variables.
+
+In this example, the output contains:
+
+- `age`
+- `bmi`
+- `children`
+- `Smoker_Num`
+- `Sex_Num`
+- `charges`
+
+Each cell shows how strongly two variables move together on the `-1` to `1` scale.
+
+The diagonal values are all `1` because each variable is perfectly correlated with itself.
+
+The matrix is also symmetric, which means the correlation between `age` and `bmi` is the same as the correlation between `bmi` and `age`.
+
+That is why Excel only needs to show one triangular half of the matrix in the worksheet-style output.
+
+##### Reading the output from Figure 23
+
+In the example output, the most important row for this lesson is the `charges` row, because `charges` is the target variable.
+
+In the worksheet-style matrix shown here, that is the **bottom row** of the table.
+
+That is the row we care about most because it shows the correlation between the explained variable `charges` and each explanatory variable in the dataset.
+
+That row shows:
+
+- `charges` with `age` -> `0.299008193`
+- `charges` with `bmi` -> `0.198340969`
+- `charges` with `children` -> `0.067998227`
+- `charges` with `Smoker_Num` -> `0.78725143`
+- `charges` with `Sex_Num` -> `0.057292062`
+
+This confirms the same pattern discussed earlier:
+
+- `Smoker_Num` has the strongest positive relationship with `charges`
+- `age` has a weaker but still noticeable positive relationship
+- `bmi` has a weak positive relationship
+- `children` and `Sex_Num` have very weak positive relationships
+
+The smaller correlations among the explanatory variables themselves are also useful because they show how those predictors move with one another.
+
+For example:
+
+- `age` and `bmi` are only weakly related
+- `age` and `Smoker_Num` are very slightly negatively related
+- `Smoker_Num` and `Sex_Num` are only weakly positively related
+
+At this stage, the main goal is not to interpret every pair in depth, but to recognise that the matrix gives one compact overview of all pairwise linear relationships in the selected dataset.
+
+##### What these correlations mean in practice
+
+Based on the bottom `charges` row, we can summarise the target-variable correlations like this:
+
+- `charges` with `age` -> about `30%`
+- `charges` with `bmi` -> about `20%`
+- `charges` with `children` -> about `7%`
+- `charges` with `Smoker_Num` -> about `79%`
+- `charges` with `Sex_Num` -> about `6%`
+
+This means that all five explanatory variables are **positively** correlated with the target variable in this prepared dataset.
+
+However, they are not equally strong:
+
+- `children` and `Sex_Num` have very small positive correlations, both below `10%`
+- `age` and `bmi` have visibly larger positive correlations, around `20%` to `30%`
+- `Smoker_Num` stands out clearly with the strongest positive correlation, around `79%`
+
+This matters because it gives us a first indication of which variables may have a stronger simple linear relationship with `charges` before we run the separate regressions.
+
+##### Running the five simple regressions
+
+The next step is to run five **simple regressions**, one at a time, using:
+
+- target variable -> `charges`
+- one explanatory variable per model
+
+Each regression should be placed in its **own worksheet** so that the outputs remain easy to read and compare.
+
+The five simple regressions are:
+
+1. `charges` explained by `age`
+2. `charges` explained by `bmi`
+3. `charges` explained by `children`
+4. `charges` explained by `Smoker_Num`
+5. `charges` explained by `Sex_Num`
+
+##### ToolPak setup pattern for each regression
+
+For each model:
+
+- keep the `Y` range as the `charges` column
+- change only the `X` range
+- keep `Labels` checked if the header row is included
+- leave `Constant is Zero` unchecked
+- send the result to a separate worksheet
+
+If the prepared worksheet layout is:
+
+- `A` -> `age`
+- `B` -> `bmi`
+- `C` -> `children`
+- `D` -> `Smoker_Num`
+- `E` -> `Sex_Num`
+- `F` -> `charges`
+
+then the ToolPak setup is:
+
+| Regression | `Input Y Range` | `Input X Range` | Suggested worksheet |
+|------------|------------------|-----------------|---------------------|
+| 1 | `$F$1:$F$1339` | `$A$1:$A$1339` | `Regression_Age` |
+| 2 | `$F$1:$F$1339` | `$B$1:$B$1339` | `Regression_BMI` |
+| 3 | `$F$1:$F$1339` | `$C$1:$C$1339` | `Regression_Children` |
+| 4 | `$F$1:$F$1339` | `$D$1:$D$1339` | `Regression_Smoker` |
+| 5 | `$F$1:$F$1339` | `$E$1:$E$1339` | `Regression_Sex` |
+
+##### Example: `Regression_Age`
+
+For the first simple regression:
+
+- `Input Y Range` -> `$F$1:$F$1339`
+- `Input X Range` -> `$A$1:$A$1339`
+- `Labels` -> checked
+- `Constant is Zero` -> unchecked
+- `Output option` -> `New Worksheet Ply`
+- worksheet name -> `Regression_Age`
+
+This produces a simple-regression output where:
+
+- `Multiple R` = `0.299008193`
+- `R Square` = `0.0894059`
+- `Adjusted R Square` = `0.088724317`
+- `Standard Error` = `11560.308844`
+- `Observations` = `1338`
+- `Intercept` = `3165.885006`
+- `age` coefficient = `257.722619`
+- `F` = `131.174013`
+- `Significance F` is extremely small in the worksheet output
+
+This tells us that the age-only model has a positive slope, but it explains only a modest share of the total variation in `charges`.
+
+##### Figure-style example: `Regression_BMI`
+
+The next worksheet-style example shown in the lesson is the **BMI** regression.
+
+Important note:
+Even if a figure caption says "Charges by age", the actual screen content here shows the **BMI** model, because:
+
+- `Input X Range` is `$B$1:$B$1339`
+- the worksheet name is `Regression_BMI`
+- the coefficient row is labelled `bmi`
+
+For this regression:
+
+- `Input Y Range` -> `$F$1:$F$1339`
+- `Input X Range` -> `$B$1:$B$1339`
+- `Labels` -> checked
+- `Constant is Zero` -> unchecked
+- `Output option` -> `New Worksheet Ply`
+- worksheet name -> `Regression_BMI`
+
+This produces a simple-regression output where:
+
+- `Multiple R` = `0.198340969`
+- `R Square` = `0.03933914`
+- `Adjusted R Square` = `0.038620082`
+- `Standard Error` = `11873.86396`
+- `Observations` = `1338`
+- `Intercept` = `1192.937209`
+- `bmi` coefficient = `393.873031`
+- `F` = `54.70930805`
+- `Significance F` = `2.45909E-13`
+
+This tells us that the BMI-only model also has a positive slope, but it explains much less of the variation in `charges` than the smoker model and less than the age-only model as well.
+
+##### Figure-style example: `Regression_Children`
+
+The next worksheet-style example shown in the lesson is the **children** regression.
+
+Important note:
+Even if a figure caption says "Charges by BMI", the actual screen content here shows the **children** model, because:
+
+- `Input X Range` is `$C$1:$C$1339`
+- the worksheet name is `Regression_Children`
+- the coefficient row is labelled `children`
+
+For this regression:
+
+- `Input Y Range` -> `$F$1:$F$1339`
+- `Input X Range` -> `$C$1:$C$1339`
+- `Labels` -> checked
+- `Constant is Zero` -> unchecked
+- `Output option` -> `New Worksheet Ply`
+- worksheet name -> `Regression_Children`
+
+This produces a simple-regression output where:
+
+- `Multiple R` = `0.067998227`
+- `R Square` = `0.004623759`
+- `Adjusted R Square` = `0.003878717`
+- `Standard Error` = `12086.50277`
+- `Observations` = `1338`
+- `Intercept` = `12522.49555`
+- `children` coefficient = `683.089382`
+- `F` = `6.206037048`
+- `Significance F` = `0.012852129`
+
+This tells us that the children-only model has a positive slope, but it explains only a very small share of the variation in `charges`.
+
+##### Figure-style example: `Regression_Smoker_Num`
+
+The next worksheet-style example shown in the lesson is the **Smoker_Num** regression.
+
+Important note:
+Even if a figure caption says "Charges by children", the actual screen content here shows the **Smoker_Num** model, because:
+
+- `Input X Range` is `$D$1:$D$1339`
+- the worksheet name is `Regression_Smoker_Num`
+- the coefficient row is labelled `Smoker_Num`
+
+For this regression:
+
+- `Input Y Range` -> `$F$1:$F$1339`
+- `Input X Range` -> `$D$1:$D$1339`
+- `Labels` -> checked
+- `Constant is Zero` -> unchecked
+- `Output option` -> `New Worksheet Ply`
+- worksheet name -> `Regression_Smoker_Num`
+
+This produces a simple-regression output where:
+
+- `Multiple R` = `0.78725143`
+- `R Square` = `0.619764815`
+- `Adjusted R Square` = `0.619480208`
+- `Standard Error` = `7470.216208`
+- `Observations` = `1338`
+- `Intercept` = `8434.268298`
+- `Smoker_Num` coefficient = `23615.963534`
+- `F` = `2177.614868`
+- `Significance F` is extremely small in the worksheet output
+
+This tells us that the smoker-only model is by far the strongest one-variable model shown so far. It explains a substantial share of the variation in `charges`, and the positive coefficient reflects the coding rule `yes = 1`, `no = 0`.
+
+##### Figure-style example: `Regression_Sex_Num`
+
+The next worksheet-style example shown in the lesson is the **Sex_Num** regression.
+
+Important note:
+Even if a figure caption says "Charges by Smoker_Num", the actual screen content here shows the **Sex_Num** model, because:
+
+- `Input X Range` is `$E$1:$E$1339`
+- the worksheet name is `Regression_Sex_Num`
+- the coefficient row is labelled `Sex_Num`
+
+For this regression:
+
+- `Input Y Range` -> `$F$1:$F$1339`
+- `Input X Range` -> `$E$1:$E$1339`
+- `Labels` -> checked
+- `Constant is Zero` -> unchecked
+- `Output option` -> `New Worksheet Ply`
+- worksheet name -> `Regression_Sex_Num`
+
+This produces a simple-regression output where:
+
+- `Multiple R` = `0.057292062`
+- `R Square` = `0.00328238`
+- `Adjusted R Square` = `0.002536334`
+- `Standard Error` = `12094.64397`
+- `Observations` = `1338`
+- `Intercept` = `12569.578844`
+- `Sex_Num` coefficient = `1387.172334`
+- `F` = `4.399701697`
+- `Significance F` = `0.036132721`
+
+This tells us that the sex-only model is a very weak one-variable model. It has a positive coefficient under the coding rule `male = 1`, `female = 0`, but it explains only a tiny share of the variation in `charges`.
+
+##### Figure-style summary of the coefficient tables
+
+The next worksheet-style figure is best understood as a **combined summary table** of the coefficient sections from all five simple regressions.
+
+Important note:
+Even if a figure caption says "Charges by Sex_Num", the actual screen content here is broader than a single model. It brings together the key coefficient rows for:
+
+- `Age`
+- `BMI`
+- `Children`
+- `Smoker_Num`
+- `Sex_Num`
+
+This kind of summary view is useful because it allows the analyst to compare the main coefficient outputs side by side without opening each regression worksheet one at a time.
+
+What the combined table makes easiest to compare is:
+
+- the intercept for each one-variable model
+- the coefficient of the explanatory variable
+- the standard error of that coefficient
+- the `t Stat`
+- the `P-value`
+- the confidence intervals
+
+At a practical level, the figure helps confirm the same overall pattern we already saw:
+
+- `Smoker_Num` has by far the strongest one-variable effect
+- `age` and `bmi` are positive but much weaker
+- `children` is positive but weak
+- `Sex_Num` is the weakest of the five one-variable models shown
+
+This is a useful exam-style summary because it moves the answer from:
+
+- one isolated regression output
+
+to:
+
+- a direct comparison of several one-variable models built on the same target variable
+
+##### Quick summary of the five simple regressions
+
+Using the prepared insurance dataset, the five one-variable regression models produce approximately:
+
+| Explanatory variable | `Multiple R` | `R Square` | Intercept | Coefficient |
+|----------------------|-------------:|-----------:|----------:|------------:|
+| `age` | `0.299008193` | `0.089405900` | `3165.885006` | `257.722619` |
+| `bmi` | `0.198340969` | `0.039339140` | `1192.937209` | `393.873031` |
+| `children` | `0.067998227` | `0.004623759` | `12522.495550` | `683.089382` |
+| `Smoker_Num` | `0.787251430` | `0.619764815` | `8434.268298` | `23615.963534` |
+| `Sex_Num` | `0.057292062` | `0.003282380` | `12569.578844` | `1387.172334` |
+
+This summary is useful because it shows that:
+
+- `Smoker_Num` gives by far the strongest one-variable model
+- `age` gives a much weaker but still noticeable model
+- `bmi` gives a weak model
+- `children` and `Sex_Num` give very weak one-variable models
+
+Important connection:
+In simple regression with an intercept, the `Multiple R` value lines up with the strength of the correlation we already observed with `charges`.
+
+##### Verifying Goodness of Fit (GoF)
+
+To conclude this section, it is useful to verify how well the five simple-regression models fit the data.
+
+Goodness of Fit (`GoF`) measures how well a model matches the observed data. In simple terms:
+
+- it tells us whether the model or expected distribution represents the observed data well
+- a higher `GoF` suggests that the model matches the data better
+- a lower `GoF` suggests that the model fits the data more poorly
+
+So a high `GoF` means a good match, while a low `GoF` indicates a poor match or larger differences between the model and the observed data.
+
+In the regression outputs, the reported `Multiple R` values give information about the correlation between the explanatory variable and the explained variable.
+
+These coefficients help us understand the strength of the relationship, and in simple regression they also line up with what we already saw in the correlation step.
+
+However, the more useful fit statistics here are usually:
+
+- `R Square`
+- `Adjusted R Square`
+
+In these five simple regressions, the values of `R Square` and `Adjusted R Square` are very close to each other, so it does not make much difference which one we interpret. For simplicity, we can focus on the regular `R Square` statistic.
+
+##### Goodness-of-fit summary for the five simple regressions
+
+| Explanatory variable | `Multiple R` | `R Square` | `Adjusted R Square` |
+|----------------------|-------------:|-----------:|--------------------:|
+| `age` | `0.299008193` | `0.089405900` | `0.088724317` |
+| `bmi` | `0.198340969` | `0.039339140` | `0.038620082` |
+| `children` | `0.067998227` | `0.004623759` | `0.003878717` |
+| `Smoker_Num` | `0.787251430` | `0.619764815` | `0.619480208` |
+| `Sex_Num` | `0.057292062` | `0.003282380` | `0.002536334` |
+
+Using `R Square` as the main GoF measure, we can say:
+
+- in simple regression with `age` as the explanatory variable, the `R Square` value is about `9%`, which means that variability in age explains about `9%` of the variability of the premium charged by the insurance company
+- in simple regression with `bmi` as the explanatory variable, the `R Square` value is about `4%`, which means that variability in the BMI index explains about `4%` of the variability of the premium charged by the insurance company
+- in simple regression with `children` as the explanatory variable, the `R Square` value is about `0.5%`, which means that variability in the number of children explains about `0.5%` of the variability of the premium charged by the insurance company
+- in simple regression with `Smoker_Num` as the explanatory variable, the `R Square` value is about `62%`, which means that the distinction between a smoker and a non-smoker explains about `62%` of the variability of the premium charged by the insurance company
+- in simple regression with `Sex_Num` as the explanatory variable, the `R Square` value is about `0.3%`, which means that the difference between being male and being female explains about `0.3%` of the variability of the premium charged by the insurance company
+
+We can therefore see that the respective one-variable models do not have the same explanatory power.
+
+The strongest of the five is the `Smoker_Num` model, because it explains the largest share of the variability in `charges`.
+
+The weakest are `children` and `Sex_Num`, because their `R Square` values are close to zero, which means they explain very little of the variation in `charges` on their own.
+
+##### Excel and Google Sheets template for quick GoF checks
+
+For a simple regression with one explanatory variable and one target variable, a quick reusable pattern is:
+
+| Goal | Formula |
+|------|---------|
+| Correlation strength | `=CORREL(x_range,y_range)` |
+| `R Square` | `=RSQ(y_range,x_range)` |
+| `R Square` from correlation | `=CORREL(x_range,y_range)^2` |
+
+If you also want a simple adjusted version for one explanatory variable, use:
+
+`=1-(1-R2_cell)*(n-1)/(n-2)`
+
+Where:
+
+- `R2_cell` is the cell containing `R Square`
+- `n` is the number of observations
+
+This template works in both Excel and Google Sheets and is useful when you want to compare the explanatory power of several one-variable models quickly.
+
+##### What the significance results suggest
+
+Looking across the five simple regressions, all five explanatory variables are statistically significant at the `5%` level in this **simple-regression framework**.
+
+That is because the `P-value` associated with each slope coefficient is below `0.05`.
+
+##### What a `P-value` means in simple terms
+
+A `P-value` is a number between `0` and `1` that helps us judge whether the result of a statistical analysis is statistically significant.
+
+In simple terms:
+
+- a small `P-value`, often below `0.05` or `0.01`, suggests strong evidence against the null hypothesis
+- this means there is statistical evidence of an effect or relationship in the data
+- it also means the observed result is not likely to have happened by random chance alone
+- a large `P-value`, above the chosen threshold, suggests weak evidence against the null hypothesis
+- this means we do not have enough statistical evidence to say that the effect or relationship is significant
+- in that case, the observed result may be due to chance
+
+So the practical rule is:
+
+- small `P-value` -> stronger evidence of a meaningful relationship
+- large `P-value` -> weaker evidence, so the result may be due to chance
+
+It is better to say **large `P-value`** or **not statistically significant**, rather than saying a "significant `P-value`" when the value is above `0.05`.
+
+In summary:
+
+- a small `P-value` supports the presence of a meaningful effect or relationship
+- a large `P-value` suggests insufficient evidence to support a significant effect or relationship
+
+In practical terms:
+
+- `age` has a very small `P-value`
+- `bmi` has a very small `P-value`
+- `children` has a smaller-than-`5%` `P-value`
+- `Smoker_Num` has an extremely small `P-value`
+- `Sex_Num` has a `P-value` close to the `5%` threshold, but still below it
+
+This means:
+
+- `Smoker_Num` shows the strongest statistical evidence and also the strongest simple correlation with `charges`
+- `age` and `bmi` are also strongly supported, but not as strongly as `Smoker_Num`
+- `children` and especially `Sex_Num` are the weakest of the five, even though they still pass the `5%` significance rule in this one-variable setting
+
+Another useful way to say this is:
+
+- all five explanatory variables are statistically significant because the `P-value` of each slope coefficient is below `5%`
+- `Smoker_Num` has the smallest `P-value` and the highest correlation coefficient, so it provides the strongest one-variable evidence in this simple-regression comparison
+- `age` and `bmi` also have very small `P-values`, and these variables were also more clearly correlated with `charges` than `children` and `Sex_Num`
+- the variables with the weakest correlations tend to have the largest `P-values`
+- in this example, `Sex_Num` is the weakest of the five because its `P-value` is closest to the `5%` threshold
+
+So the broad conclusion is that, in a simple regression framework, all five considered explanatory variables show a positive relationship with the explained variable `charges`.
+
+##### Interpreting the slope coefficients
+
+Because all five slope coefficients are statistically significant in this simple-regression setup, we can interpret their estimated values directly.
+
+###### `age`
+
+The estimated slope coefficient for `age` is about `257.72`.
+
+In simple regression, that means:
+
+- older customers tend to be charged higher premiums on average
+- for each additional year of age, the premium is predicted to increase by about `257.72 USD` on average
+
+###### `bmi`
+
+The estimated slope coefficient for `bmi` is about `393.87`.
+
+In simple regression, that means:
+
+- customers with higher BMI values tend to be charged higher premiums on average
+- for each additional BMI point, the premium is predicted to increase by about `393.87 USD` on average
+
+###### `children`
+
+The estimated slope coefficient for `children` is about `683.09`.
+
+In simple regression, that means:
+
+- customers with more children tend to be charged higher premiums on average
+- for each additional child, the premium is predicted to increase by about `683.09 USD` on average
+
+###### `Smoker_Num`
+
+The estimated slope coefficient for `Smoker_Num` is about `23615.96`.
+
+Because the coding rule is `yes = 1` and `no = 0`, in simple regression this means:
+
+- smokers tend to be charged much higher premiums than non-smokers
+- being a smoker is associated with an average increase of about `23615.96 USD` in the premium compared with being a non-smoker
+
+###### `Sex_Num`
+
+The estimated slope coefficient for `Sex_Num` is about `1387.17`.
+
+Because the coding rule is `male = 1` and `female = 0`, in simple regression this means:
+
+- male customers tend to be charged higher premiums than female customers on average in this simple one-variable model
+- being male is associated with an average increase of about `1387.17 USD` in the premium compared with being female
+
+Important caution:
+These interpretations are correct for the **simple** one-variable regressions shown here. In a later multiple-regression model, the size and meaning of the coefficients may change once the variables are considered together.
+
+##### Excel and Google Sheets template for checking correlation before regression
+
+If the prepared worksheet is arranged as:
+
+- `A` -> `age`
+- `B` -> `bmi`
+- `C` -> `children`
+- `D` -> `Smoker_Num`
+- `E` -> `Sex_Num`
+- `F` -> `charges`
+
+then the correlations can be checked with:
+
+| Relationship | Formula |
+|--------------|---------|
+| `age` and `charges` | `=CORREL(A2:A1339,F2:F1339)` |
+| `bmi` and `charges` | `=CORREL(B2:B1339,F2:F1339)` |
+| `children` and `charges` | `=CORREL(C2:C1339,F2:F1339)` |
+| `Smoker_Num` and `charges` | `=CORREL(D2:D1339,F2:F1339)` |
+| `Sex_Num` and `charges` | `=CORREL(E2:E1339,F2:F1339)` |
+
+This pattern works in both Excel and Google Sheets.
+
+##### Excel and Google Sheets template for the five simple regressions
+
+After the correlation check, the five simple regressions can be run one at a time using the same target range and changing only the explanatory-variable range.
+
+Use this structure:
+
+| Regression | Target range | Explanatory range | `LINEST` pattern |
+|------------|--------------|-------------------|------------------|
+| 1 | `charges_range` | `age_range` | `=LINEST(charges_range,age_range)` |
+| 2 | `charges_range` | `bmi_range` | `=LINEST(charges_range,bmi_range)` |
+| 3 | `charges_range` | `children_range` | `=LINEST(charges_range,children_range)` |
+| 4 | `charges_range` | `Smoker_Num_range` | `=LINEST(charges_range,Smoker_Num_range)` |
+| 5 | `charges_range` | `Sex_Num_range` | `=LINEST(charges_range,Sex_Num_range)` |
+
+Starter example with the prepared layout:
+
+- Regression 1 -> `=LINEST($F$2:$F$1339,$A$2:$A$1339)`
+- Regression 2 -> `=LINEST($F$2:$F$1339,$B$2:$B$1339)`
+- Regression 3 -> `=LINEST($F$2:$F$1339,$C$2:$C$1339)`
+- Regression 4 -> `=LINEST($F$2:$F$1339,$D$2:$D$1339)`
+- Regression 5 -> `=LINEST($F$2:$F$1339,$E$2:$E$1339)`
+
+The same logic can also be used in the Excel **Data Analysis ToolPak** by keeping `charges` as the `Y` range and changing only the `X` range from one regression to the next.
+
+##### How to use this in an exam
+
+If an exam question asks why you would examine correlation before building several regressions, a strong answer can say:
+
+1. identify the target variable
+2. list the candidate explanatory variables
+3. calculate the correlation between the target and each candidate
+4. compare the sign and strength of the relationships
+5. use that comparison as a screening step before running the simple or multiple regressions
+
+This is especially strong because it shows that the analyst is not jumping straight to model-building without first checking how the variables move together.
+
+##### Running a multiple regression
+
+In the previous section, the five explanatory variables were tested one at a time through separate simple regressions.
+
+At this point, it is worth remembering that almost everything learned from simple regression also helps with multiple regression.
+
+That includes:
+
+- interpretation of coefficients
+- checking statistical significance
+- inspecting Goodness of Fit measures
+
+Now, the next step is to analyse them together inside a **multiple linear regression** framework.
+
+The logic is similar to simple regression, but now the model uses all five explanatory variables at the same time:
+
+- `age`
+- `bmi`
+- `children`
+- `Smoker_Num`
+- `Sex_Num`
+
+In the Excel **Data Analysis ToolPak**, the setup is:
+
+- `Input Y Range` -> `$F$1:$F$1339`
+- `Input X Range` -> `$A$1:$E$1339`
+- `Labels` -> checked
+- `Constant is Zero` -> not checked
+- `New Worksheet Ply` -> `Multiple Regression`
+
+This setup is useful because it keeps the same explained variable as before, but now tests the explanatory variables together rather than in isolation.
+
+##### What the multiple-regression output shows
+
+Figure 33 shows the output of this multiple-regression setup.
+
+Using the prepared insurance dataset, the multiple-regression output is approximately:
+
+| Measure | Value |
+|---------|------:|
+| `Multiple R` | `0.865865180` |
+| `R Square` | `0.749722510` |
+| `Adjusted R Square` | `0.748783030` |
+| `Standard Error` | `6069.725250` |
+| `Observations` | `1338` |
+
+The fitted coefficients are approximately:
+
+| Variable | Coefficient |
+|----------|------------:|
+| `Intercept` | `-12052.461986` |
+| `age` | `257.734988` |
+| `bmi` | `322.364214` |
+| `children` | `474.411121` |
+| `Smoker_Num` | `23823.392531` |
+| `Sex_Num` | `-128.639854` |
+
+##### Comparing the multiple regression with the best simple regression
+
+The multiple-regression model has an `R Square` value of about `75%`.
+
+The simple regression with the highest `R Square` value was the model using `Smoker_Num`, where the `R Square` value was about `62%`.
+
+That means the multiple-regression model adds about `13` percentage points of explanatory power compared with the strongest simple-regression model.
+
+Strictly speaking, when models have different numbers of parameters, it is better to compare their explanatory power using `Adjusted R Square`.
+
+However, in this case the adjusted values are almost identical to the regular ones, so the conclusion is the same: the multiple-regression model fits the data better than any of the five one-variable models.
+
+##### What changes in multiple regression
+
+An important lesson here is that a variable can be statistically significant in a simple regression but become weak or non-significant in a multiple regression once the variables are analysed together.
+
+In this multiple-regression model:
+
+- `age`, `bmi`, `children`, and `Smoker_Num` remain statistically significant
+- `Sex_Num` is not statistically significant
+
+Why is `Sex_Num` not statistically significant here?
+
+- its estimated coefficient is negative, at about `-128.64`
+- its `P-value` is about `0.6996`, which is almost `70%`
+- but the `95%` confidence interval crosses zero
+- when zero falls inside the interval, the coefficient is not statistically distinguishable from zero at the `5%` level
+
+Figure 34 highlights this clearly: the `95%` confidence interval for `Sex_Num` runs from about `-782.6` to `525.3`.
+
+Because zero falls inside this interval, the exact sign of the coefficient does not matter here for the significance decision.
+
+So, in practical terms, the `Sex_Num` coefficient should be treated as if it may be zero in this multiple-regression setting.
+
+This is a useful exam rule:
+
+- if a variable is not statistically significant, we treat its parameter estimate as if it were equal to zero for interpretation purposes
+
+This is a strong example of why multiple regression is useful: it shows which variables still matter after the effects of the other variables are taken into account.
+
+##### Interpreting the `age` coefficient in multiple regression
+
+Figure 35 highlights the coefficient estimate for `age`.
+
+In the multiple-regression framework, the coefficient estimate associated with `age` is about `257.73`.
+
+That means:
+
+- holding `bmi`, `children`, `Smoker_Num`, and `Sex_Num` constant
+- each additional year of age is associated with an average increase of about `257.73 USD` in the insurance premium
+
+This is a more precise interpretation than in simple regression because it controls for the other explanatory variables at the same time.
+
+##### Interpreting the `bmi` coefficient in multiple regression
+
+Figure 36 highlights the coefficient estimate for `bmi`.
+
+In the multiple-regression framework, the coefficient estimate associated with `bmi` is about `322.36`.
+
+That means:
+
+- holding `age`, `children`, `Smoker_Num`, and `Sex_Num` constant
+- each additional BMI point is associated with an average increase of about `322.36 USD` in the insurance premium
+
+This interpretation is also more precise than in simple regression because it controls for the other explanatory variables at the same time.
+
+##### Interpreting the `children` coefficient in multiple regression
+
+Figure 37 highlights the coefficient estimate for `children`.
+
+In the multiple-regression framework, the coefficient estimate associated with `children` is about `474.41`.
+
+That means:
+
+- holding `age`, `bmi`, `Smoker_Num`, and `Sex_Num` constant
+- each additional child is associated with an average increase of about `474.41 USD` in the insurance premium
+
+This interpretation is also more precise than in simple regression because it controls for the other explanatory variables at the same time.
+
+##### Interpreting the `Smoker_Num` coefficient in multiple regression
+
+Figure 38 highlights the coefficient estimate for `Smoker_Num`.
+
+In the multiple-regression framework, the coefficient estimate associated with `Smoker_Num` is about `23823.39`.
+
+Because the coding rule is `yes = 1` and `no = 0`, that means:
+
+- holding `age`, `bmi`, `children`, and `Sex_Num` constant
+- being a smoker is associated with an average increase of about `23823.39 USD` in the insurance premium compared with being a non-smoker
+
+This interpretation is especially important because it shows that smoking remains the strongest explanatory variable even after the other variables are taken into account.
+
+##### Interpreting the `Sex_Num` coefficient in multiple regression
+
+Figure 39 highlights the coefficient estimate for `Sex_Num`.
+
+In the multiple-regression framework, the coefficient estimate associated with `Sex_Num` is not statistically significant.
+
+Its coefficient estimate is about `-128.64`, but this should not be given a strong practical interpretation.
+
+That is because:
+
+- the `P-value` is high, at about `0.6996`
+- the `95%` confidence interval includes zero
+- the coefficient is therefore not statistically distinguishable from zero at the `5%` level
+
+So, in this multiple-regression setting, `Sex_Num` should be treated as a variable whose effect is not supported by enough statistical evidence once the other explanatory variables are included in the model.
+
+That means:
+
+- compared with being female, being male does not translate into a clearly higher or lower insurance premium on average in this multiple-regression model
+
+This is also a useful reminder that the results of a multiple regression can differ from the results of separate simple regressions.
+
+That matters for at least two reasons:
+
+- first, coefficient estimates are interpreted directly, so different coefficient values lead to different practical interpretations
+- second, coefficient estimates play a central role when the regression model is later used for forecasting or prediction
+
+##### Activity 4 multiple-regression example
+
+The workbook `Input+Activity+4.xlsx` can also be used to build a smaller multiple-regression example.
+
+The dataset fields are:
+
+- `Gender`
+- `Children`
+- `Sex_Num`
+- `Smoker_Num`
+- `Sales`
+
+##### Data quality note about `Gender` and `Sex_Num`
+
+At first glance, `Gender` and `Sex_Num` appear to describe the same underlying concept.
+
+In a real-world analysis, this would be treated as a potential **data quality issue** and investigated before running the regression.
+
+For the purposes of this exercise, however, we assume:
+
+- `Sex_Num` refers to the sex of the primary earner in the household
+- `Gender` refers to the individual customer
+- the dataset contains only households with more than one earner
+
+Under those assumptions, both variables can remain in the model without being treated as duplicates.
+
+##### ToolPak setup for Activity 4
+
+If the worksheet is arranged as:
+
+- `A` -> `Gender`
+- `B` -> `Children`
+- `C` -> `Sex_Num`
+- `D` -> `Smoker_Num`
+- `E` -> `Sales`
+
+then the Excel **Data Analysis ToolPak** setup is:
+
+- `Input Y Range` -> `$E$1:$E$21`
+- `Input X Range` -> `$A$1:$D$21`
+- `Labels` -> checked
+- `Constant is Zero` -> not checked
+- `New Worksheet Ply` -> `Activity 4 Multiple Regression`
+
+##### Output for Activity 4
+
+Using the corrected solution workbook, the multiple-regression output is approximately:
+
+| Measure | Value |
+|---------|------:|
+| `Multiple R` | `0.660197899` |
+| `R Square` | `0.435861266` |
+| `Adjusted R Square` | `0.285424270` |
+| `Standard Error` | `138.104360` |
+| `Observations` | `20` |
+| `F` | `2.897301047` |
+| `Significance F` | `0.058306428` |
+
+The fitted coefficients are approximately:
+
+| Variable | Coefficient | `P-value` |
+|----------|------------:|----------:|
+| `Intercept` | `916.613502` | `0.000001979` |
+| `Gender` | `22.085089` | `0.742058889` |
+| `Children` | `-81.888468` | `0.050455657` |
+| `Sex_Num` | `-123.164495` | `0.084269777` |
+| `Smoker_Num` | `-2.734278` | `0.968311138` |
+
+##### Interpreting Activity 4
+
+This is a useful teaching example because it shows that:
+
+- a model can have a moderate `R Square` value, but still have weak evidence at the overall model level
+- the overall `Significance F` is about `0.0583`, which is just above the common `5%` threshold
+- individual explanatory variables can also fail to reach significance, especially in a small dataset
+
+In this activity:
+
+- `Gender` is not statistically significant
+- `Sex_Num` is not statistically significant
+- `Smoker_Num` is not statistically significant
+- `Children` is borderline, because its `P-value` is just above `0.05` and its confidence interval almost touches zero
+
+This means the activity is a good reminder that:
+
+- small datasets can produce unstable coefficient estimates
+- overlapping or closely related variables can complicate interpretation
+- a multiple regression should always be checked for both **fit** and **significance**, not just coefficient signs
+
+##### Excel and Google Sheets template for Activity 4
+
+Use this formula-style pattern:
+
+`=LINEST($E$2:$E$21,$A$2:$D$21,TRUE,TRUE)`
+
+This can be reused in other exam-style tasks by replacing only:
+
+- the target range
+- the multi-column explanatory range
+- and, if needed, the worksheet labels
+
+##### Excel and Google Sheets template for multiple regression
+
+For the prepared worksheet layout:
+
+- `A` -> `age`
+- `B` -> `bmi`
+- `C` -> `children`
+- `D` -> `Smoker_Num`
+- `E` -> `Sex_Num`
+- `F` -> `charges`
+
+use this ToolPak structure in Excel:
+
+- `Input Y Range` -> `$F$1:$F$1339`
+- `Input X Range` -> `$A$1:$E$1339`
+- `Labels` -> checked
+- `New Worksheet Ply` -> `Multiple Regression`
+
+If you need a formula-style template in Excel or Google Sheets, use:
+
+`=LINEST($F$2:$F$1339,$A$2:$E$1339,TRUE,TRUE)`
+
+This returns the coefficient structure for a multiple regression and can be reused by replacing only the target range and the multi-column explanatory range.
+
+##### How to use this in an exam
+
+If the exam asks you to compare simple and multiple regression, a strong answer can say:
+
+1. simple regression tests one explanatory variable at a time
+2. multiple regression tests several explanatory variables together
+3. significance can change when variables are analysed together
+4. `R Square` or `Adjusted R Square` can be used to compare explanatory power
+5. a coefficient in multiple regression should be interpreted as the effect of one variable while the others are held constant
+
+#### The Task
+
+##### Practical note about the task files
+
+The file names used in the task prompt appear to be swapped relative to their actual contents:
+
+- the single-regression `Years` / `Value_Nok` dataset is stored in `L3+Question+2+Dataset.csv`
+- the household multiple-regression dataset with `Gender`, `Animals`, and related fields is stored in `L3+Question+3+Dataset.csv`
+
+The solved answers below follow the actual dataset contents and match the solution workbook.
+
+##### Question 1 - `SalesData.csv`
+
+Import data from `SalesData.csv` and use the **Data Analysis ToolPak** to run:
+
+- three simple regressions:
+  - `sales` on `TV`
+  - `sales` on `radio`
+  - `sales` on `newspaper`
+- one multiple regression:
+  - `sales` on `TV`, `radio`, and `newspaper`
+
+Remember:
+
+- `sales` is measured in **millions**
+- `TV`, `radio`, and `newspaper` spending are measured in **thousands**
+
+###### Solved answer for the three simple regressions
+
+| Explanatory variable | Slope | `P-value` | `R Square` |
+|----------------------|------:|----------:|-----------:|
+| `TV` | `0.047537` | `1.47E-42` | `0.611875` |
+| `radio` | `0.202496` | `4.35E-19` | `0.332032` |
+| `newspaper` | `0.054693` | `1.15E-03` | `0.052120` |
+
+Interpretation:
+
+- `TV` slope `0.047537` means that each additional `1` unit of TV spending, measured in thousands, is associated with an average increase of about `0.047537` million in sales
+- `radio` slope `0.202496` means that each additional `1` unit of radio spending, measured in thousands, is associated with an average increase of about `0.202496` million in sales
+- `newspaper` slope `0.054693` means that each additional `1` unit of newspaper spending, measured in thousands, is associated with an average increase of about `0.054693` million in sales
+
+Statistical significance:
+
+- all three simple-regression slopes are statistically significant at the `5%` level, because all three `P-values` are below `0.05`
+
+`R Square` interpretation:
+
+- `TV` alone explains about `61.19%` of the variation in sales
+- `radio` alone explains about `33.20%` of the variation in sales
+- `newspaper` alone explains about `5.21%` of the variation in sales
+
+So the strongest one-variable model is the regression of `sales` on `TV`.
+
+###### Solved answer for the multiple regression on `TV`, `radio`, and `newspaper`
+
+The multiple-regression output is approximately:
+
+| Variable | Coefficient | `P-value` |
+|----------|------------:|----------:|
+| `Intercept` | `2.938889` | `1.27E-17` |
+| `TV` | `0.045765` | `1.51E-81` |
+| `radio` | `0.188530` | `1.51E-54` |
+| `newspaper` | `-0.001037` | `0.859915` |
+
+Interpretation:
+
+- `TV` coefficient `0.045765` means that, holding `radio` and `newspaper` constant, an additional `1` unit of TV spending is associated with an average increase of about `0.045765` million in sales
+- `radio` coefficient `0.188530` means that, holding `TV` and `newspaper` constant, an additional `1` unit of radio spending is associated with an average increase of about `0.188530` million in sales
+- `newspaper` coefficient `-0.001037` means that, holding `TV` and `radio` constant, an additional `1` unit of newspaper spending changes sales by about `-0.001037` million on average, but this coefficient is not statistically significant
+
+Statistical significance:
+
+- `TV` is statistically significant
+- `radio` is statistically significant
+- `newspaper` is **not** statistically significant
+
+The multiple-regression `R Square` is about `0.897211`.
+
+That means the combined model explains about `89.72%` of the variation in sales.
+
+The best simple regression was `sales` on `TV`, where `R Square = 0.611875`.
+
+So the multiple regression improves explanatory power by about `0.285336`, which is about `28.53` percentage points.
+
+That is why the combined model is the strongest overall model for this dataset.
+
+###### Excel and Google Sheets templates for Question 1
+
+Simple regression:
+
+- `=LINEST(sales_range,tv_range,TRUE,TRUE)`
+- `=LINEST(sales_range,radio_range,TRUE,TRUE)`
+- `=LINEST(sales_range,newspaper_range,TRUE,TRUE)`
+
+Multiple regression:
+
+- `=LINEST(sales_range,tv_to_newspaper_range,TRUE,TRUE)`
+
+ToolPak pattern:
+
+- `Input Y Range` -> `sales`
+- `Input X Range` -> one explanatory column for simple regression
+- `Input X Range` -> `TV`, `radio`, and `newspaper` together for multiple regression
+
+##### Question 2 - `Years` and `Value_Nok`
+
+Use the CSV that contains:
+
+- `Years`
+- `Value_Nok`
+
+This is the file stored as `L3+Question+2+Dataset.csv`.
+
+The required `LINEST` formula is:
+
+`=LINEST(B4:B25,A4:A25,TRUE,TRUE)`
+
+Expected `LINEST` output:
+
+- Row 1 -> slope `-3.314402` | intercept `2029.703883`
+- Row 2 -> SE slope `3.483961` | SE intercept `123.051142`
+- Row 3 -> `R Square` `0.043293` | standard error of y `304.602613`
+- Row 4 -> `F` statistic `0.905032` | degrees of freedom `20`
+- Row 5 -> regression SS `83971.339532` | residual SS `1855655.036995`
+
+ToolPak regression result:
+
+- slope `-3.314402`
+- intercept `2029.703883`
+- `P-value` for slope `0.352792`
+- `R Square` `0.043293`
+
+Interpretation:
+
+- the slope means that each additional `1` unit of `Years` is associated with an average change of about `-3.314402` in `Value_Nok`
+- the slope is **not** statistically significant because the `P-value` is greater than `0.05`
+- `R Square = 0.043293`, so the model explains only about `4.33%` of the variation in `Value_Nok`
+
+Comparison between methods:
+
+- `LINEST` and the Analysis ToolPak give the same slope and intercept
+- the difference is mainly workflow:
+  - `LINEST` is formula-based
+  - ToolPak is menu-based
+
+###### Excel and Google Sheets template for Question 2
+
+- `=LINEST(y_range,x_range,TRUE,TRUE)`
+- ToolPak:
+  - `Input Y Range` -> `Value_Nok`
+  - `Input X Range` -> `Years`
+
+##### Question 3 - household multiple regression
+
+Use the CSV that contains:
+
+- `Gender`
+- `Animals`
+- `Televisions`
+- `Cars`
+- `Rent or own`
+- `Children`
+- `Single or not`
+- `Mortgage or Rental value`
+
+This is the file stored as `L3+Question+3+Dataset.csv`.
+
+The multiple-regression output is approximately:
+
+| Measure | Value |
+|---------|------:|
+| `Multiple R` | `0.746071` |
+| `R Square` | `0.556622` |
+| `Adjusted R Square` | `0.297985` |
+| `Standard Error` | `136.885152` |
+| `Observations` | `20` |
+
+Main coefficient results:
+
+| Variable | Coefficient | `P-value` | Interpretation |
+|----------|------------:|----------:|----------------|
+| `Gender` | `-41.016436` | `0.612962` | not statistically significant |
+| `Animals` | `-91.169148` | `0.045311` | statistically significant |
+| `Televisions` | `-53.704936` | `0.304584` | not statistically significant |
+| `Cars` | `25.344054` | `0.494554` | not statistically significant |
+| `Rent or own` | `-112.141784` | `0.264302` | not statistically significant |
+| `Children` | `-0.119830` | `0.997795` | not statistically significant |
+| `Single or not` | `68.375176` | `0.443643` | not statistically significant |
+
+Interpretation:
+
+- `R Square = 0.556622` means the model explains about `55.66%` of the variation in `Mortgage or Rental value`
+- only `Animals` is statistically significant at the `5%` level in this model
+- the other explanatory variables do not have strong enough evidence in this sample once the model controls for all variables together
+
+Overall conclusion:
+
+- this model shows how multiple regression helps identify which variables still matter after controlling for the others
+- in this task, only `Animals` should be treated as a strong predictor
+
+###### Excel and Google Sheets template for Question 3
+
+If the columns run from `A` to `H`, with the dependent variable in `H`, use:
+
+- `=LINEST(H2:H21,A2:G21,TRUE,TRUE)`
+
+ToolPak pattern:
+
+- `Input Y Range` -> `Mortgage or Rental value`
+- `Input X Range` -> `Gender` through `Single or not`
+
+#### What Did I Learn in This Lesson?
+
+This lesson provided the following insights:
+
+- an overview of the various Excel add-ins available and how to install or enable them
+- linear regression using the Excel `LINEST` function
+- simple linear regression using the Analysis ToolPak
+- multiple simple linear regressions using the Analysis ToolPak
+- multiple regression using the Analysis ToolPak
+
+#### Exam Notes
+
+When revising this lesson, focus especially on these high-yield ideas:
+
+- understand that advanced spreadsheet analytics builds on earlier spreadsheet and statistics knowledge
+- be ready to explain what the **Data Analysis ToolPak** is used for
+- be ready to explain what **Solver** is used for
+- be ready to explain what **Scenario Manager** is used for
+- be ready to explain what **Goal Seek** is used for
+- be ready to explain how `Data Analysis ToolPak` and `Solver` are enabled through `File -> Options -> Add-Ins`
+- remember that `Goal Seek` and `Scenario Manager` are normally built-in features, not add-ins that must always be activated in the same way
+- be ready to distinguish add-ins from direct spreadsheet functions when relevant
+- be ready to explain the difference between long-form Excel work and shorter ToolPak-based workflows
+- be ready to explain what `LINEST` does and how `known_y's` and `known_x's` should be interpreted
+- be ready to recognise interchangeable regression terminology such as explained or target variable, explanatory or input variable, and parameters or coefficients
+- be ready to explain what a regression coefficient means in simple language
+- be ready to explain that older Excel may require `Ctrl + Shift + Enter` for legacy array output, while newer Excel usually spills with `Enter`
+- be ready to explain what slope, intercept, best-fit line, `R-squared`, and standard error mean in simple regression output
+- be ready to explain how a wider dataset can be prepared for running many simple regressions against the same dependent variable
+- remember that binary categorical variables such as `sex` and `smoker` can be converted into `0/1` numeric fields for this course
+- remember that multi-category variables such as `region` would need dummy variables and are outside the current course scope
+- be ready to describe a clean regression-ready column order such as `age`, `bmi`, `children`, `Smoker_Num`, `Sex_Num`, `charges`
+- before building a multiple regression model, be ready to explain why it can help to compare the target variable with each explanatory variable through separate correlations or simple regressions
+- for the insurance dataset, be ready to identify `charges` as the target variable and `age`, `bmi`, `children`, `Smoker_Num`, and `Sex_Num` as the candidate explanatory variables
+- remember that correlation is a screening tool for direction and strength, not proof of causation
+- be ready to interpret a correlation coefficient on the `-1` to `1` scale and explain what values near `1`, `-1`, and `0` mean
+- be ready to explain that correlation coefficients can be obtained either with `CORREL` formulas or with the Correlation option in the Data Analysis ToolPak
+- be ready to explain how the Correlation dialog is populated, including `Input Range`, `Grouped By`, `Labels in First Row`, and the output choice
+- be ready to explain that a ToolPak correlation result is a correlation matrix, with `1`s on the diagonal and mirrored values across the matrix
+- be ready to move from correlation screening to five separate simple regressions by keeping the same target variable and changing only the explanatory variable
+- for the insurance example, be ready to set `charges` as the `Y` range and place each simple regression in its own worksheet such as `Regression_Age`, `Regression_BMI`, `Regression_Children`, `Regression_Smoker`, and `Regression_Sex`
+- be ready to set up a multiple regression in the ToolPak by keeping `charges` as the `Y` range and using `A:E` as the combined `X` range
+- be ready to explain what Goodness of Fit means and why `R Square` is often more useful than `Multiple R` when comparing simple regression fit
+- be ready to explain that a multiple regression can have stronger explanatory power than the best simple regression
+- be ready to explain that statistical significance can change in multiple regression when variables are considered together
+- be ready to explain that if a confidence interval includes zero, the coefficient is not statistically significant at that confidence level
+- in the insurance multiple-regression example, be ready to explain that `Sex_Num` is not significant because its `P-value` is high and its confidence interval includes zero
+- if a variable is not statistically significant, be ready to explain that its coefficient should not be given a strong practical interpretation and is often treated as effectively zero for interpretation purposes
+- be ready to explain that multiple-regression results can differ from separate simple regressions, and that this matters both for interpretation and for later forecasting use
+- be ready to interpret a multiple-regression coefficient as the effect of one variable while the other explanatory variables are held constant
+- be ready to flag a possible data quality issue if two variables appear to represent the same concept, and state any exercise-specific assumption clearly before proceeding
+- remember that a moderate `R Square` does not automatically mean strong statistical significance for the whole model or for every coefficient
+- in the insurance example, be ready to explain that all five simple-regression slopes are significant at the 5% level, but that `Smoker_Num` is strongest and `Sex_Num` is weakest
+- be ready to interpret slope coefficients in practical terms, including binary-coded variables such as `Smoker_Num` and `Sex_Num`
+- for Excel-related methods, be ready to provide a reusable template, not only a one-off explanation
+- connect advanced Excel tools to practical workflow improvement, not only theory
+- expect hands-on and scenario-based questions rather than only short definitions
+
+##### Strong exam answer rule
+
+For advanced spreadsheet tool-pack questions, answer in this order:
+
+1. identify the problem type
+2. name the correct spreadsheet tool
+3. explain what the tool does
+4. describe the required setup or inputs
+5. interpret the output in context
+            """,
+            "key_points": [
+                "Advanced spreadsheet analytics builds on earlier spreadsheet and statistical foundations",
+                "Many advanced Excel tools are turned off by default, so the analyst should know how to enable add-ins through File, Options, and Add-Ins",
+                "The Data Analysis ToolPak supports structured statistical procedures inside Excel",
+                "Solver supports more advanced analytical and optimisation-style spreadsheet tasks",
+                "Scenario Manager supports what-if analysis by comparing alternative input sets",
+                "Goal Seek works backwards from a target result to find the required input value",
+                "Goal Seek and Scenario Manager are usually treated as built-in Excel features rather than add-ins that must always be enabled in the same way as ToolPak or Solver",
+                "Excel also supports advanced analysis through built-in statistical functions, not only add-ins",
+                "Many analytical tasks can be done either in long-form Excel or through the ToolPak, so it is important to understand both methods",
+                "LINEST is an Excel regression function that helps return the best-fit straight-line information from dependent and independent variable data",
+                "Regression terminology can vary, so explained and target variable, explanatory and input variable, and parameters and coefficients may refer to the same core roles in linear regression",
+                "A coefficient expresses the strength or impact of one variable on another in a model or equation",
+                "Older Excel may require Ctrl + Shift + Enter for legacy array output, while newer Excel usually spills LINEST output with a normal Enter",
+                "Simple regression output is easier to interpret when the analyst understands slope, intercept, best-fit line, R-squared, and standard error",
+                "Before running many simple regressions, the dataset should be cleaned into a regression-ready numeric structure with one clear dependent variable",
+                "Binary categorical variables such as smoker and sex can be encoded as 0 and 1 for simple regression use in this course",
+                "Variables with more than two categories, such as region, would require dummy variables and are outside the present course scope",
+                "A practical regression-ready layout is age, bmi, children, Smoker_Num, Sex_Num, charges",
+                "Before building a multiple regression model, it is useful to compare the target variable with each candidate explanatory variable through correlation and separate simple regressions",
+                "For the insurance example, charges is the target variable and age, bmi, children, Smoker_Num, and Sex_Num are the candidate explanatory variables",
+                "Correlation helps screen the direction and strength of linear relationships, but it does not prove causation or replace regression",
+                "Correlation coefficients run from -1 to 1, where values near 1 indicate strong positive relationships, values near -1 indicate strong negative relationships, and values near 0 indicate weak or no linear relationship",
+                "Correlation can be checked either with direct CORREL formulas or through the Correlation option in the Data Analysis ToolPak",
+                "A strong ToolPak correlation setup explains the Input Range, grouping by columns, whether labels are included, and where the output is printed",
+                "ToolPak correlation output is a correlation matrix where each variable has a perfect self-correlation of 1 on the diagonal and mirrored pairwise values elsewhere",
+                "After the correlation check, the same target variable can be used in five separate simple regressions by changing only the explanatory-variable range and worksheet name",
+                "For the insurance example, Smoker_Num gives the strongest one-variable model, while children and Sex_Num produce much weaker one-variable models",
+                "A multiple regression in this insurance example uses charges as the Y range and age, bmi, children, Smoker_Num, and Sex_Num together as the X range",
+                "Goodness of Fit helps compare how well the different one-variable regression models match the data, and R-squared is often the most useful summary measure for this purpose",
+                "The multiple-regression model explains more of the variation in charges than the best simple-regression model, so combining variables improves explanatory power here",
+                "In the simple-regression insurance examples, all five slope coefficients are significant at the 5 percent level, but Smoker_Num has the strongest evidence while Sex_Num is the weakest",
+                "In multiple regression, significance can change because variables are evaluated together rather than one at a time",
+                "If a confidence interval includes zero, the corresponding coefficient is not statistically significant at that confidence level",
+                "In the insurance multiple-regression example, Sex_Num is not statistically significant because its P-value is high and its confidence interval crosses zero",
+                "When a coefficient is not statistically significant, it should not be given a strong practical interpretation and is often treated as effectively zero for interpretation purposes",
+                "Multiple-regression results can differ from separate simple regressions, and that matters both for coefficient interpretation and for later forecasting use",
+                "A multiple-regression coefficient should be interpreted while holding the other explanatory variables constant",
+                "If two variables appear to represent the same underlying concept, that should be treated as a data quality issue and explained before modelling proceeds",
+                "A model can have a moderate R-squared value but still show weak overall significance or weak individual coefficient significance, especially in small datasets",
+                "A p-value is used to judge statistical significance: small values such as below 0.05 suggest stronger evidence against the null hypothesis, while large values suggest weaker evidence",
+                "Slope coefficients should be interpreted in context, and for binary coded variables they express the average difference between the group coded 1 and the group coded 0",
+                "Excel-related topics become more useful in exams when the answer includes a reusable template as well as the explanation",
+                "Advanced statistical functionality in Excel is most useful when linked to practical scenarios and walkthroughs",
+                "In exams, the key skill is often tool choice, setup, and interpretation rather than only naming the tool"
+            ],
+            "visual_elements": {
+                "diagrams": False,
+                "tables": False,
+                "highlighted_sections": True
+            }
+        },
+        {
+            "lesson_number": "1.4",
+            "title": "Data Analysis and Forecasting",
+            "content": """
+### 1.4. Lesson - Data Analysis and Forecasting
+
+#### Introduction
+
+Now that we have learnt the basics of regression, both simple and multiple linear, we can move on to even more exciting analytical and statistical tools and functions available to us in Excel. In this lesson, we are going to focus on forecasting.
+
+#### What forecasting means
+
+Forecasting is the process of making predictions or estimates about future events or outcomes based on historical data and patterns. It involves analysing past trends, repeated patterns, and relationships in the data to project what may happen next.
+
+Forecasting can be applied in many domains, including:
+
+- business
+- economics
+- weather
+- sales
+- stock markets
+
+The main value of forecasting is that it helps organisations and individuals plan ahead and make more informed decisions by giving insight into possible future scenarios.
+
+It is also important to remember that forecasting is not an exact science. Forecasts always involve some uncertainty because they are based on assumptions and on patterns taken from past data. That means a forecast should be interpreted as an informed estimate, not as a guaranteed future result.
+
+#### Forecasting with a Simple Linear Regression
+
+In our previous lesson, we used the `used_cars.csv` file to learn about simple and multiple regression. We learnt about the `LINEST` function and regression via the Analysis ToolPak. Let us take that to the next level and start doing some forecasting.
+
+In the `used_cars.csv` dataset, the two main variables are:
+
+- `Age`, which acts as the explanatory or independent variable
+- `Price_Eur`, which acts as the target, explained, or dependent variable
+
+When we build a simple linear regression model from these two variables, we can use the estimated regression line to predict the expected price of a used car for a given age. That is the basic idea of forecasting with a simple linear regression.
+
+In practical terms, forecasting here means:
+
+- using historical car data
+- estimating the relationship between `Age` and `Price_Eur`
+- using that estimated relationship to predict a future or unknown value
+
+If the regression shows that older cars tend to have lower prices, then the slope of the regression line will be negative. We can then use the estimated line to forecast the expected price of a car when only its age is known.
+
+#### Recreate the `SLOPE` and `INTERCEPT` with `LINEST`
+
+Please re-download and import the `used_cars.csv` file and recreate the `SLOPE` and `INTERCEPT` using the `LINEST` function from the previous lesson.
+
+For this dataset:
+
+- `Age` is the `X` variable
+- `Price_Eur` is the `Y` variable
+
+If the imported data is placed in:
+
+- `A2:A14` for `Age`
+- `B2:B14` for `Price_Eur`
+
+then the basic `LINEST` formula is:
+
+- `=LINEST($B$2:$B$14,$A$2:$A$14)`
+
+In older versions of Excel, select two horizontal cells first and confirm the formula with `Ctrl + Shift + Enter`. In newer versions of Excel, entering the formula once is usually enough because the result can spill automatically.
+
+The result for the `used_cars.csv` file is:
+
+- `SLOPE = -752.762281`
+- `INTERCEPT = 13902.062915`
+
+This means the estimated regression line is:
+
+- `Price_Eur = 13902.062915 - 752.762281 * Age`
+
+Interpretation:
+
+- the negative slope means that older cars tend to have lower prices
+- for every additional year of age, the predicted price decreases by about `752.76 EUR`
+- the intercept is the estimated price when `Age = 0`, which is useful for the regression equation even if that exact case is not realistic in practice
+
+#### Using the estimated regression equation for prediction
+
+Estimated regression equations such as the one above can be used to make predictions. Once the model has been estimated, we know the values of the parameter estimates. That means we can assume a hypothetical value for the explanatory variable and calculate the expected value of the explained variable.
+
+In this specific example, the regression of `Price_Eur` on `Age` tells us that when a car becomes one year older, its average price decreases by about `752.76 EUR`. We can use that relationship to forecast the prices of cars with hypothetical ages.
+
+Consider these ages:
+
+- `5` years old
+- `11` years old
+- `1` year old
+- `14` years old
+
+The `used_cars.csv` dataset contains ages from `5` to `13`. That means:
+
+- `5` and `11` are **in-sample** forecasts because they fall inside the data range used to estimate the model
+- `1` and `14` are **out-of-sample** forecasts because they fall outside the original data range
+
+Predicted prices from the estimated regression line are:
+
+| Age | Forecast type | Predicted `Price_Eur` |
+|-----|---------------|----------------------:|
+| `5` | in-sample | `10138.25` |
+| `11` | in-sample | `5621.68` |
+| `1` | out-of-sample | `13149.30` |
+| `14` | out-of-sample | `3363.39` |
+
+This is useful because it shows both how the model behaves inside the data range and how it behaves when we extrapolate beyond the observed values. In exams, it is a good idea to say clearly whether the forecast is in-sample or out-of-sample, because out-of-sample forecasts usually involve more uncertainty.
+
+#### Manual prediction with the estimated regression equation
+
+To compare the actual prices with the model-based predictions, make a copy of the `Price_Eur` column and place it in column `C`. Rename the new column something clear, such as:
+
+- `Theoretical_Price_Eur`
+- or `Predicted_Price_Eur`
+
+These predicted, model-based values are also called **theoretical values**.
+
+To calculate the predicted price manually, use the estimated regression equation:
+
+- `Predicted Price = INTERCEPT + SLOPE * Age`
+
+For this dataset, that becomes:
+
+- `Predicted Price = 13902.062915 - 752.762281 * Age`
+
+It is important to write the formula correctly. The idea is **not** to add the intercept and the slope first and then multiply the result by age. Instead, the slope is multiplied by `Age`, and then the intercept is added.
+
+If `Age` is in `A2:A14` and your theoretical-value column starts in `C2`, you can use:
+
+- `=INTERCEPT($B$2:$B$14,$A$2:$A$14)+SLOPE($B$2:$B$14,$A$2:$A$14)*A2`
+
+and then copy the formula downward.
+
+If you already stored the parameter estimates in cells, for example:
+
+- `H2 = SLOPE`
+- `I2 = INTERCEPT`
+
+then a simpler row formula is:
+
+- `=$I$2+$H$2*A2`
+
+For example, when `Age = 11`, the theoretical value is about `5621.68 EUR`. When `Age = 5`, the theoretical value is about `10138.25 EUR`.
+
+#### Prediction with `FORECAST.LINEAR`
+
+Because many Excel users apply regression for prediction, Excel also includes a dedicated forecasting formula called `FORECAST.LINEAR`. Its syntax is similar in spirit to `LINEST`, but it is designed directly for prediction.
+
+The basic syntax is:
+
+- `=FORECAST.LINEAR(x,known_y's,known_x's)`
+
+Where:
+
+- `x` is the value for which you want to forecast the matching `y` value
+- `known_y's` is the range of dependent-variable values
+- `known_x's` is the range of independent-variable values
+
+The function uses linear regression to estimate the `y` value associated with the chosen `x` value.
+
+To keep this method separate from the manual theoretical-value calculation, make a copy of the `Price_Eur` column and place it in column `D`. Rename the new column something clear, such as:
+
+- `Forecast_Linear_Price_Eur`
+- or `Forecast_LINEAR_Value`
+
+To illustrate this in Excel, you can place hypothetical ages below the original dataset, for example:
+
+- `A15 = 5`
+- `A16 = 11`
+- `A17 = 1`
+- `A18 = 14`
+
+Then, in the `FORECAST.LINEAR` prediction column, use:
+
+- `=FORECAST.LINEAR(A15,$B$2:$B$14,$A$2:$A$14)`
+
+and copy the formula downward.
+
+In this example, the function returns the expected `Price_Eur` for each hypothetical age. The forecast values are the same as the ones from the manual regression-equation method because both methods use the same underlying linear model.
+
+For the four example ages, the forecast values are:
+
+- age `5` -> `10138.25`
+- age `11` -> `5621.68`
+- age `1` -> `13149.30`
+- age `14` -> `3363.39`
+
+The values from the manual regression-equation calculation and the values from `FORECAST.LINEAR` are the same. The practical difference is that `FORECAST.LINEAR` does not require you to explicitly store or reuse the `SLOPE` and `INTERCEPT` yourself. It estimates the prediction directly from the known `x` and `y` ranges.
+
+#### In-sample and out-of-sample forecasting
+
+Knowing the difference between **in-sample** and **out-of-sample** forecasting is important.
+
+**In-sample forecasting**:
+
+- also called in-sample prediction or backtesting
+- evaluates the model on the same data range used to estimate or train the model
+- helps show how well the model fits the observed data
+
+**Out-of-sample forecasting**:
+
+- also called out-of-sample prediction or forward testing
+- uses the estimated model to predict values outside the data used during estimation
+- gives a more realistic test of how well the model generalises to new cases
+
+In summary:
+
+- in-sample forecasting checks how well the model explains known data
+- out-of-sample forecasting checks how well the model predicts unseen or new data
+
+Both are useful, but out-of-sample forecasting usually gives a stricter and more realistic assessment of predictive performance.
+
+#### Out-of-sample example with ages `1` and `14`
+
+Let us return to the two remaining values for `Age`, namely `1` and `14`. These do not appear in the original dataset, so they are out-of-sample cases.
+
+To demonstrate this cleanly in Excel:
+
+- add `1` and `14` as new age values below the worksheet
+- copy one of the existing `Price_Eur` columns into columns `E` and `F`
+- rename them clearly, for example:
+  - `E` -> `Price_Eur_Out_Prediction`
+  - `F` -> `Price_Eur_Out_Prediction2`
+
+If the parameter estimates are stored in:
+
+- `H2 = SLOPE`
+- `I2 = INTERCEPT`
+
+then the manual out-of-sample prediction formula in column `E` can be:
+
+- `=$I$2+$H$2*A17`
+
+and copied downward.
+
+As before, it is helpful to cover the manual calculation first. In cell `E17`, the formula:
+
+- `=$I$2+$H$2*$A17`
+
+adds the `INTERCEPT` to the `SLOPE` multiplied by the age value in `A17`.
+
+As a result, the expected price of a one-year-old car is estimated to be about `13149.30 EUR`.
+
+The `FORECAST.LINEAR` version in column `F` can be:
+
+- `=FORECAST.LINEAR(A17,$B$2:$B$14,$A$2:$A$14)`
+
+and copied downward.
+
+Now we can repeat the same process using `FORECAST.LINEAR`. In this example, the formula in `F17` is:
+
+- `=FORECAST.LINEAR(A17,$B$2:$B$14,$A$2:$A$14)`
+
+The values from `FORECAST.LINEAR` are the same as the values from the manual calculation. That is exactly what we expect, because both methods are based on the same estimated linear relationship between `Age` and `Price_Eur`.
+
+For these out-of-sample ages, the predicted values are:
+
+- age `1` -> `13149.30`
+- age `14` -> `3363.39`
+
+These values are valid model-based forecasts, but they should be interpreted with more caution than the in-sample predictions because they are outside the original estimation range.
+
+The estimates also make practical sense: a brand-new car is expected to be much more expensive than a very old car, so a one-year-old vehicle should have a much higher predicted price than a fourteen-year-old vehicle.
+
+#### Looking ahead: predictive power and point forecasts
+
+Thus far, we have introduced both in-sample and out-of-sample forecasting. In a later lesson, we will go deeper into why the distinction between them is so important when assessing the predictive power of a regression model.
+
+Up to this point, we have also been working with a single predicted number at a time. These are called **point forecasts**.
+
+A point forecast is a single-value prediction that represents the estimated outcome of a variable of interest at a specific point. It gives one most likely predicted value, but it does not by itself show the uncertainty or variation around that forecast.
+
+Point forecasts are common in fields such as:
+
+- economics
+- finance
+- weather forecasting
+- business planning
+
+They are useful because they give a concise prediction. However, they do not show the full range of possible outcomes. That is why more advanced tools such as prediction intervals or probability distributions may later be needed when we want to evaluate forecast uncertainty more carefully.
+
+#### The confidence interval of a forecast
+
+Now that we have a working understanding of in-sample forecasting, out-of-sample forecasting, and point forecasts, the next step is to understand how precise a central forecast really is. Confidence intervals help describe that precision.
+
+In forecasting, a confidence interval gives a range around the central forecast. Instead of giving only one predicted number, it gives an interval that reflects the uncertainty around the estimate. In simple terms, it helps us describe how reliable the forecast is.
+
+More precisely, confidence intervals are used to describe the range in which the expected or predicted value of the **explained variable** is likely to fall for a chosen explanatory-variable value. This is more accurate than saying they describe the explanatory-variable values themselves.
+
+In statistics and probability theory, a confidence level expresses how certain we are that the interval estimation process captures the true population parameter. Confidence levels are usually written as percentages between `0%` and `100%`. The most common ones are:
+
+##### 90% confidence level
+
+At a `90%` confidence level, if we repeatedly took many random samples and built a confidence interval from each one, about `90%` of those intervals would contain the true population parameter.
+
+This gives a narrower interval than higher confidence levels, but also slightly less certainty.
+
+##### 95% confidence level
+
+A `95%` confidence level is the most commonly used level in statistical analysis.
+
+It means that if we repeatedly took many random samples and built a confidence interval from each one, about `95%` of those intervals would contain the true population parameter.
+
+This gives a stronger degree of certainty than `90%` and is often treated as the default level in applied analysis.
+
+##### 99% confidence level
+
+At a `99%` confidence level, we are even more confident in the interval estimate.
+
+If we repeatedly sampled from the same population and built intervals each time, about `99%` of those intervals would contain the true population parameter.
+
+This gives the highest certainty of the three common levels, but it also produces the widest interval.
+
+#### Practical meaning in forecasting
+
+The key trade-off is:
+
+- higher confidence level -> wider interval
+- lower confidence level -> narrower interval
+
+That means a `99%` interval is more cautious and more conservative than a `90%` interval.
+
+For forecasting, this matters because:
+
+- a point forecast gives one central estimate
+- a confidence interval shows how precise that estimate is
+- wider intervals suggest more uncertainty
+- narrower intervals suggest more precision, but also lower certainty
+
+##### Excel and exam interpretation template for confidence levels
+
+If a task asks you to interpret a forecast interval, a strong answer can say:
+
+1. state the confidence level
+2. identify the forecasted or explained variable
+3. explain that the interval gives a range around the point forecast
+4. say that higher confidence gives a wider interval
+5. link the width of the interval to uncertainty in the forecast
+
+#### Choosing a confidence level
+
+The choice of confidence level depends on the level of precision required and on the trade-off between confidence and interval width.
+
+- higher confidence levels give more certainty
+- but they also produce wider intervals
+- wider intervals mean lower precision
+- lower confidence levels give narrower intervals
+- but they also give less certainty
+
+In practice:
+
+- `95%` or `99%` confidence levels are often preferred when decisions are important and accuracy matters a great deal
+- `90%` may be enough in more exploratory analysis or when a less strict estimate is acceptable
+
+In summary, confidence levels matter because they help quantify uncertainty and support more reliable conclusions from sample data. Choosing the confidence level well is therefore an important analytical skill.
+
+#### Example forecast for `Age = 10`
+
+Using the regression model from the previous section:
+
+- `Price_Eur = 13902.06 - 752.76 * Age`
+
+If we want to forecast the price for a car that is `10` years old, we substitute `Age = 10` into the equation:
+
+- `13902.06 - 752.76 * 10 = 6374.44`
+
+So the predicted value of `Price_Eur` is about `6374.44 EUR`.
+
+The same result can also be obtained with `FORECAST.LINEAR` by adding `10` as a new age value and using:
+
+- `=FORECAST.LINEAR(A19,$B$2:$B$14,$A$2:$A$14)`
+
+This returns the same point forecast, about `6374.44 EUR`.
+
+#### Why we say "around" `6374.44 EUR`
+
+That means that, on average, a `10`-year-old car should cost around `6374.44 EUR`. The reason we use the word **around** is that a point forecast gives only the central predicted value. It does not show how precise that forecast is.
+
+Confidence intervals help formalise what this "around" means. Two forecasts can have exactly the same central value, but still be very different in terms of precision and uncertainty.
+
+Let us consider two example scenarios built around the same point forecast of `6374.44 EUR`.
+
+##### First scenario
+
+Suppose the `95%` confidence interval is:
+
+- `6374.44 EUR +/- 500 EUR`
+
+Then:
+
+- upper bound = `6374.44 + 500 = 6874.44`
+- lower bound = `6374.44 - 500 = 5874.44`
+
+So the interval is:
+
+- `5874.44 EUR` to `6874.44 EUR`
+
+This means that, at the chosen confidence level, the forecast is relatively precise because the interval is fairly narrow.
+
+##### Second scenario
+
+Suppose the same point forecast instead has a `95%` confidence interval of:
+
+- `6374.44 EUR +/- 2500 EUR`
+
+Then:
+
+- upper bound = `6374.44 + 2500 = 8874.44`
+- lower bound = `6374.44 - 2500 = 3874.44`
+
+So the interval is:
+
+- `3874.44 EUR` to `8874.44 EUR`
+
+This means that, even though the central forecast is still `6374.44 EUR`, the prediction is much less precise because the interval is much wider.
+
+#### Comparing the two scenarios
+
+Both scenarios have the same point forecast:
+
+- `6374.44 EUR`
+
+But they differ in precision:
+
+- Scenario 1 has higher precision and lower uncertainty
+- Scenario 2 has lower precision and higher uncertainty
+
+The interval widths make this clear:
+
+- Scenario 1 width = `500 + 500 = 1000 EUR`
+- Scenario 2 width = `2500 + 2500 = 5000 EUR`
+
+So, if we had to choose between the two, we would clearly prefer the first situation, because a narrower confidence interval gives a more precise forecast.
+
+#### STT 0104 Confidence Interval of a Forecast
+
+Using the latest activity workbook, the point forecast for a `34`-year-old car is about:
+
+- `2628.68 EUR`
+
+Based on that central forecast:
+
+##### 95% point forecast with `+/- 2500 EUR`
+
+Upper bound:
+
+- `2628.68 + 2500 = 5128.68 EUR`
+
+Lower bound:
+
+- `2628.68 - 2500 = 128.68 EUR`
+
+So the confidence interval is:
+
+- `128.68 EUR` to `5128.68 EUR`
+
+Confidence interval width:
+
+- `2500 + 2500 = 5000 EUR`
+
+##### 95% point forecast with `+/- 500 EUR`
+
+Upper bound:
+
+- `2628.68 + 500 = 3128.68 EUR`
+
+Lower bound:
+
+- `2628.68 - 500 = 2128.68 EUR`
+
+So the confidence interval is:
+
+- `2128.68 EUR` to `3128.68 EUR`
+
+Confidence interval width:
+
+- `500 + 500 = 1000 EUR`
+
+##### Interpretation
+
+Both forecasts have the same central value of `2628.68 EUR`, but the `+/- 500 EUR` interval is much narrower and therefore more precise than the `+/- 2500 EUR` interval.
+
+This means:
+
+- the `1000 EUR` interval width reflects higher precision and lower uncertainty
+- the `5000 EUR` interval width reflects lower precision and higher uncertainty
+
+##### Excel and Google Sheets template for this task
+
+If the point forecast is in `B1` and the margin of error is in `B2`, use:
+
+- upper bound: `=B1+B2`
+- lower bound: `=B1-B2`
+- interval width: `=B2*2`
+
+#### Forecasting with a Multiple Linear Regression: Cross-section Data
+
+In the previous lesson, we analysed the relationship between insurance charges and customer characteristics using the `insurance.csv` dataset. We can now use that same type of regression model for forecasting in a cross-section setting.
+
+For this forecasting model, use only these explanatory variables:
+
+- `age`
+- `bmi`
+- `children`
+- `Smoker_Num`
+
+To prepare the data:
+
+- convert `smoker` so that `yes = 1` and `no = 0`
+- rename that numeric field to `Smoker_Num`
+- the `sex` column can still be converted to `Sex_Num` for consistency in the workbook, but it is not included in this particular forecasting model
+- `region` and the unchanged text versions of `sex` and `smoker` do not need to be included in the regression input
+
+So the forecasting model takes the form:
+
+- `charges = alpha + beta1*age + beta2*bmi + beta3*children + beta4*Smoker_Num`
+
+Using the Data Analysis ToolPak on `insurance.csv`, the estimated coefficients are:
+
+- `alpha = -12102.77`
+- `beta1 = 257.85`
+- `beta2 = 321.85`
+- `beta3 = 473.50`
+- `beta4 = 23811.40`
+
+That gives the estimated forecasting equation:
+
+- `charges = -12102.77 + 257.85*age + 321.85*bmi + 473.50*children + 23811.40*Smoker_Num`
+
+Interpretation:
+
+- each extra year of `age` increases predicted `charges` by about `257.85`, holding the other variables constant
+- each extra point of `bmi` increases predicted `charges` by about `321.85`, holding the other variables constant
+- each additional child increases predicted `charges` by about `473.50`, holding the other variables constant
+- being a smoker (`Smoker_Num = 1`) increases predicted `charges` by about `23811.40` compared with a non-smoker (`Smoker_Num = 0`), holding the other variables constant
+
+Using this estimated equation, we can also make a sentence such as:
+
+- when a person gets one year older, assuming the other characteristics do not change, the insurance premium rises, on average, by `257.85 USD`
+
+This is exactly how the `age` coefficient should be interpreted in a multiple-regression forecasting context.
+
+This model is useful for cross-section forecasting because it predicts the insurance premium for an individual customer based on several observed characteristics at the same point in time.
+
+Having estimated the multiple regression, we can also forecast the expected premium for a customer described by a chosen combination of characteristics.
+
+In practice, it helps to place the estimated coefficients in a separate area of the spreadsheet so they are easy to reference in formulas. For example, in a separate block you can add:
+
+- `H2 = Intercept`
+- `I2 = Age`
+- `J2 = BMI`
+- `K2 = Children`
+- `L2 = Smoker_Num`
+
+and place the corresponding estimated values below the headers:
+
+- `Intercept = -12102.76936`
+- `Age = 257.849507`
+- `BMI = 321.851402`
+- `Children = 473.502316`
+- `Smoker_Num = 23811.39984`
+
+This separate coefficient area makes it much easier to build a clean forecasting formula for any customer row in the dataset or for a new hypothetical customer.
+
+Let us now consider two individuals and add their characteristics in a separate area of the sheet:
+
+**Customer 1**
+
+- `Age = 41`
+- `BMI = 28.405`
+- `Children = 1`
+- `Smoker_Num = 0`
+
+**Customer 2**
+
+- `Age = 17`
+- `BMI = 24.5`
+- `Children = 0`
+- `Smoker_Num = 1`
+
+This is useful because it allows us to plug customer characteristics directly into the estimated regression equation and produce forecasted insurance premiums.
+
+By filtering the customer characteristics against the observed sample, we can treat `Customer 1` as an in-sample or in-range case, while `Customer 2` is out-of-sample because the age value `17` is below the minimum observed age of `18` in `insurance.csv`.
+
+For `Customer 1`, the predicted premium is calculated with the same multiple-regression structure we estimated earlier:
+
+- `Intercept + Regression Age * Given Age + Regression BMI * Given BMI + Regression Children * Given Children + Regression Smoker_Num * Given Smoker_Num`
+
+The exact same formula structure is then reused for `Customer 2`; only the customer characteristic values change.
+
+Using the estimated multiple-regression equation:
+
+- `charges = -12102.77 + 257.85*age + 321.85*bmi + 473.50*children + 23811.40*Smoker_Num`
+
+the expected premiums are approximately:
+
+- `Customer 1 -> 8084.75 USD`
+- `Customer 2 -> 23977.43 USD`
+
+As shown in the worked spreadsheet example, the predicted premium for `Customer 1` equals approximately `8084.752 USD`, while the predicted premium for `Customer 2` equals approximately `23977.431 USD`, even though `Customer 2` is out-of-sample.
+
+The second customer has a much higher predicted premium mainly because the smoker effect is very large in this model.
+
+This is a strong example of the power of regression modelling: once the model is estimated, it can be used to form conclusions and forecasts not only for observations inside the historical sample, but also for new data points that have not been observed before.
+
+##### Excel and Google Sheets template for multiple-regression forecasting
+
+If the parameter estimates are stored in cells, for example:
+
+- `H2 = Intercept`
+- `I2 = age coefficient`
+- `J2 = bmi coefficient`
+- `K2 = children coefficient`
+- `L2 = Smoker_Num coefficient`
+
+and the explanatory variables for one customer are in row `2`, then the forecast formula is:
+
+- `=$H$2+$I$2*A2+$J$2*B2+$K$2*C2+$L$2*D2`
+
+Reusable template:
+
+- `=intercept_cell+beta1_cell*age_cell+beta2_cell*bmi_cell+beta3_cell*children_cell+beta4_cell*smoker_cell`
+
+If you want a formula-based regression structure instead of the ToolPak, you can also use:
+
+- `=LINEST(charges_range,explanatory_range,TRUE,TRUE)`
+
+##### How to use this in an exam
+
+If the exam asks for forecasting with a multiple regression, a strong answer can say:
+
+1. identify the target variable and the explanatory variables
+2. show how text variables are converted to numeric form where needed
+3. write the estimated regression equation
+4. substitute the customer values into the equation
+5. calculate the forecast
+6. interpret the forecast in context while stating that the other variables are held constant
+
+One important practical caution is that the regression or forecasting range should stay fixed on the original dataset. That is why the formula above uses absolute references such as `$A$2:$A$14` and `$B$2:$B$14`. If Excel expands the model range automatically after new rows are added, undo the step or reset the references so the original estimation sample remains unchanged.
+
+#### STT 0104 Cross-Sectional Data
+
+Using the latest lesson workbook, the cross-sectional forecasting task continues the multiple-regression example from the previous lesson that uses:
+
+- `Gender`
+- `Children`
+- `Sex_Num`
+- `Smoker_Num`
+
+At first glance, `Gender` and `Sex_Num` appear to overlap conceptually. In a real-world project, that would be a data-quality issue and should be investigated before modelling. For the purpose of this exercise, we keep the same classroom assumption:
+
+- `Sex_Num` refers to the sex of the primary earner in the household
+- `Gender` refers to the individual customer
+- the dataset is assumed to contain households with more than one earner
+
+The estimated multiple-regression equation from the workbook is:
+
+- `Predicted outcome = 916.61 + 22.09*Gender - 81.89*Children - 123.16*Sex_Num - 2.73*Smoker_Num`
+
+More precisely, the estimated coefficients are:
+
+- `Intercept = 916.613502`
+- `Gender = 22.085089`
+- `Children = -81.888468`
+- `Sex_Num = -123.164495`
+- `Smoker_Num = -2.734278`
+
+For the two customer cases:
+
+**Customer 1**
+
+- `Gender = 0`
+- `Children = 3`
+- `Sex_Num = 0`
+- `Smoker_Num = 1`
+
+Forecast:
+
+- `916.613502 + 22.085089*0 - 81.888468*3 - 123.164495*0 - 2.734278*1`
+- `= 668.214` approximately
+
+**Customer 2**
+
+- `Gender = 1`
+- `Children = 2`
+- `Sex_Num = 0`
+- `Smoker_Num = 0`
+
+Forecast:
+
+- `916.613502 + 22.085089*1 - 81.888468*2 - 123.164495*0 - 2.734278*0`
+- `= 774.922` approximately
+
+So, using the workbook solution:
+
+- `Customer 1 -> 668.214`
+- `Customer 2 -> 774.922`
+
+##### Excel and Google Sheets template for this task
+
+If the coefficient block is stored as:
+
+- `H2 = Intercept`
+- `I2 = Gender coefficient`
+- `J2 = Children coefficient`
+- `K2 = Sex_Num coefficient`
+- `L2 = Smoker_Num coefficient`
+
+and the customer values are entered in row `5`, the forecast formula is:
+
+- `=$H$2+$I$2*I5+$J$2*J5+$K$2*K5+$L$2*L5`
+
+Reusable template:
+
+- `=intercept_cell+gender_beta*gender_cell+children_beta*children_cell+sex_beta*sex_num_cell+smoker_beta*smoker_num_cell`
+
+##### How to use this in an exam
+
+If you get this type of cross-sectional forecasting question in an exam, a strong answer should:
+
+1. identify the estimated regression equation
+2. map each customer characteristic to the correct coefficient
+3. substitute the values carefully
+4. calculate the forecast
+5. interpret the final predicted value in context
+
+##### Excel and Google Sheets template for recreating `SLOPE` and `INTERCEPT`
+
+Use:
+
+- `=LINEST(y_range,x_range)`
+
+Example:
+
+- `=LINEST($B$2:$B$14,$A$2:$A$14)`
+
+If you only want the same values through separate built-in functions, you can also use:
+
+- `=SLOPE($B$2:$B$14,$A$2:$A$14)`
+- `=INTERCEPT($B$2:$B$14,$A$2:$A$14)`
+
+##### Excel and Google Sheets template for theoretical values
+
+Use:
+
+- `=INTERCEPT(y_range,x_range)+SLOPE(y_range,x_range)*x_cell`
+
+If the estimates are already stored in cells:
+
+- `=intercept_cell+slope_cell*x_cell`
+
+##### Excel and Google Sheets template for simple-regression forecasting
+
+If `Age` is in column `A` and `Price_Eur` is in column `B`, use:
+
+- `=FORECAST.LINEAR(age_to_predict,$B$2:$B$14,$A$2:$A$14)`
+- `=SLOPE($B$2:$B$14,$A$2:$A$14)`
+- `=INTERCEPT($B$2:$B$14,$A$2:$A$14)`
+
+Reusable template:
+
+- `=FORECAST.LINEAR(x_value,y_range,x_range)`
+
+This is useful in exams because you can keep the structure and only change:
+
+- the value you want to predict
+- the dependent-variable range
+- the independent-variable range
+
+##### How to use this in an exam
+
+If the exam asks you to forecast with a simple linear regression, a strong answer can say:
+
+1. identify the explanatory variable and the target variable
+2. explain that a regression line is estimated from historical data
+3. state that the line is then used to predict the target value for a chosen input
+4. show the spreadsheet method or formula
+5. interpret the result in context
+
+#### STT 0104 Task - Forecasting with Simple Linear Regression
+
+Using the dataset shown in the task, let:
+
+- `Age` be in `A2:A14`
+- `Price_Eur` be in `B2:B14`
+
+The first step is to estimate the simple linear regression parameters:
+
+- `SLOPE = 1.020661058`
+- `INTERCEPT = 2593.971623`
+
+So the estimated regression equation is:
+
+- `Price_Eur = 2593.971623 + 1.020661 * Age`
+
+This slope is very small and positive, so the model predicts only a slight increase in price as age rises in this small sample. That also explains why the forecast values below are very close to one another.
+
+##### Additional forecasts using the original Excel method
+
+If the new ages are entered below the table, for example:
+
+- `A15 = 5`
+- `A16 = 11`
+
+and the parameter estimates are stored in:
+
+- `H2 = SLOPE`
+- `I2 = INTERCEPT`
+
+then the manual prediction formula is:
+
+- `=$I$2+$H$2*A15`
+
+Results:
+
+- age `5` -> `2599.07`
+- age `11` -> `2605.20`
+
+##### Additional forecasts using `FORECAST.LINEAR`
+
+Use:
+
+- `=FORECAST.LINEAR(A15,$B$2:$B$14,$A$2:$A$14)`
+
+Results:
+
+- age `5` -> `2599.07`
+- age `11` -> `2605.20`
+
+So the manual method and `FORECAST.LINEAR` return the same values.
+
+##### Forecasts for the values `2` and `34`
+
+Practical note:
+
+- based on the dataset shown in the task, age `2` is out-of-sample
+- the latest solution workbook uses age `34` as the second out-of-sample example
+- if a prompt instead says `24`, note that `24` already appears in the original data and is therefore technically in-sample in this dataset
+
+Using the workbook solution values, we can forecast both out-of-sample ages using the same method.
+
+Using the original Excel method:
+
+- age `2` -> `2596.01`
+- age `34` -> `2628.67`
+
+Using `FORECAST.LINEAR`:
+
+- age `2` -> `2596.01`
+- age `34` -> `2628.67`
+
+##### Excel and Google Sheets template for this task
+
+To estimate the parameters:
+
+- `=SLOPE($B$2:$B$14,$A$2:$A$14)`
+- `=INTERCEPT($B$2:$B$14,$A$2:$A$14)`
+
+To forecast manually:
+
+- `=intercept_cell+slope_cell*x_cell`
+
+To forecast with the dedicated function:
+
+- `=FORECAST.LINEAR(x_cell,$B$2:$B$14,$A$2:$A$14)`
+
+##### Exam use
+
+If a similar forecasting task appears in an exam, a strong answer should:
+
+1. estimate or state the slope and intercept
+2. write the regression equation
+3. calculate the forecast with the manual method
+4. calculate the same forecast with `FORECAST.LINEAR`
+5. state whether the forecast is in-sample or out-of-sample
+6. interpret the result in practical terms
+
+#### STT 0104 Multiple Regression - Employment Sales Forecasting
+
+Using [Employment_Sales_Forecasting.csv](/workspaces/Study-buddy/Employment_Sales_Forecasting.csv), we can run a multiple linear regression in the form:
+
+- `sales = alpha + beta1*index + beta2*employment + beta3*holiday + beta4*pandemy + beta5*q1 + beta6*q2 + beta7*q3 + error`
+
+If the dataset is imported into Excel in the same order as the CSV file, the practical ToolPak setup is:
+
+- `Input Y Range -> H1:H367`
+- `Input X Range -> A1:G367`
+- `Labels -> checked`
+- `New Worksheet Ply -> Employment Sales Multiple Regression`
+
+The explanatory variables are:
+
+- `index`
+- `employment`
+- `holiday`
+- `pandemy`
+- `q1`
+- `q2`
+- `q3`
+
+and the target variable is:
+
+- `sales`
+
+Using the regression on this dataset, the estimated equation is approximately:
+
+- `sales = -2204.02 + 1.83*index + 50.85*employment + 1414.75*holiday + 311.99*pandemy - 216.52*q1 - 182.76*q2 - 172.15*q3`
+
+More precisely, the coefficient estimates are:
+
+- `Intercept = -2204.0153`
+- `index = 1.8337`
+- `employment = 50.8485`
+- `holiday = 1414.7475`
+- `pandemy = 311.9902`
+- `q1 = -216.5248`
+- `q2 = -182.7611`
+- `q3 = -172.1526`
+
+This means that the estimated relationship between sales and the explanatory variables can be written as:
+
+- `sales = -2204.01 + 1.83*index + 50.85*employment + 1414.75*holiday + 312.00*pandemy - 216.52*q1 - 182.76*q2 - 172.15*q3`
+
+So, for example, the `holiday` variable alone has a very large positive effect in this model: holding the other variables constant, the holiday season increases predicted sales by about `1414.75` million USD on average.
+
+##### Regression statistics
+
+- `Multiple R = 0.8894`
+- `R Square = 0.7910`
+- `Adjusted R Square = 0.7869`
+- `Standard Error = 321.19`
+- `Observations = 366`
+- `F = 193.54`
+- `Significance F` is effectively `0`, so the model is strongly statistically significant overall
+
+##### Interpreting the slope coefficients
+
+- a one-unit increase in `index` is associated with about `1.83` higher sales, holding the other variables constant
+- a one-unit increase in `employment` is associated with about `50.85` higher sales, holding the other variables constant
+- if `holiday = 1`, predicted sales are about `1414.75` higher than when `holiday = 0`, holding the other variables constant
+- if `pandemy = 1`, predicted sales are about `311.99` higher than when `pandemy = 0`, holding the other variables constant
+- `q1`, `q2`, and `q3` are seasonal dummy variables, so their coefficients are interpreted relative to the omitted baseline quarter, which is `q4`
+- compared with `q4`, predicted sales are about `216.52` lower in `q1`
+- compared with `q4`, predicted sales are about `182.76` lower in `q2`
+- compared with `q4`, predicted sales are about `172.15` lower in `q3`
+
+##### Statistical significance
+
+All seven slope coefficients are statistically significant at the `5%` level.
+
+In exam language, that means:
+
+- each explanatory variable contributes meaningful information in this fitted model
+- the `95%` confidence intervals for the slope coefficients do not cross `0`
+- the overall model is also statistically significant because the `F` statistic is high and `Significance F` is effectively `0`
+
+##### Interpreting `R Square`
+
+The `R Square` value is about `79.10%`.
+
+That means:
+
+- the fitted multiple-regression model explains about `79.10%` of the variation in `sales`
+
+This is a strong goodness-of-fit result for an applied forecasting model and suggests that the chosen explanatory variables capture a large part of the sales variation in the dataset.
+
+##### Excel and Google Sheets template for forecasting from this model
+
+Now that the regression coefficients are known, the next step is to copy them into a separate coefficient block in the working sheet, just as in the earlier customer-forecasting examples.
+
+If the estimated coefficients are stored in cells, for example:
+
+- `K2 = Intercept`
+- `L2 = index coefficient`
+- `M2 = employment coefficient`
+- `N2 = holiday coefficient`
+- `O2 = pandemy coefficient`
+- `P2 = q1 coefficient`
+- `Q2 = q2 coefficient`
+- `R2 = q3 coefficient`
+
+and the explanatory values for one new case are in row `2`, then a reusable forecast formula is:
+
+- `=$K$2+A2*$L$2+B2*$M$2+C2*$N$2+D2*$O$2+E2*$P$2+F2*$Q$2+G2*$R$2`
+
+This is the same forecasting structure used earlier for customer-level multiple-regression tasks:
+
+- `Predicted Sales = Intercept + Regression Index * Given Index + Regression Employment * Given Employment + Regression Holiday * Given Holiday + Regression Pandemy * Given Pandemy + Regression Q1 * Given Q1 + Regression Q2 * Given Q2 + Regression Q3 * Given Q3`
+
+The important spreadsheet habit here is to lock the coefficient cells with `$...$` before copying the formula down the prediction column. That way:
+
+- the coefficient block stays fixed
+- only the row-based explanatory values change
+- the same formula can be copied safely to the remaining rows
+
+Reusable template:
+
+- `=intercept+beta_index*index+beta_employment*employment+beta_holiday*holiday+beta_pandemy*pandemy+beta_q1*q1+beta_q2*q2+beta_q3*q3`
+
+##### Forecasting 12 out-of-sample periods with external assumptions
+
+We can now push the same regression model forward and forecast a new block of out-of-sample observations.
+
+In the workbook example, the idea is:
+
+- assume we only have observed data up to the end of June 2022
+- use external forecasts for the future `employment` values
+- use external assumptions for the remaining dummy variables
+- keep the already estimated regression coefficients fixed
+- copy the forecast formula down the new rows
+
+The practical spreadsheet method is the same as before:
+
+1. add the new out-of-sample rows below the original dataset
+2. enter the external assumptions for `index`, `employment`, `holiday`, `pandemy`, `q1`, `q2`, and `q3`
+3. keep the estimated coefficient block fixed in locked cells
+4. copy the prediction formula down through all new rows
+
+With the coefficient block stored in:
+
+- `K2 = Intercept`
+- `L2 = index coefficient`
+- `M2 = employment coefficient`
+- `N2 = holiday coefficient`
+- `O2 = pandemy coefficient`
+- `P2 = q1 coefficient`
+- `Q2 = q2 coefficient`
+- `R2 = q3 coefficient`
+
+the forecast formula in the first new out-of-sample row is:
+
+- `=$K$2+A368*$L$2+B368*$M$2+C368*$N$2+D368*$O$2+E368*$P$2+F368*$Q$2+G368*$R$2`
+
+This formula should then be copied down because:
+
+- the coefficient cells stay locked
+- the row references for the explanatory variables move automatically
+- each new row gets its own predicted sales value
+
+Using the external values shown in the workbook, the forecasted sales for the 12 new rows are approximately:
+
+- `Index 367 -> 1664.77`
+- `Index 368 -> 1671.69`
+- `Index 369 -> 1668.44`
+- `Index 370 -> 1857.68`
+- `Index 371 -> 3259.01`
+- `Index 372 -> 3260.84`
+- `Index 373 -> 1319.41`
+- `Index 374 -> 1326.33`
+- `Index 375 -> 1338.34`
+- `Index 376 -> 1373.93`
+- `Index 377 -> 1375.77`
+- `Index 378 -> 1382.69`
+
+This is a strong forecasting example because it shows how the same estimated multiple-regression model can be reused for future observations once the analyst has plausible external values for the explanatory variables.
+
+##### How to use this in an exam
+
+If this appears as an exam question, a strong answer should:
+
+1. identify `sales` as the dependent variable
+2. identify `index`, `employment`, `holiday`, `pandemy`, `q1`, `q2`, and `q3` as the explanatory variables
+3. show the ToolPak setup or the estimated regression equation
+4. interpret the coefficients carefully, especially the dummy variables
+5. verify statistical significance using `P-values`, `t Stat`, or confidence intervals
+6. interpret `R Square` as explanatory power
+7. finish by stating whether the model looks useful for sales forecasting
+
+#### Employment Data Activity 4 - Multiple regression and predicted sales
+
+Using [Employment_Data_Activity_4.xlsx](/workspaces/Study-buddy/Employment_Data_Activity_4.xlsx), the available columns are:
+
+- `index`
+- `employment`
+- `pandemy`
+- `q1`
+- `q2`
+- `sales`
+
+There is one important data-quality issue in this workbook:
+
+- `pandemy` is constant at `0` for the full estimation sample
+
+That means the `pandemy` coefficient cannot be estimated meaningfully from this training data. In an exam answer, the safest and most honest interpretation is:
+
+- the intended model includes `pandemy`
+- but this specific workbook does not contain variation in `pandemy`
+- therefore its effect is not identified from the observed sample
+- the practical fitted model uses the estimable variables and treats the `pandemy` effect as `0` in this workbook
+
+So the estimable multiple-regression model is:
+
+- `sales = alpha + beta1*index + beta2*employment + beta3*q1 + beta4*q2 + error`
+
+Using the workbook data, the estimated equation is approximately:
+
+- `sales = -2265.22 + 2.25*index + 57.42*employment - 625.06*q1 - 590.61*q2`
+
+If you want to preserve the originally intended variable list in your written answer, you can safely write:
+
+- `sales = -2265.22 + 2.25*index + 57.42*employment + 0.00*pandemy - 625.06*q1 - 590.61*q2`
+
+##### Regression statistics
+
+- `Multiple R = 0.4738`
+- `R Square = 0.2245`
+- `Adjusted R Square = 0.2139`
+- `Standard Error = 632.64`
+- `Observations = 299`
+- `F = 21.28`
+
+##### Interpreting the coefficients
+
+- a one-unit increase in `index` is associated with about `2.25` higher sales, holding the other variables constant
+- a one-unit increase in `employment` is associated with about `57.42` higher sales, holding the other variables constant
+- if `q1 = 1`, predicted sales are about `625.06` lower than in the omitted baseline period, holding the other variables constant
+- if `q2 = 1`, predicted sales are about `590.61` lower than in the omitted baseline period, holding the other variables constant
+
+At the `5%` level:
+
+- `index`, `employment`, `q1`, and `q2` are statistically significant
+- the intercept is not statistically significant
+- `pandemy` is not estimable here because it does not vary in the sample
+
+##### Add a `Predicted sales` column
+
+If the original workbook columns stay in this order:
+
+- `A = index`
+- `B = employment`
+- `C = pandemy`
+- `D = q1`
+- `E = q2`
+- `F = sales`
+
+then add:
+
+- `G = Predicted sales`
+
+Place the estimated coefficients in a separate block, for example:
+
+- `I2 = Intercept`
+- `J2 = index coefficient`
+- `K2 = employment coefficient`
+- `L2 = pandemy coefficient`
+- `M2 = q1 coefficient`
+- `N2 = q2 coefficient`
+
+with values:
+
+- `Intercept = -2265.22494`
+- `index = 2.248026`
+- `employment = 57.421085`
+- `pandemy = 0`
+- `q1 = -625.060508`
+- `q2 = -590.612726`
+
+Then the forecast formula in `G2` is:
+
+- `=$I$2+A2*$J$2+B2*$K$2+C2*$L$2+D2*$M$2+E2*$N$2`
+
+Copy that formula down through the observed rows to calculate `Predicted sales` for every existing record.
+
+##### Out-of-sample forecasts for the additional records
+
+Using the additional rows shown in the screenshot, the predicted sales are approximately:
+
+- `Index 300 -> 1246.61`
+- `Index 301 -> 1082.34`
+- `Index 302 -> 969.74`
+- `Index 303 -> 1431.36`
+- `Index 304 -> 962.76`
+- `Index 305 -> 769.77`
+- `Index 306 -> 1579.94`
+- `Index 307 -> 1468.49`
+- `Index 308 -> 1197.98`
+- `Index 309 -> 1281.20`
+- `Index 310 -> 1801.96`
+
+These values are out-of-sample forecasts because the added rows are outside the original estimation sample and use new combinations of explanatory values.
+
+##### Excel and Google Sheets template for this task
+
+Reusable forecast formula:
+
+- `=intercept_cell+index_beta*index_cell+employment_beta*employment_cell+pandemy_beta*pandemy_cell+q1_beta*q1_cell+q2_beta*q2_cell`
+
+Practical Excel version:
+
+- `=$I$2+A2*$J$2+B2*$K$2+C2*$L$2+D2*$M$2+E2*$N$2`
+
+##### How to use this in an exam
+
+If this appears in an exam, a strong answer should:
+
+1. identify the dependent variable and the explanatory variables
+2. notice and state the `pandemy` data issue instead of hiding it
+3. write the estimable regression equation clearly
+4. show the `Predicted sales` formula with locked coefficient cells
+5. explain that the formula is copied down for all in-sample rows
+6. calculate the out-of-sample forecasts for the additional records
+7. interpret the predictions in context
+
+#### The Task
+
+##### Question 1 - `SalesData.csv`
+
+Import [SalesData.csv](/workspaces/Study-buddy/SalesData.csv) and run the multiple regression:
+
+- `sales = alpha + beta1*TV + beta2*radio + beta3*newspaper + error`
+
+If the imported sheet keeps the CSV order, a safe ToolPak setup is:
+
+- `Input Y Range -> E1:E201`
+- `Input X Range -> B1:D201`
+- `Labels -> checked`
+
+Using the solution workbook, the fitted model is approximately:
+
+- `sales = 2.938889 + 0.045765*TV + 0.188530*radio - 0.001037*newspaper`
+
+The key coefficient results are:
+
+- `TV = 0.045765`
+- `radio = 0.188530`
+- `newspaper = -0.001037`
+
+Statistical significance:
+
+- `TV` is statistically significant
+- `radio` is statistically significant
+- `newspaper` is not statistically significant, because `P-value = 0.859915`
+
+`R Square = 0.897211`, so the model explains about `89.72%` of the variation in sales.
+
+For the forecast values:
+
+- `TV = 150`
+- `radio = 35`
+- `newspaper = 40`
+
+the workbook solution forecasts sales by using the statistically significant predictors only:
+
+- `sales = 2.938889 + 0.045765*150 + 0.188530*35`
+- `sales = 16.4021` approximately
+
+So the point forecast is:
+
+- `Predicted sales -> 16.40 million`
+
+Practical note:
+
+- if you mechanically include the tiny newspaper term as well, the forecast changes only slightly, but the workbook solution excludes it because the newspaper coefficient is not statistically significant
+
+###### Excel and Google Sheets template for Question 1
+
+- `Data -> Data Analysis -> Regression`
+- `Input Y Range -> E1:E201`
+- `Input X Range -> B1:D201`
+- `Labels -> checked`
+- `Output -> New Worksheet Ply`
+- if you copy coefficients into cells, a reusable forecast structure is:
+  `=intercept_cell+tv_beta_cell*tv_value+radio_beta_cell*radio_value+newspaper_beta_cell*newspaper_value`
+
+##### Question 2 - simple-regression forecasting dataset
+
+Using the dataset shown in the task image, the fitted simple-regression model from the workbook is:
+
+- `Price_Eur = 1574.001434 + 22.237093*Age`
+
+So:
+
+- `SLOPE = 22.237093`
+- `INTERCEPT = 1574.001434`
+
+###### Forecast additional data with the original Excel method
+
+Manual formula:
+
+- `=intercept_cell+slope_cell*x_cell`
+
+For the values `28` and `35`, the forecasts are:
+
+- `Age 28 -> 2196.64`
+- `Age 35 -> 2352.30`
+
+###### Forecast additional data with `FORECAST.LINEAR`
+
+Formula:
+
+- `=FORECAST.LINEAR(age_to_predict,$B$2:$B$14,$A$2:$A$14)`
+
+The values are the same:
+
+- `Age 28 -> 2196.64`
+- `Age 35 -> 2352.30`
+
+###### Forecast the values `24` and `63`
+
+Using the original Excel method:
+
+- `Age 24 -> 2107.69`
+- `Age 63 -> 2974.94`
+
+Using `FORECAST.LINEAR`:
+
+- `Age 24 -> 2107.69`
+- `Age 63 -> 2974.94`
+
+Practical note:
+
+- the task wording calls `24` and `63` in-sample, but relative to the observed age range in the dataset they are out-of-sample values
+
+###### Excel and Google Sheets template for Question 2
+
+- `=SLOPE($B$2:$B$14,$A$2:$A$14)`
+- `=INTERCEPT($B$2:$B$14,$A$2:$A$14)`
+- original Excel method: `=intercept_cell+slope_cell*x_cell`
+- `=FORECAST.LINEAR(x_cell,$B$2:$B$14,$A$2:$A$14)`
+
+##### Question 3 - full `LINEST` with stats
+
+Use [L4+Question+3+dataset.csv](/workspaces/Study-buddy/L4+Question+3+dataset.csv), which contains:
+
+- `Volume`
+- `Sales`
+
+The full `LINEST` formula is:
+
+- `=LINEST(B2:B22,A2:A22,TRUE,TRUE)`
+
+Practical spreadsheet use:
+
+- in older Excel, first select a `5 x 2` output range and confirm with `Ctrl + Shift + Enter`
+- in newer Excel, enter the formula normally and allow the result to spill
+
+The workbook solution gives the following full `LINEST` output:
+
+| Output row | Value 1 | Value 2 |
+|-----------|--------:|--------:|
+| Row 1 | `Slope = 16.704414` | `Intercept = 3135.537665` |
+| Row 2 | `SE Slope = 20.566943` | `SE Intercept = 745.912103` |
+| Row 3 | `R Square = 0.033554` | `SE of y = 1388.012890` |
+| Row 4 | `F = 0.659664` | `df = 19` |
+| Row 5 | `Regression SS = 1270895.959418` | `Residual SS = 36605015.898395` |
+
+Interpretation:
+
+- the slope is positive, but the model fit is very weak
+- `R Square = 0.033554` means the regression explains only about `3.36%` of the variation in `Sales`
+- the low `F` value also suggests that this is not a strong linear model
+
+###### Excel and Google Sheets template for Question 3
+
+- `=LINEST(B2:B22,A2:A22,TRUE,TRUE)`
+
+#### What Did I Learn in This Lesson?
+
+This lesson provided the following insights:
+
+- forecasting with simple linear regressions:
+  Forecasting is the act of making predictions or estimates about future events or outcomes based on historical data and patterns.
+- confidence levels:
+  Confidence levels help us express how precise a forecast is and allow us to describe the range in which the predicted value is expected to fall at a chosen probability level such as `95%`.
+- forecasting with a multiple linear regression - cross-sectional data:
+  Forecasting with a multiple linear regression using cross-sectional data involves predicting outcomes based on the relationships between several independent variables and one dependent variable at a single point in time.
+- forecasting with a multiple linear regression - time series:
+  Forecasting with a multiple linear regression using time series data involves predicting future outcomes based on historical patterns and trends in data observed over a continuous sequence of time intervals.
+
+#### Exam Notes
+
+When revising this lesson, focus especially on these high-yield ideas:
+
+- forecasting builds directly on regression and earlier spreadsheet-statistics foundations
+- forecasting is used to estimate future values based on historical data and identifiable patterns
+- forecasting supports planning and decision-making by showing possible future outcomes
+- Excel supports forecasting through both formulas and structured analysis workflows
+- simple linear regression can be used to forecast one target variable from one explanatory variable
+- `FORECAST.LINEAR` is a dedicated Excel formula for prediction from a linear relationship
+- in-sample forecasting uses values inside the estimation range, while out-of-sample forecasting uses new values outside it
+- point forecasts are single-value predictions and do not show forecast uncertainty on their own
+- confidence intervals describe the precision of a forecast by giving a range around the point forecast
+- higher confidence levels such as 99% give wider intervals than lower levels such as 90%
+- the chosen confidence level should match the required balance between certainty and precision
+- two forecasts can have the same point estimate but very different precision if their interval widths differ
+- multiple regression can also be used for forecasting when several explanatory variables are available
+- in cross-section forecasting, the coefficients are interpreted while the other explanatory variables are held constant
+- binary variables such as smoker status must be converted into numeric form before being used in a spreadsheet regression model
+- forecasts always involve uncertainty and should be treated as informed estimates, not guarantees
+- a strong exam answer should explain what is being forecast, what data is used, and how the forecast should be interpreted
+- when the lesson develops further, include reusable Excel or Google Sheets templates for forecasting tasks
+            """,
+            "key_points": [
+                "Forecasting builds on earlier knowledge of simple and multiple regression",
+                "This lesson focuses on analytical and statistical forecasting tools in Excel",
+                "Forecasting helps estimate future values from historical data and patterns",
+                "Forecasting is used in areas such as business, economics, weather, sales, and stock markets",
+                "Forecasts support planning and decision-making by describing possible future scenarios",
+                "Simple linear regression can be used to forecast a target value from one explanatory variable",
+                "FORECAST.LINEAR is a dedicated Excel function for predicting a y-value from x-value input and known linear data",
+                "In-sample forecasting uses values inside the original data range, while out-of-sample forecasting goes beyond that range",
+                "Point forecasts are single predicted values and do not on their own describe uncertainty or spread",
+                "Confidence intervals add a range around the central forecast and therefore describe forecast precision",
+                "Higher confidence levels lead to wider intervals and reflect more conservative uncertainty assessment",
+                "Choosing a confidence level involves balancing precision against certainty",
+                "Two forecasts with the same central value can still differ greatly in precision if one interval is much wider than the other",
+                "Multiple linear regression can be used for cross-section forecasting when several explanatory variables jointly predict the target variable",
+                "In multiple-regression forecasting, each coefficient is interpreted while the other explanatory variables are held constant",
+                "Binary text variables such as smoker status must be converted into numeric form before they can be used cleanly in spreadsheet-based regression forecasting",
+                "In the used-cars example, Age explains Price_Eur and the estimated regression line can be used for prediction",
+                "Forecasts involve uncertainty because they depend on assumptions and historical patterns",
+                "Forecasting answers should explain setup, result, and interpretation clearly",
+                "Forecasting can use both cross-sectional multiple regression and time-series-based multiple regression, but the data structure and interpretation are not the same",
+                "Excel-related forecasting topics should include reusable templates where possible"
+            ],
+            "visual_elements": {
+                "diagrams": False,
+                "tables": False,
+                "highlighted_sections": True
+            }
+        },
+        {
+            "lesson_number": "1.5",
+            "title": "Statistical Tools Exam Resolver",
+            "content": """
+### 1.5. Statistical Tools Exam Resolver
+
+#### What the examiner is really testing
+
+In this course, the examiner is usually testing whether you can:
+
+- choose the correct statistical tool
+- apply it inside a spreadsheet-style workflow
+- explain why the method fits the task
+- interpret the output clearly
+- connect the result to a practical decision
+
+#### Fast exam structure for Statistical Tools
+
+Use this simple structure:
+
+`tool -> setup -> calculation or workflow -> result -> interpretation -> decision`
+
+#### When the task is calculation-based
+
+If the question asks for a numerical result, do not stop at the final number.
+
+Show:
+
+1. what is being calculated
+2. the formula or spreadsheet method
+3. the values used
+4. the result
+5. what the result means
+
+If the task is Excel-related, also include a reusable **Excel or Google Sheets template** whenever possible. That makes the answer easier to reuse when the numbers or case change.
+
+#### Exam-ready Excel and Google Sheets mini-templates
+
+##### Template 1 - Descriptive statistics
+
+| Goal | Formula |
+|------|---------|
+| Mean | `=AVERAGE(B2:B101)` |
+| Median | `=MEDIAN(B2:B101)` |
+| Mode | `Excel: =MODE.SNGL(B2:B101)` / `Google Sheets: =MODE(B2:B101)` |
+| Range | `=MAX(B2:B101)-MIN(B2:B101)` |
+| Sample SD | `=STDEV.S(B2:B101)` |
+| Population SD | `=STDEV.P(B2:B101)` |
+| Variance | `=VAR.S(B2:B101)` |
+
+Exam use:
+State which measure best represents the dataset and explain why. If outliers are present, the median may be more representative than the mean. If the question is about spread, explain whether range or standard deviation is the stronger measure and why.
+
+##### Template 2 - Relationship analysis
+
+| Goal | Formula |
+|------|---------|
+| Correlation | `=CORREL(B2:B101,C2:C101)` |
+| Regression slope | `=SLOPE(C2:C101,B2:B101)` |
+| Regression intercept | `=INTERCEPT(C2:C101,B2:B101)` |
+| Forecast | `=FORECAST.LINEAR(E2,C2:C101,B2:B101)` |
+
+Exam use:
+Explain what the relationship tool studies first, identify the independent variable and dependent variable when regression is used, state whether the case is simple or multiple regression where relevant, and then interpret whether the result suggests a weak, moderate, or strong relationship and whether it should influence decision-making.
+
+If the scenario is about prediction, trend, impact, risk, or quality, name that application explicitly before you interpret the result.
+
+If the tool is correlation, make sure you:
+
+- interpret the sign of the coefficient
+- interpret the magnitude of the coefficient
+- say whether the relationship is weak, moderate, or strong
+- explain that correlation does not prove causation
+- mention Pearson or Spearman if the question points in that direction
+
+##### Template 3 - Outlier screening
+
+| Goal | Formula |
+|------|---------|
+| Mean | `=AVERAGE(B2:B101)` |
+| Sample SD | `=STDEV.S(B2:B101)` |
+| Z-score for B2 | `=(B2-$E$2)/$E$3` |
+| Flag | `=IF(ABS(C2)>3,"Investigate","Keep")` |
+
+Exam use:
+Do not say "delete automatically". Say that the value should be investigated and then kept, corrected, flagged, or excluded with justification.
+
+##### Template 4 - Workflow answer
+
+If the question is about cleaning or automation, a short answer can say:
+
+- import the data
+- clean and standardise fields
+- use Power Query or built-in tools to make the process repeatable
+- calculate the required statistics
+- interpret the output and explain the practical implication
+
+This is useful because not every Statistical Tools answer should be reduced to one cell formula. Some exam tasks are really workflow questions.
+
+##### Template 5 - KPI summary or essay answer
+
+If the task is a longer written KPI question, use this paragraph order:
+
+1. definition and purpose
+2. alignment with strategic objectives
+3. actionable insights for decision-making
+4. performance improvement
+5. accountability and transparency
+6. communication across teams
+7. continuous monitoring and timely intervention
+
+Exam use:
+This helps you write a long answer that is structured, complete, and clearly linked to the wording of the task.
+
+##### Template 6 - Methodology overview answer
+
+If the task asks for an overview of methodologies used to extract KPIs, use this order:
+
+1. descriptive statistics for summary measures
+2. time series analysis for trend and seasonality
+3. regression analysis for drivers and relationships
+4. hypothesis testing for significance
+5. SPC for process monitoring
+6. data mining, machine learning, factor analysis, or broader modelling for deeper pattern discovery and prediction
+7. end by explaining that method choice depends on the data and objective
+
+Exam use:
+This prevents the answer from becoming a random list and helps you show both method knowledge and selection logic. If forecasting appears in the task, define temporal performance forecasting directly and connect it to time-dependent KPI prediction.
+
+##### Template 7 - Common measures activity answer
+
+If the task gives several datasets and asks you to calculate mean, median, mode, range, and standard deviation, use this order:
+
+1. list the datasets clearly
+2. calculate each measure dataset by dataset
+3. state whether there is a mode or no mode
+4. compare spread using range and standard deviation
+5. interpret what the differences mean
+6. connect the results to a real-life business or research scenario
+
+Exam use:
+This turns the activity into a full analytical answer rather than a page of disconnected calculations.
+
+##### Template 8 - Replace with a new dataset
+
+If the task gives a different dataset but asks the same kind of measures, use this reset pattern:
+
+1. rewrite the new numbers clearly
+2. decide whether the question needs ordered data for the median
+3. calculate mean, median, mode, range, and standard deviation in the same order every time
+4. state whether you are using sample or population standard deviation
+5. interpret the centre and spread
+6. compare datasets if more than one list is given
+7. finish with a business or research meaning
+
+Exam use:
+This helps you stay calm when the numbers change because the logic of the answer remains the same.
+
+##### Template 9 - Statistical concepts and processes answer
+
+If the task asks for an overview of statistical concepts and processes, use this order:
+
+1. explain that statistics supports meaningful analysis, prediction, and reliable conclusions
+2. define sampling
+3. define probability
+4. define hypothesis testing
+5. define regression analysis
+6. explain how these concepts support surveys, experiments, or forecasting
+7. end by stating that they form the foundation for later analytical work
+
+Exam use:
+This gives the answer a clear conceptual flow instead of becoming a loose paragraph of definitions.
+
+##### Template 10 - Probability theory answer
+
+If the task asks about probability theory, use this order:
+
+1. define probability theory as the study of uncertainty and likelihood
+2. explain why it matters in data analysis
+3. identify the key idea named in the task, such as distributions, conditional probability, Bayes' theorem, inference, or Monte Carlo simulation
+4. explain what that idea helps the analyst do
+5. connect it to a practical scenario
+6. add a formula or spreadsheet tool if relevant
+7. finish with what kind of decision or conclusion it supports
+
+Exam use:
+This structure keeps probability answers simple, clear, and useful even when the concept feels abstract.
+
+##### Template 11 - Probability distributions answer
+
+If the task asks about probability distributions, use this order:
+
+1. define a probability distribution as a way to describe how likely different outcomes are
+2. explain that probabilities must be non-negative and add up to `1`
+3. identify the distribution named in the task
+4. explain what kind of data or event it suits
+5. if it is the normal distribution, explain the role of `mu` `(μ)` and `sigma` `(σ)`
+6. connect it to uncertainty, prediction, or data behaviour
+7. finish with why it matters in analysis
+
+Exam use:
+This helps you explain distributions clearly without getting lost in abstract theory.
+
+##### Template 12 - Normal distribution case answer
+
+If the task gives a normal-distribution case, use this order:
+
+1. state that the variable is approximately normally distributed
+2. identify `mu` `(μ)` and `sigma` `(σ)`
+3. state the value or interval being analysed
+4. decide whether the task asks for PDF density or cumulative probability
+5. use the empirical rule or `NORM.DIST` when appropriate
+6. give the numerical result
+7. explain what the result means in the scenario
+
+Exam use:
+This gives you a reliable path for turning a formula-heavy question into a clear applied answer.
+
+##### Template 13 - Hypothesis testing answer
+
+If the task asks about hypothesis testing, use this order:
+
+1. define hypothesis testing briefly
+2. state `H0` and `Ha`
+3. identify the significance level `α`
+4. name the appropriate test statistic or test type
+5. explain the decision rule using the critical region or p-value
+6. state whether `H0` is rejected or not
+7. write the final conclusion in context
+8. if relevant, explain whether the result is practically important as well as statistically significant
+
+Exam use:
+This helps you keep the logic of the test visible from start to finish instead of jumping straight to the conclusion.
+
+##### Template 14 - Basic statistical tests answer
+
+If the task asks about basic statistical tests, use this order:
+
+1. identify whether the task is about means or categories
+2. if it is about means, explain why a **t-test** fits
+3. if it is about categories or frequencies, explain why a **chi-square test** fits
+4. state what kind of data the test needs
+5. explain what the test helps the analyst conclude
+6. connect it to a practical scenario
+
+Exam use:
+This helps you choose the correct test quickly and justify the choice clearly.
+
+##### Template 15 - Missing values and outliers answer
+
+If the task asks how to handle missing values or outliers, use this order:
+
+1. identify the quality issue
+2. explain whether it is a missing-value problem or an outlier problem
+3. name the cleaning technique such as deletion, imputation, fill, consistency check, conversion, capping, winsorisation, or transformation
+4. explain why that technique fits the context
+5. explain how it protects data quality or analysis reliability
+6. finish with the justified action
+
+Exam use:
+This stops the answer from sounding vague and shows that cleaning decisions should be reasoned, not automatic.
+
+##### Template 16 - Data visualisation answer
+
+If the task asks about histograms, scatter plots, box plots, or another basic visualisation method, use this order:
+
+1. name the visualisation
+2. state what kind of data it is designed for
+3. explain what pattern it helps the analyst see
+4. explain why it fits the scenario better than the alternatives
+5. if useful, add how it would be created in Excel or Google Sheets
+6. finish with the practical interpretation or decision support value
+
+Exam use:
+This helps you answer chart questions as analytical-method questions, not just as design or presentation questions.
+
+##### Template 17 - Time series and forecasting answer
+
+If the task asks about time series analysis, forecasting, trend, seasonality, or autocorrelation, use this order:
+
+1. state that the data is organised over time
+2. explain whether the task is mainly about trend, seasonality, autocorrelation, or forecasting
+3. define the named concept clearly
+4. explain what pattern or dependency the analyst is looking for
+5. mention a spreadsheet workflow or simple model if relevant
+6. explain what the result means for future planning or decision-making
+
+Exam use:
+This helps you turn a time-based question into a structured answer instead of a vague paragraph about prediction.
+
+##### Template 18 - Full statistical measures task answer
+
+If the task gives one or more datasets and asks you to calculate mean, median, mode, range, and standard deviation with interpretation, use this order:
+
+1. write the dataset clearly
+2. calculate the mean
+3. calculate the median
+4. identify the mode or state that there is no mode
+5. calculate the range
+6. calculate the standard deviation step by step
+7. interpret each result
+8. compare datasets if more than one dataset is given
+9. finish with a short analytical conclusion about centre and spread
+
+Exam use:
+This is a strong template because it combines working, interpretation, and comparison in one repeatable pattern.
+
+##### Template 19 - Financial functions answer
+
+If the task asks about spreadsheet financial functions such as PMT, RATE, NPER, IPMT, FV, PV, IRR, or NPV, use this order:
+
+1. identify the financial question first
+2. choose the correct function
+3. convert the rate and time into the correct period format
+4. apply the cash-flow sign rule correctly
+5. write the spreadsheet formula
+6. give the result
+7. interpret what the result means for the borrower, investor, or project
+
+Exam use:
+This is a strong template because most mistakes in spreadsheet finance questions come from wrong period conversion, wrong sign logic, or stopping at the formula without interpretation.
+
+If the numbers change in the exam, keep the same structure and only replace:
+
+- rate
+- number of periods
+- payment
+- loan value
+- future value or discount rate where needed
+
+The safest rule is:
+
+- keep table values readable
+- make sure one inflow and one outflow have opposite signs inside the function
+
+If the task uses `IPMT`, add one more check:
+
+- identify the exact payment period using `per`
+- state clearly that `IPMT` returns only the **interest part** of that payment
+
+If the task uses `FV`, add one more check:
+
+- state whether the formula is valuing a repeated payment stream, a present value, or both
+- explain whether `pv` is omitted or set to `0`
+
+If the task uses `PV`, add one more check:
+
+- state that the future cash flows are being discounted back to today's value
+- explain whether the answer should then be compared with a separate initial cost or price
+
+If the task uses `IRR`, add one more check:
+
+- state that IRR is based on the **full cash-flow sequence**
+- explain what the sign and size of the IRR mean for project acceptability
+- explain that the actual cash-flow signs must appear in the data range itself, not only inside the formula
+
+If the task uses `NPV`, add one more check:
+
+- explain that `NPV` usually discounts only the **future** cash flows
+- state clearly whether the initial investment at time `0` is added separately
+
+##### Template 20 - Combined `PMT`, `RATE`, and `NPER` loan case
+
+If the task gives one loan case and asks you to solve monthly payment, interest rate, and number of periods together, use this order:
+
+1. convert the annual rate into the rate per period
+2. convert the loan term into the total number of periods
+3. calculate `PMT`
+4. use the payment result to calculate `RATE`
+5. use the rate and payment to calculate `NPER`
+6. explain what each result means
+7. mention that small rounding differences do not change the practical interpretation
+
+Exam use:
+This is one of the strongest finance templates because it shows that you understand the relationship between the three functions, not just each one in isolation.
+
+##### Template 21 - Combined `FV` and `PV` investment case
+
+If the task gives an investment with repeated returns and asks what it will be worth later and whether it is profitable, use this order:
+
+1. identify the repeated cash flow per period
+2. identify the interest rate per period
+3. identify the number of periods
+4. use `FV` to find what the payment stream will be worth later
+5. use `PV` to find what the payment stream is worth today
+6. compare the `PV` result with the initial cost or price
+7. state clearly whether the investment looks profitable under the stated assumptions
+
+Exam use:
+This is a strong finance template because it separates future accumulation, present-value reasoning, and the final investment judgement.
+
+##### Template 22 - `IRR` project evaluation case
+
+If the task gives an initial cost and a sequence of later cash flows and asks for the internal rate of return, use this order:
+
+1. write the cash flows in time order
+2. make sure outflows are negative and inflows are positive
+3. state that `IRR` is the rate that makes the project's net present value equal to zero
+4. write the spreadsheet formula using the full cash-flow range
+5. give the IRR result
+6. explain whether the IRR is positive, negative, high, or low
+7. compare it to a hurdle rate or required return if the question asks for a decision
+
+Exam use:
+This is a strong finance template because it moves from spreadsheet mechanics to an actual investment judgement.
+
+##### Template 23 - `NPV` project evaluation case
+
+If the task gives an initial cost, a sequence of future cash flows, and a discount rate, use this order:
+
+1. write the initial cost separately
+2. write the future cash flows in time order
+3. state the discount rate
+4. explain that `NPV` discounts the future cash flows back to present value
+5. write the spreadsheet formula with the initial cost added separately if it occurs at time `0`
+6. give the NPV result
+7. explain whether the project creates value, destroys value, or just breaks even
+
+Exam use:
+This is a strong finance template because it combines spreadsheet accuracy with a clear investment decision rule.
+
+##### Template 24 - Combined `IRR` and `NPV` break-even case
+
+If the task asks both for the break-even interest rate and the NPV at a chosen discount rate, use this order:
+
+1. write the full cash-flow sequence in time order
+2. use `IRR` to find the break-even rate where project NPV is zero
+3. state the IRR result clearly as a percentage
+4. use `NPV` with the chosen discount rate to value the project
+5. add the initial cost separately if it occurs at time `0`
+6. compare the chosen discount rate to the break-even rate
+7. explain why the NPV is positive, negative, or zero under that rate
+
+Exam use:
+This is a strong finance template because it connects the break-even rate logic directly to the project-value decision.
+
+##### Template 25 - Logical functions answer
+
+If the task asks which logical function should be used, or asks you to explain one of the logical functions, use this order:
+
+1. identify the spreadsheet problem first
+2. choose the function that matches that problem
+3. explain what the function does in one clear sentence
+4. give a short spreadsheet example
+5. explain why that function fits better than the alternatives
+6. mention any important version or compatibility note if relevant
+
+If the task mentions `BYROW` or `BYCOL` and the wording says they are not standard Excel functions, add one more step:
+
+7. explain the intended row-based or column-based calculation even if the exact function is unavailable
+
+If the task is specifically about `LAMBDA`, add one more step:
+
+7. show the parameter and the custom calculation clearly, then test it on one value if possible
+8. if the case is a unit conversion or repeated business rule, explain why a reusable custom function improves consistency
+9. if the case gives a sequence of arithmetic steps, rewrite those steps as one clean custom formula before testing it
+
+If the task is specifically about `LET`, add one more step:
+
+7. define the named variables first
+8. show the final calculation using those names
+9. explain that the result stays the same while readability and structure improve
+10. if a cell address is given, show how it is assigned to a variable name before the final calculation
+
+If the task is specifically about `BYCOL` or `BYROW`, add one more step:
+
+7. identify whether the result is needed per column or per row
+8. write the `array` and `LAMBDA(...)` parts clearly
+9. explain that if only the values change, the same formula structure can still be reused by replacing the range or the inner function
+
+If the task is specifically about `IFERROR` or `IFNA`, add one more step:
+
+7. identify whether the task is about `#N/A` only or about broader spreadsheet errors
+8. write the fallback text clearly
+9. explain why the chosen function is narrower or broader than the alternative
+
+Exam use:
+This is a strong template because it turns a function-definition question into a practical spreadsheet decision answer.
+
+##### Template 26 - Mixed advanced spreadsheet task answer
+
+If the task mixes several spreadsheet functions from the same lesson, use this order:
+
+1. split the task into separate function parts
+2. identify the exact goal in each part
+3. convert time and rate into matching periods where needed
+4. apply the finance sign rule where relevant
+5. write one spreadsheet formula for each part
+6. report each result clearly
+7. interpret each result in plain business or spreadsheet language
+8. if a value set is inconsistent, state that and explain the safest interpretation
+9. finish with reusable function skeletons so the same method can be reused if the exam changes only the inputs
+
+Exam use:
+This is a strong template because many exam tasks combine finance functions, logical functions, and spreadsheet logic in one long question. The safest approach is to solve them as one structured sequence, not as one big paragraph.
+
+##### Template 27 - Simple linear regression forecasting answer
+
+If the task asks you to forecast with a simple linear regression, use this order:
+
+1. identify the explanatory variable and the target variable
+2. state the estimated regression equation or recreate `SLOPE` and `INTERCEPT`
+3. decide whether the forecast is in-sample or out-of-sample
+4. calculate the forecast either manually or with `FORECAST.LINEAR`
+5. state the point forecast clearly
+6. interpret what the forecast means in context
+7. if both manual and spreadsheet-function methods are asked for, say that they should return the same predicted value
+
+Safe spreadsheet patterns:
+
+- `=INTERCEPT(y_range,x_range)+SLOPE(y_range,x_range)*x_cell`
+- `=FORECAST.LINEAR(x_cell,y_range,x_range)`
+
+Exam use:
+This is a strong forecasting template because it combines model setup, spreadsheet method, and interpretation, while also showing that you understand the difference between in-sample and out-of-sample prediction.
+
+##### Template 28 - Confidence interval of a forecast answer
+
+If the task gives a point forecast and asks for a confidence interval, use this order:
+
+1. write the point forecast first
+2. write the confidence level
+3. write the margin of error
+4. calculate the upper bound
+5. calculate the lower bound
+6. calculate the interval width
+7. explain whether the interval is narrow or wide
+8. interpret what that means for precision and uncertainty
+
+Safe spreadsheet patterns:
+
+- upper bound: `=point_forecast_cell+margin_cell`
+- lower bound: `=point_forecast_cell-margin_cell`
+- interval width: `=margin_cell*2`
+
+Exam use:
+This is a strong template because it turns a vague phrase such as "around the forecast" into a precise, exam-ready interval with a direct interpretation of uncertainty.
+
+##### Template 29 - Multiple regression forecasting answer
+
+If the task asks you to forecast with a multiple regression, use this order:
+
+1. write the estimated regression equation
+2. identify each explanatory variable and its coefficient
+3. copy the customer or case characteristics clearly
+4. substitute the values into the equation
+5. calculate the predicted value
+6. interpret the forecast while stating that the other variables are held constant
+7. if the case uses binary-coded variables, explain what `0` and `1` mean
+8. if the case mentions in-sample or out-of-sample, say that explicitly
+
+Safe spreadsheet pattern:
+
+- `=intercept_cell+beta1_cell*x1_cell+beta2_cell*x2_cell+beta3_cell*x3_cell+...`
+
+Exam use:
+This is a strong template because it keeps multiple-regression forecasting structured and prevents coefficient-mapping mistakes when several customer characteristics are involved.
+
+##### Template 30 - Cross-sectional customer forecasting answer
+
+If the task gives one or more customers and asks for a forecast based on a previously estimated model, use this order:
+
+1. restate the model briefly
+2. copy each customer's characteristics in a clean list or mini-table
+3. map each characteristic to the correct coefficient
+4. calculate one customer at a time
+5. report each forecast separately
+6. compare the customers if the task invites comparison
+7. state what likely drives the difference in predictions
+
+Exam use:
+This is a strong template because it is easy to reuse when the exam swaps in new customer profiles or new coefficient values.
+
+#### When the task is tool-selection based
+
+If the question asks which statistical tool should be used:
+
+1. name the tool
+2. explain what kind of problem it solves
+3. explain why it fits better than the alternatives
+4. connect it to the dataset or business problem
+
+#### When the task is about quality or outliers
+
+Make sure your answer explains both:
+
+- the statistical indicator
+- the judgement behind the final handling decision
+
+#### Resolver-style supplement
+
+##### Resolver view - Question 1
+
+If the task is about a descriptive statistic, define the measure first, then calculate or describe it, then explain what it says about the dataset.
+
+##### Resolver view - Question 2
+
+If the task is about a relationship tool such as correlation or regression, explain what kind of relationship the tool is meant to study before discussing the result.
+
+For regression questions, make sure you also:
+
+- identify the independent variable
+- identify the dependent variable
+- state whether the case is simple linear regression or multiple linear regression
+- explain that a scatter plot is often the first visual check
+- state what the regression helps you explain or predict
+- explain that the model aims to fit the data as closely as possible by reducing the gap between observed and predicted values
+- classify the use case as prediction, trend analysis, impact assessment, risk assessment, or quality control when the scenario makes that clear
+
+For correlation questions, make sure you also:
+
+- name the two variables
+- report whether the relationship is positive or negative
+- explain whether the relationship is weak, moderate, or strong
+- state that correlation is about association, not proof of cause
+- explain that Spearman is rank-based if the question points to monotonic or ranked data
+
+##### Resolver view - Question 3
+
+If the task is about outliers or bad data, explain why the point is suspicious, how you test it, and why your final action protects the model.
+
+##### Resolver view - Question 4
+
+If the task is about a spreadsheet workflow such as Power Query or built-in tool packs, explain how the workflow improves reliability, repeatability, or efficiency.
+
+##### Resolver view - Question 5
+
+If the task is a KPI essay or summary question, answer it as a structured chain:
+
+- define KPIs
+- explain why they matter for performance measurement
+- connect them to strategic goals
+- explain how they guide decisions
+- explain how they support improvement
+- explain accountability and communication effects
+- finish with continuous monitoring and timely intervention
+
+This prevents the answer from becoming vague and helps you cover all of the assessment criteria directly.
+
+##### Resolver view - Question 6
+
+If the task asks for an overview of statistical methodologies for KPI extraction, answer in this pattern:
+
+- define the purpose of KPI extraction
+- group the methods by what they do
+- explain one line of function for each method
+- connect each method to the kind of KPI insight it produces
+- end by stating that the best method depends on the data type, objective, and KPI sought
+
+This makes the answer analytical and comparative instead of sounding like memorized notes. If time series analysis is included, explain that temporal performance forecasting is about assessing how well future KPI values are predicted over time.
+
+##### Resolver view - Question 7
+
+If the task is about common statistical measures, answer in this order:
+
+- define the measure
+- show the formula, manual calculation, or spreadsheet function
+- state the result
+- interpret what the result says about the data
+- explain why that measure is useful in the scenario
+
+A strong comparison rule is:
+
+- mean = typical average, but sensitive to outliers
+- median = middle value, stronger when data is skewed
+- mode = most frequent value
+- range = simple spread from minimum to maximum
+- standard deviation = fuller measure of variability around the mean
+
+This makes the answer explanatory instead of just computational.
+
+##### Resolver view - Question 8
+
+If the task gives multiple datasets and asks you to solve mean, median, mode, range, and standard deviation, use this pattern:
+
+- calculate and present the results in a clear table
+- point out whether the datasets have a mode or no mode
+- compare which dataset has the highest spread
+- explain what that means in practical terms
+- finish by linking the results to a real decision context such as waiting times, sales, or service quality
+
+This makes the answer look organised, comparative, and exam-ready.
+
+##### Resolver view - Question 9
+
+If the examiner swaps in a different dataset, do not invent a new method. Keep the same resolver flow:
+
+- write the dataset
+- calculate each measure in the same order
+- state whether there is a mode
+- compare spread and centre
+- interpret what changes in the numbers mean
+- connect the result to the scenario in the task
+
+If spreadsheet support is allowed, use the formulas directly and then explain the output in words. This is one of the easiest ways to stay consistent across different exam questions.
+
+##### Resolver view - Question 10
+
+If the task is about statistical concepts and processes, answer in this pattern:
+
+- define the broad role of statistics in data analysis
+- identify the main concepts named in the task
+- explain what each concept helps the analyst do
+- connect them to real tasks such as surveys, experiments, forecasting, or pattern detection
+- finish by explaining that they support data-driven decisions and reliable conclusions
+
+This makes the answer sound structured, foundational, and relevant to practice.
+
+##### Resolver view - Question 11
+
+If the task is about probability theory, answer in this pattern:
+
+- define probability as a way to measure uncertainty and likelihood
+- explain why uncertainty matters in data analysis
+- name the specific concept in the question
+- explain how it works in simple terms
+- connect it to a real data problem such as forecasting, risk, sampling, or updating probabilities with new information
+- finish by stating what kind of insight or decision it supports
+
+If the task is more applied, include the probability formula, distribution name, or spreadsheet function and then interpret the result in words.
+
+This makes probability answers feel grounded instead of overly theoretical.
+
+##### Resolver view - Question 12
+
+If the task is about probability distributions, answer in this pattern:
+
+- define what a probability distribution does
+- name the possible outcomes and their probabilities
+- explain the basic rules of probability values
+- identify the named distribution
+- explain why that distribution fits the kind of uncertainty being studied
+- if it is normal distribution, explain that `μ` is the centre and `σ` controls the spread
+- finish with what kind of insight the distribution gives the analyst
+
+This makes the answer structured, mathematical, and still easy to understand.
+
+##### Resolver view - Question 13
+
+If the task is a normal-distribution case, solve it in this pattern:
+
+- write down the mean `μ` and standard deviation `σ`
+- identify whether the question is about a point or an interval
+- if it is an interval near the mean, consider the empirical rule first
+- if it needs an exact spreadsheet answer, use `NORM.DIST`
+- give the result
+- interpret what it means for the business, research, or operational scenario
+
+If the question asks what data you need, say:
+
+- the mean
+- the standard deviation
+- the value or interval
+- confirmation that the variable is approximately normally distributed
+
+This makes the answer exam-relevant and practical, not just mathematical.
+
+##### Resolver view - Question 14
+
+If the task is about hypothesis testing, answer in this pattern:
+
+- write `H0` and `Ha`
+- state the significance level `α`
+- identify the correct test type
+- compute or report the test statistic or p-value
+- compare it to the decision rule
+- say reject `H0` or fail to reject `H0`
+- explain what that means for the real population or business question
+- if relevant, explain whether the effect is practically meaningful
+
+If the question asks what data is needed, say:
+
+- the hypotheses
+- the significance level
+- the sample data or summary values
+- the correct test type
+- the p-value or enough information to calculate it
+
+If the question asks about significance levels and errors, explain:
+
+- higher `α` increases Type I error risk
+- lower `α` reduces Type I error risk but can increase Type II error risk
+- statistical significance is not automatically the same as practical significance
+
+This makes the answer rigorous, structured, and exam-safe.
+
+##### Resolver view - Question 15
+
+If the task is about basic statistical tests, answer in this pattern:
+
+- identify the question type first
+- if the task compares averages, choose a t-test
+- if the task compares categories, frequencies, or associations, choose a chi-square test
+- explain what data the chosen test requires
+- explain what kind of conclusion the test supports
+- finish by linking the test to the scenario in the question
+
+This makes the answer fast, accurate, and exam-relevant.
+
+##### Resolver view - Question 16
+
+If the task is about handling missing values or outliers, answer in this pattern:
+
+- identify the problem
+- explain the risk it creates for the analysis
+- choose a suitable cleaning method
+- justify why the method fits the data
+- explain whether the value should be kept, corrected, flagged, imputed, or removed
+- finish by explaining how this improves the analysis
+
+If the task is more specific, you can match the method like this:
+
+- small amount of missing data -> deletion may be acceptable
+- central numerical tendency -> mean or median imputation
+- ordered data -> forward fill or backward fill
+- mixed formats -> consistency checks or data type conversion
+- scale problems -> standardisation
+- extreme but not impossible values -> capping, flooring, or winsorisation
+- highly skewed values -> transformation
+
+If model-based imputation is mentioned, the safer course-aligned reference here is linear regression rather than k-nearest neighbours.
+
+This makes the answer practical, cautious, and analytically sound.
+
+##### Resolver view - Question 17
+
+If the task is about data visualisation methods, answer in this pattern:
+
+- identify what analytical question is being asked
+- if it is about one numeric distribution, choose a histogram
+- if it is about two numeric variables and their relationship, choose a scatter plot
+- if it is about spread, quartiles, or possible outliers, choose a box plot
+- explain what the chosen chart reveals
+- finish by linking the chart to the scenario and decision need
+
+If the question mentions outliers, note that:
+
+- histograms can suggest unusual extremes
+- scatter plots can reveal isolated points in a relationship pattern
+- box plots can highlight potential outliers through the whisker-and-box structure
+
+This makes the answer comparative, visual, and exam-relevant.
+
+##### Resolver view - Question 18
+
+If the task is about time series analysis or forecasting, answer in this pattern:
+
+- state that the data is chronological
+- identify the key pattern named in the task
+- if it is long-term movement, talk about trend
+- if it is a fixed repeating pattern, talk about seasonality
+- if it is dependence on earlier values, talk about autocorrelation
+- if the question asks for future estimates, explain that forecasting uses historical patterns to predict future values
+- finish by linking the answer to a planning or decision need such as sales, demand, finance, or operations
+
+If spreadsheet support is relevant, mention:
+
+- a time column in order
+- a value column
+- a moving average or simple forecast setup
+- interpretation of the result rather than only the formula
+
+This makes the answer structured, time-aware, and exam-ready.
+
+##### Resolver view - Question 19
+
+If the task gives a full worked dataset question on mean, median, mode, range, and standard deviation, solve it in this pattern:
+
+- write the dataset first
+- calculate mean and explain what the average level is
+- calculate median and explain the central position
+- identify the mode or state clearly that there is no mode
+- calculate range and explain the spread between minimum and maximum
+- calculate standard deviation step by step
+- state whether the standard deviation is population or sample
+- interpret whether the dataset is tightly grouped or widely spread
+- if several datasets are given, compare which has the largest or smallest spread
+
+If the question gives a model answer style like "calculate and interpret", do not skip the interpretation. That is often what separates a basic answer from an exam-strong answer.
+
+If spreadsheet support is allowed, mention:
+
+- `AVERAGE`
+- `MEDIAN`
+- `MODE.SNGL` or `MODE`
+- `MAX-MIN`
+- `STDEV.P` or `STDEV.S`
+
+This makes the answer complete, methodical, and easy to adapt when the numbers change.
+
+##### Resolver view - Question 20
+
+If the task is about financial spreadsheet functions, answer in this pattern:
+
+- identify the exact financial objective
+- if the task asks for regular repayment, choose `PMT`
+- if it asks for the rate, choose `RATE`
+- if it asks for the number of periods, choose `NPER`
+- if it asks for the interest portion of one payment, choose `IPMT`
+- if it asks what something will be worth later, choose `FV`
+- if it asks what a future stream is worth now, choose `PV`
+- if it asks whether an investment's return rate is attractive, choose `IRR`
+- if it asks whether a project adds value at a given discount rate, choose `NPV`
+
+Before calculating, make sure you:
+
+- convert annual rate to rate per period
+- convert years to total number of periods
+- follow the sign rule: money received positive, money paid negative
+
+Important finance reminder:
+For `PMT`, `RATE`, `NPER`, `FV`, and `PV`, you can often keep table values positive and enforce opposite signs inside the formula. For `IRR`, the **cash-flow range itself must already contain the true signs**.
+
+If the task is a PMT, RATE, or NPER case and the values change, do not invent a new method. Keep the same resolver flow and only swap in the new numbers.
+
+A safe spreadsheet pattern is:
+
+- `PMT(rate_per_period,total_periods,-loan_value)`
+- `RATE(total_periods,-payment,loan_value)`
+- `NPER(rate_per_period,-payment,loan_value)`
+- `IPMT(rate_per_period,period_number,total_periods,-loan_value)`
+- `FV(rate_per_period,total_periods,-payment,0)`
+- `PV(rate_per_period,total_periods,-payment,0)`
+- `IRR(cash_flow_range)`
+- `NPV(discount_rate,future_cash_flow_range)+initial_cost`
+
+If the question is specifically about `IPMT`, make sure you also say:
+
+- which payment period is being analysed
+- that the function returns the interest portion only
+- that the result is usually highest in the early periods of a standard amortising loan
+
+If the question is specifically about `FV`, make sure you also say:
+
+- what is being accumulated over time
+- what period the rate refers to
+- whether the present value is excluded, included, or assumed to be `0`
+
+If the question is specifically about `PV`, make sure you also say:
+
+- what future cash flows are being discounted
+- what period the rate refers to
+- whether the result should be compared with an initial investment, purchase price, or current cost
+
+If the question is specifically about `IRR`, make sure you also say:
+
+- that the full series of cash flows must be included
+- that outflows are negative and inflows are positive
+- that IRR is the rate at which the project's net present value becomes zero
+- whether the result suggests acceptance or rejection of the project
+
+If the question is specifically about `NPV`, make sure you also say:
+
+- what discount rate is being used
+- that only the future cash flows go inside `NPV(...)`
+- whether the initial cost is added separately because it occurs at time `0`
+- whether the final NPV suggests value creation or value destruction
+
+Finish by explaining what the result means in practical terms, not only what number the spreadsheet returns.
+
+This makes the answer financially correct, spreadsheet-relevant, and exam-safe.
+
+##### Resolver view - Question 21
+
+If the task combines `PMT`, `RATE`, and `NPER` in one loan case, answer in this pattern:
+
+- write the loan amount
+- convert the annual rate to the period rate
+- convert the total time to the number of periods
+- calculate the monthly payment with `PMT`
+- calculate the implied rate with `RATE`
+- calculate the repayment length with `NPER`
+- state clearly whether the rate returned is monthly or annual
+- mention the sign rule
+- explain that minor rounding differences do not change the practical conclusion
+
+If spreadsheet support is allowed, a safe structure is:
+
+- `PMT(rate_per_period,total_periods,-loan_amount)`
+- `RATE(total_periods,payment,loan_amount)` with opposite signs
+- `NPER(rate_per_period,payment,loan_amount)` with opposite signs
+
+This makes the answer look organised, financially consistent, and exam-ready.
+
+##### Resolver view - Question 22
+
+If the task combines `FV` and `PV` in one investment case, answer in this pattern:
+
+- write the initial cost
+- write the repeated return per period
+- write the interest rate and the number of periods
+- check whether the timing is yearly, monthly, or another interval
+- calculate `FV` to show what the return stream will be worth later
+- calculate `PV` to show what that return stream is worth today
+- compare the `PV` result with the initial cost
+- state clearly whether the investment appears profitable under the given assumptions
+
+If the wording is slightly messy, make sure you identify whether the task is really about:
+
+- a repeated payment stream, or
+- one single lump sum
+
+If the workbook or context uses formulas like:
+
+- `=FV(rate,periods,-payment)`
+- `=PV(rate,periods,-payment)`
+
+then the task is about a repeated payment stream.
+
+This makes the answer clear, exam-safe, and easy to reuse when the numbers change.
+
+##### Resolver view - Question 23
+
+If the task is about `IRR`, answer in this pattern:
+
+- write the full cash-flow series in time order
+- mark which values are outflows and which are inflows
+- use `IRR` on the full range
+- state the result as a rate
+- explain that IRR is the discount rate that makes project NPV equal to zero
+- interpret whether the project appears attractive or unattractive
+- compare the IRR to a hurdle rate if one is provided
+
+If spreadsheet support is allowed, a safe structure is:
+
+- `B2:B6` or another full cash-flow range
+- `=IRR(B2:B6)`
+- optional `=IRR(B2:B6,10%)`
+
+Do not rewrite all the visible table values as positive for an IRR task. IRR needs the **true negative and positive cash-flow signs** inside the actual range being analysed.
+
+If the result is negative, say that clearly. A negative IRR usually means the project fails to recover its cost in present-value terms and would normally be rejected.
+
+##### Resolver view - Question 24
+
+If the task is about `NPV`, answer in this pattern:
+
+- write the initial cost separately
+- write the future cash flows in time order
+- write the discount rate
+- use `NPV` on the future cash flows only
+- add the initial cost separately if it occurs at time `0`
+- state the NPV result
+- explain whether the project creates value, destroys value, or just meets the required return
+
+If spreadsheet support is allowed, a safe structure is:
+
+- `B2` for the initial cost
+- `B3:B6` or another range for future cash flows
+- `B7` for the discount rate
+- `=NPV(B7,B3:B6)+B2`
+
+If the result is negative, say that clearly. A negative NPV means the discounted future cash flows are not enough to justify the initial investment at the chosen required return.
+
+##### Resolver view - Question 25
+
+If the task asks at which interest rate an investment breaks even and then asks for NPV at a chosen rate, answer in this pattern:
+
+- write the full cash-flow sequence
+- explain that the break-even rate is the rate where NPV becomes `0`
+- use `IRR` to find that break-even rate
+- state the IRR result
+- use `NPV` at the required discount rate for the second part
+- add the initial cost separately if it occurs at time `0`
+- compare the chosen discount rate with the break-even rate
+- explain why the project looks profitable or unprofitable at that chosen rate
+
+If spreadsheet support is allowed, a safe structure is:
+
+- `=IRR(full_cash_flow_range)`
+- `=NPV(discount_rate,future_cash_flow_range)+initial_cost`
+
+This makes the answer especially strong because it links the project's threshold return to its actual value under the rate named in the question.
+
+##### Resolver view - Question 26
+
+If the task is about logical functions such as `LAMBDA`, `LET`, `BYROW`, `BYCOL`, `IFERROR`, or `IFNA`, answer in this pattern:
+
+- identify the spreadsheet problem first
+- choose the matching logical function
+- define what the function does
+- show a short formula example
+- explain why that function fits the task
+- if the function is version-dependent, mention that clearly
+
+For `BYROW` and `BYCOL`, a very safe exam interpretation is:
+
+- `BYROW` = apply one calculation to each row
+- `BYCOL` = apply one calculation to each column
+
+If the wording says they are not standard Excel functions, do not freeze. Explain:
+
+- what the intended calculation probably is
+- how you would solve it with `BYROW` or `BYCOL` if available
+- how you would solve the same task with helper formulas if the function is unavailable
+
+Example fallback logic:
+
+- row average without `BYROW` -> `=AVERAGE(B2:E2)` and copy down
+- column maximum without `BYCOL` -> `=MAX(B2:B6)` and copy across
+
+If the task is specifically about `LAMBDA`, a safe mini-pattern is:
+
+- write `=LAMBDA(x,custom_logic)`
+- test it directly with `=LAMBDA(x,custom_logic)(test_value)`
+- explain the arithmetic steps in words
+
+If the task is specifically about `LET`, a safe mini-pattern is:
+
+- identify the repeated or important values first
+- name them inside the formula
+- write the final calculation with those names
+- explain that `LET` improves readability and avoids repetition
+
+For example:
+
+- `=LET(rate,12%/12,periods,2*12,loan,100000,PMT(rate,periods,loan))`
+
+If the task gives a cell reference and asks you to pass the variable name, the value source, and the calculation, a safe pattern is:
+
+- `=LET(x,B2,calculation_with_x)`
+- example: `=LET(x,B2,(x*2)+3)`
+- explain that `x` is the named variable, `B2` supplies the value, and the last part is the formula using `x`
+
+If the task is specifically about `BYCOL` or `BYROW`, a safe mini-pattern is:
+
+- column result -> `=BYCOL(input_range,LAMBDA(col,SUM(col)))`
+- row result -> `=BYROW(input_range,LAMBDA(row,SUM(row)))`
+- explain that the outer function chooses direction and the inner `LAMBDA` chooses the calculation
+- if the task changes from `SUM` to `AVERAGE`, `MAX`, or `MIN`, keep the structure and replace only the inner function
+
+If the task is specifically about `IFERROR` or `IFNA`, a safe mini-pattern is:
+
+- `IFNA` case -> `=IFNA(input_formula,"Not found")`
+- `IFERROR` case -> `=IFERROR(input_formula,"Check input")`
+- explain that `IFNA` handles only `#N/A`
+- explain that `IFERROR` handles several common spreadsheet errors
+- explain why the wider or narrower function fits the task better
+
+If the task gives a pure arithmetic transform such as "divide by `6`, add `4`, then raise to the power of `5`", a safe pattern is:
+
+- translate the words into formula logic: `((x/6)+4)^5`
+- write `=LAMBDA(x,((x/6)+4)^5)`
+- test one value, for example `=LAMBDA(x,((x/6)+4)^5)(6)`
+- show the result
+- explain that the same custom rule can now be reused across many cells
+
+If the task gives a named-function case such as temperature conversion, a safe pattern is:
+
+- define the input, for example `celsius`
+- write the custom formula, for example `=LAMBDA(celsius,(celsius*9/5)+32)`
+- show the named use, for example `=CelsiusToFahrenheit(25)`
+- give the returned value
+- explain why naming the function helps when the same rule is reused many times
+
+If the task gives a table and asks for one result per column or one result per row, a safe pattern is:
+
+- identify the table range first
+- choose `BYCOL` for column summaries
+- choose `BYROW` for row summaries
+- write the formula with `LAMBDA`
+- show the returned results
+- explain that the same pattern still works if only the exam values change
+
+This makes the answer practical, version-aware, and strong even when the course wording is a little ambiguous.
+
+##### Resolver view - Question 27
+
+If the task mixes functions such as `PMT`, `RATE`, `NPER`, `IPMT`, `IRR`, `NPV`, `LAMBDA`, `LET`, `BYROW`, or `BYCOL`, answer in this pattern:
+
+- split the question into one sub-task per function
+- solve each sub-task with the matching spreadsheet formula
+- convert rates and periods carefully before calculating
+- apply cash-flow signs correctly in finance parts
+- identify whether logical-function parts are custom-function, named-variable, row-based, or column-based
+- report each result separately
+- interpret each result before moving to the next part
+- if one part of the task gives inconsistent figures, say so and show the safest exam interpretation
+- finish with the reusable formula skeleton so the same method works when only the numbers change
+
+This is one of the safest exam patterns for advanced spreadsheet lessons because the method stays stable even when the case data changes.
+
+##### Resolver view - Question 28
+
+If the task is about forecasting with a simple linear regression, answer in this pattern:
+
+- identify the explanatory variable and the target variable
+- write the estimated regression equation if it is already known
+- if it is not already known, recreate `SLOPE` and `INTERCEPT` first
+- calculate the forecast manually or with `FORECAST.LINEAR`
+- state clearly whether the case is in-sample or out-of-sample
+- report the point forecast
+- interpret what the forecast means in context
+
+If spreadsheet support is allowed, a safe structure is:
+
+- `=INTERCEPT(y_range,x_range)+SLOPE(y_range,x_range)*x_cell`
+- `=FORECAST.LINEAR(x_cell,y_range,x_range)`
+
+If both methods are used, say explicitly that they should return the same predicted value when the same model and data ranges are used.
+
+##### Resolver view - Question 29
+
+If the task is about the confidence interval of a forecast, answer in this pattern:
+
+- state the point forecast first
+- state the confidence level
+- state the margin of error
+- calculate the upper bound
+- calculate the lower bound
+- calculate the interval width
+- explain whether the interval is narrow or wide
+- explain what that says about forecast precision and uncertainty
+
+If spreadsheet support is allowed, a safe structure is:
+
+- `=point_forecast+margin`
+- `=point_forecast-margin`
+- `=margin*2`
+
+If two different margins are given for the same point forecast, compare them directly and say which interval gives the more precise forecast.
+
+##### Resolver view - Question 30
+
+If the task is about forecasting with a multiple regression, answer in this pattern:
+
+- write the estimated equation first
+- identify the coefficients and what each one multiplies
+- list the customer or case characteristics clearly
+- substitute the values into the equation carefully
+- calculate the forecast
+- interpret the result while holding the other variables constant
+- if the task includes binary variables, explain what `0` and `1` mean in the model
+- if the task mentions significance, say whether the relevant coefficient should still be interpreted
+
+If spreadsheet support is allowed, a safe structure is:
+
+- `=intercept_cell+beta1_cell*x1_cell+beta2_cell*x2_cell+beta3_cell*x3_cell+...`
+
+If the task gives two or more customers, solve them one at a time and report each forecast separately before comparing them.
+
+##### Resolver view - Question 31
+
+If the task asks you to distinguish between in-sample and out-of-sample forecasting, answer in this pattern:
+
+- define in-sample forecasting as prediction for values that lie within the observed estimation sample
+- define out-of-sample forecasting as prediction for new values outside the observed estimation sample
+- explain that the same estimated equation can still be used for both
+- explain that out-of-sample forecasts are usually more uncertain because the model is being pushed beyond the values used to estimate it
+- finish by linking this to model reliability, generalisation, or predictive power
+
+If the task combines this distinction with an actual calculation, define the category first and then solve the forecast.
+
+#### Exam Notes
+
+When revising the Statistical Tools course as a whole, focus especially on these high-yield habits:
+
+- always connect the tool to the question it answers
+- explain why the method fits the data
+- show the output and its meaning, not just the method name
+- use spreadsheet language confidently when relevant
+- end with the practical implication for analysis, reporting, or decision-making
+- add the Excel or Google Sheets formula when that makes the answer clearer and more exam-ready
+
+##### Strong exam answer rule
+
+A strong Statistical Tools answer usually:
+
+1. identifies the tool or method
+2. shows how it is applied
+3. interprets the result
+4. explains why it matters in practice
+5. links the output back to the wider model or decision
+            """,
+            "key_points": [
+                "The examiner usually wants tool choice, correct application, interpretation, and practical meaning",
+                "Calculation answers should show formula or method, values, result, and interpretation",
+                "Tool-selection answers should justify why the method fits better than alternatives",
+                "Outlier and quality questions require both statistical evidence and judgement",
+                "Where relevant, exam answers should include concrete Excel or Google Sheets formulas and a simple spreadsheet template",
+                "Long KPI summary questions should be answered in a fixed resolver order so definition, strategy, decision-making, improvement, accountability, communication, and monitoring are all covered clearly",
+                "Methodology-overview questions are strongest when the answer compares what each method does, what KPI insight it provides, and why that method fits the objective",
+                "Questions about mean, median, mode, range, and standard deviation should be answered with definition, calculation, interpretation, and scenario fit",
+                "Multi-dataset activities are strongest when answered through a results table, comparison, and a real-life interpretation",
+                "If an exam swaps in new datasets, the safest approach is to keep the same resolver order and only replace the numbers",
+                "Concept-and-process questions are strongest when the answer defines each core idea, explains its analytical role, and connects it to a practical use",
+                "Probability questions are strongest when uncertainty, the named concept, the practical use, and the interpretation are all explained clearly",
+                "Probability-distribution questions should explain what pattern of uncertainty is being modeled and, for normal distribution, how the mean and standard deviation define the curve",
+                "Normal-distribution cases are strongest when the answer identifies the needed data, chooses empirical rule or NORM.DIST correctly, and interprets the result in context",
+                "Hypothesis-testing questions are strongest when the answer states H0, Ha, α, the test type, the decision rule, and the final conclusion in context",
+                "Significance-level questions should explain the trade-off between Type I and Type II errors and distinguish statistical significance from practical significance",
+                "Basic statistical-test questions are strongest when the answer first separates mean comparisons from categorical association problems",
+                "Missing-value and outlier questions are strongest when the answer explains the data-quality risk, the chosen method, and the reason for that choice",
+                "Cleaning-technique questions should match the method to the data problem instead of giving one generic answer for every case",
+                "Visualisation questions are strongest when the answer matches the chart type to the analytical purpose and then explains what the chart would reveal",
+                "Time-series questions are strongest when the answer identifies the relevant pattern such as trend, seasonality, autocorrelation, or forecasting and explains what it means for planning",
+                "Full calculation tasks on mean, median, mode, range, and standard deviation are strongest when the answer shows the working, states whether standard deviation is sample or population, and interprets the results clearly",
+                "Financial-function questions are strongest when the answer chooses the correct function, converts rate and time per period correctly, applies the sign rule, and interprets the result in context",
+                "Combined PMT, RATE, and NPER cases are strongest when the answer keeps the same period unit throughout, uses opposite cash-flow signs, and notes that rounding can cause small but harmless deviations",
+                "IRR and NPV questions are strongest when the answer keeps the true cash-flow signs, treats the initial investment at time 0 correctly, and explains what the result means for project viability",
+                "If the wording says break-even interest rate, the safest interpretation is usually IRR, because IRR is the rate at which project NPV becomes zero",
+                "Logical-function questions are strongest when the answer identifies the spreadsheet problem first, chooses the matching function, and explains why it fits better than the alternatives",
+                "LET questions are strongest when the answer names the repeated values clearly, rewrites the final formula using those names, and explains that the structure improves readability without changing the result",
+                "BYCOL and BYROW questions are strongest when the answer first identifies whether the summary is column-based or row-based, then keeps the same range-plus-LAMBDA structure even if the exam changes only the values",
+                "IFERROR and IFNA questions are strongest when the answer first identifies whether only #N/A should be handled or whether many spreadsheet errors should be caught, and then chooses the narrower or broader function accordingly",
+                "Mixed advanced spreadsheet tasks are strongest when the answer splits the long question into function-based sub-parts, solves each with the correct formula, and then keeps the same skeleton when only the exam inputs change",
+                "Simple forecasting questions are strongest when the answer states the regression equation, identifies whether the forecast is in-sample or out-of-sample, gives the point forecast, and interprets it in context",
+                "Confidence-interval forecasting questions are strongest when the answer gives the point forecast, upper and lower bounds, interval width, and a direct comment on precision versus uncertainty",
+                "Multiple-regression forecasting questions are strongest when the answer maps every customer characteristic to the correct coefficient, substitutes the values carefully, and states that the other variables are held constant"
+            ],
+            "visual_elements": {
+                "diagrams": False,
+                "tables": False,
+                "highlighted_sections": True
+            }
         }
     ]
 }
@@ -48888,24 +60008,54 @@ courses_data = [
         "semester": "2025 Spring",
         "weeks": 3,
         "hours": 126,
-        "description": "This course provides knowledge of using integrated spreadsheet tools and introductory statistical modelling software. Builds on Spreadsheet Fundamentals competence.",
+        "description": "This course provides candidates with the knowledge of using integrated spreadsheet tools and introductory statistical modelling software. Candidates apply organized datasets using the decision-making metrics learned, develop stronger technical skills, and use built-in spreadsheet tools and industry-standard practices as a starting point for creating bespoke solutions to contextualized real-world problems. The course builds directly on the competence gained from Spreadsheet Fundamentals and prepares candidates to use statistical tools to analyse data further, extract heuristics, improve data quality, and reduce the impact of erroneous data points on the rest of the model.",
         "knowledge": [
-            "Spreadsheet data tools for statistical analysis using built-in functions",
-            "Statistical methodologies to extract KPIs from numerical values",
-            "Advanced data analytics tool packs in spreadsheet software",
-            "Correlation, regression, ANOVA, histogram and covariance analysis",
-            "Power Query for automation",
-            "Z-scores and z-testing for outlier reduction"
+            "Integrated spreadsheet tools and introductory statistical modelling software for further data analysis",
+            "Decision-making metrics and heuristics applied to organized datasets",
+            "Mathematical and statistical techniques that improve data quality and reduce the impact of erroneous data points",
+            "Built-in spreadsheet suites and introductory industry-standard statistical practices",
+            "Correlation, regression, ANOVA, histograms, covariance analysis, and related spreadsheet-supported methods",
+            "Automation and workflow support using tools such as Power Query and z-score-based quality checks"
         ],
         "skills": [
-            "Perform statistical analysis on data sets using spreadsheet tools",
-            "Install and use advanced data analysis suite",
-            "Use Power Query to automate tasks",
-            "Apply z-values to reduce errors and eliminate outliers"
+            "Apply integrated spreadsheet and statistical tools to analyze organized datasets more deeply",
+            "Use decision-making metrics to extract heuristics and support contextualized real-world problem solving",
+            "Use built-in spreadsheet functions and tool packs to carry out statistical analysis and improve data quality",
+            "Use Power Query, z-values, and related techniques to automate tasks, reduce errors, and limit the effect of outliers"
         ],
         "competence": [
-            "Carry out work using advanced spreadsheet tools",
-            "Develop effective work methods for analysis within spreadsheets"
+            "Carry out analytical work using advanced spreadsheet tools and introductory statistical modelling methods",
+            "Develop effective spreadsheet-based work methods that connect statistical analysis to decision-making",
+            "Use existing tools as a foundation for building bespoke solutions to contextualized real-world problems"
+        ],
+        "learning_outcomes": [
+            {
+                "category": "Knowledge",
+                "items": [
+                    "Has knowledge of spreadsheet data tools to perform statistical analysis on data sets using built-in functions",
+                    "Has knowledge of statistical methodologies used to extract key performance indicators from numerical values",
+                    "Has knowledge of concepts and processes required to execute advanced data analytics tool packs exclusive to spreadsheet software",
+                    "Has knowledge of processes and tools required to perform industry-required analysis, specifically correlation, regression, ANOVA, histogram, and covariance analysis",
+                    "Has knowledge of Power Query and how to automate time-consuming tasks in spreadsheet software",
+                    "Understands z-scores, z-testing, and the significance of z-values in the reduction of outliers"
+                ]
+            },
+            {
+                "category": "Skills",
+                "items": [
+                    "Can apply knowledge to perform statistical analysis on data sets using built-in spreadsheet tools",
+                    "Masters relevant techniques and tools to install and use the advanced data analysis suite",
+                    "Masters advanced spreadsheet techniques such as Power Query to automate tasks",
+                    "Can apply knowledge of statistical tools and z-values to reduce errors and eliminate outliers"
+                ]
+            },
+            {
+                "category": "Competence",
+                "items": [
+                    "Can carry out work using advanced spreadsheet tools to meet the needs of selected target groups",
+                    "Can develop effective work methods in the production of an analysis within the spreadsheet framework"
+                ]
+            }
         ]
     },
     {
@@ -49377,7 +60527,200 @@ CURATED_FLASHCARD_SETS = {
     ]
 }
 
+CURATED_EXAM_SOURCE_LABELS = {
+    "core_curated": "Core curated bank",
+    "complete_course_assessment": "Complete Course Assessment review"
+}
+
 CURATED_EXAM_QUESTION_BANK = {
+    "FI1BBST05": [
+        {
+            "type": "knowledge",
+            "source": "core_curated",
+            "question": "Explain how Statistical Tools builds on Spreadsheet Fundamentals, and why that progression matters.",
+            "answer": "Statistical Tools builds on Spreadsheet Fundamentals because the student is already expected to manage workbooks, organize datasets, and use spreadsheet functions correctly. The next step is to use those spreadsheet skills for deeper statistical analysis, stronger heuristics, and better decision support. This progression matters because statistics becomes much more useful when the underlying workbook structure and data organization are already reliable."
+        },
+        {
+            "type": "knowledge",
+            "source": "core_curated",
+            "question": "Why are integrated spreadsheet tools useful in a statistical-analysis course instead of teaching only abstract formulas?",
+            "answer": "Integrated spreadsheet tools let students apply statistical methods directly to organized datasets in a practical workflow. They help candidates move from raw data to calculation, interpretation, and decision-making without treating statistics as isolated theory. In exam terms, this means the student should explain both the method and how the spreadsheet environment supports its application."
+        },
+        {
+            "type": "knowledge",
+            "source": "core_curated",
+            "question": "What does it mean to extract heuristics from a dataset in Statistical Tools?",
+            "answer": "Extracting heuristics means using statistical output to create useful decision signals or rules of thumb. For example, spread measures can show whether the data is stable, z-scores can flag unusual values, and relationship tools can suggest where further investigation is needed. The key point is that the calculation should support judgement, not exist only as a number."
+        },
+        {
+            "type": "skills",
+            "source": "core_curated",
+            "question": "A spreadsheet shows monthly sales values with one extremely large value far above the rest. Explain which descriptive measures you would compare first and why.",
+            "answer": "I would compare the mean and the median first. The mean may be pulled upward by the extreme value, while the median is more resistant to outliers and may better represent the typical monthly sales level. A strong answer would explain the difference, show which value appears more representative, and then state whether the extreme point should be investigated further."
+        },
+        {
+            "type": "skills",
+            "source": "core_curated",
+            "question": "Explain how z-scores can be used to reduce the impact of erroneous data points in a spreadsheet model.",
+            "answer": "A z-score shows how far a value is from the mean in standard-deviation units, which helps identify unusually extreme observations. The analyst can then investigate whether the point is a genuine case, a measurement issue, or a data-entry error. A strong exam answer explains that z-scores support investigation and judgement, rather than automatic deletion."
+        },
+        {
+            "type": "skills",
+            "source": "core_curated",
+            "question": "How would you explain the role of Power Query in a Statistical Tools workflow?",
+            "answer": "Power Query helps automate repetitive preparation tasks such as importing, cleaning, standardizing, and reshaping data before analysis. This improves efficiency, repeatability, and reliability because the same preparation logic can be run again without rebuilding everything manually. In exam style, the answer becomes stronger when it connects automation to better-quality downstream statistical analysis."
+        },
+        {
+            "type": "case_study",
+            "source": "core_curated",
+            "question": "A manager wants to know whether average satisfaction scores differ across three service teams. Which statistical tool would you choose first, and why?",
+            "answer": "I would choose ANOVA first because the question is about comparing the means of more than two groups. ANOVA helps test whether the observed group differences are large enough to suggest a meaningful difference rather than random variation alone. In an exam answer, I would also note that the result should then be interpreted in relation to practical management action."
+        },
+        {
+            "type": "case_study",
+            "source": "core_curated",
+            "question": "A spreadsheet dataset contains delivery times, route length, and fuel use. The analyst wants to explore whether variables move together before making operational recommendations. Which tool family is most relevant, and how should the result be used?",
+            "answer": "The most relevant tool family is relationship analysis, especially correlation and possibly regression. Correlation helps show whether variables tend to move together, while regression can go further by modeling how one variable helps explain or predict another. A strong answer should also explain that the result supports judgement and investigation, not blind cause-and-effect claims."
+        },
+        {
+            "type": "general",
+            "source": "core_curated",
+            "question": "Explain why existing spreadsheet tools are described as a starting point for bespoke solutions to contextualized real-world problems.",
+            "answer": "Existing spreadsheet tools provide tested, practical building blocks for analysis, automation, and quality checking. Once the analyst understands how these tools behave in realistic contexts, they can adapt, combine, or extend them to fit more specific business problems. That is why the course treats built-in tools as a foundation rather than as the final limit of analytical practice."
+        },
+        {
+            "type": "general",
+            "source": "core_curated",
+            "question": "What is the strongest exam structure for answering a Statistical Tools calculation or method question?",
+            "answer": "The strongest structure is tool or method, setup, calculation or workflow, result, interpretation, and decision. This prevents the answer from stopping at the raw number or method name. In other words, the student should show not only how the tool is used, but also what the output means and why it matters."
+        },
+        {
+            "type": "knowledge",
+            "source": "quiz_review",
+            "question": "State whether the following is True or False, then justify briefly: Confidence intervals represent a range of values for which we expect the predicted variable to fall with a given probability, often at a confidence level of 95%.",
+            "answer": "Correct answer: True. In this course context, confidence intervals are used to describe a range around a forecast that shows where the predicted variable is expected to fall at a chosen confidence level, commonly 95%. A narrower interval suggests greater precision, while a wider interval suggests more uncertainty. Exam use: A safe answer says confidence interval = likely range around the forecast, confidence level = how certain we want to be, often 95%."
+        },
+        {
+            "type": "knowledge",
+            "source": "quiz_review",
+            "question": "In time series forecasting with multiple linear regression, what is the purpose of the estimated regression coefficients? Choose the best answer and justify briefly.",
+            "answer": "Correct answer: To create a formula for predicting the dependent variable based on explanatory variables. The estimated coefficients are used to build the regression equation, where each coefficient shows how the dependent variable is expected to change when an explanatory variable changes, holding the others constant. They are not used to calculate the mean, they do not directly measure correlation between the independent variables, and they cannot determine exact future values with certainty. Exam use: A safe rule is coefficients = the building blocks of the forecast equation."
+        },
+        {
+            "type": "knowledge",
+            "source": "quiz_review",
+            "question": "State whether the following is True or False, then justify briefly: Logical functions in spreadsheets are not used to write logical conditions or create custom functions.",
+            "answer": "Correct answer: False. Logical functions such as IF, AND, OR, and NOT are specifically used to test logical conditions and make decisions inside formulas. They can also be combined to create more customised spreadsheet behaviour and formula logic. Exam use: A safe rule is logical functions = test conditions and return different outputs depending on the result."
+        },
+        {
+            "type": "knowledge",
+            "source": "quiz_review",
+            "question": "Which statistical distribution is often referred to as the 'bell curve' and defined by two parameters, mean (μ) and standard deviation (σ)? Choose the best answer and justify briefly.",
+            "answer": "Correct answer: Normal distribution. The normal distribution is commonly called the bell curve because of its symmetric, bell-shaped form. It is described by two key parameters: the mean, which determines the centre of the distribution, and the standard deviation, which determines the spread. Exam use: A safe rule is normal distribution = bell curve, centred at the mean, shaped by the standard deviation."
+        },
+        {
+            "type": "knowledge",
+            "source": "quiz_review",
+            "question": "State whether the following is True or False, then justify briefly: KPIs are only useful for initial goal setting and not for ongoing monitoring.",
+            "answer": "Correct answer: False. KPIs are not only used when goals are first defined. They are also used continuously to monitor performance, track progress over time, and support decisions about whether action or adjustment is needed. Exam use: A safe rule is KPIs = set targets and monitor ongoing performance against them."
+        },
+        {
+            "type": "knowledge",
+            "source": "quiz_review",
+            "question": "Which technique assigns more importance to recent data points and adapts quickly to changes in the data in time series forecasting? Choose the best answer and justify briefly.",
+            "answer": "Correct answer: Exponential smoothing. Exponential smoothing gives greater weight to the most recent observations, which allows the forecast to react more quickly when the data changes. Moving averages also smooth data, but they do not weight the newest values as strongly in the same way. Exam use: A safe rule is exponential smoothing = recent values matter more."
+        },
+        {
+            "type": "general",
+            "source": "quiz_review",
+            "question": "Question 7. Solve the following basic-statistics multiple-choice items and justify briefly: mean of 7, 5, 8, 15, 18; median of 3, 5, 12, 16, 2, 7; mode of 3, 5, 9, 8, 3, 4, 9, 7, 6, 9, 1, 5, 3, 8, 9, 4, 2; range of 1, 8, 12, 16; and in-sample standard deviation of 3, 5, 7, 9, 11.",
+            "answer": "Correct answers: mean = 10.6, median = 6, mode = 9, range = 15, and in-sample standard deviation = 3.16. The mean is found by adding 7 + 5 + 8 + 15 + 18 = 53 and dividing by 5 to get 10.6. The median of 3, 5, 12, 16, 2, 7 is found after sorting to 2, 3, 5, 7, 12, 16, so the middle two values are 5 and 7 and the median is 6. The mode is 9 because it appears most often. The range of 1, 8, 12, 16 is 16 - 1 = 15. For the in-sample standard deviation of 3, 5, 7, 9, 11, the mean is 7, the sample variance is 10, and the sample standard deviation is sqrt(10) = 3.16. Exam use: For quick stats questions, sort first when needed, identify whether the question says sample or population, and round only at the end. Spreadsheet pattern: `=AVERAGE(range)`, `=MEDIAN(range)`, `=MODE.SNGL(range)`, `=MAX(range)-MIN(range)`, and `=STDEV.S(range)`."
+        },
+        {
+            "type": "knowledge",
+            "source": "quiz_review",
+            "question": "State whether the following is True or False, then justify briefly: Financial functions in spreadsheets cannot assist in calculations related to loans, investments, and financial products.",
+            "answer": "Correct answer: False. Spreadsheet financial functions are specifically designed to help with calculations related to loans, investments, repayment schedules, interest, present value, future value, and other financial products. Functions such as PMT, PV, FV, RATE, and NPER are common examples. Exam use: A safe rule is financial functions = support common finance calculations, not avoid them."
+        },
+        {
+            "type": "knowledge",
+            "source": "quiz_review",
+            "question": "What does the IRR (Internal Rate of Return) function in Excel calculate? Choose the best answer and justify briefly.",
+            "answer": "Correct answer: Break-even interest rate for an investment. The IRR function calculates the discount rate at which the net present value of the investment's cash flows becomes zero. In practical terms, this is the break-even rate of return for the investment. Exam use: A safe rule is IRR = the rate where NPV equals zero."
+        },
+        {
+            "type": "knowledge",
+            "source": "quiz_review",
+            "question": "Which financial function in Excel can be used to calculate the interest rate for an investment or loan? Choose the best answer and justify briefly.",
+            "answer": "Correct answer: RATE. The RATE function is used to calculate the interest rate per period for a loan or investment based on values such as number of periods, payment amount, present value, and future value. The other listed functions solve for different things: NPER solves for number of periods, FV for future value, and PV for present value. Exam use: A safe rule is RATE = solve for the interest rate."
+        },
+        {
+            "type": "knowledge",
+            "source": "quiz_review",
+            "question": "State whether the following is True or False, then justify briefly: Histograms, scatter plots, and box plots are all common data visualization methods.",
+            "answer": "Correct answer: True. Histograms, scatter plots, and box plots are all standard data-visualisation methods used in statistics and data analysis. Histograms show the distribution of numerical data, scatter plots show relationships between variables, and box plots summarise spread, central tendency, and possible outliers. Exam use: A safe rule is histogram = distribution, scatter plot = relationship, box plot = spread and outliers."
+        },
+        {
+            "type": "knowledge",
+            "source": "quiz_review",
+            "question": "State whether the following is True or False, then justify briefly: A normal distribution is characterized by three parameters: the mean (μ), the standard deviation (σ), and the skewness (γ).",
+            "answer": "Correct answer: False. A normal distribution is fully characterised by two parameters: the mean and the standard deviation. Skewness is not a separate defining parameter here, because a normal distribution is symmetric and therefore has skewness equal to zero by definition. Exam use: A safe rule is normal distribution = centre and spread, not an extra skewness parameter."
+        },
+        {
+            "type": "knowledge",
+            "source": "quiz_review",
+            "question": "Which financial function in Excel is used to calculate the present value of a series of cash flows and assess if an investment is profitable? Choose the best answer and justify briefly.",
+            "answer": "Correct answer: NPV. The NPV function calculates the net present value of a series of cash flows by discounting future cash flows back to their value today. It is commonly used to assess whether an investment is profitable, because a positive NPV suggests that the investment is expected to add value. Exam use: A safe rule is NPV = present value of future cash flows net of the discounting process."
+        },
+        {
+            "type": "knowledge",
+            "source": "quiz_review",
+            "question": "Which Excel function is used to calculate the net present value of cash flows at a given interest rate? Choose the best answer and justify briefly.",
+            "answer": "Correct answer: NPV. The NPV function is used to calculate the net present value of a stream of cash flows at a specified discount or interest rate. It discounts the future cash flows back to present value and is commonly used to judge whether an investment is financially worthwhile. Exam use: A safe rule is NPV = net present value at a given discount rate."
+        },
+        {
+            "type": "general",
+            "source": "quiz_review",
+            "question": "Question 15. Calculate the slope and intercept for the Age and Price dataset with observations (11, 5362.25), (15, 4586.23), (6, 9875.21), (4, 5836.21), (8, 8596.87), (19, 1598.57), (18, 1234.56), (16, 8523.21), (2, 7412.25), (4, 9632.25), (8, 1598.25), (6, 3578.21), and (18, 4569.87). Choose the best multiple-choice answers and justify briefly.",
+            "answer": "Correct answers: slope = -255.92 and intercept = 8227.19. To solve this, treat Age as x-values and Price as y-values and fit the straight-line model `Price = a + b * Age`. First find the sample means: mean age = 10.3846 and mean price = 5569.5338. Then calculate the slope with `b = sum((x - mean_x)(y - mean_y)) / sum((x - mean_x)^2)`. Here the numerator is about -113905.1192 and the denominator is about 445.0769, so the slope is `b = -255.9223`, which rounds to `-255.92`. Next calculate the intercept with `a = mean_y - b * mean_x`, which gives `a = 8227.1887`, rounded to `8227.19`. The slope is negative, so the model predicts that price tends to decrease as age increases. The regression equation is approximately `Price = 8227.19 - 255.92 * Age`. Exam use: A safe rule is slope shows direction and rate of change, while intercept shows the predicted price when age equals zero. Spreadsheet pattern: `=SLOPE(price_range, age_range)` and `=INTERCEPT(price_range, age_range)` or `=LINEST(price_range, age_range)`."
+        },
+        {
+            "type": "knowledge",
+            "source": "quiz_review",
+            "question": "What does a 95% confidence level mean in the context of a confidence interval? Choose the best answer and justify briefly.",
+            "answer": "Correct answer: The true population parameter falls within the interval with a 95% probability. In course and quiz language, a 95% confidence level means we are highly confident that the interval captures the true parameter, and if the method were repeated many times, about 95% of such intervals would contain the true value. It does not mean the point forecast itself is 95% accurate, and it does not mean the interval width is 95% of the forecast. Exam use: A safe rule is 95% confidence level = the interval is intended to capture the true value with 95% confidence."
+        },
+        {
+            "type": "knowledge",
+            "source": "quiz_review",
+            "question": "State whether the following is True or False, then justify briefly: KPIs do not play a role in performance improvement.",
+            "answer": "Correct answer: False. KPIs are important for performance improvement because they help measure progress, identify weak areas, compare results against targets, and support decisions about what should be improved. Without KPIs, it is much harder to monitor whether performance is actually getting better. Exam use: A safe rule is KPIs = measure performance so that improvement can be tracked and managed."
+        },
+        {
+            "type": "knowledge",
+            "source": "quiz_review",
+            "question": "State whether the following is True or False, then justify briefly: A higher confidence level, such as 99%, results in narrower intervals and higher precision in forecasting.",
+            "answer": "Correct answer: False. A higher confidence level such as 99% gives more certainty, but it usually leads to wider confidence intervals, not narrower ones. Wider intervals mean lower precision, even though confidence is higher. Exam use: A safe rule is higher confidence = wider interval = less precision, lower confidence = narrower interval = more precision."
+        },
+        {
+            "type": "knowledge",
+            "source": "quiz_review",
+            "question": "State whether the following is True or False, then justify briefly: The LINEST function in Excel is used for linear regression analysis to find the best-fit straight line that represents a set of data points.",
+            "answer": "Correct answer: True. The LINEST function is used in Excel to perform linear regression analysis and estimate the best-fit straight line for a dataset. It helps calculate regression outputs such as the slope and intercept, which are then used to describe or predict the relationship between variables. Exam use: A safe rule is LINEST = linear regression line, often used to find slope and intercept."
+        },
+        {
+            "type": "knowledge",
+            "source": "quiz_review",
+            "question": "State whether the following is True or False, then justify briefly: T-tests and chi-square tests serve different purposes in data analysis.",
+            "answer": "Correct answer: True. T-tests are commonly used to compare means, while chi-square tests are typically used to examine frequencies, distributions, or relationships between categorical variables. Because they answer different kinds of statistical questions, they serve different purposes in data analysis. Exam use: A safe contrast is t-test = compare means, chi-square = analyse categorical counts or associations."
+        },
+        {
+            "type": "knowledge",
+            "source": "quiz_review",
+            "question": "Which of the following statements is true regarding the precision of forecasts with confidence intervals? Choose the best answer and justify briefly.",
+            "answer": "Correct answer: Higher confidence levels result in wider intervals. When the confidence level increases, the interval usually becomes wider in order to capture the true value with greater certainty. Wider intervals mean lower precision, while narrower intervals mean higher precision. Exam use: A safe rule is higher confidence = wider interval = lower precision."
+        }
+    ],
     "FI1BBDD75": [
         {
             "type": "knowledge",
@@ -49438,11 +60781,640 @@ CURATED_EXAM_QUESTION_BANK = {
             "type": "case_study",
             "question": "An e-commerce business sees more product returns after changing its sizing guide. Describe how qualitative and quantitative evidence should be combined before making a recommendation.",
             "answer": "Quantitative data should be used to measure return rate changes, affected product groups, and time periods. Qualitative evidence such as customer comments and support messages should be used to understand confusion or friction in the sizing guide. A recommendation should combine both by linking the KPI increase to the customer feedback before redesigning the guide and testing results afterward."
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 1. State whether the following is True or False, then justify briefly: Data summarization techniques, such as measures of central tendency and measures of variability, are mainly used in predictive analysis to forecast future trends.",
+            "answer": (
+                "Correct answer: False. Measures of central tendency and variability are mainly descriptive-analysis tools because they summarize the centre and spread of a dataset. "
+                "Predictive analysis uses methods such as forecasting, time series analysis, smoothing, or regression to estimate future outcomes. "
+                "Exam use: A strong answer contrasts descriptive = what the data looks like with predictive = what is likely to happen next."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 2. State whether the following is True or False, then justify briefly: Logical data models are primarily used for designing and implementing databases, but they do not play a significant role in enhancing data quality and consistency.",
+            "answer": (
+                "Correct answer: False. Logical data models support later database design, but they also improve quality and consistency by defining clearer entities, attributes, keys, and relationships. "
+                "That structure reduces ambiguity, duplication, and integrity problems. "
+                "Exam use: In an exam answer, explain both roles: logical models support design and strengthen consistency."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 3. State whether the following is True or False, then justify briefly: To facilitate the consensus-building process, a team should consider the following five steps as part of the Consensus data quality metric: assign a leader, examine each source, discuss discrepancies, reach consensus on accuracy, and report findings to management.",
+            "answer": (
+                "Correct answer: False. In this course, consensus is better understood as agreement across sources or analysts after comparing evidence and resolving discrepancies. "
+                "The statement incorrectly turns consensus into a fixed five-step formal metric and adds required steps such as leader assignment and reporting to management. "
+                "Exam use: Explain that consensus focuses on reconciling evidence and agreeing on the most trustworthy value."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 4. State whether the following is True or False, then justify briefly: In the healthcare research organization's study on the impact of air pollution on lung diseases, meteorological data was used as a proxy for air quality because scientific research and domain knowledge showed a strong relationship between weather conditions and pollution levels.",
+            "answer": (
+                "Correct answer: True. The proxy works because the meteorological variables are meaningfully correlated with the unavailable air-quality measurements. "
+                "That is exactly why proxy data can be justified in this case. "
+                "Exam use: Mention both scientific research and domain knowledge when explaining why a proxy is valid."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 5. State whether the following is True or False, then justify briefly: Data pipelines do not play a role in long-term archival of data; they are mainly concerned with immediate processing and delivery.",
+            "answer": (
+                "Correct answer: False. Pipelines can support both immediate delivery and long-term archival for compliance, governance, historical analysis, and recovery. "
+                "A pipeline may feed dashboards while also storing records in archive storage. "
+                "Exam use: A strong answer explains both current-use and long-term-retention roles."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 6. State whether the following is True or False, then justify briefly: Batch processing is designed for scenarios where real-time processing is essential.",
+            "answer": (
+                "Correct answer: False. Batch processing works on accumulated data at scheduled times, so it fits situations where immediate processing is not essential. "
+                "Real-time processing is the approach used when each event must be handled immediately. "
+                "Exam use: A safe contrast is batch = scheduled groups and real-time = immediate events."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 7. State whether the following is True or False, then justify briefly: In the wildlife research organization's study on the movement patterns of endangered migratory birds, data augmentation techniques were used to generate proxy real-world data based on existing GPS data from a subset of birds.",
+            "answer": (
+                "Correct answer: True. The case uses a subset of real GPS data and then applies augmentation to create realistic additional proxy observations. "
+                "That is a valid example of generating proxy real-world data from limited original evidence. "
+                "Exam use: Show the process clearly as subset of real data -> augmentation -> proxy dataset -> analysis."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 8. State whether the following is True or False, then justify briefly: Data ingestion in the data analysis pipeline is only responsible for connecting data sources, but it does not automate, schedule, or scale the data acquisition process.",
+            "answer": (
+                "Correct answer: False. Data ingestion does more than connect sources; it also supports extraction, automation, scheduling, and scaling so data can enter the pipeline reliably over time. "
+                "Without those functions, ingestion would be too weak for real operational use. "
+                "Exam use: Mention at least two practical ingestion functions such as automation and scheduling."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 9. State whether the following is True or False, then justify briefly: Data analysis pipelines do not contribute to the reproducibility of analyses, as they are mainly designed for automating tasks.",
+            "answer": (
+                "Correct answer: False. Pipelines improve reproducibility because they standardize repeated steps, document workflow logic, and let the same process be rerun consistently. "
+                "Automation is one benefit, but reproducibility and consistency are major benefits too. "
+                "Exam use: The strongest cluster of benefits is automation, consistency, and reproducibility."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 10. State whether the following is True or False, then justify briefly: A CRM review finds incomplete customer records, duplicate records, faulty spelling of names, and invalid contact details. These issues are usually labeled as consistency issues.",
+            "answer": (
+                "Correct answer: False. These problems span several data-quality dimensions: incomplete records relate to completeness, duplicates relate to uniqueness, faulty spelling often relates to accuracy, and invalid contact details relate to validity or accuracy. "
+                "Consistency is only one possible dimension, not the label for everything. "
+                "Exam use: Classifying each issue by dimension is stronger than giving one vague label."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 11. Which option best describes the primary role of data models in the decision-making process? Explain briefly why the correct option fits better than the others.",
+            "answer": (
+                "Correct answer: Data models act as a conceptual framework that defines the structure, storage, and manipulation of data, enabling efficient storage, retrieval, and manipulation of information. "
+                "This is correct because data models organize information so it can be stored, related, queried, and used properly in systems and analysis. "
+                "Exam use: Define the model first, then explain that it supports structure, storage, retrieval, and analysis."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 12. In descriptive analysis, which two visualization techniques are most useful for displaying the distribution of continuous and categorical data, respectively? Choose two and justify briefly.",
+            "answer": (
+                "Correct answers: Histograms and Bar charts. Histograms show the distribution of a continuous variable by grouping values into bins or intervals, while bar charts show categorical or discrete data through separate category bars. "
+                "Exam use: Name the data type explicitly in your explanation because that is usually what separates the correct chart from the distractors."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 13. In the context of data analysis philosophies, which two types of analysis focus on understanding underlying reasons and providing future recommendations, respectively? Choose two and justify briefly.",
+            "answer": (
+                "Correct answers: Diagnostic analysis and Prescriptive analysis. Diagnostic analysis asks why something happened, while prescriptive analysis recommends what action should be taken next. "
+                "Exam use: The safest exam framework is descriptive = what happened, diagnostic = why, predictive = what may happen, prescriptive = what should be done."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 14. In the module, four types of data sources are listed. Pick the option that is NOT one of the listed source types and justify briefly.",
+            "answer": (
+                "Correct answer: Web Traffic. The four named source categories in the module are Internal databases, External datasets, Surveys and interviews, and Sensor data. "
+                "Web traffic may still be useful data, but it is not one of the four explicitly listed source categories in that lesson. "
+                "Exam use: Repeating the exact list before choosing the odd option out is a strong exam habit."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 15. Which decision-making criterion chooses the scenario with the best possible outcome and ignores downside repercussions? Name the criterion and explain it briefly.",
+            "answer": (
+                "Correct answer: Maximax Criterion. Maximax is the optimistic rule because it looks only at the highest possible payoff for each option and then chooses the largest of those best-case outcomes. "
+                "Exam use: Always link the rule to risk attitude by saying that Maximax suits a strongly optimistic decision-maker."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 16. What is the starting index for the first element in an array, and why?",
+            "answer": (
+                "Correct answer: 0. In the standard zero-based indexing model, the first element is stored at index 0, the second at index 1, and so on. "
+                "Exam use: This is usually a direct fact-recall point, so one precise sentence is enough."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 17. In predictive analysis for forecasting and trend analysis, which two techniques are commonly used to identify underlying trends and estimate future values? Choose two and justify briefly.",
+            "answer": (
+                "Correct answers: Time series analysis and Smoothing techniques. Time series analysis identifies patterns such as trend and seasonality over time, while smoothing techniques reduce noise and support clearer forecasting. "
+                "Exam use: Connect both techniques to forecasting rather than only naming them."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 18. What is the first step in organizing a data structure effectively, and why does it come first?",
+            "answer": (
+                "Correct answer: Identify the data. Before choosing or implementing any structure, the analyst must understand the data's type, size, relationships, and important operations. "
+                "Exam use: A stronger answer says that structure choice comes after understanding the data, not before."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 19. Which option is NOT a function served by data models in data-driven decision-making? State the answer and explain briefly.",
+            "answer": (
+                "Correct answer: Promoting team-building and social interaction among employees. Data models support information structure, storage, retrieval, consistency, design, and analysis, but they are not primarily social or team-building tools. "
+                "Exam use: Eliminate distractors that belong to organizational culture instead of information structure."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 20. Which two statements correctly describe conceptual data modeling? Choose two and justify briefly.",
+            "answer": (
+                "Correct answers: Conceptual data modeling starts by deeply understanding the business processes, entities, and relationships; and it provides a high-level view of data requirements and relationships without focusing on storage or access details. "
+                "This is correct because conceptual modeling is the business-facing, high-level stage before logical and physical detail. "
+                "Exam use: A safe comparison is conceptual = overview, logical = more detail, physical = implementation."
+            )
+        },
+        {
+            "type": "general",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 21. Provide 5 key reasons why data cleaning and pre-processing are essential, and give a short description of each. Write this as a short exam answer.",
+            "answer": (
+                "A strong answer names five clear reasons: improved data quality, reliable analysis, enhanced decision-making, increased efficiency, and compatibility/integration. "
+                "Improved data quality means correcting errors, inconsistencies, and invalid values. Reliable analysis means handling missing values, outliers, duplicates, and weak formatting so results are less distorted. "
+                "Enhanced decision-making means managers can rely on stronger evidence. Increased efficiency means analysts solve data problems early instead of repeatedly fixing them later. Compatibility and integration mean standardized data is easier to combine across systems. "
+                "Exam use: Name each reason first, explain it in one sentence, and finish with a short line showing that cleaning is a foundation of trustworthy analysis."
+            )
+        },
+        {
+            "type": "general",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 22. What are the differences between the Data Analysis Life Cycle and the Data Analysis Pipeline? Provide 5 key differences in exam style.",
+            "answer": (
+                "A strong five-part comparison is: purpose, scope, focus, main users, and end result. The life cycle guides the full journey from problem definition to action, while the pipeline moves and prepares data through technical processing stages. "
+                "The life cycle is broad and end-to-end, while the pipeline is narrower and process-focused. The life cycle focuses on business problem-solving and decision-making, while the pipeline focuses on ingestion, transformation, and delivery. "
+                "The life cycle is used by analysts, managers, and decision-makers, while pipelines are often maintained by engineers and technical analysts. The life cycle produces insight and action, while the pipeline produces clean, usable, analysis-ready data. "
+                "Exam use: Comparison questions are strongest when answered line by line across both concepts."
+            )
+        },
+        {
+            "type": "general",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 23. What are the 5 criteria a KPI needs to meet to be considered adequate? Discuss each briefly in exam style.",
+            "answer": (
+                "The five criteria are simple, relevant, aligned, actionable, and measurable. Simple means easy to understand and easy to measure. Relevant means focused on something that genuinely matters to the business. "
+                "Aligned means connected to the organization's goals and strategy. Actionable means the KPI should lead to useful action or improvement rather than existing only for reporting. Measurable means it must be trackable with real data, a target, or a baseline. "
+                "Exam use: Name all five criteria first, then explain each one briefly so the examiner can see the full framework immediately."
+            )
+        },
+        {
+            "type": "general",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 24. A teacher has a sample mean test score of 80 from 30 students. The national average is 75, the known standard deviation is 10, and the significance level is 0.05. Calculate the z-score and state the conclusion in clear exam style.",
+            "answer": (
+                "Use the one-sample z-test formula: z = (Xbar - mu) / (sigma / sqrt(n)). Substituting the values gives z = (80 - 75) / (10 / sqrt(30)) = 2.74. "
+                "At the 0.05 significance level for a two-tailed test, the critical value is about +/-1.96, so 2.74 is large enough to reject the null hypothesis. "
+                "Therefore, the students' average score is significantly different from the national average, and because the sample mean is higher, the practical conclusion is that the students scored significantly higher than the national average. "
+                "Exam use: Show the formula, the values, the numerical result, the decision rule, and the final interpretation."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 25. State whether the following is True or False, then justify briefly: A negative correlation indicates an increase or decrease in both variables.",
+            "answer": (
+                "Correct answer: False. A negative correlation means the two variables move in opposite directions, so when one increases the other tends to decrease. "
+                "If both variables increase together or decrease together, that indicates a positive correlation instead. "
+                "Exam use: The safest wording is positive correlation = same direction, negative correlation = opposite direction."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 26. State whether the following is True or False, then justify briefly: With regards to data sources, internal sources are those which produce data from within an organisation.",
+            "answer": (
+                "Correct answer: True. Internal data sources are generated inside the organisation by its own systems, departments, and processes, such as sales records, HR data, CRM systems, and finance reports. "
+                "That is what separates them from external sources, which come from outside the organisation. "
+                "Exam use: A strong answer gives the definition first and then one or two clear examples."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 27. State whether the following is True or False, then justify briefly: GDPR only applies to businesses which are located directly within the European Union.",
+            "answer": (
+                "Correct answer: False. GDPR does not apply only to organisations physically located in the European Union. It can also apply to organisations outside the EU if they process the personal data of people in the EU, especially when offering goods or services to them or monitoring their behaviour. "
+                "That means GDPR has an extra-territorial reach, not just a location-based one. "
+                "Exam use: The safest answer is EU location is one case, but GDPR can also apply outside the EU when EU personal data is involved."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 28. State whether the following is True or False, then justify briefly: Z-score normalisation gives the values a mean of 0 and a standard deviation of 1.",
+            "answer": (
+                "Correct answer: True. Z-score normalisation standardises a variable by subtracting the mean and dividing by the standard deviation. "
+                "After this transformation, the standardised values are centred around a mean of 0 and have a standard deviation of 1. "
+                "Exam use: The safest explanation is formula first, then result: subtract mean, divide by standard deviation, so the transformed data has mean 0 and standard deviation 1."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 29. State whether the following is True or False, then justify briefly: Binning helps when dealing with large datasets as it allows discrete data to be converted into continuous values.",
+            "answer": (
+                "Correct answer: False. Binning usually groups continuous numerical data into intervals or categories, which makes the data more discrete rather than more continuous. "
+                "It is often used to simplify analysis, reduce noise, or create grouped frequency views, but it does not convert discrete data into continuous values. "
+                "Exam use: A safe contrast is binning = continuous values grouped into discrete intervals, not discrete values turned into continuous ones."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 30. State whether the following is True or False, then justify briefly: Deeper data analysis is used in predictive analytics to identify the factors that led to a particular result.",
+            "answer": (
+                "Correct answer: False. Identifying the factors that led to a particular result is mainly part of diagnostic analytics, because diagnostic analysis focuses on explaining why something happened. "
+                "Predictive analytics is used to estimate what is likely to happen next, not primarily to investigate past causes. "
+                "Exam use: The safest distinction is descriptive = what happened, diagnostic = why it happened, predictive = what may happen next."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 31. State whether the following is True or False, then justify briefly: Cyclical changes are fluctuations in data that happen over long periods, larger than a year.",
+            "answer": (
+                "Correct answer: True. Cyclical changes are long-term fluctuations that usually last more than one year and are often linked to broader economic or business cycles. "
+                "That is different from seasonal variation, which repeats in a regular pattern within a year. "
+                "Exam use: A safe comparison is cyclical = multi-year movement, seasonal = repeating within a year."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 32. State whether the following is True or False, then justify briefly: Skewness is a measure of a probability distribution's range.",
+            "answer": (
+                "Correct answer: False. Skewness measures the asymmetry of a distribution, meaning whether the data are stretched more to the left or to the right. "
+                "Range is a different measure and refers to the spread between the minimum and maximum values. "
+                "Exam use: The safe contrast is skewness = shape or asymmetry, range = spread from smallest to largest value."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 33. State whether the following is True or False, then justify briefly: The information that is gathered by an analyst via means such as a survey is considered to be primary data.",
+            "answer": (
+                "Correct answer: True. Primary data is data collected directly for the specific purpose of the analysis, and surveys are a common example of that. "
+                "Because the analyst gathers the information first-hand rather than reusing an existing source, it is classified as primary data. "
+                "Exam use: A safe contrast is primary = collected directly, secondary = already collected by someone else."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 34. State whether the following is True or False, then justify briefly: A linear trend is especially helpful when the data contains curves or other complex shapes.",
+            "answer": (
+                "Correct answer: False. A linear trend is most useful when the relationship in the data is approximately straight-line and changes at a fairly constant rate. "
+                "If the data contains curves or more complex shapes, a non-linear trend or another model is usually more appropriate. "
+                "Exam use: The safe contrast is linear trend = straight-line pattern, curved data = non-linear pattern."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 35. Which of the following is not seen as a role or responsibility within the field of data analysis: Data scientist, Videographer, Data engineer, or Data visualisation specialist? Explain briefly why.",
+            "answer": (
+                "Correct answer: Videographer. A data scientist, data engineer, and data visualisation specialist are all roles directly linked to collecting, processing, analysing, modelling, or presenting data. "
+                "A videographer works with video production and media creation, which is not normally treated as a core data-analysis role. "
+                "Exam use: A strong answer names the odd option out and then briefly shows why the other three do belong inside the data-analysis field."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 36. Which of the following is not a type of trend: Exponential trend, Quadratic trend, Seasonal trend, or Experiential trend? Explain briefly why.",
+            "answer": (
+                "Correct answer: Experiential trend. Exponential, quadratic, and seasonal are recognised trend or pattern types used in data analysis and forecasting contexts. "
+                "Experiential trend is not a standard trend type in this context, so it is the distractor. "
+                "Exam use: A strong answer names the incorrect option and briefly confirms that the other listed trend types are valid analytical patterns."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 37. Which of the following is not an example of a data representation or storage method: A SQL database, a .cpp file, cloud storage, or a .csv file? Explain briefly why.",
+            "answer": (
+                "Correct answer: A .cpp file. A SQL database, cloud storage, and a .csv file are all valid ways to store or represent data. "
+                "A .cpp file is primarily a C++ source-code file used for programming, not a standard data representation or storage method in this context. "
+                "Exam use: A strong answer identifies the odd option out and then shows that the other options all function as data-storage or data-representation formats."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 38. When discussing descriptive statistics, which of the following is not considered a measure of dispersion: range, kurtosis, standard deviation, or variance? Explain briefly why.",
+            "answer": (
+                "Correct answer: Kurtosis. Range, standard deviation, and variance are all measures of dispersion because they describe how spread out the data values are. "
+                "Kurtosis is different because it describes the shape of the distribution, especially the heaviness of the tails or peakedness, rather than the spread itself. "
+                "Exam use: A safe contrast is dispersion = spread, kurtosis = shape."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 39. Which of the following is not a reason that data analysts should pay attention to seasonal trends: It assists in understanding seasonality, It assists with forecasting, It helps to understand the dynamics of data, or It assists with planning and devising strategies? Explain briefly why.",
+            "answer": (
+                "Correct answer: It assists in understanding seasonality. Forecasting, understanding the dynamics of data, and planning or strategy are practical analytical reasons for studying seasonal trends. "
+                "The option about understanding seasonality is circular rather than a distinct business or analytical reason, because seasonal trends are themselves the expression of seasonality. "
+                "Exam use: If a multiple-choice option simply repeats the concept in different words, it is often the distractor rather than the strongest analytical reason."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 40. Which of the following is not considered to be a measure of dispersion: standard deviation, variance, midrange, or range? Explain briefly why.",
+            "answer": (
+                "Correct answer: Midrange. Standard deviation, variance, and range are all measures of dispersion because they describe how spread out the data values are. "
+                "Midrange is different because it is a simple measure of central location calculated from the minimum and maximum values, usually as (minimum + maximum) / 2. "
+                "Exam use: A safe contrast is dispersion = spread, midrange = centre based on extremes."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 41. Which one of the following statements regarding measures of shape is true: (a) median and kurtosis describe shape, (b) kurtosis gauges how tailed a distribution is, (c) skewness is zero if data is asymmetric, or (d) low kurtosis means longer tails than the normal distribution? Explain briefly why.",
+            "answer": (
+                "Correct answer: Kurtosis gauges how tailed a distribution is. Kurtosis is a measure of distribution shape that focuses on tail heaviness and peakedness. "
+                "Median is a measure of central tendency rather than shape, skewness close to zero is associated with symmetry rather than asymmetry, and lower kurtosis generally means lighter tails than a normal distribution, not longer ones. "
+                "Exam use: A safe contrast is median = centre, skewness = asymmetry, kurtosis = tails or peakedness."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 42. Which of the following is considered to be a source of first-order data: data obtained from another researcher, interviews conducted by the data analyst, data obtained from a government database, or data obtained from a book? Explain briefly why.",
+            "answer": (
+                "Correct answer: Interviews conducted by the data analyst. First-order or primary data is collected directly by the analyst from the original source for the purpose of the study. "
+                "Data from another researcher, a government database, or a book has already been collected or published elsewhere, so those are secondary sources. "
+                "Exam use: A safe contrast is first-order or primary = collected directly, secondary = reused from an existing source."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 43. Which of the following is not a feature-scaling method: Decimal scaling, Median scaling, Min-max scaling, or Z-score normalisation? Explain briefly why.",
+            "answer": (
+                "Correct answer: Median scaling. Decimal scaling, min-max scaling, and z-score normalisation are recognised feature-scaling methods used to rescale numerical variables. "
+                "Median scaling is not typically treated as a standard feature-scaling method in this course context, so it is the distractor. "
+                "Exam use: A strong answer names the incorrect option and briefly confirms why the other listed methods are valid scaling approaches."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 44. Which of the following is not a method used in feature engineering: Handling missing values, Transforming variables, Clustering, or Dimensionality reduction? Explain briefly why.",
+            "answer": (
+                "Correct answer: Clustering. Handling missing values, transforming variables, and dimensionality reduction are all standard feature-engineering or feature-preparation methods used to improve model input. "
+                "Clustering is mainly an unsupervised learning technique for grouping observations, not usually presented as a core feature-engineering method in this course context. "
+                "Exam use: A safe answer says feature engineering focuses on cleaning, transforming, selecting, or reducing features before modelling."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 45. Match the question type: 'On a scale of 1 to 5, how easy was it to navigate through our website?' with anchors from 'Extremely Difficult' to 'Extremely Easy'. Which question type fits best? Explain briefly why.",
+            "answer": (
+                "Correct answer: Semantic differential. This format asks the respondent to rate an experience between two opposite descriptors, in this case difficult and easy. "
+                "That fits semantic differential better than Likert, because a Likert scale usually measures agreement with a statement such as 'The website was easy to navigate' from strongly disagree to strongly agree. "
+                "Exam use: A safe rule is semantic differential = rating between opposite adjectives, Likert = agreement or satisfaction scale built around a statement."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 46. Match the question type: 'Which of the following icons do you prefer?' where the response options are shown as images or icons. Which question type fits best? Explain briefly why.",
+            "answer": (
+                "Correct answer: Pictorial. This question presents visual response options in the form of icons or images, so the respondent chooses between pictures rather than plain text labels. "
+                "That is the defining feature of a pictorial question type. "
+                "Exam use: A safe rule is pictorial = image-based response options."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 47. Match the question type: 'Describe the aspect of our website you enjoyed the most.' Which question type fits best? Explain briefly why.",
+            "answer": (
+                "Correct answer: Open ended. This question invites the respondent to answer in their own words rather than choosing from predefined options. "
+                "That makes it an open-ended question, which is useful when detailed opinions, explanations, or personal reflections are wanted. "
+                "Exam use: A safe rule is open ended = free-text response in the respondent's own words."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 47A (quiz Question 21). Match the question type: 'What is one thing you think we could improve on our website? Please be as descriptive as possible.' Which question type fits best? Explain briefly why.",
+            "answer": (
+                "Correct answer: Open ended. This question asks the respondent to give a detailed answer in their own words rather than selecting from fixed response options. "
+                "Because the goal is to collect descriptive feedback and suggestions, the most suitable question type is open ended. "
+                "Exam use: A safe rule is open ended = the respondent writes a free-text answer with their own explanation."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 48. Match the question type: 'What was the primary purpose of your visit today?' with options Shopping, Research, Browsing, and Customer Support. Which question type fits best? Explain briefly why.",
+            "answer": (
+                "Correct answer: Multiple Choice. The respondent is asked to select one answer from a predefined list of text options, which is the standard structure of a multiple-choice question. "
+                "It is not open ended because the answers are fixed, and it is not dichotomous because there are more than two possible responses. "
+                "Exam use: A safe rule is multiple choice = choose one or more options from a listed set."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 49. Match the question type: 'Did you find what you were looking for on our website?' with options Yes and No. Which question type fits best? Explain briefly why.",
+            "answer": (
+                "Correct answer: Dichotomous. This question gives only two possible response categories, Yes or No, which is the defining feature of a dichotomous question. "
+                "It is a closed question, but more specifically it belongs to the binary or two-option category. "
+                "Exam use: A safe rule is dichotomous = exactly two response options."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 50. Match the question type: 'Please rank the following features in order of importance to you: Speed, Design, Functionality, Content.' Which question type fits best? Explain briefly why.",
+            "answer": (
+                "Correct answer: Rank Order. The respondent is asked to place several items in order of importance, which is exactly what a rank-order question is designed to do. "
+                "Even if the layout looks tabular, the key task is ranking priorities rather than rating each item independently. "
+                "Exam use: A safe rule is rank order = arrange items by preference, importance, or priority."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 51. Match the question type: 'Please indicate how satisfied you are with the following aspects of the website' where several aspects are listed in rows and the same satisfaction scale is repeated across columns. Which question type fits best? Explain briefly why.",
+            "answer": (
+                "Correct answer: Matrix. This format presents several related items, such as loading speed, content quality, and customer service, and asks the respondent to rate each one using the same set of response options. "
+                "That is the defining structure of a matrix question. The scale inside the matrix is satisfaction-based and Likert-like, but the overall question type is matrix because multiple items are evaluated in one table. "
+                "Exam use: A safe rule is matrix = several items in rows with the same response scale repeated across columns."
+            )
+        },
+        {
+            "type": "knowledge",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 52. Match the question type: 'How would you describe the design of our website?' with a scale running from 'Ugly' to 'Beautiful'. Which question type fits best? Explain briefly why.",
+            "answer": (
+                "Correct answer: Semantic differential. This question asks the respondent to rate the website design between two opposite adjectives, in this case ugly and beautiful. "
+                "That is the defining structure of a semantic differential question, because it measures perception along a scale bounded by bipolar descriptors. "
+                "Exam use: A safe rule is semantic differential = a scale between two opposite descriptive words."
+            )
+        },
+        {
+            "type": "general",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 53. Given the dataset 347, 455, 153, 137, 206, 120, 245, 47, 352, 199, 48, 137, 301, 149, 411, 342, 375, 233, 372, 403, calculate the minimum, maximum, range, midrange, median, mode, and mean. Use a period as the decimal separator.",
+            "answer": (
+                "Sorted dataset: 47, 48, 120, 137, 137, 149, 153, 199, 206, 233, 245, 301, 342, 347, 352, 372, 375, 403, 411, 455. "
+                "Minimum = 47. Maximum = 455. Range = 455 - 47 = 408. Midrange = (47 + 455) / 2 = 251. Median = (233 + 245) / 2 = 239. "
+                "Mode = 137 because it appears twice and the other values appear once. Mean = 5032 / 20 = 251.6. "
+                "Exam use: For a calculation question, it is strong to show the sorted data first, then calculate each measure line by line."
+            )
+        },
+        {
+            "type": "general",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 54. Given the categorical dataset hamburger, donut, ice cream, pizza, burrito, burrito, donut, ice cream, burrito, ice cream, donut, pizza, pizza, burrito, donut, pizza, burrito, donut, pizza, hamburger, pizza, donut, hamburger, pizza, ice cream, hamburger, hamburger, burrito, burrito, hamburger, donut, pizza, calculate the number of classes, the frequency count of hamburger, the relative frequency of pizza rounded to 1 decimal, and the cumulative frequency of ice cream when sorted alphabetically.",
+            "answer": (
+                "There are 5 individual classes: burrito, donut, hamburger, ice cream, and pizza. The frequency count of hamburger is 6. "
+                "Pizza appears 8 times out of 32 observations, so its relative frequency is 8 / 32 = 0.25, which rounds to 0.3 as a decimal. As a percentage, that is 25.0%. "
+                "When the categories are sorted alphabetically, the cumulative frequency up to and including ice cream is burrito 7 + donut 7 + hamburger 6 + ice cream 4 = 24. "
+                "Exam use: For categorical-frequency questions, list the categories in order, count each one, then compute relative and cumulative values step by step."
+            )
+        },
+        {
+            "type": "general",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 55 (quiz Question 24). Given the sales-units dataset 353, 332, 379, 394, 275, 404, 244, 220, 303, 140, 278, 544, 469, 454, 347, 218, 112, 327, 341, 165, create 4 equal-width bins starting from the lowest value and calculate the bin width and the frequency in each bin.",
+            "answer": (
+                "First, sort the values mentally or on paper: 112, 140, 165, 218, 220, 244, 275, 278, 303, 327, 332, 341, 347, 353, 379, 394, 404, 454, 469, 544. "
+                "Minimum = 112 and maximum = 544, so the span is 544 - 112 = 432. With 4 equal-width bins, the bin width is 432 / 4 = 108. "
+                "Starting from the minimum, the bins become 112-219, 220-327, 328-435, and 436-544. "
+                "Then count how many observations fall inside each interval: 112, 140, 165, 218 go in the first bin, so first bin = 4. "
+                "220, 244, 275, 278, 303, 327 go in the second bin, so second bin = 6. "
+                "332, 341, 347, 353, 379, 394, 404 go in the third bin, so third bin = 7. "
+                "454, 469, 544 go in the last bin, so last bin = 3. "
+                "Exam use: Start by finding the minimum and maximum, divide the span by the number of bins, write the bins explicitly, and then count how many values fall into each one. This is the safest way to show method, not only answer. "
+                "Spreadsheet pattern: `=(MAX(A2:A21)-MIN(A2:A21))/4` for width, then use `COUNTIFS`, for example `=COUNTIFS(A2:A21,\">=\"&112,A2:A21,\"<=\"&219)` for the first bin and `=COUNTIFS(A2:A21,\">=\"&436,A2:A21,\"<=\"&544)` for the last bin."
+            )
+        },
+        {
+            "type": "general",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 56 (quiz Question 25). Given the dataset 42, 19, 83, 69, 66, 44, 57, 73, 40, 21, 48, 47, calculate the variance, standard deviation, and mean absolute deviation using 3 decimal places.",
+            "answer": (
+                "Using the course default descriptive-statistics convention, treat the data as a sample. "
+                "First find the mean: (42 + 19 + 83 + 69 + 66 + 44 + 57 + 73 + 40 + 21 + 48 + 47) / 12 = 50.750. "
+                "Then calculate the sample variance with `n - 1` in the denominator. The variance is 390.205. "
+                "The sample standard deviation is the square root of the variance, so the standard deviation is 19.754. "
+                "For mean absolute deviation, take the absolute distance of each value from the mean 50.750, add them, and divide by 12. The mean absolute deviation is 15.708. "
+                "Final answers: variance = 390.205, standard deviation = 19.754, mean absolute deviation = 15.708. "
+                "Exam use: If the course does not explicitly say population, use sample formulas such as `VAR.S` and `STDEV.S`. "
+                "Spreadsheet pattern: `=VAR.S(A2:A13)`, `=STDEV.S(A2:A13)`, and for MAD use `=AVERAGE(ARRAYFORMULA(ABS(A2:A13-AVERAGE(A2:A13))))` in Google Sheets or a helper-column absolute-deviation average in Excel."
+            )
+        },
+        {
+            "type": "general",
+            "source": "complete_course_assessment",
+            "question": "[Complete Course Assessment Review] Question 57 (quiz Question 26). Given the dataset 207, 91, 66, 132, 60, 172, 154, 161, 159, 137, 176, 110, scale the values 161 and 154 to the range 0 to 1 using min-max scaling. Round to 3 decimal places.",
+            "answer": (
+                "Min-max scaling uses the formula `(x - min) / (max - min)`. In this dataset, the minimum value is 60 and the maximum value is 207, so the range is 147. "
+                "For 161, the scaled value is (161 - 60) / 147 = 101 / 147 = 0.687. "
+                "For 154, the scaled value is (154 - 60) / 147 = 94 / 147 = 0.639. "
+                "Final answers: 161 -> 0.687 and 154 -> 0.639. "
+                "Exam use: For min-max scaling, always find the dataset minimum and maximum first, then apply the same formula to each requested value. "
+                "Spreadsheet pattern: `=(A2-MIN($A$2:$A$13))/(MAX($A$2:$A$13)-MIN($A$2:$A$13))`."
+            )
         }
     ]
 }
 
 CURATED_PRACTICE_QUESTION_BANK = {
+    "FI1BBST05": [
+        {
+            "type": "knowledge",
+            "question": "Why is the median often more useful than the mean when a dataset contains a strong outlier?",
+            "answer": "The median is less affected by extreme values, so it often gives a more representative view of the typical observation when the dataset is skewed. The mean can be pulled strongly upward or downward by a single extreme point."
+        },
+        {
+            "type": "knowledge",
+            "question": "What is the main difference between a histogram and a bar chart in statistical work?",
+            "answer": "A histogram is used for continuous numerical data grouped into intervals or bins, while a bar chart is usually used for categorical or discrete data. In exam answers, naming the data type is often the safest way to justify the choice."
+        },
+        {
+            "type": "skills",
+            "question": "A student calculates a z-score for a suspicious value and finds that the score is very large in absolute terms. What should happen next?",
+            "answer": "The next step is investigation, not automatic removal. The analyst should check whether the value is a real observation, a recording mistake, or a structural problem in the dataset, and then explain how the final decision affects the wider model."
+        },
+        {
+            "type": "skills",
+            "question": "How would you justify using correlation before regression in a spreadsheet-based analysis?",
+            "answer": "Correlation is often a useful first step because it gives a quick view of whether variables appear to move together and in what direction. Regression can then be used if the analyst wants a more detailed model of how one variable helps explain or predict another."
+        },
+        {
+            "type": "case_study",
+            "question": "A team compares average waiting time across four clinics and wants to know if the clinics differ meaningfully. Which method fits best, and what would you say in an exam answer?",
+            "answer": "ANOVA fits best because the task is about comparing means across more than two groups. In an exam answer, I would say that ANOVA tests whether the group means differ enough to suggest a meaningful difference rather than random variation alone."
+        },
+        {
+            "type": "case_study",
+            "question": "A spreadsheet model produces a result, but the source data contains duplicates, missing values, and inconsistent labels. Why is this a Statistical Tools problem and not only a spreadsheet-formatting problem?",
+            "answer": "It is a Statistical Tools problem because poor-quality data can distort the statistical output and weaken the whole model. The issue is not only how the sheet looks, but whether the data is trustworthy enough for valid analysis and decision-making."
+        },
+        {
+            "type": "general",
+            "question": "What does this course mean by using statistical tools to support decision-making rather than just to generate numbers?",
+            "answer": "It means the output should be interpreted and used to guide action, judgement, or further investigation. A number on its own is incomplete unless the analyst explains what it shows and why it matters."
+        }
+    ],
     "FI1BBDD75": [
         {
             "type": "knowledge",
@@ -49533,7 +61505,29 @@ def load_curated_flashcards(course_code):
     return added
 
 
-def build_curated_exam_questions(course_code, question_type_labels, num_questions):
+def get_curated_exam_source_options(course_code):
+    bank = CURATED_EXAM_QUESTION_BANK.get(course_code, [])
+    if not bank:
+        return [("all", "All curated questions")]
+
+    ordered_sources = []
+    for item in bank:
+        source = item.get('source', 'core_curated')
+        if source not in ordered_sources:
+            ordered_sources.append(source)
+
+    if ordered_sources == ["core_curated"]:
+        return [("all", "All curated questions")]
+
+    options = [("all", "All curated questions")]
+    for source in ordered_sources:
+        label = CURATED_EXAM_SOURCE_LABELS.get(source, source.replace("_", " ").title())
+        options.append((source, label))
+
+    return options
+
+
+def build_curated_exam_questions(course_code, question_type_labels, num_questions, source_filter="all"):
     bank = CURATED_EXAM_QUESTION_BANK.get(course_code, [])
     if not bank:
         return []
@@ -49546,6 +61540,13 @@ def build_curated_exam_questions(course_code, question_type_labels, num_question
     }
     allowed_types = {type_map[label] for label in question_type_labels if label in type_map}
     filtered_bank = [question for question in bank if question['type'] in allowed_types] if allowed_types else bank[:]
+    if source_filter != "all":
+        filtered_bank = [question for question in filtered_bank if question.get('source', 'core_curated') == source_filter]
+    if not filtered_bank:
+        filtered_bank = [
+            question for question in bank
+            if source_filter == "all" or question.get('source', 'core_curated') == source_filter
+        ]
     if not filtered_bank:
         filtered_bank = bank[:]
 
@@ -52162,19 +64163,25 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
 
     course_templates = {
         "foundations": {
-            "label": "Foundational analysis template",
+            "label": "Foundational analysis and exam template",
             "must_include": [
-                "a correct definition of the concept",
-                "why it matters in analysis or decision-making",
-                "a realistic example or application",
-                "a clear final implication for the case",
+                "the direct answer first, especially for true or false, multiple choice, and matching questions",
+                "a correct definition or core concept in simple language",
+                "why the answer is correct and why the distractor or opposite idea is wrong where relevant",
+                "a realistic example, application, or business meaning when the question is conceptual",
+                "if a dataset is included, the working, counting logic, or calculation steps",
+                "if the task is spreadsheet-based, a reusable Excel or Google Sheets template when relevant",
+                "a clear final implication for the case or what the result means",
             ],
             "answer_order": [
-                "Define the concept first, then explain why it matters before applying it.",
+                "For true or false questions, state True or False first, then explain the concept in one or two human-sounding sentences.",
+                "For multiple choice or matching questions, name the correct option first, then explain why it fits better than the others.",
+                "For calculation questions, show the method, the values used, the result, and what the result means.",
+                "If the question includes a dataset or spreadsheet task, include a reusable Excel or Google Sheets formula template whenever that would help on a later exam.",
                 "Use a simple real-world example if the question is abstract.",
             ],
-            "focus_sentence": "In this subject, strong answers usually move from clear theory to practical meaning and then to business relevance.",
-            "ending_focus": "End by showing why the concept improves understanding, analysis quality, or decision quality.",
+            "focus_sentence": "In this subject, strong answers usually start with the direct answer, explain the concept in plain language, and then add practical meaning; if data is given, the working and spreadsheet method should be visible too.",
+            "ending_focus": "End by showing what the concept, classification, or calculation means in practice, and if data is used, make the result reusable with a clear Excel or Google Sheets pattern where relevant.",
         },
         "spreadsheet": {
             "label": "Spreadsheet solution template",
@@ -52940,7 +64947,69 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         any(term in prompt_lower for term in kpi_design_terms)
         and any(term in prompt_lower for term in kpi_incentive_terms)
     )
+    true_false_case = any(term in prompt_lower for term in ["true or false", "state whether", "\ntrue\nfalse"])
+    matching_case = any(term in prompt_lower for term in ["match question", "matching question", "match the following", "help them by matching"])
+    multiple_choice_case = (
+        any(term in prompt_lower for term in ["which of the following", "multiple choice", "question 11answer", "question 12answer"])
+        or (
+            "options:" in prompt_lower
+            and any(term in prompt_lower for term in ["a.", "b.", "c.", "d."])
+        )
+    )
+    dataset_or_calculation_case = (
+        any(
+            term in prompt_lower
+            for term in [
+                "dataset", "data set", "csv", "xlsx", "excel", "google sheets", "spreadsheet",
+                "calculate", "calculation", "formula", "cell", "range", "rows", "columns",
+                "mean", "median", "mode", "minimum", "maximum", "range", "midrange",
+                "variance", "standard deviation", "frequency", "relative frequency",
+                "cumulative frequency", "correlation", "regression", "forecast",
+                "linest", "forecast.linear", "histogram", "anova", "toolpak",
+            ]
+        )
+        or any(
+            term in selected_unit_text
+            for term in [
+                "spreadsheet", "excel", "google sheets", "descriptive statistics",
+                "regression", "forecast", "frequency", "calculation",
+            ]
+        )
+    )
+    spreadsheet_template_case = (
+        dataset_or_calculation_case
+        and (
+            any(
+                term in prompt_lower
+                for term in [
+                    "excel", "google sheets", "spreadsheet", "cell", "range", "formula",
+                    "linest", "forecast.linear", "toolpak", "pivot",
+                ]
+            )
+            or course_template_key in {"spreadsheet", "statistics", "programmatic_analysis"}
+            or any(term in selected_unit_text for term in ["spreadsheet", "excel", "google sheets", "toolpak"])
+        )
+    )
     subject_must_include = course_template["must_include"][:]
+    for item in [
+        "the direct answer, classification, recommendation, or numerical result early in the response",
+        "a clear, human-sounding explanation in plain language rather than only jargon",
+    ]:
+        if item not in subject_must_include:
+            subject_must_include.append(item)
+    if dataset_or_calculation_case:
+        for item in [
+            "the working, counting logic, or calculation steps when data is provided",
+            "what the final number, classification, or pattern means in practice",
+        ]:
+            if item not in subject_must_include:
+                subject_must_include.append(item)
+    if spreadsheet_template_case:
+        for item in [
+            "a reusable Excel or Google Sheets template when the task is spreadsheet-based or formula-driven",
+        ]:
+            if item not in subject_must_include:
+                subject_must_include.append(item)
     if structure_selection_case:
         for item in [
             "the required operations in the case, such as search, insertion, deletion, traversal, or hierarchical routing",
@@ -53023,6 +65092,15 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
     lesson_count = sum(1 for unit in selected_units if unit["kind"] == "Lesson")
     outcome_count = len(selected_units) - lesson_count
 
+    answer_order_lines.append("State the direct answer, classification, recommendation, or calculated result early, then justify it.")
+    if true_false_case:
+        answer_order_lines.append("For true or false questions, write True or False first, then explain why in one or two human-sounding sentences.")
+    if multiple_choice_case or matching_case:
+        answer_order_lines.append("For multiple choice or matching questions, name the correct option first, then explain why it fits better than the alternatives.")
+    if dataset_or_calculation_case:
+        answer_order_lines.append("If data is included, show the working, counting, or calculation steps before giving the final meaning of the result.")
+    if spreadsheet_template_case:
+        answer_order_lines.append("If the task is spreadsheet-based, include a reusable Excel or Google Sheets pattern whenever that would help in a later exam.")
     answer_order_lines.append("Start by restating the case problem, goal, and decision that must be addressed.")
     if effective_resolver_mode in {"Definition or explanation", "Comparison question"}:
         answer_order_lines.append("Define the core concept or concepts clearly before applying them.")
@@ -53059,6 +65137,25 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         if line not in deduped_order_lines:
             deduped_order_lines.append(line)
     answer_order_lines = deduped_order_lines
+
+    combined_focus_parts = [course_template["focus_sentence"]]
+    universal_focus_sentence = (
+        "Across all lessons, the safest exam pattern is to state the answer early, explain it in clear human language, and then justify it."
+    )
+    if universal_focus_sentence not in combined_focus_parts:
+        combined_focus_parts.append(universal_focus_sentence)
+    if dataset_or_calculation_case:
+        combined_focus_parts.append("If data is included, the working or counting should be visible.")
+    if spreadsheet_template_case:
+        combined_focus_parts.append("If the task is spreadsheet-based, include a reusable Excel or Google Sheets pattern when it helps.")
+    combined_focus_sentence = " ".join(combined_focus_parts)
+
+    combined_ending_parts = [course_template["ending_focus"]]
+    if dataset_or_calculation_case:
+        combined_ending_parts.append("End by making the result, classification, or calculation meaningful in practice.")
+    if spreadsheet_template_case:
+        combined_ending_parts.append("If formulas or tables are involved, finish with a reusable Excel or Google Sheets pattern where helpful.")
+    combined_ending_focus = " ".join(combined_ending_parts)
 
     connector_lines = [f"From {unit['label']}, I would {short_bridge(unit).lower()}" for unit in selected_units]
     for unit in selected_units:
@@ -53110,7 +65207,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
 
     st.markdown("**Course-specific answer template in use**")
     st.markdown(f"- Template: **{course_template['label']}**")
-    st.markdown(f"- Subject focus: {course_template['focus_sentence']}")
+    st.markdown(f"- Subject focus: {combined_focus_sentence}")
     st.markdown("- Strong answers in this subject usually include:")
     for item in subject_must_include:
         st.markdown(f"  - {item}")
@@ -53258,12 +65355,12 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         [
             opening_sentence,
             focus_sentence,
-            course_template["focus_sentence"],
+            combined_focus_sentence,
             subject_template_sentence,
             selected_application_sentences[0] if selected_application_sentences else "",
             selected_application_sentences[1] if len(selected_application_sentences) > 1 else "",
             lesson_reuse_sentence,
-            course_template["ending_focus"],
+            combined_ending_focus,
             evaluator_tail,
         ]
     ).strip()
@@ -53284,14 +65381,14 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         )
     structured_answer_lines.append(f"{len(structured_answer_lines) + 1}. In this subject, I would make sure to include {', '.join(subject_must_include)}.")
     structured_answer_lines.append(f"{len(structured_answer_lines) + 1}. I would organise the answer in this order: " + " -> ".join(answer_order_lines) + ".")
-    structured_answer_lines.append(f"{len(structured_answer_lines) + 1}. {course_template['ending_focus']}")
+    structured_answer_lines.append(f"{len(structured_answer_lines) + 1}. {combined_ending_focus}")
     structured_answer_lines.append(f"{len(structured_answer_lines) + 1}. {evaluator_tail}")
     structured_answer_draft = "\n".join(structured_answer_lines)
 
     detailed_answer_parts = [
         opening_sentence,
         focus_sentence,
-        course_template["focus_sentence"],
+        combined_focus_sentence,
         "First, I would restate the case clearly and show that I understand the business, analytical, or theoretical problem that must be addressed.",
     ]
     detailed_answer_parts.extend(selected_application_sentences)
@@ -53314,7 +65411,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
     detailed_answer_parts.append(
         "This approach is stronger than listing definitions alone because it connects the selected course content directly to the exam task and shows how the ideas work together in practice."
     )
-    detailed_answer_parts.append(course_template["ending_focus"])
+    detailed_answer_parts.append(combined_ending_focus)
     detailed_answer_parts.append(evaluator_tail)
     detailed_answer_draft = "\n\n".join(detailed_answer_parts)
 
@@ -53377,6 +65474,9 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         height=280,
         key=f"{base_key}_draft",
     )
+    with st.expander("Rendered formula preview (MathJax)", expanded=False):
+        st.caption("Use this when the draft contains formulas you want to read more clearly.")
+        render_markdown_with_mathjax(output_text, key_suffix=f"{base_key}_draft_mathjax", height=420)
 
     st.markdown("**Direct model answer draft**")
     st.caption(f"Current answer tone: {answer_tone}")
@@ -53386,6 +65486,9 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         height=280,
         key=f"{base_key}_model_answer",
     )
+    with st.expander("Rendered formula preview for model answer (MathJax)", expanded=False):
+        st.caption("This preview keeps the answer editable above, but renders formulas more cleanly below.")
+        render_markdown_with_mathjax(model_answer_text, key_suffix=f"{base_key}_model_answer_mathjax", height=420)
 
     if diagram_specs:
         st.markdown("**Suggested visual diagrams**")
@@ -53709,12 +65812,74 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                     continue
             return values
 
+        def parse_categorical_values(raw_text):
+            values = []
+            normalised_text = raw_text.replace("\t", "\n").replace(";", "\n")
+            for line in normalised_text.splitlines():
+                for chunk in line.split(","):
+                    cleaned = chunk.strip()
+                    if cleaned:
+                        values.append(cleaned)
+            return values
+
         def format_display_number(value):
             if float(value).is_integer():
                 return str(int(value))
             return f"{value:.3f}".rstrip("0").rstrip(".")
 
+        def infer_bin_count_from_prompt(default_bins=4):
+            match = re.search(r"(\d+)\s+equal[- ]width bins", prompt_lower)
+            if match:
+                return max(2, int(match.group(1)))
+            match = re.search(r"create\s+(\d+)\s+bins", prompt_lower)
+            if match:
+                return max(2, int(match.group(1)))
+            return default_bins
+
+        def infer_minmax_scaling_prompt_parts(prompt_text):
+            prompt_text = str(prompt_text or "")
+            range_match = re.search(
+                r"range\s+(-?\d+(?:\.\d+)?)\s+to\s+(-?\d+(?:\.\d+)?)",
+                prompt_text,
+                re.IGNORECASE,
+            )
+            target_min = float(range_match.group(1)) if range_match else 0.0
+            target_max = float(range_match.group(2)) if range_match else 1.0
+
+            dataset_values = []
+            target_values = []
+
+            dataset_match = re.search(
+                r"Given the following data set:\s*(.*?)\s*Using the dataset",
+                prompt_text,
+                re.IGNORECASE | re.DOTALL,
+            )
+            if dataset_match:
+                dataset_values = extract_prompt_numbers(dataset_match.group(1))
+
+            target_match = re.search(
+                r"Using the dataset,\s*calculate.*?:\s*(.*?)\s*When presenting",
+                prompt_text,
+                re.IGNORECASE | re.DOTALL,
+            )
+            if target_match:
+                target_values = extract_prompt_numbers(target_match.group(1))
+
+            if not dataset_values and "min-max scaling" in prompt_text.lower():
+                all_numbers = extract_prompt_numbers(prompt_text)
+                if len(all_numbers) >= 4:
+                    dataset_values = all_numbers[:-2]
+                    target_values = all_numbers[-2:]
+
+            return dataset_values, target_values, target_min, target_max
+
         def suggest_calc_type_from_prompt():
+            if "min-max scaling" in prompt_lower or ("scale the following values" in prompt_lower and "range 0 to 1" in prompt_lower):
+                return "Min-max scaling"
+            if any(term in prompt_lower for term in ["equal-width bins", "equal width bins", "bin width", "width of each bin", "fall in the first bin", "fall in the second bin"]):
+                return "Equal-width binning (numeric values)"
+            if any(term in prompt_lower for term in ["relative frequency", "cumulative frequency", "frequency count", "individual terms (classes)", "how many classes", "categorical dataset"]):
+                return "Frequency table (categorical values)"
             if "likert" in prompt_lower:
                 return "Likert scale and realistic hypotheses"
             if "paired" in prompt_lower or "before and after" in prompt_lower or "before/after" in prompt_lower or "pre-test" in prompt_lower or "pretest" in prompt_lower or "same group" in prompt_lower:
@@ -53767,6 +65932,24 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                     st.session_state[f"{base_key}_desc_values"] = "\n".join(
                         format_display_number(number) for number in extracted_numbers
                     )
+            elif calc_type == "Min-max scaling":
+                dataset_values, target_values, target_min, target_max = infer_minmax_scaling_prompt_parts(exam_prompt)
+                if dataset_values:
+                    st.session_state[f"{base_key}_minmax_dataset"] = "\n".join(
+                        format_display_number(number) for number in dataset_values
+                    )
+                if target_values:
+                    st.session_state[f"{base_key}_minmax_targets"] = "\n".join(
+                        format_display_number(number) for number in target_values
+                    )
+                st.session_state[f"{base_key}_minmax_target_min"] = target_min
+                st.session_state[f"{base_key}_minmax_target_max"] = target_max
+            elif calc_type == "Equal-width binning (numeric values)":
+                if extracted_numbers:
+                    st.session_state[f"{base_key}_bin_values"] = "\n".join(
+                        format_display_number(number) for number in extracted_numbers
+                    )
+                st.session_state[f"{base_key}_bin_count"] = infer_bin_count_from_prompt(st.session_state.get(f"{base_key}_bin_count", 4))
             elif calc_type == "Likert scale and realistic hypotheses":
                 likert_min, likert_max = infer_likert_scale_from_prompt()
                 st.session_state[f"{base_key}_likert_min"] = likert_min
@@ -53849,6 +66032,9 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
 
         calc_options = [
             "Descriptive statistics (raw values)",
+            "Min-max scaling",
+            "Frequency table (categorical values)",
+            "Equal-width binning (numeric values)",
             "Likert scale and realistic hypotheses",
             "One-sample t-test",
             "Independent t-test",
@@ -53881,6 +66067,9 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                     "What kind of data or question do you have?",
                     options=[
                         "Raw values / descriptive stats",
+                        "Feature scaling / rescaling",
+                        "Categorical frequency / cumulative frequency",
+                        "Binning / histogram setup",
                         "Likert scale / agreement score",
                         "Mean / continuous value",
                         "Proportion / yes-no rate",
@@ -53907,6 +66096,9 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 )
                 chooser_mapping = {
                     ("Raw values / descriptive stats", "One sample against a target"): "Descriptive statistics (raw values)",
+                    ("Feature scaling / rescaling", "One sample against a target"): "Min-max scaling",
+                    ("Categorical frequency / cumulative frequency", "One sample against a target"): "Frequency table (categorical values)",
+                    ("Binning / histogram setup", "One sample against a target"): "Equal-width binning (numeric values)",
                     ("Likert scale / agreement score", "One sample against a target"): "Likert scale and realistic hypotheses",
                     ("Likert scale / agreement score", "Two independent groups"): "Likert scale and realistic hypotheses",
                     ("Mean / continuous value", "One sample against a target"): "One-sample z-test" if chooser_known_sigma else "One-sample t-test",
@@ -53959,6 +66151,11 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 height=160,
                 key=f"{base_key}_desc_values",
             )
+            desc_show_working = st.checkbox(
+                "Show step-by-step working",
+                value=True,
+                key=f"{base_key}_desc_show_working",
+            )
             descriptive_values = parse_descriptive_values(raw_values_text)
 
             if descriptive_values:
@@ -53967,11 +66164,14 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 mean_value = sum(sorted_values) / count_values
                 median_value = statistics_median(sorted_values)
                 mode_values = multimode(sorted_values)
+                squared_deviations = [(value - mean_value) ** 2 for value in sorted_values]
+                absolute_deviations = [abs(value - mean_value) for value in sorted_values]
                 sample_variance = (
-                    sum((value - mean_value) ** 2 for value in sorted_values) / (count_values - 1)
+                    sum(squared_deviations) / (count_values - 1)
                     if count_values > 1 else 0.0
                 )
                 sample_sd = math.sqrt(sample_variance)
+                mean_absolute_deviation = sum(absolute_deviations) / count_values
                 minimum_value = sorted_values[0]
                 maximum_value = sorted_values[-1]
                 range_value = maximum_value - minimum_value
@@ -53997,6 +66197,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 secondary_metric_cols[1].metric("Maximum", f"{maximum_value:.3f}")
                 secondary_metric_cols[2].metric("Range", f"{range_value:.3f}")
                 secondary_metric_cols[3].metric("IQR", f"{iqr_value:.3f}")
+                st.metric("Mean absolute deviation", f"{mean_absolute_deviation:.3f}")
 
                 st.markdown("**Sorted values**")
                 st.code(", ".join(format_display_number(value) for value in sorted_values), language="text")
@@ -54004,6 +66205,41 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                     st.markdown(f"**Mode:** {', '.join(format_display_number(value) for value in useful_modes)}")
                 else:
                     st.markdown("**Mode:** No single useful mode was found because the values are all unique or all tied.")
+
+                if desc_show_working:
+                    deviation_rows = []
+                    for value, squared_dev, abs_dev in zip(sorted_values, squared_deviations, absolute_deviations):
+                        deviation_rows.append(
+                            {
+                                "x": format_display_number(value),
+                                "x - mean": round(value - mean_value, 3),
+                                "(x - mean)^2": round(squared_dev, 3),
+                                "|x - mean|": round(abs_dev, 3),
+                            }
+                        )
+                    st.markdown("**Step-by-step working**")
+                    descriptive_working = "\n\n".join(
+                        [
+                            r"$$"
+                            + f"\\bar x = \\frac{{\\sum x}}{{n}} = \\frac{{{format_display_number(sum(sorted_values))}}}{{{count_values}}} = {mean_value:.3f}"
+                            + r"$$",
+                            r"$$"
+                            + f"s^2 = \\frac{{\\sum (x_i-\\bar x)^2}}{{n-1}} = \\frac{{{sum(squared_deviations):.3f}}}{{{count_values - 1}}} = {sample_variance:.3f}"
+                            + r"$$",
+                            r"$$"
+                            + f"s = \\sqrt{{s^2}} = \\sqrt{{{sample_variance:.3f}}} = {sample_sd:.3f}"
+                            + r"$$",
+                            r"$$"
+                            + f"\\text{{MAD}} = \\frac{{\\sum |x_i-\\bar x|}}{{n}} = \\frac{{{sum(absolute_deviations):.3f}}}{{{count_values}}} = {mean_absolute_deviation:.3f}"
+                            + r"$$",
+                        ]
+                    )
+                    render_markdown_with_mathjax(
+                        descriptive_working,
+                        key_suffix=f"{base_key}_desc_working",
+                        height=360,
+                    )
+                    st.dataframe(pd.DataFrame(deviation_rows), use_container_width=True, hide_index=True)
 
                 if count_values >= 3 and abs(mean_value - median_value) > max(sample_sd * 0.35, 0.5):
                     st.info("The mean and median are noticeably different. That usually suggests skewness or an outlier, so mention which measure better represents the typical value.")
@@ -54013,7 +66249,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 stats_summary_text = (
                     f"Descriptive statistics summary: n = {count_values}, mean = {mean_value:.3f}, median = {median_value:.3f}, "
                     f"minimum = {minimum_value:.3f}, maximum = {maximum_value:.3f}, range = {range_value:.3f}, "
-                    f"sample variance = {sample_variance:.3f}, sample standard deviation = {sample_sd:.3f}, "
+                    f"sample variance = {sample_variance:.3f}, sample standard deviation = {sample_sd:.3f}, mean absolute deviation = {mean_absolute_deviation:.3f}, "
                     f"Q1 = {q1_value:.3f}, Q3 = {q3_value:.3f}, IQR = {iqr_value:.3f}."
                 )
                 if useful_modes:
@@ -54023,7 +66259,8 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
 
                 sheets_columns = [
                     "Column B: raw numeric values",
-                    "Summary cells for count, mean, median, min, max, range, variance, standard deviation, quartiles, and IQR",
+                    "Column C: helper column for absolute deviations if you want MAD",
+                    "Summary cells for count, mean, median, min, max, range, variance, standard deviation, MAD, quartiles, and IQR",
                 ]
                 sheets_formulas = [
                     "Count: =COUNT(B2:B101)",
@@ -54035,6 +66272,8 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                     "Range: =MAX(B2:B101)-MIN(B2:B101)",
                     "Sample variance: =VAR.S(B2:B101)",
                     "Sample standard deviation: =STDEV.S(B2:B101)",
+                    "MAD helper in C2: =ABS(B2-AVERAGE($B$2:$B$101))",
+                    "MAD result: =AVERAGE(C2:C101)",
                     "Q1: =QUARTILE(B2:B101,1)",
                     "Q3: =QUARTILE(B2:B101,3)",
                     "IQR: =QUARTILE(B2:B101,3)-QUARTILE(B2:B101,1)",
@@ -54049,7 +66288,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                     "This template stores one raw numeric column and a summary area for the main descriptive statistics used in exam answers.",
                     [
                         "Data: value",
-                        "Summary: count, mean, median, mode, min, max, range, variance, standard_deviation, q1, q3, iqr",
+                        "Summary: count, mean, median, mode, min, max, range, variance, standard_deviation, mad, q1, q3, iqr",
                     ],
                     sheets_formulas,
                     sheets_notes,
@@ -54066,6 +66305,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                                 round(range_value, 3),
                                 round(sample_variance, 3),
                                 round(sample_sd, 3),
+                                round(mean_absolute_deviation, 3),
                                 round(q1_value, 3),
                                 round(q3_value, 3),
                                 round(iqr_value, 3),
@@ -54077,6 +66317,438 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 st.info("Enter at least one numeric value to calculate mean, median, and the other descriptive statistics.")
                 sheets_notes = [
                     "Paste the raw values from the exam question first, then the resolver can calculate the descriptive statistics for you.",
+                ]
+
+        elif calc_type == "Min-max scaling":
+            default_dataset_text = st.session_state.get(
+                f"{base_key}_minmax_dataset",
+                "\n".join(format_display_number(number) for number in prompt_numbers) if prompt_numbers else "12\n14\n15\n18\n21\n24",
+            )
+            default_target_text = st.session_state.get(
+                f"{base_key}_minmax_targets",
+                "18\n24",
+            )
+            minmax_col1, minmax_col2 = st.columns(2)
+            with minmax_col1:
+                dataset_text = st.text_area(
+                    "Dataset values",
+                    value=default_dataset_text,
+                    height=170,
+                    key=f"{base_key}_minmax_dataset",
+                )
+                target_text = st.text_area(
+                    "Values to scale",
+                    value=default_target_text,
+                    height=110,
+                    key=f"{base_key}_minmax_targets",
+                )
+            with minmax_col2:
+                target_range_min = st.number_input(
+                    "Target range minimum",
+                    value=float(st.session_state.get(f"{base_key}_minmax_target_min", 0.0)),
+                    step=0.1,
+                    key=f"{base_key}_minmax_target_min",
+                )
+                target_range_max = st.number_input(
+                    "Target range maximum",
+                    value=float(st.session_state.get(f"{base_key}_minmax_target_max", 1.0)),
+                    step=0.1,
+                    key=f"{base_key}_minmax_target_max",
+                )
+                show_working = st.checkbox(
+                    "Show step-by-step working",
+                    value=True,
+                    key=f"{base_key}_minmax_show_working",
+                )
+
+            dataset_values = parse_descriptive_values(dataset_text)
+            target_values = parse_descriptive_values(target_text)
+
+            if dataset_values and target_values and target_range_max != target_range_min:
+                sorted_values = sorted(dataset_values)
+                original_min = min(sorted_values)
+                original_max = max(sorted_values)
+                original_range = original_max - original_min
+
+                if original_range == 0:
+                    st.warning("Min-max scaling is not defined when all dataset values are the same, because max - min becomes 0.")
+                else:
+                    st.metric("Original range", format_display_number(original_range))
+                    st.markdown("**Sorted dataset values**")
+                    st.code(", ".join(format_display_number(value) for value in sorted_values), language="text")
+
+                    scaling_rows = []
+                    working_blocks = []
+                    for value in target_values:
+                        scaled_zero_one = (value - original_min) / original_range
+                        scaled_value = target_range_min + (scaled_zero_one * (target_range_max - target_range_min))
+                        numerator = value - original_min
+                        scaling_rows.append(
+                            {
+                                "Original value": format_display_number(value),
+                                "Min": format_display_number(original_min),
+                                "Max": format_display_number(original_max),
+                                "Scaled value": round(scaled_value, 3),
+                            }
+                        )
+                        if target_range_min == 0 and target_range_max == 1:
+                            working_blocks.append(
+                                "\n".join(
+                                    [
+                                        f"**For {format_display_number(value)}:**",
+                                        r"$$"
+                                        + f"\\frac{{{format_display_number(value)}-{format_display_number(original_min)}}}{{{format_display_number(original_max)}-{format_display_number(original_min)}}}"
+                                        + f" = \\frac{{{format_display_number(numerator)}}}{{{format_display_number(original_range)}}}"
+                                        + f" = {scaled_value:.3f}"
+                                        + r"$$",
+                                    ]
+                                )
+                            )
+                        else:
+                            working_blocks.append(
+                                "\n".join(
+                                    [
+                                        f"**For {format_display_number(value)}:**",
+                                        r"$$"
+                                        + f"{target_range_min:.3f} + \\left(\\frac{{{format_display_number(value)}-{format_display_number(original_min)}}}{{{format_display_number(original_max)}-{format_display_number(original_min)}}}\\right)"
+                                        + f"\\times ({target_range_max:.3f}-{target_range_min:.3f})"
+                                        + f" = {scaled_value:.3f}"
+                                        + r"$$",
+                                    ]
+                                )
+                            )
+
+                    st.dataframe(pd.DataFrame(scaling_rows), use_container_width=True, hide_index=True)
+
+                    if show_working:
+                        st.markdown("**Step-by-step working**")
+                        working_markdown = "\n\n".join(working_blocks)
+                        render_markdown_with_mathjax(
+                            working_markdown,
+                            key_suffix=f"{base_key}_minmax_working",
+                            height=360,
+                        )
+
+                    stats_summary_text = (
+                        f"Min-max scaling summary: minimum = {format_display_number(original_min)}, maximum = {format_display_number(original_max)}, "
+                        f"range = {format_display_number(original_range)}, target range = [{format_display_number(target_range_min)}, {format_display_number(target_range_max)}]. "
+                        + "Scaled values = "
+                        + " | ".join(
+                            f"{format_display_number(target_values[index])} -> {scaling_rows[index]['Scaled value']:.3f}"
+                            for index in range(len(target_values))
+                        )
+                        + "."
+                    )
+
+                    sheets_columns = [
+                        "Column A: raw dataset values",
+                        "Column C: values you want to scale",
+                        "Cells F2 and G2: target range minimum and maximum",
+                        "Column D: scaled values",
+                    ]
+                    sheets_formulas = [
+                        "0-to-1 scaling: =(C2-MIN($A$2:$A$13))/(MAX($A$2:$A$13)-MIN($A$2:$A$13))",
+                        "General min-max scaling: =$F$2+((C2-MIN($A$2:$A$13))/(MAX($A$2:$A$13)-MIN($A$2:$A$13)))*($G$2-$F$2)",
+                    ]
+                    sheets_notes = [
+                        "Always find the original minimum and maximum from the full dataset, not just from the requested target values.",
+                        "If the target range is 0 to 1, the formula simplifies to (x - min) / (max - min).",
+                        "Show the subtraction and denominator once in an exam answer, then scale the remaining values the same way.",
+                    ]
+                    stats_template_spec = make_stats_template_spec(
+                        "Google Sheets template - Min-max scaling",
+                        "This template stores a raw dataset plus one or more target values to scale automatically.",
+                        [
+                            "RawData: value",
+                            "Targets: original_value, scaled_value",
+                            "Settings: target_min, target_max",
+                        ],
+                        sheets_formulas,
+                        sheets_notes,
+                        {
+                            "RawData": [[value] for value in sorted_values[:30]],
+                            "Targets": [[target_values[index], scaling_rows[index]["Scaled value"]] for index in range(len(target_values))],
+                            "Settings": [[target_range_min, target_range_max]],
+                        },
+                    )
+            else:
+                st.info("Paste both the dataset values and the values to scale, then the resolver can calculate the scaled result and write out the working.")
+                sheets_notes = [
+                    "Paste the full dataset in one box and the target values in the other box to generate the scaled results automatically.",
+                ]
+
+        elif calc_type == "Frequency table (categorical values)":
+            default_category_text = st.session_state.get(
+                f"{base_key}_freq_values",
+                "hamburger\ndonut\nice cream\npizza\nburrito",
+            )
+            category_text = st.text_area(
+                "Enter one category per line or comma-separated values",
+                value=default_category_text,
+                height=170,
+                key=f"{base_key}_freq_values",
+            )
+            sort_mode = st.selectbox(
+                "Sort order for the frequency table",
+                options=["Alphabetical", "Frequency descending", "First appearance"],
+                key=f"{base_key}_freq_sort_mode",
+            )
+            freq_show_working = st.checkbox(
+                "Show step-by-step working",
+                value=True,
+                key=f"{base_key}_freq_show_working",
+            )
+            category_values = parse_categorical_values(category_text)
+
+            if category_values:
+                category_counts = Counter(category_values)
+                if sort_mode == "Alphabetical":
+                    ordered_categories = sorted(category_counts.keys(), key=lambda item: item.lower())
+                elif sort_mode == "Frequency descending":
+                    ordered_categories = sorted(category_counts.keys(), key=lambda item: (-category_counts[item], item.lower()))
+                else:
+                    ordered_categories = list(dict.fromkeys(category_values).keys())
+
+                total_count = len(category_values)
+                cumulative_count = 0
+                frequency_rows = []
+                for category in ordered_categories:
+                    count = category_counts[category]
+                    cumulative_count += count
+                    relative_frequency = count / total_count
+                    frequency_rows.append(
+                        {
+                            "Category": category,
+                            "Frequency": count,
+                            "Relative frequency": round(relative_frequency, 4),
+                            "Relative frequency %": round(relative_frequency * 100, 2),
+                            "Cumulative frequency": cumulative_count,
+                        }
+                    )
+
+                st.dataframe(pd.DataFrame(frequency_rows), use_container_width=True, hide_index=True)
+                metric_cols = st.columns(4)
+                metric_cols[0].metric("Total values", f"{total_count}")
+                metric_cols[1].metric("Number of classes", f"{len(category_counts)}")
+                metric_cols[2].metric("Top class", ordered_categories[0] if ordered_categories else "-")
+                metric_cols[3].metric("Top frequency", f"{category_counts[ordered_categories[0]]}" if ordered_categories else "0")
+
+                if freq_show_working:
+                    st.markdown("**Step-by-step working**")
+                    st.markdown(f"- First, list the raw values and identify the unique classes in the chosen sort order: `{', '.join(ordered_categories)}`.")
+                    st.markdown(f"- Total number of observations = `{total_count}`.")
+                    for row in frequency_rows:
+                        st.markdown(
+                            f"- `{row['Category']}`: frequency = `{row['Frequency']}`, relative frequency = `{row['Frequency']}/{total_count} = {row['Relative frequency']:.4f}`, cumulative frequency = `{row['Cumulative frequency']}`."
+                        )
+
+                stats_summary_text = (
+                    f"Categorical frequency summary: total values = {total_count}, number of classes = {len(category_counts)}, "
+                    f"sort order = {sort_mode.lower()}. Frequency table = "
+                    + " | ".join(
+                        f"{row['Category']}: frequency {row['Frequency']}, relative frequency {row['Relative frequency']:.4f}, cumulative frequency {row['Cumulative frequency']}"
+                        for row in frequency_rows
+                    )
+                    + "."
+                )
+
+                sheets_columns = [
+                    "Column B: raw categories",
+                    "Column D: unique sorted categories",
+                    "Column E: frequency count",
+                    "Column F: relative frequency",
+                    "Column G: cumulative frequency",
+                ]
+                sheets_formulas = [
+                    "Unique categories in Google Sheets: =SORT(UNIQUE(B2:B101))",
+                    "Frequency count: =COUNTIF($B$2:$B$101,D2)",
+                    "Relative frequency: =E2/COUNTA($B$2:$B$101)",
+                    "Cumulative frequency: =SUM($E$2:E2)",
+                ]
+                sheets_notes = [
+                    "Alphabetical sorting is usually the safest default for category tables unless the task asks for a different order.",
+                    "Relative frequency can be shown either as a decimal or multiplied by 100 for percentage form.",
+                    "Cumulative frequency depends on the displayed order, so sort the categories first before calculating it.",
+                ]
+                stats_template_spec = make_stats_template_spec(
+                    "Google Sheets template - Frequency table",
+                    "This template stores raw categories and a summary area for frequency, relative frequency, and cumulative frequency.",
+                    [
+                        "RawData: category",
+                        "FrequencyTable: category, frequency, relative_frequency, cumulative_frequency",
+                    ],
+                    sheets_formulas,
+                    sheets_notes,
+                    {
+                        "RawData": [[value] for value in category_values[:20]],
+                        "FrequencyTable": [[row["Category"], row["Frequency"], row["Relative frequency"], row["Cumulative frequency"]] for row in frequency_rows],
+                    },
+                )
+            else:
+                st.info("Paste category values first, then the resolver can build the sorted frequency table automatically.")
+                sheets_notes = [
+                    "Paste one category per line or comma-separated values to build a frequency table.",
+                ]
+
+        elif calc_type == "Equal-width binning (numeric values)":
+            default_bin_values = st.session_state.get(
+                f"{base_key}_bin_values",
+                "\n".join(format_display_number(number) for number in prompt_numbers) if prompt_numbers else "12\n14\n15\n18\n21\n24\n25\n28",
+            )
+            bin_values_text = st.text_area(
+                "Enter one numeric value per line or comma-separated values",
+                value=default_bin_values,
+                height=170,
+                key=f"{base_key}_bin_values",
+            )
+            bin_count = st.number_input(
+                "Number of equal-width bins",
+                min_value=2,
+                value=st.session_state.get(f"{base_key}_bin_count", infer_bin_count_from_prompt(4)),
+                step=1,
+                key=f"{base_key}_bin_count",
+            )
+            integer_bins = st.checkbox(
+                "Use whole-number bin widths and inclusive integer intervals",
+                value=True,
+                key=f"{base_key}_bin_integer_mode",
+            )
+            bin_show_working = st.checkbox(
+                "Show step-by-step working",
+                value=True,
+                key=f"{base_key}_bin_show_working",
+            )
+            bin_values = parse_descriptive_values(bin_values_text)
+
+            if bin_values:
+                sorted_values = sorted(bin_values)
+                minimum_value = min(sorted_values)
+                maximum_value = max(sorted_values)
+                span_value = maximum_value - minimum_value
+
+                bin_rows = []
+                if integer_bins:
+                    bin_width = max(1, int(math.floor(span_value / int(bin_count)))) if bin_count else 1
+                    start_value = int(math.floor(minimum_value))
+                    for index in range(int(bin_count)):
+                        if index < int(bin_count) - 1:
+                            end_value = start_value + bin_width - 1
+                        else:
+                            end_value = int(math.ceil(maximum_value))
+                        count_value = sum(1 for value in sorted_values if start_value <= value <= end_value)
+                        bin_rows.append(
+                            {
+                                "Bin": f"{start_value}-{end_value}",
+                                "Lower": start_value,
+                                "Upper": end_value,
+                                "Count": count_value,
+                            }
+                        )
+                        start_value = end_value + 1
+                else:
+                    bin_width = span_value / int(bin_count) if bin_count else span_value
+                    start_value = minimum_value
+                    for index in range(int(bin_count)):
+                        if index < int(bin_count) - 1:
+                            end_value = start_value + bin_width
+                            count_value = sum(1 for value in sorted_values if start_value <= value < end_value)
+                            label = f"[{start_value:.3f}, {end_value:.3f})"
+                        else:
+                            end_value = maximum_value
+                            count_value = sum(1 for value in sorted_values if start_value <= value <= end_value)
+                            label = f"[{start_value:.3f}, {end_value:.3f}]"
+                        bin_rows.append(
+                            {
+                                "Bin": label,
+                                "Lower": round(start_value, 3),
+                                "Upper": round(end_value, 3),
+                                "Count": count_value,
+                            }
+                        )
+                        start_value = end_value
+
+                st.metric("Bin width", f"{bin_width:.3f}" if not float(bin_width).is_integer() else f"{int(bin_width)}")
+                st.markdown("**Sorted values**")
+                st.code(", ".join(format_display_number(value) for value in sorted_values), language="text")
+                st.dataframe(pd.DataFrame(bin_rows), use_container_width=True, hide_index=True)
+
+                if bin_show_working:
+                    st.markdown("**Step-by-step working**")
+                    if integer_bins:
+                        bin_working = "\n\n".join(
+                            [
+                                r"$$"
+                                + f"\\text{{span}} = {format_display_number(maximum_value)} - {format_display_number(minimum_value)} = {format_display_number(span_value)}"
+                                + r"$$",
+                                r"$$"
+                                + f"\\text{{bin width}} = \\left\\lfloor \\frac{{{format_display_number(span_value)}}}{{{int(bin_count)}}} \\right\\rfloor = {format_display_number(bin_width)}"
+                                + r"$$",
+                            ]
+                        )
+                    else:
+                        bin_working = "\n\n".join(
+                            [
+                                r"$$"
+                                + f"\\text{{span}} = {format_display_number(maximum_value)} - {format_display_number(minimum_value)} = {format_display_number(span_value)}"
+                                + r"$$",
+                                r"$$"
+                                + f"\\text{{bin width}} = \\frac{{{format_display_number(span_value)}}}{{{int(bin_count)}}} = {format_display_number(bin_width)}"
+                                + r"$$",
+                            ]
+                        )
+                    render_markdown_with_mathjax(
+                        bin_working,
+                        key_suffix=f"{base_key}_bin_working",
+                        height=280,
+                    )
+                    for row in bin_rows:
+                        st.markdown(f"- Bin `{row['Bin']}` contains `{row['Count']}` values.")
+
+                stats_summary_text = (
+                    f"Equal-width binning summary: minimum = {format_display_number(minimum_value)}, maximum = {format_display_number(maximum_value)}, "
+                    f"span = {format_display_number(span_value)}, number of bins = {int(bin_count)}, bin width = {format_display_number(bin_width)}. "
+                    f"Bin counts = " + " | ".join(f"{row['Bin']}: {row['Count']}" for row in bin_rows) + "."
+                )
+
+                if integer_bins and span_value % int(bin_count) != 0:
+                    st.info("The span does not divide perfectly into equal whole-number widths, so the last bin is adjusted to still include the maximum value.")
+
+                sheets_columns = [
+                    "Column B: raw numeric values",
+                    "Summary cells for minimum, maximum, span, number_of_bins, and bin_width",
+                    "Bin table with lower bound, upper bound, and count",
+                ]
+                sheets_formulas = [
+                    "Minimum: =MIN(B2:B101)",
+                    "Maximum: =MAX(B2:B101)",
+                    "Span: =MAX(B2:B101)-MIN(B2:B101)",
+                    "Whole-number width: =ROUNDDOWN((MAX(B2:B101)-MIN(B2:B101))/4,0)",
+                    "First bin count example: =COUNTIFS($B$2:$B$101,\">=\"&D2,$B$2:$B$101,\"<=\"&E2)",
+                    "Last bin count example: =COUNTIFS($B$2:$B$101,\">=\"&D5,$B$2:$B$101,\"<=\"&E5)",
+                ]
+                sheets_notes = [
+                    "For whole-number bins, start from the minimum and let the last bin absorb any leftover width needed to reach the maximum.",
+                    "Write the bin boundaries explicitly before counting values. This avoids off-by-one mistakes.",
+                    "If the task asks for equal-width bins in an exam, show the bin width calculation before you count anything.",
+                ]
+                stats_template_spec = make_stats_template_spec(
+                    "Google Sheets template - Equal-width binning",
+                    "This template stores raw numeric values plus a bin-summary area for equal-width intervals.",
+                    [
+                        "RawData: value",
+                        "Bins: bin_label, lower_bound, upper_bound, count",
+                    ],
+                    sheets_formulas,
+                    sheets_notes,
+                    {
+                        "RawData": [[value] for value in sorted_values[:30]],
+                        "Bins": [[row["Bin"], row["Lower"], row["Upper"], row["Count"]] for row in bin_rows],
+                    },
+                )
+            else:
+                st.info("Paste numeric values first, then the resolver can sort them and build equal-width bins automatically.")
+                sheets_notes = [
+                    "Paste one numeric value per line or comma-separated values to calculate bins and frequencies.",
                 ]
 
         elif calc_type == "Likert scale and realistic hypotheses":
@@ -57555,6 +70227,41 @@ elif page == "Study Notes":
 <h2 style="color: #2c3e50; border-left: 4px solid #6a1b9a; padding-left: 12px; margin-top: 30px;">📝 My Summary</h2>
 <p><em>[Write your own short explanation of what data-driven decision-making means]</em></p>
 """},
+        "stt_module_overview": {"name": "STT: Module 1 Overview", "icon": "query_stats", "content": """<h1 style="color: #1a1a1a; border-bottom: 3px solid #00897b; padding-bottom: 12px;">STT Module 1 Overview</h1>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #00897b; padding-left: 12px; margin-top: 30px;">📘 Module Introduction</h2>
+<blockquote style="border-left: 4px solid #00897b; background: #f2fbf8; padding: 15px 20px; margin: 15px 0; border-radius: 4px;">
+<p>This module introduces various spreadsheet tools and statistical analysis.</p>
+<p>It begins with KPI understanding, advanced data analysis tool packs, and Solver, including its role in linear regression and related analytical tasks.</p>
+<p>It also introduces industry-required techniques such as ANOVA, regression, correlation, covariance, and histogram analysis.</p>
+<p><strong>Support note:</strong> Check your progression plan and/or contact a tutor if anything is unclear.</p>
+</blockquote>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #1565c0; padding-left: 12px; margin-top: 30px;">🎯 Learning Outcomes Linked to This Note</h2>
+<ul style="line-height: 1.8;">
+<li><strong>Knowledge:</strong> Spreadsheet data tools for statistical analysis using built-in functions</li>
+<li><strong>Knowledge:</strong> Statistical methodologies used to extract Key Performance Indicators from numerical values</li>
+<li><strong>Knowledge:</strong> Concepts and processes required to execute advanced data analytics tool packs exclusive to spreadsheet software</li>
+<li><strong>Knowledge:</strong> Industry-required analysis including correlation, regression, ANOVA, histogram, and covariance analysis</li>
+<li><strong>Knowledge:</strong> Power Query and automation of time-consuming spreadsheet tasks</li>
+<li><strong>Skills:</strong> Apply built-in spreadsheet tools to perform statistical analysis on data sets</li>
+<li><strong>Skills:</strong> Install and use the advanced data analysis suite</li>
+<li><strong>Skills:</strong> Use advanced spreadsheet techniques such as Power Query to automate tasks</li>
+<li><strong>General competence:</strong> Carry out work using advanced spreadsheet tools to suit the needs of selected target groups</li>
+</ul>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #f9a825; padding-left: 12px; margin-top: 30px;">🧩 Core Ideas</h2>
+<ul style="line-height: 1.8;">
+<li><strong>KPIs:</strong> Why performance indicators matter and what they summarize</li>
+<li><strong>Solver:</strong> When optimization and linear-regression-style workflows become useful</li>
+<li><strong>Tool packs:</strong> How advanced spreadsheet analysis features extend built-in formulas</li>
+<li><strong>Industry analysis:</strong> When to use ANOVA, regression, correlation, covariance, and histograms</li>
+<li><strong>Workflow:</strong> How Power Query and repeatable setup improve quality and efficiency</li>
+</ul>
+
+<h2 style="color: #2c3e50; border-left: 4px solid #6a1b9a; padding-left: 12px; margin-top: 30px;">📝 My Summary</h2>
+<p><em>[Write your own short explanation of what this STT module is about and which tools feel most important so far]</em></p>
+"""},
         "ddm_case_scenario": {"name": "DDM: Case Scenario Analysis", "icon": "analytics", "content": """<h1 style="color: #1a1a1a; border-bottom: 3px solid #00897b; padding-bottom: 12px;">DDM Case Scenario</h1>
 
 <h2 style="color: #2c3e50; border-left: 4px solid #00897b; padding-left: 12px; margin-top: 30px;">🏢 Scenario</h2>
@@ -58068,6 +70775,9 @@ elif page == "Study Notes":
                     "ddm_techniques",
                     "ddm_decision_matrix",
                     "ddm_outcome_tracker"
+                ],
+                "FI1BBST05": [
+                    "stt_module_overview"
                 ]
             }
             recommended_template_keys = recommended_template_keys_by_course.get(selected_course_code, [])
@@ -58087,7 +70797,7 @@ elif page == "Study Notes":
                 key="word_template"
             )
             if recommended_template_keys:
-                st.caption("Recommended DDM templates are shown first for this course.")
+                st.caption("Recommended course templates are shown first for this course.")
             if template_choice != "(None)":
                 template_key = template_display_map[template_choice]
                 if not st.session_state.get('editing_note_idx'):
@@ -58942,10 +71652,35 @@ elif page == "Exam Simulator":
                 ["General", "Knowledge-based", "Skills-based", "Case Study"],
                 default=["General", "Knowledge-based"]
             )
+            curated_exam_bank_filter = "all"
+            curated_exam_source_options = get_curated_exam_source_options(exam_course)
+            if len(curated_exam_source_options) > 1:
+                curated_exam_bank_label = st.selectbox(
+                    "Curated Bank",
+                    [label for _, label in curated_exam_source_options],
+                    key=f"curated_exam_bank_mode_{exam_course}"
+                )
+                curated_bank_filter_map = {
+                    label: source for source, label in curated_exam_source_options
+                }
+                curated_exam_bank_filter = curated_bank_filter_map[curated_exam_bank_label]
 
         curated_exam_count = len(CURATED_EXAM_QUESTION_BANK.get(exam_course, []))
         if curated_exam_count:
             st.info(f"Curated exam bank available for {exam_course}: {curated_exam_count} questions aligned to the course learning outcomes.")
+            source_counts = {}
+            for question in CURATED_EXAM_QUESTION_BANK.get(exam_course, []):
+                source = question.get('source', 'core_curated')
+                source_counts[source] = source_counts.get(source, 0) + 1
+
+            if len(source_counts) > 1:
+                source_summaries = []
+                for source, label in curated_exam_source_options:
+                    if source == "all":
+                        continue
+                    source_summaries.append(f"{source_counts.get(source, 0)} {label.lower()}")
+                if source_summaries:
+                    st.caption(f"Curated bank split: {', '.join(source_summaries)}.")
         elif client is None:
             st.warning("No curated bank is available for this course, and AI question generation is disabled.")
 
@@ -58968,7 +71703,12 @@ elif page == "Exam Simulator":
             }
 
             if exam_course in CURATED_EXAM_QUESTION_BANK:
-                exam_questions_list = build_curated_exam_questions(exam_course, question_types, num_questions)
+                exam_questions_list = build_curated_exam_questions(
+                    exam_course,
+                    question_types,
+                    num_questions,
+                    source_filter=curated_exam_bank_filter
+                )
             else:
                 with st.spinner("Generating exam questions..."):
                     for i in range(num_questions):
