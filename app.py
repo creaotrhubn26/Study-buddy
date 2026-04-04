@@ -840,6 +840,171 @@ def generate_glossary_suggestion(term, lesson_text, lesson_title="", course_name
     return suggestion
 
 
+def fallback_selection_explanation(selected_text, lesson_text, lesson_title="", course_name=""):
+    snippet = extract_term_context_snippet(lesson_text, selected_text, max_chars=280)
+    scope = "this lesson"
+    if lesson_title:
+        scope = f"Lesson {lesson_title}"
+    if course_name:
+        scope = f"{course_name}, {scope}"
+    return (
+        f"**What this means:** The selected text is being discussed in {scope}. "
+        f"It is worth slowing down and identifying what the question or concept is really asking.\n\n"
+        f"**In context:** {snippet or 'This part should be read together with the surrounding lesson content to understand the main idea and what you are expected to explain.'}\n\n"
+        f"**How to use it:** Break it into three parts: what the key concept is, what relationship or rule is being described, and how you would explain it in plain exam language."
+    )
+
+
+def generate_selection_explanation(selected_text, lesson_text, lesson_title="", course_name=""):
+    cache = st.session_state.setdefault("selection_explanation_cache", {})
+    cache_key = f"{course_name}::{lesson_title}::{str(selected_text or '').strip().lower()}"
+    if cache_key in cache:
+        return cache[cache_key]
+
+    fallback = fallback_selection_explanation(selected_text, lesson_text, lesson_title=lesson_title, course_name=course_name)
+    if client is None:
+        cache[cache_key] = fallback
+        return fallback
+
+    snippet = extract_term_context_snippet(lesson_text, selected_text, max_chars=700)
+    prompt = (
+        "You are helping a student understand a selected sentence, question, or concept from lesson notes. "
+        "Write a short, human explanation in markdown. "
+        "Use three short parts with bold headings: 'What this means', 'Why it matters', and 'Exam-safe version'. "
+        "Keep it concise, practical, and student-friendly. "
+        "Do not mention that you are an AI.\n\n"
+        f"Course: {course_name}\n"
+        f"Lesson: {lesson_title}\n"
+        f"Selected text: {selected_text}\n"
+        f"Lesson excerpt: {snippet}"
+    )
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "Return helpful markdown only."},
+                {"role": "user", "content": prompt},
+            ],
+            max_tokens=320,
+        )
+        explanation = response.choices[0].message.content.strip()
+    except Exception:
+        explanation = fallback
+
+    cache[cache_key] = explanation
+    return explanation
+
+
+def fallback_selection_exam_answer(selected_text, lesson_text, lesson_title="", course_name=""):
+    snippet = extract_term_context_snippet(lesson_text, selected_text, max_chars=320)
+    scope = "this lesson"
+    if lesson_title:
+        scope = f"Lesson {lesson_title}"
+    if course_name:
+        scope = f"{course_name}, {scope}"
+    return (
+        f"**Direct answer:** The selected text should be answered by stating the main concept clearly and then linking it to the lesson context.\n\n"
+        f"**Why this answer fits:** The question comes from {scope}, so the safest exam approach is to define the concept, explain the relationship or rule, and keep the wording direct.\n\n"
+        f"**Exam-safe version:** {snippet or 'Write a short answer that defines the key idea, explains why it matters, and connects it to the course language used in the lesson.'}"
+    )
+
+
+def generate_selection_exam_answer(selected_text, lesson_text, lesson_title="", course_name=""):
+    cache = st.session_state.setdefault("selection_exam_answer_cache", {})
+    cache_key = f"{course_name}::{lesson_title}::{str(selected_text or '').strip().lower()}"
+    if cache_key in cache:
+        return cache[cache_key]
+
+    fallback = fallback_selection_exam_answer(selected_text, lesson_text, lesson_title=lesson_title, course_name=course_name)
+    if client is None:
+        cache[cache_key] = fallback
+        return fallback
+
+    snippet = extract_term_context_snippet(lesson_text, selected_text, max_chars=700)
+    prompt = (
+        "You are helping a student answer a selected question or sentence from course notes. "
+        "Write a short exam-style answer in markdown. "
+        "Use three short parts with bold headings: 'Direct answer', 'Why this answer fits', and 'Exam-safe version'. "
+        "Keep the tone human, concise, and easy to reuse in an exam. "
+        "Do not mention that you are an AI.\n\n"
+        f"Course: {course_name}\n"
+        f"Lesson: {lesson_title}\n"
+        f"Selected text: {selected_text}\n"
+        f"Lesson excerpt: {snippet}"
+    )
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "Return helpful markdown only."},
+                {"role": "user", "content": prompt},
+            ],
+            max_tokens=360,
+        )
+        answer = response.choices[0].message.content.strip()
+    except Exception:
+        answer = fallback
+
+    cache[cache_key] = answer
+    return answer
+
+
+def trigger_clipboard_copy(text, key_suffix="default"):
+    payload = json.dumps(str(text or ""))
+    html(
+        f"""
+        <script>
+          const textToCopy = {payload};
+          const fallbackCopy = () => {{
+            const area = document.createElement("textarea");
+            area.value = textToCopy;
+            area.setAttribute("readonly", "");
+            area.style.position = "fixed";
+            area.style.opacity = "0";
+            document.body.appendChild(area);
+            area.focus();
+            area.select();
+            try {{
+              document.execCommand("copy");
+            }} catch (err) {{}}
+            document.body.removeChild(area);
+          }};
+
+          if (navigator.clipboard && navigator.clipboard.writeText) {{
+            navigator.clipboard.writeText(textToCopy).catch(() => fallbackCopy());
+          }} else {{
+            fallbackCopy();
+          }}
+        </script>
+        """,
+        height=0,
+        key=f"clipboard_copy_{key_suffix}",
+    )
+
+
+def save_ai_text_to_study_notes(course_code, title, markdown_content, tags=None, category="exam", importance="important", learning_outcome=""):
+    if "study_notes" not in st.session_state:
+        st.session_state.study_notes = {}
+    if course_code not in st.session_state.study_notes:
+        st.session_state.study_notes[course_code] = []
+
+    rendered_html = _markdown_with_tables(str(markdown_content or "").strip())
+    note_data = {
+        "title": str(title or "AI Note").strip(),
+        "content": rendered_html,
+        "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "tags": list(tags or []),
+        "category": category,
+        "importance": importance,
+        "learning_outcome": learning_outcome,
+        "version_history": [],
+    }
+    st.session_state.study_notes[course_code].append(note_data)
+    return True, f"Saved to Study Notes for {course_code}."
+
+
 def detect_difficult_word_candidates(text, glossary_entries, max_candidates=10):
     plain_text = re.sub(r"<[^>]+>", " ", str(text or ""))
     plain_text = re.sub(r"[*_`>#\[\]\(\)\|]", " ", plain_text)
@@ -1045,29 +1210,156 @@ def render_lesson_glossary_manager(course_code, course_name, lesson, lesson_glos
     scope_key = f"custom_glossary_scope_{course_code}_{lesson_number}"
     flashcard_key = f"custom_glossary_flashcard_{course_code}_{lesson_number}"
     manager_open_key = f"custom_glossary_manager_open_{course_code}_{lesson_number}"
+    explain_text_key = f"lesson_selected_explain_text_{course_code}_{lesson_number}"
+    explain_output_key = f"lesson_selected_explain_output_{course_code}_{lesson_number}"
+    explain_open_key = f"lesson_selected_explain_open_{course_code}_{lesson_number}"
+    explain_mode_key = f"lesson_selected_explain_mode_{course_code}_{lesson_number}"
 
     st.session_state.setdefault(scope_key, "Lesson")
     st.session_state.setdefault(flashcard_key, False)
     st.session_state.setdefault(manager_open_key, False)
+    st.session_state.setdefault(explain_open_key, False)
+    st.session_state.setdefault(explain_mode_key, "explain")
+
+    def prefill_glossary_suggestion(term):
+        suggestion = generate_glossary_suggestion(
+            term,
+            lesson_text,
+            lesson_title=lesson_title,
+            course_name=course_name,
+        )
+        st.session_state[plain_input_key] = suggestion.get("plain", "")
+        st.session_state[context_input_key] = suggestion.get("context", "")
+        st.session_state[read_more_input_key] = suggestion.get("read_more", "")
+
+    def prefill_selection_explanation(selected_text):
+        st.session_state[explain_text_key] = selected_text
+        st.session_state[explain_output_key] = generate_selection_explanation(
+            selected_text,
+            lesson_text,
+            lesson_title=lesson_title,
+            course_name=course_name,
+        )
+        st.session_state[explain_mode_key] = "explain"
+        st.session_state[explain_open_key] = True
+
+    def prefill_selection_exam_answer(selected_text):
+        st.session_state[explain_text_key] = selected_text
+        st.session_state[explain_output_key] = generate_selection_exam_answer(
+            selected_text,
+            lesson_text,
+            lesson_title=lesson_title,
+            course_name=course_name,
+        )
+        st.session_state[explain_mode_key] = "answer"
+        st.session_state[explain_open_key] = True
 
     with st.expander("➕ Capture, explain, and save difficult words", expanded=bool(st.session_state.get(manager_open_key))):
         st.markdown(
             """
             <div class="lesson-glossary-shell">
               <div class="lesson-glossary-title">Build this lesson word bank as you read</div>
-              <div class="lesson-glossary-copy">Highlight a word in the lesson, capture it here, and decide whether it belongs only to this lesson, to the whole course, or to your global glossary.</div>
+              <div class="lesson-glossary-copy">Highlight a word, sentence, or whole question in the lesson and use the quick actions to save it, explain it, or turn it into an exam-style answer.</div>
             </div>
             """,
             unsafe_allow_html=True,
         )
-        st.caption("Highlight a word or phrase in the lesson text, then capture it below. You can save it to this lesson, this course, or your global glossary.")
+        st.caption("Highlight a word, phrase, or whole question in the lesson text and use the quick actions that appear. From there you can save it to your glossary, ask for an AI explanation, or get an exam-style answer.")
 
-        captured_term = render_glossary_selection_capture(f"glossary_capture_component_{course_code}_{lesson_number}")
-        if captured_term and captured_term != st.session_state.get(capture_state_key):
+        captured_payload = render_glossary_selection_capture(f"glossary_capture_component_{course_code}_{lesson_number}")
+        captured_term = ""
+        captured_action = "lesson"
+        if isinstance(captured_payload, dict):
+            captured_term = str(captured_payload.get("term", "")).strip()
+            captured_action = str(captured_payload.get("action", "lesson")).strip().lower() or "lesson"
+            capture_signature = json.dumps(captured_payload, sort_keys=True)
+        else:
+            captured_term = str(captured_payload or "").strip()
+            capture_signature = captured_term
+
+        if captured_term and capture_signature != st.session_state.get(capture_state_key):
             st.session_state[term_input_key] = captured_term
-            st.session_state[capture_state_key] = captured_term
+            if captured_action == "course":
+                st.session_state[scope_key] = "Course"
+            elif captured_action == "global":
+                st.session_state[scope_key] = "Global"
+            else:
+                st.session_state[scope_key] = "Lesson"
+            if captured_action == "suggest":
+                prefill_selection_explanation(captured_term)
+            elif captured_action == "answer":
+                prefill_selection_exam_answer(captured_term)
+            st.session_state[capture_state_key] = capture_signature
             st.session_state[manager_open_key] = True
             st.rerun()
+
+        if st.session_state.get(explain_open_key) and st.session_state.get(explain_output_key):
+            selected_label = st.session_state.get(explain_text_key, "").strip()
+            selected_label = selected_label if len(selected_label) <= 140 else f"{selected_label[:137]}..."
+            explain_mode = st.session_state.get(explain_mode_key, "explain")
+            title_text = "AI explanation for the selected text" if explain_mode == "explain" else "AI exam-style answer for the selected text"
+            copy_text = (
+                "Use this when you highlight a whole question, sentence, or concept and want a clearer, exam-friendly explanation."
+                if explain_mode == "explain"
+                else "Use this when you want the selected text turned into a short, human exam-style answer you can reuse later."
+            )
+            st.markdown(
+                f"""
+                <div class="lesson-glossary-toolbar">
+                  <div class="lesson-glossary-toolbar-title">{html_escape(title_text)}</div>
+                  <div class="lesson-glossary-toolbar-copy">{html_escape(copy_text)}</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            if selected_label:
+                st.caption(f"Selected text: {selected_label}")
+            current_output = st.session_state.get(explain_output_key, "")
+            st.markdown(current_output)
+            explain_col1, explain_col2, explain_col3, explain_col4 = st.columns([1.1, 1.2, 1.3, 0.9])
+            with explain_col1:
+                if st.button("Copy answer", key=f"copy_selected_explain_{course_code}_{lesson_number}", use_container_width=True):
+                    trigger_clipboard_copy(current_output, key_suffix=f"{course_code}_{lesson_number}_{explain_mode}")
+                    st.success("Copied to clipboard.")
+            with explain_col2:
+                if st.button("Send to Study Notes", key=f"save_selected_explain_notes_{course_code}_{lesson_number}", use_container_width=True):
+                    prompt_text = st.session_state.get(explain_text_key, "").strip() or f"Selected text from Lesson {lesson_number}"
+                    note_title_prefix = "AI Explanation" if explain_mode == "explain" else "AI Exam Answer"
+                    note_title = f"{note_title_prefix}: {prompt_text[:70]}"
+                    ok, msg = save_ai_text_to_study_notes(
+                        course_code,
+                        note_title,
+                        current_output,
+                        tags=["ai-generated", "selected-text", explain_mode],
+                        category="exam" if explain_mode == "answer" else "summary",
+                        importance="important",
+                    )
+                    (st.success if ok else st.info)(msg)
+            with explain_col3:
+                if st.button("Save as flashcard", key=f"save_selected_explain_flashcard_{course_code}_{lesson_number}", use_container_width=True):
+                    explanation_text = current_output.strip()
+                    prompt_text = st.session_state.get(explain_text_key, "").strip() or f"Selected text from Lesson {lesson_number}"
+                    ok, msg = create_flashcard(
+                        prompt_text,
+                        explanation_text,
+                        course_code=course_code,
+                        tags=["selected-text", "ai-explanation", "lesson-support"],
+                    )
+                    (st.success if ok else st.info)(msg)
+            with explain_col4:
+                if st.button("Clear explanation", key=f"clear_selected_explain_{course_code}_{lesson_number}", use_container_width=True):
+                    st.session_state[explain_text_key] = ""
+                    st.session_state[explain_output_key] = ""
+                    st.session_state[explain_open_key] = False
+                    st.session_state[explain_mode_key] = "explain"
+                    st.rerun()
+            with st.expander("Copy-ready text", expanded=False):
+                st.text_area(
+                    "Copy-ready answer",
+                    value=current_output,
+                    height=220,
+                    key=f"copy_ready_selected_explain_{course_code}_{lesson_number}",
+                )
 
         candidate_terms = detect_difficult_word_candidates(lesson_text, lesson_glossary_entries)
         if candidate_terms:
@@ -1113,33 +1405,34 @@ def render_lesson_glossary_manager(course_code, course_name, lesson, lesson_glos
         )
         control_col1, control_col2, control_col3 = st.columns([1.1, 1.1, 1.8])
         with control_col1:
-            if st.button("Suggest meaning", key=f"suggest_glossary_{course_code}_{lesson_number}", use_container_width=True):
+            if st.button("Explain selected text", key=f"suggest_glossary_{course_code}_{lesson_number}", use_container_width=True):
                 current_term = st.session_state.get(term_input_key, "").strip()
                 if current_term:
-                    suggestion = generate_glossary_suggestion(
-                        current_term,
-                        lesson_text,
-                        lesson_title=lesson_title,
-                        course_name=course_name,
-                    )
-                    st.session_state[plain_input_key] = suggestion.get("plain", "")
-                    st.session_state[context_input_key] = suggestion.get("context", "")
-                    st.session_state[read_more_input_key] = suggestion.get("read_more", "")
+                    prefill_selection_explanation(current_term)
                     st.session_state[manager_open_key] = True
                     st.rerun()
                 else:
                     st.warning("Choose or capture a term first.")
         with control_col2:
+            if st.button("Answer like exam", key=f"answer_selected_text_{course_code}_{lesson_number}", use_container_width=True):
+                current_term = st.session_state.get(term_input_key, "").strip()
+                if current_term:
+                    prefill_selection_exam_answer(current_term)
+                    st.session_state[manager_open_key] = True
+                    st.rerun()
+                else:
+                    st.warning("Choose or capture a term first.")
+        with control_col3:
             if st.button("Clear form", key=f"clear_glossary_form_{course_code}_{lesson_number}", use_container_width=True):
                 for key in [term_input_key, plain_input_key, context_input_key, read_more_input_key, aliases_input_key]:
                     st.session_state[key] = ""
                 st.session_state[manager_open_key] = False
                 st.rerun()
-        with control_col3:
-            if client is None:
-                st.caption("AI is not configured, so suggestions fall back to lesson-context hints.")
-            else:
-                st.caption("AI suggestions use the current lesson context, then you can edit the wording before saving.")
+
+        if client is None:
+            st.caption("AI is not configured, so explanation and exam-answer drafts fall back to lesson-context hints.")
+        else:
+            st.caption("AI can now either explain the selected text or turn it into a short exam-style answer.")
 
         with st.form(f"custom_glossary_form_{course_code}_{lesson_number}"):
             custom_term = st.text_input("Word or phrase", key=term_input_key, placeholder="Example: heteroscedasticity")
@@ -70946,7 +71239,7 @@ elif page == "Learn & Practice":
         if course_code in course_lessons:
             st.markdown("### 📖 Course Lessons")
             st.markdown("Explore detailed lessons with visual explanations and key concepts.")
-            st.caption("Difficult words are highlighted in the lesson text. Hover a highlighted term for a quick meaning, or open the word bank to read more.")
+            st.caption("Difficult words are highlighted in the lesson text. Hover a highlighted term for a quick meaning, or mark any word and use the quick menu that appears to add it to the word bank.")
             st.markdown("")
 
             course_glossary_entries = merge_glossary_entry_sets(
@@ -70970,7 +71263,7 @@ elif page == "Learn & Practice":
                     content = lesson['content']
 
                     if lesson_glossary_entries:
-                        st.caption("🧠 Hover or focus highlighted words for quick meanings. Open the lesson word bank below for a longer explanation.")
+                        st.caption("🧠 Hover or focus highlighted words for quick meanings. You can also mark any word in this lesson and use the quick menu that appears to send it straight to the lesson word bank.")
                     render_lesson_glossary_manager(course_code, course['name'], lesson, lesson_glossary_entries)
                     
                     # Split content by Mermaid diagrams
