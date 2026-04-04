@@ -1,4 +1,5 @@
 import csv
+from html import escape as html_escape
 import io
 import json
 import os
@@ -7,10 +8,12 @@ import re
 import zipfile
 from collections import Counter
 from datetime import datetime, timedelta
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import streamlit as st
+import streamlit.components.v1 as components
 import mistune
 from openai import OpenAI
 from streamlit.components.v1 import html
@@ -29,6 +32,10 @@ _openai_api_key = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=_openai_api_key) if _openai_api_key else None
 
 _markdown_with_tables = mistune.create_markdown(plugins=["table", "strikethrough"])
+_selection_capture_component = components.declare_component(
+    "glossary_selection_capture",
+    path=str((Path(__file__).resolve().parent / "streamlit_components" / "glossary_selection_capture")),
+)
 
 
 def estimate_mathjax_preview_height(text, min_height=220, max_height=900):
@@ -175,6 +182,1391 @@ def render_mermaid_diagram(mermaid_code, key_suffix="default", height=420):
     </html>
     """
     html(mermaid_html, height=height, scrolling=False)
+
+
+LESSON_WORD_BANK = {
+    "data analysis": {
+        "plain": "The process of turning raw data into useful information, insight, and decisions.",
+        "context": "In these lessons, data analysis usually means collecting, cleaning, examining, and interpreting data so it supports action.",
+        "read_more": "A good shortcut is: raw data -> method -> insight -> decision.",
+        "aliases": ["data analyses"],
+    },
+    "raw data": {
+        "plain": "Data in its original, unprocessed form.",
+        "context": "Raw data has not yet been cleaned, organised, or interpreted.",
+        "read_more": "It often contains noise, missing values, duplicates, or inconsistent formatting.",
+    },
+    "decision-making": {
+        "plain": "Using evidence to choose what should be done.",
+        "context": "In this app, many lessons connect analysis back to business or professional decisions.",
+        "read_more": "A strong answer usually explains not only the result, but what action that result supports.",
+        "aliases": ["decision making"],
+    },
+    "statistical analysis": {
+        "plain": "Using statistical methods to describe data, test ideas, or model relationships.",
+        "context": "This often includes averages, spread, correlations, regression, and hypothesis tests.",
+        "read_more": "It helps move from observation to evidence-based interpretation.",
+    },
+    "diagnostic analysis": {
+        "plain": "Analysis used to explain why something happened.",
+        "context": "It focuses on causes, drivers, and root explanations rather than future forecasts.",
+        "read_more": "A safe memory rule is: descriptive = what happened, diagnostic = why it happened.",
+    },
+    "predictive analysis": {
+        "plain": "Analysis used to estimate what is likely to happen next.",
+        "context": "It often uses historical patterns, regression, or time series methods to make forecasts.",
+        "read_more": "Predictive analysis gives probabilities or estimates, not guaranteed future values.",
+    },
+    "data mining": {
+        "plain": "Finding patterns, relationships, or useful structure in large datasets.",
+        "context": "It is often used when the goal is discovery rather than testing one simple question.",
+        "read_more": "Think of it as searching for hidden patterns that are not obvious at first glance.",
+    },
+    "machine learning": {
+        "plain": "A field where models learn patterns from data instead of being fully hand-coded.",
+        "context": "In these lessons it usually appears as a more advanced way to classify, predict, or automate decisions.",
+        "read_more": "A useful memory rule is machine learning = models improve by learning from examples.",
+    },
+    "statistics": {
+        "plain": "The branch of mathematics used to describe data and draw conclusions from it.",
+        "context": "Statistics provides the foundation for many spreadsheet and analysis tools in this app.",
+        "read_more": "It includes both descriptive statistics and inferential statistics.",
+    },
+    "data visualisation": {
+        "plain": "Showing data through charts, graphs, dashboards, or other visual forms.",
+        "context": "It helps make patterns easier to understand, especially for non-technical audiences.",
+        "read_more": "Good visualisation is not decoration; it is structured communication.",
+        "aliases": ["data visualization"],
+    },
+    "business intelligence": {
+        "plain": "A set of tools and practices used to turn business data into useful reporting and decisions.",
+        "context": "It often combines dashboards, KPIs, reporting, and performance tracking.",
+        "read_more": "BI usually focuses on helping managers understand what is happening in the business.",
+    },
+    "big data": {
+        "plain": "Very large or complex datasets that are difficult to handle with traditional tools alone.",
+        "context": "The term usually points to high volume, high velocity, or high variety of data.",
+        "read_more": "A safe memory rule is big data = data too large, too fast, or too varied for simpler tools.",
+    },
+    "correlation": {
+        "plain": "A measure of how strongly two variables move together.",
+        "context": "It shows direction and strength, but it does not by itself prove causation.",
+        "read_more": "Positive correlation = same direction. Negative correlation = opposite direction.",
+        "aliases": ["correlations"],
+    },
+    "regression": {
+        "plain": "A method used to model and predict a dependent variable from one or more explanatory variables.",
+        "context": "In these lessons it is often used for slope, intercept, coefficients, and forecasting.",
+        "read_more": "A safe memory rule is regression = relationship plus prediction.",
+        "aliases": ["regressions"],
+    },
+    "slope": {
+        "plain": "The rate at which the dependent variable changes when the explanatory variable increases by one unit.",
+        "context": "In simple regression, the slope tells you direction and steepness of the best-fit line.",
+        "read_more": "Positive slope means the outcome tends to rise; negative slope means it tends to fall.",
+    },
+    "intercept": {
+        "plain": "The predicted value of the dependent variable when the explanatory variable equals zero.",
+        "context": "It is where the regression line crosses the y-axis.",
+        "read_more": "In some practical datasets, the intercept is mathematically useful even if x = 0 is not realistic.",
+    },
+    "coefficient": {
+        "plain": "A number in a model that shows how strongly one variable affects another.",
+        "context": "In linear regression, coefficients are the parameter estimates used in the forecasting formula.",
+        "read_more": "A coefficient usually tells you both the direction and the size of the relationship.",
+        "aliases": ["coefficients", "regression coefficient", "regression coefficients"],
+    },
+    "variance": {
+        "plain": "A measure of how spread out values are around the mean.",
+        "context": "Higher variance means the values are more dispersed.",
+        "read_more": "Standard deviation is the square root of variance, so the two are closely linked.",
+    },
+    "standard deviation": {
+        "plain": "A measure of the typical distance of values from the mean.",
+        "context": "It is one of the most common ways to describe spread in a dataset.",
+        "read_more": "Low standard deviation means the values stay close to the mean; high standard deviation means they are more spread out.",
+    },
+    "z-score": {
+        "plain": "A score showing how many standard deviations a value is from the mean.",
+        "context": "It is often used to compare values on a standard scale or to flag possible outliers.",
+        "read_more": "A z-score of 0 means the value is exactly at the mean.",
+        "aliases": ["z-scores", "z score", "z scores"],
+    },
+    "outlier": {
+        "plain": "A value that is unusually far away from the rest of the data.",
+        "context": "Outliers can be real, but they can also signal errors or unusual cases that deserve investigation.",
+        "read_more": "A strong exam answer usually says investigate first, not automatically delete.",
+        "aliases": ["outliers"],
+    },
+    "histogram": {
+        "plain": "A chart that shows how numerical values are distributed across intervals or bins.",
+        "context": "It is useful when you want to see shape, spread, concentration, or skew in data.",
+        "read_more": "A histogram is for grouped numerical data, not for simple categories.",
+        "aliases": ["histograms"],
+    },
+    "normal distribution": {
+        "plain": "A symmetric bell-shaped distribution centred around the mean.",
+        "context": "It is often used as a reference model in statistics because many methods assume or compare against it.",
+        "read_more": "A normal distribution is defined by its mean and standard deviation.",
+    },
+    "skewness": {
+        "plain": "A measure of how asymmetric a distribution is.",
+        "context": "It tells you whether the tail stretches more to the left or to the right.",
+        "read_more": "Skewness is about shape, not the overall range of the data.",
+    },
+    "anova": {
+        "plain": "A statistical method used to compare means across three or more groups.",
+        "context": "ANOVA is used when the question is whether group averages differ meaningfully.",
+        "read_more": "A safe memory rule is t-test = 2 groups, ANOVA = 3 or more groups.",
+    },
+    "covariance": {
+        "plain": "A measure of whether two variables tend to move together.",
+        "context": "It gives joint movement, but unlike correlation it is not standardised.",
+        "read_more": "Positive covariance means the variables tend to rise together; negative covariance means they tend to move in opposite directions.",
+    },
+    "confidence interval": {
+        "plain": "A range of plausible values around an estimate or forecast.",
+        "context": "It helps express uncertainty instead of giving only one central number.",
+        "read_more": "Narrower intervals mean more precision; wider intervals mean more uncertainty.",
+        "aliases": ["confidence intervals"],
+    },
+    "confidence level": {
+        "plain": "The degree of confidence attached to a confidence interval, often 90%, 95%, or 99%.",
+        "context": "Higher confidence gives more certainty, but usually produces a wider interval.",
+        "read_more": "A safe memory rule is higher confidence = wider interval = lower precision.",
+        "aliases": ["confidence levels"],
+    },
+    "forecast": {
+        "plain": "A prediction about a future or unknown value based on existing data and patterns.",
+        "context": "Forecasts can be made with regression, time-series methods, or simpler pattern-based tools.",
+        "read_more": "A forecast is an estimate, not a guarantee.",
+        "aliases": ["forecasts", "forecasting"],
+    },
+    "point forecast": {
+        "plain": "A single predicted value rather than a range.",
+        "context": "It gives the central estimate but does not show the uncertainty around it.",
+        "read_more": "Confidence intervals are used when you want to show uncertainty around a point forecast.",
+        "aliases": ["point forecasts"],
+    },
+    "in-sample": {
+        "plain": "Using values that fall within the data range used to estimate the model.",
+        "context": "In-sample prediction stays inside the part of the world the model has already seen.",
+        "read_more": "It is usually less risky than predicting far outside the original data range.",
+    },
+    "out-of-sample": {
+        "plain": "Using values outside the data range that was used to estimate the model.",
+        "context": "Out-of-sample forecasts test how well the model generalises beyond the observed data.",
+        "read_more": "They are often more uncertain than in-sample predictions.",
+    },
+    "categorical variable": {
+        "plain": "A variable whose values are labels or groups rather than continuous measurements.",
+        "context": "Examples include sex, region, yes/no, or product category.",
+        "read_more": "Categorical variables often need coding or dummy variables before some models can use them.",
+        "aliases": ["categorical variables"],
+    },
+    "dummy variable": {
+        "plain": "A numeric 0/1 variable used to represent categories in a model.",
+        "context": "Dummy variables let regression models work with categorical information.",
+        "read_more": "For example, smoker may be coded as 1 = yes and 0 = no.",
+        "aliases": ["dummy variables"],
+    },
+    "hypothesis testing": {
+        "plain": "A method for deciding whether evidence is strong enough to support a claim.",
+        "context": "It is commonly used with p-values, test statistics, and significance levels.",
+        "read_more": "A strong answer usually explains both the statistical result and what it means in practice.",
+    },
+    "p-value": {
+        "plain": "A value used in hypothesis testing to judge how unusual the observed result would be under the null hypothesis.",
+        "context": "Smaller p-values usually mean stronger evidence against the null hypothesis.",
+        "read_more": "A p-value does not measure the size of an effect or whether the result matters in practice.",
+        "aliases": ["p-values"],
+    },
+    "feature engineering": {
+        "plain": "Creating, transforming, or selecting variables so analysis or models work better.",
+        "context": "This can include scaling, encoding, combining variables, and cleaning inputs.",
+        "read_more": "Good feature engineering often improves model usefulness more than small algorithm changes.",
+    },
+    "min-max scaling": {
+        "plain": "A method that rescales values to a chosen range, often 0 to 1.",
+        "context": "It uses the minimum and maximum values from the dataset.",
+        "read_more": "A common formula is (x - min) / (max - min).",
+    },
+    "z-score normalisation": {
+        "plain": "A method that rescales data by subtracting the mean and dividing by the standard deviation.",
+        "context": "It centres the data around 0 and gives it a standard deviation of 1.",
+        "read_more": "This is useful when values need to be compared on a common scale.",
+        "aliases": ["z-score normalization", "z-score normalisation", "z score normalisation", "z score normalization"],
+    },
+    "power query": {
+        "plain": "A spreadsheet tool used to import, clean, transform, and reshape data.",
+        "context": "It is especially useful when the same preparation steps need to be repeated reliably.",
+        "read_more": "A safe memory rule is Power Query = repeatable data preparation.",
+    },
+    "kpi": {
+        "plain": "A key performance indicator used to track progress toward an important goal.",
+        "context": "KPIs help turn strategy into measurable monitoring.",
+        "read_more": "Good KPIs are usually specific, measurable, and linked to decisions.",
+        "aliases": ["kpis", "key performance indicator", "key performance indicators"],
+    },
+    "heuristic": {
+        "plain": "A practical rule of thumb used to support judgement or faster decision-making.",
+        "context": "In analysis, a heuristic is often a useful shortcut rather than a perfect rule.",
+        "read_more": "Heuristics are useful, but they still need context and critical thinking.",
+        "aliases": ["heuristics"],
+    },
+    "etl": {
+        "plain": "Extract, Transform, Load.",
+        "context": "It describes a data pipeline process where data is collected, cleaned or reshaped, and then loaded into a destination system.",
+        "read_more": "ETL is a common foundation for reliable reporting and analytics workflows.",
+    },
+    "primary data": {
+        "plain": "Data collected directly from the original source for the current purpose.",
+        "context": "Surveys, interviews, or first-hand observations are common examples.",
+        "read_more": "A safe contrast is primary = collected directly, secondary = reused from somewhere else.",
+    },
+    "secondary data": {
+        "plain": "Data that has already been collected by someone else and is being reused.",
+        "context": "Books, government databases, and previous research are common examples.",
+        "read_more": "Secondary data can save time, but it still has to be checked for quality and fit.",
+    },
+}
+
+
+def build_glossary_lookup(word_bank):
+    lookup = []
+    seen_aliases = set()
+    for canonical_term, meta in word_bank.items():
+        aliases = [canonical_term] + list(meta.get("aliases", []))
+        for alias in aliases:
+            alias_key = str(alias).strip().lower()
+            if not alias_key or alias_key in seen_aliases:
+                continue
+            seen_aliases.add(alias_key)
+            lookup.append((alias, canonical_term, meta))
+    lookup.sort(key=lambda item: len(item[0]), reverse=True)
+    return lookup
+
+
+LESSON_WORD_BANK_LOOKUP = build_glossary_lookup(LESSON_WORD_BANK)
+
+
+def merge_glossary_meta(base_meta, override_meta=None):
+    merged = dict(base_meta or {})
+    if not override_meta:
+        return merged
+    if isinstance(override_meta, str):
+        merged["context"] = override_meta
+        merged["tooltip"] = override_meta
+        return merged
+    for key, value in dict(override_meta).items():
+        if value:
+            merged[key] = value
+    return merged
+
+
+def detect_glossary_entries(text, explicit_terms=None, overrides=None):
+    combined_text = str(text or "")
+    explicit_lookup = {str(term).strip().lower() for term in (explicit_terms or []) if str(term).strip()}
+    overrides = overrides or {}
+    found = {}
+
+    for alias, canonical_term, meta in LESSON_WORD_BANK_LOOKUP:
+        alias_pattern = re.compile(rf"(?<!\w){re.escape(alias)}(?!\w)", flags=re.IGNORECASE)
+        alias_key = str(alias).lower()
+        canonical_key = str(canonical_term).lower()
+        forced = alias_key in explicit_lookup or canonical_key in explicit_lookup
+
+        if forced or alias_pattern.search(combined_text):
+            merged_meta = merge_glossary_meta(
+                meta,
+                overrides.get(canonical_term) or overrides.get(alias),
+            )
+            existing = found.get(canonical_term)
+            if existing:
+                existing_aliases = set(existing.get("_aliases", []))
+                existing_aliases.add(alias)
+                existing["_aliases"] = sorted(existing_aliases, key=len, reverse=True)
+            else:
+                merged_meta["_aliases"] = sorted(
+                    {canonical_term, alias, *meta.get("aliases", [])},
+                    key=len,
+                    reverse=True,
+                )
+                found[canonical_term] = merged_meta
+
+    return dict(sorted(found.items(), key=lambda item: item[0].lower()))
+
+
+def get_lesson_glossary_entries(lesson):
+    """
+    Future lessons automatically inherit supported glossary terms from LESSON_WORD_BANK.
+    If a lesson needs tighter control, it can optionally define:
+    - glossary_terms: explicit terms to force into the lesson word bank
+    - glossary_overrides: lesson-specific wording for plain/context/read_more text
+    """
+    lesson = lesson or {}
+    explicit_terms = lesson.get("glossary_terms", [])
+    overrides = lesson.get("glossary_overrides", {})
+    combined_text = " ".join(
+        [
+            str(lesson.get("title", "")),
+            str(lesson.get("content", "")),
+            " ".join(str(point) for point in lesson.get("key_points", [])),
+        ]
+    )
+    return detect_glossary_entries(combined_text, explicit_terms=explicit_terms, overrides=overrides)
+
+
+def get_course_glossary_entries(lessons):
+    aggregated = {}
+    for lesson in lessons or []:
+        for canonical_term, meta in get_lesson_glossary_entries(lesson).items():
+            if canonical_term not in aggregated:
+                aggregated[canonical_term] = dict(meta)
+            else:
+                alias_union = set(aggregated[canonical_term].get("_aliases", [])) | set(meta.get("_aliases", []))
+                aggregated[canonical_term]["_aliases"] = sorted(alias_union, key=len, reverse=True)
+    return dict(sorted(aggregated.items(), key=lambda item: item[0].lower()))
+
+
+def merge_glossary_entry_sets(*entry_sets):
+    merged = {}
+    for entry_set in entry_sets:
+        for canonical_term, meta in (entry_set or {}).items():
+            if canonical_term not in merged:
+                merged[canonical_term] = dict(meta)
+            else:
+                merged[canonical_term] = merge_glossary_meta(merged[canonical_term], meta)
+                alias_union = set(merged[canonical_term].get("_aliases", [])) | set(meta.get("_aliases", []))
+                merged[canonical_term]["_aliases"] = sorted(alias_union, key=len, reverse=True)
+    return dict(sorted(merged.items(), key=lambda item: item[0].lower()))
+
+
+def make_lesson_glossary_key(course_code, lesson_number):
+    return f"{course_code}::{lesson_number}"
+
+
+def normalize_custom_glossary_store(store=None):
+    store = dict(store or {})
+    normalized = {
+        "global": dict(store.get("global", {})),
+        "course": dict(store.get("course", {})),
+        "lesson": dict(store.get("lesson", {})),
+    }
+    legacy_lesson_store = dict(st.session_state.get("custom_lesson_glossary", {}))
+    for lesson_key, lesson_entries in legacy_lesson_store.items():
+        if lesson_key not in normalized["lesson"]:
+            normalized["lesson"][lesson_key] = dict(lesson_entries or {})
+    return normalized
+
+
+def get_custom_glossary_store():
+    store = normalize_custom_glossary_store(st.session_state.get("custom_glossary", {}))
+    st.session_state["custom_glossary"] = store
+    return store
+
+
+def build_custom_glossary_meta(canonical_term, meta, scope_label):
+    canonical_term = str(canonical_term or "").strip()
+    if not canonical_term:
+        return None
+    merged_meta = merge_glossary_meta(
+        {
+            "plain": "Custom term added by you.",
+            "context": "Custom glossary term.",
+            "tooltip": "Custom glossary term.",
+            "read_more": "",
+            "aliases": [],
+        },
+        meta,
+    )
+    aliases = [alias for alias in merged_meta.get("aliases", []) if str(alias).strip()]
+    merged_meta["_aliases"] = sorted({canonical_term, *aliases}, key=len, reverse=True)
+    merged_meta["_scope_label"] = scope_label
+    return merged_meta
+
+
+def get_custom_global_glossary_entries():
+    store = get_custom_glossary_store()
+    cleaned = {}
+    for canonical_term, meta in store.get("global", {}).items():
+        built = build_custom_glossary_meta(canonical_term, meta, "Your global glossary")
+        if built:
+            cleaned[canonical_term] = built
+    return dict(sorted(cleaned.items(), key=lambda item: item[0].lower()))
+
+
+def get_custom_course_scope_glossary_entries(course_code):
+    store = get_custom_glossary_store()
+    cleaned = {}
+    for canonical_term, meta in store.get("course", {}).get(course_code, {}).items():
+        built = build_custom_glossary_meta(canonical_term, meta, f"Your {course_code} course glossary")
+        if built:
+            cleaned[canonical_term] = built
+    return dict(sorted(cleaned.items(), key=lambda item: item[0].lower()))
+
+
+def get_custom_lesson_scope_glossary_entries(course_code, lesson_number):
+    store = get_custom_glossary_store()
+    lesson_key = make_lesson_glossary_key(course_code, lesson_number)
+    cleaned = {}
+    for canonical_term, meta in store.get("lesson", {}).get(lesson_key, {}).items():
+        built = build_custom_glossary_meta(canonical_term, meta, f"Your Lesson {lesson_number} glossary")
+        if built:
+            cleaned[canonical_term] = built
+    return dict(sorted(cleaned.items(), key=lambda item: item[0].lower()))
+
+
+def get_custom_lesson_glossary_entries(course_code, lesson_number):
+    return merge_glossary_entry_sets(
+        get_custom_global_glossary_entries(),
+        get_custom_course_scope_glossary_entries(course_code),
+        get_custom_lesson_scope_glossary_entries(course_code, lesson_number),
+    )
+
+
+def get_course_custom_glossary_entries(course_code):
+    aggregated = merge_glossary_entry_sets(
+        get_custom_global_glossary_entries(),
+        get_custom_course_scope_glossary_entries(course_code),
+    )
+    for lesson in course_lessons.get(course_code, []):
+        aggregated = merge_glossary_entry_sets(
+            aggregated,
+            get_custom_lesson_scope_glossary_entries(course_code, lesson.get("lesson_number")),
+        )
+    return aggregated
+
+
+def upsert_custom_glossary_entry(scope_level, course_code, lesson_number, term, plain, context="", read_more="", aliases_text=""):
+    term = str(term or "").strip()
+    if not term:
+        return False, "Please enter a word or phrase first."
+
+    plain = str(plain or "").strip()
+    context = str(context or "").strip()
+    read_more = str(read_more or "").strip()
+    aliases = [alias.strip() for alias in str(aliases_text or "").split(",") if alias.strip()]
+
+    if not plain and not context and not read_more:
+        return False, "Add at least a quick meaning, a context note, or a read-more note."
+
+    store = get_custom_glossary_store()
+    entry_payload = {
+        "plain": plain or context or read_more or "Custom glossary term.",
+        "context": context or plain or "Custom glossary term.",
+        "tooltip": plain or context or read_more or "Custom glossary term.",
+        "read_more": read_more,
+        "aliases": aliases,
+    }
+
+    if scope_level == "Global":
+        global_store = dict(store.get("global", {}))
+        global_store[term] = entry_payload
+        store["global"] = global_store
+        message = f"Added '{term}' to your global word bank."
+    elif scope_level == "Course":
+        course_store = dict(store.get("course", {}))
+        scoped_store = dict(course_store.get(course_code, {}))
+        scoped_store[term] = entry_payload
+        course_store[course_code] = scoped_store
+        store["course"] = course_store
+        message = f"Added '{term}' to your {course_code} course word bank."
+    else:
+        lesson_store = dict(store.get("lesson", {}))
+        lesson_key = make_lesson_glossary_key(course_code, lesson_number)
+        scoped_store = dict(lesson_store.get(lesson_key, {}))
+        scoped_store[term] = entry_payload
+        lesson_store[lesson_key] = scoped_store
+        store["lesson"] = lesson_store
+        message = f"Added '{term}' to the word bank for Lesson {lesson_number}."
+
+    st.session_state["custom_glossary"] = store
+    return True, message
+
+
+def delete_custom_glossary_entry(scope_level, course_code, lesson_number, term):
+    store = get_custom_glossary_store()
+    removed = False
+
+    if scope_level == "Global":
+        global_store = dict(store.get("global", {}))
+        removed = term in global_store
+        global_store.pop(term, None)
+        store["global"] = global_store
+    elif scope_level == "Course":
+        course_store = dict(store.get("course", {}))
+        scoped_store = dict(course_store.get(course_code, {}))
+        removed = term in scoped_store
+        scoped_store.pop(term, None)
+        if scoped_store:
+            course_store[course_code] = scoped_store
+        else:
+            course_store.pop(course_code, None)
+        store["course"] = course_store
+    else:
+        lesson_store = dict(store.get("lesson", {}))
+        lesson_key = make_lesson_glossary_key(course_code, lesson_number)
+        scoped_store = dict(lesson_store.get(lesson_key, {}))
+        removed = term in scoped_store
+        scoped_store.pop(term, None)
+        if scoped_store:
+            lesson_store[lesson_key] = scoped_store
+        else:
+            lesson_store.pop(lesson_key, None)
+        store["lesson"] = lesson_store
+
+    st.session_state["custom_glossary"] = store
+    return removed
+
+
+def iter_custom_glossary_entries():
+    store = get_custom_glossary_store()
+    entries = []
+
+    for term, meta in store.get("global", {}).items():
+        built = build_custom_glossary_meta(term, meta, "Global")
+        if built:
+            entries.append({"term": term, "scope": "Global", "course_code": "", "lesson_number": "", "meta": built})
+
+    for course_code, course_entries in store.get("course", {}).items():
+        for term, meta in dict(course_entries or {}).items():
+            built = build_custom_glossary_meta(term, meta, f"Course ({course_code})")
+            if built:
+                entries.append({"term": term, "scope": "Course", "course_code": course_code, "lesson_number": "", "meta": built})
+
+    for lesson_key, lesson_entries in store.get("lesson", {}).items():
+        course_code, lesson_number = (lesson_key.split("::", 1) + [""])[:2]
+        for term, meta in dict(lesson_entries or {}).items():
+            built = build_custom_glossary_meta(term, meta, f"Lesson {lesson_number} ({course_code})")
+            if built:
+                entries.append({"term": term, "scope": "Lesson", "course_code": course_code, "lesson_number": lesson_number, "meta": built})
+
+    return sorted(entries, key=lambda item: (item["course_code"], item["lesson_number"], item["term"].lower()))
+
+
+GLOSSARY_STOPWORDS = {
+    "about", "above", "after", "again", "against", "also", "analysis", "analyst", "and", "another", "answer",
+    "application", "are", "around", "based", "because", "been", "before", "being", "between", "both", "business",
+    "calculate", "called", "can", "case", "cells", "chart", "click", "column", "columns", "confidence", "consider",
+    "correct", "course", "create", "data", "dataset", "decision", "described", "different", "each", "easy", "enter",
+    "equation", "estimate", "expected", "explanatory", "explain", "false", "file", "first", "forecast", "formula",
+    "from", "function", "given", "goodness", "have", "help", "here", "higher", "important", "include", "input",
+    "into", "just", "known", "label", "labels", "lesson", "level", "line", "linear", "many", "matrix", "mean",
+    "model", "more", "most", "multiple", "need", "next", "null", "number", "often", "option", "output", "page",
+    "parameter", "point", "practice", "predict", "predicted", "probability", "question", "range", "read", "regression",
+    "result", "right", "same", "sample", "scale", "section", "select", "should", "show", "simple", "small", "some",
+    "spreadsheet", "standard", "statistical", "statistics", "system", "table", "target", "term", "text", "than",
+    "that", "the", "their", "there", "these", "this", "those", "time", "tool", "tools", "true", "under", "used",
+    "using", "value", "values", "variable", "variables", "what", "when", "which", "with", "word", "worksheet", "you",
+    "your",
+}
+
+
+def extract_term_context_snippet(text, term, max_chars=220):
+    plain_text = re.sub(r"<[^>]+>", " ", str(text or ""))
+    plain_text = re.sub(r"\s+", " ", plain_text).strip()
+    if not plain_text:
+        return ""
+    match = re.search(re.escape(str(term or "")), plain_text, flags=re.IGNORECASE)
+    if not match:
+        return plain_text[:max_chars].strip()
+
+    start = max(0, match.start() - max_chars // 2)
+    end = min(len(plain_text), match.end() + max_chars // 2)
+    snippet = plain_text[start:end].strip()
+    if start > 0:
+        snippet = "..." + snippet
+    if end < len(plain_text):
+        snippet = snippet + "..."
+    return snippet
+
+
+def fallback_glossary_suggestion(term, lesson_text, lesson_title=""):
+    snippet = extract_term_context_snippet(lesson_text, term)
+    title_bit = f" in '{lesson_title}'" if lesson_title else ""
+    return {
+        "plain": f"{term} is a key term that appears{title_bit}.",
+        "context": snippet or f"{term} appears in this lesson and is worth defining before moving on.",
+        "read_more": "Save your own example, formula, or plain-language reminder here so the meaning is easier to remember next time.",
+    }
+
+
+def generate_glossary_suggestion(term, lesson_text, lesson_title="", course_name=""):
+    cache = st.session_state.setdefault("glossary_suggestion_cache", {})
+    cache_key = f"{course_name}::{lesson_title}::{str(term or '').strip().lower()}"
+    if cache_key in cache:
+        return cache[cache_key]
+
+    fallback = fallback_glossary_suggestion(term, lesson_text, lesson_title=lesson_title)
+
+    if client is None:
+        cache[cache_key] = fallback
+        return fallback
+
+    snippet = extract_term_context_snippet(lesson_text, term, max_chars=500)
+    prompt = (
+        "You are helping build a study glossary. "
+        "Return strict JSON with keys plain, context, read_more. "
+        "Keep plain under 18 words, context under 35 words, and read_more under 60 words. "
+        "Use simple student-friendly English.\n\n"
+        f"Course: {course_name}\n"
+        f"Lesson: {lesson_title}\n"
+        f"Term: {term}\n"
+        f"Lesson excerpt: {snippet}"
+    )
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "Return only valid JSON."},
+                {"role": "user", "content": prompt},
+            ],
+            max_tokens=180,
+        )
+        raw_text = response.choices[0].message.content.strip()
+        json_match = re.search(r"\{.*\}", raw_text, flags=re.DOTALL)
+        payload = json.loads(json_match.group(0) if json_match else raw_text)
+        suggestion = {
+            "plain": str(payload.get("plain") or fallback["plain"]).strip(),
+            "context": str(payload.get("context") or fallback["context"]).strip(),
+            "read_more": str(payload.get("read_more") or fallback["read_more"]).strip(),
+        }
+    except Exception:
+        suggestion = fallback
+
+    cache[cache_key] = suggestion
+    return suggestion
+
+
+def detect_difficult_word_candidates(text, glossary_entries, max_candidates=10):
+    plain_text = re.sub(r"<[^>]+>", " ", str(text or ""))
+    plain_text = re.sub(r"[*_`>#\[\]\(\)\|]", " ", plain_text)
+    plain_text = re.sub(r"\s+", " ", plain_text).strip()
+    if not plain_text:
+        return []
+
+    known_terms = set()
+    for canonical_term, meta in (glossary_entries or {}).items():
+        known_terms.add(canonical_term.lower())
+        for alias in meta.get("_aliases", []):
+            known_terms.add(str(alias).lower())
+
+    raw_tokens = re.findall(r"[A-Za-z][A-Za-z0-9_-]{3,}", plain_text)
+    token_counts = Counter()
+    token_display = {}
+    for token in raw_tokens:
+        token_key = token.lower()
+        token_counts[token_key] += 1
+        token_display.setdefault(token_key, token)
+
+    ranked = []
+    for token_key, count in token_counts.items():
+        display = token_display[token_key]
+        if token_key in known_terms or token_key in GLOSSARY_STOPWORDS:
+            continue
+        if len(display) < 6 and count < 2 and not display.isupper():
+            continue
+        if display.isdigit():
+            continue
+        score = count * 10 + len(display)
+        ranked.append((score, display, count))
+
+    ranked.sort(key=lambda item: (-item[0], item[1].lower()))
+    return [
+        {
+            "term": display,
+            "count": count,
+            "snippet": extract_term_context_snippet(plain_text, display, max_chars=180),
+        }
+        for _, display, count in ranked[:max_candidates]
+    ]
+
+
+def protect_code_segments(text):
+    replacements = {}
+
+    def _store(match):
+        placeholder = f"@@GLOSSARY_CODE_{len(replacements)}@@"
+        replacements[placeholder] = match.group(0)
+        return placeholder
+
+    protected = re.sub(r"```.*?```|`[^`\n]+`", _store, str(text or ""), flags=re.DOTALL)
+    return protected, replacements
+
+
+def restore_code_segments(text, replacements):
+    restored = str(text or "")
+    for placeholder, original in replacements.items():
+        restored = restored.replace(placeholder, original)
+    return restored
+
+
+def make_glossary_span(display_text, canonical_term, meta):
+    plain = meta.get("plain") or canonical_term
+    context = meta.get("context") or plain
+    read_more = meta.get("read_more") or ""
+    scope_label = meta.get("_scope_label") or ""
+    tooltip = meta.get("tooltip") or context or plain or canonical_term
+    return (
+        f'<span class="glossary-term" tabindex="0" '
+        f'data-glossary-term="{html_escape(canonical_term)}" '
+        f'title="{html_escape(tooltip)}">'
+        f'<span class="glossary-term-label">{html_escape(display_text)}</span>'
+        f'<span class="glossary-hover-card" role="note" aria-label="{html_escape(canonical_term)} definition">'
+        f'<span class="glossary-hover-term">{html_escape(canonical_term)}</span>'
+        f'<span class="glossary-hover-plain">{html_escape(plain)}</span>'
+        f'<span class="glossary-hover-context">{html_escape(context)}</span>'
+        f'{f"<span class=\"glossary-hover-readmore\">{html_escape(read_more)}</span>" if read_more else ""}'
+        f'{f"<span class=\"glossary-hover-scope\">{html_escape(scope_label)}</span>" if scope_label else ""}'
+        f'</span></span>'
+    )
+
+
+def annotate_text_with_glossary(text, glossary_entries, occurrence_counts=None, max_occurrences_per_term=2):
+    if not glossary_entries:
+        return text
+
+    protected_text, code_replacements = protect_code_segments(text)
+    occurrence_counts = occurrence_counts if occurrence_counts is not None else {}
+    html_parts = re.split(r"(<[^>]+>)", protected_text)
+    annotated_parts = []
+    glossary_replacements = {}
+
+    for html_part in html_parts:
+        if html_part.startswith("<") and html_part.endswith(">"):
+            annotated_parts.append(html_part)
+            continue
+
+        annotated_segment = html_part
+        for canonical_term, meta in glossary_entries.items():
+            aliases = meta.get("_aliases", [canonical_term])
+            for alias in aliases:
+                pattern = re.compile(rf"(?<!\w)({re.escape(alias)})(?!\w)", flags=re.IGNORECASE)
+
+                def _replace(match, canonical_term=canonical_term, meta=meta):
+                    seen = occurrence_counts.get(canonical_term, 0)
+                    if seen >= max_occurrences_per_term:
+                        return match.group(1)
+                    occurrence_counts[canonical_term] = seen + 1
+                    placeholder = f"@@GLOSSARY_TERM_{len(glossary_replacements)}@@"
+                    glossary_replacements[placeholder] = make_glossary_span(match.group(1), canonical_term, meta)
+                    return placeholder
+
+                annotated_segment = pattern.sub(_replace, annotated_segment)
+
+        annotated_parts.append(annotated_segment)
+
+    restored = restore_code_segments("".join(annotated_parts), code_replacements)
+    for placeholder, html_value in glossary_replacements.items():
+        restored = restored.replace(placeholder, html_value)
+    return restored
+
+
+def render_glossary_bank(glossary_entries, context_label="this lesson"):
+    if not glossary_entries:
+        st.info("No glossary terms were detected for this section yet.")
+        return
+
+    cards = ['<div class="glossary-bank">']
+    for canonical_term, meta in glossary_entries.items():
+        plain = html_escape(meta.get("plain", "No short definition available."))
+        context = html_escape(meta.get("context", plain))
+        read_more = html_escape(meta.get("read_more", ""))
+        scope_label = html_escape(meta.get("_scope_label", ""))
+        aliases = [alias for alias in meta.get("_aliases", []) if alias.lower() != canonical_term.lower()]
+        alias_text = ", ".join(aliases[:4])
+
+        cards.append(
+            f"""
+            <details class="glossary-card">
+                <summary>
+                    <span class="glossary-card-term">{html_escape(canonical_term)}</span>
+                    <span class="glossary-card-subtitle">{context}</span>
+                </summary>
+                <div class="glossary-card-body">
+                    <p><strong>Plain meaning:</strong> {plain}</p>
+                    <p><strong>In context:</strong> {context}</p>
+                    {f"<p><strong>Read more:</strong> {read_more}</p>" if read_more else ""}
+                    {f"<p><strong>Saved in:</strong> {scope_label}</p>" if scope_label else ""}
+                    {f"<p><strong>Also appears as:</strong> {html_escape(alias_text)}</p>" if alias_text else ""}
+                </div>
+            </details>
+            """
+        )
+    cards.append("</div>")
+    st.markdown(
+        f"Use this word bank to unpack difficult terms from {context_label}. Hover highlighted words in the lesson text for quick meanings, or open any term below to read more.",
+        unsafe_allow_html=False,
+    )
+    st.markdown("".join(cards), unsafe_allow_html=True)
+
+
+def render_glossary_selection_capture(component_key):
+    return _selection_capture_component(key=component_key, default="", height=92)
+
+
+def get_course_name_from_code(course_code):
+    for course in courses_data:
+        if course.get("code") == course_code:
+            return course.get("name", course_code)
+    return course_code
+
+
+def build_glossary_flashcard_back(meta):
+    parts = [str(meta.get("plain", "")).strip()]
+    context = str(meta.get("context", "")).strip()
+    read_more = str(meta.get("read_more", "")).strip()
+    if context and context not in parts:
+        parts.append(f"In context: {context}")
+    if read_more:
+        parts.append(f"Read more: {read_more}")
+    return "\n\n".join(part for part in parts if part)
+
+
+def render_lesson_glossary_manager(course_code, course_name, lesson, lesson_glossary_entries):
+    lesson_number = lesson.get("lesson_number")
+    lesson_title = lesson.get("title", "")
+    lesson_text = " ".join(
+        [
+            str(lesson.get("title", "")),
+            str(lesson.get("content", "")),
+            " ".join(str(point) for point in lesson.get("key_points", [])),
+        ]
+    )
+
+    term_input_key = f"custom_glossary_term_{course_code}_{lesson_number}"
+    plain_input_key = f"custom_glossary_plain_{course_code}_{lesson_number}"
+    context_input_key = f"custom_glossary_context_{course_code}_{lesson_number}"
+    read_more_input_key = f"custom_glossary_read_more_{course_code}_{lesson_number}"
+    aliases_input_key = f"custom_glossary_aliases_{course_code}_{lesson_number}"
+    capture_state_key = f"custom_glossary_last_capture_{course_code}_{lesson_number}"
+    scope_key = f"custom_glossary_scope_{course_code}_{lesson_number}"
+    flashcard_key = f"custom_glossary_flashcard_{course_code}_{lesson_number}"
+    manager_open_key = f"custom_glossary_manager_open_{course_code}_{lesson_number}"
+
+    st.session_state.setdefault(scope_key, "Lesson")
+    st.session_state.setdefault(flashcard_key, False)
+    st.session_state.setdefault(manager_open_key, False)
+
+    with st.expander("➕ Capture, explain, and save difficult words", expanded=bool(st.session_state.get(manager_open_key))):
+        st.markdown(
+            """
+            <div class="lesson-glossary-shell">
+              <div class="lesson-glossary-title">Build this lesson word bank as you read</div>
+              <div class="lesson-glossary-copy">Highlight a word in the lesson, capture it here, and decide whether it belongs only to this lesson, to the whole course, or to your global glossary.</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        st.caption("Highlight a word or phrase in the lesson text, then capture it below. You can save it to this lesson, this course, or your global glossary.")
+
+        captured_term = render_glossary_selection_capture(f"glossary_capture_component_{course_code}_{lesson_number}")
+        if captured_term and captured_term != st.session_state.get(capture_state_key):
+            st.session_state[term_input_key] = captured_term
+            st.session_state[capture_state_key] = captured_term
+            st.session_state[manager_open_key] = True
+            st.rerun()
+
+        candidate_terms = detect_difficult_word_candidates(lesson_text, lesson_glossary_entries)
+        if candidate_terms:
+            st.markdown(
+                """
+                <div class="lesson-glossary-toolbar">
+                  <div class="lesson-glossary-toolbar-title">Possible difficult words detected automatically</div>
+                  <div class="lesson-glossary-toolbar-copy">Use these as quick starting points if the lesson contains words that still feel unfamiliar.</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            candidate_cols = st.columns(2)
+            for idx, candidate in enumerate(candidate_terms):
+                with candidate_cols[idx % 2]:
+                    st.markdown(
+                        f"""
+                        <div class="lesson-glossary-candidate">
+                          <div class="lesson-glossary-candidate-term">{html_escape(candidate['term'])}</div>
+                          <div class="lesson-glossary-candidate-meta">Appears {candidate['count']} time(s) in this lesson</div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True,
+                    )
+                    if st.button(
+                        f"Add {candidate['term']} ({candidate['count']}x)",
+                        key=f"candidate_term_{course_code}_{lesson_number}_{idx}",
+                        use_container_width=True,
+                    ):
+                        st.session_state[term_input_key] = candidate["term"]
+                        st.session_state[manager_open_key] = True
+                        st.rerun()
+                    st.caption(candidate["snippet"])
+
+        st.markdown(
+            """
+            <div class="lesson-glossary-toolbar">
+              <div class="lesson-glossary-toolbar-title">Capture and improve the explanation</div>
+              <div class="lesson-glossary-toolbar-copy">Use AI suggestions as a draft, then rewrite them into the clearest wording for your own exam memory.</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        control_col1, control_col2, control_col3 = st.columns([1.1, 1.1, 1.8])
+        with control_col1:
+            if st.button("Suggest meaning", key=f"suggest_glossary_{course_code}_{lesson_number}", use_container_width=True):
+                current_term = st.session_state.get(term_input_key, "").strip()
+                if current_term:
+                    suggestion = generate_glossary_suggestion(
+                        current_term,
+                        lesson_text,
+                        lesson_title=lesson_title,
+                        course_name=course_name,
+                    )
+                    st.session_state[plain_input_key] = suggestion.get("plain", "")
+                    st.session_state[context_input_key] = suggestion.get("context", "")
+                    st.session_state[read_more_input_key] = suggestion.get("read_more", "")
+                    st.session_state[manager_open_key] = True
+                    st.rerun()
+                else:
+                    st.warning("Choose or capture a term first.")
+        with control_col2:
+            if st.button("Clear form", key=f"clear_glossary_form_{course_code}_{lesson_number}", use_container_width=True):
+                for key in [term_input_key, plain_input_key, context_input_key, read_more_input_key, aliases_input_key]:
+                    st.session_state[key] = ""
+                st.session_state[manager_open_key] = False
+                st.rerun()
+        with control_col3:
+            if client is None:
+                st.caption("AI is not configured, so suggestions fall back to lesson-context hints.")
+            else:
+                st.caption("AI suggestions use the current lesson context, then you can edit the wording before saving.")
+
+        with st.form(f"custom_glossary_form_{course_code}_{lesson_number}"):
+            custom_term = st.text_input("Word or phrase", key=term_input_key, placeholder="Example: heteroscedasticity")
+            form_col1, form_col2 = st.columns([1, 1])
+            with form_col1:
+                custom_scope = st.selectbox("Save in", options=["Lesson", "Course", "Global"], key=scope_key)
+            with form_col2:
+                add_flashcard = st.checkbox("Also create flashcard", key=flashcard_key)
+            custom_plain = st.text_input("Quick meaning for hover", key=plain_input_key, placeholder="Short explanation shown on hover")
+            custom_context = st.text_input("Meaning in this lesson", key=context_input_key, placeholder="What the word means in the context of this lesson")
+            custom_read_more = st.text_area("Read more", key=read_more_input_key, placeholder="Longer note, example, or reminder for future revision")
+            custom_aliases = st.text_input("Optional aliases", key=aliases_input_key, placeholder="Comma-separated variants, e.g. KPI, key performance indicator")
+            submitted_custom_term = st.form_submit_button("Save word")
+
+        if submitted_custom_term:
+            ok, message = upsert_custom_glossary_entry(
+                custom_scope,
+                course_code,
+                lesson_number,
+                custom_term,
+                custom_plain,
+                context=custom_context,
+                read_more=custom_read_more,
+                aliases_text=custom_aliases,
+            )
+            if ok:
+                if add_flashcard:
+                    create_flashcard(
+                        custom_term,
+                        build_glossary_flashcard_back(
+                            {
+                                "plain": custom_plain,
+                                "context": custom_context,
+                                "read_more": custom_read_more,
+                            }
+                        ),
+                        course_code=course_code,
+                        tags=["glossary", "lesson-word-bank"],
+                    )
+                for key in [term_input_key, plain_input_key, context_input_key, read_more_input_key, aliases_input_key]:
+                    st.session_state[key] = ""
+                st.session_state[flashcard_key] = False
+                st.session_state[manager_open_key] = False
+                st.success(message)
+                st.rerun()
+            else:
+                st.warning(message)
+
+        st.markdown(
+            """
+            <div class="lesson-glossary-toolbar">
+              <div class="lesson-glossary-toolbar-title">Saved custom terms active in this lesson</div>
+              <div class="lesson-glossary-toolbar-copy">These are the terms currently enriching the text for this lesson, including inherited global and course-level entries.</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        scope_sections = [
+            ("Global", get_custom_global_glossary_entries()),
+            ("Course", get_custom_course_scope_glossary_entries(course_code)),
+            ("Lesson", get_custom_lesson_scope_glossary_entries(course_code, lesson_number)),
+        ]
+        shown_any = False
+        for scope_label, entries in scope_sections:
+            if not entries:
+                continue
+            shown_any = True
+            st.markdown(f'<div class="lesson-glossary-scope-heading">{html_escape(scope_label)} scope</div>', unsafe_allow_html=True)
+            for custom_term, custom_meta in entries.items():
+                col_term, col_scope, col_flash, col_delete = st.columns([4.3, 1.3, 1.2, 0.7])
+                with col_term:
+                    st.markdown(
+                        f"""
+                        <div class="lesson-glossary-saved-card">
+                          <div class="lesson-glossary-saved-term">{html_escape(custom_term)}</div>
+                          <div class="lesson-glossary-saved-plain">{html_escape(custom_meta.get('plain', 'Custom glossary term.'))}</div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True,
+                    )
+                with col_scope:
+                    st.caption(custom_meta.get("_scope_label", scope_label))
+                with col_flash:
+                    if st.button("🎴", key=f"flash_glossary_{scope_label}_{course_code}_{lesson_number}_{custom_term}", help=f"Create flashcard for {custom_term}"):
+                        ok, msg = create_flashcard(
+                            custom_term,
+                            build_glossary_flashcard_back(custom_meta),
+                            course_code=course_code,
+                            tags=["glossary", "lesson-word-bank"],
+                        )
+                        (st.success if ok else st.info)(msg)
+                with col_delete:
+                    if st.button("🗑️", key=f"delete_glossary_{scope_label}_{course_code}_{lesson_number}_{custom_term}", help=f"Remove {custom_term}"):
+                        delete_custom_glossary_entry(scope_label, course_code, lesson_number, custom_term)
+                        st.rerun()
+        if not shown_any:
+            st.info("No custom terms saved for this lesson yet.")
+
+
+def render_my_glossary_page():
+    st.markdown(
+        """
+        <style>
+        .my-glossary-hero {
+            background:
+                radial-gradient(circle at top left, rgba(251, 191, 36, 0.24), transparent 32%),
+                linear-gradient(135deg, #fffdf5 0%, #f8fbff 55%, #eef6ff 100%);
+            border: 1px solid #e8eef8;
+            border-radius: 18px;
+            padding: 18px 20px;
+            margin-bottom: 16px;
+        }
+        .my-glossary-hero h2 {
+            margin: 0 0 6px 0;
+            color: #0f172a;
+            font-size: 1.45rem;
+        }
+        .my-glossary-hero p {
+            margin: 0;
+            color: #475569;
+            line-height: 1.55;
+        }
+        .my-glossary-toolbar {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 14px;
+            margin-bottom: 12px;
+        }
+        .my-glossary-chip-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 10px 0 0 0;
+        }
+        .my-glossary-chip {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 6px 10px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            background: #eef4ff;
+            color: #1e3a8a;
+            border: 1px solid #c7d2fe;
+        }
+        .my-glossary-section-title {
+            margin: 8px 0 6px 0;
+            font-size: 1.02rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .my-glossary-term-card {
+            border: 1px solid #e5e7eb;
+            background: white;
+            border-radius: 14px;
+            padding: 12px 14px;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+        }
+        .my-glossary-term-card h4 {
+            margin: 0 0 4px 0;
+            color: #111827;
+            font-size: 1rem;
+        }
+        .my-glossary-term-card p {
+            margin: 0;
+            color: #475569;
+            line-height: 1.45;
+        }
+        .my-glossary-quiz-box {
+            border: 1px solid #dbeafe;
+            background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+            border-radius: 18px;
+            padding: 16px 18px;
+            margin-top: 10px;
+        }
+        .my-glossary-subtle {
+            color: #64748b;
+            font-size: 0.92rem;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.title("🧠 My Glossary")
+    st.markdown(
+        """
+        <div class="my-glossary-hero">
+          <h2>Your personal word bank</h2>
+          <p>Keep difficult words in one place, turn them into flashcards, and rehearse them until the language in the lessons feels natural.</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    custom_entries = iter_custom_glossary_entries()
+    total_terms = len(custom_entries)
+    global_count = sum(1 for entry in custom_entries if entry["scope"] == "Global")
+    course_count = sum(1 for entry in custom_entries if entry["scope"] == "Course")
+    lesson_count = sum(1 for entry in custom_entries if entry["scope"] == "Lesson")
+
+    stat_cols = st.columns(4)
+    stat_cols[0].metric("Saved terms", total_terms)
+    stat_cols[1].metric("Global", global_count)
+    stat_cols[2].metric("Course", course_count)
+    stat_cols[3].metric("Lesson", lesson_count)
+
+    tab1, tab2, tab3 = st.tabs(["📚 Saved Terms", "🗂 Course Word Banks", "🎯 Glossary Quiz"])
+
+    with tab1:
+        if not custom_entries:
+            st.info("You have not saved any custom glossary terms yet. Add terms from Learn & Practice to build your own bank.")
+        else:
+            st.markdown(
+                """
+                <div class="my-glossary-toolbar">
+                  <div class="my-glossary-section-title">Filter and export</div>
+                  <div class="my-glossary-subtle">Narrow the list, export the visible subset, or turn the current selection into flashcards.</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            filter_col1, filter_col2, filter_col3 = st.columns([2, 2, 1.3])
+            with filter_col1:
+                search_term = st.text_input("Search terms", placeholder="Search a word or definition")
+            with filter_col2:
+                course_options = ["All Courses"] + sorted({entry["course_code"] for entry in custom_entries if entry["course_code"]})
+                selected_course = st.selectbox("Course filter", course_options)
+            with filter_col3:
+                selected_scope = st.selectbox("Scope", ["All", "Global", "Course", "Lesson"])
+
+            visible_entries = []
+            search_key = search_term.strip().lower()
+            for entry in custom_entries:
+                haystack = " ".join(
+                    [
+                        entry["term"],
+                        entry["meta"].get("plain", ""),
+                        entry["meta"].get("context", ""),
+                        entry["meta"].get("read_more", ""),
+                    ]
+                ).lower()
+                if search_key and search_key not in haystack:
+                    continue
+                if selected_course != "All Courses" and entry["course_code"] != selected_course:
+                    continue
+                if selected_scope != "All" and entry["scope"] != selected_scope:
+                    continue
+                visible_entries.append(entry)
+
+            chip_parts = [f'<span class="my-glossary-chip">Visible terms: {len(visible_entries)}</span>']
+            if search_key:
+                chip_parts.append(f'<span class="my-glossary-chip">Search: {html_escape(search_term.strip())}</span>')
+            if selected_course != "All Courses":
+                chip_parts.append(f'<span class="my-glossary-chip">Course: {html_escape(selected_course)}</span>')
+            if selected_scope != "All":
+                chip_parts.append(f'<span class="my-glossary-chip">Scope: {html_escape(selected_scope)}</span>')
+            st.markdown(f'<div class="my-glossary-chip-row">{"".join(chip_parts)}</div>', unsafe_allow_html=True)
+
+            export_payload = [
+                {
+                    "term": entry["term"],
+                    "scope": entry["scope"],
+                    "course_code": entry["course_code"],
+                    "lesson_number": entry["lesson_number"],
+                    "plain": entry["meta"].get("plain", ""),
+                    "context": entry["meta"].get("context", ""),
+                    "read_more": entry["meta"].get("read_more", ""),
+                }
+                for entry in visible_entries
+            ]
+            st.download_button(
+                "Download visible glossary as JSON",
+                data=json.dumps(export_payload, ensure_ascii=False, indent=2),
+                file_name="my_glossary.json",
+                mime="application/json",
+                use_container_width=False,
+            )
+
+            if st.button("Create flashcards from visible terms", key="bulk_glossary_flashcards"):
+                added = 0
+                for entry in visible_entries:
+                    ok, _ = create_flashcard(
+                        entry["term"],
+                        build_glossary_flashcard_back(entry["meta"]),
+                        course_code=entry["course_code"],
+                        tags=["glossary", "bulk-import"],
+                    )
+                    if ok:
+                        added += 1
+                st.success(f"Created {added} new flashcards from the visible glossary terms.")
+
+            st.markdown('<div class="my-glossary-section-title">Saved entries</div>', unsafe_allow_html=True)
+            if not visible_entries:
+                st.info("No saved terms match the current filters.")
+            for entry in visible_entries:
+                meta = entry["meta"]
+                st.markdown(
+                    f"""
+                    <div class="my-glossary-term-card">
+                      <h4>{html_escape(entry['term'])}</h4>
+                      <p>{html_escape(meta.get('plain', ''))}</p>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+                with st.expander(f"{entry['term']} • {meta.get('_scope_label', entry['scope'])}", expanded=False):
+                    st.markdown(f"**Plain meaning:** {meta.get('plain', '')}")
+                    st.markdown(f"**In context:** {meta.get('context', '')}")
+                    if meta.get("read_more"):
+                        st.markdown(f"**Read more:** {meta.get('read_more')}")
+                    action_col1, action_col2 = st.columns([1, 1])
+                    with action_col1:
+                        if st.button("Create flashcard", key=f"my_glossary_flash_{entry['scope']}_{entry['course_code']}_{entry['lesson_number']}_{entry['term']}"):
+                            ok, msg = create_flashcard(
+                                entry["term"],
+                                build_glossary_flashcard_back(meta),
+                                course_code=entry["course_code"],
+                                tags=["glossary", "my-glossary"],
+                            )
+                            (st.success if ok else st.info)(msg)
+                    with action_col2:
+                        if st.button("Delete term", key=f"my_glossary_delete_{entry['scope']}_{entry['course_code']}_{entry['lesson_number']}_{entry['term']}"):
+                            delete_custom_glossary_entry(entry["scope"], entry["course_code"], entry["lesson_number"], entry["term"])
+                            st.rerun()
+
+    with tab2:
+        course_labels = [f"{course['code']} - {course['name']}" for course in courses_data if course.get("code") in course_lessons]
+        if not course_labels:
+            st.info("No lesson-based word banks are available yet.")
+        else:
+            selected_course_label = st.selectbox("Course word bank", course_labels, key="my_glossary_course_bank")
+            selected_course_code = selected_course_label.split(" - ", 1)[0]
+            system_bank = merge_glossary_entry_sets(
+                get_course_glossary_entries(course_lessons.get(selected_course_code, [])),
+                get_course_custom_glossary_entries(selected_course_code),
+            )
+            st.markdown(
+                """
+                <div class="my-glossary-toolbar">
+                  <div class="my-glossary-section-title">Browse course-level terms</div>
+                  <div class="my-glossary-subtle">Use this view when you want to pull useful built-in terms into your own glossary or turn them into flashcards.</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            render_glossary_bank(system_bank, context_label=f"{selected_course_label}")
+            if system_bank:
+                selected_system_term = st.selectbox(
+                    "Choose a term from this course word bank",
+                    options=list(system_bank.keys()),
+                    key=f"system_glossary_term_{selected_course_code}",
+                )
+                selected_meta = system_bank[selected_system_term]
+                action_col1, action_col2 = st.columns(2)
+                with action_col1:
+                    if st.button("Save selected term to my glossary", key=f"copy_system_term_{selected_course_code}"):
+                        ok, message = upsert_custom_glossary_entry(
+                            "Course",
+                            selected_course_code,
+                            "",
+                            selected_system_term,
+                            selected_meta.get("plain", ""),
+                            context=selected_meta.get("context", ""),
+                            read_more=selected_meta.get("read_more", ""),
+                            aliases_text=", ".join(
+                                alias for alias in selected_meta.get("_aliases", []) if alias.lower() != selected_system_term.lower()
+                            ),
+                        )
+                        (st.success if ok else st.info)(message)
+                with action_col2:
+                    if st.button("Create flashcard for selected term", key=f"flash_system_term_{selected_course_code}"):
+                        ok, message = create_flashcard(
+                            selected_system_term,
+                            build_glossary_flashcard_back(selected_meta),
+                            course_code=selected_course_code,
+                            tags=["glossary", "course-word-bank"],
+                        )
+                        (st.success if ok else st.info)(message)
+
+    with tab3:
+        quiz_pool = custom_entries[:]
+        if not quiz_pool:
+            st.info("Save some custom terms first, then use this tab to quiz yourself.")
+        else:
+            st.markdown(
+                """
+                <div class="my-glossary-quiz-box">
+                  <div class="my-glossary-section-title">Quick recall mode</div>
+                  <div class="my-glossary-subtle">Pick a random term, try to define it in your own words first, and then reveal the saved explanation.</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            if st.button("Pick random glossary term", key="glossary_quiz_pick"):
+                st.session_state.my_glossary_quiz_term = random.choice(quiz_pool)
+                st.session_state.my_glossary_quiz_reveal = False
+                st.session_state.my_glossary_quiz_guess = ""
+                st.rerun()
+
+            current_quiz_entry = st.session_state.get("my_glossary_quiz_term")
+            if not current_quiz_entry:
+                st.info("Pick a random glossary term to start.")
+            else:
+                meta = current_quiz_entry["meta"]
+                st.markdown(f"### {current_quiz_entry['term']}")
+                st.caption(f"Scope: {meta.get('_scope_label', current_quiz_entry['scope'])}")
+                st.markdown(
+                    f"""
+                    <div class="my-glossary-term-card">
+                      <h4>Recall prompt</h4>
+                      <p>Try to explain <strong>{html_escape(current_quiz_entry['term'])}</strong> without looking at the saved answer first.</p>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+                answer_guess = st.text_area("What do you think this means?", key="my_glossary_quiz_guess")
+                reveal = st.checkbox("Reveal answer", key="my_glossary_quiz_reveal")
+                if reveal:
+                    st.success(meta.get("plain", ""))
+                    st.markdown(f"**In context:** {meta.get('context', '')}")
+                    if meta.get("read_more"):
+                        st.markdown(f"**Read more:** {meta.get('read_more')}")
+                if answer_guess.strip():
+                    st.caption("Use your own wording first, then reveal the stored meaning and compare.")
 
 training_modules = {
     "Key Performance Indicators (KPIs)": {
@@ -61505,6 +62897,38 @@ def load_curated_flashcards(course_code):
     return added
 
 
+def create_flashcard(front, back, course_code="", tags=None):
+    front = str(front or "").strip()
+    back = str(back or "").strip()
+    if not front or not back:
+        return False, "Both front and back are required."
+
+    if 'flashcard_counter' not in st.session_state:
+        st.session_state.flashcard_counter = len(st.session_state.flashcards)
+
+    signature = (course_code, front, back)
+    for card in st.session_state.flashcards.values():
+        existing_signature = (card.get('course', ''), card.get('front', ''), card.get('back', ''))
+        if existing_signature == signature:
+            return False, "That flashcard already exists."
+
+    card_id = f"card_{st.session_state.flashcard_counter}"
+    st.session_state.flashcard_counter += 1
+    st.session_state.flashcards[card_id] = {
+        'front': front,
+        'back': back,
+        'course': course_code,
+        'tags': list(tags or []),
+        'interval': 1,
+        'repetitions': 0,
+        'ease_factor': 2.5,
+        'next_review': datetime.now().isoformat(),
+        'created': datetime.now().isoformat()
+    }
+    st.session_state.flashcard_stats['total_cards'] = len(st.session_state.flashcards)
+    return True, "Flashcard created."
+
+
 def get_curated_exam_source_options(course_code):
     bank = CURATED_EXAM_QUESTION_BANK.get(course_code, [])
     if not bank:
@@ -61673,6 +63097,16 @@ if 'study_time_by_course' not in st.session_state:
     st.session_state.study_time_by_course = {}
 if 'important_dates' not in st.session_state:
     st.session_state.important_dates = []
+if 'custom_lesson_glossary' not in st.session_state:
+    st.session_state.custom_lesson_glossary = {}
+if 'custom_glossary' not in st.session_state:
+    st.session_state.custom_glossary = {}
+if 'glossary_suggestion_cache' not in st.session_state:
+    st.session_state.glossary_suggestion_cache = {}
+if 'my_glossary_quiz_term' not in st.session_state:
+    st.session_state.my_glossary_quiz_term = None
+
+st.session_state["custom_glossary"] = normalize_custom_glossary_store(st.session_state.get("custom_glossary", {}))
 
 def generate_practice_question(course, question_type="general"):
     curated_question = build_curated_practice_question(course.get('code'), question_type)
@@ -67873,14 +69307,14 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
 
 all_pages = [
     "Overview", "Course Plan", "Training Center", "Playground", "Learn & Practice",
-    "Study Notes", "Flashcards", "Exam Simulator", "Code Library", "Formula Reference",
+    "Study Notes", "My Glossary", "Flashcards", "Exam Simulator", "Code Library", "Formula Reference",
     "Study Timer", "Progress", "Learning Outcomes", "Progression Plan", "About"
 ]
 
 navigation_groups = {
     "Dashboard": ["Overview", "Progress", "Progression Plan", "Learning Outcomes"],
     "Learning": ["Course Plan", "Training Center", "Learn & Practice", "Playground"],
-    "Study Tools": ["Study Notes", "Flashcards", "Code Library", "Formula Reference", "Study Timer"],
+    "Study Tools": ["Study Notes", "My Glossary", "Flashcards", "Code Library", "Formula Reference", "Study Timer"],
     "Assessment": ["Exam Simulator"],
     "Info": ["About"]
 }
@@ -69232,6 +70666,185 @@ elif page == "Learn & Practice":
         text-align: center;
         border: 1px solid #e0e0e0;
     }
+    .glossary-term {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.2rem;
+        background: rgba(255, 243, 205, 0.72);
+        border-bottom: 1px dotted #b8860b;
+        border-radius: 4px;
+        cursor: help;
+        padding: 0 3px;
+        transition: background 0.15s ease, box-shadow 0.15s ease;
+    }
+    .glossary-term:hover,
+    .glossary-term:focus {
+        background: rgba(255, 232, 153, 0.95);
+        box-shadow: 0 0 0 2px rgba(191, 148, 20, 0.18);
+        outline: none;
+        z-index: 50;
+    }
+    .glossary-term-label {
+        display: inline-block;
+    }
+    .glossary-hover-card {
+        display: none;
+        position: absolute;
+        left: 0;
+        top: calc(100% + 8px);
+        width: min(360px, 70vw);
+        background: #fffef7;
+        color: #111827;
+        border: 1px solid #e9d8a6;
+        border-radius: 12px;
+        box-shadow: 0 14px 30px rgba(15, 23, 42, 0.16);
+        padding: 0.8rem 0.9rem;
+        line-height: 1.45;
+        white-space: normal;
+    }
+    .glossary-term:hover .glossary-hover-card,
+    .glossary-term:focus .glossary-hover-card {
+        display: block;
+    }
+    .glossary-hover-term {
+        display: block;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+        color: #7c2d12;
+    }
+    .glossary-hover-plain,
+    .glossary-hover-context,
+    .glossary-hover-readmore,
+    .glossary-hover-scope {
+        display: block;
+        font-size: 0.92rem;
+        margin-top: 0.22rem;
+    }
+    .glossary-hover-context {
+        color: #334155;
+    }
+    .glossary-hover-readmore {
+        color: #0f766e;
+    }
+    .glossary-hover-scope {
+        color: #6b7280;
+        font-size: 0.8rem;
+    }
+    .glossary-bank {
+        display: grid;
+        gap: 0.65rem;
+        margin-top: 0.75rem;
+    }
+    .glossary-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        background: #ffffff;
+        overflow: hidden;
+    }
+    .glossary-card summary {
+        list-style: none;
+        cursor: pointer;
+        padding: 0.85rem 1rem;
+        background: #f9fafb;
+    }
+    .glossary-card summary::-webkit-details-marker {
+        display: none;
+    }
+    .glossary-card-term {
+        display: block;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.2rem;
+    }
+    .glossary-card-subtitle {
+        display: block;
+        color: #4b5563;
+        line-height: 1.45;
+        font-size: 0.94rem;
+    }
+    .glossary-card-body {
+        padding: 0.9rem 1rem 1rem;
+        color: #1f2937;
+        line-height: 1.5;
+    }
+    .glossary-card-body p {
+        margin: 0 0 0.55rem;
+    }
+    .lesson-glossary-shell {
+        background: linear-gradient(135deg, #fffef7 0%, #f7fbff 100%);
+        border: 1px solid #e7edf7;
+        border-radius: 16px;
+        padding: 14px 16px;
+        margin-bottom: 12px;
+    }
+    .lesson-glossary-title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 0.25rem;
+    }
+    .lesson-glossary-copy {
+        color: #475569;
+        line-height: 1.5;
+        font-size: 0.94rem;
+    }
+    .lesson-glossary-toolbar {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 12px 14px;
+        margin: 12px 0 10px 0;
+    }
+    .lesson-glossary-toolbar-title {
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 0.2rem;
+    }
+    .lesson-glossary-toolbar-copy {
+        color: #64748b;
+        font-size: 0.92rem;
+        line-height: 1.45;
+    }
+    .lesson-glossary-candidate {
+        border: 1px solid #dbeafe;
+        background: linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
+        border-radius: 14px;
+        padding: 10px 12px;
+        margin-bottom: 6px;
+    }
+    .lesson-glossary-candidate-term {
+        font-weight: 700;
+        color: #1d4ed8;
+        margin-bottom: 0.12rem;
+    }
+    .lesson-glossary-candidate-meta {
+        color: #64748b;
+        font-size: 0.84rem;
+    }
+    .lesson-glossary-scope-heading {
+        margin: 10px 0 6px 0;
+        font-weight: 700;
+        color: #334155;
+        font-size: 0.95rem;
+    }
+    .lesson-glossary-saved-card {
+        border: 1px solid #e5e7eb;
+        background: white;
+        border-radius: 12px;
+        padding: 10px 12px;
+        margin-bottom: 8px;
+    }
+    .lesson-glossary-saved-term {
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 0.16rem;
+    }
+    .lesson-glossary-saved-plain {
+        color: #475569;
+        line-height: 1.45;
+        font-size: 0.93rem;
+    }
     </style>
     """, unsafe_allow_html=True)
     
@@ -69333,12 +70946,32 @@ elif page == "Learn & Practice":
         if course_code in course_lessons:
             st.markdown("### 📖 Course Lessons")
             st.markdown("Explore detailed lessons with visual explanations and key concepts.")
+            st.caption("Difficult words are highlighted in the lesson text. Hover a highlighted term for a quick meaning, or open the word bank to read more.")
             st.markdown("")
+
+            course_glossary_entries = merge_glossary_entry_sets(
+                get_course_glossary_entries(course_lessons[course_code]),
+                get_course_custom_glossary_entries(course_code),
+            )
+            if course_glossary_entries:
+                with st.expander(f"🧠 Word Bank for {course['name']} ({len(course_glossary_entries)} terms)", expanded=False):
+                    render_glossary_bank(course_glossary_entries, context_label=f"the {course['name']} lessons")
             
             for lesson in course_lessons[course_code]:
+                lesson_number = lesson.get("lesson_number")
+                custom_lesson_glossary_entries = get_custom_lesson_glossary_entries(course_code, lesson_number)
+                lesson_glossary_entries = merge_glossary_entry_sets(
+                    get_lesson_glossary_entries(lesson),
+                    custom_lesson_glossary_entries,
+                )
+                glossary_counts = {}
                 with st.expander(f"📚 Lesson {lesson['lesson_number']}: {lesson['title']}", expanded=True):
                     # Parse and render lesson content with Mermaid diagrams
                     content = lesson['content']
+
+                    if lesson_glossary_entries:
+                        st.caption("🧠 Hover or focus highlighted words for quick meanings. Open the lesson word bank below for a longer explanation.")
+                    render_lesson_glossary_manager(course_code, course['name'], lesson, lesson_glossary_entries)
                     
                     # Split content by Mermaid diagrams
                     parts = re.split(r'(<div class="mermaid">.*?</div>)', content, flags=re.DOTALL)
@@ -69520,7 +71153,12 @@ elif page == "Learn & Practice":
                         else:
                             # Render regular markdown content
                             if part.strip():
-                                st.markdown(part, unsafe_allow_html=True)
+                                annotated_part = annotate_text_with_glossary(
+                                    part,
+                                    lesson_glossary_entries,
+                                    occurrence_counts=glossary_counts,
+                                )
+                                st.markdown(annotated_part, unsafe_allow_html=True)
 
                     if course_code == "FI1BBDD75" and lesson.get("lesson_number") == "2.3":
                         st.markdown("---")
@@ -69537,8 +71175,18 @@ elif page == "Learn & Practice":
                     st.markdown("### ⭐ Key Takeaways")
                     st.markdown('<div class="important-info">', unsafe_allow_html=True)
                     for i, point in enumerate(lesson['key_points'], 1):
-                        st.markdown(f"**{i}.** {point}")
+                        annotated_point = annotate_text_with_glossary(
+                            point,
+                            lesson_glossary_entries,
+                            occurrence_counts=glossary_counts,
+                            max_occurrences_per_term=3,
+                        )
+                        st.markdown(f"**{i}.** {annotated_point}", unsafe_allow_html=True)
                     st.markdown('</div>', unsafe_allow_html=True)
+
+                    if lesson_glossary_entries:
+                        with st.expander(f"🧠 Word Bank for Lesson {lesson['lesson_number']} ({len(lesson_glossary_entries)} terms)", expanded=False):
+                            render_glossary_bank(lesson_glossary_entries, context_label=f"Lesson {lesson['lesson_number']}: {lesson['title']}")
                     
                     # Visual elements indicator
                     if lesson.get('visual_elements', {}).get('diagrams'):
@@ -71380,6 +73028,8 @@ Focus on data analysis concepts, tools, and real-world applications."""
     word_count = len(st.session_state.get('current_note_content', '').split())
     char_count = len(st.session_state.get('current_note_content', ''))
     st.markdown(f"{render_mui_icon('description', 16)} {word_count} words | {char_count} characters | Course: {selected_course_code}", unsafe_allow_html=True)
+elif page == "My Glossary":
+    render_my_glossary_page()
 elif page == "Flashcards":
     st.title("🎴 Flashcards")
     st.markdown("*Learn with spaced repetition*")

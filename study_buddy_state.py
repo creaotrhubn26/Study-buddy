@@ -31,7 +31,9 @@ PERSIST_KEYS = [
     "tc_semester_filter",
     "tc_course_filter",
     "tc_topic",
-    "lp_selected_course"
+    "lp_selected_course",
+    "custom_lesson_glossary",
+    "custom_glossary",
 ]
 
 PROGRAM_DEADLINES = [

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <script src="https://unpkg.com/streamlit-component-lib@2.0.0/dist/index.js"></script>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      font-family: Arial, sans-serif;
+      color: #111827;
+    }
+    .shell {
+      border: 1px solid #dbe7f7;
+      background: #f8fbff;
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .hint {
+      font-size: 12px;
+      color: #4b5563;
+      flex: 1 1 260px;
+    }
+    .selection {
+      font-size: 13px;
+      color: #0f172a;
+      background: white;
+      border: 1px dashed #c7d2fe;
+      border-radius: 8px;
+      padding: 8px 10px;
+      width: 100%;
+      min-height: 20px;
+      box-sizing: border-box;
+    }
+    .btn {
+      border: none;
+      background: #1d4ed8;
+      color: white;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .btn:disabled {
+      background: #93c5fd;
+      cursor: not-allowed;
+    }
+    .btn-secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="row">
+      <div class="hint">Highlight a word in the lesson text, then capture it here.</div>
+      <button id="captureBtn" class="btn" disabled>Add highlighted text</button>
+      <button id="clearBtn" class="btn btn-secondary">Clear</button>
+    </div>
+    <div id="selectionText" class="selection">No text selected yet.</div>
+  </div>
+
+  <script>
+    const selectionTextEl = document.getElementById("selectionText");
+    const captureBtn = document.getElementById("captureBtn");
+    const clearBtn = document.getElementById("clearBtn");
+
+    let currentSelection = "";
+    let listenersBound = false;
+
+    function normalizeSelection(text) {
+      return (text || "").replace(/\s+/g, " ").trim();
+    }
+
+    function getParentSelection() {
+      try {
+        return normalizeSelection(window.parent.getSelection().toString());
+      } catch (err) {
+        return "";
+      }
+    }
+
+    function updateSelectionPreview() {
+      currentSelection = getParentSelection();
+      if (currentSelection) {
+        selectionTextEl.textContent = currentSelection;
+        captureBtn.disabled = false;
+      } else {
+        selectionTextEl.textContent = "No text selected yet.";
+        captureBtn.disabled = true;
+      }
+    }
+
+    function bindParentListeners() {
+      if (listenersBound) return;
+      listenersBound = true;
+      try {
+        const parentDoc = window.parent.document;
+        ["selectionchange", "mouseup", "keyup"].forEach((eventName) => {
+          parentDoc.addEventListener(eventName, updateSelectionPreview, true);
+        });
+      } catch (err) {
+        selectionTextEl.textContent = "Selection capture is not available in this browser session.";
+      }
+    }
+
+    captureBtn.addEventListener("click", () => {
+      updateSelectionPreview();
+      if (currentSelection) {
+        Streamlit.setComponentValue(currentSelection);
+      }
+    });
+
+    clearBtn.addEventListener("click", () => {
+      currentSelection = "";
+      selectionTextEl.textContent = "No text selected yet.";
+      captureBtn.disabled = true;
+      Streamlit.setComponentValue("");
+    });
+
+    function onRender(event) {
+      bindParentListeners();
+      updateSelectionPreview();
+      Streamlit.setFrameHeight(92);
+    }
+
+    Streamlit.events.addEventListener(Streamlit.RENDER_EVENT, onRender);
+    Streamlit.setComponentReady();
+    Streamlit.setFrameHeight(92);
+  </script>
+</body>
+</html>
