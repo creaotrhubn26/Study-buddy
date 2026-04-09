@@ -1,0 +1,6 @@
+.env
+.env.local
+.study_buddy_state.json
+__pycache__/
+test-results/
+.pw_*.js

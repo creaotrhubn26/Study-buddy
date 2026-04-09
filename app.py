@@ -26,10 +26,152 @@ from study_buddy_state import (
     save_persisted_state,
 )
 
-AI_NOT_CONFIGURED_MESSAGE = "OpenAI API is not configured. Add `OPENAI_API_KEY` to use AI-powered features."
+_INITIAL_ENV_KEYS_MARKER = "_STUDY_BUDDY_INITIAL_ENV_KEYS"
 
-_openai_api_key = os.getenv("OPENAI_API_KEY")
-client = OpenAI(api_key=_openai_api_key) if _openai_api_key else None
+
+def load_local_env_files():
+    if _INITIAL_ENV_KEYS_MARKER in os.environ:
+        try:
+            protected_env_keys = set(json.loads(os.environ[_INITIAL_ENV_KEYS_MARKER]))
+        except json.JSONDecodeError:
+            protected_env_keys = set()
+    else:
+        protected_env_keys = set(os.environ.keys())
+        os.environ[_INITIAL_ENV_KEYS_MARKER] = json.dumps(sorted(protected_env_keys))
+
+    project_root = Path(__file__).resolve().parent
+    env_paths = [
+        project_root / ".env",
+        project_root / ".env.local",
+    ]
+
+    for env_path in env_paths:
+        if not env_path.exists():
+            continue
+        for raw_line in env_path.read_text(encoding="utf-8").splitlines():
+            line = raw_line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, value = line.split("=", 1)
+            key = key.strip()
+            if not key or key in protected_env_keys:
+                continue
+            value = value.strip()
+            if value and len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}:
+                value = value[1:-1]
+            os.environ[key] = value
+
+
+load_local_env_files()
+
+
+def create_ai_runtime_from_env():
+    provider = str(os.getenv("STUDY_BUDDY_AI_PROVIDER", "") or "").strip().lower()
+    openai_api_key = str(os.getenv("OPENAI_API_KEY", "") or "").strip()
+    moonshot_api_key = str(os.getenv("MOONSHOT_API_KEY", "") or os.getenv("KIMI_API_KEY", "") or "").strip()
+    generic_api_key = str(os.getenv("STUDY_BUDDY_AI_API_KEY", "") or "").strip()
+    generic_base_url = str(os.getenv("STUDY_BUDDY_AI_BASE_URL", "") or "").strip()
+    generic_model = str(os.getenv("STUDY_BUDDY_AI_MODEL", "") or "").strip()
+
+    # Official Kimi / Moonshot APIs are OpenAI-SDK compatible when base_url is set correctly.
+    # Outside mainland China, Moonshot's FAQ points to https://api.moonshot.ai/v1.
+    # Mainland China uses https://api.moonshot.cn/v1.
+    kimi_base_url = (
+        generic_base_url
+        or str(os.getenv("MOONSHOT_BASE_URL", "") or os.getenv("KIMI_BASE_URL", "") or "").strip()
+        or "https://api.moonshot.ai/v1"
+    )
+    kimi_model = (
+        generic_model
+        or str(os.getenv("MOONSHOT_MODEL", "") or os.getenv("KIMI_MODEL", "") or "").strip()
+        or "kimi-k2.5"
+    )
+    openai_model = generic_model or str(os.getenv("OPENAI_MODEL", "") or "").strip() or "gpt-4o-mini"
+
+    if provider in {"kimi", "moonshot"} or (moonshot_api_key and not openai_api_key and provider != "openai"):
+        api_key = generic_api_key or moonshot_api_key
+        if not api_key:
+            return None, None, None
+        return (
+            OpenAI(api_key=api_key, base_url=kimi_base_url),
+            kimi_model,
+            "Kimi",
+        )
+
+    if openai_api_key:
+        return OpenAI(api_key=openai_api_key), openai_model, "OpenAI"
+
+    if generic_api_key and generic_base_url and generic_model:
+        provider_label = provider.title() if provider else "Custom OpenAI-compatible"
+        return OpenAI(api_key=generic_api_key, base_url=generic_base_url), generic_model, provider_label
+
+    return None, None, None
+
+
+client, AI_CHAT_MODEL, AI_PROVIDER_LABEL = create_ai_runtime_from_env()
+AI_NOT_CONFIGURED_MESSAGE = (
+    "AI is not configured. Add `OPENAI_API_KEY` for OpenAI, or "
+    "`MOONSHOT_API_KEY` / `KIMI_API_KEY` for Kimi."
+)
+
+
+def ai_provider_is_local():
+    provider_label = str(AI_PROVIDER_LABEL or "").strip().lower()
+    base_url = str(
+        os.getenv("STUDY_BUDDY_AI_BASE_URL", "")
+        or os.getenv("KIMI_BASE_URL", "")
+        or os.getenv("MOONSHOT_BASE_URL", "")
+        or ""
+    ).strip().lower()
+    return provider_label == "ollama" or "127.0.0.1" in base_url or "localhost" in base_url
+
+
+AI_LOCAL_RESPONSE_MODES = {
+    "Fast local mode": {
+        "helper_text": "Shortest answers for lower latency on local CPU models.",
+        "glossary_plain_words": 8,
+        "glossary_context_words": 14,
+        "glossary_read_more_words": 20,
+        "glossary_tokens": 90,
+        "selection_words": 28,
+        "selection_tokens": 170,
+        "answer_words": 32,
+        "answer_tokens": 180,
+    },
+    "Better quality mode": {
+        "helper_text": "Balanced quality and speed for normal study use.",
+        "glossary_plain_words": 10,
+        "glossary_context_words": 18,
+        "glossary_read_more_words": 28,
+        "glossary_tokens": 120,
+        "selection_words": 45,
+        "selection_tokens": 220,
+        "answer_words": 45,
+        "answer_tokens": 220,
+    },
+    "Long answer mode": {
+        "helper_text": "More detail when you want fuller explanations or exam drafts.",
+        "glossary_plain_words": 12,
+        "glossary_context_words": 24,
+        "glossary_read_more_words": 40,
+        "glossary_tokens": 160,
+        "selection_words": 70,
+        "selection_tokens": 320,
+        "answer_words": 75,
+        "answer_tokens": 340,
+    },
+}
+
+
+def get_local_ai_response_mode():
+    selected_mode = st.session_state.get("local_ai_response_mode", "Better quality mode")
+    if selected_mode not in AI_LOCAL_RESPONSE_MODES:
+        selected_mode = "Better quality mode"
+    return selected_mode
+
+
+def get_local_ai_mode_config():
+    return AI_LOCAL_RESPONSE_MODES[get_local_ai_response_mode()]
 
 _markdown_with_tables = mistune.create_markdown(plugins=["table", "strikethrough"])
 _selection_capture_component = components.declare_component(
@@ -762,6 +904,69 @@ GLOSSARY_STOPWORDS = {
     "your",
 }
 
+GLOSSARY_TECHNICAL_SUFFIXES = (
+    "tion", "sion", "ment", "ness", "ity", "ality", "ology", "metry", "nomy",
+    "ance", "ence", "ative", "istic", "ential", "omial", "ality", "scope",
+)
+
+GLOSSARY_DOMAIN_HEADWORDS = {
+    "anova", "autocorrelation", "average", "bayes", "binning", "boxplot", "cash", "cells",
+    "chi-square", "coefficient", "coefficients", "confidence", "correlation", "covariance",
+    "dashboard", "dataset", "deviation", "dispersion", "distribution", "equation",
+    "explanatory", "feature", "forecast", "forecasting", "frequency", "function", "functions",
+    "goodness", "heuristic", "heuristics", "histogram", "hypothesis", "inference",
+    "inferential", "input", "intercept", "interval", "irr", "kpi", "kpis", "kurtosis",
+    "likert", "linest", "logistic", "mad", "matrix", "mean", "median", "mode", "model",
+    "normalisation", "normalization", "normal", "nominal", "npv", "null", "outlier",
+    "parameter", "parameters", "pearson", "pivot", "point", "population", "power", "prediction",
+    "predictive", "premium", "present", "probability", "query", "quartile", "range", "rate",
+    "regression", "residual", "return", "risk", "sample", "sampling", "scale", "scatter",
+    "seasonality", "series", "significance", "skewness", "slope", "solver", "spearman",
+    "spread", "statistic", "statistics", "stdev", "syntax", "target", "test", "tests",
+    "time", "toolpak", "trend", "variance", "visualisation", "visualization", "whisker",
+}
+
+GLOSSARY_DOMAIN_PHRASES = {
+    "confidence interval", "standard deviation", "mean absolute deviation", "normal distribution",
+    "null hypothesis", "alternative hypothesis", "simple regression", "multiple regression",
+    "linear regression", "time series", "point forecast", "out-of-sample", "in-sample",
+    "goodness of fit", "multiple r", "r square", "adjusted r square", "present value",
+    "future value", "internal rate of return", "net present value", "chi-square test",
+    "t-test", "feature scaling", "min-max scaling", "z-score normalisation",
+    "z-score normalization", "rank order", "semantic differential", "power query",
+    "data analysis toolpak", "analysis toolpak", "cross-sectional data",
+}
+
+
+def looks_like_technical_token(display, token_key):
+    display = str(display or "")
+    token_key = str(token_key or "")
+    if not display or not token_key:
+        return False
+    is_acronym = display.isupper() and len(display) >= 2
+    has_technical_suffix = any(token_key.endswith(suffix) for suffix in GLOSSARY_TECHNICAL_SUFFIXES)
+    has_mixed_form = ("_" in display or "-" in display or any(ch.isdigit() for ch in display))
+    is_domain_head = token_key in GLOSSARY_DOMAIN_HEADWORDS
+    return is_acronym or has_technical_suffix or has_mixed_form or is_domain_head
+
+
+def describe_candidate_reason(display, token_key, is_phrase=False):
+    display = str(display or "")
+    token_key = str(token_key or "")
+    if token_key in GLOSSARY_DOMAIN_PHRASES:
+        return "Strong subject phrase used in this lesson"
+    if display.isupper() and len(display) >= 2:
+        return "Technical acronym or formula-style term"
+    if "_" in display or "-" in display:
+        return "Structured technical term used in context"
+    if token_key in GLOSSARY_DOMAIN_HEADWORDS:
+        return "Core subject term for this lesson"
+    if any(token_key.endswith(suffix) for suffix in GLOSSARY_TECHNICAL_SUFFIXES):
+        return "Academic or technical wording worth defining"
+    if is_phrase:
+        return "Likely subject phrase from the lesson context"
+    return "Potentially difficult term from the lesson"
+
 
 def extract_term_context_snippet(text, term, max_chars=220):
     plain_text = re.sub(r"<[^>]+>", " ", str(text or ""))
@@ -805,25 +1010,43 @@ def generate_glossary_suggestion(term, lesson_text, lesson_title="", course_name
         return fallback
 
     snippet = extract_term_context_snippet(lesson_text, term, max_chars=500)
-    prompt = (
-        "You are helping build a study glossary. "
-        "Return strict JSON with keys plain, context, read_more. "
-        "Keep plain under 18 words, context under 35 words, and read_more under 60 words. "
-        "Use simple student-friendly English.\n\n"
-        f"Course: {course_name}\n"
-        f"Lesson: {lesson_title}\n"
-        f"Term: {term}\n"
-        f"Lesson excerpt: {snippet}"
-    )
+    if ai_provider_is_local():
+        mode_config = get_local_ai_mode_config()
+        prompt = (
+            "Build a tiny study glossary entry. "
+            "Return JSON only with keys plain, context, read_more. "
+            "Use simple English. "
+            f"plain: max {mode_config['glossary_plain_words']} words. "
+            f"context: max {mode_config['glossary_context_words']} words. "
+            f"read_more: max {mode_config['glossary_read_more_words']} words. "
+            "Do not add extra keys.\n\n"
+            f"Course: {course_name}\n"
+            f"Lesson: {lesson_title}\n"
+            f"Term: {term}\n"
+            f"Lesson excerpt: {snippet}"
+        )
+        max_tokens = mode_config["glossary_tokens"]
+    else:
+        prompt = (
+            "You are helping build a study glossary. "
+            "Return strict JSON with keys plain, context, read_more. "
+            "Keep plain under 18 words, context under 35 words, and read_more under 60 words. "
+            "Use simple student-friendly English.\n\n"
+            f"Course: {course_name}\n"
+            f"Lesson: {lesson_title}\n"
+            f"Term: {term}\n"
+            f"Lesson excerpt: {snippet}"
+        )
+        max_tokens = 180
 
     try:
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model=AI_CHAT_MODEL,
             messages=[
                 {"role": "system", "content": "Return only valid JSON."},
                 {"role": "user", "content": prompt},
             ],
-            max_tokens=180,
+            max_tokens=max_tokens,
         )
         raw_text = response.choices[0].message.content.strip()
         json_match = re.search(r"\{.*\}", raw_text, flags=re.DOTALL)
@@ -850,8 +1073,8 @@ def fallback_selection_explanation(selected_text, lesson_text, lesson_title="", 
     return (
         f"**What this means:** The selected text is being discussed in {scope}. "
         f"It is worth slowing down and identifying what the question or concept is really asking.\n\n"
-        f"**In context:** {snippet or 'This part should be read together with the surrounding lesson content to understand the main idea and what you are expected to explain.'}\n\n"
-        f"**How to use it:** Break it into three parts: what the key concept is, what relationship or rule is being described, and how you would explain it in plain exam language."
+        f"**Why it matters:** {snippet or 'This part should be read together with the surrounding lesson content to understand the main idea and what you are expected to explain.'}\n\n"
+        f"**Exam-safe version:** Break it into three parts: what the key concept is, what relationship or rule is being described, and how you would explain it in plain exam language."
     )
 
 
@@ -867,26 +1090,44 @@ def generate_selection_explanation(selected_text, lesson_text, lesson_title="", 
         return fallback
 
     snippet = extract_term_context_snippet(lesson_text, selected_text, max_chars=700)
-    prompt = (
-        "You are helping a student understand a selected sentence, question, or concept from lesson notes. "
-        "Write a short, human explanation in markdown. "
-        "Use three short parts with bold headings: 'What this means', 'Why it matters', and 'Exam-safe version'. "
-        "Keep it concise, practical, and student-friendly. "
-        "Do not mention that you are an AI.\n\n"
-        f"Course: {course_name}\n"
-        f"Lesson: {lesson_title}\n"
-        f"Selected text: {selected_text}\n"
-        f"Lesson excerpt: {snippet}"
-    )
+    if ai_provider_is_local():
+        mode_config = get_local_ai_mode_config()
+        prompt = (
+            "Explain the selected text for a student. "
+            "Return markdown only. "
+            "Use exactly these bold headings: **What this means**, **Why it matters**, **Exam-safe version**. "
+            "Write 1 short paragraph under each heading. "
+            f"Keep each part under {mode_config['selection_words']} words. "
+            "Use plain English. "
+            "No bullets. No intro. No extra headings.\n\n"
+            f"Course: {course_name}\n"
+            f"Lesson: {lesson_title}\n"
+            f"Selected text: {selected_text}\n"
+            f"Lesson excerpt: {snippet}"
+        )
+        max_tokens = mode_config["selection_tokens"]
+    else:
+        prompt = (
+            "You are helping a student understand a selected sentence, question, or concept from lesson notes. "
+            "Write a short, human explanation in markdown. "
+            "Use three short parts with bold headings: 'What this means', 'Why it matters', and 'Exam-safe version'. "
+            "Keep it concise, practical, and student-friendly. "
+            "Do not mention that you are an AI.\n\n"
+            f"Course: {course_name}\n"
+            f"Lesson: {lesson_title}\n"
+            f"Selected text: {selected_text}\n"
+            f"Lesson excerpt: {snippet}"
+        )
+        max_tokens = 320
 
     try:
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model=AI_CHAT_MODEL,
             messages=[
                 {"role": "system", "content": "Return helpful markdown only."},
                 {"role": "user", "content": prompt},
             ],
-            max_tokens=320,
+            max_tokens=max_tokens,
         )
         explanation = response.choices[0].message.content.strip()
     except Exception:
@@ -922,26 +1163,44 @@ def generate_selection_exam_answer(selected_text, lesson_text, lesson_title="", 
         return fallback
 
     snippet = extract_term_context_snippet(lesson_text, selected_text, max_chars=700)
-    prompt = (
-        "You are helping a student answer a selected question or sentence from course notes. "
-        "Write a short exam-style answer in markdown. "
-        "Use three short parts with bold headings: 'Direct answer', 'Why this answer fits', and 'Exam-safe version'. "
-        "Keep the tone human, concise, and easy to reuse in an exam. "
-        "Do not mention that you are an AI.\n\n"
-        f"Course: {course_name}\n"
-        f"Lesson: {lesson_title}\n"
-        f"Selected text: {selected_text}\n"
-        f"Lesson excerpt: {snippet}"
-    )
+    if ai_provider_is_local():
+        mode_config = get_local_ai_mode_config()
+        prompt = (
+            "Write a short exam answer for the selected text. "
+            "Return markdown only. "
+            "Use exactly these bold headings: **Direct answer**, **Why this answer fits**, **Exam-safe version**. "
+            "Write 1 short paragraph under each heading. "
+            f"Keep each part under {mode_config['answer_words']} words. "
+            "Use clear exam English. "
+            "No bullets. No intro. No extra headings.\n\n"
+            f"Course: {course_name}\n"
+            f"Lesson: {lesson_title}\n"
+            f"Selected text: {selected_text}\n"
+            f"Lesson excerpt: {snippet}"
+        )
+        max_tokens = mode_config["answer_tokens"]
+    else:
+        prompt = (
+            "You are helping a student answer a selected question or sentence from course notes. "
+            "Write a short exam-style answer in markdown. "
+            "Use three short parts with bold headings: 'Direct answer', 'Why this answer fits', and 'Exam-safe version'. "
+            "Keep the tone human, concise, and easy to reuse in an exam. "
+            "Do not mention that you are an AI.\n\n"
+            f"Course: {course_name}\n"
+            f"Lesson: {lesson_title}\n"
+            f"Selected text: {selected_text}\n"
+            f"Lesson excerpt: {snippet}"
+        )
+        max_tokens = 360
 
     try:
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model=AI_CHAT_MODEL,
             messages=[
                 {"role": "system", "content": "Return helpful markdown only."},
                 {"role": "user", "content": prompt},
             ],
-            max_tokens=360,
+            max_tokens=max_tokens,
         )
         answer = response.choices[0].message.content.strip()
     except Exception:
@@ -1018,7 +1277,33 @@ def detect_difficult_word_candidates(text, glossary_entries, max_candidates=10):
         for alias in meta.get("_aliases", []):
             known_terms.add(str(alias).lower())
 
-    raw_tokens = re.findall(r"[A-Za-z][A-Za-z0-9_-]{3,}", plain_text)
+    phrase_candidates = {}
+    phrase_pattern = re.compile(r"\b([A-Za-z][A-Za-z0-9_-]{1,}(?:\s+[A-Za-z][A-Za-z0-9_-]{1,}){1,2})\b")
+    for phrase_match in phrase_pattern.finditer(plain_text):
+        display = phrase_match.group(1).strip()
+        phrase_key = display.lower()
+        phrase_words = [word.strip().lower() for word in display.split()]
+        if phrase_key in known_terms:
+            continue
+        if not phrase_words or all(word in GLOSSARY_STOPWORDS for word in phrase_words):
+            continue
+        if phrase_words[0] in GLOSSARY_STOPWORDS:
+            continue
+        phrase_is_domain = (
+            phrase_key in GLOSSARY_DOMAIN_PHRASES
+            or any(word in GLOSSARY_DOMAIN_HEADWORDS for word in phrase_words)
+            or any(looks_like_technical_token(word, word.lower()) for word in display.split())
+        )
+        if not phrase_is_domain:
+            continue
+        entry = phrase_candidates.setdefault(
+            phrase_key,
+            {"term": display, "count": 0, "score": 0, "reason": describe_candidate_reason(display, phrase_key, is_phrase=True)},
+        )
+        entry["count"] += 1
+        entry["score"] += 28 + (6 * entry["count"]) + len(display)
+
+    raw_tokens = re.findall(r"[A-Za-z][A-Za-z0-9_-]{1,}", plain_text)
     token_counts = Counter()
     token_display = {}
     for token in raw_tokens:
@@ -1031,21 +1316,52 @@ def detect_difficult_word_candidates(text, glossary_entries, max_candidates=10):
         display = token_display[token_key]
         if token_key in known_terms or token_key in GLOSSARY_STOPWORDS:
             continue
-        if len(display) < 6 and count < 2 and not display.isupper():
-            continue
         if display.isdigit():
             continue
-        score = count * 10 + len(display)
-        ranked.append((score, display, count))
+        is_technical = looks_like_technical_token(display, token_key)
+        if len(display) < 6 and count < 2 and not is_technical:
+            continue
+        if not is_technical and count < 2:
+            continue
+        score = count * 8 + len(display)
+        if display.isupper() and len(display) >= 2:
+            score += 26
+        if token_key in GLOSSARY_DOMAIN_HEADWORDS:
+            score += 20
+        if any(token_key.endswith(suffix) for suffix in GLOSSARY_TECHNICAL_SUFFIXES):
+            score += 14
+        if "_" in display or "-" in display or any(ch.isdigit() for ch in display):
+            score += 12
+        ranked.append(
+            {
+                "score": score,
+                "term": display,
+                "count": count,
+                "reason": describe_candidate_reason(display, token_key),
+            }
+        )
 
-    ranked.sort(key=lambda item: (-item[0], item[1].lower()))
+    merged_ranked = {}
+    for candidate in ranked:
+        merged_ranked[candidate["term"].lower()] = candidate
+    for phrase_key, candidate in phrase_candidates.items():
+        existing = merged_ranked.get(phrase_key)
+        if existing is None or candidate["score"] > existing["score"]:
+            merged_ranked[phrase_key] = candidate
+
+    final_ranked = sorted(
+        merged_ranked.values(),
+        key=lambda item: (-item["score"], -item["count"], item["term"].lower()),
+    )
+
     return [
         {
-            "term": display,
-            "count": count,
-            "snippet": extract_term_context_snippet(plain_text, display, max_chars=180),
+            "term": candidate["term"],
+            "count": candidate["count"],
+            "reason": candidate["reason"],
+            "snippet": extract_term_context_snippet(plain_text, candidate["term"], max_chars=180),
         }
-        for _, display, count in ranked[:max_candidates]
+        for candidate in final_ranked[:max_candidates]
     ]
 
 
@@ -1087,6 +1403,139 @@ def make_glossary_span(display_text, canonical_term, meta):
         f'{f"<span class=\"glossary-hover-scope\">{html_escape(scope_label)}</span>" if scope_label else ""}'
         f'</span></span>'
     )
+
+
+def strip_basic_markdown(text):
+    value = str(text or "").strip()
+    if not value:
+        return ""
+    value = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", value)
+    value = re.sub(r"`([^`]+)`", r"\1", value)
+    value = re.sub(r"\*\*([^*]+)\*\*", r"\1", value)
+    value = re.sub(r"\*([^*]+)\*", r"\1", value)
+    value = re.sub(r"^#+\s*", "", value, flags=re.MULTILINE)
+    value = re.sub(r"\n{2,}", "\n", value)
+    value = re.sub(r"\s+", " ", value)
+    return value.strip()
+
+
+def extract_markdown_section(markdown_text, heading, fallback=""):
+    text = str(markdown_text or "")
+    if not text:
+        return fallback
+    pattern = re.compile(
+        rf"\*\*{re.escape(heading)}:\*\*\s*(.*?)(?=\n\s*\*\*[A-Z][^*]+:\*\*|\Z)",
+        flags=re.IGNORECASE | re.DOTALL,
+    )
+    match = pattern.search(text)
+    if not match:
+        return fallback
+    return strip_basic_markdown(match.group(1))
+
+
+def build_selection_hover_meta(selected_text, explanation_output="", explain_mode="explain"):
+    selected_text = str(selected_text or "").strip()
+    explanation_output = str(explanation_output or "").strip()
+    explain_mode = str(explain_mode or "explain").strip().lower()
+
+    if explain_mode == "answer":
+        plain = extract_markdown_section(explanation_output, "Direct answer", fallback="Short exam-style answer for the selected text.")
+        context = extract_markdown_section(explanation_output, "Why this answer fits", fallback=plain)
+        read_more = extract_markdown_section(explanation_output, "Exam-safe version", fallback="")
+        scope_label = "AI exam answer"
+        tooltip = plain or "AI exam-style answer for the selected text."
+    else:
+        plain = extract_markdown_section(explanation_output, "What this means", fallback="AI explanation for the selected text.")
+        context = extract_markdown_section(explanation_output, "Why it matters", fallback=plain)
+        read_more = extract_markdown_section(explanation_output, "Exam-safe version", fallback="")
+        scope_label = "AI explanation"
+        tooltip = plain or "AI explanation for the selected text."
+
+    if not explanation_output:
+        context = context or f"The selected text is currently being explained in this lesson."
+        read_more = read_more or ""
+
+    return {
+        "plain": plain or selected_text,
+        "context": context or plain or selected_text,
+        "read_more": read_more,
+        "scope_label": scope_label,
+        "tooltip": tooltip or selected_text,
+    }
+
+
+def make_selection_highlight_span(display_text, selected_text, explanation_output="", explain_mode="explain"):
+    meta = build_selection_hover_meta(selected_text, explanation_output=explanation_output, explain_mode=explain_mode)
+    plain = meta["plain"]
+    context = meta["context"]
+    read_more = meta["read_more"]
+    scope_label = meta["scope_label"]
+    tooltip = meta["tooltip"]
+    return (
+        f'<span class="glossary-term selection-explain-highlight" tabindex="0" '
+        f'data-selection-highlight="true" '
+        f'data-selection-mode="{html_escape(explain_mode)}" '
+        f'title="{html_escape(tooltip)}">'
+        f'<span class="glossary-term-label">{html_escape(display_text)}</span>'
+        f'<span class="glossary-hover-card" role="note" aria-label="{html_escape(selected_text)} AI explanation">'
+        f'<span class="glossary-hover-term">{html_escape(selected_text)}</span>'
+        f'<span class="glossary-hover-plain">{html_escape(plain)}</span>'
+        f'<span class="glossary-hover-context">{html_escape(context)}</span>'
+        f'{f"<span class=\"glossary-hover-readmore\">{html_escape(read_more)}</span>" if read_more else ""}'
+        f'<span class="glossary-hover-scope">{html_escape(scope_label)}</span>'
+        f'</span></span>'
+    )
+
+
+def annotate_text_with_selection_highlight(text, selected_text, explanation_output="", explain_mode="explain", max_occurrences=1):
+    selected_text = str(selected_text or "").strip()
+    if not text or not selected_text:
+        return text, {}
+
+    protected_text, code_replacements = protect_code_segments(text)
+    html_parts = re.split(r"(<[^>]+>)", protected_text)
+    annotated_parts = []
+    selection_replacements = {}
+    replacements_made = 0
+
+    escaped_selection = re.escape(selected_text)
+    flexible_pattern = escaped_selection.replace(r"\ ", r"\s+")
+    selection_pattern = re.compile(flexible_pattern, flags=re.IGNORECASE)
+
+    for html_part in html_parts:
+        if html_part.startswith("<") and html_part.endswith(">"):
+            annotated_parts.append(html_part)
+            continue
+
+        if replacements_made >= max_occurrences:
+            annotated_parts.append(html_part)
+            continue
+
+        def _replace(match):
+            nonlocal replacements_made
+            if replacements_made >= max_occurrences:
+                return match.group(0)
+            placeholder = f"@@SELECTION_HIGHLIGHT_{len(selection_replacements)}@@"
+            selection_replacements[placeholder] = make_selection_highlight_span(
+                match.group(0),
+                selected_text,
+                explanation_output=explanation_output,
+                explain_mode=explain_mode,
+            )
+            replacements_made += 1
+            return placeholder
+
+        annotated_parts.append(selection_pattern.sub(_replace, html_part, count=max_occurrences - replacements_made))
+
+    restored = restore_code_segments("".join(annotated_parts), code_replacements)
+    return restored, selection_replacements
+
+
+def restore_selection_highlight_placeholders(text, selection_replacements):
+    restored = str(text or "")
+    for placeholder, html_value in (selection_replacements or {}).items():
+        restored = restored.replace(placeholder, html_value)
+    return restored
 
 
 def annotate_text_with_glossary(text, glossary_entries, occurrence_counts=None, max_occurrences_per_term=2):
@@ -1190,7 +1639,7 @@ def build_glossary_flashcard_back(meta):
     return "\n\n".join(part for part in parts if part)
 
 
-def render_lesson_glossary_manager(course_code, course_name, lesson, lesson_glossary_entries):
+def render_lesson_glossary_manager(course_code, course_name, lesson, lesson_glossary_entries, global_capture_payload=None):
     lesson_number = lesson.get("lesson_number")
     lesson_title = lesson.get("title", "")
     lesson_text = " ".join(
@@ -1256,6 +1705,10 @@ def render_lesson_glossary_manager(course_code, course_name, lesson, lesson_glos
 
     with st.expander("➕ Capture, explain, and save difficult words", expanded=bool(st.session_state.get(manager_open_key))):
         st.markdown(
+            f'<div class="study-buddy-lesson-glossary-anchor" data-study-buddy-course="{html_escape(str(course_code))}" data-study-buddy-lesson="{html_escape(str(lesson_number))}" data-study-buddy-lesson-title="{html_escape(str(lesson_title))}"></div>',
+            unsafe_allow_html=True,
+        )
+        st.markdown(
             """
             <div class="lesson-glossary-shell">
               <div class="lesson-glossary-title">Build this lesson word bank as you read</div>
@@ -1264,20 +1717,30 @@ def render_lesson_glossary_manager(course_code, course_name, lesson, lesson_glos
             """,
             unsafe_allow_html=True,
         )
-        st.caption("Highlight a word, phrase, or whole question in the lesson text and use the quick actions that appear. From there you can save it to your glossary, ask for an AI explanation, or get an exam-style answer.")
+        st.caption("Highlight a word, phrase, or whole question anywhere inside this lesson and use the quick actions that appear. From there you can save it to your glossary, ask for an AI explanation, or get an exam-style answer.")
 
-        captured_payload = render_glossary_selection_capture(f"glossary_capture_component_{course_code}_{lesson_number}")
+        captured_payload = global_capture_payload
         captured_term = ""
         captured_action = "lesson"
+        captured_course_code = ""
+        captured_lesson_number = ""
         if isinstance(captured_payload, dict):
             captured_term = str(captured_payload.get("term", "")).strip()
             captured_action = str(captured_payload.get("action", "lesson")).strip().lower() or "lesson"
+            captured_course_code = str(captured_payload.get("course_code", "")).strip()
+            captured_lesson_number = str(captured_payload.get("lesson_number", "")).strip()
             capture_signature = json.dumps(captured_payload, sort_keys=True)
         else:
             captured_term = str(captured_payload or "").strip()
             capture_signature = captured_term
 
-        if captured_term and capture_signature != st.session_state.get(capture_state_key):
+        capture_matches_lesson = (
+            captured_term
+            and (not captured_course_code or captured_course_code == str(course_code))
+            and (not captured_lesson_number or captured_lesson_number == str(lesson_number))
+        )
+
+        if capture_matches_lesson and capture_signature != st.session_state.get(capture_state_key):
             st.session_state[term_input_key] = captured_term
             if captured_action == "course":
                 st.session_state[scope_key] = "Course"
@@ -1314,6 +1777,7 @@ def render_lesson_glossary_manager(course_code, course_name, lesson, lesson_glos
             )
             if selected_label:
                 st.caption(f"Selected text: {selected_label}")
+                st.caption("The selected text is highlighted in the lesson content below while this explanation is open.")
             current_output = st.session_state.get(explain_output_key, "")
             st.markdown(current_output)
             explain_col1, explain_col2, explain_col3, explain_col4 = st.columns([1.1, 1.2, 1.3, 0.9])
@@ -1366,8 +1830,8 @@ def render_lesson_glossary_manager(course_code, course_name, lesson, lesson_glos
             st.markdown(
                 """
                 <div class="lesson-glossary-toolbar">
-                  <div class="lesson-glossary-toolbar-title">Possible difficult words detected automatically</div>
-                  <div class="lesson-glossary-toolbar-copy">Use these as quick starting points if the lesson contains words that still feel unfamiliar.</div>
+                  <div class="lesson-glossary-toolbar-title">Possible subject terms detected automatically</div>
+                  <div class="lesson-glossary-toolbar-copy">These suggestions now prioritise technical vocabulary, formulas, acronyms, and subject phrases from the lesson instead of only long or uncommon words.</div>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -1379,6 +1843,7 @@ def render_lesson_glossary_manager(course_code, course_name, lesson, lesson_glos
                         f"""
                         <div class="lesson-glossary-candidate">
                           <div class="lesson-glossary-candidate-term">{html_escape(candidate['term'])}</div>
+                          <div class="lesson-glossary-candidate-meta">{html_escape(candidate.get('reason', 'Potentially difficult term from the lesson'))}</div>
                           <div class="lesson-glossary-candidate-meta">Appears {candidate['count']} time(s) in this lesson</div>
                         </div>
                         """,
@@ -1432,7 +1897,21 @@ def render_lesson_glossary_manager(course_code, course_name, lesson, lesson_glos
         if client is None:
             st.caption("AI is not configured, so explanation and exam-answer drafts fall back to lesson-context hints.")
         else:
-            st.caption("AI can now either explain the selected text or turn it into a short exam-style answer.")
+            provider_label = AI_PROVIDER_LABEL or "configured AI provider"
+            model_label = AI_CHAT_MODEL or "configured model"
+            provider_caption = f"AI can now either explain the selected text or turn it into a short exam-style answer. Current provider: {provider_label} ({model_label})."
+            if ai_provider_is_local():
+                provider_caption += f" Mode: {get_local_ai_response_mode()}."
+            st.caption(provider_caption)
+
+        if client is not None and ai_provider_is_local():
+            local_mode = st.selectbox(
+                "Local AI response mode",
+                options=list(AI_LOCAL_RESPONSE_MODES.keys()),
+                key="local_ai_response_mode",
+                help="Choose whether the local model should optimise for speed or give slightly fuller answers.",
+            )
+            st.caption(AI_LOCAL_RESPONSE_MODES[local_mode]["helper_text"])
 
         with st.form(f"custom_glossary_form_{course_code}_{lesson_number}"):
             custom_term = st.text_input("Word or phrase", key=term_input_key, placeholder="Example: heteroscedasticity")
@@ -62280,6 +62759,144 @@ CURATED_EXAM_QUESTION_BANK = {
             "answer": "The strongest structure is tool or method, setup, calculation or workflow, result, interpretation, and decision. This prevents the answer from stopping at the raw number or method name. In other words, the student should show not only how the tool is used, but also what the output means and why it matters."
         },
         {
+            "type": "skills",
+            "source": "quiz_review",
+            "question": "Using the dataset [STT-0202-CALC1.xlsx](/workspaces/Study-buddy/STT-0202-CALC1.xlsx), run a one-way single-factor ANOVA at significance level 0.05 and read the Excel summary table. What are the summary values for Group 1 mean, Group 2 sum, and Group 3 variance?",
+            "answer": "Correct answers: Group 1 mean = 4.28, Group 2 sum = 145, and Group 3 variance = 11.56. In the ANOVA summary section, Excel reports the descriptive statistics for each group before the F-test interpretation. For this dataset, Group 1 has values summing to 77 across 18 observations, so the mean is 77 / 18 = 4.2778, which rounds to 4.28. Group 2 sums directly to 145. Group 3 uses the sample variance in the ANOVA summary, which is 11.5588 and rounds to 11.56. How we found it: the dataset is arranged in three columns, one column per group. In Excel ToolPak, the workflow is Data -> Data Analysis -> ANOVA: Single Factor -> Input Range = the full three-column block including labels -> Grouped By = Columns -> Labels in First Row -> Alpha = 0.05 -> Output Range or New Worksheet. Then read the Summary table, not the ANOVA table, because the question asks for Average, Sum, and Variance. Excel formula view: Group 1 mean = AVERAGE(A2:A19), Group 2 sum = SUM(B2:B19), Group 3 variance = VAR.S(C2:C19). Google Sheets view: the same descriptive values can be produced with =AVERAGE(A2:A19), =SUM(B2:B19), and =VAR.S(C2:C19), even if you build the ANOVA table manually. If the exam asks for the ANOVA test as well, the next manual steps in Sheets are SS_between, SS_within, MS_between, MS_within, and F = MS_between / MS_within. Exam use: When a question asks for the summary section of ANOVA, focus first on count, sum, average, and variance before worrying about the F-statistic and p-value."
+        },
+        {
+            "type": "skills",
+            "source": "quiz_review",
+            "question": "Using the dataset [STT-0204-CALC1.xlsx](/workspaces/Study-buddy/STT-0204-CALC1.xlsx), perform the Covariance and Correlation matrix using the Data Analysis ToolPak. What is the covariance between Price and Bedrooms, and what is the correlation between Grade and sqft_lot?",
+            "answer": "Correct answers: the covariance between Price and Bedrooms is 111119.66, and the correlation between Grade and sqft_lot is 0.11. In this dataset, the covariance matrix entry for Price versus Bedrooms is 111119.659..., which rounds to 111119.66. The correlation matrix entry for Grade versus sqft_lot is 0.1115..., which rounds to 0.11. Exam use: When reading covariance and correlation matrices in Excel, first find the exact row-column intersection, then round only after locating the correct paired variables."
+        },
+        {
+            "type": "knowledge",
+            "source": "quiz_review",
+            "question": "State whether the following is True or False, then justify briefly: The programming language used by Power Query is called M.",
+            "answer": "Correct answer: True. Power Query uses the M language, which is designed for data import, transformation, cleaning, and reshaping workflows. In exam terms, a safe answer is that Power Query's underlying formula language is M, while DAX is used elsewhere in the Microsoft data stack for modelling and calculations."
+        },
+        {
+            "type": "knowledge",
+            "source": "quiz_review",
+            "question": "State whether the following is True or False, then justify briefly: Z-scores serve to determine whether the observed sample mean significantly differs from a hypothesised population mean.",
+            "answer": "Correct answer: False. A z-score normally describes how far a single value is from the mean in standard-deviation units. Testing whether an observed sample mean differs significantly from a hypothesised population mean is the role of a one-sample z-test, not the general descriptive use of z-scores. Exam use: A safe distinction is z-score = standardised distance for a value, z-test = hypothesis test for a mean or proportion."
+        },
+        {
+            "type": "knowledge",
+            "source": "quiz_review",
+            "question": "State whether the following is True or False, then justify briefly: A histogram with two distinct peaks or modes suggests the presence of two separate groups or subpopulations within the dataset.",
+            "answer": "Correct answer: True. A histogram with two clear peaks is called bimodal, and this often suggests that the data may contain two different groups, processes, or subpopulations mixed together. It does not prove the cause on its own, but it is a strong visual signal that the analyst should investigate whether the dataset contains two underlying patterns. Exam use: A safe rule is two peaks in a histogram often mean two groups may be present."
+        },
+        {
+            "type": "knowledge",
+            "source": "quiz_review",
+            "question": "State whether the following is True or False, then justify briefly: If a value ranks first in the Rank and Percentile tool, it means it is the smallest value in the dataset.",
+            "answer": "Correct answer: False. In Excel's Rank and Percentile tool, rank 1 normally refers to the largest value in the dataset, not the smallest. That means a value with rank 1 is at the top of the ordered list. Exam use: A safe memory rule is rank 1 = highest value unless the task clearly defines ranking in the opposite direction."
+        },
+        {
+            "type": "knowledge",
+            "source": "quiz_review",
+            "question": "State whether the following is True or False, then justify briefly: If we flip a fair coin three times, there are eight possible outcomes.",
+            "answer": "Correct answer: True. Each coin flip has 2 possible outcomes, heads or tails. With three independent flips, the total number of possible outcomes is 2 × 2 × 2 = 2^3 = 8. Exam use: A safe rule is number of outcomes = 2^n for n fair coin flips."
+        },
+        {
+            "type": "knowledge",
+            "source": "quiz_review",
+            "question": "State whether the following is True or False, then justify briefly: Covariance can only be positive.",
+            "answer": "Correct answer: False. Covariance can be positive, negative, or close to zero. A positive covariance means the variables tend to move in the same direction, a negative covariance means they tend to move in opposite directions, and a covariance near zero suggests no clear linear co-movement. Exam use: A safe memory rule is covariance shows direction of joint movement, not only positive movement."
+        },
+        {
+            "type": "knowledge",
+            "source": "quiz_review",
+            "question": "How is the probability of making a Type I error represented? Choose the best answer and justify briefly.",
+            "answer": "Correct answer: Significance level. The probability of making a Type I error is represented by alpha, which is the significance level of the test. It is the probability of rejecting a true null hypothesis. Exam use: A safe memory rule is Type I error = alpha = significance level."
+        },
+        {
+            "type": "knowledge",
+            "source": "quiz_review",
+            "question": "State whether the following is True or False, then justify briefly: Outliers have the potential to offer invaluable insights into the underlying processes or trends under study, potentially unveiling rare events, extreme conditions, or unconventional behaviours beyond the norm.",
+            "answer": "Correct answer: True. Outliers can sometimes reveal rare but important events, unusual behaviours, structural breaks, or extreme conditions that are worth investigating. They should not be removed automatically, because they may contain useful information rather than just errors. Exam use: A safe answer is outliers can signal mistakes, but they can also highlight meaningful exceptions."
+        },
+        {
+            "type": "knowledge",
+            "source": "quiz_review",
+            "question": "State whether the following is True or False, then justify briefly: Power Query is restricted by the number of rows in Excel.",
+            "answer": "Correct answer: False. Power Query itself can work with datasets that are larger than the visible row limit of a normal Excel worksheet. The worksheet grid has row limits, but Power Query can still import, transform, and load data into models or connections in ways that go beyond what fits directly on a sheet. Exam use: A safe distinction is worksheet row limit is not the same thing as Power Query capability."
+        },
+        {
+            "type": "knowledge",
+            "source": "quiz_review",
+            "question": "What is the primary purpose of a Z-score in statistical analysis? Choose the best answer and justify briefly.",
+            "answer": "Correct answer: To indicate the data point's relative position within its distribution. A z-score shows how many standard deviations a value lies above or below the mean, so it standardises the value relative to the rest of the distribution. It is not the mode, it does not measure skewness, and it is not best described as an absolute distance because the sign and standardised scale both matter. Exam use: A safe memory rule is z-score = relative position in standard-deviation units."
+        },
+        {
+            "type": "knowledge",
+            "source": "quiz_review",
+            "question": "What does a correlation value of 0 between two variables mean? Choose the best answer and justify briefly.",
+            "answer": "Correct answer: No correlation. A correlation of 0 means there is no linear relationship between the two variables. It does not mean there are outliers, and it is not a positive or negative perfect correlation. Exam use: A safe memory rule is correlation 0 = no linear correlation."
+        },
+        {
+            "type": "knowledge",
+            "source": "quiz_review",
+            "question": "State whether the following is True or False, then justify briefly: When using the Rank and Percentile tool from the Data Analysis ToolPak in Excel, the 'Point' column refers to the ranking of a particular value in the data set.",
+            "answer": "Correct answer: False. In the Rank and Percentile output, the 'Point' column shows the actual data value, while the ranking itself is shown in the 'Rank' column. The percentile information is then shown separately as well. Exam use: A safe memory rule is Point = original value, Rank = position in the ordered dataset."
+        },
+        {
+            "type": "knowledge",
+            "source": "quiz_review",
+            "question": "State whether the following is True or False, then justify briefly: Using the Sampling tool in the Data Analysis ToolPak, periodic sampling can be applied to extract every nth value from the dataset.",
+            "answer": "Correct answer: True. In the Sampling tool, periodic sampling means selecting observations at a fixed interval, such as every 3rd, 5th, or nth value from the dataset. This is different from random sampling, where observations are chosen by chance. Exam use: A safe memory rule is periodic sampling = fixed step pattern through the data."
+        },
+        {
+            "type": "knowledge",
+            "source": "quiz_review",
+            "question": "In the context of outliers, why might it be a mistake to remove outliers from a market risk management analysis? Choose the best answer and justify briefly.",
+            "answer": "Correct answer: Because outliers in this context are vital for accurate risk assessment. In market risk analysis, extreme values may represent rare but important losses, shocks, or stress events that the analyst must understand rather than hide. Removing them could understate the true level of risk. Exam use: A safe rule is that in risk management, extreme events are often the point of the analysis, not noise to delete."
+        },
+        {
+            "type": "knowledge",
+            "source": "quiz_review",
+            "question": "How is the t-statistic for a regression parameter calculated? Choose the best answer and justify briefly.",
+            "answer": "Correct answer: By dividing the estimated coefficient by its standard error. The t-statistic measures how large the estimated coefficient is relative to the uncertainty around that estimate, so the formula is coefficient divided by standard error. Exam use: A safe memory rule is t-stat = estimate / SE."
+        },
+        {
+            "type": "knowledge",
+            "source": "quiz_review",
+            "question": "Which of the following best describes an outlier in a dataset? Choose the best answer and justify briefly.",
+            "answer": "Correct answer: They are data points that deviate significantly from a dataset's overall patterns. An outlier is an observation that lies unusually far from the rest of the data or does not fit the main pattern well. It is not the average, the centre, or the most frequent value. Exam use: A safe memory rule is outlier = unusually distant or unusual observation."
+        },
+        {
+            "type": "knowledge",
+            "source": "quiz_review",
+            "question": "In Z-testing, what is the primary purpose of the computed Z-score? Choose the best answer and justify briefly.",
+            "answer": "Correct answer: To determine if the observed sample mean significantly differs from a hypothesised population mean. In a z-test, the computed z-score shows how far the sample result is from the hypothesised value after standardising by the standard error. This allows the analyst to compare it with a critical value or p-value rule and decide whether the difference is statistically significant. Exam use: A safe rule is z-test z-score = test statistic for significance against a benchmark."
+        },
+        {
+            "type": "knowledge",
+            "source": "quiz_review",
+            "question": "Which of the following describes a bimodal distribution in a histogram? Choose the best answer and justify briefly.",
+            "answer": "Correct answer: A distribution that reveals two distinct peaks or modes. A bimodal histogram has two clear peaks, which often suggests two groups, processes, or subpopulations within the data. It is not a symmetric shape by itself, not a single peak, and not simply a long tail on one side. Exam use: A safe memory rule is bimodal = two modes = two peaks."
+        },
+        {
+            "type": "skills",
+            "source": "quiz_review",
+            "question": "Using the dataset [STT-0201-CALC2.xlsx](/workspaces/Study-buddy/STT-0201-CALC2.xlsx), calculate the mean and standard deviation of the Quantity field, then count outliers using threshold 3.",
+            "answer": "Correct answers: Mean = 1.89 and Standard Deviation = 0.89. In the workbook, the Quantity values produce a mean of 1.8941 and a sample standard deviation of 0.8855, which match the rounded options 1.89 and 0.89. The workbook's Outlier column uses the direct formula IF(ABS(Quantity) > 3, \"Outlier\", \"Not an Outlier\"), so it flags 553 records as Not an Outlier and 86 records as Outlier across the 639 data rows. The quiz options appear to contain a one-off mismatch on the outlier count, and the intended selected option is 87 because it is the only paired option consistent with 553. Exam use: Always check whether the threshold is applied to raw values or to z-scores, because that changes the outlier count completely."
+        },
+        {
+            "type": "knowledge",
+            "source": "quiz_review",
+            "question": "What does a positive covariance between two variables indicate? Choose the best answer and justify briefly.",
+            "answer": "Correct answer: The variables tend to move together. A positive covariance means that when one variable is above its mean, the other also tends to be above its mean, and when one is below its mean, the other tends to be below its mean. Exam use: A safe rule is positive covariance = same-direction movement."
+        },
+        {
+            "type": "knowledge",
+            "source": "quiz_review",
+            "question": "Which of the following best describes Z-values in statistical analysis? Choose the best answer and justify briefly.",
+            "answer": "Correct answer: They encompass both Z-scores and critical values. In statistical analysis, z-values can refer both to calculated z-scores from data and to critical z-values used as decision thresholds in hypothesis testing. They are therefore broader than just outlier flags or data-point standardisation alone. Exam use: A safe distinction is z-score = computed standardised value, critical z-value = benchmark used in testing, and both are z-values."
+        },
+        {
             "type": "knowledge",
             "source": "quiz_review",
             "question": "State whether the following is True or False, then justify briefly: Confidence intervals represent a range of values for which we expect the predicted variable to fall with a given probability, often at a confidence level of 95%.",
@@ -63420,7 +64037,7 @@ def generate_practice_question(course, question_type="general"):
     
     try:
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model=AI_CHAT_MODEL,
             messages=[
                 {"role": "system", "content": "You are an educational tutor for a Data Analyst vocational program. Generate clear, practical questions that test understanding of data analysis concepts."},
                 {"role": "user", "content": prompts.get(question_type, prompts["general"])}
@@ -63437,7 +64054,7 @@ def evaluate_answer(question, correct_answer, user_answer):
 
     try:
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model=AI_CHAT_MODEL,
             messages=[
                 {"role": "system", "content": "You are a supportive educational tutor. Evaluate student answers and provide constructive feedback. Be encouraging but accurate."},
                 {"role": "user", "content": f"Question: {question}\n\nCorrect answer concept: {correct_answer}\n\nStudent's answer: {user_answer}\n\nProvide brief feedback (2-3 sentences): Is the answer correct or partially correct? What did they get right? What could be improved?"}
@@ -71089,6 +71706,34 @@ elif page == "Learn & Practice":
         padding: 12px 14px;
         margin: 12px 0 10px 0;
     }
+    .study-buddy-lesson-root-marker {
+        display: block;
+        width: 0;
+        height: 0;
+        overflow: hidden;
+        pointer-events: none;
+    }
+    .study-buddy-lesson-glossary-anchor {
+        display: block;
+        width: 0;
+        height: 0;
+        overflow: hidden;
+        pointer-events: none;
+    }
+    .study-buddy-focus-flash {
+        animation: studyBuddyFocusFlash 1.8s ease;
+    }
+    @keyframes studyBuddyFocusFlash {
+        0% {
+            box-shadow: 0 0 0 0 rgba(29, 78, 216, 0.00);
+        }
+        20% {
+            box-shadow: 0 0 0 4px rgba(29, 78, 216, 0.18);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(29, 78, 216, 0.00);
+        }
+    }
     .lesson-glossary-toolbar-title {
         font-weight: 700;
         color: #0f172a;
@@ -71137,6 +71782,15 @@ elif page == "Learn & Practice":
         color: #475569;
         line-height: 1.45;
         font-size: 0.93rem;
+    }
+    .selection-explain-highlight {
+        display: inline;
+        background: linear-gradient(180deg, rgba(254, 240, 138, 0.92) 0%, rgba(253, 224, 71, 0.96) 100%);
+        color: #111827;
+        border-radius: 6px;
+        padding: 0 0.2em;
+        box-shadow: 0 0 0 1px rgba(217, 119, 6, 0.16);
+        font-weight: 600;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -71239,8 +71893,19 @@ elif page == "Learn & Practice":
         if course_code in course_lessons:
             st.markdown("### 📖 Course Lessons")
             st.markdown("Explore detailed lessons with visual explanations and key concepts.")
-            st.caption("Difficult words are highlighted in the lesson text. Hover a highlighted term for a quick meaning, or mark any word and use the quick menu that appears to add it to the word bank.")
+            st.caption("Difficult words are highlighted in the lesson text. Hover a highlighted term for a quick meaning, or mark any word anywhere inside a lesson and use the quick menu that appears to add it to the word bank.")
             st.markdown("")
+
+            st.markdown(
+                """
+                <div class="lesson-glossary-toolbar">
+                  <div class="lesson-glossary-toolbar-title">Global lesson selection manager</div>
+                  <div class="lesson-glossary-toolbar-copy">This quick-action layer now listens across the whole lesson page, routes marked text to the correct lesson, and can also pick up text selected inside supported inputs or accessible iframes.</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            global_glossary_capture_payload = render_glossary_selection_capture(f"glossary_capture_component_global_{course_code}")
 
             course_glossary_entries = merge_glossary_entry_sets(
                 get_course_glossary_entries(course_lessons[course_code]),
@@ -71259,12 +71924,25 @@ elif page == "Learn & Practice":
                 )
                 glossary_counts = {}
                 with st.expander(f"📚 Lesson {lesson['lesson_number']}: {lesson['title']}", expanded=True):
+                    st.markdown(
+                        f'<div class="study-buddy-lesson-root-marker" data-study-buddy-lesson-root="true" data-study-buddy-course="{html_escape(course_code)}" data-study-buddy-lesson="{html_escape(str(lesson_number))}" data-study-buddy-lesson-title="{html_escape(str(lesson.get("title", "")))}"></div>',
+                        unsafe_allow_html=True,
+                    )
                     # Parse and render lesson content with Mermaid diagrams
                     content = lesson['content']
+                    selected_explain_text = str(
+                        st.session_state.get(f"lesson_selected_explain_text_{course_code}_{lesson_number}", "")
+                    ).strip()
+                    selected_explain_output = str(
+                        st.session_state.get(f"lesson_selected_explain_output_{course_code}_{lesson_number}", "")
+                    )
+                    selected_explain_mode = str(
+                        st.session_state.get(f"lesson_selected_explain_mode_{course_code}_{lesson_number}", "explain")
+                    ).strip().lower()
 
                     if lesson_glossary_entries:
                         st.caption("🧠 Hover or focus highlighted words for quick meanings. You can also mark any word in this lesson and use the quick menu that appears to send it straight to the lesson word bank.")
-                    render_lesson_glossary_manager(course_code, course['name'], lesson, lesson_glossary_entries)
+                    render_lesson_glossary_manager(course_code, course['name'], lesson, lesson_glossary_entries, global_capture_payload=global_glossary_capture_payload)
                     
                     # Split content by Mermaid diagrams
                     parts = re.split(r'(<div class="mermaid">.*?</div>)', content, flags=re.DOTALL)
@@ -71446,10 +72124,21 @@ elif page == "Learn & Practice":
                         else:
                             # Render regular markdown content
                             if part.strip():
-                                annotated_part = annotate_text_with_glossary(
+                                highlighted_part, selection_highlight_replacements = annotate_text_with_selection_highlight(
                                     part,
+                                    selected_explain_text,
+                                    explanation_output=selected_explain_output,
+                                    explain_mode=selected_explain_mode,
+                                    max_occurrences=1,
+                                )
+                                annotated_part = annotate_text_with_glossary(
+                                    highlighted_part,
                                     lesson_glossary_entries,
                                     occurrence_counts=glossary_counts,
+                                )
+                                annotated_part = restore_selection_highlight_placeholders(
+                                    annotated_part,
+                                    selection_highlight_replacements,
                                 )
                                 st.markdown(annotated_part, unsafe_allow_html=True)
 
@@ -71468,11 +72157,22 @@ elif page == "Learn & Practice":
                     st.markdown("### ⭐ Key Takeaways")
                     st.markdown('<div class="important-info">', unsafe_allow_html=True)
                     for i, point in enumerate(lesson['key_points'], 1):
-                        annotated_point = annotate_text_with_glossary(
+                        highlighted_point, point_highlight_replacements = annotate_text_with_selection_highlight(
                             point,
+                            selected_explain_text,
+                            explanation_output=selected_explain_output,
+                            explain_mode=selected_explain_mode,
+                            max_occurrences=1,
+                        )
+                        annotated_point = annotate_text_with_glossary(
+                            highlighted_point,
                             lesson_glossary_entries,
                             occurrence_counts=glossary_counts,
                             max_occurrences_per_term=3,
+                        )
+                        annotated_point = restore_selection_highlight_placeholders(
+                            annotated_point,
+                            point_highlight_replacements,
                         )
                         st.markdown(f"**{i}.** {annotated_point}", unsafe_allow_html=True)
                     st.markdown('</div>', unsafe_allow_html=True)
@@ -73024,7 +73724,7 @@ Guidelines:
 - When relevant, reference course learning outcomes and skills"""
 
                             response = client.chat.completions.create(
-                                model="gpt-4o-mini",
+                                model=AI_CHAT_MODEL,
                                 messages=[
                                     {"role": "system", "content": system_prompt},
                                     {"role": "user", "content": prompts[action]}
@@ -73089,7 +73789,7 @@ Always respond in English.
 Be practical and focused on real-world data analysis. {full_context if include_course_context else ''}"""
 
                                 response = client.chat.completions.create(
-                                    model="gpt-4o-mini",
+                                    model=AI_CHAT_MODEL,
                                     messages=[
                                         {"role": "system", "content": system_prompt},
                                         {"role": "user", "content": type_prompts[gen_type]}
@@ -73140,7 +73840,7 @@ Always respond in English.
 Be specific and actionable in your recommendations. {full_context}"""
 
                                 response = client.chat.completions.create(
-                                    model="gpt-4o-mini",
+                                    model=AI_CHAT_MODEL,
                                     messages=[
                                         {"role": "system", "content": system_prompt},
                                         {"role": "user", "content": analyze_prompts[analyze_type]}
@@ -73181,7 +73881,7 @@ Be helpful, educational, and practical.
 Focus on data analysis concepts, tools, and real-world applications."""
 
                                 response = client.chat.completions.create(
-                                    model="gpt-4o-mini",
+                                    model=AI_CHAT_MODEL,
                                     messages=[
                                         {"role": "system", "content": system_prompt},
                                         {"role": "user", "content": full_prompt}

@@ -2,7 +2,22 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <script src="https://unpkg.com/streamlit-component-lib@2.0.0/dist/index.js"></script>
+  <script>
+    window.loadStudyBuddyStreamlit = window.loadStudyBuddyStreamlit || (() => {
+      let promise = null;
+      return () => {
+        if (window.Streamlit) return Promise.resolve(window.Streamlit);
+        if (!promise) {
+          promise = import("https://esm.sh/streamlit-component-lib@2.0.0?bundle")
+            .then((mod) => {
+              window.Streamlit = mod.Streamlit;
+              return window.Streamlit;
+            });
+        }
+        return promise;
+      };
+    })();
+  </script>
   <style>
     html, body {
       margin: 0;
@@ -254,7 +269,7 @@
 <body>
   <div class="shell">
     <div class="row">
-      <div class="hint">Highlight a word, sentence, or question in the lesson text. Quick actions let you save it, explain it, or turn it into an exam-style answer. The button below still works as a fallback.</div>
+      <div class="hint">Highlight a word, sentence, or question anywhere in the lessons below. Quick actions will route the marked text to the correct lesson, and the button below still works as a fallback.</div>
       <button id="captureBtn" class="btn" disabled>Add highlighted text</button>
       <button id="clearBtn" class="btn btn-secondary">Clear</button>
     </div>
@@ -269,6 +284,8 @@
   </div>
 
   <script>
+    (async function () {
+    const Streamlit = await window.loadStudyBuddyStreamlit();
     const selectionTextEl = document.getElementById("selectionText");
     const captureBtn = document.getElementById("captureBtn");
     const clearBtn = document.getElementById("clearBtn");
@@ -284,11 +301,17 @@
     ];
 
     let currentSelection = "";
+    let currentSelectionContext = null;
+    let currentSelectionRect = null;
     let listenersBound = false;
     let actionMenuEl = null;
-    let lastSelectionExpander = null;
     let lastCapturedSelection = "";
+    let lastCapturedLessonContext = null;
+    let lastSelectionRect = null;
     let lastFocusedSelection = "";
+    let selectionPollHandle = null;
+    let componentReadySent = false;
+    const PENDING_SELECTION_TARGET_KEY = "studyBuddyPendingGlossaryTarget";
 
     function ensureParentStyles() {
       try {
@@ -435,24 +458,142 @@
       return (text || "").replace(/\s+/g, " ").trim();
     }
 
+    function buildPendingSelectionTarget(lessonContext, action, selectionText) {
+      if (!lessonContext || !lessonContext.lessonNumber) return null;
+      return {
+        courseCode: lessonContext.courseCode || "",
+        lessonNumber: lessonContext.lessonNumber || "",
+        lessonTitle: lessonContext.lessonTitle || "",
+        action: action || "lesson",
+        selectionText: selectionText || "",
+        ts: Date.now()
+      };
+    }
+
+    function savePendingSelectionTarget(lessonContext, action, selectionText) {
+      try {
+        const payload = buildPendingSelectionTarget(lessonContext, action, selectionText);
+        if (!payload) return;
+        window.parent.sessionStorage.setItem(PENDING_SELECTION_TARGET_KEY, JSON.stringify(payload));
+      } catch (err) {
+        // ignore storage errors
+      }
+    }
+
+    function loadPendingSelectionTarget() {
+      try {
+        const raw = window.parent.sessionStorage.getItem(PENDING_SELECTION_TARGET_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (!parsed || !parsed.lessonNumber) return null;
+        if (parsed.ts && Date.now() - parsed.ts > 20000) {
+          window.parent.sessionStorage.removeItem(PENDING_SELECTION_TARGET_KEY);
+          return null;
+        }
+        return parsed;
+      } catch (err) {
+        return null;
+      }
+    }
+
+    function clearPendingSelectionTarget() {
+      try {
+        window.parent.sessionStorage.removeItem(PENDING_SELECTION_TARGET_KEY);
+      } catch (err) {
+        // ignore
+      }
+    }
+
     function toElement(node) {
       if (!node) return null;
       return node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
     }
 
-    function getOutermostExpander(element) {
+    function getLessonMarkers() {
       try {
-        let current = element;
-        let lastExpander = null;
-        while (current) {
-          if (current.matches && current.matches('div[data-testid="stExpander"]')) {
-            lastExpander = current;
-          }
-          current = current.parentElement;
+        return Array.from(window.parent.document.querySelectorAll(".study-buddy-lesson-root-marker[data-study-buddy-lesson]"));
+      } catch (err) {
+        return [];
+      }
+    }
+
+    function getLessonContextFromMarker(marker) {
+      if (!marker) return null;
+      const courseCode = marker.dataset.studyBuddyCourse || "";
+      const lessonNumber = marker.dataset.studyBuddyLesson || "";
+      const lessonTitle = marker.dataset.studyBuddyLessonTitle || "";
+      if (!lessonNumber) return null;
+      return { courseCode, lessonNumber, lessonTitle };
+    }
+
+    function getLessonMarkerForElement(ownerElement) {
+      try {
+        if (!ownerElement) return null;
+        if (ownerElement.closest) {
+          const direct = ownerElement.closest(".study-buddy-lesson-root-marker[data-study-buddy-lesson]");
+          if (direct) return direct;
         }
-        return lastExpander;
+        const markers = getLessonMarkers();
+        let candidate = null;
+        markers.forEach((marker) => {
+          if (marker === ownerElement || marker.contains(ownerElement)) {
+            candidate = marker;
+            return;
+          }
+          const relation = marker.compareDocumentPosition(ownerElement);
+          if (relation & Node.DOCUMENT_POSITION_FOLLOWING) {
+            candidate = marker;
+          }
+        });
+        return candidate;
       } catch (err) {
         return null;
+      }
+    }
+
+    function getGlossaryAnchorForLesson(courseCode, lessonNumber) {
+      try {
+        const anchors = Array.from(window.parent.document.querySelectorAll(".study-buddy-lesson-glossary-anchor[data-study-buddy-lesson]"));
+        return anchors.find((anchor) => {
+          const anchorCourse = anchor.dataset.studyBuddyCourse || "";
+          const anchorLesson = anchor.dataset.studyBuddyLesson || "";
+          return anchorLesson === String(lessonNumber || "") && (!courseCode || anchorCourse === String(courseCode));
+        }) || null;
+      } catch (err) {
+        return null;
+      }
+    }
+
+    function flashFocusTarget(anchor) {
+      if (!anchor) return;
+      const flashTarget =
+        anchor.closest('[data-testid="stExpander"]') ||
+        anchor.parentElement ||
+        anchor;
+      try {
+        flashTarget.classList.remove("study-buddy-focus-flash");
+        void flashTarget.offsetWidth;
+        flashTarget.classList.add("study-buddy-focus-flash");
+        window.setTimeout(() => {
+          flashTarget.classList.remove("study-buddy-focus-flash");
+        }, 1900);
+      } catch (err) {
+        // ignore
+      }
+    }
+
+    function tryFocusPendingSelectionTarget() {
+      const pending = loadPendingSelectionTarget();
+      if (!pending) return false;
+      const anchor = getGlossaryAnchorForLesson(pending.courseCode, pending.lessonNumber);
+      if (!anchor) return false;
+      try {
+        anchor.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" });
+        flashFocusTarget(anchor);
+        clearPendingSelectionTarget();
+        return true;
+      } catch (err) {
+        return false;
       }
     }
 
@@ -471,61 +612,129 @@
       return null;
     }
 
-    function getHostExpander() {
+    function rectFromRange(range, ownerElementOverride = null) {
       try {
-        return getOutermostExpander(window.frameElement) || null;
-      } catch (err) {
-        return null;
-      }
-    }
-
-    function getSelectionOwnerElement() {
-      try {
-        const selection = window.parent.getSelection();
-        if (!selection || selection.rangeCount === 0) return null;
-        return toElement(selection.anchorNode) || toElement(selection.focusNode);
-      } catch (err) {
-        return null;
-      }
-    }
-
-    function selectionBelongsToThisLesson(ownerElementOverride = null) {
-      try {
-        const ownerElement = ownerElementOverride || getSelectionOwnerElement();
-        const hostExpander = getHostExpander();
-        if (!ownerElement || !hostExpander) return false;
-        if (ownerElement.closest('input, textarea, [contenteditable="true"]')) return false;
-        const selectionExpander = getOutermostExpander(ownerElement);
-        const belongs = Boolean(selectionExpander && selectionExpander === hostExpander);
-        if (belongs) {
-          lastSelectionExpander = selectionExpander;
+        const rect = range.getBoundingClientRect();
+        if (rect && (rect.width || rect.height)) {
+          if (!ownerElementOverride || ownerElementOverride.tagName !== "IFRAME") {
+            return rect;
+          }
+          const iframeRect = ownerElementOverride.getBoundingClientRect();
+          return {
+            left: iframeRect.left + rect.left,
+            top: iframeRect.top + rect.top,
+            right: iframeRect.left + rect.right,
+            bottom: iframeRect.top + rect.bottom,
+            width: rect.width,
+            height: rect.height,
+          };
         }
-        return belongs;
       } catch (err) {
-        return false;
+        // ignore
+      }
+      if (ownerElementOverride) {
+        return ownerElementOverride.getBoundingClientRect();
+      }
+      return null;
+    }
+
+    function getTextInputSelection(doc, ownerElementOverride = null) {
+      try {
+        const active = doc.activeElement;
+        if (!active || !active.matches || !active.matches("input, textarea")) return null;
+        const start = Number.isInteger(active.selectionStart) ? active.selectionStart : null;
+        const end = Number.isInteger(active.selectionEnd) ? active.selectionEnd : null;
+        if (start === null || end === null || start === end) return null;
+        const text = normalizeSelection(active.value.slice(start, end));
+        if (!text) return null;
+        const ownerElement = ownerElementOverride || active;
+        return {
+          text,
+          ownerElement,
+          rect: ownerElement.getBoundingClientRect(),
+          lessonContext: getLessonContextFromMarker(getLessonMarkerForElement(ownerElement)),
+        };
+      } catch (err) {
+        return null;
       }
     }
 
-    function getParentSelection() {
+    function getDocumentSelectionSnapshot(doc, ownerElementOverride = null) {
       try {
-        return normalizeSelection(window.parent.getSelection().toString());
+        const selection = doc.getSelection();
+        if (!selection || selection.rangeCount === 0) return null;
+        const text = normalizeSelection(selection.toString());
+        if (!text) return null;
+        const ownerElement = ownerElementOverride || toElement(selection.anchorNode) || toElement(selection.focusNode);
+        if (!ownerElement) return null;
+        return {
+          text,
+          ownerElement,
+          rect: rectFromRange(selection.getRangeAt(0), ownerElementOverride),
+          lessonContext: getLessonContextFromMarker(getLessonMarkerForElement(ownerElement)),
+        };
       } catch (err) {
-        return "";
+        return null;
       }
+    }
+
+    function getAccessibleIframeSelection() {
+      try {
+        const iframeNodes = Array.from(window.parent.document.querySelectorAll("iframe"));
+        for (const iframe of iframeNodes) {
+          try {
+            const childDoc = iframe.contentWindow && iframe.contentWindow.document;
+            if (!childDoc) continue;
+            const inputSelection = getTextInputSelection(childDoc, iframe);
+            if (inputSelection && inputSelection.lessonContext) return inputSelection;
+            const textSelection = getDocumentSelectionSnapshot(childDoc, iframe);
+            if (textSelection && textSelection.lessonContext) return textSelection;
+          } catch (err) {
+            // ignore cross-origin or inaccessible iframes
+          }
+        }
+      } catch (err) {
+        return null;
+      }
+      return null;
+    }
+
+    function getSelectionSnapshot() {
+      try {
+        const parentDoc = window.parent.document;
+        const directInputSelection = getTextInputSelection(parentDoc);
+        if (directInputSelection && directInputSelection.lessonContext) return directInputSelection;
+        const directTextSelection = getDocumentSelectionSnapshot(parentDoc);
+        if (directTextSelection && directTextSelection.lessonContext) return directTextSelection;
+        const iframeSelection = getAccessibleIframeSelection();
+        if (iframeSelection && iframeSelection.lessonContext) return iframeSelection;
+      } catch (err) {
+        return null;
+      }
+      return null;
     }
 
     function updateSelectionPreview() {
-      const ownerElement = getSelectionOwnerElement();
-      const freshSelection = selectionBelongsToThisLesson(ownerElement) ? getParentSelection() : "";
+      const snapshot = getSelectionSnapshot();
+      const freshSelection = snapshot && snapshot.lessonContext ? snapshot.text : "";
       if (freshSelection) {
         currentSelection = freshSelection;
+        currentSelectionContext = snapshot.lessonContext;
+        currentSelectionRect = snapshot.rect || null;
         lastCapturedSelection = freshSelection;
-        selectionTextEl.textContent = currentSelection;
+        lastCapturedLessonContext = snapshot.lessonContext;
+        lastSelectionRect = snapshot.rect || null;
+        selectionTextEl.textContent = freshSelection;
         captureBtn.disabled = false;
       } else {
         currentSelection = "";
+        currentSelectionContext = null;
+        currentSelectionRect = null;
         if (lastCapturedSelection) {
-          selectionTextEl.textContent = lastCapturedSelection;
+          const lessonSuffix = lastCapturedLessonContext && lastCapturedLessonContext.lessonNumber
+            ? ` (Lesson ${lastCapturedLessonContext.lessonNumber})`
+            : "";
+          selectionTextEl.textContent = `${lastCapturedSelection}${lessonSuffix}`;
           captureBtn.disabled = false;
         } else {
           selectionTextEl.textContent = "No text selected yet.";
@@ -547,7 +756,9 @@
         lastFocusedSelection = "";
         return;
       }
-      const label = effectiveSelection.length > 72 ? `${effectiveSelection.slice(0, 69)}...` : effectiveSelection;
+      const lessonLabel = currentSelectionContext?.lessonNumber || lastCapturedLessonContext?.lessonNumber;
+      const labelBase = effectiveSelection.length > 72 ? `${effectiveSelection.slice(0, 69)}...` : effectiveSelection;
+      const label = lessonLabel ? `${labelBase} · Lesson ${lessonLabel}` : labelBase;
       inlineActionSelectionEl.textContent = label;
       inlineActionBarEl.classList.add("visible");
       focusManagerForSelection(effectiveSelection);
@@ -556,25 +767,6 @@
     function focusManagerForSelection(selectionText) {
       if (!selectionText || selectionText === lastFocusedSelection) return;
       lastFocusedSelection = selectionText;
-      try {
-        const frame = window.frameElement;
-        const nearestExpander = getNearestAncestor(frame, 'div[data-testid="stExpander"]');
-        const nearestDetails = getNearestAncestor(frame, 'details');
-        if (nearestDetails && !nearestDetails.hasAttribute('open')) {
-          nearestDetails.setAttribute('open', 'open');
-        }
-        if (nearestExpander) {
-          const summary = nearestExpander.querySelector('summary');
-          if (summary && summary.getAttribute('aria-expanded') === 'false') {
-            summary.click();
-          }
-        }
-        window.setTimeout(() => {
-          frame.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
-        }, 90);
-      } catch (err) {
-        // ignore and fall back to the normal panel flow
-      }
     }
 
     function buildInlineActionButtons() {
@@ -663,10 +855,21 @@
     function emitSelection(action) {
       updateSelectionPreview();
       const effectiveSelection = getEffectiveSelection();
-      if (effectiveSelection) {
+      const lessonContext = currentSelectionContext || lastCapturedLessonContext;
+      if (effectiveSelection && lessonContext) {
+        savePendingSelectionTarget(lessonContext, action, effectiveSelection);
+        const selectionLabel = effectiveSelection.length > 80 ? `${effectiveSelection.slice(0, 77)}...` : effectiveSelection;
+        selectionTextEl.textContent = action === "suggest"
+          ? `Preparing AI explanation for: ${selectionLabel}`
+          : action === "answer"
+            ? `Preparing exam-style answer for: ${selectionLabel}`
+            : `Saving selected text: ${selectionLabel}`;
         Streamlit.setComponentValue({
           term: effectiveSelection,
           action: action || "lesson",
+          course_code: lessonContext.courseCode || "",
+          lesson_number: lessonContext.lessonNumber || "",
+          lesson_title: lessonContext.lessonTitle || "",
           nonce: Date.now()
         });
       }
@@ -684,32 +887,18 @@
       }
     }
 
-    function getSelectionRect() {
-      try {
-        const selection = window.parent.getSelection();
-        if (!selection || selection.rangeCount === 0) return null;
-        const range = selection.getRangeAt(0);
-        if (range.collapsed) return null;
-        const rect = range.getBoundingClientRect();
-        if (rect && (rect.width || rect.height)) return rect;
-        const rects = range.getClientRects();
-        return rects && rects.length ? rects[0] : null;
-      } catch (err) {
-        return null;
-      }
-    }
-
     function showActionMenuNearSelection() {
       const menu = ensureActionMenu();
       if (!menu || !currentSelection) return;
-      const rect = getSelectionRect();
+      const rect = currentSelectionRect || lastSelectionRect;
       if (!rect) {
         hideActionMenu();
         return;
       }
       const label = currentSelection.length > 48 ? `${currentSelection.slice(0, 45)}...` : currentSelection;
+      const lessonLabel = currentSelectionContext?.lessonNumber || lastCapturedLessonContext?.lessonNumber || "";
       if (menu._headerTerm) {
-        menu._headerTerm.textContent = label;
+        menu._headerTerm.textContent = lessonLabel ? `${label} · Lesson ${lessonLabel}` : label;
       }
       Array.from(menu._actionList.children).forEach((button) => {
         const action = button.dataset.action;
@@ -750,7 +939,7 @@
     }
 
     function syncActionMenu() {
-      if (currentSelection && lastSelectionExpander && getHostExpander() === lastSelectionExpander) {
+      if (currentSelection && currentSelectionContext) {
         showActionMenuNearSelection();
       } else {
         hideActionMenu();
@@ -789,6 +978,14 @@
       }
     }
 
+    function ensureSelectionWatcher() {
+      if (selectionPollHandle !== null) return;
+      selectionPollHandle = window.setInterval(() => {
+        updateSelectionPreview();
+        syncActionMenu();
+      }, 300);
+    }
+
     captureBtn.addEventListener("click", () => {
       emitSelection("lesson");
     });
@@ -803,16 +1000,35 @@
       Streamlit.setComponentValue("");
     });
 
-    function onRender(event) {
+    function runSelectionSetup() {
       buildInlineActionButtons();
       bindParentListeners();
+      ensureSelectionWatcher();
       updateSelectionPreview();
-      Streamlit.setFrameHeight(92);
+      syncActionMenu();
+      window.setTimeout(tryFocusPendingSelectionTarget, 250);
+      window.setTimeout(tryFocusPendingSelectionTarget, 900);
     }
 
+    function onRender(event) {
+      runSelectionSetup();
+      if (componentReadySent) {
+        Streamlit.setFrameHeight(92);
+      }
+    }
+
+    runSelectionSetup();
     Streamlit.events.addEventListener(Streamlit.RENDER_EVENT, onRender);
     Streamlit.setComponentReady();
+    componentReadySent = true;
     Streamlit.setFrameHeight(92);
+    })().catch((err) => {
+      const selectionTextEl = document.getElementById("selectionText");
+      if (selectionTextEl) {
+        selectionTextEl.textContent = `Selection capture failed to load: ${err && err.message ? err.message : err}`;
+      }
+      console.error("Glossary selection capture boot failed", err);
+    });
   </script>
 </body>
 </html>
