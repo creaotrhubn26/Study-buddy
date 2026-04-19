@@ -62759,6 +62759,174 @@ CURATED_EXAM_QUESTION_BANK = {
             "answer": "The strongest structure is tool or method, setup, calculation or workflow, result, interpretation, and decision. This prevents the answer from stopping at the raw number or method name. In other words, the student should show not only how the tool is used, but also what the output means and why it matters."
         },
         {
+            "type": "knowledge",
+            "source": "assessment_review",
+            "question": "[Assessment Question 1] State whether the following is True or False, then justify briefly: Probability theory helps us make predictions and quantify uncertainty in data analysis.",
+            "answer": "Correct answer: True. Probability theory helps data analysts reason about uncertainty by assigning numerical likelihoods to possible outcomes. This makes it possible to estimate risk, compare uncertain scenarios, make predictions, and communicate how confident we are about possible results. How to solve similar questions: look for phrases such as uncertainty, likelihood, chance, risk, prediction, expected outcome, or probability of an event. These are strong signals that probability theory is relevant. Core formula: P(A) = number of favourable outcomes / total number of possible outcomes. Example: if 20 out of 100 customers churn, the estimated churn probability is 20 / 100 = 0.20 or 20%. Excel template: =COUNTIF(range, condition)/COUNTA(range). Google Sheets template: =COUNTIF(range, condition)/COUNTA(range). If outcomes are already counted in cells, use =favourable_outcomes/total_outcomes. Suggested diagram: Data -> uncertainty -> probability model -> prediction or risk estimate. Exam-safe version: True. Probability theory is used to quantify uncertainty and make predictions about possible outcomes based on data."
+        },
+        {
+            "type": "knowledge",
+            "source": "assessment_review",
+            "question": "[Assessment Question 2] State whether the following is True or False, then justify briefly: Forecasting with simple linear regression is an exact science that provides precise predictions without any uncertainty.",
+            "answer": "Correct answer: False. Simple linear regression can be used for forecasting, but the forecast is an estimate, not an exact guaranteed value. The model is based on historical data, assumptions, residual variation, and the strength of the relationship between the variables, so uncertainty always remains. How to solve similar questions: if a statement says forecasting is exact, certain, guaranteed, or has no uncertainty, it is usually false. Forecasts should be described as informed estimates. Core formula: y_hat = intercept + slope * x. Excel template: =FORECAST.LINEAR(x_value, known_y_range, known_x_range), or =INTERCEPT(known_y_range, known_x_range)+SLOPE(known_y_range, known_x_range)*x_value. Google Sheets uses the same formulas: =FORECAST.LINEAR(x_value, known_y_range, known_x_range), =SLOPE(known_y_range, known_x_range), and =INTERCEPT(known_y_range, known_x_range). If precision is asked for, add a confidence interval or prediction interval around the point forecast. Suggested diagram: Historical data -> regression line -> point forecast -> uncertainty interval. Exam-safe version: False. Simple linear regression provides an estimated prediction, but it does not remove uncertainty."
+        },
+        {
+            "type": "knowledge",
+            "source": "assessment_review",
+            "question": "[Assessment Question 3] State whether the following is True or False, then justify briefly: The rejection area in statistical hypothesis testing consists of events with a probability greater than 5%, assuming that the null hypothesis is true.",
+            "answer": "Correct answer: False. The rejection area contains outcomes that are sufficiently unlikely under the null hypothesis, not outcomes with probability greater than 5%. If the significance level is 0.05, the rejection region is usually chosen so that its total probability is 5% or less under the null hypothesis. How to solve similar questions: connect rejection area with rare/extreme outcomes and alpha, not common outcomes. Core rule: reject H0 when p-value <= alpha. At alpha = 0.05, this means rejecting only when the observed result is in the most extreme 5% region under H0. Excel template: =IF(p_value<=0.05,\"Reject H0\",\"Do not reject H0\"). Google Sheets template: =IF(p_value<=0.05,\"Reject H0\",\"Do not reject H0\"). Suggested diagram: Null distribution -> central non-rejection area -> tail rejection area alpha. Exam-safe version: False. The rejection area represents low-probability extreme outcomes under the null hypothesis, usually with total probability equal to the significance level."
+        },
+        {
+            "type": "knowledge",
+            "source": "assessment_review",
+            "question": "[Assessment Question 4] State whether the following is True or False, then justify briefly: Covariance indicates the strength of the relationship between two variables.",
+            "answer": "Correct answer: False. Covariance mainly indicates the direction of joint movement between two variables, not a standardised strength of relationship. Because covariance is measured in the units of the two variables, its size is difficult to compare across datasets. Correlation is the standardised measure that is normally used to discuss the strength and direction of a linear relationship. How to solve similar questions: if the question asks about direction of movement, covariance may fit; if it asks about strength on a comparable -1 to +1 scale, correlation fits better. Core formulas: COVARIANCE.S(x_range, y_range) for covariance and CORREL(x_range, y_range) for correlation. Excel template: =COVARIANCE.S(A2:A100,B2:B100) and =CORREL(A2:A100,B2:B100). Google Sheets template: =COVARIANCE.S(A2:A100,B2:B100) and =CORREL(A2:A100,B2:B100). Suggested diagram: Variable X and Variable Y -> covariance gives direction -> correlation gives standardised strength. Exam-safe version: False. Covariance shows whether variables tend to move together or in opposite directions, while correlation is better for strength."
+        },
+        {
+            "type": "knowledge",
+            "source": "assessment_review",
+            "question": "[Assessment Question 5] State whether the following is True or False, then justify briefly: T-tests compare the means of three or more groups.",
+            "answer": "Correct answer: False. T-tests are normally used to compare the means of two groups or two related measurements. When the task is to compare the means of three or more groups, ANOVA is the more appropriate method. How to solve similar questions: count the number of groups and identify whether the outcome is numerical. Two groups usually points to a t-test; three or more groups usually points to ANOVA. Excel template: for two groups use =T.TEST(range1, range2, tails, type). For three or more groups, use Data -> Data Analysis -> ANOVA: Single Factor. Google Sheets template: use =T.TEST(range1, range2, tails, type) for two groups; for ANOVA, build a summary table with COUNT, AVERAGE, VAR.S, SS_between, SS_within, and F = MS_between / MS_within. Suggested diagram: 2 group means -> t-test; 3+ group means -> ANOVA. Exam-safe version: False. T-tests compare two means; ANOVA is used for three or more group means."
+        },
+        {
+            "type": "knowledge",
+            "source": "assessment_review",
+            "question": "[Assessment Question 6] State whether the following is True or False, then justify briefly: ANOVA is used to compare the means of only two groups.",
+            "answer": "Correct answer: False. ANOVA is mainly used to compare the means of three or more groups. A t-test is normally used when the comparison involves only two group means. ANOVA can technically give a result for two groups in some contexts, but in basic exam logic the expected distinction is t-test for two groups and ANOVA for three or more. How to solve similar questions: identify the number of groups first. If the question says only two groups, think t-test. If it says three or more groups, think ANOVA. Excel template: Data -> Data Analysis -> ANOVA: Single Factor for 3+ columns/groups. Google Sheets template: build a group summary with COUNT, AVERAGE, VAR.S, then calculate SS_between, SS_within, MS_between, MS_within, and F. Suggested diagram: two groups -> t-test; three or more groups -> ANOVA. Exam-safe version: False. ANOVA is used to compare three or more group means, not only two."
+        },
+        {
+            "type": "knowledge",
+            "source": "assessment_review",
+            "question": "[Assessment Question 7] State whether the following is True or False, then justify briefly: Z-scores are used in hypothesis testing to evaluate whether a histogram is symmetric, skewed, or bimodal.",
+            "answer": "Correct answer: False. Z-scores standardise values by showing how many standard deviations a value is from the mean, and z-testing can be used for hypothesis tests involving means or proportions. They are not the main tool for deciding whether a histogram is symmetric, skewed, or bimodal. Histogram shape is usually assessed visually, or with measures such as skewness, kurtosis, and distribution plots. How to solve similar questions: if the question asks about shape, think histogram, skewness, kurtosis, or bimodality; if it asks about standardised distance or z-tests, think z-score or z-statistic. Illustrative histogram patterns: a symmetric histogram has one central mound with roughly equal left and right sides, like low-high-low counts across bins: 2, 5, 9, 5, 2. A right-skewed histogram has many values on the left and a long tail to the right, like 9, 7, 4, 2, 1. A left-skewed histogram has a long tail to the left and many values on the right, like 1, 2, 4, 7, 9. A bimodal histogram has two clear peaks, like 2, 8, 3, 8, 2. Excel template: create bins with Data Analysis -> Histogram, or use FREQUENCY(data_range, bin_range), then insert a column chart. Z-score = (value-AVERAGE(range))/STDEV.S(range); skewness = SKEW(range). Google Sheets template: use =FREQUENCY(data_range, bin_range) and Insert -> Chart -> Column chart, or use =SKEW(A2:A100) to support the visual judgement. Suggested diagram: raw values -> histogram -> shape check: symmetric / left-skewed / right-skewed / bimodal; raw value -> z-score -> distance from mean. Exam-safe version: False. Z-scores are not used to classify histogram shape as symmetric, skewed, or bimodal."
+        },
+        {
+            "type": "knowledge",
+            "source": "assessment_review",
+            "question": "[Assessment Question 8] State whether the following is True or False, then justify briefly: In the context of the coin toss experiment, observing 4 heads and 6 tails in 10 tosses would lead to the rejection of the null hypothesis which states that the coin is fair.",
+            "answer": "Correct answer: False. If the null hypothesis says the coin is fair, then the expected probability of heads is 0.5, so in 10 tosses we would expect about 5 heads and 5 tails. Observing 4 heads and 6 tails is close to that expectation and is not an extreme result. At a usual significance level such as 0.05, this result would not give enough evidence to reject the null hypothesis. How to solve similar questions: state H0 as p = 0.5, compare the observed number of heads with the expected number, and ask whether the difference is extreme enough. Exact binomial idea: under a fair coin, P(X = 4) = COMBIN(10,4)*(0.5)^4*(0.5)^6 = 0.205. A two-sided binomial-style check gives a large p-value, so we do not reject H0. Simple z-approximation: observed proportion = 4/10 = 0.40, standard error = SQRT(0.5*(1-0.5)/10), z = (0.40-0.50)/SE ≈ -0.63, which is far inside the usual +/-1.96 rejection cut-off. Excel template: =BINOM.DIST(4,10,0.5,FALSE) for the probability of exactly 4 heads, or =2*BINOM.DIST(4,10,0.5,TRUE) as a simple lower-tail doubled check for this symmetric case. Google Sheets uses the same formulas: =BINOM.DIST(4,10,0.5,FALSE) and =2*BINOM.DIST(4,10,0.5,TRUE). Suggested diagram: H0 fair coin p=0.5 -> expected 5 heads -> observed 4 heads -> not extreme -> do not reject H0. Exam-safe version: False. Four heads in ten tosses is not far enough from five heads to reject fairness."
+        },
+        {
+            "type": "knowledge",
+            "source": "assessment_review",
+            "question": "[Assessment Question 9] State whether the following is True or False, then justify briefly: Hypothesis testing aims to prove the null hypothesis is true.",
+            "answer": "Correct answer: False. Hypothesis testing does not prove that the null hypothesis is true. It evaluates whether the sample evidence is strong enough to reject the null hypothesis. If the evidence is not strong enough, we say that we fail to reject H0, not that H0 has been proven true. How to solve similar questions: watch for words like prove, guarantee, or confirm as true. In hypothesis testing, the safer language is reject H0 or fail to reject H0. Core decision rule: reject H0 if p-value <= alpha; otherwise fail to reject H0. Excel template: =IF(p_value<=alpha,\"Reject H0\",\"Fail to reject H0\"). Google Sheets template: =IF(p_value<=alpha,\"Reject H0\",\"Fail to reject H0\"). Suggested diagram: data -> test statistic -> p-value -> compare with alpha -> reject or fail to reject H0. Exam-safe version: False. Hypothesis testing assesses evidence against H0; it does not prove H0 true."
+        },
+        {
+            "type": "knowledge",
+            "source": "assessment_review",
+            "question": "[Assessment Question 10] State whether the following is True or False, then justify briefly: Correlation analysis can establish causation between two variables.",
+            "answer": "Correct answer: False. Correlation analysis measures the direction and strength of a linear relationship between two variables, but it does not prove that one variable causes the other. A correlation may be caused by a third variable, reverse causality, coincidence, or a genuine causal mechanism that needs further evidence. How to solve similar questions: if the statement says correlation proves, establishes, or confirms causation, the answer is normally false. Core formula/tool: correlation coefficient r ranges from -1 to +1. Excel template: =CORREL(x_range,y_range). Google Sheets template: =CORREL(x_range,y_range). To investigate causation, use stronger research design, controls, experiments, or causal modelling rather than correlation alone. Suggested diagram: X and Y move together -> correlation observed -> possible explanations: X causes Y, Y causes X, third variable, coincidence. Exam-safe version: False. Correlation shows association, not causation."
+        },
+        {
+            "type": "knowledge",
+            "source": "assessment_review",
+            "question": "[Assessment Question 11] What is the main difference between the LAMBDA and LET functions in Excel? Choose the best answer and justify briefly.",
+            "answer": "Correct answer: LAMBDA allows the creation of custom functions by defining inputs, outputs, and the calculation to be performed, while LET is used to define and name variables within a formula. LAMBDA is useful when you want to reuse a calculation as a custom function, while LET is useful when you want to make one formula clearer, faster, and easier to maintain by naming intermediate values. How to solve similar questions: if the question says custom reusable function, think LAMBDA; if it says define variables inside one formula, think LET. Excel LAMBDA example: =LAMBDA(x,x*2)(5) returns 10. Excel LET example: =LET(price,A2,discount,B2,price*(1-discount)) names price and discount inside the formula. Google Sheets pattern: if LAMBDA/LET are available in the spreadsheet environment, the same conceptual distinction applies; otherwise use named functions or helper cells to imitate the logic. Suggested diagram: LET -> names values inside one formula; LAMBDA -> packages logic as a reusable custom function. Exam-safe version: LAMBDA creates custom reusable functions; LET names variables inside a formula."
+        },
+        {
+            "type": "knowledge",
+            "source": "assessment_review",
+            "question": "[Assessment Question 12] In the context of the Periodic Sampling method, what does specifying a period of 10 mean? Choose the best answer and justify briefly.",
+            "answer": "Correct answer: Excel will select every 10th value from the dataset. In periodic sampling, the period tells Excel the fixed interval between selected observations. A period of 10 means the sampling tool takes observations at every 10th position, rather than selecting values randomly or summing groups of 10 values. How to solve similar questions: if the method says periodic sampling, think fixed interval; if it says random sampling, think chance-based selection. Excel ToolPak workflow: Data -> Data Analysis -> Sampling -> Input Range -> Sampling Method = Periodic -> Period = 10. Excel formula template: =FILTER(A2:A1000,MOD(SEQUENCE(ROWS(A2:A1000)),10)=0) in newer Excel, or use a helper column =MOD(ROW(A2)-ROW($A$2)+1,10)=0 and filter TRUE. Google Sheets template: =FILTER(A2:A1000,MOD(SEQUENCE(ROWS(A2:A1000)),10)=0). Suggested diagram: dataset order -> 1,2,3,...,10 selected -> 20 selected -> 30 selected. Exam-safe version: A period of 10 means every 10th value is selected."
+        },
+        {
+            "type": "knowledge",
+            "source": "assessment_review",
+            "question": "[Assessment Question 13] What is a Type I error in the context of statistical testing? Choose the best answer and justify briefly.",
+            "answer": "Correct answer: Rejecting the null hypothesis when it is true. A Type I error is a false positive: the test says there is evidence against H0, but in reality H0 is true. The probability of a Type I error is the significance level alpha. How to solve similar questions: Type I error = false alarm = rejecting a true null hypothesis. Type II error = missing a real effect = failing to reject a false null hypothesis. Core decision rule: lower alpha reduces the risk of Type I error but may increase the risk of Type II error. Excel template: =IF(p_value<=alpha,\"Reject H0\",\"Fail to reject H0\"). Google Sheets uses the same template: =IF(p_value<=alpha,\"Reject H0\",\"Fail to reject H0\"). Suggested diagram: H0 true -> test rejects H0 -> Type I error. Exam-safe version: A Type I error means rejecting H0 even though H0 is actually true."
+        },
+        {
+            "type": "knowledge",
+            "source": "assessment_review",
+            "question": "[Assessment Question 14] What does imputing outlying observations with the median value involve? Choose the best answer and justify briefly.",
+            "answer": "Correct answer: Replacing the outlying observations with the middle value of the dataset. Median imputation means identifying outliers and replacing those extreme values with the median, which is the middle value after the data are sorted. The median is often used because it is less affected by extreme values than the mean. How to solve similar questions: imputation means replacing a problematic or missing value, not deleting it. Median imputation specifically uses the median as the replacement value. Excel template: median = MEDIAN(data_range); replacement formula = IF(outlier_flag=\"Outlier\",MEDIAN(data_range),original_value). Google Sheets template: =IF(outlier_flag=\"Outlier\",MEDIAN(data_range),original_value). If the outlier is based on z-score, use =IF(ABS(z_score)>3,MEDIAN(data_range),original_value). Suggested diagram: raw data -> detect outlier -> calculate median -> replace outlier with median -> cleaned data. Exam-safe version: Median imputation replaces outlying observations with the dataset's median value."
+        },
+        {
+            "type": "knowledge",
+            "source": "assessment_review",
+            "question": "[Assessment Question 15] Which technique involves setting a limit based on a specific percentile value, beyond which any observations exceeding that limit are replaced? Choose the best answer and justify briefly.",
+            "answer": "Correct answer: Capping Using a Percentile. This technique sets an upper or lower boundary using a chosen percentile, such as the 95th or 99th percentile, and replaces values beyond that boundary with the cap value. It reduces the influence of extreme observations without deleting the rows. How to solve similar questions: if the wording says set a limit, percentile, and replace values beyond that limit, the method is percentile capping. If it says replace with median, it is median imputation; if it says delete rows, it is removing outliers. Excel template: upper cap = PERCENTILE.INC(data_range,0.95); capped value = MIN(original_value,upper_cap). For both tails: =MAX(lower_cap,MIN(original_value,upper_cap)). Google Sheets uses the same formulas: =PERCENTILE(data_range,0.95), =MIN(original_value,upper_cap), and =MAX(lower_cap,MIN(original_value,upper_cap)). Suggested diagram: raw values -> choose percentile cap -> values above cap replaced by cap -> capped dataset. Exam-safe version: Capping using a percentile replaces extreme values beyond a percentile-based threshold."
+        },
+        {
+            "type": "knowledge",
+            "source": "assessment_review",
+            "question": "[Assessment Question 16] What is the primary goal of trend analysis in time series data? Choose the best answer and justify briefly.",
+            "answer": "Correct answer: To determine the overall movement or direction of data. Trend analysis looks for the long-term direction in a time series, such as whether the values are generally increasing, decreasing, or staying stable over time. It is different from seasonality, which looks for repeating calendar patterns, and irregular variation, which looks at random or unusual fluctuations. How to solve similar questions: if the wording says overall direction, long-term movement, upward/downward path, or general pattern over time, choose trend analysis. Excel template: add a line chart and trendline, or use =SLOPE(y_range,x_range) to estimate the direction. Forecast template: =FORECAST.LINEAR(next_time, known_y_range, known_x_range). Google Sheets template: Insert -> Chart -> Line chart -> Trendline, or use =SLOPE(y_range,x_range) and =FORECAST.LINEAR(next_time, known_y_range, known_x_range). Suggested diagram: time series -> trend component = long-term direction; seasonal component = repeating pattern; irregular component = random noise. Exam-safe version: Trend analysis identifies the overall movement or direction of data over time."
+        },
+        {
+            "type": "knowledge",
+            "source": "assessment_review",
+            "question": "[Assessment Question 17] Which statistical technique is suitable for analyzing the relationship between two numerical variables? Choose the best answer and justify briefly.",
+            "answer": "Correct answer: Regression analysis. Regression analysis is suitable when we want to study or model the relationship between numerical variables, especially when one variable is treated as the outcome and the other as an explanatory variable. Correlation is also useful for two numerical variables, but it is not one of the listed options. How to solve similar questions: two numerical variables usually points to correlation or regression; categorical variables often point to chi-square; comparing group means often points to t-tests or ANOVA. Excel template: =SLOPE(y_range,x_range), =INTERCEPT(y_range,x_range), =RSQ(y_range,x_range), or Data -> Data Analysis -> Regression. Google Sheets template: =SLOPE(y_range,x_range), =INTERCEPT(y_range,x_range), =RSQ(y_range,x_range), and =LINEST(y_range,x_range,TRUE,TRUE). Suggested diagram: numerical X -> regression line -> numerical Y. Exam-safe version: Regression analysis is used to analyse relationships between numerical variables."
+        },
+        {
+            "type": "knowledge",
+            "source": "assessment_review",
+            "question": "[Assessment Question 18] What does the significance level (α) control in hypothesis testing? Choose the best answer and justify briefly.",
+            "answer": "Correct answer: The threshold for rejecting the null hypothesis. The significance level alpha is the cut-off used to decide whether a p-value is small enough to reject H0. It also represents the maximum tolerated probability of a Type I error, which is rejecting a true null hypothesis. How to solve similar questions: alpha is chosen before the test; the p-value is calculated from the data; then compare p-value with alpha. Core decision rule: reject H0 if p-value <= alpha. Excel template: =IF(p_value<=alpha,\"Reject H0\",\"Fail to reject H0\"). Google Sheets template: =IF(p_value<=alpha,\"Reject H0\",\"Fail to reject H0\"). Suggested diagram: choose alpha -> calculate p-value -> compare -> reject or fail to reject H0. Exam-safe version: The significance level controls the rejection threshold for H0."
+        },
+        {
+            "type": "knowledge",
+            "source": "assessment_review",
+            "question": "[Assessment Question 19] What does a confidence interval represent in the context of forecasting the price of a 10-year-old car? Choose the best answer and justify briefly.",
+            "answer": "Correct answer: The range of values within which the price is expected to fall with a given probability. In forecasting, a confidence interval gives a range around the point forecast, such as the predicted price of a 10-year-old car, to show uncertainty. It is not the exact price, and it is not simply the minimum or maximum possible price. How to solve similar questions: point forecast = one estimated value; confidence interval = range around that estimate at a chosen confidence level, often 95%. Core structure: lower bound = point forecast - margin of error; upper bound = point forecast + margin of error. Excel template: point forecast = FORECAST.LINEAR(age, known_price_range, known_age_range); lower = point_forecast - margin; upper = point_forecast + margin. Google Sheets uses the same formulas. Suggested diagram: regression forecast -> point estimate -> confidence interval around estimate. Exam-safe version: A confidence interval is the range in which the forecasted price is expected to fall with a given probability."
+        },
+        {
+            "type": "knowledge",
+            "source": "assessment_review",
+            "question": "[Assessment Question 20] What does a histogram represent in data visualization? Choose the best answer and justify briefly.",
+            "answer": "Correct answer: Distribution of data. A histogram shows how numerical values are distributed across intervals or bins. It helps reveal the shape, spread, centre, skewness, and possible outliers in a dataset. It is different from a bar chart, which is usually used for categorical data, and from a scatter plot, which is used to show relationships between variables. How to solve similar questions: if the question asks about distribution of numerical data, choose histogram; if it asks about categories, choose bar chart; if it asks about relationship between two numerical variables, choose scatter plot. Excel template: Insert -> Statistic Chart -> Histogram, or Data -> Data Analysis -> Histogram. Formula option: =FREQUENCY(data_range, bin_range). Google Sheets template: Insert -> Chart -> Histogram chart, or =FREQUENCY(data_range, bin_range) followed by a column chart. Suggested diagram: raw numerical data -> bins -> frequencies -> histogram shape. Exam-safe version: A histogram represents the distribution of numerical data."
+        },
+        {
+            "type": "case_study",
+            "source": "assessment_review",
+            "question": "[Assessment Question 21] Retail sales forecasting scenario. A manager wants to forecast Product 1 and Product 2 sales for the second half of the year using January to June sales. Identify the correct regression setup, dependent and independent variables, LINEST interpretation, extra statistics, and Solver use.",
+            "answer": "Correct answers: Answer 1 = option 1, Answer 2 = option 1, Answer 3 = option 1, Answer 4 = option 1, Answer 5 = option 1. The correct regression setup is to use month or a numeric month index as the independent variable and product sales as the dependent variable. Product sales are the outcome we want to forecast, while time/month is the predictor. The slope from LINEST shows the average monthly change in sales, the intercept is the estimated starting level when the month index is zero, and R-squared shows how well the regression line fits the observed sales data. Additional LINEST statistics such as standard error, t-statistics, and p-values help judge forecast uncertainty and parameter reliability. Solver is not a forecasting tool by itself, but it can use regression-based predictions to optimize decisions such as resource allocation, pricing, inventory, or promotions subject to constraints. How to solve similar questions: define time as x, sales as y, run one regression per product unless modelling products together is explicitly requested, then use the fitted line y_hat = intercept + slope * month_index to forecast future months. Excel ToolPak setup: create MonthIndex 1 to 6 for January to June, put Product 1 sales and Product 2 sales in separate columns, then run Data -> Data Analysis -> Regression with Y Range = Product sales and X Range = MonthIndex. Repeat for each product. Excel LINEST template: =LINEST(product_sales_range, month_index_range, TRUE, TRUE). Forecast template: =FORECAST.LINEAR(future_month_index, product_sales_range, month_index_range), or =intercept+slope*future_month_index. Google Sheets uses the same formulas: =LINEST(y_range,x_range,TRUE,TRUE), =SLOPE(y_range,x_range), =INTERCEPT(y_range,x_range), =RSQ(y_range,x_range), and =FORECAST.LINEAR(future_x,y_range,x_range). Suggested diagram: Month index -> regression model -> Product 1 forecast and Product 2 forecast -> Solver optimization for resources/pricing. Exam-safe version: Use month as the independent variable and sales as the dependent variable; interpret slope as monthly sales change, intercept as baseline, R-squared as fit, and Solver as an optimization tool after forecasting."
+        },
+        {
+            "type": "case_study",
+            "source": "assessment_review",
+            "question": "[Assessment Question 22] Exponential smoothing with monthly product demand. Explain how alpha assigns weight to recent data, how a higher alpha changes responsiveness, and identify alpha values that make the forecast highly sensitive or less responsive.",
+            "answer": "Correct answers: Answer 1 = option 1, by using the smoothing factor alpha; Answer 2 = option 1, a higher alpha gives more weight to current data points; Answer 3 = option 1, 0.9; Answer 4 = option 1, 0.1. In exponential smoothing, alpha is the weight placed on the most recent actual observation. The remaining weight, 1 - alpha, is placed on the previous forecast, which represents historical information. A high alpha such as 0.9 makes the forecast react very strongly to the newest observation, so it is highly sensitive to recent changes. A low alpha such as 0.1 makes the forecast smoother because it gives much less weight to the newest observation and keeps more influence from the older forecast pattern. Formula: Forecast for next period = alpha * actual demand this period + (1 - alpha) * forecast this period. Example: if alpha = 0.9, actual demand = 120, and previous forecast = 100, then next forecast = 0.9*120 + 0.1*100 = 118. If alpha = 0.1 with the same data, next forecast = 0.1*120 + 0.9*100 = 102, so the forecast changes much more slowly. How to solve similar questions: remember alpha controls responsiveness. High alpha means fast reaction and more noise sensitivity. Low alpha means slow reaction and more smoothing. Excel template: put alpha in a locked cell, for example $E$1. If actual demand is in B2 and the previous forecast is in C2, then C3 = $E$1*B2+(1-$E$1)*C2, then copy down. Google Sheets uses the same formula. If using Excel's Data Analysis ToolPak, use Data -> Data Analysis -> Exponential Smoothing, choose the input range, and remember Excel asks for the damping factor, which is often 1 - alpha. Suggested diagram: actual demand -> alpha weight -> new forecast; previous forecast/history -> 1-alpha weight -> new forecast. Exam-safe version: alpha is the smoothing factor; higher alpha gives more weight to recent data, while lower alpha gives more weight to historical patterns."
+        },
+        {
+            "type": "case_study",
+            "source": "assessment_review",
+            "question": "[Assessment Question 23] Excel LAMBDA and LET scenario. Create a CelsiusToFahrenheit custom function, define a CustomCalculation in Name Manager, and construct a LET formula with x = 10 and y = 20.",
+            "answer": "Correct answers: Answer 1 = =LAMBDA(celsius,celsius*9/5+32); Answer 2 = =LAMBDA(number,((number/6)+4)^5); Answer 3 = =LET(x,10,y,20,(x+y)*2). Task 1 uses the standard Celsius to Fahrenheit conversion formula: Fahrenheit = Celsius * 9/5 + 32. In Excel Name Manager, the name would be CelsiusToFahrenheit and the Refers to field would contain =LAMBDA(celsius,celsius*9/5+32). You could then use it in the sheet as =CelsiusToFahrenheit(A2). Task 2 is also best written as a LAMBDA because the repeated calculation needs an input value. In Name Manager, create the name CustomCalculation and use =LAMBDA(number,((number/6)+4)^5). You could then call it with =CustomCalculation(A2). Task 3 uses LET to define temporary variables inside one formula. The formula =LET(x,10,y,20,(x+y)*2) defines x and y, adds them, and multiplies the sum by 2, giving 60. How to solve similar questions: use LAMBDA when you want to create a reusable custom function with inputs; use LET when you want cleaner variable names inside a single formula. Excel templates: =LAMBDA(input,calculation_using_input), =LET(name1,value1,name2,value2,final_calculation). Google Sheets note: LET is available in Google Sheets; LAMBDA support may vary by account/function availability, so a portable Sheets version can use named functions or a direct formula such as =A2*9/5+32. Suggested diagram: repeated formula -> LAMBDA named function -> reusable workbook function; long formula -> LET variables -> readable formula. Exam-safe version: LAMBDA creates a reusable custom function, while LET defines variables inside a formula to make it easier to read and maintain."
+        },
+        {
+            "type": "skills",
+            "source": "assessment_review",
+            "question": "[Assessment Question 24] Using [Covariance matrix CA.csv](/workspaces/Study-buddy/Covariance%20matrix%20CA.csv), perform a Covariance matrix using the Data Analysis ToolPak. Round to 5 decimal places where needed. Find the covariance between bedrooms and price, the variable with the highest positive covariance with sqft_living, the covariance between sqft_lot and sqft_above, and the covariance between yr_built and condition.",
+            "answer": "Correct answers: Answer 1 = 120313.32494; Answer 2 = price; Answer 3 = 6637538.45522; Answer 4 = -6.36535. These values use the same population covariance convention as Excel's Data Analysis ToolPak Covariance output. The covariance between bedrooms and price is read at the bedrooms-price intersection of the covariance matrix. The variable with the highest positive covariance with sqft_living is price, because the covariance between sqft_living and price is much larger than the other positive entries in that row/column. The covariance between sqft_lot and sqft_above is 6637538.45522. The covariance between yr_built and condition is -6.36535, which is negative, meaning the two variables tend to move slightly in opposite directions in this dataset. How to solve similar questions: run Data -> Data Analysis -> Covariance, select the full numeric table including labels, choose Labels in First Row, then read the row-column intersection for the requested pair. Covariance matrices are symmetric, so covariance(A,B) equals covariance(B,A). Excel formula check for ToolPak-style covariance: =COVARIANCE.P(range1,range2), not =COVARIANCE.S. Google Sheets uses the same check formula: =COVARIANCE.P(range1,range2). If asked which variable has the highest positive covariance with a given variable, scan that variable's row or column, ignore the variable's covariance with itself if the question asks for another variable, and choose the largest positive number. Suggested diagram: dataset columns -> covariance matrix -> row/column intersection -> rounded answer. Exam-safe version: Covariance is found by locating the intersection of two variables in the covariance matrix; positive covariance means variables tend to move together, while negative covariance means they tend to move in opposite directions."
+        },
+        {
+            "type": "skills",
+            "source": "assessment_review",
+            "question": "[Assessment Question 25] Investment finance functions. Given annual interest rate 3.68%, initial cost $7,000, annual return $900, and repayment period 7 years, calculate FV, PV, NPV at a 10% discount rate, and IRR. Interpret the negative NPV and negative IRR.",
+            "answer": "Correct answers: Answer 1 FV = $7,039.78; Answer 2 PV = $5,466.31; Answer 3 NPV = -$2,618.42; Answer 4 = is not; Answer 5 IRR = -2.57%; Answer 6 = loss, or negative return. The future value is the accumulated value of seven annual $900 cash inflows at 3.68% interest, using end-of-period payments: =FV(3.68%,7,-900,0,0), which returns $7,039.78. The present value discounts those same seven annual inflows back at 3.68%: =PV(3.68%,7,-900,0,0), which returns $5,466.31. The NPV uses the 10% discount rate and subtracts the initial cost: =NPV(10%,900,900,900,900,900,900,900)-7000, giving -$2,618.42. A negative NPV means the investment is not expected to earn a return above the 10% discount rate. The IRR uses the full cash-flow series: =IRR({-7000,900,900,900,900,900,900,900}), giving about -2.57%. This negative IRR indicates the investment is expected to result in a loss over the period because the total undiscounted inflows are only $6,300, less than the $7,000 initial cost. How to solve similar questions: FV compounds payments forward, PV discounts payments backward, NPV compares discounted inflows with the initial outflow, and IRR is the discount rate that makes NPV equal zero. Excel templates: =FV(rate,nper,-payment,0,0), =PV(rate,nper,-payment,0,0), =NPV(discount_rate,cashflow1:cashflowN)+initial_outflow, and =IRR(full_cashflow_range). Google Sheets uses the same formulas. Suggested diagram: initial cost -> annual returns -> FV/PV calculations -> NPV decision -> IRR comparison. Exam-safe version: Negative NPV means reject if the required return is 10%; negative IRR means the project loses money overall."
+        },
+        {
+            "type": "case_study",
+            "source": "exam_strategy",
+            "question": "[Exam Scenario] How to solve investment-function questions with FV, PV, NPV, and IRR in Excel or Google Sheets.",
+            "answer": "Use this scenario whenever an exam gives an initial cost, interest or discount rate, repeated returns, and a number of years. Step 1: Build the timeline. Put the initial cost at time 0 as a negative cash flow, then list each yearly return as a positive cash flow. Example layout: Year 0 = -7000, Year 1 to Year 7 = 900. Step 2: Match the wording to the function. If the question asks what the returns will grow to in the future, use FV. If it asks what future returns are worth today, use PV. If it asks whether the investment is worthwhile at a required return, use NPV. If it asks for the break-even return rate, use IRR. Step 3: Use consistent signs. In Excel finance functions, payments and results often use opposite signs. To display FV or PV as a positive value for received returns, use the payment as negative: =FV(rate,nper,-payment,0,0) and =PV(rate,nper,-payment,0,0). Step 4: For NPV, remember that Excel's NPV does not automatically include the time-0 investment. Use =NPV(discount_rate,future_cashflows)+initial_cashflow, where the initial cashflow is negative. Step 5: For IRR, include the full cash-flow range, including the negative initial investment: =IRR(cashflow_range). Interpretation rules: Positive NPV means the investment is expected to earn more than the required return; negative NPV means it is not expected to meet the required return. IRR is the return rate that makes NPV equal zero. If IRR is below the required return, the investment should normally be rejected. If IRR is negative, the investment is expected to lose money overall. Excel template table: A1 Year, B1 Cash Flow; A2 = 0, B2 = -Initial_Cost; A3:A9 = 1 to n; B3:B9 = Annual_Return. Then use =FV(rate,nper,-annual_return,0,0), =PV(rate,nper,-annual_return,0,0), =NPV(discount_rate,B3:B9)+B2, and =IRR(B2:B9). Google Sheets uses the same formulas. Manual check formulas: FV of annuity = payment*((1+rate)^n-1)/rate; PV of annuity = payment*(1-(1+rate)^-n)/rate; NPV = sum of discounted future cash flows - initial cost. Suggested diagram: Time 0 investment outflow -> yearly inflows -> FV/PV/NPV/IRR decision box. Exam-safe memory rule: FV moves money forward, PV moves money backward, NPV tells whether value is created, and IRR tells the break-even return rate."
+        },
+        {
+            "type": "skills",
+            "source": "assessment_review",
+            "question": "[Assessment Question 26] Using [Calc Question_mode and median etc base set.csv](/workspaces/Study-buddy/Calc%20Question_mode%20and%20median%20etc%20base%20set.csv), calculate median, mode, mean, population standard deviation, outliers at threshold 3, and the Z-score interpretation for Quantity = 3.9.",
+            "answer": "Correct answers: Answer 1 Median = 1.5; Answer 2 Mode = 1.4; Answer 3 Mean = 1.53884; Answer 4 Population Standard Deviation = 0.28278; Answer 5 Number of Outliers = 2; Answer 6 Number of Non Outliers = 446; Answer 7 Z-Score = 8.34980; Answer 8 Interpretation = 3.9 is an outlier because it is about 8.35 standard deviations above the mean, which is far beyond the threshold of 3. The Quantity field has 448 observations. The median is the middle value after sorting the Quantity values, which is 1.5. The mode is the most frequent Quantity value, which is 1.4. The mean is 1.53884 and the population standard deviation is 0.28278. For outliers, calculate a Z-score for every Quantity value using z = (x - mean) / population standard deviation, then mark records with ABS(z) > 3 as Outlier. In this dataset, only two values are outliers: 3.2 and 5.9, so there are 2 outliers and 446 non-outliers. For a score of 3.9, z = (3.9 - 1.53884) / 0.28278 = 8.34980, so it is clearly an outlier. Excel long-form method: put Quantity in C2:C449. Median = MEDIAN(C2:C449). Mode = MODE.SNGL(C2:C449). Mean can be long-form as =SUM(C2:C449)/COUNT(C2:C449). Population variance helper: create Deviation column = C2-$F$2 where F2 contains the mean, Squared Deviation column = D2^2, Population Variance = SUM(E2:E449)/COUNT(C2:C449), and Population Standard Deviation = SQRT(Population Variance). Direct Excel check: =STDEV.P(C2:C449). Z-score helper column: =(C2-$F$2)/$F$3 where F3 contains the population standard deviation. Outlier flag: =IF(ABS(G2)>3,\"Outlier\",\"Non Outlier\"). Count outliers: =COUNTIF(H2:H449,\"Outlier\"). Count non-outliers: =COUNTIF(H2:H449,\"Non Outlier\"). Z-score for 3.9: =(3.9-$F$2)/$F$3. Google Sheets uses the same formulas. Suggested diagram: Quantity column -> mean and population standard deviation -> Z-score column -> ABS(z)>3 decision -> outlier counts. Exam-safe version: A Z-score shows how many standard deviations a value is from the mean; if ABS(z) is greater than 3, it is normally treated as an outlier."
+        },
+        {
+            "type": "skills",
+            "source": "assessment_review",
+            "question": "[Assessment Question 27] Using [used_cars_Forecast linear function.csv](/workspaces/Study-buddy/used_cars_Forecast%20linear%20function.csv), forecast prices for in-sample ages 6 and 12, out-of-sample ages 2 and 13, then calculate confidence interval examples around the 13-year-old forecast.",
+            "answer": "Correct answers: Answer 1 = 8117.25917; Answer 2 = 5037.84841; Answer 3 = 10170.19967; Answer 4 = 4524.61329; Answer 5 = 4524.61329; Answer 6 = 5024.61329; Answer 7 = 4024.61329; Answer 8 = 7024.61329; Answer 9 = 2024.61329; Answer 10 = 1000; Answer 11 = 5000. The fitted simple linear regression is Price_Eur = 11196.66992 - 513.23513 * Age. Age values 6 and 12 are in-sample because they appear in the dataset's age range and are observed in the dataset. Age values 2 and 13 are out-of-sample because they fall outside the observed age range of 3 to 12. Using the regression forecast, a 6-year-old car is predicted at 8117.25917, a 12-year-old car at 5037.84841, a 2-year-old car at 10170.19967, and a 13-year-old car at 4524.61329. The confidence interval examples are simple point forecast plus or minus a stated margin. For the 13-year-old forecast with +/- 500, the upper value is 4524.61329 + 500 = 5024.61329 and the lower value is 4524.61329 - 500 = 4024.61329. The interval width is 500 + 500 = 1000. With +/- 2500, the upper value is 7024.61329, the lower value is 2024.61329, and the width is 5000. Excel manual method: slope = SLOPE(B2:B14,A2:A14), intercept = INTERCEPT(B2:B14,A2:A14), forecast = intercept + slope * age. Excel FORECAST.LINEAR method: =FORECAST.LINEAR(target_age,$B$2:$B$14,$A$2:$A$14). Google Sheets uses the same formulas. Confidence interval templates: upper = point_forecast + margin, lower = point_forecast - margin, width = upper - lower or 2 * margin. Suggested diagram: observed age-price data -> fitted regression line -> in-sample forecast inside observed range -> out-of-sample forecast outside observed range -> confidence interval around point forecast. Exam-safe version: Use FORECAST.LINEAR or intercept+slope*age for the point forecast; then add and subtract the given margin to form the interval."
+        },
+        {
             "type": "skills",
             "source": "quiz_review",
             "question": "Using the dataset [STT-0202-CALC1.xlsx](/workspaces/Study-buddy/STT-0202-CALC1.xlsx), run a one-way single-factor ANOVA at significance level 0.05 and read the Excel summary table. What are the summary values for Group 1 mean, Group 2 sum, and Group 3 variance?",
@@ -65932,62 +66100,29 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             return {
                 "title": "Suggested ER Diagram",
                 "caption": "This ER draft is designed for a library-style case.",
-                "code": """erDiagram
-    BORROWER {
-        int BorrowerID
-        string Name
-        string Email
-    }
-    BOOK {
-        int BookID
-        string Title
-        string ISBN
-    }
-    LOAN {
-        int LoanID
-        date IssueDate
-        date DueDate
-    }
-    AUTHOR {
-        int AuthorID
-        string AuthorName
-    }
-    CATEGORY {
-        int CategoryID
-        string CategoryName
-    }
-    BORROWER ||--o{ LOAN : borrows
-    BOOK ||--o{ LOAN : appears_in
-    AUTHOR }o--o{ BOOK : writes
-    CATEGORY ||--o{ BOOK : groups
+                "code": """flowchart LR
+    BORROWER[Borrower<br/>BorrowerID<br/>Name<br/>Email]
+    BOOK[Book<br/>BookID<br/>Title<br/>ISBN]
+    LOAN[Loan<br/>LoanID<br/>IssueDate<br/>DueDate]
+    AUTHOR[Author<br/>AuthorID<br/>AuthorName]
+    CATEGORY[Category<br/>CategoryID<br/>CategoryName]
+    BORROWER -->|borrows| LOAN
+    BOOK -->|appears in| LOAN
+    AUTHOR -->|writes| BOOK
+    CATEGORY -->|groups| BOOK
 """,
             }
         return {
             "title": "Suggested ER Diagram",
             "caption": "This ER draft is designed for a school or course-management case.",
-            "code": """erDiagram
-    STUDENT {
-        int StudentID
-        string Name
-        string Email
-    }
-    COURSE {
-        int CourseID
-        string CourseName
-        int Credits
-    }
-    TEACHER {
-        int TeacherID
-        string TeacherName
-        string Email
-    }
-    DEPARTMENT {
-        int DepartmentID
-        string DepartmentName
-    }
-    STUDENT }o--o{ COURSE : ENROLLS_IN
-    TEACHER ||--o{ COURSE : TEACHES
-    DEPARTMENT ||--o{ STUDENT : HAS
+            "code": """flowchart LR
+    STUDENT[Student<br/>StudentID<br/>Name<br/>Email]
+    COURSE[Course<br/>CourseID<br/>CourseName<br/>Credits]
+    TEACHER[Teacher<br/>TeacherID<br/>TeacherName<br/>Email]
+    DEPARTMENT[Department<br/>DepartmentID<br/>DepartmentName]
+    STUDENT -->|enrols in| COURSE
+    TEACHER -->|teaches| COURSE
+    DEPARTMENT -->|has| STUDENT
 """,
         }
 
@@ -66039,77 +66174,35 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             return {
                 "title": "Suggested Relational Diagram",
                 "caption": "This relational draft is designed for an online bookstore.",
-                "code": """erDiagram
-    CUSTOMERS {
-        int CustomerID PK
-        string Name
-        string Email
-    }
-    BOOKS {
-        int BookID PK
-        string Title
-        decimal Price
-    }
-    ORDERS {
-        int OrderID PK
-        int CustomerID FK
-        int BookID FK
-        date OrderDate
-        int Quantity
-    }
-    CUSTOMERS ||--o{ ORDERS : places
-    BOOKS ||--o{ ORDERS : appears_in
+                "code": """flowchart LR
+    CUSTOMERS[Customers<br/>CustomerID (PK)<br/>Name<br/>Email]
+    BOOKS[Books<br/>BookID (PK)<br/>Title<br/>Price]
+    ORDERS[Orders<br/>OrderID (PK)<br/>CustomerID (FK)<br/>BookID (FK)<br/>OrderDate<br/>Quantity]
+    CUSTOMERS -->|places| ORDERS
+    BOOKS -->|ordered in| ORDERS
 """,
             }
         if any(term in combined for term in ["craft shop", "craft", "handmade"]):
             return {
                 "title": "Suggested Relational Diagram",
                 "caption": "This relational draft is designed for an online craft-shop case.",
-                "code": """erDiagram
-    CUSTOMERS {
-        int CustomerID PK
-        string Name
-        string Email
-    }
-    PRODUCTS {
-        int ProductID PK
-        string ProductName
-        decimal Price
-        string Category
-    }
-    ORDERS {
-        int OrderID PK
-        int CustomerID FK
-        int ProductID FK
-        date OrderDate
-        int Quantity
-    }
-    CUSTOMERS ||--o{ ORDERS : places
-    PRODUCTS ||--o{ ORDERS : appears_in
+                "code": """flowchart LR
+    CUSTOMERS[Customers<br/>CustomerID (PK)<br/>Name<br/>Email]
+    PRODUCTS[Products<br/>ProductID (PK)<br/>ProductName<br/>Price<br/>Category]
+    ORDERS[Orders<br/>OrderID (PK)<br/>CustomerID (FK)<br/>ProductID (FK)<br/>OrderDate<br/>Quantity]
+    CUSTOMERS -->|places| ORDERS
+    PRODUCTS -->|ordered in| ORDERS
 """,
             }
         return {
             "title": "Suggested Relational Diagram",
             "caption": "This relational draft is designed for a simple customer-product-order database.",
-            "code": """erDiagram
-    CUSTOMERS {
-        int CustomerID PK
-        string Name
-        string Email
-    }
-    PRODUCTS {
-        int ProductID PK
-        string ProductName
-        decimal Price
-    }
-    ORDERS {
-        int OrderID PK
-        int CustomerID FK
-        int ProductID FK
-        date OrderDate
-    }
-    CUSTOMERS ||--o{ ORDERS : places
-    PRODUCTS ||--o{ ORDERS : contains
+            "code": """flowchart LR
+    CUSTOMERS[Customers<br/>CustomerID (PK)<br/>Name<br/>Email]
+    PRODUCTS[Products<br/>ProductID (PK)<br/>ProductName<br/>Price]
+    ORDERS[Orders<br/>OrderID (PK)<br/>CustomerID (FK)<br/>ProductID (FK)<br/>OrderDate]
+    CUSTOMERS -->|places| ORDERS
+    PRODUCTS -->|included in| ORDERS
 """,
         }
 
