@@ -10408,6 +10408,289 @@ DECISIONS MADE:
             }
         ]
     },
+    "Integrated Semester Project: Retail Performance Analysis": {
+        "course": "Semester Project 1",
+        "description": "A complete semester project that combines Data Analysis Fundamentals, Spreadsheet Fundamentals, Data Driven Decision-Making, and Statistical Tools in one realistic retail case.",
+        "lessons": [
+            {
+                "title": "Project Brief and Business Scenario",
+                "content": """
+**Semester Project Scenario**
+
+You are a junior data analyst for a retail company selling Budget, Standard, and Premium products across four regions and two channels: Online and Store.
+
+Management wants to know:
+
+- Which regions, channels, and product segments perform best?
+- Are campaigns and holidays associated with better sales?
+- Are there data quality issues that could distort the analysis?
+- What should the company prioritize next quarter?
+
+**Dataset**
+
+Use:
+
+`/workspaces/Study-buddy/semester_project_1_retail_sales.csv`
+
+Full project guide:
+
+`/workspaces/Study-buddy/semester_project_1_capstone_project.md`
+
+**Main Deliverables**
+
+| Deliverable | Purpose |
+|---|---|
+| Cleaned dataset | Shows data preparation skills |
+| Data dictionary | Explains columns and assumptions |
+| Excel or Google Sheets workbook | Shows reproducible calculations |
+| Dashboard | Shows KPI and visual communication skills |
+| Report | Explains methods, findings, and recommendations |
+| Presentation | Communicates the decision story |
+
+**Core Business Problem**
+
+The company needs to understand annual revenue and profit performance across regions, channels, product segments, campaigns, and holiday periods in order to recommend actions for next quarter.
+                """,
+                "key_points": ["Use a real project structure", "Start from a business problem", "Connect analysis to decisions", "Deliver a workbook, report, and presentation"]
+            },
+            {
+                "title": "How Each Course Is Applied",
+                "content": """
+**This Project Uses All Four Course Areas**
+
+| Course | How It Appears in the Project |
+|---|---|
+| Data Analysis Fundamentals | Problem definition, variable types, data sources, data quality, ethics |
+| Spreadsheet Fundamentals | Import CSV, clean missing values, formulas, pivot tables, charts |
+| Data Driven Decision-Making | KPIs, RAG status, dashboard, recommendations |
+| Statistical Tools | Descriptive stats, z-scores, outliers, correlation, covariance, ANOVA, regression, forecasting |
+
+**Workflow**
+
+```text
+Business question
+-> Import data
+-> Clean and document data
+-> Build descriptive statistics
+-> Create pivot tables and charts
+-> Apply statistical tools
+-> Build KPI dashboard
+-> Forecast and recommend actions
+-> Present limitations and next steps
+```
+
+**Professional Mindset**
+
+Do not just calculate numbers. A good semester project explains what the numbers mean, what decision they support, and what limitations the analysis has.
+                """,
+                "key_points": ["Use the whole analyst workflow", "Tie methods to business decisions", "Explain limitations", "Make results reproducible"]
+            },
+            {
+                "title": "Workbook Setup and Cleaning Plan",
+                "content": """
+**Recommended Workbook Tabs**
+
+1. `Raw_Data`
+2. `Clean_Data`
+3. `Data_Dictionary`
+4. `Descriptive_Stats`
+5. `Pivot_Analysis`
+6. `Statistical_Tests`
+7. `Forecasting`
+8. `Dashboard`
+9. `Recommendations`
+
+**Data Quality Checks**
+
+| Check | What to Look For |
+|---|---|
+| Missing values | Blank cells in `customer_satisfaction` and `discount_rate` |
+| Outliers | Extreme values in `units_sold`, `returns`, or `profit` |
+| Data types | Month is time/numeric, region/channel/segment are categorical |
+| Formula consistency | Revenue, profit, margin, and return rates make sense |
+
+**Cleaning Decisions Used in the Solution**
+
+- Replace missing `customer_satisfaction` with the median satisfaction value: `3.87`.
+- Replace missing `discount_rate` with `0`, assuming no discount was recorded.
+- Keep the `units_sold = 190` observation, but flag it as an outlier for investigation.
+
+**Useful Excel and Google Sheets Formulas**
+
+```excel
+=MEDIAN(K2:K289)
+=IF(ISBLANK(K2),$K$median_cell,K2)
+=IF(ISBLANK(G2),0,G2)
+=profit/revenue
+=returns/units_sold
+```
+                """,
+                "key_points": ["Preserve raw data", "Document cleaning decisions", "Use helper columns", "Flag outliers before removing anything"]
+            },
+            {
+                "title": "Solution Highlights",
+                "content": """
+**Key Results from the Provided Dataset**
+
+| Metric | Result |
+|---|---:|
+| Total revenue | 608018.76 |
+| Total profit | 165521.63 |
+| Profit margin | 27.22% |
+| Average satisfaction | 3.87233 |
+| Return rate | 5.40% |
+
+**Best Performing Areas**
+
+| Question | Answer |
+|---|---|
+| Highest revenue region | East, 172181.93 |
+| Highest profit region | East, 48922.13 |
+| Highest revenue channel | Online, 332739.28 |
+| Highest profit channel | Online, 88742.73 |
+| Highest revenue segment | Premium, 237634.40 |
+| Highest profit segment | Premium, 81592.48 |
+
+**Statistical Findings**
+
+| Analysis | Result | Interpretation |
+|---|---:|---|
+| Units mean | 31.61458 | Average units sold per row |
+| Units population SD | 16.93392 | Spread in unit sales |
+| Units outliers | 1 | `units_sold = 190` |
+| Z-score for 190 | 9.35314 | Extreme outlier |
+| Corr marketing spend vs revenue | 0.26175 | Weak positive relationship |
+| Corr marketing spend vs profit | -0.03093 | Almost no linear relationship |
+| Corr campaign vs revenue | 0.25053 | Campaigns are associated with higher revenue |
+| ANOVA F for profit by region | 3.60250 | Evidence of regional profit differences |
+
+**Forecasting Result**
+
+Monthly revenue trend model:
+
+```text
+Revenue = 50550.81409 + 18.06399 * month
+```
+
+Forecasts:
+
+| Month | Forecast revenue |
+|---:|---:|
+| 13 | 50785.64591 |
+| 14 | 50803.70990 |
+| 15 | 50821.77388 |
+
+Important: this simple forecast is limited because retail revenue has seasonality and holiday effects.
+                """,
+                "key_points": ["East, Online, and Premium are strongest", "Profit margin needs attention", "Campaigns lift revenue more clearly than profit", "Forecasting should account for seasonality"]
+            },
+            {
+                "title": "Final Recommendations and Submission Checklist",
+                "content": """
+**Recommended Business Actions**
+
+1. Prioritize the `Premium` segment because it contributes the highest profit.
+2. Continue investing in `Online`, but evaluate campaign efficiency because marketing spend has weak correlation with profit.
+3. Investigate the `units_sold = 190` outlier before using it for forecasting.
+4. Plan carefully around holiday periods because holidays are associated with higher revenue.
+5. Improve profit margin from `27.22%` toward the `32%` target through pricing, campaign efficiency, or return reduction.
+
+**Suggested Report Structure**
+
+1. Executive summary
+2. Business problem and scope
+3. Data description and cleaning
+4. Descriptive analysis
+5. Statistical analysis
+6. Forecasting
+7. Dashboard and KPIs
+8. Recommendations
+9. Limitations
+10. Appendix with formulas
+
+**Suggested Presentation Structure**
+
+1. Title and business question
+2. Dataset and cleaning choices
+3. KPI dashboard
+4. Region/channel/segment findings
+5. Statistical evidence
+6. Forecast
+7. Recommendations
+8. Limitations and next steps
+
+**Quality Checklist**
+
+- Problem statement is clear.
+- Raw data is preserved.
+- Cleaning decisions are documented.
+- Formulas are visible and reproducible.
+- Pivot tables answer the business questions.
+- Charts have clear titles and labels.
+- Statistical methods are interpreted in plain language.
+- Recommendations follow from evidence.
+- Limitations are stated honestly.
+                """,
+                "key_points": ["Recommendations must follow from evidence", "Include limitations", "Use a clean report structure", "Make calculations reproducible"]
+            }
+        ],
+        "exercises": [
+            {
+                "title": "Create the Scope Statement",
+                "type": "practical",
+                "question": "Write a scope statement for the retail performance project, including problem, objectives, in-scope items, out-of-scope items, and deliverables.",
+                "answer": "PROJECT: Retail Performance Analysis. PROBLEM: The company needs to understand revenue and profit performance across region, channel, segment, campaign, and holiday periods in order to decide next quarter priorities. OBJECTIVES: 1) Identify strongest and weakest regions, channels, and segments; 2) Evaluate campaign and holiday effects; 3) Detect data quality issues and outliers; 4) Forecast next-quarter revenue; 5) Recommend actions. IN SCOPE: Provided retail sales CSV, spreadsheet cleaning, pivot analysis, KPI dashboard, descriptive statistics, z-scores, correlation, ANOVA, and simple forecasting. OUT OF SCOPE: Customer-level GDPR-sensitive analysis, causal proof of campaign impact, inventory optimization model, and external competitor data. DELIVERABLES: Clean workbook, dashboard, report, presentation, and documented formulas.",
+                "hint": "Turn the broad business question into specific objectives and boundaries."
+            },
+            {
+                "title": "Build the KPI Dashboard",
+                "type": "practical",
+                "question": "Using the dataset, calculate total revenue, total profit, profit margin, average satisfaction, and return rate. Interpret the dashboard.",
+                "answer": "Total revenue = 608018.76. Total profit = 165521.63. Profit margin = 27.22%. Average satisfaction = 3.87233. Return rate = 5.40%. Interpretation: Revenue is slightly above a 600000 target, satisfaction is above a 3.80 target, and return rate is within a 5.50% maximum target. Profit margin is weaker than a 32% target, so the project should recommend margin improvement rather than only revenue growth.",
+                "hint": "Use SUM, AVERAGE, and calculated KPI formulas such as profit/revenue and returns/units_sold."
+            },
+            {
+                "title": "Apply Statistical Tools",
+                "type": "practical",
+                "question": "Identify the key outlier in units_sold and explain whether it should automatically be removed.",
+                "answer": "The key outlier is units_sold = 190. Using the population mean 31.61458 and population standard deviation 16.93392, the Z-score is 9.35314. Since ABS(z) > 3, it should be flagged as an outlier. It should not be automatically removed. The analyst should investigate whether it is a data entry error, a bulk order, or a genuine campaign/holiday effect before deciding what to do.",
+                "hint": "Use z = (x - mean) / standard deviation and then apply ABS(z) > 3."
+            },
+            {
+                "title": "Write the Executive Recommendation",
+                "type": "scenario",
+                "question": "Write a short executive recommendation based on the analysis.",
+                "answer": "Recommendation: The company should prioritize Premium products and the Online channel next quarter, with special focus on the East region. These areas produce the strongest revenue and profit contribution. However, campaign spending should be reviewed because it is associated with higher revenue but not clearly with higher profit. Management should investigate the units_sold outlier before using it in forecasts and should work to improve profit margin from 27.22% toward the 32% target through pricing, campaign efficiency, and return reduction.",
+                "hint": "Mention what to do, why the data supports it, and what limitation still needs checking."
+            }
+        ],
+        "quiz": [
+            {
+                "question": "Which project finding best supports prioritizing the Premium segment?",
+                "options": ["Premium has the highest profit contribution", "Premium has the lowest average price", "Premium has the most missing values", "Premium has no returns"],
+                "correct": 0,
+                "explanation": "Premium has the highest profit contribution at 81592.48, so prioritizing it is supported by the data."
+            },
+            {
+                "question": "Why should the units_sold value of 190 be investigated?",
+                "options": ["It has no revenue", "It is a categorical value", "Its Z-score is far above 3", "It is below the mean"],
+                "correct": 2,
+                "explanation": "The Z-score is 9.35314, far above the common outlier threshold of 3."
+            },
+            {
+                "question": "What does a weak correlation between marketing_spend and profit suggest?",
+                "options": ["Marketing always causes losses", "Marketing spend is not clearly linearly related to profit in this dataset", "Profit should be deleted", "Campaigns prove causation"],
+                "correct": 1,
+                "explanation": "The correlation is about -0.03093, which means there is almost no linear relationship between marketing spend and profit in this dataset."
+            },
+            {
+                "question": "Why is the simple monthly revenue forecast limited?",
+                "options": ["It ignores seasonality and holiday effects", "It uses too many variables", "It cannot be done in Excel", "It only works for categorical data"],
+                "correct": 0,
+                "explanation": "Retail revenue is affected by seasonality and holidays, so a simple linear trend may miss important patterns."
+            }
+        ]
+    },
     "Data Ethics & GDPR": {
         "course": "Semester Project 1",
         "description": "Understand ethical principles for data collection, storage, and use, including GDPR compliance.",
@@ -67859,6 +68142,953 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
     }[draft_style]
     model_answer_text = adapt_text_to_tone(model_answer_text, answer_tone)
 
+    def render_semester_project_csv_resolver():
+        def project_number(value, decimals=5):
+            try:
+                value = float(value)
+            except (TypeError, ValueError):
+                return str(value)
+            if np.isnan(value) or np.isinf(value):
+                return "-"
+            if abs(value) >= 1000:
+                return f"{value:,.2f}"
+            return f"{value:.{decimals}f}".rstrip("0").rstrip(".")
+
+        def normalise_column_name(value):
+            return re.sub(r"[^a-z0-9]+", "_", str(value).strip().lower()).strip("_")
+
+        def find_project_column(df_columns, candidates):
+            normalised_lookup = {normalise_column_name(column): column for column in df_columns}
+            for candidate in candidates:
+                normalised_candidate = normalise_column_name(candidate)
+                if normalised_candidate in normalised_lookup:
+                    return normalised_lookup[normalised_candidate]
+            for column in df_columns:
+                normalised_column = normalise_column_name(column)
+                if any(normalise_column_name(candidate) in normalised_column for candidate in candidates):
+                    return column
+            return None
+
+        def safe_numeric_columns(df):
+            numeric_columns = []
+            converted_df = df.copy()
+            for column in converted_df.columns:
+                if pd.api.types.is_numeric_dtype(converted_df[column]):
+                    numeric_columns.append(column)
+                    continue
+                converted = pd.to_numeric(converted_df[column], errors="coerce")
+                non_null_ratio = converted.notna().mean()
+                if non_null_ratio >= 0.75:
+                    converted_df[column] = converted
+                    numeric_columns.append(column)
+            return converted_df, numeric_columns
+
+        def build_project_report_text(
+            df,
+            numeric_columns,
+            categorical_columns,
+            metric_column,
+            group_column,
+            outlier_column,
+            forecast_column,
+            time_column,
+            project_metrics,
+            group_summary,
+            outlier_summary,
+            forecast_summary,
+            correlation_summary,
+        ):
+            lines = [
+                "Semester Project CSV Resolver - draft report",
+                "",
+                "1. Business problem",
+                "The purpose of this analysis is to understand performance patterns in the uploaded dataset and turn them into evidence-based recommendations.",
+                "",
+                "2. Data overview",
+                f"The dataset contains {len(df)} rows and {len(df.columns)} columns.",
+                f"Numerical columns detected: {', '.join(numeric_columns[:10]) if numeric_columns else 'None detected'}.",
+                f"Categorical columns detected: {', '.join(categorical_columns[:10]) if categorical_columns else 'None detected'}.",
+                "",
+                "3. Data quality",
+                f"Total missing values: {int(df.isna().sum().sum())}. Missing values should be documented and handled before final analysis.",
+                "",
+                "4. KPI summary",
+            ]
+            if project_metrics:
+                for label, value in project_metrics:
+                    lines.append(f"- {label}: {value}")
+            else:
+                lines.append("- No standard revenue/profit/unit KPI columns were detected, so choose the most relevant numeric metric manually.")
+
+            lines.extend(["", "5. Group analysis"])
+            if group_summary:
+                lines.append(f"Using `{metric_column}` grouped by `{group_column}`, the top category is {group_summary[0]['category']} with {group_summary[0]['value']}.")
+            else:
+                lines.append("No group analysis was generated. Choose one categorical column and one numeric metric.")
+
+            lines.extend(["", "6. Statistical checks"])
+            if outlier_summary:
+                lines.append(
+                    f"For `{outlier_column}`, {outlier_summary['count']} outlier(s) were detected using ABS(z) > 3. "
+                    f"The largest absolute z-score was {outlier_summary['max_abs_z']}."
+                )
+            if correlation_summary:
+                lines.append("Top absolute correlations:")
+                for item in correlation_summary[:5]:
+                    lines.append(f"- {item['pair']}: {item['correlation']}")
+
+            lines.extend(["", "7. Forecasting"])
+            if forecast_summary:
+                lines.append(
+                    f"Using `{time_column}` to forecast `{forecast_column}`, the simple linear trend is "
+                    f"y = {forecast_summary['intercept']} + {forecast_summary['slope']} * x."
+                )
+                for forecast_item in forecast_summary["forecasts"]:
+                    lines.append(f"- Forecast for {forecast_item['x']}: {forecast_item['y']}")
+            else:
+                lines.append("No simple forecast was generated. Add a time/month column and a numerical target to enable forecasting.")
+
+            lines.extend([
+                "",
+                "8. Recommended next steps",
+                "- Preserve the raw data and document all cleaning decisions.",
+                "- Build pivot tables for the main business categories.",
+                "- Use z-scores to flag, not automatically delete, outliers.",
+                "- Use correlation as association evidence, not causation proof.",
+                "- Connect final recommendations directly to KPI results.",
+            ])
+            return "\n".join(lines)
+
+        def dataframe_to_csv_bytes(df):
+            return df.to_csv(index=False).encode("utf-8")
+
+        def build_clean_project_df(df, numeric_columns):
+            clean_df = df.copy()
+            cleaning_log = []
+            for column in clean_df.columns:
+                missing_count = int(clean_df[column].isna().sum())
+                if missing_count == 0:
+                    continue
+                if column in numeric_columns:
+                    fill_value = clean_df[column].median()
+                    clean_df[column] = clean_df[column].fillna(fill_value)
+                    cleaning_log.append(
+                        {
+                            "Column": column,
+                            "Missing values handled": missing_count,
+                            "Action": "Median imputation",
+                            "Fill value": project_number(fill_value, 5),
+                            "Reason": "Median is robust and exam-safe for small missing counts.",
+                        }
+                    )
+                else:
+                    clean_df[column] = clean_df[column].fillna("Unknown")
+                    cleaning_log.append(
+                        {
+                            "Column": column,
+                            "Missing values handled": missing_count,
+                            "Action": "Filled with Unknown",
+                            "Fill value": "Unknown",
+                            "Reason": "Keeps the row while clearly marking missing category information.",
+                        }
+                    )
+            if not cleaning_log:
+                cleaning_log.append(
+                    {
+                        "Column": "All columns",
+                        "Missing values handled": 0,
+                        "Action": "No imputation needed",
+                        "Fill value": "-",
+                        "Reason": "No missing values were detected.",
+                    }
+                )
+            return clean_df, pd.DataFrame(cleaning_log)
+
+        def build_method_recommendations(numeric_columns, categorical_columns, time_column, metric_column, group_column):
+            recommendations = []
+            if categorical_columns and numeric_columns:
+                recommendations.append(
+                    {
+                        "Need": "Compare categories",
+                        "Recommended method": "Pivot table or grouped summary",
+                        "Why": f"Use categories like `{group_column or categorical_columns[0]}` with metrics like `{metric_column or numeric_columns[0]}`.",
+                        "Excel / Sheets": "Insert PivotTable or use =SUMIF / =AVERAGEIF.",
+                    }
+                )
+            if len(numeric_columns) >= 2:
+                recommendations.append(
+                    {
+                        "Need": "Check relationships between numerical variables",
+                        "Recommended method": "Correlation / covariance matrix",
+                        "Why": "Numerical pairs can reveal association patterns, but not causation.",
+                        "Excel / Sheets": "=CORREL(range1,range2) and =COVARIANCE.P(range1,range2).",
+                    }
+                )
+            if numeric_columns:
+                recommendations.append(
+                    {
+                        "Need": "Detect unusual values",
+                        "Recommended method": "Z-score outlier detection",
+                        "Why": "Outliers can distort averages, forecasts, and business recommendations.",
+                        "Excel / Sheets": "=(value-AVERAGE(range))/STDEV.P(range), then =IF(ABS(z)>3,\"Outlier\",\"Non Outlier\").",
+                    }
+                )
+            if categorical_columns and numeric_columns:
+                recommendations.append(
+                    {
+                        "Need": "Test whether group averages differ",
+                        "Recommended method": "ANOVA if there are 3+ groups",
+                        "Why": "ANOVA checks whether differences between category means are likely meaningful.",
+                        "Excel / Sheets": "Excel ToolPak: Data -> Data Analysis -> ANOVA: Single Factor.",
+                    }
+                )
+            if time_column and numeric_columns:
+                recommendations.append(
+                    {
+                        "Need": "Forecast future performance",
+                        "Recommended method": "FORECAST.LINEAR / simple regression baseline",
+                        "Why": f"`{time_column}` can be used as a time index for forecasting a metric.",
+                        "Excel / Sheets": "=FORECAST.LINEAR(next_period,target_range,time_range).",
+                    }
+                )
+            return pd.DataFrame(recommendations)
+
+        def build_project_checklist(df, numeric_columns, categorical_columns, project_metrics, group_summary, outlier_summary, forecast_summary, correlation_summary):
+            checklist = [
+                {
+                    "Requirement": "Problem statement and scope",
+                    "Status": "Needs writing",
+                    "Evidence": "Resolver can draft it, but the student must adapt it to the assignment.",
+                    "Next action": "Write who needs the analysis, what decision it supports, and what is out of scope.",
+                },
+                {
+                    "Requirement": "Data imported and described",
+                    "Status": "Done" if len(df) > 0 else "Missing",
+                    "Evidence": f"{len(df)} rows and {len(df.columns)} columns detected.",
+                    "Next action": "Create a data dictionary tab.",
+                },
+                {
+                    "Requirement": "Data quality checked",
+                    "Status": "Done" if int(df.isna().sum().sum()) >= 0 else "Missing",
+                    "Evidence": f"{int(df.isna().sum().sum())} missing cells detected.",
+                    "Next action": "Document how missing values and outliers are handled.",
+                },
+                {
+                    "Requirement": "Spreadsheet formulas and pivots",
+                    "Status": "Ready" if numeric_columns and categorical_columns else "Needs setup",
+                    "Evidence": "Numeric and categorical columns detected." if numeric_columns and categorical_columns else "Need at least one metric and one category.",
+                    "Next action": "Build pivot tables for the most important categories.",
+                },
+                {
+                    "Requirement": "KPI dashboard",
+                    "Status": "Ready" if project_metrics else "Needs setup",
+                    "Evidence": f"{len(project_metrics)} KPI(s) auto-detected.",
+                    "Next action": "Add targets and RAG status.",
+                },
+                {
+                    "Requirement": "Statistical analysis",
+                    "Status": "Ready" if outlier_summary or correlation_summary else "Needs setup",
+                    "Evidence": "Outlier or correlation analysis generated." if outlier_summary or correlation_summary else "Need numeric columns.",
+                    "Next action": "Explain what each method means in plain language.",
+                },
+                {
+                    "Requirement": "Forecasting",
+                    "Status": "Ready" if forecast_summary else "Optional / missing time column",
+                    "Evidence": "Simple forecast generated." if forecast_summary else "No time-index forecast generated.",
+                    "Next action": "If relevant, add a time column or explain why forecasting is not suitable.",
+                },
+                {
+                    "Requirement": "Recommendations and limitations",
+                    "Status": "Needs writing",
+                    "Evidence": "Computed findings are available.",
+                    "Next action": "Turn the strongest evidence into 3-5 business recommendations.",
+                },
+            ]
+            return pd.DataFrame(checklist)
+
+        def build_presentation_outline(project_metrics, group_summary, outlier_summary, forecast_summary, correlation_summary):
+            kpi_lines = "\n".join(f"- {label}: {value}" for label, value in project_metrics) if project_metrics else "- Add the most relevant KPI results from the workbook."
+            group_line = (
+                f"The strongest category in the selected pivot is {group_summary[0]['category']} with {group_summary[0]['value']}."
+                if group_summary else
+                "Add the strongest category from your pivot table."
+            )
+            outlier_line = (
+                f"{outlier_summary['count']} outlier(s) were detected; the largest absolute z-score was {outlier_summary['max_abs_z']}."
+                if outlier_summary else
+                "No outlier summary was generated yet."
+            )
+            forecast_line = "No forecast was generated. Explain whether forecasting is relevant for the project."
+            if forecast_summary:
+                forecast_line = (
+                    f"The baseline trend model is y = {forecast_summary['intercept']} + {forecast_summary['slope']} * x. "
+                    f"The next forecast is {forecast_summary['forecasts'][0]['y']}."
+                )
+            correlation_line = (
+                f"The strongest detected correlation pair is {correlation_summary[0]['pair']} with r = {correlation_summary[0]['correlation']}."
+                if correlation_summary else
+                "No correlation summary was generated yet."
+            )
+            return "\n\n".join(
+                [
+                    "# Presentation Outline",
+                    "## Slide 1: Title and Business Question\nKey message: State the business problem and what decision the project supports.\nSpeaker note: Keep this short and decision-focused.",
+                    "## Slide 2: Dataset and Cleaning\nKey message: Explain the dataset, missing values, and cleaning rules.\nSpeaker note: Mention that raw data was preserved and decisions were documented.",
+                    f"## Slide 3: KPI Dashboard\nKey message: Summarise core performance.\n{kpi_lines}",
+                    f"## Slide 4: Category Performance\nKey message: Show the strongest category.\n{group_line}",
+                    f"## Slide 5: Statistical Evidence\nKey message: Use statistics to support the story.\n{outlier_line}\n{correlation_line}",
+                    f"## Slide 6: Forecast\nKey message: Show the baseline forecast and its limitation.\n{forecast_line}",
+                    "## Slide 7: Recommendations\nKey message: Give 3 clear actions linked to evidence.\nSpeaker note: Avoid recommendations that are not supported by the data.",
+                    "## Slide 8: Limitations and Next Steps\nKey message: Be honest about uncertainty, outliers, causation, and future data needs.",
+                ]
+            )
+
+        def build_defense_questions(project_metrics, group_summary, outlier_summary, forecast_summary, correlation_summary):
+            answers = [
+                (
+                    "Why did you choose these KPIs?",
+                    "I chose KPIs that connect directly to performance and decision-making. Revenue shows scale, profit or margin shows financial quality, and operational measures such as returns or satisfaction explain whether growth is healthy."
+                ),
+                (
+                    "How did you handle missing data?",
+                    "I first counted missing values by column, then used conservative cleaning rules. Numeric missing values can be filled with the median when the missing count is small; categorical missing values can be marked as Unknown. The key is documenting the decision."
+                ),
+                (
+                    "Why did you not automatically remove outliers?",
+                    "An outlier can be a data error, but it can also represent a real event such as a bulk order or campaign effect. I flagged outliers with Z-scores and recommended investigation before removal."
+                ),
+                (
+                    "Does correlation prove causation?",
+                    "No. Correlation shows association, not causation. To claim causation, we would need stronger design such as an experiment, A/B test, or better control of confounding variables."
+                ),
+                (
+                    "What are the limitations of the forecast?",
+                    "A simple linear forecast is only a baseline. If the dataset has seasonality, campaigns, holidays, or structural changes, a richer model with those variables would be more appropriate."
+                ),
+                (
+                    "How would GDPR apply if customer-level data was included?",
+                    "I would check lawful basis, minimize collected personal data, anonymize where possible, restrict access, and use the data only for the stated project purpose."
+                ),
+            ]
+            if group_summary:
+                answers.append(
+                    (
+                        "Why is the top category important?",
+                        f"The selected group analysis shows {group_summary[0]['category']} as the strongest category with {group_summary[0]['value']}. That gives management a clear place to investigate growth or best practice."
+                    )
+                )
+            if forecast_summary:
+                answers.append(
+                    (
+                        "How confident are you in the forecast?",
+                        "I would treat it as a directional baseline, not an exact prediction. The model should be validated against future observations or compared with a seasonal/multiple-regression model."
+                    )
+                )
+            return "\n\n".join(f"### {question}\n{answer}" for question, answer in answers)
+
+        def build_next_steps(project_metrics, outlier_summary, forecast_summary, correlation_summary):
+            steps = [
+                "Validate the most important findings with a stakeholder who understands the business context.",
+                "Create a dashboard with the core KPIs and targets.",
+                "Document all data cleaning decisions in the report appendix.",
+            ]
+            if outlier_summary and outlier_summary["count"]:
+                steps.append("Investigate flagged outliers before using them in forecasting or final recommendations.")
+            if correlation_summary:
+                steps.append("Use correlation results to decide which relationships deserve deeper investigation, but avoid causal claims.")
+            if forecast_summary:
+                steps.append("Compare the simple forecast with a seasonal or multiple-regression model if the project has enough data.")
+            else:
+                steps.append("Add a time variable if forecasting is required by the assignment.")
+            steps.append("Collect additional data if the current dataset cannot answer the business question fully.")
+            return steps
+
+        def build_project_package_zip(
+            clean_df,
+            dictionary_df,
+            missing_df,
+            cleaning_log_df,
+            metrics_df,
+            grouped_df,
+            correlation_df,
+            outlier_df,
+            forecast_df,
+            method_df,
+            checklist_df,
+            formula_lines,
+            report_text,
+            presentation_text,
+            defense_text,
+            next_steps,
+        ):
+            zip_buffer = io.BytesIO()
+            with zipfile.ZipFile(zip_buffer, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+                archive.writestr("Clean_Data.csv", dataframe_to_csv_bytes(clean_df))
+                archive.writestr("Data_Dictionary.csv", dataframe_to_csv_bytes(dictionary_df))
+                archive.writestr("Missing_Values.csv", dataframe_to_csv_bytes(missing_df))
+                archive.writestr("Cleaning_Log.csv", dataframe_to_csv_bytes(cleaning_log_df))
+                archive.writestr("KPI_Summary.csv", dataframe_to_csv_bytes(metrics_df))
+                archive.writestr("Pivot_Analysis.csv", dataframe_to_csv_bytes(grouped_df))
+                archive.writestr("Correlation_Checks.csv", dataframe_to_csv_bytes(correlation_df))
+                archive.writestr("Outlier_Checks.csv", dataframe_to_csv_bytes(outlier_df))
+                archive.writestr("Forecasting.csv", dataframe_to_csv_bytes(forecast_df))
+                archive.writestr("Method_Recommendations.csv", dataframe_to_csv_bytes(method_df))
+                archive.writestr("Project_Grading_Checklist.csv", dataframe_to_csv_bytes(checklist_df))
+                archive.writestr("Formula_Bank.txt", "\n".join(formula_lines))
+                archive.writestr("Report_Draft.md", report_text)
+                archive.writestr("Presentation_Outline.md", presentation_text)
+                archive.writestr("Defense_Questions.md", defense_text)
+                archive.writestr("Next_Steps.md", "\n".join(f"- {step}" for step in next_steps))
+            zip_buffer.seek(0)
+            return zip_buffer.getvalue()
+
+        with st.expander("Semester Project CSV Resolver (upload dataset)", expanded=False):
+            st.caption(
+                "Upload a CSV and the resolver will build a project-style analysis plan: data quality, KPIs, pivots, statistics, forecasting, Excel/Sheets formulas, and report wording."
+            )
+
+            upload_cols = st.columns([2, 1])
+            with upload_cols[0]:
+                uploaded_project_file = st.file_uploader(
+                    "Upload CSV for project resolver",
+                    type=["csv"],
+                    key=f"{base_key}_semester_project_csv_upload",
+                )
+            with upload_cols[1]:
+                use_capstone_sample = st.checkbox(
+                    "Use capstone sample CSV",
+                    value=False,
+                    key=f"{base_key}_use_capstone_sample_csv",
+                )
+
+            project_df = None
+            project_file_label = ""
+            if uploaded_project_file is not None:
+                try:
+                    uploaded_project_file.seek(0)
+                    project_df = pd.read_csv(uploaded_project_file)
+                    project_file_label = uploaded_project_file.name
+                except Exception as exc:
+                    st.error(f"Could not read uploaded CSV: {exc}")
+            elif use_capstone_sample:
+                sample_path = Path(__file__).resolve().parent / "semester_project_1_retail_sales.csv"
+                if sample_path.exists():
+                    project_df = pd.read_csv(sample_path)
+                    project_file_label = str(sample_path)
+                else:
+                    st.warning("The capstone sample CSV was not found in the workspace.")
+
+            if project_df is None:
+                st.info(
+                    "Upload a CSV, or tick the sample option. The resolver will then calculate a project-ready summary and give you formulas to reproduce it in Excel or Google Sheets."
+                )
+                st.markdown("**What the resolver will produce**")
+                for item in [
+                    "Dataset overview and data dictionary starter",
+                    "Missing-value and data-quality checks",
+                    "Suggested workbook tabs",
+                    "KPI calculations if revenue/profit/unit columns exist",
+                    "Pivot-table suggestions",
+                    "Z-score outlier detection",
+                    "Correlation checks",
+                    "Simple forecasting if a time column exists",
+                    "Report and presentation structure",
+                ]:
+                    st.markdown(f"- {item}")
+                return
+
+            project_df.columns = [str(column).strip().replace("\ufeff", "") for column in project_df.columns]
+            project_df = project_df.loc[:, [column for column in project_df.columns if str(column).strip()]]
+            project_df = project_df.dropna(axis=1, how="all")
+            project_df, numeric_columns = safe_numeric_columns(project_df)
+            categorical_columns = [
+                column for column in project_df.columns
+                if column not in numeric_columns and project_df[column].nunique(dropna=True) <= max(50, len(project_df) * 0.4)
+            ]
+            clean_project_df, cleaning_log_df = build_clean_project_df(project_df, numeric_columns)
+            dictionary_rows = []
+            for column in project_df.columns:
+                non_null_values = project_df[column].dropna()
+                sample_values = ", ".join(str(value) for value in non_null_values.head(3).tolist())
+                dictionary_rows.append(
+                    {
+                        "Column": column,
+                        "Detected type": "numeric" if column in numeric_columns else "categorical/text",
+                        "Missing": int(project_df[column].isna().sum()),
+                        "Unique values": int(project_df[column].nunique(dropna=True)),
+                        "Example values": sample_values,
+                    }
+                )
+            dictionary_df = pd.DataFrame(dictionary_rows)
+            missing_df = pd.DataFrame(
+                [
+                    {
+                        "Column": column,
+                        "Missing": int(project_df[column].isna().sum()),
+                        "Missing %": round(float(project_df[column].isna().mean() * 100), 2),
+                    }
+                    for column in project_df.columns
+                    if project_df[column].isna().sum() > 0
+                ]
+            )
+
+            st.markdown(f"**Loaded dataset:** `{project_file_label}`")
+            overview_cols = st.columns(4)
+            overview_cols[0].metric("Rows", f"{len(project_df)}")
+            overview_cols[1].metric("Columns", f"{len(project_df.columns)}")
+            overview_cols[2].metric("Numeric columns", f"{len(numeric_columns)}")
+            overview_cols[3].metric("Missing cells", f"{int(project_df.isna().sum().sum())}")
+
+            with st.expander("Preview and data dictionary starter", expanded=True):
+                st.dataframe(project_df.head(20), use_container_width=True)
+                st.dataframe(dictionary_df, use_container_width=True, hide_index=True)
+
+            if not missing_df.empty:
+                st.markdown("**Data quality issues detected**")
+                st.dataframe(missing_df, use_container_width=True, hide_index=True)
+                st.markdown("**Suggested cleaning rule**")
+                st.markdown("- Numeric missing values: consider median imputation if the missing count is small, or document why rows are excluded.")
+                st.markdown("- Categorical missing values: consider `Unknown` or document why the record is incomplete.")
+                with st.expander("Cleaning log generated for downloadable package", expanded=False):
+                    st.dataframe(cleaning_log_df, use_container_width=True, hide_index=True)
+            else:
+                st.success("No missing values detected in the uploaded dataset.")
+
+            revenue_col = find_project_column(project_df.columns, ["revenue", "sales", "total_sales"])
+            profit_col = find_project_column(project_df.columns, ["profit", "net_profit", "margin_amount"])
+            units_col = find_project_column(project_df.columns, ["units_sold", "quantity", "units", "sales_units"])
+            returns_col = find_project_column(project_df.columns, ["returns", "returned", "return_count"])
+            satisfaction_col = find_project_column(project_df.columns, ["customer_satisfaction", "satisfaction", "rating"])
+            month_col = find_project_column(project_df.columns, ["month", "period", "date", "time"])
+
+            project_metrics = []
+            if revenue_col in numeric_columns:
+                project_metrics.append(("Total revenue", project_number(project_df[revenue_col].sum(), 2)))
+            if profit_col in numeric_columns:
+                project_metrics.append(("Total profit", project_number(project_df[profit_col].sum(), 2)))
+            if revenue_col in numeric_columns and profit_col in numeric_columns and project_df[revenue_col].sum() != 0:
+                project_metrics.append(("Profit margin", f"{(project_df[profit_col].sum() / project_df[revenue_col].sum()) * 100:.2f}%"))
+            if units_col in numeric_columns:
+                project_metrics.append(("Total units", project_number(project_df[units_col].sum(), 0)))
+            if returns_col in numeric_columns and units_col in numeric_columns and project_df[units_col].sum() != 0:
+                project_metrics.append(("Return rate", f"{(project_df[returns_col].sum() / project_df[units_col].sum()) * 100:.2f}%"))
+            if satisfaction_col in numeric_columns:
+                project_metrics.append(("Average satisfaction", project_number(project_df[satisfaction_col].mean(), 5)))
+            metrics_df = pd.DataFrame(project_metrics, columns=["KPI", "Value"]) if project_metrics else pd.DataFrame(columns=["KPI", "Value"])
+
+            if project_metrics:
+                st.markdown("**Auto-detected KPI summary**")
+                metric_columns = st.columns(min(4, len(project_metrics)))
+                for index, (label, value) in enumerate(project_metrics):
+                    metric_columns[index % len(metric_columns)].metric(label, value)
+
+            st.markdown("**Project workbook structure**")
+            workbook_tabs = [
+                "Raw_Data",
+                "Clean_Data",
+                "Data_Dictionary",
+                "Descriptive_Stats",
+                "Pivot_Analysis",
+                "Statistical_Tests",
+                "Forecasting",
+                "Dashboard",
+                "Recommendations",
+            ]
+            st.code("\n".join(workbook_tabs), language="text")
+
+            analysis_cols = st.columns(2)
+            default_metric = revenue_col if revenue_col in numeric_columns else (numeric_columns[0] if numeric_columns else None)
+            default_group = (
+                find_project_column(project_df.columns, ["region", "channel", "segment", "category", "product"])
+                if categorical_columns else None
+            )
+            with analysis_cols[0]:
+                metric_column = st.selectbox(
+                    "Main numeric metric for pivot-style analysis",
+                    options=numeric_columns,
+                    index=numeric_columns.index(default_metric) if default_metric in numeric_columns else 0,
+                    key=f"{base_key}_semester_project_metric_column",
+                ) if numeric_columns else None
+            with analysis_cols[1]:
+                group_column = st.selectbox(
+                    "Main category for pivot-style analysis",
+                    options=categorical_columns,
+                    index=categorical_columns.index(default_group) if default_group in categorical_columns else 0,
+                    key=f"{base_key}_semester_project_group_column",
+                ) if categorical_columns else None
+
+            method_df = build_method_recommendations(numeric_columns, categorical_columns, month_col, metric_column, group_column)
+            if not method_df.empty:
+                with st.expander("Automatic method selector", expanded=True):
+                    st.dataframe(method_df, use_container_width=True, hide_index=True)
+
+            group_summary = []
+            grouped_df = pd.DataFrame(columns=["Category", f"Sum of {metric_column}" if metric_column else "Value"])
+            if metric_column and group_column:
+                grouped_df = (
+                    project_df.groupby(group_column, dropna=False)[metric_column]
+                    .sum()
+                    .sort_values(ascending=False)
+                    .reset_index()
+                    .rename(columns={group_column: "Category", metric_column: f"Sum of {metric_column}"})
+                )
+                st.markdown("**Pivot-style result**")
+                st.dataframe(grouped_df.head(15), use_container_width=True, hide_index=True)
+                group_summary = [
+                    {"category": str(row["Category"]), "value": project_number(row[f"Sum of {metric_column}"], 2)}
+                    for _, row in grouped_df.head(5).iterrows()
+                ]
+                with st.expander("Automatic chart: category performance", expanded=False):
+                    try:
+                        import altair as alt
+
+                        chart = alt.Chart(grouped_df.head(15)).mark_bar().encode(
+                            x=alt.X("Category:N", sort="-y"),
+                            y=alt.Y(f"Sum of {metric_column}:Q", title=f"Sum of {metric_column}"),
+                            tooltip=["Category:N", alt.Tooltip(f"Sum of {metric_column}:Q", format=",.2f")],
+                        ).properties(height=320)
+                        st.altair_chart(chart, width="stretch")
+                        st.caption("Use this chart in the dashboard to show which category contributes most to the selected metric.")
+                    except Exception as exc:
+                        st.info(f"Chart preview is unavailable in this environment: {exc}")
+
+            st.markdown("**Statistical checks**")
+            stats_cols = st.columns(2)
+            with stats_cols[0]:
+                outlier_default = units_col if units_col in numeric_columns else (numeric_columns[0] if numeric_columns else None)
+                outlier_column = st.selectbox(
+                    "Numeric column for Z-score outlier detection",
+                    options=numeric_columns,
+                    index=numeric_columns.index(outlier_default) if outlier_default in numeric_columns else 0,
+                    key=f"{base_key}_semester_project_outlier_column",
+                ) if numeric_columns else None
+            with stats_cols[1]:
+                z_threshold = st.number_input(
+                    "Outlier threshold: ABS(z) >",
+                    min_value=1.0,
+                    value=3.0,
+                    step=0.5,
+                    key=f"{base_key}_semester_project_z_threshold",
+                )
+
+            outlier_summary = None
+            outlier_df = pd.DataFrame(columns=[outlier_column or "value", "z_score"])
+            if outlier_column:
+                clean_series = project_df[outlier_column].dropna()
+                mean_value = clean_series.mean()
+                std_value = clean_series.std(ddof=0)
+                if std_value and not np.isnan(std_value):
+                    z_scores = (project_df[outlier_column] - mean_value) / std_value
+                    outlier_mask = z_scores.abs() > z_threshold
+                    outlier_rows = project_df.loc[outlier_mask, [outlier_column]].copy()
+                    outlier_rows["z_score"] = z_scores[outlier_mask].round(5)
+                    outlier_df = outlier_rows.reset_index().rename(columns={"index": "Source row index"})
+                    outlier_summary = {
+                        "count": int(outlier_mask.sum()),
+                        "max_abs_z": project_number(z_scores.abs().max(), 5),
+                    }
+                    outlier_metric_cols = st.columns(4)
+                    outlier_metric_cols[0].metric("Mean", project_number(mean_value, 5))
+                    outlier_metric_cols[1].metric("Population SD", project_number(std_value, 5))
+                    outlier_metric_cols[2].metric("Outliers", f"{int(outlier_mask.sum())}")
+                    outlier_metric_cols[3].metric("Non-outliers", f"{int((~outlier_mask & project_df[outlier_column].notna()).sum())}")
+                    if not outlier_rows.empty:
+                        st.dataframe(outlier_rows.head(20), use_container_width=True)
+                    with st.expander("Automatic chart: outlier box plot", expanded=False):
+                        try:
+                            import altair as alt
+
+                            box_df = project_df[[outlier_column]].dropna().rename(columns={outlier_column: "value"})
+                            box_chart = alt.Chart(box_df).mark_boxplot(size=80).encode(
+                                y=alt.Y("value:Q", title=outlier_column),
+                                tooltip=[alt.Tooltip("value:Q", format=",.3f")],
+                            ).properties(height=320)
+                            st.altair_chart(box_chart, width="stretch")
+                            st.caption("Use this chart to discuss spread and visible outliers.")
+                        except Exception as exc:
+                            st.info(f"Outlier chart preview is unavailable in this environment: {exc}")
+
+            correlation_summary = []
+            correlation_df = pd.DataFrame(columns=["pair", "correlation"])
+            if len(numeric_columns) >= 2:
+                corr_matrix = project_df[numeric_columns].corr(numeric_only=True)
+                correlation_pairs = []
+                for i, left_column in enumerate(numeric_columns):
+                    for right_column in numeric_columns[i + 1:]:
+                        corr_value = corr_matrix.loc[left_column, right_column]
+                        if pd.isna(corr_value):
+                            continue
+                        correlation_pairs.append((abs(corr_value), left_column, right_column, corr_value))
+                correlation_pairs.sort(reverse=True)
+                correlation_summary = [
+                    {
+                        "pair": f"{left_column} vs {right_column}",
+                        "correlation": project_number(corr_value, 5),
+                    }
+                    for _, left_column, right_column, corr_value in correlation_pairs[:8]
+                ]
+                correlation_df = pd.DataFrame(correlation_summary)
+                if correlation_summary:
+                    st.markdown("**Top absolute correlations**")
+                    st.dataframe(correlation_df, use_container_width=True, hide_index=True)
+                    with st.expander("Automatic chart: correlation heatmap", expanded=False):
+                        try:
+                            import altair as alt
+
+                            corr_long = corr_matrix.reset_index().melt(id_vars="index", var_name="Variable 2", value_name="Correlation")
+                            corr_long = corr_long.rename(columns={"index": "Variable 1"})
+                            heatmap = alt.Chart(corr_long).mark_rect().encode(
+                                x=alt.X("Variable 1:N", sort=None),
+                                y=alt.Y("Variable 2:N", sort=None),
+                                color=alt.Color("Correlation:Q", scale=alt.Scale(scheme="redblue", domain=[-1, 1])),
+                                tooltip=["Variable 1:N", "Variable 2:N", alt.Tooltip("Correlation:Q", format=".3f")],
+                            ).properties(height=360)
+                            st.altair_chart(heatmap, width="stretch")
+                            st.caption("Use this as a quick relationship scan. Correlation does not prove causation.")
+                        except Exception as exc:
+                            st.info(f"Correlation chart preview is unavailable in this environment: {exc}")
+
+            forecast_summary = None
+            forecast_df = pd.DataFrame(columns=["x", "y"])
+            forecast_candidates = [column for column in numeric_columns if column != month_col]
+            if month_col in numeric_columns and forecast_candidates:
+                forecast_col_default = revenue_col if revenue_col in forecast_candidates else forecast_candidates[0]
+                forecast_cols = st.columns(3)
+                with forecast_cols[0]:
+                    forecast_column = st.selectbox(
+                        "Forecast target",
+                        options=forecast_candidates,
+                        index=forecast_candidates.index(forecast_col_default),
+                        key=f"{base_key}_semester_project_forecast_column",
+                    )
+                with forecast_cols[1]:
+                    time_column = st.selectbox(
+                        "Time/index column",
+                        options=numeric_columns,
+                        index=numeric_columns.index(month_col),
+                        key=f"{base_key}_semester_project_time_column",
+                    )
+                with forecast_cols[2]:
+                    periods_ahead = st.number_input(
+                        "Forecast next periods",
+                        min_value=1,
+                        max_value=12,
+                        value=3,
+                        step=1,
+                        key=f"{base_key}_semester_project_periods_ahead",
+                    )
+
+                forecast_data = (
+                    project_df[[time_column, forecast_column]]
+                    .dropna()
+                    .groupby(time_column, as_index=False)[forecast_column]
+                    .sum()
+                    .sort_values(time_column)
+                )
+                if len(forecast_data) >= 3 and forecast_data[time_column].nunique() >= 3:
+                    x_values = forecast_data[time_column].astype(float).to_numpy()
+                    y_values = forecast_data[forecast_column].astype(float).to_numpy()
+                    slope, intercept = np.polyfit(x_values, y_values, 1)
+                    step_size = np.median(np.diff(np.sort(np.unique(x_values)))) if len(np.unique(x_values)) > 1 else 1
+                    max_x = float(np.nanmax(x_values))
+                    forecast_rows = []
+                    for offset in range(1, int(periods_ahead) + 1):
+                        next_x = max_x + (step_size * offset)
+                        next_y = intercept + (slope * next_x)
+                        forecast_rows.append({"x": project_number(next_x, 5), "y": project_number(next_y, 5)})
+                    forecast_summary = {
+                        "intercept": project_number(intercept, 5),
+                        "slope": project_number(slope, 5),
+                        "forecasts": forecast_rows,
+                    }
+                    forecast_df = pd.DataFrame(forecast_rows)
+                    st.markdown("**Simple linear forecast**")
+                    st.markdown(f"`{forecast_column} = {project_number(intercept, 5)} + {project_number(slope, 5)} * {time_column}`")
+                    st.dataframe(forecast_df, use_container_width=True, hide_index=True)
+                    st.info("Use this as a simple baseline. If the data has seasonality, holidays, or campaigns, explain that a multiple regression or seasonal model would be stronger.")
+                    with st.expander("Automatic chart: historical trend and forecast", expanded=False):
+                        try:
+                            import altair as alt
+
+                            historical_chart_df = forecast_data.rename(columns={time_column: "x", forecast_column: "y"}).copy()
+                            historical_chart_df["Series"] = "Historical"
+                            forecast_chart_df = pd.DataFrame(
+                                [
+                                    {"x": float(item["x"]), "y": float(str(item["y"]).replace(",", "")), "Series": "Forecast"}
+                                    for item in forecast_rows
+                                ]
+                            )
+                            trend_chart_df = pd.concat([historical_chart_df, forecast_chart_df], ignore_index=True)
+                            trend_chart = alt.Chart(trend_chart_df).mark_line(point=True).encode(
+                                x=alt.X("x:Q", title=time_column),
+                                y=alt.Y("y:Q", title=forecast_column),
+                                color="Series:N",
+                                tooltip=["Series:N", alt.Tooltip("x:Q", format=".2f"), alt.Tooltip("y:Q", format=",.2f")],
+                            ).properties(height=320)
+                            st.altair_chart(trend_chart, width="stretch")
+                        except Exception as exc:
+                            st.info(f"Forecast chart preview is unavailable in this environment: {exc}")
+
+            st.markdown("**Excel / Google Sheets formula bank for this project**")
+            formula_lines = [
+                "=SUM(revenue_range)",
+                "=SUM(profit_range)",
+                "=SUM(profit_range)/SUM(revenue_range)",
+                "=AVERAGE(numeric_range)",
+                "=STDEV.P(numeric_range)",
+                "=(value_cell-mean_cell)/std_cell",
+                "=IF(ABS(z_cell)>3,\"Outlier\",\"Non Outlier\")",
+                "=CORREL(metric_range,other_metric_range)",
+                "=COVARIANCE.P(metric_range,other_metric_range)",
+                "=FORECAST.LINEAR(next_period,target_range,time_range)",
+            ]
+            st.code("\n".join(formula_lines), language="excel")
+
+            project_report_text = build_project_report_text(
+                project_df,
+                numeric_columns,
+                categorical_columns,
+                metric_column,
+                group_column,
+                outlier_column,
+                forecast_column if "forecast_column" in locals() else None,
+                time_column if "time_column" in locals() else None,
+                project_metrics,
+                group_summary,
+                outlier_summary,
+                forecast_summary,
+                correlation_summary,
+            )
+            st.markdown("**Draft report text**")
+            st.text_area(
+                "Copy/adapt this into your semester project report",
+                value=project_report_text,
+                height=320,
+                key=f"{base_key}_semester_project_report_text",
+            )
+            st.download_button(
+                "Download project resolver draft as TXT",
+                data=project_report_text,
+                file_name="semester_project_resolver_draft.txt",
+                mime="text/plain",
+                key=f"{base_key}_semester_project_download_report",
+            )
+
+            checklist_df = build_project_checklist(
+                project_df,
+                numeric_columns,
+                categorical_columns,
+                project_metrics,
+                group_summary,
+                outlier_summary,
+                forecast_summary,
+                correlation_summary,
+            )
+            presentation_text = build_presentation_outline(project_metrics, group_summary, outlier_summary, forecast_summary, correlation_summary)
+            defense_text = build_defense_questions(project_metrics, group_summary, outlier_summary, forecast_summary, correlation_summary)
+            next_steps = build_next_steps(project_metrics, outlier_summary, forecast_summary, correlation_summary)
+
+            st.markdown("**Project grading checklist**")
+            st.dataframe(checklist_df, use_container_width=True, hide_index=True)
+
+            checklist_score = sum(1 for status in checklist_df["Status"] if status in {"Done", "Ready"})
+            st.progress(checklist_score / max(len(checklist_df), 1))
+            st.caption(f"Automatic readiness estimate: {checklist_score}/{len(checklist_df)} core areas are done or ready.")
+
+            st.markdown("**Defense question generator**")
+            st.text_area(
+                "Likely examiner questions and strong answer drafts",
+                value=defense_text,
+                height=280,
+                key=f"{base_key}_semester_project_defense_text",
+            )
+
+            st.markdown("**Presentation builder**")
+            st.text_area(
+                "8-slide outline with speaker-note cues",
+                value=presentation_text,
+                height=320,
+                key=f"{base_key}_semester_project_presentation_text",
+            )
+
+            st.markdown("**What would I do next?**")
+            for step in next_steps:
+                st.markdown(f"- {step}")
+
+            package_zip = build_project_package_zip(
+                clean_project_df,
+                dictionary_df,
+                missing_df,
+                cleaning_log_df,
+                metrics_df,
+                grouped_df,
+                correlation_df,
+                outlier_df,
+                forecast_df,
+                method_df,
+                checklist_df,
+                formula_lines,
+                project_report_text,
+                presentation_text,
+                defense_text,
+                next_steps,
+            )
+            st.download_button(
+                "Download complete semester project package (ZIP)",
+                data=package_zip,
+                file_name="semester_project_resolver_package.zip",
+                mime="application/zip",
+                key=f"{base_key}_semester_project_download_zip",
+            )
+
+            with st.expander("AI executive summary from computed facts", expanded=False):
+                st.caption("AI is only given the deterministic findings above. It should write prose, not invent new numbers.")
+                if client is None:
+                    st.warning(AI_NOT_CONFIGURED_MESSAGE)
+                else:
+                    ai_summary_key = f"{base_key}_semester_project_ai_summary"
+                    if st.button("Generate executive summary with AI", key=f"{base_key}_semester_project_ai_button"):
+                        facts_payload = {
+                            "dataset": {
+                                "rows": len(project_df),
+                                "columns": len(project_df.columns),
+                                "numeric_columns": numeric_columns,
+                                "categorical_columns": categorical_columns,
+                                "missing_cells": int(project_df.isna().sum().sum()),
+                            },
+                            "kpis": project_metrics,
+                            "group_summary": group_summary,
+                            "outlier_summary": outlier_summary,
+                            "correlation_summary": correlation_summary,
+                            "forecast_summary": forecast_summary,
+                            "next_steps": next_steps,
+                        }
+                        prompt = (
+                            "Write a concise semester project executive summary in a human student tone. "
+                            "Use only the facts in the JSON payload. Do not invent extra numbers. "
+                            "Include: business problem, 3 key findings, 3 recommendations, and 2 limitations. "
+                            "Keep it under 220 words.\n\n"
+                            f"FACTS JSON:\n{json.dumps(facts_payload, ensure_ascii=False, indent=2)}"
+                        )
+                        try:
+                            response = client.chat.completions.create(
+                                model=AI_CHAT_MODEL,
+                                messages=[
+                                    {"role": "system", "content": "You write concise project summaries using only provided facts."},
+                                    {"role": "user", "content": prompt},
+                                ],
+                                max_tokens=420,
+                            )
+                            st.session_state[ai_summary_key] = response.choices[0].message.content.strip()
+                        except Exception as exc:
+                            st.session_state[ai_summary_key] = f"Could not generate AI summary: {exc}"
+                    st.text_area(
+                        "AI executive summary draft",
+                        value=st.session_state.get(ai_summary_key, ""),
+                        height=220,
+                        key=f"{base_key}_semester_project_ai_summary_textarea",
+                    )
+
     combined_diagram_context = f"{exam_prompt} {selected_unit_text}"
     requested_diagram_types = infer_requested_diagram_types(exam_prompt, selected_unit_text)
     requested_chart_types = infer_requested_chart_types(exam_prompt, selected_unit_text)
@@ -67926,6 +69156,8 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
     with st.expander("Rendered formula preview for model answer (MathJax)", expanded=False):
         st.caption("This preview keeps the answer editable above, but renders formulas more cleanly below.")
         render_markdown_with_mathjax(model_answer_text, key_suffix=f"{base_key}_model_answer_mathjax", height=420)
+
+    render_semester_project_csv_resolver()
 
     if diagram_specs:
         st.markdown("**Suggested visual diagrams**")
