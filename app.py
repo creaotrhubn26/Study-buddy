@@ -69971,6 +69971,8 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                     st.session_state[f"{base_key}_zp_total_a"] = max(1, int(round(extracted_numbers[1])))
                     st.session_state[f"{base_key}_zp_success_b"] = max(0, int(round(extracted_numbers[2])))
                     st.session_state[f"{base_key}_zp_total_b"] = max(1, int(round(extracted_numbers[3])))
+                st.session_state[f"{base_key}_zp_tail"] = tail_guess
+                set_alpha_key(f"{base_key}_zp_alpha")
             elif calc_type == "Chi-square test of independence (2x2)":
                 labeled = extract_chi_square_2x2(exam_prompt)
                 if labeled is not None:
@@ -71313,35 +71315,39 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             with calc_col1:
                 success_a = st.number_input("Successes in group A", min_value=0, value=520, step=1, key=f"{base_key}_zp_success_a")
                 total_a = st.number_input("Total in group A", min_value=1, value=10000, step=1, key=f"{base_key}_zp_total_a")
-            with calc_col2:
                 success_b = st.number_input("Successes in group B", min_value=0, value=570, step=1, key=f"{base_key}_zp_success_b")
+            with calc_col2:
                 total_b = st.number_input("Total in group B", min_value=1, value=10050, step=1, key=f"{base_key}_zp_total_b")
+                alpha = st.selectbox("Alpha (α)", options=[0.10, 0.05, 0.01], index=1, format_func=lambda x: f"{x:.2f}", key=f"{base_key}_zp_alpha")
+                tail_type = st.selectbox("Tail type", options=["Two-tailed", "Right-tailed", "Left-tailed"], key=f"{base_key}_zp_tail")
 
             p_a = success_a / total_a
             p_b = success_b / total_b
             pooled_p = (success_a + success_b) / (total_a + total_b)
             standard_error = math.sqrt(pooled_p * (1 - pooled_p) * ((1 / total_a) + (1 / total_b)))
             z_value = (p_a - p_b) / standard_error
-            p_value = 2 * (1 - NormalDist().cdf(abs(z_value)))
+            p_value, decision_text, critical_text = z_test_tail_result(z_value, alpha, tail_type)
 
             stats_metric_cols = st.columns(4)
             stats_metric_cols[0].metric("pA", f"{p_a:.4f}")
             stats_metric_cols[1].metric("pB", f"{p_b:.4f}")
             stats_metric_cols[2].metric("z-value", f"{z_value:.3f}")
             stats_metric_cols[3].metric("p-value", f"{p_value:.4f}")
+            st.markdown(f"**Critical rule:** {critical_text}")
             st.latex(rf"z = \frac{{p_A - p_B}}{{\sqrt{{p(1-p)(1/n_A + 1/n_B)}}}} = {z_value:.3f}")
-            ci_alpha = 0.05
-            ci_critical = NormalDist().inv_cdf(1 - ci_alpha / 2)
+            ci_critical = NormalDist().inv_cdf(1 - alpha / 2)
             unpooled_se = math.sqrt((p_a * (1 - p_a) / total_a) + (p_b * (1 - p_b) / total_b))
             difference = p_a - p_b
             ci_lower = difference - (ci_critical * unpooled_se)
             ci_upper = difference + (ci_critical * unpooled_se)
-            render_confidence_interval("95% confidence interval for the proportion difference", ci_lower, ci_upper)
-            ci_summary_text = f" 95% CI for the proportion difference = [{ci_lower:.4f}, {ci_upper:.4f}]."
+            confidence_label = f"{int((1 - alpha) * 100)}% confidence interval for the proportion difference"
+            render_confidence_interval(confidence_label, ci_lower, ci_upper)
+            ci_summary_text = f" {int((1 - alpha) * 100)}% CI for the proportion difference = [{ci_lower:.4f}, {ci_upper:.4f}]."
 
             stats_summary_text = (
                 f"Two-proportion z-test summary: pA = {p_a:.4f}, pB = {p_b:.4f}, pooled p = {pooled_p:.4f}, "
-                f"SE = {standard_error:.5f}, z = {z_value:.3f}, p-value = {p_value:.4f}."
+                f"SE = {standard_error:.5f}, z = {z_value:.3f}, alpha = {alpha:.2f}, tail = {tail_type}, "
+                f"decision = {decision_text}, p-value = {p_value:.4f}."
             )
             stats_summary_text += ci_summary_text
 
@@ -71354,6 +71360,9 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 "pooled p: =(success_A+success_B)/(total_A+total_B)",
                 "SE: =SQRT(pooled_p*(1-pooled_p)*((1/total_A)+(1/total_B)))",
                 "z-value: =(pA-pB)/SE",
+                "Two-tailed p-value: =2*(1-NORM.S.DIST(ABS(z_value),TRUE))",
+                "Right-tailed p-value: =1-NORM.S.DIST(z_value,TRUE)",
+                "Left-tailed p-value: =NORM.S.DIST(z_value,TRUE)",
             ]
             sheets_notes = [
                 "This setup is useful for click-through rate, conversion rate, acceptance rate, or any yes/no proportion question.",
