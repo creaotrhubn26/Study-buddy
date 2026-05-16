@@ -69313,8 +69313,100 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             }
 
         def extract_prompt_numbers(prompt_text):
-            cleaned_prompt = re.sub(r"(?<=\d),(?=\d)", ".", prompt_text)
-            return [float(match) for match in re.findall(r"\d+(?:\.\d+)?", cleaned_prompt)]
+            # Strip English thousand-separators first ("1,000" -> "1000", "1,234,567" -> "1234567").
+            # Only collapse the comma when the next 3 digits are NOT followed by another digit,
+            # so that European decimals like "0,05" survive for the next pass.
+            cleaned_prompt = re.sub(r"(?<=\d),(?=\d{3}(?!\d))", "", prompt_text)
+            # Treat remaining inter-digit commas with 1-2 trailing digits as European decimals.
+            cleaned_prompt = re.sub(r"(?<=\d),(?=\d{1,2}(?!\d))", ".", cleaned_prompt)
+            return [
+                float(match)
+                for match in re.findall(r"\d+(?:\.\d+)?(?:[eE][+-]?\d+)?", cleaned_prompt)
+            ]
+
+        _MEAN_PATTERNS = [r"\bmean\b", r"\baverage\b", r"\bavg\b", r"\bm\s*=", r"x[̄¯]\s*="]
+        _SD_PATTERNS = [
+            r"standard\s+deviation",
+            r"std\.?\s*dev\.?",
+            r"\bsd\b",
+            r"\bs\s*=",
+            r"\bsigma\b",
+            r"σ\s*=",
+        ]
+        _N_PATTERNS = [
+            r"sample\s+size",
+            r"number\s+of\s+(?:pairs|observations|samples|respondents|participants)",
+            # Matches "n=30", "n: 30", "n is 30", "n of 30", and plain "n 30".
+            # Trailing lookahead keeps it from binding to a far-off number.
+            r"\bn\b\s*(?:is|of)?\s*[=:]?\s*(?=\d)",
+        ]
+
+        def _find_first_number(segment, label_patterns, integer=False):
+            """Return the first labeled value in segment, or None if no label hits."""
+            # Apply the same comma-handling as extract_prompt_numbers so European decimals survive.
+            cleaned = re.sub(r"(?<=\d),(?=\d{3}(?!\d))", "", segment)
+            cleaned = re.sub(r"(?<=\d),(?=\d{1,2}(?!\d))", ".", cleaned)
+            number_re = r"(\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)"
+            best = None
+            for label in label_patterns:
+                pattern = label + r"[^\d\-]{0,30}?" + number_re
+                match = re.search(pattern, cleaned, re.IGNORECASE)
+                if match:
+                    position = match.start()
+                    if best is None or position < best[0]:
+                        best = (position, float(match.group(1)))
+            if best is None:
+                return None
+            value = best[1]
+            return int(round(value)) if integer else value
+
+        def _split_into_group_segments(prompt_text, group_keys):
+            """Split prompt into per-group text segments by finding group markers.
+
+            group_keys: ordered list of identifiers like ['A','B'], ['1','2','3'], ['before','after'].
+            Returns ordered list of (key, segment_text) or None if any key was not found.
+            """
+            if not group_keys:
+                return None
+            positions = []
+            for key in group_keys:
+                if key.lower() in ("before", "pre", "pretest", "pre-test"):
+                    pattern = r"\b(?:before|pre[- ]?test|baseline|prior)\b"
+                elif key.lower() in ("after", "post", "posttest", "post-test"):
+                    pattern = r"\b(?:after|post[- ]?test|follow[- ]?up)\b"
+                else:
+                    pattern = rf"(?:group|sample|condition|class|set)\s+{re.escape(key)}\b"
+                match = re.search(pattern, prompt_text, re.IGNORECASE)
+                if not match:
+                    return None
+                positions.append((match.start(), key))
+            ordered = sorted(positions)
+            segments = []
+            for index, (start, key) in enumerate(ordered):
+                end = ordered[index + 1][0] if index + 1 < len(ordered) else len(prompt_text)
+                segments.append((key, prompt_text[start:end]))
+            # Reorder back to caller's requested key order.
+            by_key = {key: segment for key, segment in segments}
+            return [(key, by_key[key]) for key in group_keys]
+
+        def extract_labeled_group_stats(prompt_text, group_keys):
+            """Extract [mean, sd, n] per group via labels.
+
+            Returns a flat list [m1, sd1, n1, m2, sd2, n2, ...] only if every label is found
+            for every group. Caller should fall back to positional extraction on None.
+            """
+            segments = _split_into_group_segments(prompt_text, group_keys)
+            if segments is None:
+                return None
+            collected = []
+            for _, segment in segments:
+                mean_value = _find_first_number(segment, _MEAN_PATTERNS)
+                sd_value = _find_first_number(segment, _SD_PATTERNS)
+                n_value = _find_first_number(segment, _N_PATTERNS, integer=True)
+                if mean_value is None or sd_value is None or n_value is None:
+                    return None
+                collected.extend([mean_value, sd_value, n_value])
+            return collected
 
         def infer_alpha_from_prompt(default_alpha=0.05):
             if "0.01" in prompt_lower or "1%" in prompt_lower:
@@ -69638,7 +69730,17 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 st.session_state[f"{base_key}_t_tail"] = tail_guess
                 set_alpha_key(f"{base_key}_t_alpha")
             elif calc_type == "Independent t-test":
-                if len(extracted_numbers) >= 6:
+                labeled = extract_labeled_group_stats(exam_prompt, ["A", "B"])
+                if labeled is None:
+                    labeled = extract_labeled_group_stats(exam_prompt, ["1", "2"])
+                if labeled is not None:
+                    st.session_state[f"{base_key}_it_mean_a"] = labeled[0]
+                    st.session_state[f"{base_key}_it_sd_a"] = max(0.0001, labeled[1])
+                    st.session_state[f"{base_key}_it_n_a"] = max(2, int(round(labeled[2])))
+                    st.session_state[f"{base_key}_it_mean_b"] = labeled[3]
+                    st.session_state[f"{base_key}_it_sd_b"] = max(0.0001, labeled[4])
+                    st.session_state[f"{base_key}_it_n_b"] = max(2, int(round(labeled[5])))
+                elif len(extracted_numbers) >= 6:
                     st.session_state[f"{base_key}_it_mean_a"] = extracted_numbers[0]
                     st.session_state[f"{base_key}_it_sd_a"] = max(0.0001, extracted_numbers[1])
                     st.session_state[f"{base_key}_it_n_a"] = max(2, int(round(extracted_numbers[2])))
@@ -69648,7 +69750,26 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 st.session_state[f"{base_key}_it_tail"] = tail_guess
                 set_alpha_key(f"{base_key}_it_alpha")
             elif calc_type == "Paired t-test":
-                if len(extracted_numbers) >= 4:
+                before_after = _split_into_group_segments(exam_prompt, ["before", "after"])
+                pt_mean_before = pt_mean_after = pt_sd_diff = pt_n = None
+                if before_after is not None:
+                    pt_mean_before = _find_first_number(before_after[0][1], _MEAN_PATTERNS)
+                    pt_mean_after = _find_first_number(before_after[1][1], _MEAN_PATTERNS)
+                pt_sd_diff = _find_first_number(
+                    exam_prompt,
+                    [r"standard\s+deviation\s+of\s+(?:the\s+)?differences", r"sd\s+of\s+(?:the\s+)?differences", r"sd[_ ]diff"],
+                )
+                pt_n = _find_first_number(
+                    exam_prompt,
+                    [r"number\s+of\s+pairs", r"\bpairs\s*=", r"\bn\s+pairs", r"sample\s+size"],
+                    integer=True,
+                )
+                if None not in (pt_mean_before, pt_mean_after, pt_sd_diff, pt_n):
+                    st.session_state[f"{base_key}_pt_before"] = pt_mean_before
+                    st.session_state[f"{base_key}_pt_after"] = pt_mean_after
+                    st.session_state[f"{base_key}_pt_sd_diff"] = max(0.0001, pt_sd_diff)
+                    st.session_state[f"{base_key}_pt_n"] = max(2, int(round(pt_n)))
+                elif len(extracted_numbers) >= 4:
                     st.session_state[f"{base_key}_pt_before"] = extracted_numbers[0]
                     st.session_state[f"{base_key}_pt_after"] = extracted_numbers[1]
                     st.session_state[f"{base_key}_pt_sd_diff"] = max(0.0001, extracted_numbers[2])
@@ -69681,7 +69802,20 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                     st.session_state[f"{base_key}_chi_21"] = max(0, int(round(extracted_numbers[2])))
                     st.session_state[f"{base_key}_chi_22"] = max(0, int(round(extracted_numbers[3])))
             elif calc_type == "One-way ANOVA (3 groups)":
-                if len(extracted_numbers) >= 9:
+                labeled = extract_labeled_group_stats(exam_prompt, ["1", "2", "3"])
+                if labeled is None:
+                    labeled = extract_labeled_group_stats(exam_prompt, ["A", "B", "C"])
+                if labeled is not None:
+                    st.session_state[f"{base_key}_anova_mean_1"] = labeled[0]
+                    st.session_state[f"{base_key}_anova_sd_1"] = max(0.0001, labeled[1])
+                    st.session_state[f"{base_key}_anova_n_1"] = max(2, int(round(labeled[2])))
+                    st.session_state[f"{base_key}_anova_mean_2"] = labeled[3]
+                    st.session_state[f"{base_key}_anova_sd_2"] = max(0.0001, labeled[4])
+                    st.session_state[f"{base_key}_anova_n_2"] = max(2, int(round(labeled[5])))
+                    st.session_state[f"{base_key}_anova_mean_3"] = labeled[6]
+                    st.session_state[f"{base_key}_anova_sd_3"] = max(0.0001, labeled[7])
+                    st.session_state[f"{base_key}_anova_n_3"] = max(2, int(round(labeled[8])))
+                elif len(extracted_numbers) >= 9:
                     st.session_state[f"{base_key}_anova_mean_1"] = extracted_numbers[0]
                     st.session_state[f"{base_key}_anova_sd_1"] = max(0.0001, extracted_numbers[1])
                     st.session_state[f"{base_key}_anova_n_1"] = max(2, int(round(extracted_numbers[2])))
@@ -70726,7 +70860,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 alpha = st.selectbox("Alpha (α)", options=[0.10, 0.05, 0.01], index=1, format_func=lambda x: f"{x:.2f}", key=f"{base_key}_pt_alpha")
                 tail_type = st.selectbox("Tail type", options=["Two-tailed", "Right-tailed", "Left-tailed"], key=f"{base_key}_pt_tail")
 
-            mean_diff = mean_before - mean_after
+            mean_diff = mean_after - mean_before
             standard_error = sd_diff / math.sqrt(sample_size)
             t_value = mean_diff / standard_error
             degrees_freedom = sample_size - 1
