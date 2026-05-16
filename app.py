@@ -67627,12 +67627,25 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
     ai_answer_key = f"{base_key}_ai_answer"
     ai_signature_key = f"{base_key}_ai_answer_signature"
     if exam_prompt.strip() and client is not None:
-        button_label = (
-            "🔁 Re-generate answer"
-            if st.session_state.get(ai_answer_key)
-            else "💡 Generate answer with reasoning"
-        )
-        generate_clicked = st.button(button_label, key=f"{base_key}_generate_ai_answer")
+        ai_settings_col1, ai_settings_col2 = st.columns([3, 2])
+        with ai_settings_col1:
+            button_label = (
+                "🔁 Re-generate answer"
+                if st.session_state.get(ai_answer_key)
+                else "💡 Generate answer with reasoning"
+            )
+            generate_clicked = st.button(button_label, key=f"{base_key}_generate_ai_answer")
+        with ai_settings_col2:
+            exam_submission_mode = st.checkbox(
+                "📝 Exam submission mode",
+                value=False,
+                key=f"{base_key}_exam_submission_mode",
+                help=(
+                    "Forces the AI to produce an exam-ready answer: numbered tasks, "
+                    "explicit Excel/Sheets formulas with cell references, Markdown tables for "
+                    "any results, and a Noroff-style structure suitable for direct hand-in."
+                ),
+            )
         if generate_clicked:
             dataset_block = data_context_block if data_context_block else ""
             user_message = (
@@ -67640,18 +67653,73 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 f"STUDENT QUESTION:\n{exam_prompt.strip()}\n"
                 f"{dataset_block}"
             )
-            system_prompt = (
-                "You are an exam tutor for a Norwegian vocational data analyst "
-                "(PDAN) student. Answer the student's question directly and "
-                "thoroughly, in clear English. Show your reasoning step by step. "
-                "If a dataset is attached, USE it: compute summary statistics or "
-                "cite specific column values when relevant, and explain how the "
-                "data supports your conclusion. Structure the answer with these "
-                "markdown sections: ## Direct answer, ## Step-by-step reasoning, "
-                "## How the data supports this (only if a dataset is attached), "
-                "## Exam-safe paragraph. Keep formulas in LaTeX where useful. "
-                "Do not invent numbers; if data is missing, say so explicitly."
-            )
+            if exam_submission_mode:
+                system_prompt = (
+                    "You are producing a Noroff exam-submission report for a vocational "
+                    "data analyst (PDAN) student. The output must be ready to hand in "
+                    "without further editing.\n\n"
+                    "Use this EXACT report structure with numbered headings:\n"
+                    "## 1. Introduction\n"
+                    "Describe the purpose of the report, why it is necessary, and how you "
+                    "intend to approach the task.\n\n"
+                    "## 2. Initial Assumptions and Hypotheses\n"
+                    "State what you initially believe about the dataset. When relevant, "
+                    "ground these in Cortez and Silva (2008) and cite them in-text.\n\n"
+                    "## 3. Exploratory Data Analysis (EDA)\n"
+                    "Describe your methods for exploring the data. Break this into "
+                    "numbered sub-sections (3.1, 3.2, ...) such as Data quality, "
+                    "Descriptive statistics, Distributions, Correlations, etc.\n\n"
+                    "## 4. Trends, Patterns, and Anomalies\n"
+                    "Highlight and explain the insights you discovered during EDA. "
+                    "Use Markdown tables for any summary results.\n\n"
+                    "## 5. Discussion\n"
+                    "Reflect on your hypotheses from section 2 and explain whether the "
+                    "data supported them.\n\n"
+                    "## 6. Conclusion and Reflection\n"
+                    "Summarise findings and add a brief reflection on the learning "
+                    "experience.\n\n"
+                    "Calculation rules:\n"
+                    "- For every calculation, ALWAYS give the Excel / Google Sheets "
+                    "formula with concrete cell references in a fenced code block, e.g.\n"
+                    "  ```excel\n"
+                    "  Mean: =AVERAGE(B2:B289)\n"
+                    "  Sample SD: =STDEV.S(B2:B289)\n"
+                    "  z-score for B2: =(B2-$E$2)/$E$3\n"
+                    "  ```\n"
+                    "  Use STDEV.S for sample SD, STDEV.P for population SD, and explain "
+                    "which one applies.\n"
+                    "- State the computed value next to every formula so the examiner can "
+                    "read the answer without opening Excel.\n"
+                    "- Present any tabular result (KPI summary, frequency table, ANOVA "
+                    "table, group comparison) as a proper Markdown table with header rows. "
+                    "Number tables (Table 1, Table 2, ...) and figures (Figure 1, ...) in "
+                    "captions immediately above or below.\n"
+                    "- Use ENGLISH unless the prompt is clearly Norwegian, in which case "
+                    "answer in Norwegian.\n"
+                    "- Do not invent numbers; if data is missing, say so explicitly.\n"
+                    "- If a dataset is attached, USE it: compute summary statistics and "
+                    "cite specific column values when relevant.\n"
+                    "- For every step where the examiner expects visual evidence, add a "
+                    "callout line of the form:\n"
+                    "  > 📸 **Screenshot needed:** <exactly what to capture from Excel / "
+                    "Google Sheets / Power BI, e.g. 'the Pivot Table on sheet KPI with "
+                    "Region in Rows and Sum of Revenue in Values'>\n"
+                    "  Add at least one screenshot callout per major EDA step.\n"
+                )
+            else:
+                system_prompt = (
+                    "You are an exam tutor for a Norwegian vocational data analyst "
+                    "(PDAN) student. Answer the student's question directly and "
+                    "thoroughly, in clear English. Show your reasoning step by step. "
+                    "If a dataset is attached, USE it: compute summary statistics or "
+                    "cite specific column values when relevant, and explain how the "
+                    "data supports your conclusion. Structure the answer with these "
+                    "markdown sections: ## Direct answer, ## Step-by-step reasoning, "
+                    "## How the data supports this (only if a dataset is attached), "
+                    "## Exam-safe paragraph. Where a calculation happens, include the "
+                    "Excel / Google Sheets formula in a fenced ```excel code block. "
+                    "Do not invent numbers; if data is missing, say so explicitly."
+                )
             with st.spinner("Claude is thinking through your question…"):
                 try:
                     response = client.chat.completions.create(
@@ -67707,6 +67775,211 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 "Click the button again after changing the prompt or dataset to refresh."
             )
 
+        # 📊 Generate an analysis-ready Excel workbook so the student can screenshot
+        # FROM EXCEL (which is what Noroff wants — proof of Excel skill).
+        if project_df is not None:
+            with st.expander(
+                "📊 Auto-generate an Excel analysis workbook (for Excel screenshots)",
+                expanded=False,
+            ):
+                st.caption(
+                    "Builds an .xlsx with your raw data, a Descriptive-statistics sheet "
+                    "that shows the actual `=AVERAGE`, `=STDEV.S`, `=MEDIAN`, `=QUARTILE.INC` "
+                    "formulas, a Pivot sheet with `=COUNTIF` and `=AVERAGEIF`, a Z-score "
+                    "sheet, and embedded histogram + bar charts. Open it in Excel, take "
+                    "screenshots of the formulas / charts / pivots, and paste them into "
+                    "your Noroff Word report."
+                )
+                if st.button("📥 Build analysis workbook", key=f"{base_key}_build_xlsx"):
+                    try:
+                        from openpyxl import Workbook as _Workbook
+                        from openpyxl.utils import get_column_letter as _col_letter
+                        from openpyxl.chart import BarChart as _BarChart, Reference as _Reference
+                        from io import BytesIO as _BytesIO
+                        from openpyxl.styles import Font as _Font, PatternFill as _Fill
+
+                        wb = _Workbook()
+
+                        # --- Sheet 1: RawData ---
+                        ws_raw = wb.active
+                        ws_raw.title = "RawData"
+                        headers = list(project_df.columns)
+                        ws_raw.append(headers)
+                        for cell in ws_raw[1]:
+                            cell.font = _Font(bold=True)
+                            cell.fill = _Fill("solid", fgColor="DDEBF7")
+                        for row in project_df.itertuples(index=False):
+                            ws_raw.append([
+                                None if pd.isna(value) else (
+                                    float(value) if isinstance(value, (int, float)) else str(value)
+                                )
+                                for value in row
+                            ])
+                        n_rows = ws_raw.max_row
+                        data_first = 2
+                        data_last = n_rows
+
+                        numeric_cols = [
+                            col for col in project_df.columns
+                            if pd.api.types.is_numeric_dtype(project_df[col])
+                        ]
+                        categorical_cols = [
+                            col for col in project_df.columns
+                            if col not in numeric_cols
+                            and project_df[col].dropna().nunique() <= 20
+                        ]
+
+                        # --- Sheet 2: Descriptive (formula-driven) ---
+                        ws_desc = wb.create_sheet("Descriptive")
+                        desc_headers = ["Column", "n", "Mean", "Median", "Mode", "Sample SD",
+                                        "Population SD", "Min", "Q1", "Q3", "Max", "Range", "IQR"]
+                        ws_desc.append(desc_headers)
+                        for cell in ws_desc[1]:
+                            cell.font = _Font(bold=True)
+                            cell.fill = _Fill("solid", fgColor="DDEBF7")
+                        for column in numeric_cols:
+                            col_idx = headers.index(column) + 1
+                            letter = _col_letter(col_idx)
+                            range_ref = f"RawData!{letter}{data_first}:{letter}{data_last}"
+                            ws_desc.append([
+                                column,
+                                f"=COUNT({range_ref})",
+                                f"=AVERAGE({range_ref})",
+                                f"=MEDIAN({range_ref})",
+                                f"=IFERROR(MODE.SNGL({range_ref}),\"—\")",
+                                f"=STDEV.S({range_ref})",
+                                f"=STDEV.P({range_ref})",
+                                f"=MIN({range_ref})",
+                                f"=QUARTILE.INC({range_ref},1)",
+                                f"=QUARTILE.INC({range_ref},3)",
+                                f"=MAX({range_ref})",
+                                f"=MAX({range_ref})-MIN({range_ref})",
+                                f"=QUARTILE.INC({range_ref},3)-QUARTILE.INC({range_ref},1)",
+                            ])
+
+                        # --- Sheet 3: Pivot (COUNTIF / AVERAGEIF per category) ---
+                        ws_pivot = wb.create_sheet("PivotByCategory")
+                        ws_pivot.append(["Open this sheet to see frequency and group-average pivots."])
+                        ws_pivot["A1"].font = _Font(bold=True, italic=True)
+                        row_cursor = 3
+                        for cat_col in categorical_cols[:3]:
+                            cat_col_idx = headers.index(cat_col) + 1
+                            cat_letter = _col_letter(cat_col_idx)
+                            cat_range = f"RawData!{cat_letter}{data_first}:{cat_letter}{data_last}"
+                            categories = list(project_df[cat_col].dropna().unique())
+                            # Header
+                            header_row = [f"{cat_col}", "Count"] + [f"Avg {c}" for c in numeric_cols[:3]]
+                            for i, value in enumerate(header_row):
+                                cell = ws_pivot.cell(row=row_cursor, column=i + 1, value=value)
+                                cell.font = _Font(bold=True)
+                                cell.fill = _Fill("solid", fgColor="E2EFDA")
+                            row_cursor += 1
+                            for category_value in categories:
+                                criteria = f'"{category_value}"'
+                                ws_pivot.cell(row=row_cursor, column=1, value=str(category_value))
+                                ws_pivot.cell(row=row_cursor, column=2,
+                                              value=f"=COUNTIF({cat_range},{criteria})")
+                                for idx, num_col in enumerate(numeric_cols[:3]):
+                                    num_letter = _col_letter(headers.index(num_col) + 1)
+                                    num_range = f"RawData!{num_letter}{data_first}:{num_letter}{data_last}"
+                                    ws_pivot.cell(
+                                        row=row_cursor, column=3 + idx,
+                                        value=f"=AVERAGEIF({cat_range},{criteria},{num_range})",
+                                    )
+                                row_cursor += 1
+                            row_cursor += 2  # blank gap between categories
+
+                        # --- Sheet 4: Z-scores (per row, per first numeric column) ---
+                        if numeric_cols:
+                            target = numeric_cols[0]
+                            target_idx = headers.index(target) + 1
+                            target_letter = _col_letter(target_idx)
+                            target_range = f"RawData!{target_letter}{data_first}:{target_letter}{data_last}"
+                            ws_z = wb.create_sheet("ZScores")
+                            ws_z.append([target, "z-score", "Outlier? (|z|>3)"])
+                            for cell in ws_z[1]:
+                                cell.font = _Font(bold=True)
+                                cell.fill = _Fill("solid", fgColor="FFF2CC")
+                            for r in range(data_first, data_last + 1):
+                                cell_ref = f"RawData!{target_letter}{r}"
+                                z_formula = f"=({cell_ref}-AVERAGE({target_range}))/STDEV.S({target_range})"
+                                z_row = r - data_first + 2  # account for header
+                                ws_z.cell(row=z_row, column=1, value=f"={cell_ref}")
+                                ws_z.cell(row=z_row, column=2, value=z_formula)
+                                ws_z.cell(
+                                    row=z_row, column=3,
+                                    value=f'=IF(ABS(B{z_row})>3,"OUTLIER","")',
+                                )
+
+                        # --- Sheet 5: Histogram chart of first numeric column ---
+                        if numeric_cols:
+                            target = numeric_cols[0]
+                            ws_hist = wb.create_sheet("HistogramChart")
+                            ws_hist.append([f"Histogram of {target}"])
+                            ws_hist["A1"].font = _Font(bold=True, size=14)
+                            ws_hist.append([])
+                            ws_hist.append(["Bin upper bound", "Frequency"])
+                            for cell in ws_hist[3]:
+                                cell.font = _Font(bold=True)
+                            series = project_df[target].dropna()
+                            if len(series) >= 2:
+                                lo, hi = float(series.min()), float(series.max())
+                                n_bins = 10
+                                width = (hi - lo) / n_bins if hi > lo else 1
+                                target_letter = _col_letter(headers.index(target) + 1)
+                                target_range = f"RawData!{target_letter}{data_first}:{target_letter}{data_last}"
+                                hist_first_row = 4
+                                for k in range(1, n_bins + 1):
+                                    upper = lo + k * width
+                                    lower = lo + (k - 1) * width
+                                    if k == 1:
+                                        formula = f'=COUNTIFS({target_range},">="&{lower},{target_range},"<="&{upper})'
+                                    else:
+                                        formula = f'=COUNTIFS({target_range},">"&{lower},{target_range},"<="&{upper})'
+                                    ws_hist.append([round(upper, 3), formula])
+                                hist_last_row = ws_hist.max_row
+                                # Embed a bar chart
+                                chart = _BarChart()
+                                chart.type = "col"
+                                chart.style = 10
+                                chart.title = f"Histogram of {target}"
+                                chart.y_axis.title = "Frequency"
+                                chart.x_axis.title = target
+                                data_ref = _Reference(ws_hist, min_col=2, min_row=3, max_row=hist_last_row)
+                                cats_ref = _Reference(ws_hist, min_col=1, min_row=hist_first_row, max_row=hist_last_row)
+                                chart.add_data(data_ref, titles_from_data=True)
+                                chart.set_categories(cats_ref)
+                                chart.height = 10; chart.width = 18
+                                ws_hist.add_chart(chart, "E3")
+
+                        out_buffer = _BytesIO()
+                        wb.save(out_buffer)
+                        st.session_state[f"{base_key}_analysis_xlsx_bytes"] = out_buffer.getvalue()
+                        st.success("Analysis workbook ready. Download it below and take your Excel screenshots.")
+                    except Exception as exc:
+                        st.error(f"Could not build the workbook: {type(exc).__name__}: {exc}")
+
+                workbook_bytes = st.session_state.get(f"{base_key}_analysis_xlsx_bytes")
+                if workbook_bytes:
+                    st.download_button(
+                        "⬇️ Download analysis_workbook.xlsx",
+                        data=workbook_bytes,
+                        file_name="analysis_workbook.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        key=f"{base_key}_analysis_xlsx_download",
+                    )
+                    st.markdown("**📸 Suggested Excel screenshots for your Noroff report:**")
+                    st.markdown(
+                        "1. **Descriptive sheet** — show the column with `=AVERAGE`, "
+                        "`=STDEV.S` etc. visible in the formula bar.\n"
+                        "2. **PivotByCategory sheet** — capture each pivot block with "
+                        "`=COUNTIF` / `=AVERAGEIF` formulas.\n"
+                        "3. **ZScores sheet** — show the `=(x-AVG)/STDEV.S` formula and "
+                        "any rows flagged as OUTLIER.\n"
+                        "4. **HistogramChart sheet** — capture the embedded chart "
+                        "together with the bin / frequency table beside it."
+                    )
+
         # Show the saved answer history so students can revisit past sessions.
         def _history_to_markdown(entries):
             lines = []
@@ -67728,33 +68001,197 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 lines.append("")
             return "\n".join(lines)
 
+        def _render_markdown_to_docx(document, markdown_text):
+            """Translate a small markdown subset to Word: headings, tables, code
+            blocks, blockquotes. Falls back to plain paragraphs for everything
+            else. Designed for the AI-answer markdown we emit, not full CommonMark.
+            """
+            lines = (markdown_text or "").splitlines()
+            i = 0
+            while i < len(lines):
+                line = lines[i]
+                stripped = line.strip()
+                # Fenced code block (```excel ... ``` or ``` ... ```)
+                if stripped.startswith("```"):
+                    j = i + 1
+                    code_lines = []
+                    while j < len(lines) and not lines[j].strip().startswith("```"):
+                        code_lines.append(lines[j])
+                        j += 1
+                    paragraph = document.add_paragraph()
+                    run = paragraph.add_run("\n".join(code_lines))
+                    run.font.name = "Consolas"
+                    i = j + 1
+                    continue
+                # Markdown table: starts with a row whose next line is the separator.
+                if stripped.startswith("|") and i + 1 < len(lines) and set(
+                    lines[i + 1].strip().replace("|", "").replace(":", "").replace("-", "").strip()
+                ) == set():
+                    table_rows = []
+                    # Header row.
+                    header_cells = [cell.strip() for cell in stripped.strip("|").split("|")]
+                    table_rows.append(header_cells)
+                    j = i + 2  # skip separator
+                    while j < len(lines) and lines[j].strip().startswith("|"):
+                        row_cells = [cell.strip() for cell in lines[j].strip().strip("|").split("|")]
+                        # Pad / trim to the header width
+                        while len(row_cells) < len(header_cells):
+                            row_cells.append("")
+                        row_cells = row_cells[: len(header_cells)]
+                        table_rows.append(row_cells)
+                        j += 1
+                    if len(table_rows) >= 2:
+                        word_table = document.add_table(rows=len(table_rows), cols=len(table_rows[0]))
+                        try:
+                            word_table.style = "Light Grid Accent 1"
+                        except Exception:
+                            pass
+                        for r, row in enumerate(table_rows):
+                            for c, cell_text in enumerate(row):
+                                word_table.cell(r, c).text = cell_text
+                        i = j
+                        continue
+                # Headings.
+                if stripped.startswith("#### "):
+                    document.add_heading(stripped[5:].strip(), level=4)
+                elif stripped.startswith("### "):
+                    document.add_heading(stripped[4:].strip(), level=4)
+                elif stripped.startswith("## "):
+                    document.add_heading(stripped[3:].strip(), level=3)
+                elif stripped.startswith("# "):
+                    document.add_heading(stripped[2:].strip(), level=2)
+                elif stripped.startswith("> "):
+                    document.add_paragraph(stripped[2:], style="Intense Quote")
+                else:
+                    document.add_paragraph(line)
+                i += 1
+
+        def _apply_noroff_styling(document):
+            """Apply the formatting that Noroff's submission guide demands:
+            Arial 11pt, 1.5 line spacing, justified text."""
+            from docx.shared import Pt as _Pt
+            from docx.enum.text import WD_ALIGN_PARAGRAPH as _WD_ALIGN
+            try:
+                normal = document.styles["Normal"]
+                normal.font.name = "Arial"
+                normal.font.size = _Pt(11)
+                normal.paragraph_format.line_spacing = 1.5
+                normal.paragraph_format.alignment = _WD_ALIGN.JUSTIFY
+            except Exception:
+                pass
+
+        def _add_page_numbers(document):
+            """Insert a 'Page X of Y' field into the footer of every section."""
+            from docx.oxml.ns import qn as _qn
+            from docx.oxml import OxmlElement as _Oxml
+            for section in document.sections:
+                footer_paragraph = section.footer.paragraphs[0]
+                footer_paragraph.alignment = 1  # centre
+                run = footer_paragraph.add_run()
+                # PAGE field
+                fld_char1 = _Oxml("w:fldChar"); fld_char1.set(_qn("w:fldCharType"), "begin")
+                instr1 = _Oxml("w:instrText"); instr1.set(_qn("xml:space"), "preserve"); instr1.text = " PAGE "
+                fld_char2 = _Oxml("w:fldChar"); fld_char2.set(_qn("w:fldCharType"), "end")
+                for elem in (fld_char1, instr1, fld_char2):
+                    run._r.append(elem)
+                run.add_text(" of ")
+                # NUMPAGES field
+                fld_char3 = _Oxml("w:fldChar"); fld_char3.set(_qn("w:fldCharType"), "begin")
+                instr2 = _Oxml("w:instrText"); instr2.set(_qn("xml:space"), "preserve"); instr2.text = " NUMPAGES "
+                fld_char4 = _Oxml("w:fldChar"); fld_char4.set(_qn("w:fldCharType"), "end")
+                for elem in (fld_char3, instr2, fld_char4):
+                    run._r.append(elem)
+
+        def _add_table_of_contents(document):
+            """Insert a Word TOC field. Word builds the actual TOC on open via F9."""
+            from docx.oxml.ns import qn as _qn
+            from docx.oxml import OxmlElement as _Oxml
+            paragraph = document.add_paragraph()
+            run = paragraph.add_run()
+            fld_char1 = _Oxml("w:fldChar"); fld_char1.set(_qn("w:fldCharType"), "begin")
+            instr = _Oxml("w:instrText"); instr.set(_qn("xml:space"), "preserve")
+            instr.text = r'TOC \o "1-3" \h \z \u'  # auto TOC, levels 1-3
+            fld_char2 = _Oxml("w:fldChar"); fld_char2.set(_qn("w:fldCharType"), "separate")
+            placeholder = _Oxml("w:t"); placeholder.text = "Right-click here in Word and choose 'Update Field' to populate the table of contents."
+            fld_char3 = _Oxml("w:fldChar"); fld_char3.set(_qn("w:fldCharType"), "end")
+            for elem in (fld_char1, instr, fld_char2, placeholder, fld_char3):
+                run._r.append(elem)
+
+        def _add_cover_page(document, entry):
+            """Standalone cover page: title, course, date, candidate placeholder."""
+            from docx.shared import Pt as _Pt
+            from docx.enum.text import WD_ALIGN_PARAGRAPH as _WD_ALIGN
+
+            # Title
+            title = document.add_paragraph()
+            title.alignment = _WD_ALIGN.CENTER
+            run = title.add_run("Exam Submission")
+            run.bold = True; run.font.size = _Pt(28)
+            # Subtitle: course
+            subtitle = document.add_paragraph()
+            subtitle.alignment = _WD_ALIGN.CENTER
+            sub_run = subtitle.add_run(
+                f"{entry.get('course_name', '')} ({entry.get('course_code', '')})"
+            )
+            sub_run.font.size = _Pt(16)
+            # Spacer
+            for _ in range(8):
+                document.add_paragraph()
+            # Question summary
+            q = (entry.get("prompt") or "").strip().splitlines()[0][:140]
+            if q:
+                q_para = document.add_paragraph()
+                q_para.alignment = _WD_ALIGN.CENTER
+                q_run = q_para.add_run(q)
+                q_run.italic = True; q_run.font.size = _Pt(12)
+            for _ in range(6):
+                document.add_paragraph()
+            # Candidate block
+            candidate = document.add_paragraph()
+            candidate.alignment = _WD_ALIGN.CENTER
+            candidate.add_run("Candidate name: ____________________\n").font.size = _Pt(12)
+            candidate.add_run("Candidate number: __________________\n").font.size = _Pt(12)
+            candidate.add_run(f"Date: {entry.get('timestamp', '')[:10]}").font.size = _Pt(12)
+            # Page break to start report on page 2
+            document.add_page_break()
+
         def _history_to_docx_bytes(entries):
             from docx import Document as _DocxDocument
             from io import BytesIO as _BytesIO
             document = _DocxDocument()
-            document.add_heading("Exam resolver answers", level=1)
-            for entry in entries:
-                document.add_heading(
-                    f"{entry.get('timestamp', '')} — {entry.get('course_name', '')}",
-                    level=2,
-                )
+            _apply_noroff_styling(document)
+
+            if len(entries) == 1:
+                # Single-entry export: render as a proper Noroff report.
+                entry = entries[0]
+                _add_cover_page(document, entry)
+                document.add_heading("Table of Contents", level=1)
+                _add_table_of_contents(document)
+                document.add_page_break()
+                # Optional context
                 attachments = (entry.get("attached_datasets") or []) + (entry.get("attached_documents") or [])
-                if attachments:
-                    document.add_paragraph("Attached: " + ", ".join(attachments))
-                document.add_heading("Question", level=3)
-                document.add_paragraph(entry.get("prompt", "") or "")
-                document.add_heading("Answer", level=3)
-                # Render the markdown answer line by line, treating ## / ### as subheadings.
-                for line in (entry.get("answer", "") or "").splitlines():
-                    stripped = line.strip()
-                    if stripped.startswith("### "):
-                        document.add_heading(stripped[4:].strip(), level=4)
-                    elif stripped.startswith("## "):
-                        document.add_heading(stripped[3:].strip(), level=3)
-                    elif stripped.startswith("# "):
-                        document.add_heading(stripped[2:].strip(), level=2)
-                    else:
-                        document.add_paragraph(line)
+                if attachments or entry.get("prompt"):
+                    document.add_heading("Task brief", level=1)
+                    if attachments:
+                        document.add_paragraph("Attached files: " + ", ".join(attachments))
+                    document.add_paragraph("Question: " + (entry.get("prompt", "") or ""))
+                _render_markdown_to_docx(document, entry.get("answer", "") or "")
+            else:
+                document.add_heading("Exam resolver answers", level=1)
+                for entry in entries:
+                    document.add_heading(
+                        f"{entry.get('timestamp', '')} — {entry.get('course_name', '')}",
+                        level=2,
+                    )
+                    attachments = (entry.get("attached_datasets") or []) + (entry.get("attached_documents") or [])
+                    if attachments:
+                        document.add_paragraph("Attached: " + ", ".join(attachments))
+                    document.add_heading("Question", level=3)
+                    document.add_paragraph(entry.get("prompt", "") or "")
+                    document.add_heading("Answer", level=3)
+                    _render_markdown_to_docx(document, entry.get("answer", "") or "")
+
+            _add_page_numbers(document)
             buffer = _BytesIO()
             document.save(buffer)
             return buffer.getvalue()
