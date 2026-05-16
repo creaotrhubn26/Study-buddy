@@ -66104,10 +66104,14 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             text = text[:-1]
 
         text = text.replace(" ", "")
-        if "," in text and "." not in text and re.search(r"\d,\d", text):
-            text = text.replace(",", ".")
-        else:
+        if "." in text:
+            # Dot is the decimal marker; any comma must be a thousand-separator.
             text = text.replace(",", "")
+        else:
+            # Strip English thousand-separators ("1,000" -> "1000") before
+            # converting any remaining European decimal commas ("0,05" -> "0.05").
+            text = re.sub(r"(?<=\d),(?=\d{3}(?!\d))", "", text)
+            text = re.sub(r"(?<=\d),(?=\d{1,2}(?!\d))", ".", text)
 
         try:
             return float(text) * multiplier
@@ -69335,7 +69339,8 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         ]
         _N_PATTERNS = [
             r"sample\s+size",
-            r"number\s+of\s+(?:pairs|observations|samples|respondents|participants)",
+            r"sample\s+of\b",
+            r"number\s+of\s+(?:pairs|observations|samples|respondents|participants|students|people|subjects)",
             # Matches "n=30", "n: 30", "n is 30", "n of 30", and plain "n 30".
             # Trailing lookahead keeps it from binding to a far-off number.
             r"\bn\b\s*(?:is|of)?\s*[=:]?\s*(?=\d)",
@@ -69407,6 +69412,154 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                     return None
                 collected.extend([mean_value, sd_value, n_value])
             return collected
+
+        _SAMPLE_MEAN_PATTERNS = [
+            r"sample\s+mean",
+            r"observed\s+mean",
+            r"mean\s+of\s+the\s+sample",
+            r"sample\s+average",
+            r"x[̄¯]",
+            r"\bx-?bar\b",
+        ]
+        _HYP_MEAN_PATTERNS = [
+            r"hypoth[a-z]*\s+mean",
+            r"population\s+mean",
+            r"national\s+average",
+            r"benchmark\s+mean",
+            r"claimed\s+mean",
+            r"expected\s+mean",
+            r"null\s+mean",
+            r"target\s+mean",
+            r"known\s+mean",
+            r"\bμ\s*_?\s*0\b",
+            r"\bmu\s*_?\s*0\b",
+            r"\bμ\b",
+        ]
+
+        def extract_one_sample_stats(prompt_text):
+            """Return (sample_mean, hyp_mean, sd, n) when every label is found."""
+            sample_mean = _find_first_number(prompt_text, _SAMPLE_MEAN_PATTERNS)
+            hyp_mean = _find_first_number(prompt_text, _HYP_MEAN_PATTERNS)
+            sd_value = _find_first_number(prompt_text, _SD_PATTERNS)
+            n_value = _find_first_number(prompt_text, _N_PATTERNS, integer=True)
+            if None in (sample_mean, hyp_mean, sd_value, n_value):
+                return None
+            return (sample_mean, hyp_mean, sd_value, n_value)
+
+        def extract_zscore_stats(prompt_text):
+            """Return (value, mean, sd) for z-score prompts."""
+            value_patterns = [
+                r"value\s+of",
+                r"\bobservation\b",
+                r"data\s+point",
+                r"score\s+of",
+                r"\bx\s*=",
+            ]
+            value = _find_first_number(prompt_text, value_patterns)
+            mean_value = _find_first_number(prompt_text, _MEAN_PATTERNS)
+            sd_value = _find_first_number(prompt_text, _SD_PATTERNS)
+            if None in (value, mean_value, sd_value):
+                return None
+            return (value, mean_value, sd_value)
+
+        def _find_number_near_label(segment, label_patterns, integer=False):
+            """Like _find_first_number but also matches NUMBER preceding the label.
+
+            Useful for prompts like "45 conversions out of 200 visitors" where the
+            count comes before the noun.
+            """
+            cleaned = re.sub(r"(?<=\d),(?=\d{3}(?!\d))", "", segment)
+            cleaned = re.sub(r"(?<=\d),(?=\d{1,2}(?!\d))", ".", cleaned)
+            number_re = r"(\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)"
+            best = None
+            for label in label_patterns:
+                for pattern in (
+                    number_re + r"\s+(?:of\s+)?" + label,
+                    label + r"[^\d\-]{0,30}?" + number_re,
+                ):
+                    for match in re.finditer(pattern, cleaned, re.IGNORECASE):
+                        position = match.start()
+                        if best is None or position < best[0]:
+                            best = (position, float(match.group(1)))
+            if best is None:
+                return None
+            value = best[1]
+            return int(round(value)) if integer else value
+
+        _PROPORTION_SUCCESS_PATTERNS = [
+            r"\bsuccess(?:es)?\b",
+            r"\b(?:convert(?:ed|s)?|conversions?)\b",
+            r"\bclick(?:s|-?through)?\b",
+            r"\bpositive(?:s)?\b",
+            r"\byes(?:\s+responses?)?\b",
+            r"\bwin(?:s)?\b",
+            r"\bsigned\s+up\b",
+            r"\bpurchased\b",
+            r"\bresponded\b",
+        ]
+        _PROPORTION_TOTAL_PATTERNS = [
+            r"\btrial(?:s)?\b",
+            r"\bvisitor(?:s)?\b",
+            r"\bout\s+of\b",
+            r"\btotal\b",
+            r"\bsample\s+size\b",
+            r"\bparticipants?\b",
+            r"\bcustomers?\b",
+            r"\busers?\b",
+            r"\bsurveyed\b",
+            r"\bobservations?\b",
+        ]
+
+        def extract_two_proportion_stats(prompt_text):
+            """Return [success_a, total_a, success_b, total_b] via labels."""
+            segments = _split_into_group_segments(prompt_text, ["A", "B"])
+            if segments is None:
+                segments = _split_into_group_segments(prompt_text, ["1", "2"])
+            if segments is None:
+                return None
+            collected = []
+            for _, segment in segments:
+                success = _find_number_near_label(segment, _PROPORTION_SUCCESS_PATTERNS, integer=True)
+                total = _find_number_near_label(segment, _PROPORTION_TOTAL_PATTERNS, integer=True)
+                if success is None or total is None:
+                    # Fallback: "X of Y", "X out of Y", "X / Y" anywhere in the segment.
+                    pair = re.search(r"(\d+)\s*(?:out\s+of|of|/)\s*(\d+)", segment, re.IGNORECASE)
+                    if pair:
+                        if success is None:
+                            success = int(pair.group(1))
+                        if total is None:
+                            total = int(pair.group(2))
+                if success is None or total is None:
+                    return None
+                collected.extend([success, total])
+            return collected
+
+        def extract_chi_square_2x2(prompt_text):
+            """Return [c11, c12, c21, c22] when binary outcome labels can be found per group."""
+            outcome_pairs = [
+                (r"\byes\b", r"\bno\b"),
+                (r"\bsuccess(?:es)?\b", r"\bfail(?:ure(?:s)?|ed)?\b"),
+                (r"\bpurchased\b", r"\b(?:did\s+not\s+purchase|no\s+purchase)\b"),
+                (r"\bsubscribed\b", r"\bunsubscribed\b"),
+                (r"\bconvert(?:ed|s|ions?)\b", r"\b(?:did\s+not\s+convert|no\s+conversion)\b"),
+            ]
+            for pos_label, neg_label in outcome_pairs:
+                for keys in (["A", "B"], ["1", "2"]):
+                    segments = _split_into_group_segments(prompt_text, keys)
+                    if segments is None:
+                        continue
+                    cells = []
+                    ok = True
+                    for _, segment in segments:
+                        positive = _find_number_near_label(segment, [pos_label], integer=True)
+                        negative = _find_number_near_label(segment, [neg_label], integer=True)
+                        if positive is None or negative is None:
+                            ok = False
+                            break
+                        cells.extend([positive, negative])
+                    if ok:
+                        return cells
+            return None
 
         def infer_alpha_from_prompt(default_alpha=0.05):
             if "0.01" in prompt_lower or "1%" in prompt_lower:
@@ -69722,7 +69875,13 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                         if guessed_n >= 5:
                             st.session_state[f"{base_key}_likert_n"] = guessed_n
             elif calc_type == "One-sample t-test":
-                if len(extracted_numbers) >= 4:
+                labeled = extract_one_sample_stats(exam_prompt)
+                if labeled is not None:
+                    st.session_state[f"{base_key}_t_sample_mean"] = labeled[0]
+                    st.session_state[f"{base_key}_t_hyp_mean"] = labeled[1]
+                    st.session_state[f"{base_key}_t_sample_sd"] = max(0.0001, labeled[2])
+                    st.session_state[f"{base_key}_t_sample_size"] = max(2, int(round(labeled[3])))
+                elif len(extracted_numbers) >= 4:
                     st.session_state[f"{base_key}_t_sample_mean"] = extracted_numbers[0]
                     st.session_state[f"{base_key}_t_hyp_mean"] = extracted_numbers[1]
                     st.session_state[f"{base_key}_t_sample_sd"] = max(0.0001, extracted_numbers[2])
@@ -69777,7 +69936,13 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 st.session_state[f"{base_key}_pt_tail"] = tail_guess
                 set_alpha_key(f"{base_key}_pt_alpha")
             elif calc_type == "One-sample z-test":
-                if len(extracted_numbers) >= 4:
+                labeled = extract_one_sample_stats(exam_prompt)
+                if labeled is not None:
+                    st.session_state[f"{base_key}_z_sample_mean"] = labeled[0]
+                    st.session_state[f"{base_key}_z_hyp_mean"] = labeled[1]
+                    st.session_state[f"{base_key}_z_pop_sd"] = max(0.0001, labeled[2])
+                    st.session_state[f"{base_key}_z_sample_size"] = max(1, int(round(labeled[3])))
+                elif len(extracted_numbers) >= 4:
                     st.session_state[f"{base_key}_z_sample_mean"] = extracted_numbers[0]
                     st.session_state[f"{base_key}_z_hyp_mean"] = extracted_numbers[1]
                     st.session_state[f"{base_key}_z_pop_sd"] = max(0.0001, extracted_numbers[2])
@@ -69785,18 +69950,35 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 st.session_state[f"{base_key}_z_tail"] = tail_guess
                 set_alpha_key(f"{base_key}_z_alpha")
             elif calc_type == "Z-score":
-                if len(extracted_numbers) >= 3:
+                labeled = extract_zscore_stats(exam_prompt)
+                if labeled is not None:
+                    st.session_state[f"{base_key}_zs_value"] = labeled[0]
+                    st.session_state[f"{base_key}_zs_mean"] = labeled[1]
+                    st.session_state[f"{base_key}_zs_sd"] = max(0.0001, labeled[2])
+                elif len(extracted_numbers) >= 3:
                     st.session_state[f"{base_key}_zs_value"] = extracted_numbers[0]
                     st.session_state[f"{base_key}_zs_mean"] = extracted_numbers[1]
                     st.session_state[f"{base_key}_zs_sd"] = max(0.0001, extracted_numbers[2])
             elif calc_type == "Two-proportion z-test":
-                if len(extracted_numbers) >= 4:
+                labeled = extract_two_proportion_stats(exam_prompt)
+                if labeled is not None:
+                    st.session_state[f"{base_key}_zp_success_a"] = max(0, int(round(labeled[0])))
+                    st.session_state[f"{base_key}_zp_total_a"] = max(1, int(round(labeled[1])))
+                    st.session_state[f"{base_key}_zp_success_b"] = max(0, int(round(labeled[2])))
+                    st.session_state[f"{base_key}_zp_total_b"] = max(1, int(round(labeled[3])))
+                elif len(extracted_numbers) >= 4:
                     st.session_state[f"{base_key}_zp_success_a"] = max(0, int(round(extracted_numbers[0])))
                     st.session_state[f"{base_key}_zp_total_a"] = max(1, int(round(extracted_numbers[1])))
                     st.session_state[f"{base_key}_zp_success_b"] = max(0, int(round(extracted_numbers[2])))
                     st.session_state[f"{base_key}_zp_total_b"] = max(1, int(round(extracted_numbers[3])))
             elif calc_type == "Chi-square test of independence (2x2)":
-                if len(extracted_numbers) >= 4:
+                labeled = extract_chi_square_2x2(exam_prompt)
+                if labeled is not None:
+                    st.session_state[f"{base_key}_chi_11"] = max(0, int(round(labeled[0])))
+                    st.session_state[f"{base_key}_chi_12"] = max(0, int(round(labeled[1])))
+                    st.session_state[f"{base_key}_chi_21"] = max(0, int(round(labeled[2])))
+                    st.session_state[f"{base_key}_chi_22"] = max(0, int(round(labeled[3])))
+                elif len(extracted_numbers) >= 4:
                     st.session_state[f"{base_key}_chi_11"] = max(0, int(round(extracted_numbers[0])))
                     st.session_state[f"{base_key}_chi_12"] = max(0, int(round(extracted_numbers[1])))
                     st.session_state[f"{base_key}_chi_21"] = max(0, int(round(extracted_numbers[2])))
