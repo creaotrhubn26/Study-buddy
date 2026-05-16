@@ -67415,6 +67415,45 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         from io import BytesIO
         return _read_project_csv(BytesIO(csv_bytes))
 
+    def _read_pdf_text(source, max_pages=40):
+        """Extract text from a PDF using pypdf. Truncates very long pages."""
+        from pypdf import PdfReader
+        if hasattr(source, "seek"):
+            source.seek(0)
+        reader = PdfReader(source)
+        pieces = []
+        for i, page in enumerate(reader.pages):
+            if i >= max_pages:
+                pieces.append(f"\n[Page {i + 1}+ truncated; PDF has {len(reader.pages)} pages]")
+                break
+            try:
+                pieces.append(page.extract_text() or "")
+            except Exception:
+                continue
+        return "\n".join(pieces).strip()
+
+    def _read_docx_text(source):
+        """Extract paragraph text from a .docx document using python-docx."""
+        from docx import Document
+        if hasattr(source, "seek"):
+            source.seek(0)
+        document = Document(source)
+        return "\n".join(p.text for p in document.paragraphs if p.text.strip()).strip()
+
+    def _read_plain_text(source):
+        """Read .txt / .md as UTF-8 text (best-effort decoding)."""
+        if hasattr(source, "seek"):
+            source.seek(0)
+        data = source.read()
+        if isinstance(data, bytes):
+            for encoding in ("utf-8", "utf-16", "latin-1"):
+                try:
+                    return data.decode(encoding)
+                except UnicodeDecodeError:
+                    continue
+            return data.decode("utf-8", errors="replace")
+        return str(data)
+
     prompt_col, data_col = st.columns([2, 1])
     with prompt_col:
         exam_prompt = st.text_area(
@@ -67424,10 +67463,10 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             height=180,
         )
     with data_col:
-        st.markdown("**Optional: attach datasets**")
+        st.markdown("**Optional: attach files**")
         uploaded_project_files = st.file_uploader(
-            "CSV or Excel — drop one or several",
-            type=["csv", "xlsx", "xls"],
+            "CSV / Excel / PDF / Word / text — drop one or several",
+            type=["csv", "xlsx", "xls", "pdf", "docx", "txt", "md"],
             key=f"{base_key}_semester_project_csv_upload",
             label_visibility="visible",
             accept_multiple_files=True,
@@ -67444,10 +67483,12 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             key=f"{base_key}_use_capstone_sample_csv",
         )
 
-    # Load every attached dataset. attached_datasets is an ordered list of
-    # (label, DataFrame) pairs so the AI context can include all of them and
-    # downstream stats panels can let the user pick one as primary.
+    # Load every attached file. Tabular formats become (label, DataFrame)
+    # pairs in attached_datasets; PDF / Word / text become (label, text)
+    # pairs in attached_documents. The AI answer sees both; stats panels and
+    # the CSV resolver only consume attached_datasets.
     attached_datasets = []
+    attached_documents = []
     if uploaded_project_files:
         for uploaded_project_file in uploaded_project_files:
             file_name = uploaded_project_file.name
@@ -67466,6 +67507,22 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                         attached_datasets.append((f"{file_name} ({chosen_sheet})", df))
                     else:
                         attached_datasets.append((file_name, df))
+                elif lowered.endswith(".pdf"):
+                    text = _read_pdf_text(uploaded_project_file)
+                    if text:
+                        attached_documents.append((file_name, text))
+                    else:
+                        st.warning(f"`{file_name}`: no extractable text (scanned PDF?).")
+                elif lowered.endswith(".docx"):
+                    text = _read_docx_text(uploaded_project_file)
+                    if text:
+                        attached_documents.append((file_name, text))
+                    else:
+                        st.warning(f"`{file_name}`: the document contains no paragraph text.")
+                elif lowered.endswith((".txt", ".md")):
+                    text = _read_plain_text(uploaded_project_file)
+                    if text:
+                        attached_documents.append((file_name, text))
                 else:
                     attached_datasets.append((file_name, _read_project_csv(uploaded_project_file)))
             except Exception as exc:
@@ -67499,37 +67556,56 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                     project_file_label, project_df = label, df
                     break
 
-    if attached_datasets:
-        st.caption(
-            "📊 Attached: "
-            + " · ".join(
-                f"**{label}** ({df.shape[0]}×{df.shape[1]})"
-                for label, df in attached_datasets
+    if attached_datasets or attached_documents:
+        caption_pieces = []
+        if attached_datasets:
+            caption_pieces.append(
+                "📊 Datasets: "
+                + " · ".join(
+                    f"**{label}** ({df.shape[0]}×{df.shape[1]})"
+                    for label, df in attached_datasets
+                )
             )
-            + ". The AI answer sees all of them; stats panels use the primary."
-        )
+        if attached_documents:
+            caption_pieces.append(
+                "📄 Documents: "
+                + " · ".join(
+                    f"**{label}** ({len(text):,} chars)" for label, text in attached_documents
+                )
+            )
+        caption_pieces.append("The AI answer sees all of them; stats panels use the primary dataset.")
+        st.caption(" — ".join(caption_pieces))
         st.session_state[f"{base_key}_project_df_loaded"] = True
         st.session_state[f"{base_key}_project_df_shape"] = project_df.shape if project_df is not None else None
     else:
         st.session_state[f"{base_key}_project_df_loaded"] = False
 
     # Build a compact data-context string the resolver can splice into prompts.
-    # Includes every attached dataset so the AI answer sees all of them.
+    # Includes every attached dataset and document so the AI answer sees them all.
     data_context_block = ""
-    if attached_datasets:
-        sections = []
-        for label, df in attached_datasets:
-            try:
-                sample_csv = df.head(5).to_csv(index=False)
-                sections.append(
-                    f"[Dataset: {label} — {df.shape[0]} rows × {df.shape[1]} columns. "
-                    f"Columns: {', '.join(str(c) for c in df.columns)}.\n"
-                    f"First 5 rows:\n{sample_csv}]"
-                )
-            except Exception:
-                continue
-        if sections:
-            data_context_block = "\n\n" + "\n\n".join(sections)
+    context_sections = []
+    for label, df in attached_datasets:
+        try:
+            sample_csv = df.head(5).to_csv(index=False)
+            context_sections.append(
+                f"[Dataset: {label} — {df.shape[0]} rows × {df.shape[1]} columns. "
+                f"Columns: {', '.join(str(c) for c in df.columns)}.\n"
+                f"First 5 rows:\n{sample_csv}]"
+            )
+        except Exception:
+            continue
+    document_char_budget = 4000  # per document, to keep Claude's context manageable
+    for label, text in attached_documents:
+        snippet = text.strip()
+        truncated = ""
+        if len(snippet) > document_char_budget:
+            snippet = snippet[:document_char_budget]
+            truncated = f"\n[...truncated; document is {len(text):,} characters total]"
+        context_sections.append(
+            f"[Document: {label} — {len(text):,} characters.\nContent:\n{snippet}{truncated}]"
+        )
+    if context_sections:
+        data_context_block = "\n\n" + "\n\n".join(context_sections)
 
     # Status banner so the user can SEE the resolver responded to the paste.
     if not exam_prompt.strip():
@@ -67586,12 +67662,35 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                         ],
                         max_tokens=1800,
                     )
-                    st.session_state[ai_answer_key] = response.choices[0].message.content
+                    answer_text = response.choices[0].message.content
+                    st.session_state[ai_answer_key] = answer_text
                     ai_signature = (
                         f"{exam_prompt}\n\nDATA::{project_file_label if project_df is not None else ''}::"
                         f"{project_df.shape if project_df is not None else None}"
                     )
                     st.session_state[ai_signature_key] = ai_signature
+
+                    # Append to the persistent history so the student can
+                    # browse / download every answer they have generated.
+                    import datetime as _dt
+                    history = st.session_state.get("resolver_answer_history", [])
+                    history.append({
+                        "timestamp": _dt.datetime.now().isoformat(timespec="seconds"),
+                        "course_code": course.get("code", ""),
+                        "course_name": course.get("name", ""),
+                        "prompt": exam_prompt.strip(),
+                        "attached_datasets": [label for label, _ in attached_datasets],
+                        "attached_documents": [label for label, _ in attached_documents],
+                        "model": AI_CHAT_MODEL or "",
+                        "provider": AI_PROVIDER_LABEL or "",
+                        "answer": answer_text,
+                    })
+                    # Cap to last 100 to keep the JSON file bounded.
+                    st.session_state["resolver_answer_history"] = history[-100:]
+                    try:
+                        save_persisted_state(st.session_state)
+                    except Exception:
+                        pass
                 except Exception as exc:
                     st.session_state[ai_answer_key] = (
                         f"_Could not generate the AI answer right now._\n\n"
@@ -67607,6 +67706,140 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 f"({AI_CHAT_MODEL or 'default model'}). "
                 "Click the button again after changing the prompt or dataset to refresh."
             )
+
+        # Show the saved answer history so students can revisit past sessions.
+        def _history_to_markdown(entries):
+            lines = []
+            for entry in entries:
+                lines.append(f"## {entry.get('timestamp', '')} — {entry.get('course_name', '')}")
+                attachments = (entry.get("attached_datasets") or []) + (entry.get("attached_documents") or [])
+                if attachments:
+                    lines.append("**Attached:** " + ", ".join(attachments))
+                lines.append("")
+                lines.append("**Question**")
+                lines.append("")
+                lines.append("> " + (entry.get("prompt", "") or "").replace("\n", "\n> "))
+                lines.append("")
+                lines.append("**Answer**")
+                lines.append("")
+                lines.append(entry.get("answer", ""))
+                lines.append("")
+                lines.append("---")
+                lines.append("")
+            return "\n".join(lines)
+
+        def _history_to_docx_bytes(entries):
+            from docx import Document as _DocxDocument
+            from io import BytesIO as _BytesIO
+            document = _DocxDocument()
+            document.add_heading("Exam resolver answers", level=1)
+            for entry in entries:
+                document.add_heading(
+                    f"{entry.get('timestamp', '')} — {entry.get('course_name', '')}",
+                    level=2,
+                )
+                attachments = (entry.get("attached_datasets") or []) + (entry.get("attached_documents") or [])
+                if attachments:
+                    document.add_paragraph("Attached: " + ", ".join(attachments))
+                document.add_heading("Question", level=3)
+                document.add_paragraph(entry.get("prompt", "") or "")
+                document.add_heading("Answer", level=3)
+                # Render the markdown answer line by line, treating ## / ### as subheadings.
+                for line in (entry.get("answer", "") or "").splitlines():
+                    stripped = line.strip()
+                    if stripped.startswith("### "):
+                        document.add_heading(stripped[4:].strip(), level=4)
+                    elif stripped.startswith("## "):
+                        document.add_heading(stripped[3:].strip(), level=3)
+                    elif stripped.startswith("# "):
+                        document.add_heading(stripped[2:].strip(), level=2)
+                    else:
+                        document.add_paragraph(line)
+            buffer = _BytesIO()
+            document.save(buffer)
+            return buffer.getvalue()
+
+        history = st.session_state.get("resolver_answer_history", [])
+        course_history = [
+            entry for entry in history
+            if entry.get("course_code", "") == course.get("code", "")
+        ]
+        if course_history:
+            with st.expander(
+                f"🗂️ Saved answers for this course ({len(course_history)})",
+                expanded=False,
+            ):
+                import json as _json
+                format_choice = st.selectbox(
+                    "Download format",
+                    options=["Markdown (.md)", "Word (.docx)", "JSON (.json)", "Plain text (.txt)"],
+                    key=f"{base_key}_history_download_format",
+                )
+                course_code_clean = course.get("code", "course") or "course"
+                if format_choice.startswith("JSON"):
+                    payload = _json.dumps(course_history, ensure_ascii=False, indent=2)
+                    st.download_button(
+                        f"⬇️ Download {len(course_history)} answers as JSON",
+                        data=payload,
+                        file_name=f"resolver_history_{course_code_clean}.json",
+                        mime="application/json",
+                        key=f"{base_key}_history_download_json",
+                    )
+                elif format_choice.startswith("Word"):
+                    try:
+                        docx_bytes = _history_to_docx_bytes(course_history)
+                        st.download_button(
+                            f"⬇️ Download {len(course_history)} answers as Word",
+                            data=docx_bytes,
+                            file_name=f"resolver_history_{course_code_clean}.docx",
+                            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                            key=f"{base_key}_history_download_docx",
+                        )
+                    except Exception as exc:
+                        st.error(f"Could not build Word file: {type(exc).__name__}: {exc}")
+                elif format_choice.startswith("Plain"):
+                    payload = _history_to_markdown(course_history)
+                    st.download_button(
+                        f"⬇️ Download {len(course_history)} answers as text",
+                        data=payload,
+                        file_name=f"resolver_history_{course_code_clean}.txt",
+                        mime="text/plain",
+                        key=f"{base_key}_history_download_txt",
+                    )
+                else:
+                    payload = _history_to_markdown(course_history)
+                    st.download_button(
+                        f"⬇️ Download {len(course_history)} answers as Markdown",
+                        data=payload,
+                        file_name=f"resolver_history_{course_code_clean}.md",
+                        mime="text/markdown",
+                        key=f"{base_key}_history_download_md",
+                    )
+                # Most recent first.
+                for entry in reversed(course_history[-20:]):
+                    label = (entry.get("prompt") or "(empty prompt)")[:80]
+                    timestamp = entry.get("timestamp", "")
+                    with st.expander(f"{timestamp} — {label}", expanded=False):
+                        attachments = (entry.get("attached_datasets") or []) + (entry.get("attached_documents") or [])
+                        if attachments:
+                            st.caption("Attached: " + ", ".join(attachments))
+                        st.markdown("**Question**")
+                        st.markdown(f"> {entry.get('prompt', '')}")
+                        st.markdown("**Answer**")
+                        st.markdown(entry.get("answer", ""))
+                        # Per-entry single-answer Word download for quick handing-in.
+                        try:
+                            single_docx = _history_to_docx_bytes([entry])
+                            entry_key_seed = f"{timestamp}_{label[:20]}".replace(" ", "_")
+                            st.download_button(
+                                "⬇️ Save this answer as Word",
+                                data=single_docx,
+                                file_name=f"exam_answer_{timestamp[:10]}.docx",
+                                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                                key=f"{base_key}_single_download_{entry_key_seed}",
+                            )
+                        except Exception:
+                            pass
     elif exam_prompt.strip() and client is None:
         st.warning(
             "⚠️ AI is not configured. Set `ANTHROPIC_API_KEY` (or `OPENAI_API_KEY`) "

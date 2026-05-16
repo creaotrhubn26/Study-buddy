@@ -34,6 +34,7 @@ PERSIST_KEYS = [
     "lp_selected_course",
     "custom_lesson_glossary",
     "custom_glossary",
+    "resolver_answer_history",
 ]
 
 PROGRAM_DEADLINES = [
