@@ -68610,8 +68610,8 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             upload_cols = st.columns([2, 1])
             with upload_cols[0]:
                 uploaded_project_file = st.file_uploader(
-                    "Upload CSV for project resolver",
-                    type=["csv"],
+                    "Upload CSV or Excel for project resolver",
+                    type=["csv", "xlsx", "xls"],
                     key=f"{base_key}_semester_project_csv_upload",
                 )
             with upload_cols[1]:
@@ -68620,6 +68620,12 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                     value=False,
                     key=f"{base_key}_use_capstone_sample_csv",
                 )
+
+            gsheet_url = st.text_input(
+                "...or paste a Google Sheets URL (must be 'Anyone with the link can view')",
+                key=f"{base_key}_semester_project_gsheet_url",
+                placeholder="https://docs.google.com/spreadsheets/d/.../edit#gid=0",
+            ).strip()
 
             def read_project_csv(source):
                 """Read a CSV that may use US (`,` `.`) or European (`;` `,`) format."""
@@ -68641,14 +68647,83 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                     df = pd.read_csv(source, sep=";", decimal=",")
                 return df
 
+            def read_project_excel(source, sheet_name=None):
+                """Read an Excel workbook (.xlsx/.xls). When sheet_name is None and
+                the workbook has multiple sheets, returns the workbook dict so the
+                caller can prompt for which sheet to use."""
+                if hasattr(source, "seek"):
+                    source.seek(0)
+                # Read everything as a dict {sheet_name: DataFrame}
+                sheets = pd.read_excel(source, sheet_name=None, engine="openpyxl")
+                if sheet_name is not None and sheet_name in sheets:
+                    return sheets[sheet_name], list(sheets.keys())
+                if len(sheets) == 1:
+                    only_name = next(iter(sheets))
+                    return sheets[only_name], [only_name]
+                return None, list(sheets.keys())
+
+            def fetch_google_sheets_as_csv(url):
+                """Convert a Google Sheets share URL into the CSV export URL and fetch it.
+
+                Requires the sheet to be shared as 'Anyone with the link can view'.
+                Returns a DataFrame, or raises ValueError with a human message.
+                """
+                import re as _re
+                import urllib.request as _urllib
+
+                doc_match = _re.search(r"/spreadsheets/d/([a-zA-Z0-9_-]+)", url)
+                if not doc_match:
+                    raise ValueError("That does not look like a Google Sheets URL.")
+                doc_id = doc_match.group(1)
+                gid_match = _re.search(r"[?#&]gid=(\d+)", url)
+                gid = gid_match.group(1) if gid_match else "0"
+                export_url = (
+                    f"https://docs.google.com/spreadsheets/d/{doc_id}/export"
+                    f"?format=csv&gid={gid}"
+                )
+                request = _urllib.Request(export_url, headers={"User-Agent": "Mozilla/5.0"})
+                with _urllib.urlopen(request, timeout=10) as response:
+                    if response.status != 200:
+                        raise ValueError(
+                            f"Google rejected the export request (HTTP {response.status}). "
+                            "Check that the sheet is shared as 'Anyone with the link can view'."
+                        )
+                    csv_bytes = response.read()
+                from io import BytesIO
+                return read_project_csv(BytesIO(csv_bytes))
+
             project_df = None
             project_file_label = ""
             if uploaded_project_file is not None:
+                file_name = uploaded_project_file.name
+                lowered = file_name.lower()
                 try:
-                    project_df = read_project_csv(uploaded_project_file)
-                    project_file_label = uploaded_project_file.name
+                    if lowered.endswith((".xlsx", ".xls")):
+                        sheet_pick_key = f"{base_key}_semester_project_xlsx_sheet"
+                        df, sheet_names = read_project_excel(uploaded_project_file)
+                        if df is None and sheet_names:
+                            # Multi-sheet workbook -> ask which sheet
+                            chosen_sheet = st.selectbox(
+                                f"This workbook has {len(sheet_names)} sheets. Choose one:",
+                                options=sheet_names,
+                                key=sheet_pick_key,
+                            )
+                            df, _ = read_project_excel(uploaded_project_file, sheet_name=chosen_sheet)
+                            project_file_label = f"{file_name} ({chosen_sheet})"
+                        else:
+                            project_file_label = file_name
+                        project_df = df
+                    else:
+                        project_df = read_project_csv(uploaded_project_file)
+                        project_file_label = file_name
                 except Exception as exc:
-                    st.error(f"Could not read uploaded CSV: {exc}")
+                    st.error(f"Could not read uploaded file: {type(exc).__name__}: {exc}")
+            elif gsheet_url:
+                try:
+                    project_df = fetch_google_sheets_as_csv(gsheet_url)
+                    project_file_label = gsheet_url
+                except Exception as exc:
+                    st.error(f"Could not fetch Google Sheet: {type(exc).__name__}: {exc}")
             elif use_capstone_sample:
                 sample_path = Path(__file__).resolve().parent / "semester_project_1_retail_sales.csv"
                 if sample_path.exists():
