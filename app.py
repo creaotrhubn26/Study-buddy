@@ -70364,6 +70364,43 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
 
         try:
             if calc_type == "Descriptive statistics (raw values)":
+                # If a dataset is attached, offer to pull values from one of its
+                # numeric columns so the user does not have to retype them.
+                if project_df is not None:
+                    numeric_cols = [
+                        col for col in project_df.columns
+                        if pd.api.types.is_numeric_dtype(project_df[col])
+                    ]
+                    if numeric_cols:
+                        column_pick_key = f"{base_key}_desc_dataset_column"
+                        column_options = ["(do not use dataset)"] + numeric_cols
+                        # Default to a column whose name appears in the prompt; otherwise none.
+                        prompt_lower_local = (exam_prompt or "").lower()
+                        suggested = next(
+                            (col for col in numeric_cols if str(col).lower() in prompt_lower_local),
+                            None,
+                        )
+                        default_index = column_options.index(suggested) if suggested else 0
+                        chosen_dataset_column = st.selectbox(
+                            "Use a column from the attached dataset",
+                            options=column_options,
+                            index=default_index,
+                            key=column_pick_key,
+                        )
+                        if chosen_dataset_column != "(do not use dataset)":
+                            column_values = (
+                                project_df[chosen_dataset_column]
+                                .dropna()
+                                .astype(float)
+                                .tolist()
+                            )
+                            st.session_state[f"{base_key}_desc_values"] = "\n".join(
+                                format_display_number(value) for value in column_values
+                            )
+                            st.caption(
+                                f"Loaded {len(column_values)} values from column "
+                                f"**{chosen_dataset_column}**."
+                            )
                 default_values_text = st.session_state.get(
                     f"{base_key}_desc_values",
                     "\n".join(format_display_number(number) for number in prompt_numbers) if prompt_numbers else "12\n14\n15\n18\n21\n24",
@@ -71107,6 +71144,35 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 )
 
             elif calc_type == "One-sample t-test":
+                # Optional: pull sample stats from a dataset column.
+                if project_df is not None:
+                    numeric_cols = [
+                        col for col in project_df.columns
+                        if pd.api.types.is_numeric_dtype(project_df[col])
+                    ]
+                    if numeric_cols:
+                        prompt_lower_local = (exam_prompt or "").lower()
+                        suggested = next(
+                            (col for col in numeric_cols if str(col).lower() in prompt_lower_local),
+                            None,
+                        )
+                        column_options = ["(do not use dataset)"] + numeric_cols
+                        chosen_dataset_column = st.selectbox(
+                            "Use a column from the attached dataset",
+                            options=column_options,
+                            index=column_options.index(suggested) if suggested else 0,
+                            key=f"{base_key}_t_dataset_column",
+                        )
+                        if chosen_dataset_column != "(do not use dataset)":
+                            series = project_df[chosen_dataset_column].dropna().astype(float)
+                            if len(series) >= 2:
+                                st.session_state[f"{base_key}_t_sample_mean"] = float(series.mean())
+                                st.session_state[f"{base_key}_t_sample_sd"] = max(0.0001, float(series.std(ddof=1)))
+                                st.session_state[f"{base_key}_t_sample_size"] = int(len(series))
+                                st.caption(
+                                    f"Computed from **{chosen_dataset_column}**: "
+                                    f"x̄ = {series.mean():.3f}, s = {series.std(ddof=1):.3f}, n = {len(series)}."
+                                )
                 calc_col1, calc_col2 = st.columns(2)
                 with calc_col1:
                     sample_mean = st.number_input("Sample mean (x̄)", value=200.0, step=1.0, key=f"{base_key}_t_sample_mean")
@@ -71177,6 +71243,66 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 )
 
             elif calc_type == "Independent t-test":
+                # Optional: compute group A / B stats from a value column split by a category column.
+                if project_df is not None:
+                    numeric_cols = [
+                        col for col in project_df.columns
+                        if pd.api.types.is_numeric_dtype(project_df[col])
+                    ]
+                    categorical_cols = [
+                        col for col in project_df.columns
+                        if not pd.api.types.is_numeric_dtype(project_df[col])
+                        or (project_df[col].dropna().nunique() <= 10)
+                    ]
+                    if numeric_cols and categorical_cols:
+                        ds_col1, ds_col2 = st.columns(2)
+                        with ds_col1:
+                            value_col = st.selectbox(
+                                "Dataset: value column",
+                                options=["(do not use dataset)"] + numeric_cols,
+                                key=f"{base_key}_it_value_col",
+                            )
+                        with ds_col2:
+                            group_col = st.selectbox(
+                                "Dataset: group column",
+                                options=["(do not use dataset)"] + categorical_cols,
+                                key=f"{base_key}_it_group_col",
+                            )
+                        if value_col != "(do not use dataset)" and group_col != "(do not use dataset)":
+                            groups_present = list(project_df[group_col].dropna().unique())
+                            if len(groups_present) >= 2:
+                                pair_options = [f"{groups_present[i]} vs {groups_present[j]}"
+                                                for i in range(len(groups_present))
+                                                for j in range(i + 1, len(groups_present))]
+                                chosen_pair_label = st.selectbox(
+                                    "Compare which two groups?",
+                                    options=pair_options,
+                                    key=f"{base_key}_it_pair_label",
+                                )
+                                group_a_label, group_b_label = [
+                                    part.strip() for part in chosen_pair_label.split(" vs ", 1)
+                                ]
+                                series_a = (
+                                    project_df.loc[project_df[group_col] == group_a_label, value_col]
+                                    .dropna().astype(float)
+                                )
+                                series_b = (
+                                    project_df.loc[project_df[group_col] == group_b_label, value_col]
+                                    .dropna().astype(float)
+                                )
+                                if len(series_a) >= 2 and len(series_b) >= 2:
+                                    st.session_state[f"{base_key}_it_mean_a"] = float(series_a.mean())
+                                    st.session_state[f"{base_key}_it_sd_a"] = max(0.0001, float(series_a.std(ddof=1)))
+                                    st.session_state[f"{base_key}_it_n_a"] = int(len(series_a))
+                                    st.session_state[f"{base_key}_it_mean_b"] = float(series_b.mean())
+                                    st.session_state[f"{base_key}_it_sd_b"] = max(0.0001, float(series_b.std(ddof=1)))
+                                    st.session_state[f"{base_key}_it_n_b"] = int(len(series_b))
+                                    st.caption(
+                                        f"Group A = **{group_a_label}** "
+                                        f"(n={len(series_a)}, mean={series_a.mean():.3f}, sd={series_a.std(ddof=1):.3f}). "
+                                        f"Group B = **{group_b_label}** "
+                                        f"(n={len(series_b)}, mean={series_b.mean():.3f}, sd={series_b.std(ddof=1):.3f})."
+                                    )
                 calc_col1, calc_col2 = st.columns(2)
                 with calc_col1:
                     mean_a = st.number_input("Group A mean", value=72.0, step=1.0, key=f"{base_key}_it_mean_a")
