@@ -67424,12 +67424,13 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             height=180,
         )
     with data_col:
-        st.markdown("**Optional: attach dataset**")
-        uploaded_project_file = st.file_uploader(
-            "CSV or Excel (.csv / .xlsx / .xls)",
+        st.markdown("**Optional: attach datasets**")
+        uploaded_project_files = st.file_uploader(
+            "CSV or Excel — drop one or several",
             type=["csv", "xlsx", "xls"],
             key=f"{base_key}_semester_project_csv_upload",
             label_visibility="visible",
+            accept_multiple_files=True,
         )
         gsheet_url = st.text_input(
             "...or paste a Google Sheets URL",
@@ -67443,72 +67444,92 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             key=f"{base_key}_use_capstone_sample_csv",
         )
 
-    # Load the dataset once and share it via session_state so both the
-    # downstream CSV resolver and AI prompts can read it.
-    project_df = None
-    project_file_label = ""
-    if uploaded_project_file is not None:
-        file_name = uploaded_project_file.name
-        lowered = file_name.lower()
-        try:
-            if lowered.endswith((".xlsx", ".xls")):
-                sheet_pick_key = f"{base_key}_semester_project_xlsx_sheet"
-                df, sheet_names = _read_project_excel(uploaded_project_file)
-                if df is None and sheet_names:
-                    chosen_sheet = st.selectbox(
-                        f"This workbook has {len(sheet_names)} sheets. Choose one:",
-                        options=sheet_names,
-                        key=sheet_pick_key,
-                    )
-                    df, _ = _read_project_excel(uploaded_project_file, sheet_name=chosen_sheet)
-                    project_file_label = f"{file_name} ({chosen_sheet})"
+    # Load every attached dataset. attached_datasets is an ordered list of
+    # (label, DataFrame) pairs so the AI context can include all of them and
+    # downstream stats panels can let the user pick one as primary.
+    attached_datasets = []
+    if uploaded_project_files:
+        for uploaded_project_file in uploaded_project_files:
+            file_name = uploaded_project_file.name
+            lowered = file_name.lower()
+            try:
+                if lowered.endswith((".xlsx", ".xls")):
+                    sheet_pick_key = f"{base_key}_xlsx_sheet::{file_name}"
+                    df, sheet_names = _read_project_excel(uploaded_project_file)
+                    if df is None and sheet_names:
+                        chosen_sheet = st.selectbox(
+                            f"`{file_name}` has {len(sheet_names)} sheets. Choose one:",
+                            options=sheet_names,
+                            key=sheet_pick_key,
+                        )
+                        df, _ = _read_project_excel(uploaded_project_file, sheet_name=chosen_sheet)
+                        attached_datasets.append((f"{file_name} ({chosen_sheet})", df))
+                    else:
+                        attached_datasets.append((file_name, df))
                 else:
-                    project_file_label = file_name
-                project_df = df
-            else:
-                project_df = _read_project_csv(uploaded_project_file)
-                project_file_label = file_name
-        except Exception as exc:
-            st.error(f"Could not read uploaded file: {type(exc).__name__}: {exc}")
-    elif gsheet_url:
+                    attached_datasets.append((file_name, _read_project_csv(uploaded_project_file)))
+            except Exception as exc:
+                st.error(f"Could not read **{file_name}**: {type(exc).__name__}: {exc}")
+    if gsheet_url:
         try:
-            project_df = _fetch_google_sheets_as_csv(gsheet_url)
-            project_file_label = gsheet_url
+            attached_datasets.append((gsheet_url, _fetch_google_sheets_as_csv(gsheet_url)))
         except Exception as exc:
             st.error(f"Could not fetch Google Sheet: {type(exc).__name__}: {exc}")
-    elif use_capstone_sample:
+    if use_capstone_sample and not attached_datasets:
         sample_path = Path(__file__).resolve().parent / "semester_project_1_retail_sales.csv"
         if sample_path.exists():
-            project_df = _read_project_csv(sample_path)
-            project_file_label = str(sample_path)
+            attached_datasets.append((str(sample_path), _read_project_csv(sample_path)))
         else:
             st.warning("The capstone sample CSV was not found in the workspace.")
 
-    if project_df is not None:
+    # Choose a primary dataset for stats panels and the CSV resolver section.
+    project_df = None
+    project_file_label = ""
+    if attached_datasets:
+        if len(attached_datasets) == 1:
+            project_file_label, project_df = attached_datasets[0]
+        else:
+            primary_label = st.selectbox(
+                f"Primary dataset for stats panels ({len(attached_datasets)} attached)",
+                options=[label for label, _ in attached_datasets],
+                key=f"{base_key}_primary_dataset_label",
+            )
+            for label, df in attached_datasets:
+                if label == primary_label:
+                    project_file_label, project_df = label, df
+                    break
+
+    if attached_datasets:
         st.caption(
-            f"📊 Attached dataset: **{project_file_label}** "
-            f"({project_df.shape[0]} rows × {project_df.shape[1]} columns). "
-            "The resolver will use this as context."
+            "📊 Attached: "
+            + " · ".join(
+                f"**{label}** ({df.shape[0]}×{df.shape[1]})"
+                for label, df in attached_datasets
+            )
+            + ". The AI answer sees all of them; stats panels use the primary."
         )
-        # Share with downstream sections via session_state.
         st.session_state[f"{base_key}_project_df_loaded"] = True
-        st.session_state[f"{base_key}_project_df_shape"] = project_df.shape
+        st.session_state[f"{base_key}_project_df_shape"] = project_df.shape if project_df is not None else None
     else:
         st.session_state[f"{base_key}_project_df_loaded"] = False
 
     # Build a compact data-context string the resolver can splice into prompts.
+    # Includes every attached dataset so the AI answer sees all of them.
     data_context_block = ""
-    if project_df is not None:
-        try:
-            sample_csv = project_df.head(5).to_csv(index=False)
-            data_context_block = (
-                f"\n\n[Attached dataset: {project_file_label} — "
-                f"{project_df.shape[0]} rows × {project_df.shape[1]} columns. "
-                f"Columns: {', '.join(str(c) for c in project_df.columns)}.\n"
-                f"First 5 rows:\n{sample_csv}]"
-            )
-        except Exception:
-            data_context_block = ""
+    if attached_datasets:
+        sections = []
+        for label, df in attached_datasets:
+            try:
+                sample_csv = df.head(5).to_csv(index=False)
+                sections.append(
+                    f"[Dataset: {label} — {df.shape[0]} rows × {df.shape[1]} columns. "
+                    f"Columns: {', '.join(str(c) for c in df.columns)}.\n"
+                    f"First 5 rows:\n{sample_csv}]"
+                )
+            except Exception:
+                continue
+        if sections:
+            data_context_block = "\n\n" + "\n\n".join(sections)
 
     # Status banner so the user can SEE the resolver responded to the paste.
     if not exam_prompt.strip():
