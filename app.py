@@ -68580,19 +68580,38 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                     key=f"{base_key}_use_capstone_sample_csv",
                 )
 
+            def read_project_csv(source):
+                """Read a CSV that may use US (`,` `.`) or European (`;` `,`) format."""
+                # First pass: let pandas sniff the delimiter.
+                if hasattr(source, "seek"):
+                    source.seek(0)
+                try:
+                    df = pd.read_csv(source, sep=None, engine="python")
+                except Exception:
+                    if hasattr(source, "seek"):
+                        source.seek(0)
+                    df = pd.read_csv(source)
+                # If the sniffer landed on a single column whose header still
+                # contains a semicolon, the file is European-style. Retry with
+                # explicit `;` separator and `,` decimal.
+                if df.shape[1] == 1 and ";" in str(df.columns[0]):
+                    if hasattr(source, "seek"):
+                        source.seek(0)
+                    df = pd.read_csv(source, sep=";", decimal=",")
+                return df
+
             project_df = None
             project_file_label = ""
             if uploaded_project_file is not None:
                 try:
-                    uploaded_project_file.seek(0)
-                    project_df = pd.read_csv(uploaded_project_file)
+                    project_df = read_project_csv(uploaded_project_file)
                     project_file_label = uploaded_project_file.name
                 except Exception as exc:
                     st.error(f"Could not read uploaded CSV: {exc}")
             elif use_capstone_sample:
                 sample_path = Path(__file__).resolve().parent / "semester_project_1_retail_sales.csv"
                 if sample_path.exists():
-                    project_df = pd.read_csv(sample_path)
+                    project_df = read_project_csv(sample_path)
                     project_file_label = str(sample_path)
                 else:
                     st.warning("The capstone sample CSV was not found in the workspace.")
@@ -68685,11 +68704,11 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 project_metrics.append(("Total revenue", project_number(project_df[revenue_col].sum(), 2)))
             if profit_col in numeric_columns:
                 project_metrics.append(("Total profit", project_number(project_df[profit_col].sum(), 2)))
-            if revenue_col in numeric_columns and profit_col in numeric_columns and project_df[revenue_col].sum() != 0:
+            if revenue_col in numeric_columns and profit_col in numeric_columns and project_df[revenue_col].sum() > 0:
                 project_metrics.append(("Profit margin", f"{(project_df[profit_col].sum() / project_df[revenue_col].sum()) * 100:.2f}%"))
             if units_col in numeric_columns:
                 project_metrics.append(("Total units", project_number(project_df[units_col].sum(), 0)))
-            if returns_col in numeric_columns and units_col in numeric_columns and project_df[units_col].sum() != 0:
+            if returns_col in numeric_columns and units_col in numeric_columns and project_df[units_col].sum() > 0:
                 project_metrics.append(("Return rate", f"{(project_df[returns_col].sum() / project_df[units_col].sum()) * 100:.2f}%"))
             if satisfaction_col in numeric_columns:
                 project_metrics.append(("Average satisfaction", project_number(project_df[satisfaction_col].mean(), 5)))
@@ -68832,12 +68851,26 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             if len(numeric_columns) >= 2:
                 corr_matrix = project_df[numeric_columns].corr(numeric_only=True)
                 correlation_pairs = []
+                zero_variance_columns = {
+                    column for column in numeric_columns
+                    if project_df[column].dropna().nunique() < 2
+                }
+                skipped_pair_count = 0
                 for i, left_column in enumerate(numeric_columns):
                     for right_column in numeric_columns[i + 1:]:
                         corr_value = corr_matrix.loc[left_column, right_column]
                         if pd.isna(corr_value):
+                            skipped_pair_count += 1
                             continue
                         correlation_pairs.append((abs(corr_value), left_column, right_column, corr_value))
+                if skipped_pair_count and zero_variance_columns:
+                    st.caption(
+                        "Skipped "
+                        f"{skipped_pair_count} pair{'s' if skipped_pair_count != 1 else ''} "
+                        "involving constant columns ("
+                        + ", ".join(sorted(zero_variance_columns))
+                        + "); correlation is undefined when one column has zero variance."
+                    )
                 correlation_pairs.sort(reverse=True)
                 correlation_summary = [
                     {
