@@ -1,5 +1,5 @@
 streamlit>=1.52.2
-streamlit-quill>=0.1.0
+streamlit-quill>=0.0.3
 pandas>=2.3.3
 numpy>=2.4.0
 scipy>=1.16.3
