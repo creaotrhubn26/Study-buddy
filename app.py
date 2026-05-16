@@ -16,7 +16,21 @@ import streamlit as st
 import streamlit.components.v1 as components
 import mistune
 from openai import OpenAI
-from streamlit.components.v1 import html
+
+
+def html(body, height=None, width=None, scrolling=None, key=None):
+    """Forward-compatible drop-in for streamlit.components.v1.html.
+
+    Streamlit removed st.components.v1.html after 2026-06-01. st.iframe
+    is the supported replacement and accepts raw HTML strings. The
+    scrolling, width, and key arguments from the old API are accepted
+    but ignored; iframes scroll on overflow and Streamlit derives the
+    element identity from call position.
+    """
+    iframe_kwargs = {}
+    if height is not None and height > 0:
+        iframe_kwargs["height"] = height
+    st.iframe(body, **iframe_kwargs)
 
 from study_buddy_state import (
     COURSE_PROGRESSION_MAP,
@@ -70251,1442 +70265,1450 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         ci_summary_text = ""
         stats_template_spec = None
 
-        if calc_type == "Descriptive statistics (raw values)":
-            default_values_text = st.session_state.get(
-                f"{base_key}_desc_values",
-                "\n".join(format_display_number(number) for number in prompt_numbers) if prompt_numbers else "12\n14\n15\n18\n21\n24",
-            )
-            raw_values_text = st.text_area(
-                "Enter one value per line or comma-separated values",
-                value=default_values_text,
-                height=160,
-                key=f"{base_key}_desc_values",
-            )
-            desc_show_working = st.checkbox(
-                "Show step-by-step working",
-                value=True,
-                key=f"{base_key}_desc_show_working",
-            )
-            descriptive_values = parse_descriptive_values(raw_values_text)
-
-            if descriptive_values:
-                sorted_values = sorted(descriptive_values)
-                count_values = len(sorted_values)
-                mean_value = sum(sorted_values) / count_values
-                median_value = statistics_median(sorted_values)
-                mode_values = multimode(sorted_values)
-                squared_deviations = [(value - mean_value) ** 2 for value in sorted_values]
-                absolute_deviations = [abs(value - mean_value) for value in sorted_values]
-                sample_variance = (
-                    sum(squared_deviations) / (count_values - 1)
-                    if count_values > 1 else 0.0
+        try:
+            if calc_type == "Descriptive statistics (raw values)":
+                default_values_text = st.session_state.get(
+                    f"{base_key}_desc_values",
+                    "\n".join(format_display_number(number) for number in prompt_numbers) if prompt_numbers else "12\n14\n15\n18\n21\n24",
                 )
-                sample_sd = math.sqrt(sample_variance)
-                mean_absolute_deviation = sum(absolute_deviations) / count_values
-                minimum_value = sorted_values[0]
-                maximum_value = sorted_values[-1]
-                range_value = maximum_value - minimum_value
-                if count_values % 2 == 0:
-                    lower_half = sorted_values[: count_values // 2]
-                    upper_half = sorted_values[count_values // 2 :]
-                else:
-                    lower_half = sorted_values[: count_values // 2]
-                    upper_half = sorted_values[(count_values // 2) + 1 :]
-                q1_value = statistics_median(lower_half) if lower_half else median_value
-                q3_value = statistics_median(upper_half) if upper_half else median_value
-                iqr_value = q3_value - q1_value
-                useful_modes = [] if len(mode_values) == count_values else mode_values
-
-                metric_cols = st.columns(4)
-                metric_cols[0].metric("Count", f"{count_values}")
-                metric_cols[1].metric("Mean", f"{mean_value:.3f}")
-                metric_cols[2].metric("Median", f"{median_value:.3f}")
-                metric_cols[3].metric("Std Dev", f"{sample_sd:.3f}")
-
-                secondary_metric_cols = st.columns(4)
-                secondary_metric_cols[0].metric("Minimum", f"{minimum_value:.3f}")
-                secondary_metric_cols[1].metric("Maximum", f"{maximum_value:.3f}")
-                secondary_metric_cols[2].metric("Range", f"{range_value:.3f}")
-                secondary_metric_cols[3].metric("IQR", f"{iqr_value:.3f}")
-                st.metric("Mean absolute deviation", f"{mean_absolute_deviation:.3f}")
-
-                st.markdown("**Sorted values**")
-                st.code(", ".join(format_display_number(value) for value in sorted_values), language="text")
-                if useful_modes:
-                    st.markdown(f"**Mode:** {', '.join(format_display_number(value) for value in useful_modes)}")
-                else:
-                    st.markdown("**Mode:** No single useful mode was found because the values are all unique or all tied.")
-
-                if desc_show_working:
-                    deviation_rows = []
-                    for value, squared_dev, abs_dev in zip(sorted_values, squared_deviations, absolute_deviations):
-                        deviation_rows.append(
-                            {
-                                "x": format_display_number(value),
-                                "x - mean": round(value - mean_value, 3),
-                                "(x - mean)^2": round(squared_dev, 3),
-                                "|x - mean|": round(abs_dev, 3),
-                            }
-                        )
-                    st.markdown("**Step-by-step working**")
-                    descriptive_working = "\n\n".join(
-                        [
-                            r"$$"
-                            + f"\\bar x = \\frac{{\\sum x}}{{n}} = \\frac{{{format_display_number(sum(sorted_values))}}}{{{count_values}}} = {mean_value:.3f}"
-                            + r"$$",
-                            r"$$"
-                            + f"s^2 = \\frac{{\\sum (x_i-\\bar x)^2}}{{n-1}} = \\frac{{{sum(squared_deviations):.3f}}}{{{count_values - 1}}} = {sample_variance:.3f}"
-                            + r"$$",
-                            r"$$"
-                            + f"s = \\sqrt{{s^2}} = \\sqrt{{{sample_variance:.3f}}} = {sample_sd:.3f}"
-                            + r"$$",
-                            r"$$"
-                            + f"\\text{{MAD}} = \\frac{{\\sum |x_i-\\bar x|}}{{n}} = \\frac{{{sum(absolute_deviations):.3f}}}{{{count_values}}} = {mean_absolute_deviation:.3f}"
-                            + r"$$",
-                        ]
-                    )
-                    render_markdown_with_mathjax(
-                        descriptive_working,
-                        key_suffix=f"{base_key}_desc_working",
-                        height=360,
-                    )
-                    st.dataframe(pd.DataFrame(deviation_rows), use_container_width=True, hide_index=True)
-
-                if count_values >= 3 and abs(mean_value - median_value) > max(sample_sd * 0.35, 0.5):
-                    st.info("The mean and median are noticeably different. That usually suggests skewness or an outlier, so mention which measure better represents the typical value.")
-                else:
-                    st.info("The mean and median are fairly close. That usually suggests the distribution is not strongly skewed.")
-
-                stats_summary_text = (
-                    f"Descriptive statistics summary: n = {count_values}, mean = {mean_value:.3f}, median = {median_value:.3f}, "
-                    f"minimum = {minimum_value:.3f}, maximum = {maximum_value:.3f}, range = {range_value:.3f}, "
-                    f"sample variance = {sample_variance:.3f}, sample standard deviation = {sample_sd:.3f}, mean absolute deviation = {mean_absolute_deviation:.3f}, "
-                    f"Q1 = {q1_value:.3f}, Q3 = {q3_value:.3f}, IQR = {iqr_value:.3f}."
+                raw_values_text = st.text_area(
+                    "Enter one value per line or comma-separated values",
+                    value=default_values_text,
+                    height=160,
+                    key=f"{base_key}_desc_values",
                 )
-                if useful_modes:
-                    stats_summary_text += " Mode = " + ", ".join(format_display_number(value) for value in useful_modes) + "."
-                else:
-                    stats_summary_text += " No single useful mode was found."
-
-                sheets_columns = [
-                    "Column B: raw numeric values",
-                    "Column C: helper column for absolute deviations if you want MAD",
-                    "Summary cells for count, mean, median, min, max, range, variance, standard deviation, MAD, quartiles, and IQR",
-                ]
-                sheets_formulas = [
-                    "Count: =COUNT(B2:B101)",
-                    "Mean: =AVERAGE(B2:B101)",
-                    "Median: =MEDIAN(B2:B101)",
-                    "Mode: =MODE(B2:B101)",
-                    "Minimum: =MIN(B2:B101)",
-                    "Maximum: =MAX(B2:B101)",
-                    "Range: =MAX(B2:B101)-MIN(B2:B101)",
-                    "Sample variance: =VAR.S(B2:B101)",
-                    "Sample standard deviation: =STDEV.S(B2:B101)",
-                    "MAD helper in C2: =ABS(B2-AVERAGE($B$2:$B$101))",
-                    "MAD result: =AVERAGE(C2:C101)",
-                    "Q1: =QUARTILE(B2:B101,1)",
-                    "Q3: =QUARTILE(B2:B101,3)",
-                    "IQR: =QUARTILE(B2:B101,3)-QUARTILE(B2:B101,1)",
-                ]
-                sheets_notes = [
-                    "Use mean when the data is roughly symmetric and not dominated by outliers.",
-                    "Use median when the data is skewed or when one or two extreme values pull the mean away from the typical value.",
-                    "If Google Sheets returns an error for MODE, the dataset may have no repeated values.",
-                ]
-                stats_template_spec = make_stats_template_spec(
-                    "Google Sheets template - Descriptive statistics",
-                    "This template stores one raw numeric column and a summary area for the main descriptive statistics used in exam answers.",
-                    [
-                        "Data: value",
-                        "Summary: count, mean, median, mode, min, max, range, variance, standard_deviation, mad, q1, q3, iqr",
-                    ],
-                    sheets_formulas,
-                    sheets_notes,
-                    {
-                        "Data": [[value] for value in sorted_values],
-                        "Summary": [
-                            [
-                                count_values,
-                                round(mean_value, 3),
-                                round(median_value, 3),
-                                ", ".join(format_display_number(value) for value in useful_modes) if useful_modes else "No single mode",
-                                round(minimum_value, 3),
-                                round(maximum_value, 3),
-                                round(range_value, 3),
-                                round(sample_variance, 3),
-                                round(sample_sd, 3),
-                                round(mean_absolute_deviation, 3),
-                                round(q1_value, 3),
-                                round(q3_value, 3),
-                                round(iqr_value, 3),
-                            ]
-                        ],
-                    },
-                )
-            else:
-                st.info("Enter at least one numeric value to calculate mean, median, and the other descriptive statistics.")
-                sheets_notes = [
-                    "Paste the raw values from the exam question first, then the resolver can calculate the descriptive statistics for you.",
-                ]
-
-        elif calc_type == "Min-max scaling":
-            default_dataset_text = st.session_state.get(
-                f"{base_key}_minmax_dataset",
-                "\n".join(format_display_number(number) for number in prompt_numbers) if prompt_numbers else "12\n14\n15\n18\n21\n24",
-            )
-            default_target_text = st.session_state.get(
-                f"{base_key}_minmax_targets",
-                "18\n24",
-            )
-            minmax_col1, minmax_col2 = st.columns(2)
-            with minmax_col1:
-                dataset_text = st.text_area(
-                    "Dataset values",
-                    value=default_dataset_text,
-                    height=170,
-                    key=f"{base_key}_minmax_dataset",
-                )
-                target_text = st.text_area(
-                    "Values to scale",
-                    value=default_target_text,
-                    height=110,
-                    key=f"{base_key}_minmax_targets",
-                )
-            with minmax_col2:
-                target_range_min = st.number_input(
-                    "Target range minimum",
-                    value=float(st.session_state.get(f"{base_key}_minmax_target_min", 0.0)),
-                    step=0.1,
-                    key=f"{base_key}_minmax_target_min",
-                )
-                target_range_max = st.number_input(
-                    "Target range maximum",
-                    value=float(st.session_state.get(f"{base_key}_minmax_target_max", 1.0)),
-                    step=0.1,
-                    key=f"{base_key}_minmax_target_max",
-                )
-                show_working = st.checkbox(
+                desc_show_working = st.checkbox(
                     "Show step-by-step working",
                     value=True,
-                    key=f"{base_key}_minmax_show_working",
+                    key=f"{base_key}_desc_show_working",
                 )
+                descriptive_values = parse_descriptive_values(raw_values_text)
 
-            dataset_values = parse_descriptive_values(dataset_text)
-            target_values = parse_descriptive_values(target_text)
+                if descriptive_values:
+                    sorted_values = sorted(descriptive_values)
+                    count_values = len(sorted_values)
+                    mean_value = sum(sorted_values) / count_values
+                    median_value = statistics_median(sorted_values)
+                    mode_values = multimode(sorted_values)
+                    squared_deviations = [(value - mean_value) ** 2 for value in sorted_values]
+                    absolute_deviations = [abs(value - mean_value) for value in sorted_values]
+                    sample_variance = (
+                        sum(squared_deviations) / (count_values - 1)
+                        if count_values > 1 else 0.0
+                    )
+                    sample_sd = math.sqrt(sample_variance)
+                    mean_absolute_deviation = sum(absolute_deviations) / count_values
+                    minimum_value = sorted_values[0]
+                    maximum_value = sorted_values[-1]
+                    range_value = maximum_value - minimum_value
+                    if count_values % 2 == 0:
+                        lower_half = sorted_values[: count_values // 2]
+                        upper_half = sorted_values[count_values // 2 :]
+                    else:
+                        lower_half = sorted_values[: count_values // 2]
+                        upper_half = sorted_values[(count_values // 2) + 1 :]
+                    q1_value = statistics_median(lower_half) if lower_half else median_value
+                    q3_value = statistics_median(upper_half) if upper_half else median_value
+                    iqr_value = q3_value - q1_value
+                    useful_modes = [] if len(mode_values) == count_values else mode_values
 
-            if dataset_values and target_values and target_range_max != target_range_min:
-                sorted_values = sorted(dataset_values)
-                original_min = min(sorted_values)
-                original_max = max(sorted_values)
-                original_range = original_max - original_min
+                    metric_cols = st.columns(4)
+                    metric_cols[0].metric("Count", f"{count_values}")
+                    metric_cols[1].metric("Mean", f"{mean_value:.3f}")
+                    metric_cols[2].metric("Median", f"{median_value:.3f}")
+                    metric_cols[3].metric("Std Dev", f"{sample_sd:.3f}")
 
-                if original_range == 0:
-                    st.warning("Min-max scaling is not defined when all dataset values are the same, because max - min becomes 0.")
-                else:
-                    st.metric("Original range", format_display_number(original_range))
-                    st.markdown("**Sorted dataset values**")
+                    secondary_metric_cols = st.columns(4)
+                    secondary_metric_cols[0].metric("Minimum", f"{minimum_value:.3f}")
+                    secondary_metric_cols[1].metric("Maximum", f"{maximum_value:.3f}")
+                    secondary_metric_cols[2].metric("Range", f"{range_value:.3f}")
+                    secondary_metric_cols[3].metric("IQR", f"{iqr_value:.3f}")
+                    st.metric("Mean absolute deviation", f"{mean_absolute_deviation:.3f}")
+
+                    st.markdown("**Sorted values**")
                     st.code(", ".join(format_display_number(value) for value in sorted_values), language="text")
+                    if useful_modes:
+                        st.markdown(f"**Mode:** {', '.join(format_display_number(value) for value in useful_modes)}")
+                    else:
+                        st.markdown("**Mode:** No single useful mode was found because the values are all unique or all tied.")
 
-                    scaling_rows = []
-                    working_blocks = []
-                    for value in target_values:
-                        scaled_zero_one = (value - original_min) / original_range
-                        scaled_value = target_range_min + (scaled_zero_one * (target_range_max - target_range_min))
-                        numerator = value - original_min
-                        scaling_rows.append(
-                            {
-                                "Original value": format_display_number(value),
-                                "Min": format_display_number(original_min),
-                                "Max": format_display_number(original_max),
-                                "Scaled value": round(scaled_value, 3),
-                            }
-                        )
-                        if target_range_min == 0 and target_range_max == 1:
-                            working_blocks.append(
-                                "\n".join(
-                                    [
-                                        f"**For {format_display_number(value)}:**",
-                                        r"$$"
-                                        + f"\\frac{{{format_display_number(value)}-{format_display_number(original_min)}}}{{{format_display_number(original_max)}-{format_display_number(original_min)}}}"
-                                        + f" = \\frac{{{format_display_number(numerator)}}}{{{format_display_number(original_range)}}}"
-                                        + f" = {scaled_value:.3f}"
-                                        + r"$$",
-                                    ]
-                                )
+                    if desc_show_working:
+                        deviation_rows = []
+                        for value, squared_dev, abs_dev in zip(sorted_values, squared_deviations, absolute_deviations):
+                            deviation_rows.append(
+                                {
+                                    "x": format_display_number(value),
+                                    "x - mean": round(value - mean_value, 3),
+                                    "(x - mean)^2": round(squared_dev, 3),
+                                    "|x - mean|": round(abs_dev, 3),
+                                }
                             )
-                        else:
-                            working_blocks.append(
-                                "\n".join(
-                                    [
-                                        f"**For {format_display_number(value)}:**",
-                                        r"$$"
-                                        + f"{target_range_min:.3f} + \\left(\\frac{{{format_display_number(value)}-{format_display_number(original_min)}}}{{{format_display_number(original_max)}-{format_display_number(original_min)}}}\\right)"
-                                        + f"\\times ({target_range_max:.3f}-{target_range_min:.3f})"
-                                        + f" = {scaled_value:.3f}"
-                                        + r"$$",
-                                    ]
-                                )
-                            )
-
-                    st.dataframe(pd.DataFrame(scaling_rows), use_container_width=True, hide_index=True)
-
-                    if show_working:
                         st.markdown("**Step-by-step working**")
-                        working_markdown = "\n\n".join(working_blocks)
+                        descriptive_working = "\n\n".join(
+                            [
+                                r"$$"
+                                + f"\\bar x = \\frac{{\\sum x}}{{n}} = \\frac{{{format_display_number(sum(sorted_values))}}}{{{count_values}}} = {mean_value:.3f}"
+                                + r"$$",
+                                r"$$"
+                                + f"s^2 = \\frac{{\\sum (x_i-\\bar x)^2}}{{n-1}} = \\frac{{{sum(squared_deviations):.3f}}}{{{count_values - 1}}} = {sample_variance:.3f}"
+                                + r"$$",
+                                r"$$"
+                                + f"s = \\sqrt{{s^2}} = \\sqrt{{{sample_variance:.3f}}} = {sample_sd:.3f}"
+                                + r"$$",
+                                r"$$"
+                                + f"\\text{{MAD}} = \\frac{{\\sum |x_i-\\bar x|}}{{n}} = \\frac{{{sum(absolute_deviations):.3f}}}{{{count_values}}} = {mean_absolute_deviation:.3f}"
+                                + r"$$",
+                            ]
+                        )
                         render_markdown_with_mathjax(
-                            working_markdown,
-                            key_suffix=f"{base_key}_minmax_working",
+                            descriptive_working,
+                            key_suffix=f"{base_key}_desc_working",
                             height=360,
                         )
+                        st.dataframe(pd.DataFrame(deviation_rows), use_container_width=True, hide_index=True)
+
+                    if count_values >= 3 and abs(mean_value - median_value) > max(sample_sd * 0.35, 0.5):
+                        st.info("The mean and median are noticeably different. That usually suggests skewness or an outlier, so mention which measure better represents the typical value.")
+                    else:
+                        st.info("The mean and median are fairly close. That usually suggests the distribution is not strongly skewed.")
 
                     stats_summary_text = (
-                        f"Min-max scaling summary: minimum = {format_display_number(original_min)}, maximum = {format_display_number(original_max)}, "
-                        f"range = {format_display_number(original_range)}, target range = [{format_display_number(target_range_min)}, {format_display_number(target_range_max)}]. "
-                        + "Scaled values = "
+                        f"Descriptive statistics summary: n = {count_values}, mean = {mean_value:.3f}, median = {median_value:.3f}, "
+                        f"minimum = {minimum_value:.3f}, maximum = {maximum_value:.3f}, range = {range_value:.3f}, "
+                        f"sample variance = {sample_variance:.3f}, sample standard deviation = {sample_sd:.3f}, mean absolute deviation = {mean_absolute_deviation:.3f}, "
+                        f"Q1 = {q1_value:.3f}, Q3 = {q3_value:.3f}, IQR = {iqr_value:.3f}."
+                    )
+                    if useful_modes:
+                        stats_summary_text += " Mode = " + ", ".join(format_display_number(value) for value in useful_modes) + "."
+                    else:
+                        stats_summary_text += " No single useful mode was found."
+
+                    sheets_columns = [
+                        "Column B: raw numeric values",
+                        "Column C: helper column for absolute deviations if you want MAD",
+                        "Summary cells for count, mean, median, min, max, range, variance, standard deviation, MAD, quartiles, and IQR",
+                    ]
+                    sheets_formulas = [
+                        "Count: =COUNT(B2:B101)",
+                        "Mean: =AVERAGE(B2:B101)",
+                        "Median: =MEDIAN(B2:B101)",
+                        "Mode: =MODE(B2:B101)",
+                        "Minimum: =MIN(B2:B101)",
+                        "Maximum: =MAX(B2:B101)",
+                        "Range: =MAX(B2:B101)-MIN(B2:B101)",
+                        "Sample variance: =VAR.S(B2:B101)",
+                        "Sample standard deviation: =STDEV.S(B2:B101)",
+                        "MAD helper in C2: =ABS(B2-AVERAGE($B$2:$B$101))",
+                        "MAD result: =AVERAGE(C2:C101)",
+                        "Q1: =QUARTILE(B2:B101,1)",
+                        "Q3: =QUARTILE(B2:B101,3)",
+                        "IQR: =QUARTILE(B2:B101,3)-QUARTILE(B2:B101,1)",
+                    ]
+                    sheets_notes = [
+                        "Use mean when the data is roughly symmetric and not dominated by outliers.",
+                        "Use median when the data is skewed or when one or two extreme values pull the mean away from the typical value.",
+                        "If Google Sheets returns an error for MODE, the dataset may have no repeated values.",
+                    ]
+                    stats_template_spec = make_stats_template_spec(
+                        "Google Sheets template - Descriptive statistics",
+                        "This template stores one raw numeric column and a summary area for the main descriptive statistics used in exam answers.",
+                        [
+                            "Data: value",
+                            "Summary: count, mean, median, mode, min, max, range, variance, standard_deviation, mad, q1, q3, iqr",
+                        ],
+                        sheets_formulas,
+                        sheets_notes,
+                        {
+                            "Data": [[value] for value in sorted_values],
+                            "Summary": [
+                                [
+                                    count_values,
+                                    round(mean_value, 3),
+                                    round(median_value, 3),
+                                    ", ".join(format_display_number(value) for value in useful_modes) if useful_modes else "No single mode",
+                                    round(minimum_value, 3),
+                                    round(maximum_value, 3),
+                                    round(range_value, 3),
+                                    round(sample_variance, 3),
+                                    round(sample_sd, 3),
+                                    round(mean_absolute_deviation, 3),
+                                    round(q1_value, 3),
+                                    round(q3_value, 3),
+                                    round(iqr_value, 3),
+                                ]
+                            ],
+                        },
+                    )
+                else:
+                    st.info("Enter at least one numeric value to calculate mean, median, and the other descriptive statistics.")
+                    sheets_notes = [
+                        "Paste the raw values from the exam question first, then the resolver can calculate the descriptive statistics for you.",
+                    ]
+
+            elif calc_type == "Min-max scaling":
+                default_dataset_text = st.session_state.get(
+                    f"{base_key}_minmax_dataset",
+                    "\n".join(format_display_number(number) for number in prompt_numbers) if prompt_numbers else "12\n14\n15\n18\n21\n24",
+                )
+                default_target_text = st.session_state.get(
+                    f"{base_key}_minmax_targets",
+                    "18\n24",
+                )
+                minmax_col1, minmax_col2 = st.columns(2)
+                with minmax_col1:
+                    dataset_text = st.text_area(
+                        "Dataset values",
+                        value=default_dataset_text,
+                        height=170,
+                        key=f"{base_key}_minmax_dataset",
+                    )
+                    target_text = st.text_area(
+                        "Values to scale",
+                        value=default_target_text,
+                        height=110,
+                        key=f"{base_key}_minmax_targets",
+                    )
+                with minmax_col2:
+                    target_range_min = st.number_input(
+                        "Target range minimum",
+                        value=float(st.session_state.get(f"{base_key}_minmax_target_min", 0.0)),
+                        step=0.1,
+                        key=f"{base_key}_minmax_target_min",
+                    )
+                    target_range_max = st.number_input(
+                        "Target range maximum",
+                        value=float(st.session_state.get(f"{base_key}_minmax_target_max", 1.0)),
+                        step=0.1,
+                        key=f"{base_key}_minmax_target_max",
+                    )
+                    show_working = st.checkbox(
+                        "Show step-by-step working",
+                        value=True,
+                        key=f"{base_key}_minmax_show_working",
+                    )
+
+                dataset_values = parse_descriptive_values(dataset_text)
+                target_values = parse_descriptive_values(target_text)
+
+                if dataset_values and target_values and target_range_max != target_range_min:
+                    sorted_values = sorted(dataset_values)
+                    original_min = min(sorted_values)
+                    original_max = max(sorted_values)
+                    original_range = original_max - original_min
+
+                    if original_range == 0:
+                        st.warning("Min-max scaling is not defined when all dataset values are the same, because max - min becomes 0.")
+                    else:
+                        st.metric("Original range", format_display_number(original_range))
+                        st.markdown("**Sorted dataset values**")
+                        st.code(", ".join(format_display_number(value) for value in sorted_values), language="text")
+
+                        scaling_rows = []
+                        working_blocks = []
+                        for value in target_values:
+                            scaled_zero_one = (value - original_min) / original_range
+                            scaled_value = target_range_min + (scaled_zero_one * (target_range_max - target_range_min))
+                            numerator = value - original_min
+                            scaling_rows.append(
+                                {
+                                    "Original value": format_display_number(value),
+                                    "Min": format_display_number(original_min),
+                                    "Max": format_display_number(original_max),
+                                    "Scaled value": round(scaled_value, 3),
+                                }
+                            )
+                            if target_range_min == 0 and target_range_max == 1:
+                                working_blocks.append(
+                                    "\n".join(
+                                        [
+                                            f"**For {format_display_number(value)}:**",
+                                            r"$$"
+                                            + f"\\frac{{{format_display_number(value)}-{format_display_number(original_min)}}}{{{format_display_number(original_max)}-{format_display_number(original_min)}}}"
+                                            + f" = \\frac{{{format_display_number(numerator)}}}{{{format_display_number(original_range)}}}"
+                                            + f" = {scaled_value:.3f}"
+                                            + r"$$",
+                                        ]
+                                    )
+                                )
+                            else:
+                                working_blocks.append(
+                                    "\n".join(
+                                        [
+                                            f"**For {format_display_number(value)}:**",
+                                            r"$$"
+                                            + f"{target_range_min:.3f} + \\left(\\frac{{{format_display_number(value)}-{format_display_number(original_min)}}}{{{format_display_number(original_max)}-{format_display_number(original_min)}}}\\right)"
+                                            + f"\\times ({target_range_max:.3f}-{target_range_min:.3f})"
+                                            + f" = {scaled_value:.3f}"
+                                            + r"$$",
+                                        ]
+                                    )
+                                )
+
+                        st.dataframe(pd.DataFrame(scaling_rows), use_container_width=True, hide_index=True)
+
+                        if show_working:
+                            st.markdown("**Step-by-step working**")
+                            working_markdown = "\n\n".join(working_blocks)
+                            render_markdown_with_mathjax(
+                                working_markdown,
+                                key_suffix=f"{base_key}_minmax_working",
+                                height=360,
+                            )
+
+                        stats_summary_text = (
+                            f"Min-max scaling summary: minimum = {format_display_number(original_min)}, maximum = {format_display_number(original_max)}, "
+                            f"range = {format_display_number(original_range)}, target range = [{format_display_number(target_range_min)}, {format_display_number(target_range_max)}]. "
+                            + "Scaled values = "
+                            + " | ".join(
+                                f"{format_display_number(target_values[index])} -> {scaling_rows[index]['Scaled value']:.3f}"
+                                for index in range(len(target_values))
+                            )
+                            + "."
+                        )
+
+                        sheets_columns = [
+                            "Column A: raw dataset values",
+                            "Column C: values you want to scale",
+                            "Cells F2 and G2: target range minimum and maximum",
+                            "Column D: scaled values",
+                        ]
+                        sheets_formulas = [
+                            "0-to-1 scaling: =(C2-MIN($A$2:$A$13))/(MAX($A$2:$A$13)-MIN($A$2:$A$13))",
+                            "General min-max scaling: =$F$2+((C2-MIN($A$2:$A$13))/(MAX($A$2:$A$13)-MIN($A$2:$A$13)))*($G$2-$F$2)",
+                        ]
+                        sheets_notes = [
+                            "Always find the original minimum and maximum from the full dataset, not just from the requested target values.",
+                            "If the target range is 0 to 1, the formula simplifies to (x - min) / (max - min).",
+                            "Show the subtraction and denominator once in an exam answer, then scale the remaining values the same way.",
+                        ]
+                        stats_template_spec = make_stats_template_spec(
+                            "Google Sheets template - Min-max scaling",
+                            "This template stores a raw dataset plus one or more target values to scale automatically.",
+                            [
+                                "RawData: value",
+                                "Targets: original_value, scaled_value",
+                                "Settings: target_min, target_max",
+                            ],
+                            sheets_formulas,
+                            sheets_notes,
+                            {
+                                "RawData": [[value] for value in sorted_values[:30]],
+                                "Targets": [[target_values[index], scaling_rows[index]["Scaled value"]] for index in range(len(target_values))],
+                                "Settings": [[target_range_min, target_range_max]],
+                            },
+                        )
+                else:
+                    st.info("Paste both the dataset values and the values to scale, then the resolver can calculate the scaled result and write out the working.")
+                    sheets_notes = [
+                        "Paste the full dataset in one box and the target values in the other box to generate the scaled results automatically.",
+                    ]
+
+            elif calc_type == "Frequency table (categorical values)":
+                default_category_text = st.session_state.get(
+                    f"{base_key}_freq_values",
+                    "hamburger\ndonut\nice cream\npizza\nburrito",
+                )
+                category_text = st.text_area(
+                    "Enter one category per line or comma-separated values",
+                    value=default_category_text,
+                    height=170,
+                    key=f"{base_key}_freq_values",
+                )
+                sort_mode = st.selectbox(
+                    "Sort order for the frequency table",
+                    options=["Alphabetical", "Frequency descending", "First appearance"],
+                    key=f"{base_key}_freq_sort_mode",
+                )
+                freq_show_working = st.checkbox(
+                    "Show step-by-step working",
+                    value=True,
+                    key=f"{base_key}_freq_show_working",
+                )
+                category_values = parse_categorical_values(category_text)
+
+                if category_values:
+                    category_counts = Counter(category_values)
+                    if sort_mode == "Alphabetical":
+                        ordered_categories = sorted(category_counts.keys(), key=lambda item: item.lower())
+                    elif sort_mode == "Frequency descending":
+                        ordered_categories = sorted(category_counts.keys(), key=lambda item: (-category_counts[item], item.lower()))
+                    else:
+                        ordered_categories = list(dict.fromkeys(category_values).keys())
+
+                    total_count = len(category_values)
+                    cumulative_count = 0
+                    frequency_rows = []
+                    for category in ordered_categories:
+                        count = category_counts[category]
+                        cumulative_count += count
+                        relative_frequency = count / total_count
+                        frequency_rows.append(
+                            {
+                                "Category": category,
+                                "Frequency": count,
+                                "Relative frequency": round(relative_frequency, 4),
+                                "Relative frequency %": round(relative_frequency * 100, 2),
+                                "Cumulative frequency": cumulative_count,
+                            }
+                        )
+
+                    st.dataframe(pd.DataFrame(frequency_rows), use_container_width=True, hide_index=True)
+                    metric_cols = st.columns(4)
+                    metric_cols[0].metric("Total values", f"{total_count}")
+                    metric_cols[1].metric("Number of classes", f"{len(category_counts)}")
+                    metric_cols[2].metric("Top class", ordered_categories[0] if ordered_categories else "-")
+                    metric_cols[3].metric("Top frequency", f"{category_counts[ordered_categories[0]]}" if ordered_categories else "0")
+
+                    if freq_show_working:
+                        st.markdown("**Step-by-step working**")
+                        st.markdown(f"- First, list the raw values and identify the unique classes in the chosen sort order: `{', '.join(ordered_categories)}`.")
+                        st.markdown(f"- Total number of observations = `{total_count}`.")
+                        for row in frequency_rows:
+                            st.markdown(
+                                f"- `{row['Category']}`: frequency = `{row['Frequency']}`, relative frequency = `{row['Frequency']}/{total_count} = {row['Relative frequency']:.4f}`, cumulative frequency = `{row['Cumulative frequency']}`."
+                            )
+
+                    stats_summary_text = (
+                        f"Categorical frequency summary: total values = {total_count}, number of classes = {len(category_counts)}, "
+                        f"sort order = {sort_mode.lower()}. Frequency table = "
                         + " | ".join(
-                            f"{format_display_number(target_values[index])} -> {scaling_rows[index]['Scaled value']:.3f}"
-                            for index in range(len(target_values))
+                            f"{row['Category']}: frequency {row['Frequency']}, relative frequency {row['Relative frequency']:.4f}, cumulative frequency {row['Cumulative frequency']}"
+                            for row in frequency_rows
                         )
                         + "."
                     )
 
                     sheets_columns = [
-                        "Column A: raw dataset values",
-                        "Column C: values you want to scale",
-                        "Cells F2 and G2: target range minimum and maximum",
-                        "Column D: scaled values",
+                        "Column B: raw categories",
+                        "Column D: unique sorted categories",
+                        "Column E: frequency count",
+                        "Column F: relative frequency",
+                        "Column G: cumulative frequency",
                     ]
                     sheets_formulas = [
-                        "0-to-1 scaling: =(C2-MIN($A$2:$A$13))/(MAX($A$2:$A$13)-MIN($A$2:$A$13))",
-                        "General min-max scaling: =$F$2+((C2-MIN($A$2:$A$13))/(MAX($A$2:$A$13)-MIN($A$2:$A$13)))*($G$2-$F$2)",
+                        "Unique categories in Google Sheets: =SORT(UNIQUE(B2:B101))",
+                        "Frequency count: =COUNTIF($B$2:$B$101,D2)",
+                        "Relative frequency: =E2/COUNTA($B$2:$B$101)",
+                        "Cumulative frequency: =SUM($E$2:E2)",
                     ]
                     sheets_notes = [
-                        "Always find the original minimum and maximum from the full dataset, not just from the requested target values.",
-                        "If the target range is 0 to 1, the formula simplifies to (x - min) / (max - min).",
-                        "Show the subtraction and denominator once in an exam answer, then scale the remaining values the same way.",
+                        "Alphabetical sorting is usually the safest default for category tables unless the task asks for a different order.",
+                        "Relative frequency can be shown either as a decimal or multiplied by 100 for percentage form.",
+                        "Cumulative frequency depends on the displayed order, so sort the categories first before calculating it.",
                     ]
                     stats_template_spec = make_stats_template_spec(
-                        "Google Sheets template - Min-max scaling",
-                        "This template stores a raw dataset plus one or more target values to scale automatically.",
+                        "Google Sheets template - Frequency table",
+                        "This template stores raw categories and a summary area for frequency, relative frequency, and cumulative frequency.",
+                        [
+                            "RawData: category",
+                            "FrequencyTable: category, frequency, relative_frequency, cumulative_frequency",
+                        ],
+                        sheets_formulas,
+                        sheets_notes,
+                        {
+                            "RawData": [[value] for value in category_values[:20]],
+                            "FrequencyTable": [[row["Category"], row["Frequency"], row["Relative frequency"], row["Cumulative frequency"]] for row in frequency_rows],
+                        },
+                    )
+                else:
+                    st.info("Paste category values first, then the resolver can build the sorted frequency table automatically.")
+                    sheets_notes = [
+                        "Paste one category per line or comma-separated values to build a frequency table.",
+                    ]
+
+            elif calc_type == "Equal-width binning (numeric values)":
+                default_bin_values = st.session_state.get(
+                    f"{base_key}_bin_values",
+                    "\n".join(format_display_number(number) for number in prompt_numbers) if prompt_numbers else "12\n14\n15\n18\n21\n24\n25\n28",
+                )
+                bin_values_text = st.text_area(
+                    "Enter one numeric value per line or comma-separated values",
+                    value=default_bin_values,
+                    height=170,
+                    key=f"{base_key}_bin_values",
+                )
+                bin_count = st.number_input(
+                    "Number of equal-width bins",
+                    min_value=2,
+                    value=st.session_state.get(f"{base_key}_bin_count", infer_bin_count_from_prompt(4)),
+                    step=1,
+                    key=f"{base_key}_bin_count",
+                )
+                integer_bins = st.checkbox(
+                    "Use whole-number bin widths and inclusive integer intervals",
+                    value=True,
+                    key=f"{base_key}_bin_integer_mode",
+                )
+                bin_show_working = st.checkbox(
+                    "Show step-by-step working",
+                    value=True,
+                    key=f"{base_key}_bin_show_working",
+                )
+                bin_values = parse_descriptive_values(bin_values_text)
+
+                if bin_values:
+                    sorted_values = sorted(bin_values)
+                    minimum_value = min(sorted_values)
+                    maximum_value = max(sorted_values)
+                    span_value = maximum_value - minimum_value
+
+                    bin_rows = []
+                    if integer_bins:
+                        bin_width = max(1, int(math.floor(span_value / int(bin_count)))) if bin_count else 1
+                        start_value = int(math.floor(minimum_value))
+                        for index in range(int(bin_count)):
+                            if index < int(bin_count) - 1:
+                                end_value = start_value + bin_width - 1
+                            else:
+                                end_value = int(math.ceil(maximum_value))
+                            count_value = sum(1 for value in sorted_values if start_value <= value <= end_value)
+                            bin_rows.append(
+                                {
+                                    "Bin": f"{start_value}-{end_value}",
+                                    "Lower": start_value,
+                                    "Upper": end_value,
+                                    "Count": count_value,
+                                }
+                            )
+                            start_value = end_value + 1
+                    else:
+                        bin_width = span_value / int(bin_count) if bin_count else span_value
+                        start_value = minimum_value
+                        for index in range(int(bin_count)):
+                            if index < int(bin_count) - 1:
+                                end_value = start_value + bin_width
+                                count_value = sum(1 for value in sorted_values if start_value <= value < end_value)
+                                label = f"[{start_value:.3f}, {end_value:.3f})"
+                            else:
+                                end_value = maximum_value
+                                count_value = sum(1 for value in sorted_values if start_value <= value <= end_value)
+                                label = f"[{start_value:.3f}, {end_value:.3f}]"
+                            bin_rows.append(
+                                {
+                                    "Bin": label,
+                                    "Lower": round(start_value, 3),
+                                    "Upper": round(end_value, 3),
+                                    "Count": count_value,
+                                }
+                            )
+                            start_value = end_value
+
+                    st.metric("Bin width", f"{bin_width:.3f}" if not float(bin_width).is_integer() else f"{int(bin_width)}")
+                    st.markdown("**Sorted values**")
+                    st.code(", ".join(format_display_number(value) for value in sorted_values), language="text")
+                    st.dataframe(pd.DataFrame(bin_rows), use_container_width=True, hide_index=True)
+
+                    if bin_show_working:
+                        st.markdown("**Step-by-step working**")
+                        if integer_bins:
+                            bin_working = "\n\n".join(
+                                [
+                                    r"$$"
+                                    + f"\\text{{span}} = {format_display_number(maximum_value)} - {format_display_number(minimum_value)} = {format_display_number(span_value)}"
+                                    + r"$$",
+                                    r"$$"
+                                    + f"\\text{{bin width}} = \\left\\lfloor \\frac{{{format_display_number(span_value)}}}{{{int(bin_count)}}} \\right\\rfloor = {format_display_number(bin_width)}"
+                                    + r"$$",
+                                ]
+                            )
+                        else:
+                            bin_working = "\n\n".join(
+                                [
+                                    r"$$"
+                                    + f"\\text{{span}} = {format_display_number(maximum_value)} - {format_display_number(minimum_value)} = {format_display_number(span_value)}"
+                                    + r"$$",
+                                    r"$$"
+                                    + f"\\text{{bin width}} = \\frac{{{format_display_number(span_value)}}}{{{int(bin_count)}}} = {format_display_number(bin_width)}"
+                                    + r"$$",
+                                ]
+                            )
+                        render_markdown_with_mathjax(
+                            bin_working,
+                            key_suffix=f"{base_key}_bin_working",
+                            height=280,
+                        )
+                        for row in bin_rows:
+                            st.markdown(f"- Bin `{row['Bin']}` contains `{row['Count']}` values.")
+
+                    stats_summary_text = (
+                        f"Equal-width binning summary: minimum = {format_display_number(minimum_value)}, maximum = {format_display_number(maximum_value)}, "
+                        f"span = {format_display_number(span_value)}, number of bins = {int(bin_count)}, bin width = {format_display_number(bin_width)}. "
+                        f"Bin counts = " + " | ".join(f"{row['Bin']}: {row['Count']}" for row in bin_rows) + "."
+                    )
+
+                    if integer_bins and span_value % int(bin_count) != 0:
+                        st.info("The span does not divide perfectly into equal whole-number widths, so the last bin is adjusted to still include the maximum value.")
+
+                    sheets_columns = [
+                        "Column B: raw numeric values",
+                        "Summary cells for minimum, maximum, span, number_of_bins, and bin_width",
+                        "Bin table with lower bound, upper bound, and count",
+                    ]
+                    sheets_formulas = [
+                        "Minimum: =MIN(B2:B101)",
+                        "Maximum: =MAX(B2:B101)",
+                        "Span: =MAX(B2:B101)-MIN(B2:B101)",
+                        "Whole-number width: =ROUNDDOWN((MAX(B2:B101)-MIN(B2:B101))/4,0)",
+                        "First bin count example: =COUNTIFS($B$2:$B$101,\">=\"&D2,$B$2:$B$101,\"<=\"&E2)",
+                        "Last bin count example: =COUNTIFS($B$2:$B$101,\">=\"&D5,$B$2:$B$101,\"<=\"&E5)",
+                    ]
+                    sheets_notes = [
+                        "For whole-number bins, start from the minimum and let the last bin absorb any leftover width needed to reach the maximum.",
+                        "Write the bin boundaries explicitly before counting values. This avoids off-by-one mistakes.",
+                        "If the task asks for equal-width bins in an exam, show the bin width calculation before you count anything.",
+                    ]
+                    stats_template_spec = make_stats_template_spec(
+                        "Google Sheets template - Equal-width binning",
+                        "This template stores raw numeric values plus a bin-summary area for equal-width intervals.",
                         [
                             "RawData: value",
-                            "Targets: original_value, scaled_value",
-                            "Settings: target_min, target_max",
+                            "Bins: bin_label, lower_bound, upper_bound, count",
                         ],
                         sheets_formulas,
                         sheets_notes,
                         {
                             "RawData": [[value] for value in sorted_values[:30]],
-                            "Targets": [[target_values[index], scaling_rows[index]["Scaled value"]] for index in range(len(target_values))],
-                            "Settings": [[target_range_min, target_range_max]],
+                            "Bins": [[row["Bin"], row["Lower"], row["Upper"], row["Count"]] for row in bin_rows],
                         },
                     )
-            else:
-                st.info("Paste both the dataset values and the values to scale, then the resolver can calculate the scaled result and write out the working.")
-                sheets_notes = [
-                    "Paste the full dataset in one box and the target values in the other box to generate the scaled results automatically.",
-                ]
-
-        elif calc_type == "Frequency table (categorical values)":
-            default_category_text = st.session_state.get(
-                f"{base_key}_freq_values",
-                "hamburger\ndonut\nice cream\npizza\nburrito",
-            )
-            category_text = st.text_area(
-                "Enter one category per line or comma-separated values",
-                value=default_category_text,
-                height=170,
-                key=f"{base_key}_freq_values",
-            )
-            sort_mode = st.selectbox(
-                "Sort order for the frequency table",
-                options=["Alphabetical", "Frequency descending", "First appearance"],
-                key=f"{base_key}_freq_sort_mode",
-            )
-            freq_show_working = st.checkbox(
-                "Show step-by-step working",
-                value=True,
-                key=f"{base_key}_freq_show_working",
-            )
-            category_values = parse_categorical_values(category_text)
-
-            if category_values:
-                category_counts = Counter(category_values)
-                if sort_mode == "Alphabetical":
-                    ordered_categories = sorted(category_counts.keys(), key=lambda item: item.lower())
-                elif sort_mode == "Frequency descending":
-                    ordered_categories = sorted(category_counts.keys(), key=lambda item: (-category_counts[item], item.lower()))
                 else:
-                    ordered_categories = list(dict.fromkeys(category_values).keys())
+                    st.info("Paste numeric values first, then the resolver can sort them and build equal-width bins automatically.")
+                    sheets_notes = [
+                        "Paste one numeric value per line or comma-separated values to calculate bins and frequencies.",
+                    ]
 
-                total_count = len(category_values)
-                cumulative_count = 0
-                frequency_rows = []
-                for category in ordered_categories:
-                    count = category_counts[category]
-                    cumulative_count += count
-                    relative_frequency = count / total_count
-                    frequency_rows.append(
-                        {
-                            "Category": category,
-                            "Frequency": count,
-                            "Relative frequency": round(relative_frequency, 4),
-                            "Relative frequency %": round(relative_frequency * 100, 2),
-                            "Cumulative frequency": cumulative_count,
-                        }
-                    )
+            elif calc_type == "Likert scale and realistic hypotheses":
+                col1, col2 = st.columns(2)
+                with col1:
+                    outcome_name = st.text_input("Outcome or statement being measured", value="customer satisfaction", key=f"{base_key}_likert_outcome")
+                    group_a_name = st.text_input("Group A / baseline label", value="current process", key=f"{base_key}_likert_group_a")
+                    group_b_name = st.text_input("Group B / intervention label", value="new process", key=f"{base_key}_likert_group_b")
+                    scale_min = st.number_input("Likert scale minimum", min_value=1, value=1, step=1, key=f"{base_key}_likert_min")
+                    scale_max = st.number_input("Likert scale maximum", min_value=2, value=5, step=1, key=f"{base_key}_likert_max")
+                    baseline_mean = st.number_input("Expected average for group A", value=3.40, step=0.05, key=f"{base_key}_likert_base_mean")
+                    target_mean = st.number_input("Expected average for group B", value=3.90, step=0.05, key=f"{base_key}_likert_target_mean")
+                with col2:
+                    items_in_scale = st.number_input("Number of Likert items in the scale", min_value=1, value=5, step=1, key=f"{base_key}_likert_items")
+                    sample_size_per_group = st.number_input("Planned sample size per group", min_value=5, value=60, step=1, key=f"{base_key}_likert_n")
+                    directional_hypothesis = st.checkbox("Use a directional alternative hypothesis", value=True, key=f"{base_key}_likert_directional")
+                    single_item_only = st.checkbox("This is only one Likert item", value=False, key=f"{base_key}_likert_single_item")
+                    business_justification = st.text_area("Why do you expect this direction?", value="The new process reduces waiting time and improves service consistency.", height=90, key=f"{base_key}_likert_justification")
+                    claim_text = st.text_area("Draft claim you want to test", value="The new process improves customer satisfaction.", height=90, key=f"{base_key}_likert_claim")
 
-                st.dataframe(pd.DataFrame(frequency_rows), use_container_width=True, hide_index=True)
-                metric_cols = st.columns(4)
-                metric_cols[0].metric("Total values", f"{total_count}")
-                metric_cols[1].metric("Number of classes", f"{len(category_counts)}")
-                metric_cols[2].metric("Top class", ordered_categories[0] if ordered_categories else "-")
-                metric_cols[3].metric("Top frequency", f"{category_counts[ordered_categories[0]]}" if ordered_categories else "0")
+                scale_span = scale_max - scale_min
+                expected_difference = target_mean - baseline_mean
+                absolute_terms = ["always", "never", "everyone", "all customers", "all users", "prove", "guarantee", "100%"]
+                warnings = []
+                strengths = []
 
-                if freq_show_working:
-                    st.markdown("**Step-by-step working**")
-                    st.markdown(f"- First, list the raw values and identify the unique classes in the chosen sort order: `{', '.join(ordered_categories)}`.")
-                    st.markdown(f"- Total number of observations = `{total_count}`.")
-                    for row in frequency_rows:
-                        st.markdown(
-                            f"- `{row['Category']}`: frequency = `{row['Frequency']}`, relative frequency = `{row['Frequency']}/{total_count} = {row['Relative frequency']:.4f}`, cumulative frequency = `{row['Cumulative frequency']}`."
-                        )
+                if scale_max <= scale_min:
+                    warnings.append("The scale maximum must be larger than the scale minimum.")
+                if not (scale_min <= baseline_mean <= scale_max):
+                    warnings.append("The expected average for group A is outside the Likert scale range.")
+                if not (scale_min <= target_mean <= scale_max):
+                    warnings.append("The expected average for group B is outside the Likert scale range.")
+                if abs(expected_difference) > max(1.0, scale_span * 0.35):
+                    warnings.append("The expected change is large for a Likert scale. Check whether the claim is too ambitious for one intervention.")
+                elif abs(expected_difference) < 0.15 and sample_size_per_group < 100:
+                    warnings.append("The expected effect is small, so the planned sample may be too limited to detect it reliably.")
+                if directional_hypothesis and len(business_justification.strip()) < 20:
+                    warnings.append("A directional hypothesis should have a specific business or research reason behind it.")
+                if any(term in claim_text.lower() for term in absolute_terms):
+                    warnings.append("Avoid absolute wording such as 'always', 'never', or 'prove' in hypotheses. Hypotheses should be testable and realistic.")
+                if single_item_only:
+                    warnings.append("A single Likert item is ordinal. A mean-based t-test can be debated, so distribution tables or non-parametric alternatives may be safer.")
+                if items_in_scale >= 4 and sample_size_per_group >= 30:
+                    strengths.append("A multi-item Likert scale with at least moderate sample size is often treated more comfortably as a scale score.")
+                if abs(expected_difference) >= 0.25:
+                    strengths.append("The expected difference is large enough to be practically noticeable if the intervention truly works.")
+                if len(business_justification.strip()) >= 20:
+                    strengths.append("The directional claim has a stated rationale, which makes the alternative hypothesis more defensible.")
 
-                stats_summary_text = (
-                    f"Categorical frequency summary: total values = {total_count}, number of classes = {len(category_counts)}, "
-                    f"sort order = {sort_mode.lower()}. Frequency table = "
-                    + " | ".join(
-                        f"{row['Category']}: frequency {row['Frequency']}, relative frequency {row['Relative frequency']:.4f}, cumulative frequency {row['Cumulative frequency']}"
-                        for row in frequency_rows
-                    )
-                    + "."
-                )
-
-                sheets_columns = [
-                    "Column B: raw categories",
-                    "Column D: unique sorted categories",
-                    "Column E: frequency count",
-                    "Column F: relative frequency",
-                    "Column G: cumulative frequency",
-                ]
-                sheets_formulas = [
-                    "Unique categories in Google Sheets: =SORT(UNIQUE(B2:B101))",
-                    "Frequency count: =COUNTIF($B$2:$B$101,D2)",
-                    "Relative frequency: =E2/COUNTA($B$2:$B$101)",
-                    "Cumulative frequency: =SUM($E$2:E2)",
-                ]
-                sheets_notes = [
-                    "Alphabetical sorting is usually the safest default for category tables unless the task asks for a different order.",
-                    "Relative frequency can be shown either as a decimal or multiplied by 100 for percentage form.",
-                    "Cumulative frequency depends on the displayed order, so sort the categories first before calculating it.",
-                ]
-                stats_template_spec = make_stats_template_spec(
-                    "Google Sheets template - Frequency table",
-                    "This template stores raw categories and a summary area for frequency, relative frequency, and cumulative frequency.",
-                    [
-                        "RawData: category",
-                        "FrequencyTable: category, frequency, relative_frequency, cumulative_frequency",
-                    ],
-                    sheets_formulas,
-                    sheets_notes,
-                    {
-                        "RawData": [[value] for value in category_values[:20]],
-                        "FrequencyTable": [[row["Category"], row["Frequency"], row["Relative frequency"], row["Cumulative frequency"]] for row in frequency_rows],
-                    },
-                )
-            else:
-                st.info("Paste category values first, then the resolver can build the sorted frequency table automatically.")
-                sheets_notes = [
-                    "Paste one category per line or comma-separated values to build a frequency table.",
-                ]
-
-        elif calc_type == "Equal-width binning (numeric values)":
-            default_bin_values = st.session_state.get(
-                f"{base_key}_bin_values",
-                "\n".join(format_display_number(number) for number in prompt_numbers) if prompt_numbers else "12\n14\n15\n18\n21\n24\n25\n28",
-            )
-            bin_values_text = st.text_area(
-                "Enter one numeric value per line or comma-separated values",
-                value=default_bin_values,
-                height=170,
-                key=f"{base_key}_bin_values",
-            )
-            bin_count = st.number_input(
-                "Number of equal-width bins",
-                min_value=2,
-                value=st.session_state.get(f"{base_key}_bin_count", infer_bin_count_from_prompt(4)),
-                step=1,
-                key=f"{base_key}_bin_count",
-            )
-            integer_bins = st.checkbox(
-                "Use whole-number bin widths and inclusive integer intervals",
-                value=True,
-                key=f"{base_key}_bin_integer_mode",
-            )
-            bin_show_working = st.checkbox(
-                "Show step-by-step working",
-                value=True,
-                key=f"{base_key}_bin_show_working",
-            )
-            bin_values = parse_descriptive_values(bin_values_text)
-
-            if bin_values:
-                sorted_values = sorted(bin_values)
-                minimum_value = min(sorted_values)
-                maximum_value = max(sorted_values)
-                span_value = maximum_value - minimum_value
-
-                bin_rows = []
-                if integer_bins:
-                    bin_width = max(1, int(math.floor(span_value / int(bin_count)))) if bin_count else 1
-                    start_value = int(math.floor(minimum_value))
-                    for index in range(int(bin_count)):
-                        if index < int(bin_count) - 1:
-                            end_value = start_value + bin_width - 1
-                        else:
-                            end_value = int(math.ceil(maximum_value))
-                        count_value = sum(1 for value in sorted_values if start_value <= value <= end_value)
-                        bin_rows.append(
-                            {
-                                "Bin": f"{start_value}-{end_value}",
-                                "Lower": start_value,
-                                "Upper": end_value,
-                                "Count": count_value,
-                            }
-                        )
-                        start_value = end_value + 1
-                else:
-                    bin_width = span_value / int(bin_count) if bin_count else span_value
-                    start_value = minimum_value
-                    for index in range(int(bin_count)):
-                        if index < int(bin_count) - 1:
-                            end_value = start_value + bin_width
-                            count_value = sum(1 for value in sorted_values if start_value <= value < end_value)
-                            label = f"[{start_value:.3f}, {end_value:.3f})"
-                        else:
-                            end_value = maximum_value
-                            count_value = sum(1 for value in sorted_values if start_value <= value <= end_value)
-                            label = f"[{start_value:.3f}, {end_value:.3f}]"
-                        bin_rows.append(
-                            {
-                                "Bin": label,
-                                "Lower": round(start_value, 3),
-                                "Upper": round(end_value, 3),
-                                "Count": count_value,
-                            }
-                        )
-                        start_value = end_value
-
-                st.metric("Bin width", f"{bin_width:.3f}" if not float(bin_width).is_integer() else f"{int(bin_width)}")
-                st.markdown("**Sorted values**")
-                st.code(", ".join(format_display_number(value) for value in sorted_values), language="text")
-                st.dataframe(pd.DataFrame(bin_rows), use_container_width=True, hide_index=True)
-
-                if bin_show_working:
-                    st.markdown("**Step-by-step working**")
-                    if integer_bins:
-                        bin_working = "\n\n".join(
-                            [
-                                r"$$"
-                                + f"\\text{{span}} = {format_display_number(maximum_value)} - {format_display_number(minimum_value)} = {format_display_number(span_value)}"
-                                + r"$$",
-                                r"$$"
-                                + f"\\text{{bin width}} = \\left\\lfloor \\frac{{{format_display_number(span_value)}}}{{{int(bin_count)}}} \\right\\rfloor = {format_display_number(bin_width)}"
-                                + r"$$",
-                            ]
-                        )
+                if directional_hypothesis:
+                    if expected_difference >= 0:
+                        suggested_h1 = f"H1: The average {outcome_name} score is higher for {group_b_name} than for {group_a_name}."
                     else:
-                        bin_working = "\n\n".join(
-                            [
-                                r"$$"
-                                + f"\\text{{span}} = {format_display_number(maximum_value)} - {format_display_number(minimum_value)} = {format_display_number(span_value)}"
-                                + r"$$",
-                                r"$$"
-                                + f"\\text{{bin width}} = \\frac{{{format_display_number(span_value)}}}{{{int(bin_count)}}} = {format_display_number(bin_width)}"
-                                + r"$$",
-                            ]
-                        )
-                    render_markdown_with_mathjax(
-                        bin_working,
-                        key_suffix=f"{base_key}_bin_working",
-                        height=280,
-                    )
-                    for row in bin_rows:
-                        st.markdown(f"- Bin `{row['Bin']}` contains `{row['Count']}` values.")
+                        suggested_h1 = f"H1: The average {outcome_name} score is lower for {group_b_name} than for {group_a_name}."
+                else:
+                    suggested_h1 = f"H1: The average {outcome_name} score differs between {group_a_name} and {group_b_name}."
+                suggested_h0 = f"H0: The average {outcome_name} score is the same for {group_a_name} and {group_b_name}."
+
+                realism_status = "Looks realistic"
+                if len(warnings) >= 3:
+                    realism_status = "Needs major revision"
+                elif warnings:
+                    realism_status = "Needs caution"
+
+                metric_cols = st.columns(4)
+                metric_cols[0].metric("Expected change", f"{expected_difference:.2f}")
+                metric_cols[1].metric("Scale width", f"{scale_span:.0f}")
+                metric_cols[2].metric("n per group", f"{sample_size_per_group}")
+                metric_cols[3].metric("Realism check", realism_status)
+
+                st.markdown("**Suggested hypotheses**")
+                st.markdown(f"- {suggested_h0}")
+                st.markdown(f"- {suggested_h1}")
+
+                if warnings:
+                    st.markdown("**What to check before using this hypothesis**")
+                    for item in warnings:
+                        st.markdown(f"- {item}")
+                if strengths:
+                    st.markdown("**What already looks strong**")
+                    for item in strengths:
+                        st.markdown(f"- {item}")
+
+                st.info("Likert rule of thumb: one single Likert item is ordinal. An averaged score from several similar items is often treated more like a scale variable, especially with larger samples.")
 
                 stats_summary_text = (
-                    f"Equal-width binning summary: minimum = {format_display_number(minimum_value)}, maximum = {format_display_number(maximum_value)}, "
-                    f"span = {format_display_number(span_value)}, number of bins = {int(bin_count)}, bin width = {format_display_number(bin_width)}. "
-                    f"Bin counts = " + " | ".join(f"{row['Bin']}: {row['Count']}" for row in bin_rows) + "."
+                    f"Likert and hypothesis planning summary: outcome = {outcome_name}, group A = {group_a_name}, "
+                    f"group B = {group_b_name}, scale = {scale_min}-{scale_max}, expected mean A = {baseline_mean:.2f}, "
+                    f"expected mean B = {target_mean:.2f}, expected difference = {expected_difference:.2f}, items in scale = {items_in_scale}, "
+                    f"n per group = {sample_size_per_group}, realism status = {realism_status}. "
+                    f"Suggested H0: {suggested_h0} Suggested H1: {suggested_h1}"
                 )
 
-                if integer_bins and span_value % int(bin_count) != 0:
-                    st.info("The span does not divide perfectly into equal whole-number widths, so the last bin is adjusted to still include the maximum value.")
-
                 sheets_columns = [
-                    "Column B: raw numeric values",
-                    "Summary cells for minimum, maximum, span, number_of_bins, and bin_width",
-                    "Bin table with lower bound, upper bound, and count",
+                    "Column A: respondent_id",
+                    "Column B: group (for example control / intervention)",
+                    "Columns C:G: Likert items scored from 1 to 5",
+                    "Column H: average scale score per respondent",
                 ]
                 sheets_formulas = [
-                    "Minimum: =MIN(B2:B101)",
-                    "Maximum: =MAX(B2:B101)",
-                    "Span: =MAX(B2:B101)-MIN(B2:B101)",
-                    "Whole-number width: =ROUNDDOWN((MAX(B2:B101)-MIN(B2:B101))/4,0)",
-                    "First bin count example: =COUNTIFS($B$2:$B$101,\">=\"&D2,$B$2:$B$101,\"<=\"&E2)",
-                    "Last bin count example: =COUNTIFS($B$2:$B$101,\">=\"&D5,$B$2:$B$101,\"<=\"&E5)",
+                    "H2: =AVERAGE(C2:G2)",
+                    "Overall average: =AVERAGE(H2:H101)",
+                    f"Average for {group_a_name}: =AVERAGEIF(B2:B101,\"{group_a_name}\",H2:H101)",
+                    f"Average for {group_b_name}: =AVERAGEIF(B2:B101,\"{group_b_name}\",H2:H101)",
+                    "Count of score 5 on one item: =COUNTIF(C2:C101,5)",
                 ]
                 sheets_notes = [
-                    "For whole-number bins, start from the minimum and let the last bin absorb any leftover width needed to reach the maximum.",
-                    "Write the bin boundaries explicitly before counting values. This avoids off-by-one mistakes.",
-                    "If the task asks for equal-width bins in an exam, show the bin width calculation before you count anything.",
+                    "Use Data validation to create a dropdown with the allowed Likert values.",
+                    "If you only have one Likert item, inspect counts and distributions carefully before treating the mean as your main evidence.",
+                    "For a group comparison, keep one row per respondent and one column that labels the group.",
                 ]
                 stats_template_spec = make_stats_template_spec(
-                    "Google Sheets template - Equal-width binning",
-                    "This template stores raw numeric values plus a bin-summary area for equal-width intervals.",
+                    "Google Sheets template - Likert scale and hypotheses",
+                    "This template gives you a respondent-level sheet for Likert data plus a hypothesis sheet you can adapt to the exam wording.",
                     [
-                        "RawData: value",
-                        "Bins: bin_label, lower_bound, upper_bound, count",
+                        "Responses: respondent_id, group, item_1, item_2, item_3, item_4, item_5, average_score",
+                        "Hypotheses: hypothesis_type, statement",
                     ],
                     sheets_formulas,
                     sheets_notes,
                     {
-                        "RawData": [[value] for value in sorted_values[:30]],
-                        "Bins": [[row["Bin"], row["Lower"], row["Upper"], row["Count"]] for row in bin_rows],
+                        "Responses": [
+                            [1, group_a_name, 4, 4, 3, 4, 5, ""],
+                            [2, group_a_name, 3, 3, 4, 3, 4, ""],
+                            [3, group_b_name, 4, 5, 4, 4, 5, ""],
+                            [4, group_b_name, 5, 4, 4, 5, 4, ""],
+                        ],
+                        "Hypotheses": [
+                            ["H0", suggested_h0],
+                            ["H1", suggested_h1],
+                        ],
                     },
                 )
-            else:
-                st.info("Paste numeric values first, then the resolver can sort them and build equal-width bins automatically.")
-                sheets_notes = [
-                    "Paste one numeric value per line or comma-separated values to calculate bins and frequencies.",
+
+            elif calc_type == "One-sample t-test":
+                calc_col1, calc_col2 = st.columns(2)
+                with calc_col1:
+                    sample_mean = st.number_input("Sample mean (x̄)", value=200.0, step=1.0, key=f"{base_key}_t_sample_mean")
+                    hypoth_mean = st.number_input("Hypothesised mean (μ₀)", value=220.0, step=1.0, key=f"{base_key}_t_hyp_mean")
+                    sample_sd = st.number_input("Sample standard deviation (s)", min_value=0.0001, value=15.0, step=0.5, key=f"{base_key}_t_sample_sd")
+                with calc_col2:
+                    sample_size = st.number_input("Sample size (n)", min_value=2, value=50, step=1, key=f"{base_key}_t_sample_size")
+                    alpha = st.selectbox("Alpha (α)", options=[0.10, 0.05, 0.01], index=1, format_func=lambda x: f"{x:.2f}", key=f"{base_key}_t_alpha")
+                    tail_type = st.selectbox("Tail type", options=["Two-tailed", "Right-tailed", "Left-tailed"], key=f"{base_key}_t_tail")
+
+                standard_error = sample_sd / math.sqrt(sample_size)
+                t_value = (sample_mean - hypoth_mean) / standard_error
+                degrees_freedom = sample_size - 1
+                p_value, decision_text, critical_text = t_test_tail_result(t_value, degrees_freedom, alpha, tail_type)
+
+                stats_metric_cols = st.columns(4)
+                stats_metric_cols[0].metric("SE", f"{standard_error:.3f}")
+                stats_metric_cols[1].metric("t-value", f"{t_value:.3f}")
+                stats_metric_cols[2].metric("df", f"{degrees_freedom}")
+                stats_metric_cols[3].metric("Decision", decision_text)
+                st.latex(rf"t = \frac{{\bar{{x}} - \mu_0}}{{s / \sqrt{{n}}}} = \frac{{{sample_mean:.3f} - {hypoth_mean:.3f}}}{{{sample_sd:.3f} / \sqrt{{{sample_size}}}}} = {t_value:.3f}")
+                st.markdown(f"**Critical rule:** {critical_text}")
+                if p_value is not None:
+                    st.markdown(f"**p-value:** {p_value:.4f}")
+                if scipy_stats is not None:
+                    ci_critical = scipy_stats.t.ppf(1 - alpha / 2, degrees_freedom)
+                    ci_lower = sample_mean - (ci_critical * standard_error)
+                    ci_upper = sample_mean + (ci_critical * standard_error)
+                    render_confidence_interval(f"{int((1 - alpha) * 100)}% confidence interval for the mean", ci_lower, ci_upper)
+                    ci_summary_text = f" {int((1 - alpha) * 100)}% CI for the mean = [{ci_lower:.3f}, {ci_upper:.3f}]."
+
+                stats_summary_text = (
+                    f"One-sample t-test summary: x̄ = {sample_mean:.3f}, μ0 = {hypoth_mean:.3f}, s = {sample_sd:.3f}, "
+                    f"n = {sample_size}, SE = {standard_error:.3f}, t = {t_value:.3f}, df = {degrees_freedom}, "
+                    f"alpha = {alpha:.2f}, tail = {tail_type}, decision = {decision_text}."
+                )
+                if p_value is not None:
+                    stats_summary_text += f" p-value = {p_value:.4f}."
+                stats_summary_text += ci_summary_text
+
+                sheets_columns = [
+                    "Cells for sample mean, hypothesised mean, sample standard deviation, sample size, alpha, and tail type.",
                 ]
+                sheets_formulas = [
+                    "SE: =sample_sd/SQRT(sample_size)",
+                    "t-value: =(sample_mean-hyp_mean)/(sample_sd/SQRT(sample_size))",
+                    "If you have raw data in B2:B51, compute mean with =AVERAGE(B2:B51) and sample SD with =STDEV.S(B2:B51)",
+                ]
+                sheets_notes = [
+                    "Google Sheets does not have a single simple one-sample t-test button, so summary-statistic formulas are usually the easiest setup.",
+                    "Write H0 and H1 in text cells so your decision stays tied to the original hypothesis.",
+                ]
+                stats_template_spec = make_stats_template_spec(
+                    "Google Sheets template - One-sample t-test",
+                    "This template includes a raw-data sheet and a summary sheet for a one-sample t-test setup.",
+                    [
+                        "RawData: observation",
+                        "Summary: sample_mean, hypoth_mean, sample_sd, sample_size, alpha, tail_type",
+                    ],
+                    sheets_formulas,
+                    sheets_notes,
+                    {
+                        "RawData": [[value] for value in build_numeric_sample_series(sample_mean, spread=max(sample_sd * 0.6, 1.0))],
+                        "Summary": [
+                            [round(sample_mean, 3), round(hypoth_mean, 3), round(sample_sd, 3), int(sample_size), alpha, tail_type],
+                        ],
+                    },
+                )
 
-        elif calc_type == "Likert scale and realistic hypotheses":
-            col1, col2 = st.columns(2)
-            with col1:
-                outcome_name = st.text_input("Outcome or statement being measured", value="customer satisfaction", key=f"{base_key}_likert_outcome")
-                group_a_name = st.text_input("Group A / baseline label", value="current process", key=f"{base_key}_likert_group_a")
-                group_b_name = st.text_input("Group B / intervention label", value="new process", key=f"{base_key}_likert_group_b")
-                scale_min = st.number_input("Likert scale minimum", min_value=1, value=1, step=1, key=f"{base_key}_likert_min")
-                scale_max = st.number_input("Likert scale maximum", min_value=2, value=5, step=1, key=f"{base_key}_likert_max")
-                baseline_mean = st.number_input("Expected average for group A", value=3.40, step=0.05, key=f"{base_key}_likert_base_mean")
-                target_mean = st.number_input("Expected average for group B", value=3.90, step=0.05, key=f"{base_key}_likert_target_mean")
-            with col2:
-                items_in_scale = st.number_input("Number of Likert items in the scale", min_value=1, value=5, step=1, key=f"{base_key}_likert_items")
-                sample_size_per_group = st.number_input("Planned sample size per group", min_value=5, value=60, step=1, key=f"{base_key}_likert_n")
-                directional_hypothesis = st.checkbox("Use a directional alternative hypothesis", value=True, key=f"{base_key}_likert_directional")
-                single_item_only = st.checkbox("This is only one Likert item", value=False, key=f"{base_key}_likert_single_item")
-                business_justification = st.text_area("Why do you expect this direction?", value="The new process reduces waiting time and improves service consistency.", height=90, key=f"{base_key}_likert_justification")
-                claim_text = st.text_area("Draft claim you want to test", value="The new process improves customer satisfaction.", height=90, key=f"{base_key}_likert_claim")
+            elif calc_type == "Independent t-test":
+                calc_col1, calc_col2 = st.columns(2)
+                with calc_col1:
+                    mean_a = st.number_input("Group A mean", value=72.0, step=1.0, key=f"{base_key}_it_mean_a")
+                    sd_a = st.number_input("Group A standard deviation", min_value=0.0001, value=10.0, step=0.5, key=f"{base_key}_it_sd_a")
+                    n_a = st.number_input("Group A sample size", min_value=2, value=35, step=1, key=f"{base_key}_it_n_a")
+                    mean_b = st.number_input("Group B mean", value=78.0, step=1.0, key=f"{base_key}_it_mean_b")
+                with calc_col2:
+                    sd_b = st.number_input("Group B standard deviation", min_value=0.0001, value=11.0, step=0.5, key=f"{base_key}_it_sd_b")
+                    n_b = st.number_input("Group B sample size", min_value=2, value=37, step=1, key=f"{base_key}_it_n_b")
+                    equal_variance = st.checkbox("Assume equal variances", value=False, key=f"{base_key}_it_equal_var")
+                    alpha = st.selectbox("Alpha (α)", options=[0.10, 0.05, 0.01], index=1, format_func=lambda x: f"{x:.2f}", key=f"{base_key}_it_alpha")
+                    tail_type = st.selectbox("Tail type", options=["Two-tailed", "Right-tailed", "Left-tailed"], key=f"{base_key}_it_tail")
 
-            scale_span = scale_max - scale_min
-            expected_difference = target_mean - baseline_mean
-            absolute_terms = ["always", "never", "everyone", "all customers", "all users", "prove", "guarantee", "100%"]
-            warnings = []
-            strengths = []
-
-            if scale_max <= scale_min:
-                warnings.append("The scale maximum must be larger than the scale minimum.")
-            if not (scale_min <= baseline_mean <= scale_max):
-                warnings.append("The expected average for group A is outside the Likert scale range.")
-            if not (scale_min <= target_mean <= scale_max):
-                warnings.append("The expected average for group B is outside the Likert scale range.")
-            if abs(expected_difference) > max(1.0, scale_span * 0.35):
-                warnings.append("The expected change is large for a Likert scale. Check whether the claim is too ambitious for one intervention.")
-            elif abs(expected_difference) < 0.15 and sample_size_per_group < 100:
-                warnings.append("The expected effect is small, so the planned sample may be too limited to detect it reliably.")
-            if directional_hypothesis and len(business_justification.strip()) < 20:
-                warnings.append("A directional hypothesis should have a specific business or research reason behind it.")
-            if any(term in claim_text.lower() for term in absolute_terms):
-                warnings.append("Avoid absolute wording such as 'always', 'never', or 'prove' in hypotheses. Hypotheses should be testable and realistic.")
-            if single_item_only:
-                warnings.append("A single Likert item is ordinal. A mean-based t-test can be debated, so distribution tables or non-parametric alternatives may be safer.")
-            if items_in_scale >= 4 and sample_size_per_group >= 30:
-                strengths.append("A multi-item Likert scale with at least moderate sample size is often treated more comfortably as a scale score.")
-            if abs(expected_difference) >= 0.25:
-                strengths.append("The expected difference is large enough to be practically noticeable if the intervention truly works.")
-            if len(business_justification.strip()) >= 20:
-                strengths.append("The directional claim has a stated rationale, which makes the alternative hypothesis more defensible.")
-
-            if directional_hypothesis:
-                if expected_difference >= 0:
-                    suggested_h1 = f"H1: The average {outcome_name} score is higher for {group_b_name} than for {group_a_name}."
+                if equal_variance:
+                    pooled_variance = (((n_a - 1) * (sd_a ** 2)) + ((n_b - 1) * (sd_b ** 2))) / (n_a + n_b - 2)
+                    standard_error = math.sqrt(pooled_variance * ((1 / n_a) + (1 / n_b)))
+                    degrees_freedom = n_a + n_b - 2
                 else:
-                    suggested_h1 = f"H1: The average {outcome_name} score is lower for {group_b_name} than for {group_a_name}."
-            else:
-                suggested_h1 = f"H1: The average {outcome_name} score differs between {group_a_name} and {group_b_name}."
-            suggested_h0 = f"H0: The average {outcome_name} score is the same for {group_a_name} and {group_b_name}."
+                    variance_piece_a = (sd_a ** 2) / n_a
+                    variance_piece_b = (sd_b ** 2) / n_b
+                    standard_error = math.sqrt(variance_piece_a + variance_piece_b)
+                    numerator = (variance_piece_a + variance_piece_b) ** 2
+                    denominator = ((variance_piece_a ** 2) / (n_a - 1)) + ((variance_piece_b ** 2) / (n_b - 1))
+                    degrees_freedom = numerator / denominator if denominator else 1
+                t_value = (mean_a - mean_b) / standard_error
+                p_value, decision_text, critical_text = t_test_tail_result(t_value, degrees_freedom, alpha, tail_type)
 
-            realism_status = "Looks realistic"
-            if len(warnings) >= 3:
-                realism_status = "Needs major revision"
-            elif warnings:
-                realism_status = "Needs caution"
+                stats_metric_cols = st.columns(4)
+                stats_metric_cols[0].metric("Mean diff", f"{(mean_a - mean_b):.3f}")
+                stats_metric_cols[1].metric("SE", f"{standard_error:.3f}")
+                stats_metric_cols[2].metric("t-value", f"{t_value:.3f}")
+                stats_metric_cols[3].metric("df", f"{degrees_freedom:.2f}")
+                st.markdown(f"**Critical rule:** {critical_text}")
+                if p_value is not None:
+                    st.markdown(f"**p-value:** {p_value:.4f}")
+                st.info("Use equal variances only if that assumption is reasonable. If you are unsure, Welch's independent t-test is often the safer choice.")
+                if scipy_stats is not None:
+                    ci_critical = scipy_stats.t.ppf(1 - alpha / 2, degrees_freedom)
+                    mean_difference = mean_a - mean_b
+                    ci_lower = mean_difference - (ci_critical * standard_error)
+                    ci_upper = mean_difference + (ci_critical * standard_error)
+                    render_confidence_interval(f"{int((1 - alpha) * 100)}% confidence interval for the mean difference", ci_lower, ci_upper)
+                    ci_summary_text = f" {int((1 - alpha) * 100)}% CI for the mean difference = [{ci_lower:.3f}, {ci_upper:.3f}]."
 
-            metric_cols = st.columns(4)
-            metric_cols[0].metric("Expected change", f"{expected_difference:.2f}")
-            metric_cols[1].metric("Scale width", f"{scale_span:.0f}")
-            metric_cols[2].metric("n per group", f"{sample_size_per_group}")
-            metric_cols[3].metric("Realism check", realism_status)
+                stats_summary_text = (
+                    f"Independent t-test summary: mean A = {mean_a:.3f}, mean B = {mean_b:.3f}, "
+                    f"sd A = {sd_a:.3f}, sd B = {sd_b:.3f}, nA = {n_a}, nB = {n_b}, "
+                    f"SE = {standard_error:.3f}, t = {t_value:.3f}, df = {degrees_freedom:.2f}, "
+                    f"equal variances assumed = {'yes' if equal_variance else 'no'}, alpha = {alpha:.2f}, "
+                    f"tail = {tail_type}, decision = {decision_text}."
+                )
+                if p_value is not None:
+                    stats_summary_text += f" p-value = {p_value:.4f}."
+                stats_summary_text += ci_summary_text
 
-            st.markdown("**Suggested hypotheses**")
-            st.markdown(f"- {suggested_h0}")
-            st.markdown(f"- {suggested_h1}")
-
-            if warnings:
-                st.markdown("**What to check before using this hypothesis**")
-                for item in warnings:
-                    st.markdown(f"- {item}")
-            if strengths:
-                st.markdown("**What already looks strong**")
-                for item in strengths:
-                    st.markdown(f"- {item}")
-
-            st.info("Likert rule of thumb: one single Likert item is ordinal. An averaged score from several similar items is often treated more like a scale variable, especially with larger samples.")
-
-            stats_summary_text = (
-                f"Likert and hypothesis planning summary: outcome = {outcome_name}, group A = {group_a_name}, "
-                f"group B = {group_b_name}, scale = {scale_min}-{scale_max}, expected mean A = {baseline_mean:.2f}, "
-                f"expected mean B = {target_mean:.2f}, expected difference = {expected_difference:.2f}, items in scale = {items_in_scale}, "
-                f"n per group = {sample_size_per_group}, realism status = {realism_status}. "
-                f"Suggested H0: {suggested_h0} Suggested H1: {suggested_h1}"
-            )
-
-            sheets_columns = [
-                "Column A: respondent_id",
-                "Column B: group (for example control / intervention)",
-                "Columns C:G: Likert items scored from 1 to 5",
-                "Column H: average scale score per respondent",
-            ]
-            sheets_formulas = [
-                "H2: =AVERAGE(C2:G2)",
-                "Overall average: =AVERAGE(H2:H101)",
-                f"Average for {group_a_name}: =AVERAGEIF(B2:B101,\"{group_a_name}\",H2:H101)",
-                f"Average for {group_b_name}: =AVERAGEIF(B2:B101,\"{group_b_name}\",H2:H101)",
-                "Count of score 5 on one item: =COUNTIF(C2:C101,5)",
-            ]
-            sheets_notes = [
-                "Use Data validation to create a dropdown with the allowed Likert values.",
-                "If you only have one Likert item, inspect counts and distributions carefully before treating the mean as your main evidence.",
-                "For a group comparison, keep one row per respondent and one column that labels the group.",
-            ]
-            stats_template_spec = make_stats_template_spec(
-                "Google Sheets template - Likert scale and hypotheses",
-                "This template gives you a respondent-level sheet for Likert data plus a hypothesis sheet you can adapt to the exam wording.",
-                [
-                    "Responses: respondent_id, group, item_1, item_2, item_3, item_4, item_5, average_score",
-                    "Hypotheses: hypothesis_type, statement",
-                ],
-                sheets_formulas,
-                sheets_notes,
-                {
-                    "Responses": [
-                        [1, group_a_name, 4, 4, 3, 4, 5, ""],
-                        [2, group_a_name, 3, 3, 4, 3, 4, ""],
-                        [3, group_b_name, 4, 5, 4, 4, 5, ""],
-                        [4, group_b_name, 5, 4, 4, 5, 4, ""],
+                sheets_columns = [
+                    "Column B: Group A raw scores",
+                    "Column C: Group B raw scores",
+                    "Summary cells for means, standard deviations, and counts if you want to show the manual setup",
+                ]
+                sheets_formulas = [
+                    "Group A mean: =AVERAGE(B2:B36)",
+                    "Group B mean: =AVERAGE(C2:C38)",
+                    "Group A SD: =STDEV.S(B2:B36)",
+                    "Group B SD: =STDEV.S(C2:C38)",
+                    "Welch-style t-value from summary cells: =(mean_A-mean_B)/SQRT((sd_A^2/n_A)+(sd_B^2/n_B))",
+                    "Two-sample t-test directly on raw data: =T.TEST(B2:B36,C2:C38,2,3)",
+                ]
+                sheets_notes = [
+                    "In Google Sheets, T.TEST with type 3 is the unequal-variance version and type 2 is equal-variance.",
+                    "Keep the two groups in separate columns if you want to use the direct T.TEST formula on raw data.",
+                ]
+                stats_template_spec = make_stats_template_spec(
+                    "Google Sheets template - Independent t-test",
+                    "This template keeps the two groups in separate columns so you can use direct Google Sheets t-test formulas.",
+                    [
+                        "Data: group_a, group_b",
+                        "Summary: mean_a, sd_a, n_a, mean_b, sd_b, n_b, alpha, tail_type, equal_variance",
                     ],
-                    "Hypotheses": [
-                        ["H0", suggested_h0],
-                        ["H1", suggested_h1],
+                    sheets_formulas,
+                    sheets_notes,
+                    {
+                        "Data": build_grouped_rows(
+                            build_numeric_sample_series(mean_a, spread=max(sd_a * 0.55, 1.0)),
+                            build_numeric_sample_series(mean_b, spread=max(sd_b * 0.55, 1.0)),
+                        ),
+                        "Summary": [
+                            [round(mean_a, 3), round(sd_a, 3), int(n_a), round(mean_b, 3), round(sd_b, 3), int(n_b), alpha, tail_type, "Yes" if equal_variance else "No"],
+                        ],
+                    },
+                )
+
+            elif calc_type == "Paired t-test":
+                calc_col1, calc_col2 = st.columns(2)
+                with calc_col1:
+                    mean_before = st.number_input("Mean before", value=68.0, step=1.0, key=f"{base_key}_pt_before")
+                    mean_after = st.number_input("Mean after", value=74.0, step=1.0, key=f"{base_key}_pt_after")
+                    sd_diff = st.number_input("Standard deviation of differences", min_value=0.0001, value=8.0, step=0.5, key=f"{base_key}_pt_sd_diff")
+                with calc_col2:
+                    sample_size = st.number_input("Number of pairs (n)", min_value=2, value=30, step=1, key=f"{base_key}_pt_n")
+                    alpha = st.selectbox("Alpha (α)", options=[0.10, 0.05, 0.01], index=1, format_func=lambda x: f"{x:.2f}", key=f"{base_key}_pt_alpha")
+                    tail_type = st.selectbox("Tail type", options=["Two-tailed", "Right-tailed", "Left-tailed"], key=f"{base_key}_pt_tail")
+
+                mean_diff = mean_after - mean_before
+                standard_error = sd_diff / math.sqrt(sample_size)
+                t_value = mean_diff / standard_error
+                degrees_freedom = sample_size - 1
+                p_value, decision_text, critical_text = t_test_tail_result(t_value, degrees_freedom, alpha, tail_type)
+
+                stats_metric_cols = st.columns(4)
+                stats_metric_cols[0].metric("Mean diff", f"{mean_diff:.3f}")
+                stats_metric_cols[1].metric("SE", f"{standard_error:.3f}")
+                stats_metric_cols[2].metric("t-value", f"{t_value:.3f}")
+                stats_metric_cols[3].metric("df", f"{degrees_freedom}")
+                st.markdown(f"**Critical rule:** {critical_text}")
+                if p_value is not None:
+                    st.markdown(f"**p-value:** {p_value:.4f}")
+                st.info("A paired t-test is for matched observations such as before/after scores for the same participants, not two independent groups.")
+                if scipy_stats is not None:
+                    ci_critical = scipy_stats.t.ppf(1 - alpha / 2, degrees_freedom)
+                    ci_lower = mean_diff - (ci_critical * standard_error)
+                    ci_upper = mean_diff + (ci_critical * standard_error)
+                    render_confidence_interval(f"{int((1 - alpha) * 100)}% confidence interval for the mean difference", ci_lower, ci_upper)
+                    ci_summary_text = f" {int((1 - alpha) * 100)}% CI for the mean difference = [{ci_lower:.3f}, {ci_upper:.3f}]."
+
+                stats_summary_text = (
+                    f"Paired t-test summary: mean before = {mean_before:.3f}, mean after = {mean_after:.3f}, "
+                    f"mean difference = {mean_diff:.3f}, sd of differences = {sd_diff:.3f}, n = {sample_size}, "
+                    f"SE = {standard_error:.3f}, t = {t_value:.3f}, df = {degrees_freedom}, alpha = {alpha:.2f}, "
+                    f"tail = {tail_type}, decision = {decision_text}."
+                )
+                if p_value is not None:
+                    stats_summary_text += f" p-value = {p_value:.4f}."
+                stats_summary_text += ci_summary_text
+
+                sheets_columns = [
+                    "Column B: before scores",
+                    "Column C: after scores",
+                    "Column D: row-wise difference (before - after)",
+                ]
+                sheets_formulas = [
+                    "D2: =B2-C2",
+                    "Mean difference: =AVERAGE(D2:D31)",
+                    "SD of differences: =STDEV.S(D2:D31)",
+                    "n: =COUNT(D2:D31)",
+                    "t-value: =(AVERAGE(D2:D31))/(STDEV.S(D2:D31)/SQRT(COUNT(D2:D31)))",
+                    "Paired t-test directly on raw data: =T.TEST(B2:B31,C2:C31,2,1)",
+                ]
+                sheets_notes = [
+                    "Keep paired observations on the same row, because each row represents the same person, product, or case before and after.",
+                ]
+                stats_template_spec = make_stats_template_spec(
+                    "Google Sheets template - Paired t-test",
+                    "This template stores before-and-after values on the same row so the paired differences are easy to calculate.",
+                    [
+                        "Data: before, after, difference",
+                        "Summary: mean_before, mean_after, sd_diff, sample_size, alpha, tail_type",
                     ],
-                },
-            )
+                    sheets_formulas,
+                    sheets_notes,
+                    {
+                        "Data": build_paired_sample_rows(mean_before, mean_after, sd_diff),
+                        "Summary": [
+                            [round(mean_before, 3), round(mean_after, 3), round(sd_diff, 3), int(sample_size), alpha, tail_type],
+                        ],
+                    },
+                )
 
-        elif calc_type == "One-sample t-test":
-            calc_col1, calc_col2 = st.columns(2)
-            with calc_col1:
-                sample_mean = st.number_input("Sample mean (x̄)", value=200.0, step=1.0, key=f"{base_key}_t_sample_mean")
-                hypoth_mean = st.number_input("Hypothesised mean (μ₀)", value=220.0, step=1.0, key=f"{base_key}_t_hyp_mean")
-                sample_sd = st.number_input("Sample standard deviation (s)", min_value=0.0001, value=15.0, step=0.5, key=f"{base_key}_t_sample_sd")
-            with calc_col2:
-                sample_size = st.number_input("Sample size (n)", min_value=2, value=50, step=1, key=f"{base_key}_t_sample_size")
-                alpha = st.selectbox("Alpha (α)", options=[0.10, 0.05, 0.01], index=1, format_func=lambda x: f"{x:.2f}", key=f"{base_key}_t_alpha")
-                tail_type = st.selectbox("Tail type", options=["Two-tailed", "Right-tailed", "Left-tailed"], key=f"{base_key}_t_tail")
+            elif calc_type == "One-sample z-test":
+                calc_col1, calc_col2 = st.columns(2)
+                with calc_col1:
+                    sample_mean = st.number_input("Sample mean (x̄)", value=102.0, step=1.0, key=f"{base_key}_z_sample_mean")
+                    hypoth_mean = st.number_input("Hypothesised mean (μ₀)", value=100.0, step=1.0, key=f"{base_key}_z_hyp_mean")
+                    population_sd = st.number_input("Population standard deviation (σ)", min_value=0.0001, value=10.0, step=0.5, key=f"{base_key}_z_pop_sd")
+                with calc_col2:
+                    sample_size = st.number_input("Sample size (n)", min_value=1, value=64, step=1, key=f"{base_key}_z_sample_size")
+                    alpha = st.selectbox("Alpha (α)", options=[0.10, 0.05, 0.01], index=1, format_func=lambda x: f"{x:.2f}", key=f"{base_key}_z_alpha")
+                    tail_type = st.selectbox("Tail type", options=["Two-tailed", "Right-tailed", "Left-tailed"], key=f"{base_key}_z_tail")
 
-            standard_error = sample_sd / math.sqrt(sample_size)
-            t_value = (sample_mean - hypoth_mean) / standard_error
-            degrees_freedom = sample_size - 1
-            p_value, decision_text, critical_text = t_test_tail_result(t_value, degrees_freedom, alpha, tail_type)
+                standard_error = population_sd / math.sqrt(sample_size)
+                z_value = (sample_mean - hypoth_mean) / standard_error
+                p_value, decision_text, critical_text = z_test_tail_result(z_value, alpha, tail_type)
+                visual_block, critical_value = build_hypothesis_test_visual(z_value, alpha, tail_type, test_label="z")
+                tail_hint = infer_tail_type_from_prompt()
+                benchmark_direction = "higher than" if sample_mean > hypoth_mean else "lower than" if sample_mean < hypoth_mean else "equal to"
+                plain_language_conclusion = (
+                    f"The sample mean is statistically significantly {benchmark_direction} the benchmark mean."
+                    if decision_text == "Reject H0"
+                    else "There is not enough evidence to say the sample mean is statistically different from the benchmark mean."
+                )
+                common_mistakes = [
+                    "Do not confuse a z-score for one value with a one-sample z-test for a sample mean.",
+                    "Use the known population or benchmark standard deviation for a z-test, not the sample SD, unless the course tells you otherwise.",
+                    "Match the tail type to the wording of the question: 'different' usually means two-tailed, 'higher' means right-tailed, and 'lower' means left-tailed.",
+                    "Do not stop at 'Reject H0' or 'Fail to reject H0'. Explain what that means in plain language.",
+                ]
+                direct_answer_text = (
+                    f"x̄ = {sample_mean:.3f}, μ0 = {hypoth_mean:.3f}, σ = {population_sd:.3f}, n = {sample_size}, "
+                    f"z = {z_value:.3f}. Decision: {decision_text}. {plain_language_conclusion}"
+                )
+                exam_paragraph_text = (
+                    f"A one-sample z-test is appropriate because this question compares one sample mean with a known benchmark mean using a known population standard deviation. "
+                    f"Here, x̄ = {sample_mean:.3f}, μ0 = {hypoth_mean:.3f}, σ = {population_sd:.3f}, and n = {sample_size}. "
+                    f"Using the formula z = (x̄ - μ0) / (σ / √n), the calculated z-value is {z_value:.3f}. "
+                    f"For a {tail_type.lower()} test at alpha = {alpha:.2f}, the critical rule is: {critical_text}. "
+                    f"Because the result is {z_value:.3f}, the decision is to {decision_text}. "
+                    f"In plain language, this means {plain_language_conclusion.lower()}"
+                )
+                structured_template_text = "\n".join(
+                    [
+                        f"Given: x̄ = {sample_mean:.3f}, μ0 = {hypoth_mean:.3f}, σ = {population_sd:.3f}, n = {sample_size}, α = {alpha:.2f}",
+                        "Find: whether the sample mean is statistically different from the benchmark mean",
+                        "Method: one-sample z-test",
+                        f"Calculation: z = (x̄ - μ0) / (σ / √n) = ({sample_mean:.3f} - {hypoth_mean:.3f}) / ({population_sd:.3f} / √{sample_size}) = {z_value:.3f}",
+                        f"Decision: {decision_text} because {critical_text}",
+                        f"Interpretation: {plain_language_conclusion}",
+                    ]
+                )
+                sheets_explanation_text = (
+                    f"In Google Sheets, I would enter the sample mean ({sample_mean:.3f}), the benchmark mean ({hypoth_mean:.3f}), "
+                    f"the known standard deviation ({population_sd:.3f}), the sample size ({sample_size}), and alpha ({alpha:.2f}). "
+                    f"I would calculate the standard error, then use the one-sample z-test formula to get z = {z_value:.3f}. "
+                    f"After that, I would compare the result with the critical z-value for a {tail_type.lower()} test and write the decision as {decision_text}. "
+                    f"That gives the plain-language conclusion: {plain_language_conclusion}"
+                )
+                multiple_choice_text = (
+                    f"If the exam gives two choices such as 'not significantly different' versus 'significantly different', the correct choice here is the option that matches '{plain_language_conclusion}'."
+                )
 
-            stats_metric_cols = st.columns(4)
-            stats_metric_cols[0].metric("SE", f"{standard_error:.3f}")
-            stats_metric_cols[1].metric("t-value", f"{t_value:.3f}")
-            stats_metric_cols[2].metric("df", f"{degrees_freedom}")
-            stats_metric_cols[3].metric("Decision", decision_text)
-            st.latex(rf"t = \frac{{\bar{{x}} - \mu_0}}{{s / \sqrt{{n}}}} = \frac{{{sample_mean:.3f} - {hypoth_mean:.3f}}}{{{sample_sd:.3f} / \sqrt{{{sample_size}}}}} = {t_value:.3f}")
-            st.markdown(f"**Critical rule:** {critical_text}")
-            if p_value is not None:
-                st.markdown(f"**p-value:** {p_value:.4f}")
-            if scipy_stats is not None:
-                ci_critical = scipy_stats.t.ppf(1 - alpha / 2, degrees_freedom)
+                stats_metric_cols = st.columns(4)
+                stats_metric_cols[0].metric("SE", f"{standard_error:.3f}")
+                stats_metric_cols[1].metric("z-value", f"{z_value:.3f}")
+                stats_metric_cols[2].metric("p-value", f"{p_value:.4f}")
+                stats_metric_cols[3].metric("Decision", decision_text)
+                st.caption(f"Tail-type hint from the prompt: {tail_hint}")
+                st.latex(rf"z = \frac{{\bar{{x}} - \mu_0}}{{\sigma / \sqrt{{n}}}} = \frac{{{sample_mean:.3f} - {hypoth_mean:.3f}}}{{{population_sd:.3f} / \sqrt{{{sample_size}}}}} = {z_value:.3f}")
+                st.markdown(f"**Critical rule:** {critical_text}")
+                st.markdown("**Plain-language conclusion:**")
+                st.markdown(f"- {plain_language_conclusion}")
+                with st.expander("Visual rejection-region guide"):
+                    st.code(visual_block, language="text")
+                with st.expander("Common mistakes to avoid"):
+                    for warning in common_mistakes:
+                        st.markdown(f"- {warning}")
+                    if "sample standard deviation" in prompt_lower and any(term in prompt_lower for term in ["known sigma", "known standard deviation", "population standard deviation", "national average"]):
+                        st.warning("This prompt includes both a sample SD and a known comparison SD. For the z-test, use the known SD unless the course instructions say otherwise.")
+                answer_tabs = st.tabs(["Direct answer", "Exam paragraph", "Structured template", "Google Sheets wording", "Multiple-choice wording"])
+                with answer_tabs[0]:
+                    st.text_area("Direct answer", value=direct_answer_text, height=120, key=f"{base_key}_z_direct_answer")
+                with answer_tabs[1]:
+                    st.text_area("Exam paragraph", value=exam_paragraph_text, height=180, key=f"{base_key}_z_exam_paragraph")
+                with answer_tabs[2]:
+                    st.text_area("Given / Find / Method / Calculation / Decision / Interpretation", value=structured_template_text, height=200, key=f"{base_key}_z_structured_template")
+                with answer_tabs[3]:
+                    st.text_area("Google Sheets explanation", value=sheets_explanation_text, height=180, key=f"{base_key}_z_sheets_explanation")
+                with answer_tabs[4]:
+                    st.text_area("Multiple-choice wording", value=multiple_choice_text, height=120, key=f"{base_key}_z_mc_text")
+                ci_critical = NormalDist().inv_cdf(1 - alpha / 2)
                 ci_lower = sample_mean - (ci_critical * standard_error)
                 ci_upper = sample_mean + (ci_critical * standard_error)
                 render_confidence_interval(f"{int((1 - alpha) * 100)}% confidence interval for the mean", ci_lower, ci_upper)
                 ci_summary_text = f" {int((1 - alpha) * 100)}% CI for the mean = [{ci_lower:.3f}, {ci_upper:.3f}]."
 
-            stats_summary_text = (
-                f"One-sample t-test summary: x̄ = {sample_mean:.3f}, μ0 = {hypoth_mean:.3f}, s = {sample_sd:.3f}, "
-                f"n = {sample_size}, SE = {standard_error:.3f}, t = {t_value:.3f}, df = {degrees_freedom}, "
-                f"alpha = {alpha:.2f}, tail = {tail_type}, decision = {decision_text}."
-            )
-            if p_value is not None:
-                stats_summary_text += f" p-value = {p_value:.4f}."
-            stats_summary_text += ci_summary_text
+                stats_summary_text = (
+                    f"One-sample z-test summary: x̄ = {sample_mean:.3f}, μ0 = {hypoth_mean:.3f}, σ = {population_sd:.3f}, "
+                    f"n = {sample_size}, SE = {standard_error:.3f}, z = {z_value:.3f}, alpha = {alpha:.2f}, "
+                    f"tail = {tail_type}, p-value = {p_value:.4f}, decision = {decision_text}."
+                )
+                stats_summary_text += ci_summary_text
+                stats_summary_text += f" Plain-language conclusion: {plain_language_conclusion}"
 
-            sheets_columns = [
-                "Cells for sample mean, hypothesised mean, sample standard deviation, sample size, alpha, and tail type.",
-            ]
-            sheets_formulas = [
-                "SE: =sample_sd/SQRT(sample_size)",
-                "t-value: =(sample_mean-hyp_mean)/(sample_sd/SQRT(sample_size))",
-                "If you have raw data in B2:B51, compute mean with =AVERAGE(B2:B51) and sample SD with =STDEV.S(B2:B51)",
-            ]
-            sheets_notes = [
-                "Google Sheets does not have a single simple one-sample t-test button, so summary-statistic formulas are usually the easiest setup.",
-                "Write H0 and H1 in text cells so your decision stays tied to the original hypothesis.",
-            ]
-            stats_template_spec = make_stats_template_spec(
-                "Google Sheets template - One-sample t-test",
-                "This template includes a raw-data sheet and a summary sheet for a one-sample t-test setup.",
-                [
-                    "RawData: observation",
-                    "Summary: sample_mean, hypoth_mean, sample_sd, sample_size, alpha, tail_type",
-                ],
-                sheets_formulas,
-                sheets_notes,
-                {
-                    "RawData": [[value] for value in build_numeric_sample_series(sample_mean, spread=max(sample_sd * 0.6, 1.0))],
-                    "Summary": [
-                        [round(sample_mean, 3), round(hypoth_mean, 3), round(sample_sd, 3), int(sample_size), alpha, tail_type],
+                sheets_columns = [
+                    "Cells for sample mean, hypothesised mean, population SD, sample size, alpha, and tail type.",
+                    "Optional text cells for H0, H1, decision, and plain-language conclusion.",
+                ]
+                sheets_formulas = [
+                    "SE: =population_sd/SQRT(sample_size)",
+                    "z-value: =(sample_mean-hyp_mean)/(population_sd/SQRT(sample_size))",
+                    "Critical z-value for two-tailed: =NORM.S.INV(1-alpha/2)",
+                    "Critical z-value for right-tailed: =NORM.S.INV(1-alpha)",
+                    "Critical z-value for left-tailed: =NORM.S.INV(alpha)",
+                    "Two-tailed p-value: =2*(1-NORM.S.DIST(ABS(z_value),TRUE))",
+                    "Right-tailed p-value: =1-NORM.S.DIST(z_value,TRUE)",
+                    "Left-tailed p-value: =NORM.S.DIST(z_value,TRUE)",
+                    "Decision text (two-tailed): =IF(ABS(z_value)>critical_z,\"Reject H0\",\"Fail to reject H0\")",
+                    "Plain-language conclusion: =IF(decision_cell=\"Reject H0\",\"The sample mean is significantly \"&IF(sample_mean>hyp_mean,\"higher\",\"lower\")&\" than the benchmark mean.\",\"There is not enough evidence to say the sample mean differs significantly from the benchmark mean.\")",
+                    "If you have raw data and known population SD, use summary-statistic cells instead of trying to force a one-click Sheets test.",
+                ]
+                sheets_notes = [
+                    "Use a z-test only when the population standard deviation is known or the course specifically tells you to use z.",
+                    "If the question gives both a sample SD and a known benchmark or population SD, use the known SD for the z-test unless the course tells you otherwise.",
+                    "If the wording says 'different', choose a two-tailed test. If it says 'higher', choose right-tailed. If it says 'lower', choose left-tailed.",
+                    "Add small text cells for H0 and H1 if you want your sheet to double as an exam working page.",
+                ]
+                stats_template_spec = make_stats_template_spec(
+                    "Google Sheets template - One-sample z-test",
+                    "This template gives you a simple summary-based z-test setup with optional raw observations.",
+                    [
+                        "RawData: observation",
+                        "Summary: sample_mean, hypoth_mean, population_sd, sample_size, alpha, tail_type, standard_error, z_value, critical_value, p_value, decision, plain_language_conclusion",
                     ],
-                },
-            )
+                    sheets_formulas,
+                    sheets_notes,
+                    {
+                        "RawData": [[value] for value in build_numeric_sample_series(sample_mean, spread=max(population_sd * 0.5, 1.0))],
+                        "Summary": [
+                            [round(sample_mean, 3), round(hypoth_mean, 3), round(population_sd, 3), int(sample_size), alpha, tail_type, round(standard_error, 3), round(z_value, 3), round(critical_value, 3), round(p_value, 4), decision_text, plain_language_conclusion],
+                        ],
+                    },
+                )
 
-        elif calc_type == "Independent t-test":
-            calc_col1, calc_col2 = st.columns(2)
-            with calc_col1:
-                mean_a = st.number_input("Group A mean", value=72.0, step=1.0, key=f"{base_key}_it_mean_a")
-                sd_a = st.number_input("Group A standard deviation", min_value=0.0001, value=10.0, step=0.5, key=f"{base_key}_it_sd_a")
-                n_a = st.number_input("Group A sample size", min_value=2, value=35, step=1, key=f"{base_key}_it_n_a")
-                mean_b = st.number_input("Group B mean", value=78.0, step=1.0, key=f"{base_key}_it_mean_b")
-            with calc_col2:
-                sd_b = st.number_input("Group B standard deviation", min_value=0.0001, value=11.0, step=0.5, key=f"{base_key}_it_sd_b")
-                n_b = st.number_input("Group B sample size", min_value=2, value=37, step=1, key=f"{base_key}_it_n_b")
-                equal_variance = st.checkbox("Assume equal variances", value=False, key=f"{base_key}_it_equal_var")
-                alpha = st.selectbox("Alpha (α)", options=[0.10, 0.05, 0.01], index=1, format_func=lambda x: f"{x:.2f}", key=f"{base_key}_it_alpha")
-                tail_type = st.selectbox("Tail type", options=["Two-tailed", "Right-tailed", "Left-tailed"], key=f"{base_key}_it_tail")
+            elif calc_type == "Z-score":
+                calc_col1, calc_col2 = st.columns(2)
+                with calc_col1:
+                    value = st.number_input("Observed value (x)", value=110.0, step=1.0, key=f"{base_key}_zs_value")
+                    mean_value = st.number_input("Mean (μ)", value=100.0, step=1.0, key=f"{base_key}_zs_mean")
+                with calc_col2:
+                    sd_value = st.number_input("Standard deviation (σ)", min_value=0.0001, value=10.0, step=0.5, key=f"{base_key}_zs_sd")
 
-            if equal_variance:
-                pooled_variance = (((n_a - 1) * (sd_a ** 2)) + ((n_b - 1) * (sd_b ** 2))) / (n_a + n_b - 2)
-                standard_error = math.sqrt(pooled_variance * ((1 / n_a) + (1 / n_b)))
-                degrees_freedom = n_a + n_b - 2
+                z_score_value = (value - mean_value) / sd_value
+                interpretation = "far above the mean" if z_score_value >= 2 else "above the mean" if z_score_value > 0 else "far below the mean" if z_score_value <= -2 else "below the mean" if z_score_value < 0 else "equal to the mean"
+                stats_metric_cols = st.columns(3)
+                stats_metric_cols[0].metric("z-score", f"{z_score_value:.3f}")
+                stats_metric_cols[1].metric("Distance", f"{abs(z_score_value):.3f} SD")
+                stats_metric_cols[2].metric("Interpretation", interpretation)
+                st.latex(rf"z = \frac{{x - \mu}}{{\sigma}} = \frac{{{value:.3f} - {mean_value:.3f}}}{{{sd_value:.3f}}} = {z_score_value:.3f}")
+
+                stats_summary_text = (
+                    f"Z-score summary: x = {value:.3f}, μ = {mean_value:.3f}, σ = {sd_value:.3f}, "
+                    f"z = {z_score_value:.3f}, interpretation = {interpretation}."
+                )
+
+                sheets_columns = [
+                    "Column B: observed values",
+                    "A mean cell and a standard deviation cell to standardise each observation",
+                ]
+                sheets_formulas = [
+                    "Mean: =AVERAGE(B2:B101)",
+                    "Standard deviation: =STDEV.S(B2:B101)",
+                    "Z-score for B2: =(B2-$E$2)/$E$3",
+                ]
+                sheets_notes = [
+                    "Use absolute z-scores above about 2 as a first signal that a value is unusually far from the mean.",
+                ]
+                stats_template_spec = make_stats_template_spec(
+                    "Google Sheets template - Z-score",
+                    "This template stores observed values and a summary area for mean and standard deviation so each score can be standardised.",
+                    [
+                        "Data: observation, z_score",
+                        "Summary: mean, standard_deviation, highlighted_value",
+                    ],
+                    sheets_formulas,
+                    sheets_notes,
+                    {
+                        "Data": [[sample, ""] for sample in build_numeric_sample_series(mean_value, spread=max(sd_value, 1.0), minimum=0 if mean_value >= 0 and value >= 0 else None)],
+                        "Summary": [
+                            [round(mean_value, 3), round(sd_value, 3), round(value, 3)],
+                        ],
+                    },
+                )
+
+            elif calc_type == "Two-proportion z-test":
+                calc_col1, calc_col2 = st.columns(2)
+                with calc_col1:
+                    success_a = st.number_input("Successes in group A", min_value=0, value=520, step=1, key=f"{base_key}_zp_success_a")
+                    total_a = st.number_input("Total in group A", min_value=1, value=10000, step=1, key=f"{base_key}_zp_total_a")
+                    success_b = st.number_input("Successes in group B", min_value=0, value=570, step=1, key=f"{base_key}_zp_success_b")
+                with calc_col2:
+                    total_b = st.number_input("Total in group B", min_value=1, value=10050, step=1, key=f"{base_key}_zp_total_b")
+                    alpha = st.selectbox("Alpha (α)", options=[0.10, 0.05, 0.01], index=1, format_func=lambda x: f"{x:.2f}", key=f"{base_key}_zp_alpha")
+                    tail_type = st.selectbox("Tail type", options=["Two-tailed", "Right-tailed", "Left-tailed"], key=f"{base_key}_zp_tail")
+
+                p_a = success_a / total_a
+                p_b = success_b / total_b
+                pooled_p = (success_a + success_b) / (total_a + total_b)
+                standard_error = math.sqrt(pooled_p * (1 - pooled_p) * ((1 / total_a) + (1 / total_b)))
+                z_value = (p_a - p_b) / standard_error
+                p_value, decision_text, critical_text = z_test_tail_result(z_value, alpha, tail_type)
+
+                stats_metric_cols = st.columns(4)
+                stats_metric_cols[0].metric("pA", f"{p_a:.4f}")
+                stats_metric_cols[1].metric("pB", f"{p_b:.4f}")
+                stats_metric_cols[2].metric("z-value", f"{z_value:.3f}")
+                stats_metric_cols[3].metric("p-value", f"{p_value:.4f}")
+                st.markdown(f"**Critical rule:** {critical_text}")
+                st.latex(rf"z = \frac{{p_A - p_B}}{{\sqrt{{p(1-p)(1/n_A + 1/n_B)}}}} = {z_value:.3f}")
+                ci_critical = NormalDist().inv_cdf(1 - alpha / 2)
+                unpooled_se = math.sqrt((p_a * (1 - p_a) / total_a) + (p_b * (1 - p_b) / total_b))
+                difference = p_a - p_b
+                ci_lower = difference - (ci_critical * unpooled_se)
+                ci_upper = difference + (ci_critical * unpooled_se)
+                confidence_label = f"{int((1 - alpha) * 100)}% confidence interval for the proportion difference"
+                render_confidence_interval(confidence_label, ci_lower, ci_upper)
+                ci_summary_text = f" {int((1 - alpha) * 100)}% CI for the proportion difference = [{ci_lower:.4f}, {ci_upper:.4f}]."
+
+                stats_summary_text = (
+                    f"Two-proportion z-test summary: pA = {p_a:.4f}, pB = {p_b:.4f}, pooled p = {pooled_p:.4f}, "
+                    f"SE = {standard_error:.5f}, z = {z_value:.3f}, alpha = {alpha:.2f}, tail = {tail_type}, "
+                    f"decision = {decision_text}, p-value = {p_value:.4f}."
+                )
+                stats_summary_text += ci_summary_text
+
+                sheets_columns = [
+                    "Cells for successes and totals in each group.",
+                ]
+                sheets_formulas = [
+                    "pA: =success_A/total_A",
+                    "pB: =success_B/total_B",
+                    "pooled p: =(success_A+success_B)/(total_A+total_B)",
+                    "SE: =SQRT(pooled_p*(1-pooled_p)*((1/total_A)+(1/total_B)))",
+                    "z-value: =(pA-pB)/SE",
+                    "Two-tailed p-value: =2*(1-NORM.S.DIST(ABS(z_value),TRUE))",
+                    "Right-tailed p-value: =1-NORM.S.DIST(z_value,TRUE)",
+                    "Left-tailed p-value: =NORM.S.DIST(z_value,TRUE)",
+                ]
+                sheets_notes = [
+                    "This setup is useful for click-through rate, conversion rate, acceptance rate, or any yes/no proportion question.",
+                ]
+                stats_template_spec = make_stats_template_spec(
+                    "Google Sheets template - Two-proportion z-test",
+                    "This template stores successes and totals for two groups so you can compare conversion-style rates in Google Sheets.",
+                    [
+                        "GroupSummary: group, successes, total, proportion",
+                    ],
+                    sheets_formulas,
+                    sheets_notes,
+                    {
+                        "GroupSummary": [
+                            ["Group A", min(int(success_a), int(total_a)), int(total_a), ""],
+                            ["Group B", min(int(success_b), int(total_b)), int(total_b), ""],
+                        ],
+                    },
+                )
+
+            elif calc_type == "Chi-square test of independence (2x2)":
+                obs_cols = st.columns(2)
+                with obs_cols[0]:
+                    observed_11 = st.number_input("Row 1, Column 1", min_value=0, value=45, step=1, key=f"{base_key}_chi_11")
+                    observed_12 = st.number_input("Row 1, Column 2", min_value=0, value=30, step=1, key=f"{base_key}_chi_12")
+                with obs_cols[1]:
+                    observed_21 = st.number_input("Row 2, Column 1", min_value=0, value=20, step=1, key=f"{base_key}_chi_21")
+                    observed_22 = st.number_input("Row 2, Column 2", min_value=0, value=55, step=1, key=f"{base_key}_chi_22")
+
+                row_1_total = observed_11 + observed_12
+                row_2_total = observed_21 + observed_22
+                col_1_total = observed_11 + observed_21
+                col_2_total = observed_12 + observed_22
+                grand_total = row_1_total + row_2_total
+
+                expected_11 = (row_1_total * col_1_total) / grand_total if grand_total else 0
+                expected_12 = (row_1_total * col_2_total) / grand_total if grand_total else 0
+                expected_21 = (row_2_total * col_1_total) / grand_total if grand_total else 0
+                expected_22 = (row_2_total * col_2_total) / grand_total if grand_total else 0
+                expected_values = [expected_11, expected_12, expected_21, expected_22]
+                observed_values = [observed_11, observed_12, observed_21, observed_22]
+                chi_square_value = sum(((obs - exp) ** 2) / exp for obs, exp in zip(observed_values, expected_values) if exp > 0)
+                degrees_freedom = 1
+                p_value = scipy_stats.chi2.sf(chi_square_value, degrees_freedom) if scipy_stats is not None else None
+
+                stats_metric_cols = st.columns(4)
+                stats_metric_cols[0].metric("Chi-square", f"{chi_square_value:.3f}")
+                stats_metric_cols[1].metric("df", f"{degrees_freedom}")
+                stats_metric_cols[2].metric("Grand total", f"{grand_total}")
+                stats_metric_cols[3].metric("p-value", f"{p_value:.4f}" if p_value is not None else "SciPy needed")
+
+                st.markdown("**Expected counts**")
+                st.markdown(f"- Cell (1,1): {expected_11:.2f}")
+                st.markdown(f"- Cell (1,2): {expected_12:.2f}")
+                st.markdown(f"- Cell (2,1): {expected_21:.2f}")
+                st.markdown(f"- Cell (2,2): {expected_22:.2f}")
+                if any(value < 5 for value in expected_values):
+                    st.warning("At least one expected count is below 5. The chi-square approximation may be weak, so interpret the result with caution.")
+
+                stats_summary_text = (
+                    f"Chi-square test of independence summary: observed counts = [{observed_11}, {observed_12}; {observed_21}, {observed_22}], "
+                    f"expected counts = [{expected_11:.2f}, {expected_12:.2f}; {expected_21:.2f}, {expected_22:.2f}], "
+                    f"chi-square = {chi_square_value:.3f}, df = {degrees_freedom}."
+                )
+                if p_value is not None:
+                    stats_summary_text += f" p-value = {p_value:.4f}."
+
+                sheets_columns = [
+                    "Observed 2x2 table in B3:C4",
+                    "Row totals in D3:D4, column totals in B5:C5, grand total in D5",
+                    "Expected table in B8:C9",
+                ]
+                sheets_formulas = [
+                    "D3: =SUM(B3:C3)",
+                    "D4: =SUM(B4:C4)",
+                    "B5: =SUM(B3:B4)",
+                    "C5: =SUM(C3:C4)",
+                    "D5: =SUM(B5:C5)",
+                    "B8: =$D3*B$5/$D$5",
+                    "C8: =$D3*C$5/$D$5",
+                    "B9: =$D4*B$5/$D$5",
+                    "C9: =$D4*C$5/$D$5",
+                    "p-value from observed vs expected: =CHISQ.TEST(B3:C4,B8:C9)",
+                ]
+                sheets_notes = [
+                    "Use chi-square for categorical count data, not for means.",
+                    "Check that expected counts are not too small before trusting the result.",
+                ]
+                stats_template_spec = make_stats_template_spec(
+                    "Google Sheets template - Chi-square 2x2",
+                    "This template gives you a compact observed-count table for a 2x2 chi-square test.",
+                    [
+                        "ObservedTable: category, column_1_count, column_2_count",
+                    ],
+                    sheets_formulas,
+                    sheets_notes,
+                    {
+                        "ObservedTable": [
+                            ["Row 1", int(observed_11), int(observed_12)],
+                            ["Row 2", int(observed_21), int(observed_22)],
+                        ],
+                    },
+                )
+
             else:
-                variance_piece_a = (sd_a ** 2) / n_a
-                variance_piece_b = (sd_b ** 2) / n_b
-                standard_error = math.sqrt(variance_piece_a + variance_piece_b)
-                numerator = (variance_piece_a + variance_piece_b) ** 2
-                denominator = ((variance_piece_a ** 2) / (n_a - 1)) + ((variance_piece_b ** 2) / (n_b - 1))
-                degrees_freedom = numerator / denominator if denominator else 1
-            t_value = (mean_a - mean_b) / standard_error
-            p_value, decision_text, critical_text = t_test_tail_result(t_value, degrees_freedom, alpha, tail_type)
+                anova_col1, anova_col2, anova_col3 = st.columns(3)
+                with anova_col1:
+                    mean_1 = st.number_input("Group 1 mean", value=64.0, step=1.0, key=f"{base_key}_anova_mean_1")
+                    sd_1 = st.number_input("Group 1 SD", min_value=0.0001, value=8.0, step=0.5, key=f"{base_key}_anova_sd_1")
+                    n_1 = st.number_input("Group 1 n", min_value=2, value=25, step=1, key=f"{base_key}_anova_n_1")
+                with anova_col2:
+                    mean_2 = st.number_input("Group 2 mean", value=70.0, step=1.0, key=f"{base_key}_anova_mean_2")
+                    sd_2 = st.number_input("Group 2 SD", min_value=0.0001, value=9.0, step=0.5, key=f"{base_key}_anova_sd_2")
+                    n_2 = st.number_input("Group 2 n", min_value=2, value=24, step=1, key=f"{base_key}_anova_n_2")
+                with anova_col3:
+                    mean_3 = st.number_input("Group 3 mean", value=75.0, step=1.0, key=f"{base_key}_anova_mean_3")
+                    sd_3 = st.number_input("Group 3 SD", min_value=0.0001, value=8.5, step=0.5, key=f"{base_key}_anova_sd_3")
+                    n_3 = st.number_input("Group 3 n", min_value=2, value=26, step=1, key=f"{base_key}_anova_n_3")
+                    alpha = st.selectbox("Alpha (α)", options=[0.10, 0.05, 0.01], index=1, format_func=lambda x: f"{x:.2f}", key=f"{base_key}_anova_alpha")
 
-            stats_metric_cols = st.columns(4)
-            stats_metric_cols[0].metric("Mean diff", f"{(mean_a - mean_b):.3f}")
-            stats_metric_cols[1].metric("SE", f"{standard_error:.3f}")
-            stats_metric_cols[2].metric("t-value", f"{t_value:.3f}")
-            stats_metric_cols[3].metric("df", f"{degrees_freedom:.2f}")
-            st.markdown(f"**Critical rule:** {critical_text}")
-            if p_value is not None:
-                st.markdown(f"**p-value:** {p_value:.4f}")
-            st.info("Use equal variances only if that assumption is reasonable. If you are unsure, Welch's independent t-test is often the safer choice.")
-            if scipy_stats is not None:
-                ci_critical = scipy_stats.t.ppf(1 - alpha / 2, degrees_freedom)
-                mean_difference = mean_a - mean_b
-                ci_lower = mean_difference - (ci_critical * standard_error)
-                ci_upper = mean_difference + (ci_critical * standard_error)
-                render_confidence_interval(f"{int((1 - alpha) * 100)}% confidence interval for the mean difference", ci_lower, ci_upper)
-                ci_summary_text = f" {int((1 - alpha) * 100)}% CI for the mean difference = [{ci_lower:.3f}, {ci_upper:.3f}]."
+                total_n = n_1 + n_2 + n_3
+                overall_mean = ((mean_1 * n_1) + (mean_2 * n_2) + (mean_3 * n_3)) / total_n
+                ss_between = (n_1 * ((mean_1 - overall_mean) ** 2)) + (n_2 * ((mean_2 - overall_mean) ** 2)) + (n_3 * ((mean_3 - overall_mean) ** 2))
+                ss_within = ((n_1 - 1) * (sd_1 ** 2)) + ((n_2 - 1) * (sd_2 ** 2)) + ((n_3 - 1) * (sd_3 ** 2))
+                df_between = 2
+                df_within = total_n - 3
+                ms_between = ss_between / df_between
+                ms_within = ss_within / df_within if df_within else 0
+                f_value = ms_between / ms_within if ms_within else 0
+                p_value = scipy_stats.f.sf(f_value, df_between, df_within) if scipy_stats is not None else None
 
-            stats_summary_text = (
-                f"Independent t-test summary: mean A = {mean_a:.3f}, mean B = {mean_b:.3f}, "
-                f"sd A = {sd_a:.3f}, sd B = {sd_b:.3f}, nA = {n_a}, nB = {n_b}, "
-                f"SE = {standard_error:.3f}, t = {t_value:.3f}, df = {degrees_freedom:.2f}, "
-                f"equal variances assumed = {'yes' if equal_variance else 'no'}, alpha = {alpha:.2f}, "
-                f"tail = {tail_type}, decision = {decision_text}."
-            )
-            if p_value is not None:
-                stats_summary_text += f" p-value = {p_value:.4f}."
-            stats_summary_text += ci_summary_text
+                stats_metric_cols = st.columns(4)
+                stats_metric_cols[0].metric("Overall mean", f"{overall_mean:.3f}")
+                stats_metric_cols[1].metric("F-value", f"{f_value:.3f}")
+                stats_metric_cols[2].metric("df", f"{df_between}, {df_within}")
+                stats_metric_cols[3].metric("p-value", f"{p_value:.4f}" if p_value is not None else "SciPy needed")
+                st.info("ANOVA tells you whether at least one group mean differs. It does not tell you which groups differ until you run a post-hoc comparison.")
+                pairwise_lines = []
+                if scipy_stats is not None and p_value is not None and p_value < alpha:
+                    st.markdown("**Simple post-hoc screen (pairwise Welch comparisons with Bonferroni correction)**")
+                    bonferroni_alpha = alpha / 3
+                    pairwise_inputs = [
+                        ("Group 1 vs Group 2", mean_1, sd_1, n_1, mean_2, sd_2, n_2),
+                        ("Group 1 vs Group 3", mean_1, sd_1, n_1, mean_3, sd_3, n_3),
+                        ("Group 2 vs Group 3", mean_2, sd_2, n_2, mean_3, sd_3, n_3),
+                    ]
+                    for label, mean_a, sd_a, n_a, mean_b, sd_b, n_b in pairwise_inputs:
+                        variance_piece_a = (sd_a ** 2) / n_a
+                        variance_piece_b = (sd_b ** 2) / n_b
+                        pair_se = math.sqrt(variance_piece_a + variance_piece_b)
+                        pair_t = (mean_a - mean_b) / pair_se
+                        numerator = (variance_piece_a + variance_piece_b) ** 2
+                        denominator = ((variance_piece_a ** 2) / (n_a - 1)) + ((variance_piece_b ** 2) / (n_b - 1))
+                        pair_df = numerator / denominator if denominator else 1
+                        pair_p = 2 * (1 - scipy_stats.t.cdf(abs(pair_t), pair_df))
+                        pair_decision = "Likely different" if pair_p < bonferroni_alpha else "No strong pairwise evidence"
+                        st.markdown(f"- {label}: t = {pair_t:.3f}, df = {pair_df:.2f}, p = {pair_p:.4f}, decision = {pair_decision}")
+                        pairwise_lines.append(f"{label}: t = {pair_t:.3f}, df = {pair_df:.2f}, p = {pair_p:.4f}, decision = {pair_decision}")
+                elif p_value is not None and p_value >= alpha:
+                    st.markdown("**Post-hoc note:** The ANOVA is not statistically significant at the selected alpha level, so pairwise follow-up tests are usually not the main next step.")
 
-            sheets_columns = [
-                "Column B: Group A raw scores",
-                "Column C: Group B raw scores",
-                "Summary cells for means, standard deviations, and counts if you want to show the manual setup",
-            ]
-            sheets_formulas = [
-                "Group A mean: =AVERAGE(B2:B36)",
-                "Group B mean: =AVERAGE(C2:C38)",
-                "Group A SD: =STDEV.S(B2:B36)",
-                "Group B SD: =STDEV.S(C2:C38)",
-                "Welch-style t-value from summary cells: =(mean_A-mean_B)/SQRT((sd_A^2/n_A)+(sd_B^2/n_B))",
-                "Two-sample t-test directly on raw data: =T.TEST(B2:B36,C2:C38,2,3)",
-            ]
-            sheets_notes = [
-                "In Google Sheets, T.TEST with type 3 is the unequal-variance version and type 2 is equal-variance.",
-                "Keep the two groups in separate columns if you want to use the direct T.TEST formula on raw data.",
-            ]
-            stats_template_spec = make_stats_template_spec(
-                "Google Sheets template - Independent t-test",
-                "This template keeps the two groups in separate columns so you can use direct Google Sheets t-test formulas.",
-                [
-                    "Data: group_a, group_b",
-                    "Summary: mean_a, sd_a, n_a, mean_b, sd_b, n_b, alpha, tail_type, equal_variance",
-                ],
-                sheets_formulas,
-                sheets_notes,
-                {
-                    "Data": build_grouped_rows(
-                        build_numeric_sample_series(mean_a, spread=max(sd_a * 0.55, 1.0)),
-                        build_numeric_sample_series(mean_b, spread=max(sd_b * 0.55, 1.0)),
-                    ),
-                    "Summary": [
-                        [round(mean_a, 3), round(sd_a, 3), int(n_a), round(mean_b, 3), round(sd_b, 3), int(n_b), alpha, tail_type, "Yes" if equal_variance else "No"],
-                    ],
-                },
-            )
+                stats_summary_text = (
+                    f"One-way ANOVA summary: means = [{mean_1:.3f}, {mean_2:.3f}, {mean_3:.3f}], "
+                    f"SDs = [{sd_1:.3f}, {sd_2:.3f}, {sd_3:.3f}], ns = [{n_1}, {n_2}, {n_3}], overall mean = {overall_mean:.3f}, "
+                    f"SS_between = {ss_between:.3f}, SS_within = {ss_within:.3f}, F = {f_value:.3f}, df = ({df_between}, {df_within}), alpha = {alpha:.2f}."
+                )
+                if p_value is not None:
+                    stats_summary_text += f" p-value = {p_value:.4f}."
+                if pairwise_lines:
+                    stats_summary_text += " Post-hoc screen (Bonferroni-adjusted pairwise tests): " + " | ".join(pairwise_lines)
 
-        elif calc_type == "Paired t-test":
-            calc_col1, calc_col2 = st.columns(2)
-            with calc_col1:
-                mean_before = st.number_input("Mean before", value=68.0, step=1.0, key=f"{base_key}_pt_before")
-                mean_after = st.number_input("Mean after", value=74.0, step=1.0, key=f"{base_key}_pt_after")
-                sd_diff = st.number_input("Standard deviation of differences", min_value=0.0001, value=8.0, step=0.5, key=f"{base_key}_pt_sd_diff")
-            with calc_col2:
-                sample_size = st.number_input("Number of pairs (n)", min_value=2, value=30, step=1, key=f"{base_key}_pt_n")
-                alpha = st.selectbox("Alpha (α)", options=[0.10, 0.05, 0.01], index=1, format_func=lambda x: f"{x:.2f}", key=f"{base_key}_pt_alpha")
-                tail_type = st.selectbox("Tail type", options=["Two-tailed", "Right-tailed", "Left-tailed"], key=f"{base_key}_pt_tail")
-
-            mean_diff = mean_after - mean_before
-            standard_error = sd_diff / math.sqrt(sample_size)
-            t_value = mean_diff / standard_error
-            degrees_freedom = sample_size - 1
-            p_value, decision_text, critical_text = t_test_tail_result(t_value, degrees_freedom, alpha, tail_type)
-
-            stats_metric_cols = st.columns(4)
-            stats_metric_cols[0].metric("Mean diff", f"{mean_diff:.3f}")
-            stats_metric_cols[1].metric("SE", f"{standard_error:.3f}")
-            stats_metric_cols[2].metric("t-value", f"{t_value:.3f}")
-            stats_metric_cols[3].metric("df", f"{degrees_freedom}")
-            st.markdown(f"**Critical rule:** {critical_text}")
-            if p_value is not None:
-                st.markdown(f"**p-value:** {p_value:.4f}")
-            st.info("A paired t-test is for matched observations such as before/after scores for the same participants, not two independent groups.")
-            if scipy_stats is not None:
-                ci_critical = scipy_stats.t.ppf(1 - alpha / 2, degrees_freedom)
-                ci_lower = mean_diff - (ci_critical * standard_error)
-                ci_upper = mean_diff + (ci_critical * standard_error)
-                render_confidence_interval(f"{int((1 - alpha) * 100)}% confidence interval for the mean difference", ci_lower, ci_upper)
-                ci_summary_text = f" {int((1 - alpha) * 100)}% CI for the mean difference = [{ci_lower:.3f}, {ci_upper:.3f}]."
-
-            stats_summary_text = (
-                f"Paired t-test summary: mean before = {mean_before:.3f}, mean after = {mean_after:.3f}, "
-                f"mean difference = {mean_diff:.3f}, sd of differences = {sd_diff:.3f}, n = {sample_size}, "
-                f"SE = {standard_error:.3f}, t = {t_value:.3f}, df = {degrees_freedom}, alpha = {alpha:.2f}, "
-                f"tail = {tail_type}, decision = {decision_text}."
-            )
-            if p_value is not None:
-                stats_summary_text += f" p-value = {p_value:.4f}."
-            stats_summary_text += ci_summary_text
-
-            sheets_columns = [
-                "Column B: before scores",
-                "Column C: after scores",
-                "Column D: row-wise difference (before - after)",
-            ]
-            sheets_formulas = [
-                "D2: =B2-C2",
-                "Mean difference: =AVERAGE(D2:D31)",
-                "SD of differences: =STDEV.S(D2:D31)",
-                "n: =COUNT(D2:D31)",
-                "t-value: =(AVERAGE(D2:D31))/(STDEV.S(D2:D31)/SQRT(COUNT(D2:D31)))",
-                "Paired t-test directly on raw data: =T.TEST(B2:B31,C2:C31,2,1)",
-            ]
-            sheets_notes = [
-                "Keep paired observations on the same row, because each row represents the same person, product, or case before and after.",
-            ]
-            stats_template_spec = make_stats_template_spec(
-                "Google Sheets template - Paired t-test",
-                "This template stores before-and-after values on the same row so the paired differences are easy to calculate.",
-                [
-                    "Data: before, after, difference",
-                    "Summary: mean_before, mean_after, sd_diff, sample_size, alpha, tail_type",
-                ],
-                sheets_formulas,
-                sheets_notes,
-                {
-                    "Data": build_paired_sample_rows(mean_before, mean_after, sd_diff),
-                    "Summary": [
-                        [round(mean_before, 3), round(mean_after, 3), round(sd_diff, 3), int(sample_size), alpha, tail_type],
-                    ],
-                },
-            )
-
-        elif calc_type == "One-sample z-test":
-            calc_col1, calc_col2 = st.columns(2)
-            with calc_col1:
-                sample_mean = st.number_input("Sample mean (x̄)", value=102.0, step=1.0, key=f"{base_key}_z_sample_mean")
-                hypoth_mean = st.number_input("Hypothesised mean (μ₀)", value=100.0, step=1.0, key=f"{base_key}_z_hyp_mean")
-                population_sd = st.number_input("Population standard deviation (σ)", min_value=0.0001, value=10.0, step=0.5, key=f"{base_key}_z_pop_sd")
-            with calc_col2:
-                sample_size = st.number_input("Sample size (n)", min_value=1, value=64, step=1, key=f"{base_key}_z_sample_size")
-                alpha = st.selectbox("Alpha (α)", options=[0.10, 0.05, 0.01], index=1, format_func=lambda x: f"{x:.2f}", key=f"{base_key}_z_alpha")
-                tail_type = st.selectbox("Tail type", options=["Two-tailed", "Right-tailed", "Left-tailed"], key=f"{base_key}_z_tail")
-
-            standard_error = population_sd / math.sqrt(sample_size)
-            z_value = (sample_mean - hypoth_mean) / standard_error
-            p_value, decision_text, critical_text = z_test_tail_result(z_value, alpha, tail_type)
-            visual_block, critical_value = build_hypothesis_test_visual(z_value, alpha, tail_type, test_label="z")
-            tail_hint = infer_tail_type_from_prompt()
-            benchmark_direction = "higher than" if sample_mean > hypoth_mean else "lower than" if sample_mean < hypoth_mean else "equal to"
-            plain_language_conclusion = (
-                f"The sample mean is statistically significantly {benchmark_direction} the benchmark mean."
-                if decision_text == "Reject H0"
-                else "There is not enough evidence to say the sample mean is statistically different from the benchmark mean."
-            )
-            common_mistakes = [
-                "Do not confuse a z-score for one value with a one-sample z-test for a sample mean.",
-                "Use the known population or benchmark standard deviation for a z-test, not the sample SD, unless the course tells you otherwise.",
-                "Match the tail type to the wording of the question: 'different' usually means two-tailed, 'higher' means right-tailed, and 'lower' means left-tailed.",
-                "Do not stop at 'Reject H0' or 'Fail to reject H0'. Explain what that means in plain language.",
-            ]
-            direct_answer_text = (
-                f"x̄ = {sample_mean:.3f}, μ0 = {hypoth_mean:.3f}, σ = {population_sd:.3f}, n = {sample_size}, "
-                f"z = {z_value:.3f}. Decision: {decision_text}. {plain_language_conclusion}"
-            )
-            exam_paragraph_text = (
-                f"A one-sample z-test is appropriate because this question compares one sample mean with a known benchmark mean using a known population standard deviation. "
-                f"Here, x̄ = {sample_mean:.3f}, μ0 = {hypoth_mean:.3f}, σ = {population_sd:.3f}, and n = {sample_size}. "
-                f"Using the formula z = (x̄ - μ0) / (σ / √n), the calculated z-value is {z_value:.3f}. "
-                f"For a {tail_type.lower()} test at alpha = {alpha:.2f}, the critical rule is: {critical_text}. "
-                f"Because the result is {z_value:.3f}, the decision is to {decision_text}. "
-                f"In plain language, this means {plain_language_conclusion.lower()}"
-            )
-            structured_template_text = "\n".join(
-                [
-                    f"Given: x̄ = {sample_mean:.3f}, μ0 = {hypoth_mean:.3f}, σ = {population_sd:.3f}, n = {sample_size}, α = {alpha:.2f}",
-                    "Find: whether the sample mean is statistically different from the benchmark mean",
-                    "Method: one-sample z-test",
-                    f"Calculation: z = (x̄ - μ0) / (σ / √n) = ({sample_mean:.3f} - {hypoth_mean:.3f}) / ({population_sd:.3f} / √{sample_size}) = {z_value:.3f}",
-                    f"Decision: {decision_text} because {critical_text}",
-                    f"Interpretation: {plain_language_conclusion}",
+                sheets_columns = [
+                    "Raw data in separate columns for Group 1, Group 2, and Group 3",
+                    "Summary rows for means, counts, and SDs under each group column",
                 ]
-            )
-            sheets_explanation_text = (
-                f"In Google Sheets, I would enter the sample mean ({sample_mean:.3f}), the benchmark mean ({hypoth_mean:.3f}), "
-                f"the known standard deviation ({population_sd:.3f}), the sample size ({sample_size}), and alpha ({alpha:.2f}). "
-                f"I would calculate the standard error, then use the one-sample z-test formula to get z = {z_value:.3f}. "
-                f"After that, I would compare the result with the critical z-value for a {tail_type.lower()} test and write the decision as {decision_text}. "
-                f"That gives the plain-language conclusion: {plain_language_conclusion}"
-            )
-            multiple_choice_text = (
-                f"If the exam gives two choices such as 'not significantly different' versus 'significantly different', the correct choice here is the option that matches '{plain_language_conclusion}'."
-            )
-
-            stats_metric_cols = st.columns(4)
-            stats_metric_cols[0].metric("SE", f"{standard_error:.3f}")
-            stats_metric_cols[1].metric("z-value", f"{z_value:.3f}")
-            stats_metric_cols[2].metric("p-value", f"{p_value:.4f}")
-            stats_metric_cols[3].metric("Decision", decision_text)
-            st.caption(f"Tail-type hint from the prompt: {tail_hint}")
-            st.latex(rf"z = \frac{{\bar{{x}} - \mu_0}}{{\sigma / \sqrt{{n}}}} = \frac{{{sample_mean:.3f} - {hypoth_mean:.3f}}}{{{population_sd:.3f} / \sqrt{{{sample_size}}}}} = {z_value:.3f}")
-            st.markdown(f"**Critical rule:** {critical_text}")
-            st.markdown("**Plain-language conclusion:**")
-            st.markdown(f"- {plain_language_conclusion}")
-            with st.expander("Visual rejection-region guide"):
-                st.code(visual_block, language="text")
-            with st.expander("Common mistakes to avoid"):
-                for warning in common_mistakes:
-                    st.markdown(f"- {warning}")
-                if "sample standard deviation" in prompt_lower and any(term in prompt_lower for term in ["known sigma", "known standard deviation", "population standard deviation", "national average"]):
-                    st.warning("This prompt includes both a sample SD and a known comparison SD. For the z-test, use the known SD unless the course instructions say otherwise.")
-            answer_tabs = st.tabs(["Direct answer", "Exam paragraph", "Structured template", "Google Sheets wording", "Multiple-choice wording"])
-            with answer_tabs[0]:
-                st.text_area("Direct answer", value=direct_answer_text, height=120, key=f"{base_key}_z_direct_answer")
-            with answer_tabs[1]:
-                st.text_area("Exam paragraph", value=exam_paragraph_text, height=180, key=f"{base_key}_z_exam_paragraph")
-            with answer_tabs[2]:
-                st.text_area("Given / Find / Method / Calculation / Decision / Interpretation", value=structured_template_text, height=200, key=f"{base_key}_z_structured_template")
-            with answer_tabs[3]:
-                st.text_area("Google Sheets explanation", value=sheets_explanation_text, height=180, key=f"{base_key}_z_sheets_explanation")
-            with answer_tabs[4]:
-                st.text_area("Multiple-choice wording", value=multiple_choice_text, height=120, key=f"{base_key}_z_mc_text")
-            ci_critical = NormalDist().inv_cdf(1 - alpha / 2)
-            ci_lower = sample_mean - (ci_critical * standard_error)
-            ci_upper = sample_mean + (ci_critical * standard_error)
-            render_confidence_interval(f"{int((1 - alpha) * 100)}% confidence interval for the mean", ci_lower, ci_upper)
-            ci_summary_text = f" {int((1 - alpha) * 100)}% CI for the mean = [{ci_lower:.3f}, {ci_upper:.3f}]."
-
-            stats_summary_text = (
-                f"One-sample z-test summary: x̄ = {sample_mean:.3f}, μ0 = {hypoth_mean:.3f}, σ = {population_sd:.3f}, "
-                f"n = {sample_size}, SE = {standard_error:.3f}, z = {z_value:.3f}, alpha = {alpha:.2f}, "
-                f"tail = {tail_type}, p-value = {p_value:.4f}, decision = {decision_text}."
-            )
-            stats_summary_text += ci_summary_text
-            stats_summary_text += f" Plain-language conclusion: {plain_language_conclusion}"
-
-            sheets_columns = [
-                "Cells for sample mean, hypothesised mean, population SD, sample size, alpha, and tail type.",
-                "Optional text cells for H0, H1, decision, and plain-language conclusion.",
-            ]
-            sheets_formulas = [
-                "SE: =population_sd/SQRT(sample_size)",
-                "z-value: =(sample_mean-hyp_mean)/(population_sd/SQRT(sample_size))",
-                "Critical z-value for two-tailed: =NORM.S.INV(1-alpha/2)",
-                "Critical z-value for right-tailed: =NORM.S.INV(1-alpha)",
-                "Critical z-value for left-tailed: =NORM.S.INV(alpha)",
-                "Two-tailed p-value: =2*(1-NORM.S.DIST(ABS(z_value),TRUE))",
-                "Right-tailed p-value: =1-NORM.S.DIST(z_value,TRUE)",
-                "Left-tailed p-value: =NORM.S.DIST(z_value,TRUE)",
-                "Decision text (two-tailed): =IF(ABS(z_value)>critical_z,\"Reject H0\",\"Fail to reject H0\")",
-                "Plain-language conclusion: =IF(decision_cell=\"Reject H0\",\"The sample mean is significantly \"&IF(sample_mean>hyp_mean,\"higher\",\"lower\")&\" than the benchmark mean.\",\"There is not enough evidence to say the sample mean differs significantly from the benchmark mean.\")",
-                "If you have raw data and known population SD, use summary-statistic cells instead of trying to force a one-click Sheets test.",
-            ]
-            sheets_notes = [
-                "Use a z-test only when the population standard deviation is known or the course specifically tells you to use z.",
-                "If the question gives both a sample SD and a known benchmark or population SD, use the known SD for the z-test unless the course tells you otherwise.",
-                "If the wording says 'different', choose a two-tailed test. If it says 'higher', choose right-tailed. If it says 'lower', choose left-tailed.",
-                "Add small text cells for H0 and H1 if you want your sheet to double as an exam working page.",
-            ]
-            stats_template_spec = make_stats_template_spec(
-                "Google Sheets template - One-sample z-test",
-                "This template gives you a simple summary-based z-test setup with optional raw observations.",
-                [
-                    "RawData: observation",
-                    "Summary: sample_mean, hypoth_mean, population_sd, sample_size, alpha, tail_type, standard_error, z_value, critical_value, p_value, decision, plain_language_conclusion",
-                ],
-                sheets_formulas,
-                sheets_notes,
-                {
-                    "RawData": [[value] for value in build_numeric_sample_series(sample_mean, spread=max(population_sd * 0.5, 1.0))],
-                    "Summary": [
-                        [round(sample_mean, 3), round(hypoth_mean, 3), round(population_sd, 3), int(sample_size), alpha, tail_type, round(standard_error, 3), round(z_value, 3), round(critical_value, 3), round(p_value, 4), decision_text, plain_language_conclusion],
-                    ],
-                },
-            )
-
-        elif calc_type == "Z-score":
-            calc_col1, calc_col2 = st.columns(2)
-            with calc_col1:
-                value = st.number_input("Observed value (x)", value=110.0, step=1.0, key=f"{base_key}_zs_value")
-                mean_value = st.number_input("Mean (μ)", value=100.0, step=1.0, key=f"{base_key}_zs_mean")
-            with calc_col2:
-                sd_value = st.number_input("Standard deviation (σ)", min_value=0.0001, value=10.0, step=0.5, key=f"{base_key}_zs_sd")
-
-            z_score_value = (value - mean_value) / sd_value
-            interpretation = "far above the mean" if z_score_value >= 2 else "above the mean" if z_score_value > 0 else "far below the mean" if z_score_value <= -2 else "below the mean" if z_score_value < 0 else "equal to the mean"
-            stats_metric_cols = st.columns(3)
-            stats_metric_cols[0].metric("z-score", f"{z_score_value:.3f}")
-            stats_metric_cols[1].metric("Distance", f"{abs(z_score_value):.3f} SD")
-            stats_metric_cols[2].metric("Interpretation", interpretation)
-            st.latex(rf"z = \frac{{x - \mu}}{{\sigma}} = \frac{{{value:.3f} - {mean_value:.3f}}}{{{sd_value:.3f}}} = {z_score_value:.3f}")
-
-            stats_summary_text = (
-                f"Z-score summary: x = {value:.3f}, μ = {mean_value:.3f}, σ = {sd_value:.3f}, "
-                f"z = {z_score_value:.3f}, interpretation = {interpretation}."
-            )
-
-            sheets_columns = [
-                "Column B: observed values",
-                "A mean cell and a standard deviation cell to standardise each observation",
-            ]
-            sheets_formulas = [
-                "Mean: =AVERAGE(B2:B101)",
-                "Standard deviation: =STDEV.S(B2:B101)",
-                "Z-score for B2: =(B2-$E$2)/$E$3",
-            ]
-            sheets_notes = [
-                "Use absolute z-scores above about 2 as a first signal that a value is unusually far from the mean.",
-            ]
-            stats_template_spec = make_stats_template_spec(
-                "Google Sheets template - Z-score",
-                "This template stores observed values and a summary area for mean and standard deviation so each score can be standardised.",
-                [
-                    "Data: observation, z_score",
-                    "Summary: mean, standard_deviation, highlighted_value",
-                ],
-                sheets_formulas,
-                sheets_notes,
-                {
-                    "Data": [[sample, ""] for sample in build_numeric_sample_series(mean_value, spread=max(sd_value, 1.0), minimum=0 if mean_value >= 0 and value >= 0 else None)],
-                    "Summary": [
-                        [round(mean_value, 3), round(sd_value, 3), round(value, 3)],
-                    ],
-                },
-            )
-
-        elif calc_type == "Two-proportion z-test":
-            calc_col1, calc_col2 = st.columns(2)
-            with calc_col1:
-                success_a = st.number_input("Successes in group A", min_value=0, value=520, step=1, key=f"{base_key}_zp_success_a")
-                total_a = st.number_input("Total in group A", min_value=1, value=10000, step=1, key=f"{base_key}_zp_total_a")
-                success_b = st.number_input("Successes in group B", min_value=0, value=570, step=1, key=f"{base_key}_zp_success_b")
-            with calc_col2:
-                total_b = st.number_input("Total in group B", min_value=1, value=10050, step=1, key=f"{base_key}_zp_total_b")
-                alpha = st.selectbox("Alpha (α)", options=[0.10, 0.05, 0.01], index=1, format_func=lambda x: f"{x:.2f}", key=f"{base_key}_zp_alpha")
-                tail_type = st.selectbox("Tail type", options=["Two-tailed", "Right-tailed", "Left-tailed"], key=f"{base_key}_zp_tail")
-
-            p_a = success_a / total_a
-            p_b = success_b / total_b
-            pooled_p = (success_a + success_b) / (total_a + total_b)
-            standard_error = math.sqrt(pooled_p * (1 - pooled_p) * ((1 / total_a) + (1 / total_b)))
-            z_value = (p_a - p_b) / standard_error
-            p_value, decision_text, critical_text = z_test_tail_result(z_value, alpha, tail_type)
-
-            stats_metric_cols = st.columns(4)
-            stats_metric_cols[0].metric("pA", f"{p_a:.4f}")
-            stats_metric_cols[1].metric("pB", f"{p_b:.4f}")
-            stats_metric_cols[2].metric("z-value", f"{z_value:.3f}")
-            stats_metric_cols[3].metric("p-value", f"{p_value:.4f}")
-            st.markdown(f"**Critical rule:** {critical_text}")
-            st.latex(rf"z = \frac{{p_A - p_B}}{{\sqrt{{p(1-p)(1/n_A + 1/n_B)}}}} = {z_value:.3f}")
-            ci_critical = NormalDist().inv_cdf(1 - alpha / 2)
-            unpooled_se = math.sqrt((p_a * (1 - p_a) / total_a) + (p_b * (1 - p_b) / total_b))
-            difference = p_a - p_b
-            ci_lower = difference - (ci_critical * unpooled_se)
-            ci_upper = difference + (ci_critical * unpooled_se)
-            confidence_label = f"{int((1 - alpha) * 100)}% confidence interval for the proportion difference"
-            render_confidence_interval(confidence_label, ci_lower, ci_upper)
-            ci_summary_text = f" {int((1 - alpha) * 100)}% CI for the proportion difference = [{ci_lower:.4f}, {ci_upper:.4f}]."
-
-            stats_summary_text = (
-                f"Two-proportion z-test summary: pA = {p_a:.4f}, pB = {p_b:.4f}, pooled p = {pooled_p:.4f}, "
-                f"SE = {standard_error:.5f}, z = {z_value:.3f}, alpha = {alpha:.2f}, tail = {tail_type}, "
-                f"decision = {decision_text}, p-value = {p_value:.4f}."
-            )
-            stats_summary_text += ci_summary_text
-
-            sheets_columns = [
-                "Cells for successes and totals in each group.",
-            ]
-            sheets_formulas = [
-                "pA: =success_A/total_A",
-                "pB: =success_B/total_B",
-                "pooled p: =(success_A+success_B)/(total_A+total_B)",
-                "SE: =SQRT(pooled_p*(1-pooled_p)*((1/total_A)+(1/total_B)))",
-                "z-value: =(pA-pB)/SE",
-                "Two-tailed p-value: =2*(1-NORM.S.DIST(ABS(z_value),TRUE))",
-                "Right-tailed p-value: =1-NORM.S.DIST(z_value,TRUE)",
-                "Left-tailed p-value: =NORM.S.DIST(z_value,TRUE)",
-            ]
-            sheets_notes = [
-                "This setup is useful for click-through rate, conversion rate, acceptance rate, or any yes/no proportion question.",
-            ]
-            stats_template_spec = make_stats_template_spec(
-                "Google Sheets template - Two-proportion z-test",
-                "This template stores successes and totals for two groups so you can compare conversion-style rates in Google Sheets.",
-                [
-                    "GroupSummary: group, successes, total, proportion",
-                ],
-                sheets_formulas,
-                sheets_notes,
-                {
-                    "GroupSummary": [
-                        ["Group A", min(int(success_a), int(total_a)), int(total_a), ""],
-                        ["Group B", min(int(success_b), int(total_b)), int(total_b), ""],
-                    ],
-                },
-            )
-
-        elif calc_type == "Chi-square test of independence (2x2)":
-            obs_cols = st.columns(2)
-            with obs_cols[0]:
-                observed_11 = st.number_input("Row 1, Column 1", min_value=0, value=45, step=1, key=f"{base_key}_chi_11")
-                observed_12 = st.number_input("Row 1, Column 2", min_value=0, value=30, step=1, key=f"{base_key}_chi_12")
-            with obs_cols[1]:
-                observed_21 = st.number_input("Row 2, Column 1", min_value=0, value=20, step=1, key=f"{base_key}_chi_21")
-                observed_22 = st.number_input("Row 2, Column 2", min_value=0, value=55, step=1, key=f"{base_key}_chi_22")
-
-            row_1_total = observed_11 + observed_12
-            row_2_total = observed_21 + observed_22
-            col_1_total = observed_11 + observed_21
-            col_2_total = observed_12 + observed_22
-            grand_total = row_1_total + row_2_total
-
-            expected_11 = (row_1_total * col_1_total) / grand_total if grand_total else 0
-            expected_12 = (row_1_total * col_2_total) / grand_total if grand_total else 0
-            expected_21 = (row_2_total * col_1_total) / grand_total if grand_total else 0
-            expected_22 = (row_2_total * col_2_total) / grand_total if grand_total else 0
-            expected_values = [expected_11, expected_12, expected_21, expected_22]
-            observed_values = [observed_11, observed_12, observed_21, observed_22]
-            chi_square_value = sum(((obs - exp) ** 2) / exp for obs, exp in zip(observed_values, expected_values) if exp > 0)
-            degrees_freedom = 1
-            p_value = scipy_stats.chi2.sf(chi_square_value, degrees_freedom) if scipy_stats is not None else None
-
-            stats_metric_cols = st.columns(4)
-            stats_metric_cols[0].metric("Chi-square", f"{chi_square_value:.3f}")
-            stats_metric_cols[1].metric("df", f"{degrees_freedom}")
-            stats_metric_cols[2].metric("Grand total", f"{grand_total}")
-            stats_metric_cols[3].metric("p-value", f"{p_value:.4f}" if p_value is not None else "SciPy needed")
-
-            st.markdown("**Expected counts**")
-            st.markdown(f"- Cell (1,1): {expected_11:.2f}")
-            st.markdown(f"- Cell (1,2): {expected_12:.2f}")
-            st.markdown(f"- Cell (2,1): {expected_21:.2f}")
-            st.markdown(f"- Cell (2,2): {expected_22:.2f}")
-            if any(value < 5 for value in expected_values):
-                st.warning("At least one expected count is below 5. The chi-square approximation may be weak, so interpret the result with caution.")
-
-            stats_summary_text = (
-                f"Chi-square test of independence summary: observed counts = [{observed_11}, {observed_12}; {observed_21}, {observed_22}], "
-                f"expected counts = [{expected_11:.2f}, {expected_12:.2f}; {expected_21:.2f}, {expected_22:.2f}], "
-                f"chi-square = {chi_square_value:.3f}, df = {degrees_freedom}."
-            )
-            if p_value is not None:
-                stats_summary_text += f" p-value = {p_value:.4f}."
-
-            sheets_columns = [
-                "Observed 2x2 table in B3:C4",
-                "Row totals in D3:D4, column totals in B5:C5, grand total in D5",
-                "Expected table in B8:C9",
-            ]
-            sheets_formulas = [
-                "D3: =SUM(B3:C3)",
-                "D4: =SUM(B4:C4)",
-                "B5: =SUM(B3:B4)",
-                "C5: =SUM(C3:C4)",
-                "D5: =SUM(B5:C5)",
-                "B8: =$D3*B$5/$D$5",
-                "C8: =$D3*C$5/$D$5",
-                "B9: =$D4*B$5/$D$5",
-                "C9: =$D4*C$5/$D$5",
-                "p-value from observed vs expected: =CHISQ.TEST(B3:C4,B8:C9)",
-            ]
-            sheets_notes = [
-                "Use chi-square for categorical count data, not for means.",
-                "Check that expected counts are not too small before trusting the result.",
-            ]
-            stats_template_spec = make_stats_template_spec(
-                "Google Sheets template - Chi-square 2x2",
-                "This template gives you a compact observed-count table for a 2x2 chi-square test.",
-                [
-                    "ObservedTable: category, column_1_count, column_2_count",
-                ],
-                sheets_formulas,
-                sheets_notes,
-                {
-                    "ObservedTable": [
-                        ["Row 1", int(observed_11), int(observed_12)],
-                        ["Row 2", int(observed_21), int(observed_22)],
-                    ],
-                },
-            )
-
-        else:
-            anova_col1, anova_col2, anova_col3 = st.columns(3)
-            with anova_col1:
-                mean_1 = st.number_input("Group 1 mean", value=64.0, step=1.0, key=f"{base_key}_anova_mean_1")
-                sd_1 = st.number_input("Group 1 SD", min_value=0.0001, value=8.0, step=0.5, key=f"{base_key}_anova_sd_1")
-                n_1 = st.number_input("Group 1 n", min_value=2, value=25, step=1, key=f"{base_key}_anova_n_1")
-            with anova_col2:
-                mean_2 = st.number_input("Group 2 mean", value=70.0, step=1.0, key=f"{base_key}_anova_mean_2")
-                sd_2 = st.number_input("Group 2 SD", min_value=0.0001, value=9.0, step=0.5, key=f"{base_key}_anova_sd_2")
-                n_2 = st.number_input("Group 2 n", min_value=2, value=24, step=1, key=f"{base_key}_anova_n_2")
-            with anova_col3:
-                mean_3 = st.number_input("Group 3 mean", value=75.0, step=1.0, key=f"{base_key}_anova_mean_3")
-                sd_3 = st.number_input("Group 3 SD", min_value=0.0001, value=8.5, step=0.5, key=f"{base_key}_anova_sd_3")
-                n_3 = st.number_input("Group 3 n", min_value=2, value=26, step=1, key=f"{base_key}_anova_n_3")
-                alpha = st.selectbox("Alpha (α)", options=[0.10, 0.05, 0.01], index=1, format_func=lambda x: f"{x:.2f}", key=f"{base_key}_anova_alpha")
-
-            total_n = n_1 + n_2 + n_3
-            overall_mean = ((mean_1 * n_1) + (mean_2 * n_2) + (mean_3 * n_3)) / total_n
-            ss_between = (n_1 * ((mean_1 - overall_mean) ** 2)) + (n_2 * ((mean_2 - overall_mean) ** 2)) + (n_3 * ((mean_3 - overall_mean) ** 2))
-            ss_within = ((n_1 - 1) * (sd_1 ** 2)) + ((n_2 - 1) * (sd_2 ** 2)) + ((n_3 - 1) * (sd_3 ** 2))
-            df_between = 2
-            df_within = total_n - 3
-            ms_between = ss_between / df_between
-            ms_within = ss_within / df_within if df_within else 0
-            f_value = ms_between / ms_within if ms_within else 0
-            p_value = scipy_stats.f.sf(f_value, df_between, df_within) if scipy_stats is not None else None
-
-            stats_metric_cols = st.columns(4)
-            stats_metric_cols[0].metric("Overall mean", f"{overall_mean:.3f}")
-            stats_metric_cols[1].metric("F-value", f"{f_value:.3f}")
-            stats_metric_cols[2].metric("df", f"{df_between}, {df_within}")
-            stats_metric_cols[3].metric("p-value", f"{p_value:.4f}" if p_value is not None else "SciPy needed")
-            st.info("ANOVA tells you whether at least one group mean differs. It does not tell you which groups differ until you run a post-hoc comparison.")
-            pairwise_lines = []
-            if scipy_stats is not None and p_value is not None and p_value < alpha:
-                st.markdown("**Simple post-hoc screen (pairwise Welch comparisons with Bonferroni correction)**")
-                bonferroni_alpha = alpha / 3
-                pairwise_inputs = [
-                    ("Group 1 vs Group 2", mean_1, sd_1, n_1, mean_2, sd_2, n_2),
-                    ("Group 1 vs Group 3", mean_1, sd_1, n_1, mean_3, sd_3, n_3),
-                    ("Group 2 vs Group 3", mean_2, sd_2, n_2, mean_3, sd_3, n_3),
+                sheets_formulas = [
+                    "Group 1 mean: =AVERAGE(B2:B26)",
+                    "Group 2 mean: =AVERAGE(C2:C25)",
+                    "Group 3 mean: =AVERAGE(D2:D27)",
+                    "Group counts: =COUNT(B2:B26), =COUNT(C2:C25), =COUNT(D2:D27)",
+                    "Overall mean: =AVERAGE(B2:D27)",
+                    "SS_between example: =SUMPRODUCT(B30:D30,(B29:D29-$B$31)^2)",
+                    "Within-group SS example: =SUM(ArrayFormula((FILTER(B2:B26,ISNUMBER(B2:B26))-$B$29)^2))+SUM(ArrayFormula((FILTER(C2:C25,ISNUMBER(C2:C25))-$C$29)^2))+SUM(ArrayFormula((FILTER(D2:D27,ISNUMBER(D2:D27))-$D$29)^2))",
                 ]
-                for label, mean_a, sd_a, n_a, mean_b, sd_b, n_b in pairwise_inputs:
-                    variance_piece_a = (sd_a ** 2) / n_a
-                    variance_piece_b = (sd_b ** 2) / n_b
-                    pair_se = math.sqrt(variance_piece_a + variance_piece_b)
-                    pair_t = (mean_a - mean_b) / pair_se
-                    numerator = (variance_piece_a + variance_piece_b) ** 2
-                    denominator = ((variance_piece_a ** 2) / (n_a - 1)) + ((variance_piece_b ** 2) / (n_b - 1))
-                    pair_df = numerator / denominator if denominator else 1
-                    pair_p = 2 * (1 - scipy_stats.t.cdf(abs(pair_t), pair_df))
-                    pair_decision = "Likely different" if pair_p < bonferroni_alpha else "No strong pairwise evidence"
-                    st.markdown(f"- {label}: t = {pair_t:.3f}, df = {pair_df:.2f}, p = {pair_p:.4f}, decision = {pair_decision}")
-                    pairwise_lines.append(f"{label}: t = {pair_t:.3f}, df = {pair_df:.2f}, p = {pair_p:.4f}, decision = {pair_decision}")
-            elif p_value is not None and p_value >= alpha:
-                st.markdown("**Post-hoc note:** The ANOVA is not statistically significant at the selected alpha level, so pairwise follow-up tests are usually not the main next step.")
-
-            stats_summary_text = (
-                f"One-way ANOVA summary: means = [{mean_1:.3f}, {mean_2:.3f}, {mean_3:.3f}], "
-                f"SDs = [{sd_1:.3f}, {sd_2:.3f}, {sd_3:.3f}], ns = [{n_1}, {n_2}, {n_3}], overall mean = {overall_mean:.3f}, "
-                f"SS_between = {ss_between:.3f}, SS_within = {ss_within:.3f}, F = {f_value:.3f}, df = ({df_between}, {df_within}), alpha = {alpha:.2f}."
-            )
-            if p_value is not None:
-                stats_summary_text += f" p-value = {p_value:.4f}."
-            if pairwise_lines:
-                stats_summary_text += " Post-hoc screen (Bonferroni-adjusted pairwise tests): " + " | ".join(pairwise_lines)
-
-            sheets_columns = [
-                "Raw data in separate columns for Group 1, Group 2, and Group 3",
-                "Summary rows for means, counts, and SDs under each group column",
-            ]
-            sheets_formulas = [
-                "Group 1 mean: =AVERAGE(B2:B26)",
-                "Group 2 mean: =AVERAGE(C2:C25)",
-                "Group 3 mean: =AVERAGE(D2:D27)",
-                "Group counts: =COUNT(B2:B26), =COUNT(C2:C25), =COUNT(D2:D27)",
-                "Overall mean: =AVERAGE(B2:D27)",
-                "SS_between example: =SUMPRODUCT(B30:D30,(B29:D29-$B$31)^2)",
-                "Within-group SS example: =SUM(ArrayFormula((FILTER(B2:B26,ISNUMBER(B2:B26))-$B$29)^2))+SUM(ArrayFormula((FILTER(C2:C25,ISNUMBER(C2:C25))-$C$29)^2))+SUM(ArrayFormula((FILTER(D2:D27,ISNUMBER(D2:D27))-$D$29)^2))",
-            ]
-            sheets_notes = [
-                "In basic Google Sheets, a manual ANOVA setup is often clearer than relying on a hidden add-on.",
-                "If the ANOVA is significant, add a post-hoc comparison step before claiming which exact groups differ.",
-            ]
-            stats_template_spec = make_stats_template_spec(
-                "Google Sheets template - One-way ANOVA",
-                "This template stores three groups in separate columns so you can build a manual ANOVA setup in Google Sheets.",
-                [
-                    "Data: group_1, group_2, group_3",
-                    "Summary: mean_1, sd_1, n_1, mean_2, sd_2, n_2, mean_3, sd_3, n_3, alpha",
-                ],
-                sheets_formulas,
-                sheets_notes,
-                {
-                    "Data": build_grouped_rows(
-                        build_numeric_sample_series(mean_1, spread=max(sd_1 * 0.5, 1.0)),
-                        build_numeric_sample_series(mean_2, spread=max(sd_2 * 0.5, 1.0)),
-                        build_numeric_sample_series(mean_3, spread=max(sd_3 * 0.5, 1.0)),
-                    ),
-                    "Summary": [
-                        [round(mean_1, 3), round(sd_1, 3), int(n_1), round(mean_2, 3), round(sd_2, 3), int(n_2), round(mean_3, 3), round(sd_3, 3), int(n_3), alpha],
+                sheets_notes = [
+                    "In basic Google Sheets, a manual ANOVA setup is often clearer than relying on a hidden add-on.",
+                    "If the ANOVA is significant, add a post-hoc comparison step before claiming which exact groups differ.",
+                ]
+                stats_template_spec = make_stats_template_spec(
+                    "Google Sheets template - One-way ANOVA",
+                    "This template stores three groups in separate columns so you can build a manual ANOVA setup in Google Sheets.",
+                    [
+                        "Data: group_1, group_2, group_3",
+                        "Summary: mean_1, sd_1, n_1, mean_2, sd_2, n_2, mean_3, sd_3, n_3, alpha",
                     ],
-                },
+                    sheets_formulas,
+                    sheets_notes,
+                    {
+                        "Data": build_grouped_rows(
+                            build_numeric_sample_series(mean_1, spread=max(sd_1 * 0.5, 1.0)),
+                            build_numeric_sample_series(mean_2, spread=max(sd_2 * 0.5, 1.0)),
+                            build_numeric_sample_series(mean_3, spread=max(sd_3 * 0.5, 1.0)),
+                        ),
+                        "Summary": [
+                            [round(mean_1, 3), round(sd_1, 3), int(n_1), round(mean_2, 3), round(sd_2, 3), int(n_2), round(mean_3, 3), round(sd_3, 3), int(n_3), alpha],
+                        ],
+                    },
+                )
+
+        except Exception as _calc_panel_exc:
+            st.error(
+                f"Could not render the {calc_type} panel: "
+                f"{type(_calc_panel_exc).__name__}: {_calc_panel_exc}"
             )
+            st.caption("Defensive guard; try a different calculation type or adjust the inputs.")
 
         st.text_area(
             "Verified stats / hypothesis summary to use in your answer",
