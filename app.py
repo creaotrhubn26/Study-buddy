@@ -69177,6 +69177,14 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         "mean and sd",
         "mean, median",
         "median and mode",
+        "gjennomsnitt og median",
+        "gjennomsnitt og standardavvik",
+        "beskrivende statistikk",
+        "beregn gjennomsnittet",
+        "beregn medianen",
+        "finn gjennomsnittet",
+        "finn medianen",
+        "sentraltendens",
     ])
     stats_guardrail_needed = (
         course_template_key == "statistics"
@@ -69383,7 +69391,15 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 for match in re.findall(r"\d+(?:\.\d+)?(?:[eE][+-]?\d+)?", cleaned_prompt)
             ]
 
-        _MEAN_PATTERNS = [r"\bmean\b", r"\baverage\b", r"\bavg\b", r"\bm\s*=", r"x[̄¯]\s*="]
+        _MEAN_PATTERNS = [
+            r"\bmean\b",
+            r"\baverage\b",
+            r"\bavg\b",
+            r"\bm\s*=",
+            r"x[̄¯]\s*=",
+            r"\bgjennomsnitt(?:et)?\b",
+            r"\bsnitt\b",
+        ]
         _SD_PATTERNS = [
             r"standard\s+deviation",
             r"std\.?\s*dev\.?",
@@ -69391,14 +69407,17 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             r"\bs\s*=",
             r"\bsigma\b",
             r"σ\s*=",
+            r"\bstandardavvik(?:et)?\b",
         ]
         _N_PATTERNS = [
             r"sample\s+size",
             r"sample\s+of\b",
             r"number\s+of\s+(?:pairs|observations|samples|respondents|participants|students|people|subjects)",
+            r"utvalg(?:s)?(?:størrelse| av| på)",
+            r"antall\s+(?:par|observasjoner|deltakere|respondenter|studenter|personer)",
             # Matches "n=30", "n: 30", "n is 30", "n of 30", and plain "n 30".
             # Trailing lookahead keeps it from binding to a far-off number.
-            r"\bn\b\s*(?:is|of)?\s*[=:]?\s*(?=\d)",
+            r"\bn\b\s*(?:is|of|er|på)?\s*[=:]?\s*(?=\d)",
         ]
 
         def _find_first_number(segment, label_patterns, integer=False):
@@ -69431,11 +69450,11 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             positions = []
             for key in group_keys:
                 if key.lower() in ("before", "pre", "pretest", "pre-test"):
-                    pattern = r"\b(?:before|pre[- ]?test|baseline|prior)\b"
+                    pattern = r"\b(?:before|pre[- ]?test|baseline|prior|før|før-test|fortest)\b"
                 elif key.lower() in ("after", "post", "posttest", "post-test"):
-                    pattern = r"\b(?:after|post[- ]?test|follow[- ]?up)\b"
+                    pattern = r"\b(?:after|post[- ]?test|follow[- ]?up|etter|etter-test|ettertest)\b"
                 else:
-                    pattern = rf"(?:group|sample|condition|class|set)\s+{re.escape(key)}\b"
+                    pattern = rf"(?:group|sample|condition|class|set|gruppe|utvalg|klasse)\s+{re.escape(key)}\b"
                 match = re.search(pattern, prompt_text, re.IGNORECASE)
                 if not match:
                     return None
@@ -69847,25 +69866,28 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 "min-max scaling" in prompt_lower
                 or "min-max normalization" in prompt_lower
                 or "min-max normalisation" in prompt_lower
+                or "min-maks skalering" in prompt_lower
+                or "min-maks normalisering" in prompt_lower
                 or ("scale" in prompt_lower and ("range 0 to 1" in prompt_lower or "range 0-1" in prompt_lower or "0 to 1 range" in prompt_lower))
+                or ("skaler" in prompt_lower and "0 til 1" in prompt_lower)
             ):
                 return "Min-max scaling"
-            if any(term in prompt_lower for term in ["equal-width bins", "equal width bins", "bin width", "width of each bin", "fall in the first bin", "fall in the second bin"]):
+            if any(term in prompt_lower for term in ["equal-width bins", "equal width bins", "bin width", "width of each bin", "fall in the first bin", "fall in the second bin", "like brede klasser", "intervaller med lik bredde"]):
                 return "Equal-width binning (numeric values)"
-            if any(term in prompt_lower for term in ["relative frequency", "cumulative frequency", "frequency count", "frequency distribution", "frequency table", "individual terms (classes)", "how many classes", "categorical dataset"]):
+            if any(term in prompt_lower for term in ["relative frequency", "cumulative frequency", "frequency count", "frequency distribution", "frequency table", "individual terms (classes)", "how many classes", "categorical dataset", "frekvensfordeling", "frekvenstabell", "relativ frekvens", "kumulativ frekvens"]):
                 return "Frequency table (categorical values)"
             if "likert" in prompt_lower:
                 return "Likert scale and realistic hypotheses"
             # ANOVA before paired so "three paired groups" routes to ANOVA, not paired t-test.
-            if "anova" in prompt_lower or "three groups" in prompt_lower or "3 groups" in prompt_lower or "repeated measures" in prompt_lower:
+            if any(term in prompt_lower for term in ["anova", "three groups", "3 groups", "repeated measures", "tre grupper", "variansanalyse", "enveis anova"]):
                 return "One-way ANOVA (3 groups)"
-            if "paired" in prompt_lower or "before and after" in prompt_lower or "before/after" in prompt_lower or "pre-test" in prompt_lower or "pretest" in prompt_lower or "same group" in prompt_lower:
+            if any(term in prompt_lower for term in ["paired", "before and after", "before/after", "pre-test", "pretest", "same group", "paret", "før og etter", "før/etter", "samme gruppe"]):
                 return "Paired t-test"
-            if "independent t-test" in prompt_lower or "independent t test" in prompt_lower:
+            if any(term in prompt_lower for term in ["independent t-test", "independent t test", "uavhengig t-test", "uavhengige t-test", "uavhengig t test"]):
                 return "Independent t-test"
-            if "chi-square" in prompt_lower or "chi square" in prompt_lower:
+            if any(term in prompt_lower for term in ["chi-square", "chi square", "kjikvadrat", "kji-kvadrat"]):
                 return "Chi-square test of independence (2x2)"
-            if "z-score" in prompt_lower or "z score" in prompt_lower:
+            if "z-score" in prompt_lower or "z score" in prompt_lower or "z-skåre" in prompt_lower or "z-verdi" in prompt_lower:
                 if any(
                     signal in prompt_lower
                     for signal in [
@@ -69879,15 +69901,21 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                         "known sigma",
                         "population standard deviation",
                         "known standard deviation",
+                        "signifikansnivå",
+                        "hypotese",
+                        "utvalgsgjennomsnitt",
+                        "utvalgsstørrelse",
+                        "kjent standardavvik",
+                        "populasjonsstandardavvik",
                     ]
                 ):
                     return "One-sample z-test"
                 return "Z-score"
-            if "proportion" in prompt_lower or "conversion rate" in prompt_lower or "click-through rate" in prompt_lower or "success rate" in prompt_lower:
+            if any(term in prompt_lower for term in ["proportion", "conversion rate", "click-through rate", "success rate", "andel", "konverteringsrate", "klikkrate", "suksessrate"]):
                 return "Two-proportion z-test"
-            if "population standard deviation" in prompt_lower or "known sigma" in prompt_lower or "known standard deviation" in prompt_lower:
+            if any(term in prompt_lower for term in ["population standard deviation", "known sigma", "known standard deviation", "populasjonsstandardavvik", "kjent sigma", "kjent standardavvik"]):
                 return "One-sample z-test"
-            if "z-test" in prompt_lower or "z test" in prompt_lower:
+            if "z-test" in prompt_lower or "z test" in prompt_lower or "z-prøve" in prompt_lower:
                 return "One-sample z-test"
             if descriptive_stats_phrase_hits:
                 return "Descriptive statistics (raw values)"
