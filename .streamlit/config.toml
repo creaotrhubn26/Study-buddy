@@ -1,4 +1,4 @@
 [server]
 headless = true
-address = "0.0.0.0"
-port = 5000
+# Replit needs address/port; Streamlit Community Cloud sets its own.
+# Leaving them off here lets both environments use sensible defaults.
