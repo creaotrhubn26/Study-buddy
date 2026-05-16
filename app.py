@@ -66104,9 +66104,17 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             text = text[:-1]
 
         text = text.replace(" ", "")
-        if "." in text:
-            # Dot is the decimal marker; any comma must be a thousand-separator.
-            text = text.replace(",", "")
+        if "." in text and "," in text:
+            # Both separators present: the one that appears last is the decimal.
+            # "1,234.56" -> US thousand-sep -> 1234.56
+            # "1.234,56" -> European thousand-sep -> 1234.56
+            if text.rfind(",") > text.rfind("."):
+                text = text.replace(".", "").replace(",", ".")
+            else:
+                text = text.replace(",", "")
+        elif "." in text:
+            # Dot is the decimal marker; nothing to fix.
+            pass
         else:
             # Strip English thousand-separators ("1,000" -> "1000") before
             # converting any remaining European decimal commas ("0,05" -> "0.05").
@@ -66174,18 +66182,25 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         return pairs
 
     def extract_xy_pairs_from_prompt(prompt_text, limit=20):
+        # In a scatter context, commas, tabs, and semicolons act as pair
+        # separators rather than European decimals. Parse each line on its own
+        # so "1,2" -> (1, 2) and "1.5, 2.7" -> (1.5, 2.7).
+        pair_line_pattern = re.compile(
+            r"^\s*[$€£]?(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)\s*"
+            r"[,;\t]\s*"
+            r"[$€£]?(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)\s*$"
+        )
         pairs = []
         for line in prompt_text.splitlines():
             stripped = line.strip(" -•\t")
             if not stripped:
                 continue
-            numeric_matches = re.findall(r"[$€£]?\d[\d,.\s]*[%KkMmBb]?", stripped)
-            numeric_values = [
-                value for value in (parse_numeric_token(match) for match in numeric_matches)
-                if value is not None
-            ]
-            if len(numeric_values) == 2:
-                pairs.append((numeric_values[0], numeric_values[1]))
+            match = pair_line_pattern.match(stripped)
+            if match:
+                try:
+                    pairs.append((float(match.group(1)), float(match.group(2))))
+                except ValueError:
+                    pass
             if len(pairs) >= limit:
                 break
 
@@ -69122,6 +69137,13 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         "average and median",
         "descriptive statistics",
         "central tendency",
+        "find the mean",
+        "find the median",
+        "find the average",
+        "mean and standard deviation",
+        "mean and sd",
+        "mean, median",
+        "median and mode",
     ])
     stats_guardrail_needed = (
         course_template_key == "statistics"
@@ -69788,22 +69810,28 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             return dataset_values, target_values, target_min, target_max
 
         def suggest_calc_type_from_prompt():
-            if "min-max scaling" in prompt_lower or ("scale the following values" in prompt_lower and "range 0 to 1" in prompt_lower):
+            if (
+                "min-max scaling" in prompt_lower
+                or "min-max normalization" in prompt_lower
+                or "min-max normalisation" in prompt_lower
+                or ("scale" in prompt_lower and ("range 0 to 1" in prompt_lower or "range 0-1" in prompt_lower or "0 to 1 range" in prompt_lower))
+            ):
                 return "Min-max scaling"
             if any(term in prompt_lower for term in ["equal-width bins", "equal width bins", "bin width", "width of each bin", "fall in the first bin", "fall in the second bin"]):
                 return "Equal-width binning (numeric values)"
-            if any(term in prompt_lower for term in ["relative frequency", "cumulative frequency", "frequency count", "individual terms (classes)", "how many classes", "categorical dataset"]):
+            if any(term in prompt_lower for term in ["relative frequency", "cumulative frequency", "frequency count", "frequency distribution", "frequency table", "individual terms (classes)", "how many classes", "categorical dataset"]):
                 return "Frequency table (categorical values)"
             if "likert" in prompt_lower:
                 return "Likert scale and realistic hypotheses"
+            # ANOVA before paired so "three paired groups" routes to ANOVA, not paired t-test.
+            if "anova" in prompt_lower or "three groups" in prompt_lower or "3 groups" in prompt_lower or "repeated measures" in prompt_lower:
+                return "One-way ANOVA (3 groups)"
             if "paired" in prompt_lower or "before and after" in prompt_lower or "before/after" in prompt_lower or "pre-test" in prompt_lower or "pretest" in prompt_lower or "same group" in prompt_lower:
                 return "Paired t-test"
             if "independent t-test" in prompt_lower or "independent t test" in prompt_lower:
                 return "Independent t-test"
             if "chi-square" in prompt_lower or "chi square" in prompt_lower:
                 return "Chi-square test of independence (2x2)"
-            if "anova" in prompt_lower or "three groups" in prompt_lower or "3 groups" in prompt_lower:
-                return "One-way ANOVA (3 groups)"
             if "z-score" in prompt_lower or "z score" in prompt_lower:
                 if any(
                     signal in prompt_lower
