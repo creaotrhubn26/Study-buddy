@@ -68,10 +68,25 @@ load_local_env_files()
 def create_ai_runtime_from_env():
     provider = str(os.getenv("STUDY_BUDDY_AI_PROVIDER", "") or "").strip().lower()
     openai_api_key = str(os.getenv("OPENAI_API_KEY", "") or "").strip()
+    anthropic_api_key = str(os.getenv("ANTHROPIC_API_KEY", "") or "").strip()
     moonshot_api_key = str(os.getenv("MOONSHOT_API_KEY", "") or os.getenv("KIMI_API_KEY", "") or "").strip()
     generic_api_key = str(os.getenv("STUDY_BUDDY_AI_API_KEY", "") or "").strip()
     generic_base_url = str(os.getenv("STUDY_BUDDY_AI_BASE_URL", "") or "").strip()
     generic_model = str(os.getenv("STUDY_BUDDY_AI_MODEL", "") or "").strip()
+
+    # Anthropic exposes an OpenAI-SDK-compatible endpoint that accepts Claude
+    # model IDs. We can reuse the OpenAI client and every existing call site
+    # by pointing base_url at api.anthropic.com.
+    anthropic_base_url = (
+        generic_base_url
+        or str(os.getenv("ANTHROPIC_BASE_URL", "") or "").strip()
+        or "https://api.anthropic.com/v1/"
+    )
+    anthropic_model = (
+        generic_model
+        or str(os.getenv("ANTHROPIC_MODEL", "") or "").strip()
+        or "claude-sonnet-4-6"
+    )
 
     # Official Kimi / Moonshot APIs are OpenAI-SDK compatible when base_url is set correctly.
     # Outside mainland China, Moonshot's FAQ points to https://api.moonshot.ai/v1.
@@ -87,6 +102,18 @@ def create_ai_runtime_from_env():
         or "kimi-k2.5"
     )
     openai_model = generic_model or str(os.getenv("OPENAI_MODEL", "") or "").strip() or "gpt-4o-mini"
+
+    if provider in {"anthropic", "claude"} or (
+        anthropic_api_key and not openai_api_key and not moonshot_api_key and provider not in {"openai", "kimi", "moonshot"}
+    ):
+        api_key = generic_api_key or anthropic_api_key
+        if not api_key:
+            return None, None, None
+        return (
+            OpenAI(api_key=api_key, base_url=anthropic_base_url),
+            anthropic_model,
+            "Anthropic",
+        )
 
     if provider in {"kimi", "moonshot"} or (moonshot_api_key and not openai_api_key and provider != "openai"):
         api_key = generic_api_key or moonshot_api_key
@@ -110,8 +137,8 @@ def create_ai_runtime_from_env():
 
 client, AI_CHAT_MODEL, AI_PROVIDER_LABEL = create_ai_runtime_from_env()
 AI_NOT_CONFIGURED_MESSAGE = (
-    "AI is not configured. Add `OPENAI_API_KEY` for OpenAI, or "
-    "`MOONSHOT_API_KEY` / `KIMI_API_KEY` for Kimi."
+    "AI is not configured. Add `ANTHROPIC_API_KEY` for Claude, "
+    "`OPENAI_API_KEY` for OpenAI, or `MOONSHOT_API_KEY` / `KIMI_API_KEY` for Kimi."
 )
 
 
