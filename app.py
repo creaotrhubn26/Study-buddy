@@ -70036,14 +70036,22 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         if calc_type_key not in st.session_state:
             st.session_state[calc_type_key] = suggested_calc_type
         prompt_signature_key = f"{base_key}_stats_prompt_signature"
+        last_autofill_calc_type_key = f"{base_key}_stats_last_autofill_calc_type"
         prompt_signature = (
-            f"{suggested_calc_type}|"
             f"{normalise_text(exam_prompt)[:400]}|"
             f"{'|'.join(format(num, '.6g') for num in prompt_numbers[:16])}"
         )
-        if exam_prompt.strip() and st.session_state.get(prompt_signature_key) != prompt_signature:
-            apply_autofill_to_widgets(suggested_calc_type, prompt_numbers)
+        prompt_changed = st.session_state.get(prompt_signature_key) != prompt_signature
+        current_calc_type = st.session_state.get(calc_type_key, suggested_calc_type)
+        calc_type_changed_since_autofill = (
+            st.session_state.get(last_autofill_calc_type_key) != current_calc_type
+        )
+        if exam_prompt.strip() and (prompt_changed or calc_type_changed_since_autofill):
+            # On a new prompt re-detect the test, but a manual switch keeps the user's pick.
+            target_calc_type = suggested_calc_type if prompt_changed else current_calc_type
+            apply_autofill_to_widgets(target_calc_type, prompt_numbers)
             st.session_state[prompt_signature_key] = prompt_signature
+            st.session_state[last_autofill_calc_type_key] = target_calc_type
 
         chooser_col, autofill_col = st.columns(2)
         with chooser_col:
