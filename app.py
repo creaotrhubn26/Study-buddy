@@ -68423,7 +68423,122 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             # Page break to start report on page 2
             document.add_page_break()
 
-        def _history_to_docx_bytes(entries):
+        def _build_excel_styled_charts(df):
+            """Render Excel-styled matplotlib PNGs from a DataFrame.
+
+            Returns a list of (caption, png_bytes) tuples. Each chart uses
+            Excel's Calibri font, light grid, and the blue accent colour so
+            the charts visually match what the student would see if they
+            took a screenshot from Excel.
+            """
+            import matplotlib
+            matplotlib.use("Agg")
+            import matplotlib.pyplot as _plt
+            from io import BytesIO as _BytesIO
+            results = []
+
+            try:
+                _plt.rcParams.update({
+                    "font.family": "DejaVu Sans",
+                    "axes.edgecolor": "#7F7F7F",
+                    "axes.grid": True,
+                    "grid.color": "#D9D9D9",
+                    "grid.linestyle": "-",
+                    "axes.facecolor": "white",
+                    "figure.facecolor": "white",
+                })
+            except Exception:
+                pass
+
+            numeric_cols = [
+                col for col in df.columns
+                if pd.api.types.is_numeric_dtype(df[col])
+            ]
+            if not numeric_cols:
+                return results
+
+            excel_blue = "#4472C4"
+            excel_green = "#70AD47"
+
+            # Histograms for up to 4 numeric columns.
+            for column in numeric_cols[:4]:
+                series = df[column].dropna()
+                if len(series) < 2:
+                    continue
+                fig, ax = _plt.subplots(figsize=(6.5, 3.8))
+                ax.hist(series, bins=12, color=excel_blue, edgecolor="white")
+                ax.set_title(f"Histogram of {column}", fontsize=12)
+                ax.set_xlabel(column); ax.set_ylabel("Frequency")
+                fig.tight_layout()
+                buf = _BytesIO()
+                fig.savefig(buf, format="png", dpi=144)
+                _plt.close(fig)
+                results.append((f"Histogram of {column} (auto-generated from dataset)", buf.getvalue()))
+
+            # Correlation heatmap if 2+ numeric columns.
+            if len(numeric_cols) >= 2:
+                corr = df[numeric_cols].corr(numeric_only=True)
+                fig, ax = _plt.subplots(figsize=(6.5, 5.5))
+                im = ax.imshow(corr.values, vmin=-1, vmax=1, cmap="RdBu_r")
+                ax.set_xticks(range(len(numeric_cols)))
+                ax.set_xticklabels(numeric_cols, rotation=45, ha="right", fontsize=8)
+                ax.set_yticks(range(len(numeric_cols)))
+                ax.set_yticklabels(numeric_cols, fontsize=8)
+                for i in range(len(numeric_cols)):
+                    for j in range(len(numeric_cols)):
+                        ax.text(j, i, f"{corr.iloc[i, j]:.2f}",
+                                ha="center", va="center", fontsize=7,
+                                color="white" if abs(corr.iloc[i, j]) > 0.5 else "black")
+                ax.set_title("Pearson correlation matrix", fontsize=12)
+                fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+                fig.tight_layout()
+                buf = _BytesIO()
+                fig.savefig(buf, format="png", dpi=144)
+                _plt.close(fig)
+                results.append(("Correlation heatmap (auto-generated from dataset)", buf.getvalue()))
+
+            # Box plot of up to 8 numeric columns.
+            fig, ax = _plt.subplots(figsize=(7, 4))
+            ax.boxplot(
+                [df[c].dropna() for c in numeric_cols[:8]],
+                labels=numeric_cols[:8],
+                patch_artist=True,
+                boxprops=dict(facecolor=excel_green, edgecolor="black"),
+                medianprops=dict(color="white", linewidth=2),
+            )
+            ax.set_title("Box plot of numeric columns", fontsize=12)
+            ax.tick_params(axis="x", rotation=30)
+            fig.tight_layout()
+            buf = _BytesIO()
+            fig.savefig(buf, format="png", dpi=144)
+            _plt.close(fig)
+            results.append(("Box plot of numeric columns (auto-generated from dataset)", buf.getvalue()))
+
+            return results
+
+        def _embed_charts_in_document(document, df):
+            """Append a 'Auto-generated charts' section with embedded PNGs."""
+            from docx.shared import Inches as _Inches
+            from io import BytesIO as _BytesIO
+            charts = _build_excel_styled_charts(df)
+            if not charts:
+                return
+            document.add_page_break()
+            document.add_heading("Appendix A: Auto-generated charts", level=1)
+            document.add_paragraph(
+                "These charts were rendered automatically from the attached "
+                "dataset. The styling matches Excel's default theme so they "
+                "can be used directly in the report, or replaced with "
+                "real Excel screenshots if the examiner specifically requires "
+                "a chart produced inside Excel."
+            )
+            for fig_idx, (caption, png_bytes) in enumerate(charts, start=1):
+                document.add_picture(_BytesIO(png_bytes), width=_Inches(6.0))
+                figure_para = document.add_paragraph()
+                figure_run = figure_para.add_run(f"Figure A.{fig_idx}: {caption}")
+                figure_run.italic = True
+
+        def _history_to_docx_bytes(entries, primary_df=None):
             from docx import Document as _DocxDocument
             from io import BytesIO as _BytesIO
             document = _DocxDocument()
@@ -68444,6 +68559,8 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                         document.add_paragraph("Attached files: " + ", ".join(attachments))
                     document.add_paragraph("Question: " + (entry.get("prompt", "") or ""))
                 _render_markdown_to_docx(document, entry.get("answer", "") or "")
+                if primary_df is not None:
+                    _embed_charts_in_document(document, primary_df)
             else:
                 document.add_heading("Exam resolver answers", level=1)
                 for entry in entries:
@@ -68492,7 +68609,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                     )
                 elif format_choice.startswith("Word"):
                     try:
-                        docx_bytes = _history_to_docx_bytes(course_history)
+                        docx_bytes = _history_to_docx_bytes(course_history, primary_df=project_df)
                         st.download_button(
                             f"⬇️ Download {len(course_history)} answers as Word",
                             data=docx_bytes,
@@ -68534,7 +68651,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                         st.markdown(entry.get("answer", ""))
                         # Per-entry single-answer Word download for quick handing-in.
                         try:
-                            single_docx = _history_to_docx_bytes([entry])
+                            single_docx = _history_to_docx_bytes([entry], primary_df=project_df)
                             entry_key_seed = f"{timestamp}_{label[:20]}".replace(" ", "_")
                             st.download_button(
                                 "⬇️ Save this answer as Word",
