@@ -67705,9 +67705,11 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 # Cap the snippet list so it does not dominate context.
                 if lesson_lines:
                     lesson_context_block = (
-                        "\n\n[Course materials matched to this prompt — cite these "
-                        "inline as (Course-name, Lesson-label) wherever they apply. "
-                        "Prefer these over generic textbook references:\n"
+                        "\n\n[Course materials matched to this prompt — use the "
+                        "vocabulary, definitions, and methods from these excerpts "
+                        "as your primary source when answering. Do NOT cite them "
+                        "inline; the report must read as the student's own work, "
+                        "not as a curriculum assembly:\n"
                         + "\n".join(lesson_lines[:18])
                         + "\n]"
                     )
@@ -67742,26 +67744,24 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             strict_clause = ""
             if strict_curriculum_mode:
                 strict_clause = (
-                    "\n\nSTRICT CURRICULUM MODE IS ACTIVE. You must follow these "
-                    "additional rules with no exceptions:\n"
+                    "\n\nSTRICT CURRICULUM MODE IS ACTIVE.\n"
                     "- Use ONLY the lesson excerpts in the 'STRICT CURRICULUM MODE' "
-                    "block of the user message as your authoritative source for "
-                    "definitions, methods, formulas, and theoretical content.\n"
-                    "- Solve the task with your own reasoning (mathematical, "
-                    "structural, analytical), but every CONTENT claim must come "
-                    "from the provided excerpts. Do not introduce concepts, "
-                    "frameworks, or textbook references that are not in the "
-                    "provided material.\n"
+                    "block of the user message as your source of definitions, "
+                    "methods, formulas, and theoretical framing. Match their "
+                    "vocabulary and approach closely.\n"
+                    "- Solve the task with your own reasoning (math, structure, "
+                    "analysis), but content concepts must come from the provided "
+                    "excerpts. Do not introduce frameworks, named theories, or "
+                    "textbook references that are not in the provided material.\n"
+                    "- Write naturally, as a student applying what they have "
+                    "learned. Do NOT cite lessons inline, do NOT mention the "
+                    "curriculum source, do NOT quote lessons verbatim with a "
+                    "'Per [Course], [Lesson]:' bridge. The output must read like "
+                    "the student's own application of their knowledge.\n"
                     "- If a topic the prompt asks about is NOT covered in the "
-                    "provided excerpts, state this explicitly with: "
-                    "*'This topic is not covered in the supplied Noroff course "
-                    "materials. Please add the relevant lesson to the source pool "
-                    "and regenerate.'* Then continue with the parts that are "
-                    "covered.\n"
-                    "- For every paragraph that uses curriculum content, end "
-                    "with a verbatim short quote or paraphrase plus the lesson "
-                    "citation: e.g., *'Per [Course], [Lesson]: \"sample standard "
-                    "deviation divides by n − 1 to give an unbiased estimate\".'*\n"
+                    "provided excerpts, write a short note in plain prose that "
+                    "the topic falls outside the available course material and "
+                    "skip that part. Do not invent.\n"
                 )
             if exam_submission_mode:
                 system_prompt = (
@@ -67861,22 +67861,18 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                     "Region in Rows and Sum of Revenue in Values'>\n"
                     "  Add at least one screenshot callout per major EDA step.\n"
                     "- If a 'Course materials matched to this prompt' block is present "
-                    "in the user message, you MUST ground the report in those excerpts. "
-                    "Treat them as the authoritative curriculum the student is being "
-                    "assessed on. Whenever you apply a definition, method or formula, "
-                    "include a short bridge in plain language: "
-                    "*'You learned about [topic] in [Course-name], [Lesson-label] — here "
-                    "this means [application].'* "
-                    "Cite the lesson inline as ([Course-name], [Lesson-label]) at the "
-                    "end of every paragraph that uses curriculum content. Prefer the "
-                    "wording / definitions / methods from these excerpts over external "
-                    "textbook knowledge.\n"
-                    "- Number every cited lesson in section 7. References.\n"
-                    "- Add a final '## 8. Curriculum traceability' section that lists "
-                    "each major report claim alongside the exact lesson it came from "
-                    "in a Markdown table with three columns: 'Claim or method used' | "
-                    "'Lesson cited' | 'Where it appears in this report (section #)'. "
-                    "This lets the examiner verify each claim against the curriculum.\n"
+                    "in the user message, treat it as your primary source for "
+                    "vocabulary, definitions, methods, and theoretical framing. Use "
+                    "the wording, terminology, and approach from those excerpts in "
+                    "the natural body of the report — but DO NOT name the source "
+                    "lessons inline. The report must read as if the student is "
+                    "applying their own learning, not as if it was assembled from a "
+                    "lesson database. No '(Course, Lesson)' citations, no 'we took "
+                    "this from the curriculum' phrasing, no verbatim quote blocks "
+                    "pointing at lessons.\n"
+                    "- Section 7. References is reserved for actual external sources "
+                    "(Cortez & Silva 2008, course textbooks, datasets, published "
+                    "papers). Do not list internal Noroff lessons there.\n"
                 )
             else:
                 system_prompt = (
@@ -68895,21 +68891,10 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 _render_markdown_to_docx(document, entry.get("answer", "") or "")
                 if primary_df is not None:
                     _embed_charts_in_document(document, primary_df)
-                # Appendix B: verbatim curriculum excerpts that were sent to Claude.
-                syllabus_excerpts = entry.get("syllabus_excerpts") or []
-                if syllabus_excerpts:
-                    document.add_page_break()
-                    document.add_heading("Appendix B: Curriculum excerpts used", level=1)
-                    document.add_paragraph(
-                        "The following excerpts were pulled from the Noroff "
-                        "course lessons and learning outcomes and sent to the AI "
-                        "as authoritative context for the report. The examiner "
-                        "can use this list to verify that every cited lesson "
-                        "actually exists in the curriculum and that the report's "
-                        "claims trace back to course material."
-                    )
-                    for line in syllabus_excerpts:
-                        document.add_paragraph(str(line), style="List Bullet")
+                # Note: syllabus_excerpts are still stored in the history for
+                # internal traceability, but they are deliberately NOT rendered
+                # into the Word output so the report reads as the student's own
+                # work rather than an AI assembly of lesson excerpts.
             else:
                 document.add_heading("Exam resolver answers", level=1)
                 for entry in entries:
