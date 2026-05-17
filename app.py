@@ -68220,6 +68220,189 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                                 chart.height = 10; chart.width = 18
                                 ws_hist.add_chart(chart, "E3")
 
+                        # --- Sheet 6: Correlation matrix (formula-driven) ---
+                        if len(numeric_cols) >= 2:
+                            ws_corr = wb.create_sheet("CorrelationMatrix")
+                            ws_corr.append(["Pearson correlation matrix (=CORREL)"])
+                            ws_corr["A1"].font = _Font(bold=True, size=14)
+                            ws_corr.append([])
+                            # Header row: column names
+                            ws_corr.append([""] + numeric_cols)
+                            for cell in ws_corr[3]:
+                                cell.font = _Font(bold=True)
+                                cell.fill = _Fill("solid", fgColor="DDEBF7")
+                            corr_first_row = 4
+                            for i, col_a in enumerate(numeric_cols):
+                                letter_a = _col_letter(headers.index(col_a) + 1)
+                                range_a = f"RawData!{letter_a}{data_first}:{letter_a}{data_last}"
+                                row = [col_a]
+                                for col_b in numeric_cols:
+                                    letter_b = _col_letter(headers.index(col_b) + 1)
+                                    range_b = f"RawData!{letter_b}{data_first}:{letter_b}{data_last}"
+                                    row.append(f"=CORREL({range_a},{range_b})")
+                                ws_corr.append(row)
+                                ws_corr.cell(row=corr_first_row + i, column=1).font = _Font(bold=True)
+                                ws_corr.cell(row=corr_first_row + i, column=1).fill = _Fill("solid", fgColor="DDEBF7")
+                            # 3-color scale conditional formatting on the matrix
+                            from openpyxl.formatting.rule import ColorScaleRule as _ColorScale
+                            corr_end_letter = _col_letter(len(numeric_cols) + 1)
+                            corr_range = f"B{corr_first_row}:{corr_end_letter}{corr_first_row + len(numeric_cols) - 1}"
+                            rule = _ColorScale(
+                                start_type="num", start_value=-1, start_color="F8696B",
+                                mid_type="num", mid_value=0, mid_color="FFFFFF",
+                                end_type="num", end_value=1, end_color="63BE7B",
+                            )
+                            ws_corr.conditional_formatting.add(corr_range, rule)
+
+                        # --- Sheet 7: T-test setup (two-sample) ---
+                        if len(numeric_cols) >= 1 and len(categorical_cols) >= 1:
+                            value_col = numeric_cols[0]
+                            group_col = categorical_cols[0]
+                            value_letter = _col_letter(headers.index(value_col) + 1)
+                            group_letter = _col_letter(headers.index(group_col) + 1)
+                            value_range = f"RawData!{value_letter}{data_first}:{value_letter}{data_last}"
+                            group_range = f"RawData!{group_letter}{data_first}:{group_letter}{data_last}"
+                            groups_present = list(project_df[group_col].dropna().unique())
+                            if len(groups_present) >= 2:
+                                ws_t = wb.create_sheet("TTestSetup")
+                                ws_t.append([f"Independent two-sample t-test: {value_col} by {group_col}"])
+                                ws_t["A1"].font = _Font(bold=True, size=14)
+                                ws_t.append([])
+                                ws_t.append(["Group", "n", "Mean", "SD", "Variance / n"])
+                                for cell in ws_t[3]:
+                                    cell.font = _Font(bold=True)
+                                    cell.fill = _Fill("solid", fgColor="DDEBF7")
+                                group_a, group_b = groups_present[0], groups_present[1]
+                                quoted_a = f'"{group_a}"'
+                                quoted_b = f'"{group_b}"'
+                                ws_t.append([
+                                    str(group_a),
+                                    f"=COUNTIF({group_range},{quoted_a})",
+                                    f"=AVERAGEIF({group_range},{quoted_a},{value_range})",
+                                    # Workaround for STDEVIF (not native): use array-style formula
+                                    f"=SQRT(SUMPRODUCT(({group_range}={quoted_a})*(({value_range}-AVERAGEIF({group_range},{quoted_a},{value_range}))^2))/(COUNTIF({group_range},{quoted_a})-1))",
+                                    f"=D4^2/B4",
+                                ])
+                                ws_t.append([
+                                    str(group_b),
+                                    f"=COUNTIF({group_range},{quoted_b})",
+                                    f"=AVERAGEIF({group_range},{quoted_b},{value_range})",
+                                    f"=SQRT(SUMPRODUCT(({group_range}={quoted_b})*(({value_range}-AVERAGEIF({group_range},{quoted_b},{value_range}))^2))/(COUNTIF({group_range},{quoted_b})-1))",
+                                    f"=D5^2/B5",
+                                ])
+                                ws_t.append([])
+                                ws_t.append(["Welch t-statistic", "=(C4-C5)/SQRT(E4+E5)"])
+                                ws_t["A7"].font = _Font(bold=True)
+                                ws_t.append(["Welch degrees of freedom", "=((E4+E5)^2)/((E4^2)/(B4-1)+(E5^2)/(B5-1))"])
+                                ws_t["A8"].font = _Font(bold=True)
+                                ws_t.append(["Two-tailed p-value", "=T.DIST.2T(ABS(B7),B8)"])
+                                ws_t["A9"].font = _Font(bold=True)
+                                ws_t.append(["Decision at α=0.05", '=IF(B9<0.05,"Reject H0","Fail to reject H0")'])
+                                ws_t["A10"].font = _Font(bold=True)
+
+                        # --- Sheet 8: Cross-tab (two categorical columns) ---
+                        if len(categorical_cols) >= 2 and numeric_cols:
+                            cat_a, cat_b = categorical_cols[0], categorical_cols[1]
+                            metric_col = numeric_cols[0]
+                            cat_a_letter = _col_letter(headers.index(cat_a) + 1)
+                            cat_b_letter = _col_letter(headers.index(cat_b) + 1)
+                            metric_letter = _col_letter(headers.index(metric_col) + 1)
+                            cat_a_range = f"RawData!{cat_a_letter}{data_first}:{cat_a_letter}{data_last}"
+                            cat_b_range = f"RawData!{cat_b_letter}{data_first}:{cat_b_letter}{data_last}"
+                            metric_range = f"RawData!{metric_letter}{data_first}:{metric_letter}{data_last}"
+                            cats_a_values = list(project_df[cat_a].dropna().unique())[:6]
+                            cats_b_values = list(project_df[cat_b].dropna().unique())[:6]
+                            if cats_a_values and cats_b_values:
+                                ws_cross = wb.create_sheet("CrossTab")
+                                ws_cross.append([f"Cross-tabulation: average of {metric_col} by {cat_a} × {cat_b}"])
+                                ws_cross["A1"].font = _Font(bold=True, size=14)
+                                ws_cross.append([])
+                                ws_cross.append([f"{cat_a} \\ {cat_b}"] + [str(v) for v in cats_b_values])
+                                for cell in ws_cross[3]:
+                                    cell.font = _Font(bold=True)
+                                    cell.fill = _Fill("solid", fgColor="DDEBF7")
+                                for cat_a_value in cats_a_values:
+                                    row = [str(cat_a_value)]
+                                    for cat_b_value in cats_b_values:
+                                        a_q = f'"{cat_a_value}"'
+                                        b_q = f'"{cat_b_value}"'
+                                        row.append(
+                                            f"=AVERAGEIFS({metric_range},{cat_a_range},{a_q},{cat_b_range},{b_q})"
+                                        )
+                                    ws_cross.append(row)
+                                # Color scale on the body
+                                cross_end_letter = _col_letter(1 + len(cats_b_values))
+                                cross_range = f"B4:{cross_end_letter}{3 + len(cats_a_values)}"
+                                rule = _ColorScale(
+                                    start_type="min", start_color="F8696B",
+                                    mid_type="percentile", mid_value=50, mid_color="FFEB84",
+                                    end_type="max", end_color="63BE7B",
+                                )
+                                ws_cross.conditional_formatting.add(cross_range, rule)
+
+                        # --- Sheet 9: Scatter chart of first two numeric columns ---
+                        if len(numeric_cols) >= 2:
+                            from openpyxl.chart import ScatterChart as _ScatterChart, Series as _Series
+                            x_col, y_col = numeric_cols[0], numeric_cols[1]
+                            x_letter = _col_letter(headers.index(x_col) + 1)
+                            y_letter = _col_letter(headers.index(y_col) + 1)
+                            ws_scatter = wb.create_sheet("ScatterChart")
+                            ws_scatter.append([f"Scatter: {x_col} vs {y_col}"])
+                            ws_scatter["A1"].font = _Font(bold=True, size=14)
+                            ws_scatter.append([])
+                            ws_scatter.append([
+                                f"Correlation (=CORREL):",
+                                f"=CORREL(RawData!{x_letter}{data_first}:{x_letter}{data_last},RawData!{y_letter}{data_first}:{y_letter}{data_last})",
+                            ])
+                            ws_scatter["A3"].font = _Font(bold=True)
+                            ws_scatter.append([f"R-squared (=RSQ):",
+                                               f"=RSQ(RawData!{y_letter}{data_first}:{y_letter}{data_last},RawData!{x_letter}{data_first}:{x_letter}{data_last})"])
+                            ws_scatter["A4"].font = _Font(bold=True)
+                            ws_scatter.append([f"Slope (=SLOPE):",
+                                               f"=SLOPE(RawData!{y_letter}{data_first}:{y_letter}{data_last},RawData!{x_letter}{data_first}:{x_letter}{data_last})"])
+                            ws_scatter["A5"].font = _Font(bold=True)
+                            ws_scatter.append([f"Intercept (=INTERCEPT):",
+                                               f"=INTERCEPT(RawData!{y_letter}{data_first}:{y_letter}{data_last},RawData!{x_letter}{data_first}:{x_letter}{data_last})"])
+                            ws_scatter["A6"].font = _Font(bold=True)
+                            scatter = _ScatterChart()
+                            scatter.title = f"Scatter: {x_col} vs {y_col}"
+                            scatter.x_axis.title = x_col
+                            scatter.y_axis.title = y_col
+                            xvalues = _Reference(ws_raw, min_col=headers.index(x_col) + 1,
+                                                 min_row=data_first, max_row=data_last)
+                            yvalues = _Reference(ws_raw, min_col=headers.index(y_col) + 1,
+                                                 min_row=data_first, max_row=data_last)
+                            series = _Series(yvalues, xvalues, title=f"{y_col} vs {x_col}")
+                            scatter.series.append(series)
+                            scatter.height = 10; scatter.width = 18
+                            ws_scatter.add_chart(scatter, "E3")
+
+                        # Conditional formatting on the Descriptive sheet's
+                        # mean column so values stand out visually.
+                        if len(numeric_cols) >= 1:
+                            mean_range = f"C2:C{1 + len(numeric_cols)}"
+                            rule = _ColorScale(
+                                start_type="min", start_color="FFFFFF",
+                                end_type="max", end_color="63BE7B",
+                            )
+                            ws_desc.conditional_formatting.add(mean_range, rule)
+                            # Highlight outliers on ZScores sheet.
+                            if "ZScores" in [s.title for s in wb.worksheets]:
+                                ws_z_sheet = wb["ZScores"]
+                                from openpyxl.formatting.rule import CellIsRule as _CellIs
+                                from openpyxl.styles import Font as _Font2
+                                z_range = f"B2:B{ws_z_sheet.max_row}"
+                                red_font = _Font2(color="9C0006", bold=True)
+                                red_fill = _Fill("solid", fgColor="FFC7CE")
+                                ws_z_sheet.conditional_formatting.add(
+                                    z_range,
+                                    _CellIs(operator="greaterThan", formula=["3"], fill=red_fill, font=red_font),
+                                )
+                                ws_z_sheet.conditional_formatting.add(
+                                    z_range,
+                                    _CellIs(operator="lessThan", formula=["-3"], fill=red_fill, font=red_font),
+                                )
+
                         out_buffer = _BytesIO()
                         wb.save(out_buffer)
                         st.session_state[f"{base_key}_analysis_xlsx_bytes"] = out_buffer.getvalue()
@@ -68239,13 +68422,23 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                     st.markdown("**📸 Suggested Excel screenshots for your Noroff report:**")
                     st.markdown(
                         "1. **Descriptive sheet** — show the column with `=AVERAGE`, "
-                        "`=STDEV.S` etc. visible in the formula bar.\n"
+                        "`=STDEV`, `=MEDIAN`, `=QUARTILE` etc. visible in the formula bar. "
+                        "The Mean column now has a colour scale so high values stand out.\n"
                         "2. **PivotByCategory sheet** — capture each pivot block with "
                         "`=COUNTIF` / `=AVERAGEIF` formulas.\n"
-                        "3. **ZScores sheet** — show the `=(x-AVG)/STDEV.S` formula and "
-                        "any rows flagged as OUTLIER.\n"
-                        "4. **HistogramChart sheet** — capture the embedded chart "
-                        "together with the bin / frequency table beside it."
+                        "3. **CrossTab sheet** — two categorical columns crossed with "
+                        "`=AVERAGEIFS` and a red→yellow→green colour scale.\n"
+                        "4. **CorrelationMatrix sheet** — full Pearson matrix via "
+                        "`=CORREL`, with a divergent red↔green colour scale.\n"
+                        "5. **TTestSetup sheet** — full two-sample t-test workflow: "
+                        "`=COUNTIF`, `=AVERAGEIF`, sample SD, Welch t-statistic, "
+                        "`=T.DIST.2T` p-value, and decision rule.\n"
+                        "6. **ScatterChart sheet** — embedded scatter plus `=CORREL`, "
+                        "`=RSQ`, `=SLOPE`, `=INTERCEPT` for simple linear regression.\n"
+                        "7. **ZScores sheet** — show `=(x-AVG)/STDEV` and the red "
+                        "highlight on rows flagged as |z|>3 outliers.\n"
+                        "8. **HistogramChart sheet** — embedded bar chart with bin / "
+                        "frequency table beside it."
                     )
 
         # Show the saved answer history so students can revisit past sessions.
