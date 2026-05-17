@@ -68303,7 +68303,10 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                                 ws_t["A7"].font = _Font(bold=True)
                                 ws_t.append(["Welch degrees of freedom", "=((E4+E5)^2)/((E4^2)/(B4-1)+(E5^2)/(B5-1))"])
                                 ws_t["A8"].font = _Font(bold=True)
-                                ws_t.append(["Two-tailed p-value", "=T.DIST.2T(ABS(B7),B8)"])
+                                # Legacy TDIST(x, df, tails) — TDIST with tails=2
+                                # is the cross-locale, prefix-free equivalent of
+                                # T.DIST.2T(x, df).
+                                ws_t.append(["Two-tailed p-value", "=TDIST(ABS(B7),B8,2)"])
                                 ws_t["A9"].font = _Font(bold=True)
                                 ws_t.append(["Decision at α=0.05", '=IF(B9<0.05,"Reject H0","Fail to reject H0")'])
                                 ws_t["A10"].font = _Font(bold=True)
@@ -68440,7 +68443,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                         "`=CORREL`, with a divergent red↔green colour scale.\n"
                         "5. **TTestSetup sheet** — full two-sample t-test workflow: "
                         "`=COUNTIF`, `=AVERAGEIF`, sample SD, Welch t-statistic, "
-                        "`=T.DIST.2T` p-value, and decision rule.\n"
+                        "`=TDIST` (legacy two-tailed) p-value, and decision rule.\n"
                         "6. **ScatterChart sheet** — embedded scatter plus `=CORREL`, "
                         "`=RSQ`, `=SLOPE`, `=INTERCEPT` for simple linear regression.\n"
                         "7. **ZScores sheet** — show `=(x-AVG)/STDEV` and the red "
