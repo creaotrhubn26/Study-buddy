@@ -66904,6 +66904,68 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         units = []
         order_index = 0
 
+        def _normalise_course_name(value):
+            return str(value or "").strip().lower()
+
+        selected_course_name_lc = _normalise_course_name(course.get("name"))
+
+        # --- Pull from training_modules across the whole app ---
+        # The training_modules dict lives at module scope (defined ~line 2395)
+        # and contains the Training Center content: Descriptive Statistics,
+        # KPIs, Correlation/Regression/ANOVA, Z-scores, plus tool-specific
+        # modules. We include every module whose 'course' field matches the
+        # currently selected course; this surfaces content like Descriptive
+        # Statistics, KPIs, and Z-scores when the student is on Statistical
+        # Tools. Token-overlap ranking will keep irrelevant ones at the
+        # bottom of the preview.
+        for module_name, module_data in (training_modules or {}).items():
+            module_course = _normalise_course_name(module_data.get("course"))
+            # Include modules tied to the selected course AND tool modules
+            # ("Tool: ...") that span courses.
+            if module_course != selected_course_name_lc and not module_name.startswith("Tool:"):
+                continue
+            for lesson_idx, t_lesson in enumerate(module_data.get("lessons", []) or [], start=1):
+                order_index += 1
+                title = t_lesson.get("title", f"{module_name} lesson {lesson_idx}")
+                content = re.sub(r"\s+", " ", str(t_lesson.get("content", "")))[:1800]
+                key_points = t_lesson.get("key_points", []) or []
+                cue_phrases = dedupe_keep_order([title] + key_points, limit=10)
+                search_text = " ".join([module_name, title, content, " ".join(key_points)])
+                units.append({
+                    "id": f"training::{module_name}::{lesson_idx}",
+                    "label": f"Training — {module_name} → {title}",
+                    "kind": "Training",
+                    "title": title,
+                    "order_index": 50 + order_index,
+                    "what_it_covers": summarise_items(key_points, 4) or title,
+                    "search_text": search_text,
+                    "tokens": tokenise(search_text),
+                    "weight": 2.5,
+                    "cue_phrases": cue_phrases,
+                    "content_segments": [content] if content else key_points,
+                })
+            for ex_idx, exercise in enumerate(module_data.get("exercises", []) or [], start=1):
+                order_index += 1
+                ex_title = exercise.get("title", f"Exercise {ex_idx}")
+                ex_description = re.sub(r"\s+", " ", str(exercise.get("description", "") or exercise.get("question", "")))[:1200]
+                hints = exercise.get("hints", []) or []
+                ex_search = " ".join([module_name, ex_title, ex_description, " ".join(str(h) for h in hints)])
+                if not ex_search.strip():
+                    continue
+                units.append({
+                    "id": f"training_exercise::{module_name}::{ex_idx}",
+                    "label": f"Exercise — {module_name} → {ex_title}",
+                    "kind": "Exercise",
+                    "title": ex_title,
+                    "order_index": 70 + order_index,
+                    "what_it_covers": ex_title,
+                    "search_text": ex_search,
+                    "tokens": tokenise(ex_search),
+                    "weight": 2.0,
+                    "cue_phrases": [ex_title] + [str(h) for h in hints[:3]],
+                    "content_segments": [ex_description] if ex_description else [ex_title],
+                })
+
         detailed_lessons = course_lessons.get(course_code, [])
         for lesson in detailed_lessons:
             order_index += 1
