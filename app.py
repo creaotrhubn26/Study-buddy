@@ -68366,10 +68366,16 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                             and project_df[col].dropna().nunique() <= 20
                         ]
 
-                        # --- Sheet 2: Descriptive (formula-driven) ---
+                        # --- Sheet 2: Descriptive (formula-driven, pensum-tro) ---
+                        # Pensum teaches: =AVERAGE, =MEDIAN, =STDEV (sample SD),
+                        # =MIN, =MAX. We add =MODE, =QUARTILE for completeness
+                        # since they are universal Excel functions, and Range as
+                        # MAX-MIN per the pensum convention. Population SD
+                        # (STDEVP) is dropped because the curriculum only teaches
+                        # sample standard deviation.
                         ws_desc = wb.create_sheet("Descriptive")
                         desc_headers = ["Column", "n", "Mean", "Median", "Mode", "Sample SD",
-                                        "Population SD", "Min", "Q1", "Q3", "Max", "Range", "IQR"]
+                                        "Min", "Q1", "Q3", "Max", "Range", "IQR"]
                         ws_desc.append(desc_headers)
                         for cell in ws_desc[1]:
                             cell.font = _Font(bold=True)
@@ -68378,12 +68384,6 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                             col_idx = headers.index(column) + 1
                             letter = _col_letter(col_idx)
                             range_ref = f"RawData!{letter}{data_first}:{letter}{data_last}"
-                            # Use the legacy function names (STDEV, STDEVP, MODE,
-                            # QUARTILE) instead of the post-2010 variants
-                            # (STDEV.S, STDEV.P, MODE.SNGL, QUARTILE.INC) because
-                            # openpyxl does not auto-prefix the latter with
-                            # `_xlfn.`, which makes them surface as #NAME? in
-                            # Excel on some locales.
                             ws_desc.append([
                                 column,
                                 f"=COUNT({range_ref})",
@@ -68391,7 +68391,6 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                                 f"=MEDIAN({range_ref})",
                                 f"=IFERROR(MODE({range_ref}),\"—\")",
                                 f"=STDEV({range_ref})",
-                                f"=STDEVP({range_ref})",
                                 f"=MIN({range_ref})",
                                 f"=QUARTILE({range_ref},1)",
                                 f"=QUARTILE({range_ref},3)",
@@ -68539,54 +68538,87 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                             )
                             ws_corr.conditional_formatting.add(corr_range, rule)
 
-                        # --- Sheet 7: T-test setup (two-sample) ---
+                        # --- Sheet 7: T-test setup (pensum-tro =TTEST on raw values) ---
+                        # The curriculum teaches the two-sample t-test as
+                        # =TTEST(range1, range2, tails, type) operating on two
+                        # raw value-columns. To match that exactly we split the
+                        # data by the chosen grouping column, write Group A's
+                        # values into column A and Group B's values into column
+                        # B, then call =TTEST directly on those ranges.
                         if len(numeric_cols) >= 1 and len(categorical_cols) >= 1:
                             value_col = numeric_cols[0]
                             group_col = categorical_cols[0]
-                            value_letter = _col_letter(headers.index(value_col) + 1)
-                            group_letter = _col_letter(headers.index(group_col) + 1)
-                            value_range = f"RawData!{value_letter}{data_first}:{value_letter}{data_last}"
-                            group_range = f"RawData!{group_letter}{data_first}:{group_letter}{data_last}"
                             groups_present = list(project_df[group_col].dropna().unique())
                             if len(groups_present) >= 2:
-                                ws_t = wb.create_sheet("TTestSetup")
-                                ws_t.append([f"Independent two-sample t-test: {value_col} by {group_col}"])
-                                ws_t["A1"].font = _Font(bold=True, size=14)
-                                ws_t.append([])
-                                ws_t.append(["Group", "n", "Mean", "SD", "Variance / n"])
-                                for cell in ws_t[3]:
-                                    cell.font = _Font(bold=True)
-                                    cell.fill = _Fill("solid", fgColor="DDEBF7")
                                 group_a, group_b = groups_present[0], groups_present[1]
-                                quoted_a = f'"{group_a}"'
-                                quoted_b = f'"{group_b}"'
-                                ws_t.append([
-                                    str(group_a),
-                                    f"=COUNTIF({group_range},{quoted_a})",
-                                    f"=AVERAGEIF({group_range},{quoted_a},{value_range})",
-                                    # Workaround for STDEVIF (not native): use array-style formula
-                                    f"=SQRT(SUMPRODUCT(({group_range}={quoted_a})*(({value_range}-AVERAGEIF({group_range},{quoted_a},{value_range}))^2))/(COUNTIF({group_range},{quoted_a})-1))",
-                                    f"=D4^2/B4",
-                                ])
-                                ws_t.append([
-                                    str(group_b),
-                                    f"=COUNTIF({group_range},{quoted_b})",
-                                    f"=AVERAGEIF({group_range},{quoted_b},{value_range})",
-                                    f"=SQRT(SUMPRODUCT(({group_range}={quoted_b})*(({value_range}-AVERAGEIF({group_range},{quoted_b},{value_range}))^2))/(COUNTIF({group_range},{quoted_b})-1))",
-                                    f"=D5^2/B5",
-                                ])
-                                ws_t.append([])
-                                ws_t.append(["Welch t-statistic", "=(C4-C5)/SQRT(E4+E5)"])
-                                ws_t["A7"].font = _Font(bold=True)
-                                ws_t.append(["Welch degrees of freedom", "=((E4+E5)^2)/((E4^2)/(B4-1)+(E5^2)/(B5-1))"])
-                                ws_t["A8"].font = _Font(bold=True)
-                                # Legacy TDIST(x, df, tails) — TDIST with tails=2
-                                # is the cross-locale, prefix-free equivalent of
-                                # T.DIST.2T(x, df).
-                                ws_t.append(["Two-tailed p-value", "=TDIST(ABS(B7),B8,2)"])
-                                ws_t["A9"].font = _Font(bold=True)
-                                ws_t.append(["Decision at α=0.05", '=IF(B9<0.05,"Reject H0","Fail to reject H0")'])
-                                ws_t["A10"].font = _Font(bold=True)
+                                series_a = (
+                                    project_df.loc[project_df[group_col] == group_a, value_col]
+                                    .dropna().astype(float).tolist()
+                                )
+                                series_b = (
+                                    project_df.loc[project_df[group_col] == group_b, value_col]
+                                    .dropna().astype(float).tolist()
+                                )
+                                if series_a and series_b:
+                                    ws_t = wb.create_sheet("TTestSetup")
+                                    ws_t.append([
+                                        f"Two-sample t-test: {value_col} by {group_col}"
+                                    ])
+                                    ws_t["A1"].font = _Font(bold=True, size=14)
+                                    ws_t.append([])
+                                    # Header row for the two value columns.
+                                    ws_t.append([
+                                        f"{value_col} where {group_col} = {group_a}",
+                                        f"{value_col} where {group_col} = {group_b}",
+                                    ])
+                                    for cell in ws_t[3]:
+                                        cell.font = _Font(bold=True)
+                                        cell.fill = _Fill("solid", fgColor="DDEBF7")
+                                    # Write each group's values into A and B.
+                                    data_start_row = 4
+                                    longest = max(len(series_a), len(series_b))
+                                    for i in range(longest):
+                                        ws_t.append([
+                                            series_a[i] if i < len(series_a) else None,
+                                            series_b[i] if i < len(series_b) else None,
+                                        ])
+                                    data_end_a = data_start_row + len(series_a) - 1
+                                    data_end_b = data_start_row + len(series_b) - 1
+                                    range_a = f"A{data_start_row}:A{data_end_a}"
+                                    range_b = f"B{data_start_row}:B{data_end_b}"
+                                    data_end_total = data_start_row + longest - 1
+                                    # Summary block underneath the raw values.
+                                    summary_row = data_end_total + 2
+                                    ws_t.cell(row=summary_row, column=1, value=f"n ({group_a})")
+                                    ws_t.cell(row=summary_row, column=2, value=f"=COUNT({range_a})")
+                                    ws_t.cell(row=summary_row + 1, column=1, value=f"n ({group_b})")
+                                    ws_t.cell(row=summary_row + 1, column=2, value=f"=COUNT({range_b})")
+                                    ws_t.cell(row=summary_row + 2, column=1, value=f"Mean ({group_a})")
+                                    ws_t.cell(row=summary_row + 2, column=2, value=f"=AVERAGE({range_a})")
+                                    ws_t.cell(row=summary_row + 3, column=1, value=f"Mean ({group_b})")
+                                    ws_t.cell(row=summary_row + 3, column=2, value=f"=AVERAGE({range_b})")
+                                    ws_t.cell(row=summary_row + 4, column=1, value=f"Sample SD ({group_a})")
+                                    ws_t.cell(row=summary_row + 4, column=2, value=f"=STDEV({range_a})")
+                                    ws_t.cell(row=summary_row + 5, column=1, value=f"Sample SD ({group_b})")
+                                    ws_t.cell(row=summary_row + 5, column=2, value=f"=STDEV({range_b})")
+                                    # Pensum-tro t-test: =TTEST(range1, range2, tails, type).
+                                    # tails = 2 (two-tailed). type = 2 (equal variances, pooled),
+                                    # type = 3 (unequal variances, Welch). Pensum example uses
+                                    # type=2 by default; we expose both so the student can
+                                    # screenshot whichever the assignment asks for.
+                                    pivot_row = summary_row + 7
+                                    ws_t.cell(row=pivot_row, column=1, value="p-value (two-tailed, equal variances)")
+                                    ws_t.cell(row=pivot_row, column=2,
+                                              value=f"=TTEST({range_a},{range_b},2,2)")
+                                    ws_t.cell(row=pivot_row + 1, column=1, value="p-value (two-tailed, Welch / unequal variances)")
+                                    ws_t.cell(row=pivot_row + 1, column=2,
+                                              value=f"=TTEST({range_a},{range_b},2,3)")
+                                    ws_t.cell(row=pivot_row + 2, column=1, value="Decision at α=0.05 (equal variances)")
+                                    ws_t.cell(row=pivot_row + 2, column=2,
+                                              value=f'=IF(B{pivot_row}<0.05,"Reject H0","Fail to reject H0")')
+                                    # Make the summary labels bold.
+                                    for r in range(summary_row, pivot_row + 3):
+                                        ws_t.cell(row=r, column=1).font = _Font(bold=True)
 
                         # --- Sheet 8: Cross-tab (two categorical columns) ---
                         if len(categorical_cols) >= 2 and numeric_cols:
@@ -68710,21 +68742,25 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                     st.markdown("**📸 Suggested Excel screenshots for your Noroff report:**")
                     st.markdown(
                         "1. **Descriptive sheet** — show the column with `=AVERAGE`, "
-                        "`=STDEV`, `=MEDIAN`, `=QUARTILE` etc. visible in the formula bar. "
-                        "The Mean column now has a colour scale so high values stand out.\n"
+                        "`=MEDIAN`, `=STDEV`, `=MIN`, `=MAX`, `=QUARTILE` (sample-SD "
+                        "convention from your curriculum). The Mean column has a "
+                        "colour scale so high values stand out.\n"
                         "2. **PivotByCategory sheet** — capture each pivot block with "
-                        "`=COUNTIF` / `=AVERAGEIF` formulas.\n"
+                        "`=COUNTIF` / `=AVERAGEIF` formulas (per pensum's "
+                        "COUNTIF / AVERAGEIF teaching).\n"
                         "3. **CrossTab sheet** — two categorical columns crossed with "
                         "`=AVERAGEIFS` and a red→yellow→green colour scale.\n"
                         "4. **CorrelationMatrix sheet** — full Pearson matrix via "
                         "`=CORREL`, with a divergent red↔green colour scale.\n"
-                        "5. **TTestSetup sheet** — full two-sample t-test workflow: "
-                        "`=COUNTIF`, `=AVERAGEIF`, sample SD, Welch t-statistic, "
-                        "`=TDIST` (legacy two-tailed) p-value, and decision rule.\n"
+                        "5. **TTestSetup sheet** — pensum-tro two-sample t-test using "
+                        "`=TTEST(range1, range2, 2, 2)` for equal variances and "
+                        "`=TTEST(range1, range2, 2, 3)` for Welch. Raw values are "
+                        "split into two columns so the formula matches the curriculum's "
+                        "`=T.TEST(range1, range2, tails, type)` example exactly.\n"
                         "6. **ScatterChart sheet** — embedded scatter plus `=CORREL`, "
                         "`=RSQ`, `=SLOPE`, `=INTERCEPT` for simple linear regression.\n"
-                        "7. **ZScores sheet** — show `=(x-AVG)/STDEV` and the red "
-                        "highlight on rows flagged as |z|>3 outliers.\n"
+                        "7. **ZScores sheet** — show `=(x-AVG)/STDEV` (the pensum z-score "
+                        "formula) and the red highlight on rows flagged as |z|>3 outliers.\n"
                         "8. **HistogramChart sheet** — embedded bar chart with bin / "
                         "frequency table beside it."
                     )
