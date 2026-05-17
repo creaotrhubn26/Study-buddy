@@ -67862,14 +67862,22 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             # If the answer might have been truncated (no clear final section
             # like Conclusion / Reflection / Konklusjon), show a Continue button
             # so the user can ask Claude to pick up where it stopped.
-            answer_tail = (ai_answer or "")[-300:].lower()
+            # Treat the answer as finished if the last 600 chars (footers,
+            # word-count notes, etc. can push the marker out of the last 300)
+            # contain any of these end-of-report markers.
+            answer_tail = (ai_answer or "")[-600:].lower()
             looks_truncated = not any(
                 marker in answer_tail
                 for marker in [
                     "conclusion and reflection",
                     "## 6.",
+                    "## 7.",
+                    "references",
                     "konklusjon",
                     "## konklusjon",
+                    "end of report",
+                    "end of semester project",
+                    "skills demonstrated",
                 ]
             )
             stashed_system = st.session_state.get(f"{base_key}_ai_system_prompt")
