@@ -67646,18 +67646,36 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                     "any results, and a Noroff-style structure suitable for direct hand-in."
                 ),
             )
+            strict_curriculum_mode = st.checkbox(
+                "📚 Strict curriculum mode (use ONLY the syllabus)",
+                value=False,
+                key=f"{base_key}_strict_curriculum_mode",
+                help=(
+                    "When on, Claude is restricted to the matched Noroff lesson "
+                    "excerpts as its only authoritative source for definitions, "
+                    "methods, and conclusions. If a topic is not covered in the "
+                    "provided excerpts, Claude must say so explicitly rather than "
+                    "fall back to general training knowledge. The task is still "
+                    "solved by Claude's reasoning, but every CONTENT claim must "
+                    "be sourced from the curriculum."
+                ),
+            )
         if generate_clicked:
             dataset_block = data_context_block if data_context_block else ""
 
             # Build a lesson-evidence block from the SAME source units the
             # resolver shows in the "Lesson evidence" panel, so Claude can
             # cite from the actual Noroff course materials rather than from
-            # its general training data.
+            # its general training data. When strict mode is on, send the
+            # fuller content of the top-matching units so Claude has enough
+            # material to answer without falling back to general knowledge.
             lesson_context_block = ""
             lesson_lines = []
+            full_lesson_blocks = []
             try:
                 _ai_prompt_tokens = tokenise(exam_prompt)
                 _ai_prompt_lower = exam_prompt.lower()
+                ranked = []
                 for unit in source_units:
                     try:
                         fragments = select_best_unit_fragments(
@@ -67672,7 +67690,19 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                     snippet = " | ".join(str(f).strip() for f in fragments[:2])
                     if snippet:
                         lesson_lines.append(f"- [{kind}] {label}: {snippet}")
-                # Cap the lesson block so it does not dominate the context window.
+                        # Track for fuller content extraction in strict mode.
+                        full_text = ""
+                        for content_key in ("content", "text", "body"):
+                            value = unit.get(content_key)
+                            if value:
+                                full_text = str(value)
+                                break
+                        if not full_text:
+                            full_text = snippet
+                        # Score = number of overlapping tokens, as a proxy for relevance.
+                        overlap = len(_ai_prompt_tokens & set(unit.get("tokens", [])))
+                        ranked.append((overlap, kind, label, full_text))
+                # Cap the snippet list so it does not dominate context.
                 if lesson_lines:
                     lesson_context_block = (
                         "\n\n[Course materials matched to this prompt — cite these "
@@ -67681,6 +67711,25 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                         + "\n".join(lesson_lines[:18])
                         + "\n]"
                     )
+                # Strict mode: also include richer content for the top 8 units.
+                if strict_curriculum_mode and ranked:
+                    ranked.sort(reverse=True)
+                    for overlap, kind, label, full_text in ranked[:8]:
+                        truncated = full_text.strip()
+                        if len(truncated) > 1500:
+                            truncated = truncated[:1500] + " […truncated]"
+                        full_lesson_blocks.append(
+                            f"### [{kind}] {label}\n{truncated}"
+                        )
+                    if full_lesson_blocks:
+                        lesson_context_block += (
+                            "\n\n[STRICT CURRICULUM MODE — these are the only "
+                            "authoritative sources you may use for content. If a "
+                            "topic is not covered below, say so explicitly rather "
+                            "than introducing outside knowledge:\n\n"
+                            + "\n\n".join(full_lesson_blocks)
+                            + "\n]"
+                        )
             except Exception:
                 lesson_context_block = ""
 
@@ -67690,6 +67739,30 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 f"{dataset_block}"
                 f"{lesson_context_block}"
             )
+            strict_clause = ""
+            if strict_curriculum_mode:
+                strict_clause = (
+                    "\n\nSTRICT CURRICULUM MODE IS ACTIVE. You must follow these "
+                    "additional rules with no exceptions:\n"
+                    "- Use ONLY the lesson excerpts in the 'STRICT CURRICULUM MODE' "
+                    "block of the user message as your authoritative source for "
+                    "definitions, methods, formulas, and theoretical content.\n"
+                    "- Solve the task with your own reasoning (mathematical, "
+                    "structural, analytical), but every CONTENT claim must come "
+                    "from the provided excerpts. Do not introduce concepts, "
+                    "frameworks, or textbook references that are not in the "
+                    "provided material.\n"
+                    "- If a topic the prompt asks about is NOT covered in the "
+                    "provided excerpts, state this explicitly with: "
+                    "*'This topic is not covered in the supplied Noroff course "
+                    "materials. Please add the relevant lesson to the source pool "
+                    "and regenerate.'* Then continue with the parts that are "
+                    "covered.\n"
+                    "- For every paragraph that uses curriculum content, end "
+                    "with a verbatim short quote or paraphrase plus the lesson "
+                    "citation: e.g., *'Per [Course], [Lesson]: \"sample standard "
+                    "deviation divides by n − 1 to give an unbiased estimate\".'*\n"
+                )
             if exam_submission_mode:
                 system_prompt = (
                     "You are producing a Noroff exam-submission report for a vocational "
@@ -67819,6 +67892,8 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                     "Excel / Google Sheets formula in a fenced ```excel code block. "
                     "Do not invent numbers; if data is missing, say so explicitly."
                 )
+            # Append the strict-curriculum clause to whichever base prompt won.
+            system_prompt = system_prompt + strict_clause
             # Stash the messages so the "Continue" button can resume the same
             # conversation thread without rebuilding prompts.
             st.session_state[f"{base_key}_ai_system_prompt"] = system_prompt
