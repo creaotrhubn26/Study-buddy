@@ -17,6 +17,17 @@ import streamlit.components.v1 as components
 import mistune
 from openai import OpenAI
 
+# Use the full browser width so the prompt + dataset upload + syllabus preview
+# all have room to breathe. Must be the first Streamlit call in the module.
+try:
+    st.set_page_config(
+        page_title="Study Buddy — Data Analyst (PDAN)",
+        layout="wide",
+        initial_sidebar_state="expanded",
+    )
+except Exception:
+    pass
+
 
 def html(body, height=None, width=None, scrolling=None, key=None):
     """Forward-compatible drop-in for streamlit.components.v1.html.
@@ -67676,6 +67687,12 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 _ai_prompt_tokens = tokenise(exam_prompt)
                 _ai_prompt_lower = exam_prompt.lower()
                 ranked = []
+                # Walk EVERY source unit — lesson, knowledge outcome, skill,
+                # competence — and include it in the preview. Rank by token
+                # overlap with the prompt so the most relevant ones come first,
+                # but never silently drop units that have zero overlap; they
+                # still appear in the preview so the student can see the full
+                # scope of the syllabus.
                 for unit in source_units:
                     try:
                         fragments = select_best_unit_fragments(
@@ -67683,40 +67700,57 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                         )
                     except Exception:
                         fragments = []
-                    if not fragments:
-                        continue
                     label = unit.get("label") or unit.get("title") or unit.get("id", "")
                     kind = unit.get("kind", "")
-                    snippet = " | ".join(str(f).strip() for f in fragments[:2])
-                    if snippet:
-                        lesson_lines.append(f"- [{kind}] {label}: {snippet}")
-                        # Track for fuller content extraction in strict mode.
-                        full_text = ""
+                    # Fall back to the first ~240 chars of content if there is
+                    # no token overlap, so we still surface something.
+                    if fragments:
+                        snippet = " | ".join(str(f).strip() for f in fragments[:2])
+                    else:
+                        full_text_for_snippet = ""
                         for content_key in ("content", "text", "body"):
-                            value = unit.get(content_key)
-                            if value:
-                                full_text = str(value)
+                            v = unit.get(content_key)
+                            if v:
+                                full_text_for_snippet = str(v)
                                 break
-                        if not full_text:
-                            full_text = snippet
-                        # Score = number of overlapping tokens, as a proxy for relevance.
-                        overlap = len(_ai_prompt_tokens & set(unit.get("tokens", [])))
-                        ranked.append((overlap, kind, label, full_text))
-                # Cap the snippet list so it does not dominate context.
+                        snippet = (full_text_for_snippet or "")[:240].strip()
+                    if not snippet:
+                        continue
+                    lesson_lines.append(f"- [{kind}] {label}: {snippet}")
+                    full_text = ""
+                    for content_key in ("content", "text", "body"):
+                        value = unit.get(content_key)
+                        if value:
+                            full_text = str(value)
+                            break
+                    if not full_text:
+                        full_text = snippet
+                    overlap = len(_ai_prompt_tokens & set(unit.get("tokens", [])))
+                    ranked.append((overlap, kind, label, full_text, snippet))
+                # Rank the lesson_lines too so the most relevant ones lead.
+                if ranked:
+                    ranked.sort(key=lambda t: t[0], reverse=True)
+                    lesson_lines = [
+                        f"- [{kind}] {label}: {snippet}"
+                        for _, kind, label, _, snippet in ranked
+                    ]
                 if lesson_lines:
+                    # Send the top 30 most-relevant excerpts to Claude.
+                    # The preview panel will still show every line in lesson_lines.
+                    top_lines = lesson_lines[:30]
                     lesson_context_block = (
                         "\n\n[Course materials matched to this prompt — use the "
                         "vocabulary, definitions, and methods from these excerpts "
                         "as your primary source when answering. Do NOT cite them "
                         "inline; the report must read as the student's own work, "
                         "not as a curriculum assembly:\n"
-                        + "\n".join(lesson_lines[:18])
+                        + "\n".join(top_lines)
                         + "\n]"
                     )
-                # Strict mode: also include richer content for the top 8 units.
+                # Strict mode: include fuller content for the top 12 ranked units
+                # (was 8). Each capped at 1500 chars to keep prompt size bounded.
                 if strict_curriculum_mode and ranked:
-                    ranked.sort(reverse=True)
-                    for overlap, kind, label, full_text in ranked[:8]:
+                    for overlap, kind, label, full_text, _snippet in ranked[:12]:
                         truncated = full_text.strip()
                         if len(truncated) > 1500:
                             truncated = truncated[:1500] + " […truncated]"
@@ -67984,7 +68018,10 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             if history_now:
                 recent_excerpts = history_now[-1].get("syllabus_excerpts") or []
             if recent_excerpts:
-                answer_col, preview_col = st.columns([2, 1])
+                # Give the preview real estate to breathe — roughly 40% of the
+                # row — so the matched lesson excerpts are readable side by
+                # side with the answer instead of squeezed into a sliver.
+                answer_col, preview_col = st.columns([3, 2])
             else:
                 answer_col = st
                 preview_col = None
