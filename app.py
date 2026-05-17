@@ -67648,10 +67648,47 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             )
         if generate_clicked:
             dataset_block = data_context_block if data_context_block else ""
+
+            # Build a lesson-evidence block from the SAME source units the
+            # resolver shows in the "Lesson evidence" panel, so Claude can
+            # cite from the actual Noroff course materials rather than from
+            # its general training data.
+            lesson_context_block = ""
+            lesson_lines = []
+            try:
+                _ai_prompt_tokens = tokenise(exam_prompt)
+                _ai_prompt_lower = exam_prompt.lower()
+                for unit in source_units:
+                    try:
+                        fragments = select_best_unit_fragments(
+                            unit, _ai_prompt_tokens, _ai_prompt_lower, limit=2,
+                        )
+                    except Exception:
+                        fragments = []
+                    if not fragments:
+                        continue
+                    label = unit.get("label") or unit.get("title") or unit.get("id", "")
+                    kind = unit.get("kind", "")
+                    snippet = " | ".join(str(f).strip() for f in fragments[:2])
+                    if snippet:
+                        lesson_lines.append(f"- [{kind}] {label}: {snippet}")
+                # Cap the lesson block so it does not dominate the context window.
+                if lesson_lines:
+                    lesson_context_block = (
+                        "\n\n[Course materials matched to this prompt — cite these "
+                        "inline as (Course-name, Lesson-label) wherever they apply. "
+                        "Prefer these over generic textbook references:\n"
+                        + "\n".join(lesson_lines[:18])
+                        + "\n]"
+                    )
+            except Exception:
+                lesson_context_block = ""
+
             user_message = (
                 f"COURSE: {course['name']}\n\n"
                 f"STUDENT QUESTION:\n{exam_prompt.strip()}\n"
                 f"{dataset_block}"
+                f"{lesson_context_block}"
             )
             if exam_submission_mode:
                 system_prompt = (
@@ -67750,6 +67787,23 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                     "Google Sheets / Power BI, e.g. 'the Pivot Table on sheet KPI with "
                     "Region in Rows and Sum of Revenue in Values'>\n"
                     "  Add at least one screenshot callout per major EDA step.\n"
+                    "- If a 'Course materials matched to this prompt' block is present "
+                    "in the user message, you MUST ground the report in those excerpts. "
+                    "Treat them as the authoritative curriculum the student is being "
+                    "assessed on. Whenever you apply a definition, method or formula, "
+                    "include a short bridge in plain language: "
+                    "*'You learned about [topic] in [Course-name], [Lesson-label] — here "
+                    "this means [application].'* "
+                    "Cite the lesson inline as ([Course-name], [Lesson-label]) at the "
+                    "end of every paragraph that uses curriculum content. Prefer the "
+                    "wording / definitions / methods from these excerpts over external "
+                    "textbook knowledge.\n"
+                    "- Number every cited lesson in section 7. References.\n"
+                    "- Add a final '## 8. Curriculum traceability' section that lists "
+                    "each major report claim alongside the exact lesson it came from "
+                    "in a Markdown table with three columns: 'Claim or method used' | "
+                    "'Lesson cited' | 'Where it appears in this report (section #)'. "
+                    "This lets the examiner verify each claim against the curriculum.\n"
                 )
             else:
                 system_prompt = (
@@ -67833,6 +67887,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                     "prompt": exam_prompt.strip(),
                     "attached_datasets": [label for label, _ in attached_datasets],
                     "attached_documents": [label for label, _ in attached_documents],
+                    "syllabus_excerpts": lesson_lines[:18],
                     "model": AI_CHAT_MODEL or "",
                     "provider": AI_PROVIDER_LABEL or "",
                     "answer": answer_text,
@@ -68765,6 +68820,21 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 _render_markdown_to_docx(document, entry.get("answer", "") or "")
                 if primary_df is not None:
                     _embed_charts_in_document(document, primary_df)
+                # Appendix B: verbatim curriculum excerpts that were sent to Claude.
+                syllabus_excerpts = entry.get("syllabus_excerpts") or []
+                if syllabus_excerpts:
+                    document.add_page_break()
+                    document.add_heading("Appendix B: Curriculum excerpts used", level=1)
+                    document.add_paragraph(
+                        "The following excerpts were pulled from the Noroff "
+                        "course lessons and learning outcomes and sent to the AI "
+                        "as authoritative context for the report. The examiner "
+                        "can use this list to verify that every cited lesson "
+                        "actually exists in the curriculum and that the report's "
+                        "claims trace back to course material."
+                    )
+                    for line in syllabus_excerpts:
+                        document.add_paragraph(str(line), style="List Bullet")
             else:
                 document.add_heading("Exam resolver answers", level=1)
                 for entry in entries:
