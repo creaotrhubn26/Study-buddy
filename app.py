@@ -67725,6 +67725,10 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                     "Excel / Google Sheets formula in a fenced ```excel code block. "
                     "Do not invent numbers; if data is missing, say so explicitly."
                 )
+            # Stash the messages so the "Continue" button can resume the same
+            # conversation thread without rebuilding prompts.
+            st.session_state[f"{base_key}_ai_system_prompt"] = system_prompt
+            st.session_state[f"{base_key}_ai_user_message"] = user_message
             with st.spinner("Claude is thinking through your question…"):
                 try:
                     response = client.chat.completions.create(
@@ -67734,9 +67738,10 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                             {"role": "user", "content": user_message},
                         ],
                         # Exam-submission mode produces a full Noroff report
-                        # (intro + 6 sections + tables + formulas), so give it
-                        # roughly 4x the headroom of a normal answer.
-                        max_tokens=8000 if exam_submission_mode else 1800,
+                        # (intro + 6 sections + tables + formulas) on datasets
+                        # that can have 30+ columns. Give it enough headroom to
+                        # finish even a long EDA without truncation.
+                        max_tokens=16000 if exam_submission_mode else 1800,
                     )
                     answer_text = response.choices[0].message.content
                     st.session_state[ai_answer_key] = answer_text
@@ -67782,6 +67787,62 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 f"({AI_CHAT_MODEL or 'default model'}). "
                 "Click the button again after changing the prompt or dataset to refresh."
             )
+            # If the answer might have been truncated (no clear final section
+            # like Conclusion / Reflection / Konklusjon), show a Continue button
+            # so the user can ask Claude to pick up where it stopped.
+            answer_tail = (ai_answer or "")[-300:].lower()
+            looks_truncated = not any(
+                marker in answer_tail
+                for marker in [
+                    "conclusion and reflection",
+                    "## 6.",
+                    "konklusjon",
+                    "## konklusjon",
+                ]
+            )
+            stashed_system = st.session_state.get(f"{base_key}_ai_system_prompt")
+            stashed_user = st.session_state.get(f"{base_key}_ai_user_message")
+            if looks_truncated and stashed_system and stashed_user and st.button(
+                "➕ Continue the answer (the previous response looks unfinished)",
+                key=f"{base_key}_continue_ai_answer",
+            ):
+                continue_messages = [
+                    {"role": "system", "content": stashed_system},
+                    {"role": "user", "content": stashed_user},
+                    {"role": "assistant", "content": ai_answer},
+                    {
+                        "role": "user",
+                        "content": (
+                            "Your previous answer was cut off. Continue exactly where "
+                            "you stopped — do not repeat any earlier text. Pick up the "
+                            "next sentence or section and finish through the final "
+                            "## 6. Conclusion and Reflection section."
+                        ),
+                    },
+                ]
+                with st.spinner("Continuing the answer…"):
+                    try:
+                        response = client.chat.completions.create(
+                            model=AI_CHAT_MODEL,
+                            messages=continue_messages,
+                            max_tokens=8000,
+                        )
+                        continuation = response.choices[0].message.content
+                        st.session_state[ai_answer_key] = (
+                            ai_answer.rstrip() + "\n\n" + continuation.lstrip()
+                        )
+                        # Refresh the latest history entry too
+                        history = st.session_state.get("resolver_answer_history", [])
+                        if history:
+                            history[-1]["answer"] = st.session_state[ai_answer_key]
+                            st.session_state["resolver_answer_history"] = history
+                            try:
+                                save_persisted_state(st.session_state)
+                            except Exception:
+                                pass
+                        st.rerun()
+                    except Exception as exc:
+                        st.error(f"Could not continue: {type(exc).__name__}: {exc}")
 
         # 📊 Generate an analysis-ready Excel workbook so the student can screenshot
         # FROM EXCEL (which is what Noroff wants — proof of Excel skill).
