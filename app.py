@@ -68321,12 +68321,67 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             ):
                 st.caption(
                     "Builds an .xlsx with your raw data, a Descriptive-statistics sheet "
-                    "that shows the actual `=AVERAGE`, `=STDEV.S`, `=MEDIAN`, `=QUARTILE.INC` "
+                    "that shows the actual `=AVERAGE`, `=STDEV`, `=MEDIAN`, `=QUARTILE` "
                     "formulas, a Pivot sheet with `=COUNTIF` and `=AVERAGEIF`, a Z-score "
-                    "sheet, and embedded histogram + bar charts. Open it in Excel, take "
-                    "screenshots of the formulas / charts / pivots, and paste them into "
-                    "your Noroff Word report."
+                    "sheet, embedded histogram + bar charts, t-test, paired t-test, "
+                    "ANOVA, and Excel ToolPak-style regression output. The "
+                    "Target column dropdowns let the workbook focus on the variable "
+                    "the assignment is actually asking about (e.g., predict G3)."
                 )
+
+                # --- Task-aware target + grouping inference ---
+                numeric_pool = [
+                    col for col in project_df.columns
+                    if pd.api.types.is_numeric_dtype(project_df[col])
+                ]
+                categorical_pool = [
+                    col for col in project_df.columns
+                    if col not in numeric_pool
+                    and project_df[col].dropna().nunique() <= 20
+                ]
+                # Heuristic: pick the column whose name appears in the prompt next
+                # to "predict", "target", "output" or "final" wording, else
+                # default to the last numeric column (often the response variable).
+                prompt_lower_for_target = (exam_prompt or "").lower()
+                target_keywords = ["predict", "target", "output", "final", "response", "outcome"]
+                target_guess = numeric_pool[-1] if numeric_pool else None
+                for col in numeric_pool:
+                    name = str(col).lower()
+                    if name in prompt_lower_for_target:
+                        # Bias toward columns mentioned alongside target keywords.
+                        nearby = " ".join([
+                            prompt_lower_for_target[max(0, prompt_lower_for_target.find(name) - 60):
+                                                     prompt_lower_for_target.find(name) + 60]
+                        ])
+                        if any(k in nearby for k in target_keywords):
+                            target_guess = col
+                            break
+                # Grouping guess: first categorical mentioned in prompt, else first
+                # categorical with 2+ unique values.
+                grouping_guess = categorical_pool[0] if categorical_pool else None
+                for col in categorical_pool:
+                    if str(col).lower() in prompt_lower_for_target:
+                        grouping_guess = col
+                        break
+
+                opt_col1, opt_col2 = st.columns(2)
+                with opt_col1:
+                    target_choice = st.selectbox(
+                        "Target column (Y for regression, value for tests)",
+                        options=numeric_pool if numeric_pool else ["(no numeric columns)"],
+                        index=(numeric_pool.index(target_guess) if numeric_pool and target_guess in numeric_pool else 0),
+                        key=f"{base_key}_xlsx_target_col",
+                        help="Defaults to the column the prompt mentions as the prediction target, or the last numeric column.",
+                    )
+                with opt_col2:
+                    grouping_choice = st.selectbox(
+                        "Primary grouping column (for t-tests and ANOVA)",
+                        options=categorical_pool if categorical_pool else ["(no categorical columns)"],
+                        index=(categorical_pool.index(grouping_guess) if categorical_pool and grouping_guess in categorical_pool else 0),
+                        key=f"{base_key}_xlsx_grouping_col",
+                        help="Defaults to the categorical column the prompt mentions, or the first categorical column.",
+                    )
+
                 if st.button("📥 Build analysis workbook", key=f"{base_key}_build_xlsx"):
                     try:
                         from openpyxl import Workbook as _Workbook
@@ -68334,6 +68389,12 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                         from openpyxl.chart import BarChart as _BarChart, Reference as _Reference
                         from io import BytesIO as _BytesIO
                         from openpyxl.styles import Font as _Font, PatternFill as _Fill
+
+                        # Surface the task-aware choices as locals so the
+                        # downstream sheet builders can re-order the columns
+                        # they pick by default.
+                        _target_col_name = target_choice if isinstance(target_choice, str) and target_choice in (numeric_pool or []) else None
+                        _grouping_col_name = grouping_choice if isinstance(grouping_choice, str) and grouping_choice in (categorical_pool or []) else None
 
                         wb = _Workbook()
 
@@ -68365,6 +68426,20 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                             if col not in numeric_cols
                             and project_df[col].dropna().nunique() <= 20
                         ]
+                        # Reorder so the task-aware choices come first. Sheets
+                        # such as ZScores, TTestSetup, RegressionAnalysis pick
+                        # numeric_cols[0] / categorical_cols[0] as the default
+                        # target / grouping; promoting the student's chosen
+                        # columns to the front makes those sheets relevant to
+                        # the assignment without rewriting every builder.
+                        if _target_col_name and _target_col_name in numeric_cols:
+                            numeric_cols = [_target_col_name] + [
+                                c for c in numeric_cols if c != _target_col_name
+                            ]
+                        if _grouping_col_name and _grouping_col_name in categorical_cols:
+                            categorical_cols = [_grouping_col_name] + [
+                                c for c in categorical_cols if c != _grouping_col_name
+                            ]
 
                         # --- Sheet 2: Descriptive (formula-driven, pensum-tro) ---
                         # Pensum teaches: =AVERAGE, =MEDIAN, =STDEV (sample SD),
