@@ -67683,11 +67683,16 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                     "formula with concrete cell references in a fenced code block, e.g.\n"
                     "  ```excel\n"
                     "  Mean: =AVERAGE(B2:B289)\n"
-                    "  Sample SD: =STDEV.S(B2:B289)\n"
+                    "  Sample SD: =STDEV(B2:B289)\n"
                     "  z-score for B2: =(B2-$E$2)/$E$3\n"
                     "  ```\n"
-                    "  Use STDEV.S for sample SD, STDEV.P for population SD, and explain "
-                    "which one applies.\n"
+                    "- Use the LEGACY Excel function names that work on every Excel "
+                    "version and locale: STDEV (sample SD), STDEVP (population SD), "
+                    "MODE, QUARTILE(range, k) — DO NOT use STDEV.S, STDEV.P, MODE.SNGL, "
+                    "or QUARTILE.INC because they surface as #NAME? on Norwegian Excel "
+                    "and some older Excel builds. Explain in prose which kind of SD "
+                    "is being used (sample vs population) so the examiner knows the "
+                    "intent.\n"
                     "- State the computed value next to every formula so the examiner can "
                     "read the answer without opening Excel.\n"
                     "- Present any tabular result (KPI summary, frequency table, ANOVA "
@@ -67728,7 +67733,10 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                             {"role": "system", "content": system_prompt},
                             {"role": "user", "content": user_message},
                         ],
-                        max_tokens=1800,
+                        # Exam-submission mode produces a full Noroff report
+                        # (intro + 6 sections + tables + formulas), so give it
+                        # roughly 4x the headroom of a normal answer.
+                        max_tokens=8000 if exam_submission_mode else 1800,
                     )
                     answer_text = response.choices[0].message.content
                     st.session_state[ai_answer_key] = answer_text
@@ -67841,20 +67849,26 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                             col_idx = headers.index(column) + 1
                             letter = _col_letter(col_idx)
                             range_ref = f"RawData!{letter}{data_first}:{letter}{data_last}"
+                            # Use the legacy function names (STDEV, STDEVP, MODE,
+                            # QUARTILE) instead of the post-2010 variants
+                            # (STDEV.S, STDEV.P, MODE.SNGL, QUARTILE.INC) because
+                            # openpyxl does not auto-prefix the latter with
+                            # `_xlfn.`, which makes them surface as #NAME? in
+                            # Excel on some locales.
                             ws_desc.append([
                                 column,
                                 f"=COUNT({range_ref})",
                                 f"=AVERAGE({range_ref})",
                                 f"=MEDIAN({range_ref})",
-                                f"=IFERROR(MODE.SNGL({range_ref}),\"—\")",
-                                f"=STDEV.S({range_ref})",
-                                f"=STDEV.P({range_ref})",
+                                f"=IFERROR(MODE({range_ref}),\"—\")",
+                                f"=STDEV({range_ref})",
+                                f"=STDEVP({range_ref})",
                                 f"=MIN({range_ref})",
-                                f"=QUARTILE.INC({range_ref},1)",
-                                f"=QUARTILE.INC({range_ref},3)",
+                                f"=QUARTILE({range_ref},1)",
+                                f"=QUARTILE({range_ref},3)",
                                 f"=MAX({range_ref})",
                                 f"=MAX({range_ref})-MIN({range_ref})",
-                                f"=QUARTILE.INC({range_ref},3)-QUARTILE.INC({range_ref},1)",
+                                f"=QUARTILE({range_ref},3)-QUARTILE({range_ref},1)",
                             ])
 
                         # --- Sheet 3: Pivot (COUNTIF / AVERAGEIF per category) ---
@@ -67902,7 +67916,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                                 cell.fill = _Fill("solid", fgColor="FFF2CC")
                             for r in range(data_first, data_last + 1):
                                 cell_ref = f"RawData!{target_letter}{r}"
-                                z_formula = f"=({cell_ref}-AVERAGE({target_range}))/STDEV.S({target_range})"
+                                z_formula = f"=({cell_ref}-AVERAGE({target_range}))/STDEV({target_range})"
                                 z_row = r - data_first + 2  # account for header
                                 ws_z.cell(row=z_row, column=1, value=f"={cell_ref}")
                                 ws_z.cell(row=z_row, column=2, value=z_formula)
@@ -67932,10 +67946,20 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                                 for k in range(1, n_bins + 1):
                                     upper = lo + k * width
                                     lower = lo + (k - 1) * width
+                                    # COUNTIFS is Excel 2007+ which is fine, but if openpyxl
+                                    # drops the prefix some locales still complain. Express
+                                    # the bin count via two COUNTIFs subtracted, which uses
+                                    # only universal Excel functions.
                                     if k == 1:
-                                        formula = f'=COUNTIFS({target_range},">="&{lower},{target_range},"<="&{upper})'
+                                        formula = (
+                                            f'=COUNTIF({target_range},"<="&{upper})'
+                                            f'-COUNTIF({target_range},"<"&{lower})'
+                                        )
                                     else:
-                                        formula = f'=COUNTIFS({target_range},">"&{lower},{target_range},"<="&{upper})'
+                                        formula = (
+                                            f'=COUNTIF({target_range},"<="&{upper})'
+                                            f'-COUNTIF({target_range},"<="&{lower})'
+                                        )
                                     ws_hist.append([round(upper, 3), formula])
                                 hist_last_row = ws_hist.max_row
                                 # Embed a bar chart
