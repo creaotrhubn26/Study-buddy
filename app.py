@@ -67706,6 +67706,18 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                     "  - **Correlation / regression:** linked predictors to the target "
                     "(section X) using PEARSON / CORREL / LINEST / TREND.\n"
                     "Add other skills the actual report demonstrated.\n\n"
+                    "## 7. References\n"
+                    "Every source you cited in-text (Cortez & Silva 2008, course "
+                    "textbooks, datasets, websites, Noroff lessons) MUST appear here as "
+                    "a numbered list in APA 7 format, e.g.:\n"
+                    "  1. Cortez, P., & Silva, A. (2008). *Using data mining to predict "
+                    "secondary school student performance.* In A. Brito & J. Teixeira "
+                    "(Eds.), *Proceedings of 5th Annual Future Business Technology "
+                    "Conference* (pp. 5–12). EUROSIS.\n"
+                    "If the dataset or attached documents have known authors/years, "
+                    "include them. Do not invent references — only list sources you "
+                    "actually cited above. Keep the list ordered alphabetically by "
+                    "first author surname.\n\n"
                     "Calculation rules:\n"
                     "- For every calculation, ALWAYS give the Excel / Google Sheets "
                     "formula with concrete cell references in a fenced code block, e.g.\n"
@@ -67757,54 +67769,86 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             # conversation thread without rebuilding prompts.
             st.session_state[f"{base_key}_ai_system_prompt"] = system_prompt
             st.session_state[f"{base_key}_ai_user_message"] = user_message
-            with st.spinner("Claude is thinking through your question…"):
+            # Stream the response so the student sees the report appear live
+            # rather than staring at a spinner for 30+ seconds.
+            stream_placeholder = st.empty()
+            stream_placeholder.markdown(
+                "### 💡 Generating answer…\n\n_Claude is writing — the report will "
+                "appear here as it streams in._"
+            )
+            answer_text = ""
+            try:
                 try:
+                    stream = client.chat.completions.create(
+                        model=AI_CHAT_MODEL,
+                        messages=[
+                            {"role": "system", "content": system_prompt},
+                            {"role": "user", "content": user_message},
+                        ],
+                        max_tokens=16000 if exam_submission_mode else 1800,
+                        stream=True,
+                    )
+                    for chunk in stream:
+                        if not getattr(chunk, "choices", None):
+                            continue
+                        delta = getattr(chunk.choices[0], "delta", None)
+                        if delta and getattr(delta, "content", None):
+                            answer_text += delta.content
+                            if len(answer_text) % 80 < 16:
+                                stream_placeholder.markdown(
+                                    "### 💡 Generated answer (streaming…)\n\n"
+                                    + answer_text + "▌"
+                                )
+                    stream_placeholder.markdown(
+                        "### 💡 Generated answer\n\n" + answer_text
+                    )
+                except Exception:
+                    # Fall back to the non-streaming path if streaming fails.
+                    stream_placeholder.empty()
                     response = client.chat.completions.create(
                         model=AI_CHAT_MODEL,
                         messages=[
                             {"role": "system", "content": system_prompt},
                             {"role": "user", "content": user_message},
                         ],
-                        # Exam-submission mode produces a full Noroff report
-                        # (intro + 6 sections + tables + formulas) on datasets
-                        # that can have 30+ columns. Give it enough headroom to
-                        # finish even a long EDA without truncation.
                         max_tokens=16000 if exam_submission_mode else 1800,
                     )
                     answer_text = response.choices[0].message.content
-                    st.session_state[ai_answer_key] = answer_text
-                    ai_signature = (
-                        f"{exam_prompt}\n\nDATA::{project_file_label if project_df is not None else ''}::"
-                        f"{project_df.shape if project_df is not None else None}"
-                    )
-                    st.session_state[ai_signature_key] = ai_signature
 
-                    # Append to the persistent history so the student can
-                    # browse / download every answer they have generated.
-                    import datetime as _dt
-                    history = st.session_state.get("resolver_answer_history", [])
-                    history.append({
-                        "timestamp": _dt.datetime.now().isoformat(timespec="seconds"),
-                        "course_code": course.get("code", ""),
-                        "course_name": course.get("name", ""),
-                        "prompt": exam_prompt.strip(),
-                        "attached_datasets": [label for label, _ in attached_datasets],
-                        "attached_documents": [label for label, _ in attached_documents],
-                        "model": AI_CHAT_MODEL or "",
-                        "provider": AI_PROVIDER_LABEL or "",
-                        "answer": answer_text,
-                    })
-                    # Cap to last 100 to keep the JSON file bounded.
-                    st.session_state["resolver_answer_history"] = history[-100:]
-                    try:
-                        save_persisted_state(st.session_state)
-                    except Exception:
-                        pass
-                except Exception as exc:
-                    st.session_state[ai_answer_key] = (
-                        f"_Could not generate the AI answer right now._\n\n"
-                        f"Error: `{type(exc).__name__}: {exc}`"
-                    )
+                st.session_state[ai_answer_key] = answer_text
+                ai_signature = (
+                    f"{exam_prompt}\n\nDATA::{project_file_label if project_df is not None else ''}::"
+                    f"{project_df.shape if project_df is not None else None}"
+                )
+                st.session_state[ai_signature_key] = ai_signature
+
+                # Append to the persistent history so the student can
+                # browse / download every answer they have generated.
+                import datetime as _dt
+                history = st.session_state.get("resolver_answer_history", [])
+                history.append({
+                    "timestamp": _dt.datetime.now().isoformat(timespec="seconds"),
+                    "course_code": course.get("code", ""),
+                    "course_name": course.get("name", ""),
+                    "prompt": exam_prompt.strip(),
+                    "attached_datasets": [label for label, _ in attached_datasets],
+                    "attached_documents": [label for label, _ in attached_documents],
+                    "model": AI_CHAT_MODEL or "",
+                    "provider": AI_PROVIDER_LABEL or "",
+                    "answer": answer_text,
+                })
+                # Cap to last 100 to keep the JSON file bounded.
+                st.session_state["resolver_answer_history"] = history[-100:]
+                try:
+                    save_persisted_state(st.session_state)
+                except Exception:
+                    pass
+            except Exception as exc:
+                stream_placeholder.empty()
+                st.session_state[ai_answer_key] = (
+                    f"_Could not generate the AI answer right now._\n\n"
+                    f"Error: `{type(exc).__name__}: {exc}`"
+                )
 
         ai_answer = st.session_state.get(ai_answer_key, "")
         if ai_answer:
@@ -67871,6 +67915,117 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                         st.rerun()
                     except Exception as exc:
                         st.error(f"Could not continue: {type(exc).__name__}: {exc}")
+
+            # 🔍 Self-review pass — Claude re-reads its own answer as if it
+            # were an exam grader and patches every weakness it finds.
+            if stashed_system and stashed_user and st.button(
+                "🔍 Run quality review (re-read and improve the answer)",
+                key=f"{base_key}_quality_review_ai_answer",
+            ):
+                review_system = (
+                    "You are a strict Noroff exam grader for a vocational data "
+                    "analyst (PDAN) student. Read the submission below and produce "
+                    "an IMPROVED version. Your job is to:\n"
+                    "1. Verify every required Noroff section is present and "
+                    "complete: Task Brief and Deliverables, 1. Introduction, "
+                    "2. Initial Assumptions and Hypotheses (with Cortez & Silva "
+                    "2008 references where relevant), 3. EDA (with sub-sections), "
+                    "4. Trends/Patterns/Anomalies, 5. Discussion, 6. Conclusion "
+                    "and Reflection (including the Skills Demonstrated list), "
+                    "and 7. References (APA 7).\n"
+                    "2. Check every claim: is it backed by a number, a formula, "
+                    "or a citation? Patch unsupported claims by adding evidence "
+                    "or removing them.\n"
+                    "3. Check every formula: is it written with legacy Excel "
+                    "function names (STDEV, STDEVP, MODE, QUARTILE) that work "
+                    "on Norwegian Excel? Replace STDEV.S / STDEV.P / MODE.SNGL "
+                    "/ QUARTILE.INC if you see them.\n"
+                    "4. Make sure each major EDA step has a '📸 Screenshot needed:' "
+                    "callout telling the student exactly what to capture from Excel.\n"
+                    "5. Tighten weak arguments. Strengthen the link between the "
+                    "data and the conclusion in every section.\n"
+                    "6. Keep the same overall length unless something is missing. "
+                    "Do not pad with filler.\n"
+                    "OUTPUT the improved full report only — do not narrate your "
+                    "edits, do not add a summary of changes. Use the same EXACT "
+                    "structure and markdown style as the original."
+                )
+                review_user = (
+                    f"ORIGINAL ASSIGNMENT:\n{stashed_user}\n\n"
+                    f"DRAFT SUBMISSION TO IMPROVE:\n{ai_answer}"
+                )
+                with st.spinner("Claude is reviewing and improving the submission…"):
+                    try:
+                        review_response = client.chat.completions.create(
+                            model=AI_CHAT_MODEL,
+                            messages=[
+                                {"role": "system", "content": review_system},
+                                {"role": "user", "content": review_user},
+                            ],
+                            max_tokens=16000,
+                        )
+                        improved = review_response.choices[0].message.content
+                        st.session_state[ai_answer_key] = improved
+                        # Update the latest history entry too.
+                        history = st.session_state.get("resolver_answer_history", [])
+                        if history:
+                            history[-1]["answer"] = improved
+                            history[-1]["quality_reviewed"] = True
+                            st.session_state["resolver_answer_history"] = history
+                            try:
+                                save_persisted_state(st.session_state)
+                            except Exception:
+                                pass
+                        st.rerun()
+                    except Exception as exc:
+                        st.error(f"Could not run quality review: {type(exc).__name__}: {exc}")
+
+            # 💬 Multi-turn follow-up — let the student ask further questions
+            # that build on the report.
+            if stashed_system and stashed_user:
+                followup_key = f"{base_key}_ai_followup_input"
+                followup_msg = st.text_input(
+                    "💬 Follow-up question (builds on the current answer)",
+                    key=followup_key,
+                    placeholder="e.g. 'Also analyse studytime vs G3 and add it to section 4.'",
+                )
+                if st.button(
+                    "Send follow-up", key=f"{base_key}_ai_followup_send"
+                ) and followup_msg.strip():
+                    followup_messages = [
+                        {"role": "system", "content": stashed_system},
+                        {"role": "user", "content": stashed_user},
+                        {"role": "assistant", "content": ai_answer},
+                        {"role": "user", "content": followup_msg.strip()},
+                    ]
+                    with st.spinner("Claude is extending the answer…"):
+                        try:
+                            response = client.chat.completions.create(
+                                model=AI_CHAT_MODEL,
+                                messages=followup_messages,
+                                max_tokens=8000,
+                            )
+                            addition = response.choices[0].message.content
+                            st.session_state[ai_answer_key] = (
+                                ai_answer.rstrip()
+                                + f"\n\n---\n\n## Follow-up: {followup_msg.strip()}\n\n"
+                                + addition.lstrip()
+                            )
+                            history = st.session_state.get("resolver_answer_history", [])
+                            if history:
+                                history[-1]["answer"] = st.session_state[ai_answer_key]
+                                followups = history[-1].get("followups", [])
+                                followups.append({"question": followup_msg.strip(),
+                                                  "answer": addition})
+                                history[-1]["followups"] = followups
+                                st.session_state["resolver_answer_history"] = history
+                                try:
+                                    save_persisted_state(st.session_state)
+                                except Exception:
+                                    pass
+                            st.rerun()
+                        except Exception as exc:
+                            st.error(f"Could not send follow-up: {type(exc).__name__}: {exc}")
 
         # 📊 Generate an analysis-ready Excel workbook so the student can screenshot
         # FROM EXCEL (which is what Noroff wants — proof of Excel skill).
