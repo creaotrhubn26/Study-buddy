@@ -68697,6 +68697,316 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                             scatter.height = 10; scatter.width = 18
                             ws_scatter.add_chart(scatter, "E3")
 
+                        # --- Sheet 10: PairedTTest (pensum-tro =TTEST type=1) ---
+                        # The paired-design t-test in the curriculum uses
+                        # =TTEST(range1, range2, tails, 1) on two columns of
+                        # matched observations (before/after, or G1/G2, etc.).
+                        # We pair the first two numeric columns by default so
+                        # the student has a screenshot-ready setup.
+                        if len(numeric_cols) >= 2:
+                            paired_a, paired_b = numeric_cols[0], numeric_cols[1]
+                            paired_a_values = (
+                                project_df[paired_a].dropna().astype(float).tolist()
+                            )
+                            paired_b_values = (
+                                project_df[paired_b].dropna().astype(float).tolist()
+                            )
+                            n_pairs = min(len(paired_a_values), len(paired_b_values))
+                            if n_pairs >= 2:
+                                ws_paired = wb.create_sheet("PairedTTest")
+                                ws_paired.append([
+                                    f"Paired t-test: {paired_a} vs {paired_b}"
+                                ])
+                                ws_paired["A1"].font = _Font(bold=True, size=14)
+                                ws_paired.append([])
+                                ws_paired.append([paired_a, paired_b, "Difference (=A-B)"])
+                                for cell in ws_paired[3]:
+                                    cell.font = _Font(bold=True)
+                                    cell.fill = _Fill("solid", fgColor="DDEBF7")
+                                paired_start = 4
+                                for i in range(n_pairs):
+                                    ws_paired.append([
+                                        paired_a_values[i],
+                                        paired_b_values[i],
+                                        f"=A{paired_start + i}-B{paired_start + i}",
+                                    ])
+                                paired_end = paired_start + n_pairs - 1
+                                range_a = f"A{paired_start}:A{paired_end}"
+                                range_b = f"B{paired_start}:B{paired_end}"
+                                range_d = f"C{paired_start}:C{paired_end}"
+                                summary_row = paired_end + 2
+                                ws_paired.cell(row=summary_row, column=1, value="n pairs")
+                                ws_paired.cell(row=summary_row, column=2, value=f"=COUNT({range_a})")
+                                ws_paired.cell(row=summary_row + 1, column=1, value=f"Mean ({paired_a})")
+                                ws_paired.cell(row=summary_row + 1, column=2, value=f"=AVERAGE({range_a})")
+                                ws_paired.cell(row=summary_row + 2, column=1, value=f"Mean ({paired_b})")
+                                ws_paired.cell(row=summary_row + 2, column=2, value=f"=AVERAGE({range_b})")
+                                ws_paired.cell(row=summary_row + 3, column=1, value="Mean of differences")
+                                ws_paired.cell(row=summary_row + 3, column=2, value=f"=AVERAGE({range_d})")
+                                ws_paired.cell(row=summary_row + 4, column=1, value="SD of differences")
+                                ws_paired.cell(row=summary_row + 4, column=2, value=f"=STDEV({range_d})")
+                                ws_paired.cell(row=summary_row + 5, column=1, value="SE of mean diff")
+                                ws_paired.cell(row=summary_row + 5, column=2, value=f"=STDEV({range_d})/SQRT(COUNT({range_a}))")
+                                ws_paired.cell(row=summary_row + 6, column=1, value="t-statistic")
+                                ws_paired.cell(row=summary_row + 6, column=2,
+                                               value=f"=AVERAGE({range_d})/(STDEV({range_d})/SQRT(COUNT({range_a})))")
+                                ws_paired.cell(row=summary_row + 7, column=1, value="Degrees of freedom")
+                                ws_paired.cell(row=summary_row + 7, column=2, value=f"=COUNT({range_a})-1")
+                                ws_paired.cell(row=summary_row + 8, column=1,
+                                               value="p-value (two-tailed paired) — pensum =TTEST type=1")
+                                ws_paired.cell(row=summary_row + 8, column=2,
+                                               value=f"=TTEST({range_a},{range_b},2,1)")
+                                ws_paired.cell(row=summary_row + 9, column=1,
+                                               value="Decision at α=0.05")
+                                ws_paired.cell(row=summary_row + 9, column=2,
+                                               value=f'=IF(B{summary_row + 8}<0.05,"Reject H0","Fail to reject H0")')
+                                for r in range(summary_row, summary_row + 10):
+                                    ws_paired.cell(row=r, column=1).font = _Font(bold=True)
+
+                        # --- Sheet 11: ANOVA (one-way, k groups) ---
+                        # Pensum's Statistical Tools module covers ANOVA for
+                        # comparing 3+ group means. We pick the first numeric
+                        # column as the value and the first categorical column
+                        # (3+ unique values) as the grouping. Each group's
+                        # values are written into its own column so the student
+                        # can also run Data → Data Analysis → Anova: Single Factor
+                        # if they prefer the ToolPak path.
+                        if numeric_cols and categorical_cols:
+                            anova_value = numeric_cols[0]
+                            anova_group = None
+                            for cat in categorical_cols:
+                                if project_df[cat].dropna().nunique() >= 3:
+                                    anova_group = cat
+                                    break
+                            if anova_group:
+                                group_values = list(project_df[anova_group].dropna().unique())
+                                # Cap at 6 groups so the layout stays readable.
+                                group_values = group_values[:6]
+                                group_columns = []
+                                for gv in group_values:
+                                    series = (
+                                        project_df.loc[project_df[anova_group] == gv, anova_value]
+                                        .dropna().astype(float).tolist()
+                                    )
+                                    if series:
+                                        group_columns.append((str(gv), series))
+                                if len(group_columns) >= 3:
+                                    ws_anova = wb.create_sheet("ANOVASetup")
+                                    ws_anova.append([
+                                        f"One-way ANOVA: {anova_value} by {anova_group}"
+                                    ])
+                                    ws_anova["A1"].font = _Font(bold=True, size=14)
+                                    ws_anova.append([])
+                                    # Header row: one column per group.
+                                    ws_anova.append([gv for gv, _ in group_columns])
+                                    for cell in ws_anova[3]:
+                                        cell.font = _Font(bold=True)
+                                        cell.fill = _Fill("solid", fgColor="DDEBF7")
+                                    longest = max(len(s) for _, s in group_columns)
+                                    anova_start = 4
+                                    for i in range(longest):
+                                        ws_anova.append([
+                                            s[i] if i < len(s) else None
+                                            for _, s in group_columns
+                                        ])
+                                    # Build per-group summary block underneath.
+                                    summary_top = anova_start + longest + 1
+                                    ws_anova.cell(row=summary_top, column=1, value="Statistic")
+                                    for col_idx, (gv, _) in enumerate(group_columns, start=2):
+                                        ws_anova.cell(row=summary_top, column=col_idx, value=gv)
+                                    ws_anova[summary_top][0].font = _Font(bold=True)
+                                    stat_rows = ["n", "Mean", "Sample SD", "SS_within"]
+                                    for offset, label in enumerate(stat_rows, start=1):
+                                        ws_anova.cell(row=summary_top + offset, column=1, value=label).font = _Font(bold=True)
+                                    for col_idx, (_, series) in enumerate(group_columns, start=2):
+                                        col_letter = _col_letter(col_idx)
+                                        end = anova_start + len(series) - 1
+                                        rng = f"{col_letter}{anova_start}:{col_letter}{end}"
+                                        ws_anova.cell(row=summary_top + 1, column=col_idx, value=f"=COUNT({rng})")
+                                        ws_anova.cell(row=summary_top + 2, column=col_idx, value=f"=AVERAGE({rng})")
+                                        ws_anova.cell(row=summary_top + 3, column=col_idx, value=f"=STDEV({rng})")
+                                        # SS_within per group = (n-1) * variance = (n-1) * STDEV^2
+                                        ws_anova.cell(
+                                            row=summary_top + 4, column=col_idx,
+                                            value=f"=(COUNT({rng})-1)*STDEV({rng})^2",
+                                        )
+                                    # ANOVA table block.
+                                    table_top = summary_top + 6
+                                    # Grand mean over ALL values combined.
+                                    # Build the union range as a Sumproduct-friendly expression:
+                                    # easier: sum of (n*mean) / total n
+                                    # We have row summary_top+1 with COUNTs in columns 2..k+1, summary_top+2 with means.
+                                    k = len(group_columns)
+                                    means_row = summary_top + 2
+                                    counts_row = summary_top + 1
+                                    ss_row = summary_top + 4
+                                    means_range = f"B{means_row}:{_col_letter(1 + k)}{means_row}"
+                                    counts_range = f"B{counts_row}:{_col_letter(1 + k)}{counts_row}"
+                                    ss_within_range = f"B{ss_row}:{_col_letter(1 + k)}{ss_row}"
+                                    ws_anova.cell(row=table_top, column=1, value="Grand mean").font = _Font(bold=True)
+                                    ws_anova.cell(
+                                        row=table_top, column=2,
+                                        value=f"=SUMPRODUCT({means_range},{counts_range})/SUM({counts_range})",
+                                    )
+                                    ws_anova.cell(row=table_top + 1, column=1, value="SS_between").font = _Font(bold=True)
+                                    ws_anova.cell(
+                                        row=table_top + 1, column=2,
+                                        value=f"=SUMPRODUCT({counts_range},({means_range}-B{table_top})^2)",
+                                    )
+                                    ws_anova.cell(row=table_top + 2, column=1, value="SS_within").font = _Font(bold=True)
+                                    ws_anova.cell(row=table_top + 2, column=2,
+                                                  value=f"=SUM({ss_within_range})")
+                                    ws_anova.cell(row=table_top + 3, column=1, value="df_between (k-1)").font = _Font(bold=True)
+                                    ws_anova.cell(row=table_top + 3, column=2, value=k - 1)
+                                    ws_anova.cell(row=table_top + 4, column=1, value="df_within (N-k)").font = _Font(bold=True)
+                                    ws_anova.cell(row=table_top + 4, column=2, value=f"=SUM({counts_range})-{k}")
+                                    ws_anova.cell(row=table_top + 5, column=1, value="MS_between").font = _Font(bold=True)
+                                    ws_anova.cell(row=table_top + 5, column=2,
+                                                  value=f"=B{table_top + 1}/B{table_top + 3}")
+                                    ws_anova.cell(row=table_top + 6, column=1, value="MS_within").font = _Font(bold=True)
+                                    ws_anova.cell(row=table_top + 6, column=2,
+                                                  value=f"=B{table_top + 2}/B{table_top + 4}")
+                                    ws_anova.cell(row=table_top + 7, column=1, value="F-statistic").font = _Font(bold=True)
+                                    ws_anova.cell(row=table_top + 7, column=2,
+                                                  value=f"=B{table_top + 5}/B{table_top + 6}")
+                                    ws_anova.cell(row=table_top + 8, column=1,
+                                                  value="p-value (right tail) — legacy =FDIST").font = _Font(bold=True)
+                                    ws_anova.cell(row=table_top + 8, column=2,
+                                                  value=f"=FDIST(B{table_top + 7},B{table_top + 3},B{table_top + 4})")
+                                    ws_anova.cell(row=table_top + 9, column=1,
+                                                  value="Decision at α=0.05").font = _Font(bold=True)
+                                    ws_anova.cell(row=table_top + 9, column=2,
+                                                  value=f'=IF(B{table_top + 8}<0.05,"Reject H0","Fail to reject H0")')
+                                    # Note for the student about the ToolPak path.
+                                    note_row = table_top + 11
+                                    ws_anova.cell(row=note_row, column=1,
+                                                  value=("Alternative: Data → Data Analysis → Anova: Single Factor "
+                                                         f"with input range A{anova_start - 1}:{_col_letter(k)}{anova_start + longest - 1}"))
+
+                        # --- Sheet 12: RegressionAnalysis (Excel ToolPak layout) ---
+                        # The Statistical Tools regression module is graded on
+                        # the Excel Data Analysis Regression output: Regression
+                        # Statistics + ANOVA + Coefficients table (Coefficient,
+                        # Standard Error, t Stat, P-value). We rebuild that
+                        # exact layout using only universal Excel functions so
+                        # the student can screenshot directly without running
+                        # the ToolPak.
+                        if len(numeric_cols) >= 2:
+                            y_col, x_col = numeric_cols[0], numeric_cols[1]
+                            y_letter = _col_letter(headers.index(y_col) + 1)
+                            x_letter = _col_letter(headers.index(x_col) + 1)
+                            y_range = f"RawData!{y_letter}{data_first}:{y_letter}{data_last}"
+                            x_range = f"RawData!{x_letter}{data_first}:{x_letter}{data_last}"
+                            ws_reg = wb.create_sheet("RegressionAnalysis")
+                            ws_reg.append([f"Linear regression: predict {y_col} from {x_col}"])
+                            ws_reg["A1"].font = _Font(bold=True, size=14)
+                            ws_reg.append([])
+                            # --- Regression Statistics ---
+                            ws_reg.append(["Regression Statistics"])
+                            ws_reg["A3"].font = _Font(bold=True, size=12)
+                            ws_reg.append(["Multiple R", f"=CORREL({x_range},{y_range})"])
+                            ws_reg.append(["R Square", f"=RSQ({y_range},{x_range})"])
+                            # Adjusted R² for simple linear regression (k=1 predictor):
+                            # adj_R² = 1 - (1-R²) * (n-1)/(n-2)
+                            ws_reg.append([
+                                "Adjusted R Square",
+                                f"=1-(1-RSQ({y_range},{x_range}))*(COUNT({x_range})-1)/(COUNT({x_range})-2)",
+                            ])
+                            ws_reg.append(["Standard Error", f"=STEYX({y_range},{x_range})"])
+                            ws_reg.append(["Observations", f"=COUNT({x_range})"])
+                            for r in (3, 4, 5, 6, 7, 8):
+                                ws_reg.cell(row=r, column=1).font = _Font(bold=True)
+                            # --- ANOVA (regression vs residual) ---
+                            ws_reg.append([])
+                            ws_reg.append(["ANOVA"])
+                            ws_reg["A10"].font = _Font(bold=True, size=12)
+                            ws_reg.append(["", "df", "SS", "MS", "F", "Significance F"])
+                            for cell in ws_reg[11]:
+                                cell.font = _Font(bold=True)
+                                cell.fill = _Fill("solid", fgColor="DDEBF7")
+                            # Regression row: df=1, SS = R² * SS_total, MS = SS/df, F = MS_reg/MS_res
+                            # SS_total = (n-1) * VAR(y)
+                            ss_total_expr = f"(COUNT({y_range})-1)*VAR({y_range})"
+                            ss_reg_expr = f"RSQ({y_range},{x_range})*{ss_total_expr}"
+                            ss_res_expr = f"(1-RSQ({y_range},{x_range}))*{ss_total_expr}"
+                            df_res_expr = f"COUNT({y_range})-2"
+                            # F = (R²/1) / ((1-R²)/(n-2))
+                            f_stat_expr = (
+                                f"(RSQ({y_range},{x_range})/1)/"
+                                f"((1-RSQ({y_range},{x_range}))/({df_res_expr}))"
+                            )
+                            sig_f_expr = f"FDIST({f_stat_expr},1,{df_res_expr})"
+                            ws_reg.append([
+                                "Regression",
+                                1,
+                                f"={ss_reg_expr}",
+                                f"={ss_reg_expr}/1",
+                                f"={f_stat_expr}",
+                                f"={sig_f_expr}",
+                            ])
+                            ws_reg.append([
+                                "Residual",
+                                f"={df_res_expr}",
+                                f"={ss_res_expr}",
+                                f"={ss_res_expr}/({df_res_expr})",
+                                "", "",
+                            ])
+                            ws_reg.append([
+                                "Total",
+                                f"=COUNT({y_range})-1",
+                                f"={ss_total_expr}",
+                                "", "", "",
+                            ])
+                            for r in (12, 13, 14):
+                                ws_reg.cell(row=r, column=1).font = _Font(bold=True)
+                            # --- Coefficients table ---
+                            ws_reg.append([])
+                            ws_reg.append(["Coefficients table"])
+                            ws_reg["A16"].font = _Font(bold=True, size=12)
+                            ws_reg.append(["", "Coefficient", "Standard Error", "t Stat", "P-value"])
+                            for cell in ws_reg[17]:
+                                cell.font = _Font(bold=True)
+                                cell.fill = _Fill("solid", fgColor="DDEBF7")
+                            # Slope (m) and intercept (b)
+                            slope_expr = f"SLOPE({y_range},{x_range})"
+                            intercept_expr = f"INTERCEPT({y_range},{x_range})"
+                            # SE_slope = STEYX(y,x) / SQRT(SUMPRODUCT((x-AVG(x))^2))
+                            se_slope_expr = (
+                                f"STEYX({y_range},{x_range})/"
+                                f"SQRT(SUMPRODUCT(({x_range}-AVERAGE({x_range}))^2))"
+                            )
+                            # SE_intercept = SE_slope * SQRT(SUMSQ(x) / n)
+                            se_intercept_expr = (
+                                f"({se_slope_expr})*SQRT(SUMSQ({x_range})/COUNT({x_range}))"
+                            )
+                            # t-stat = coefficient / SE
+                            # p-value = 2 * (1 - T.DIST(|t|, df)) → legacy TDIST(|t|, df, 2)
+                            ws_reg.append([
+                                "Intercept",
+                                f"={intercept_expr}",
+                                f"={se_intercept_expr}",
+                                f"={intercept_expr}/({se_intercept_expr})",
+                                f"=TDIST(ABS({intercept_expr}/({se_intercept_expr})),{df_res_expr},2)",
+                            ])
+                            ws_reg.append([
+                                x_col,
+                                f"={slope_expr}",
+                                f"={se_slope_expr}",
+                                f"={slope_expr}/({se_slope_expr})",
+                                f"=TDIST(ABS({slope_expr}/({se_slope_expr})),{df_res_expr},2)",
+                            ])
+                            for r in (18, 19):
+                                ws_reg.cell(row=r, column=1).font = _Font(bold=True)
+                            # Footer note on equivalence with Excel ToolPak.
+                            ws_reg.append([])
+                            ws_reg.append([
+                                "Note:",
+                                "This layout mirrors Data → Data Analysis → Regression. "
+                                "Selecting Y range = the first numeric column and X range = the second "
+                                "numeric column in the ToolPak gives the same numbers."
+                            ])
+                            ws_reg["A21"].font = _Font(bold=True, italic=True)
+
                         # Conditional formatting on the Descriptive sheet's
                         # mean column so values stand out visually.
                         if len(numeric_cols) >= 1:
@@ -68762,7 +69072,21 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                         "7. **ZScores sheet** — show `=(x-AVG)/STDEV` (the pensum z-score "
                         "formula) and the red highlight on rows flagged as |z|>3 outliers.\n"
                         "8. **HistogramChart sheet** — embedded bar chart with bin / "
-                        "frequency table beside it."
+                        "frequency table beside it.\n"
+                        "9. **PairedTTest sheet** — pensum-tro paired design with "
+                        "`=TTEST(range1, range2, 2, 1)`, plus =AVERAGE / =STDEV of "
+                        "the difference column for the manual derivation.\n"
+                        "10. **ANOVASetup sheet** — one-way ANOVA for 3+ groups with "
+                        "per-group =COUNT / =AVERAGE / =STDEV, SS_between, SS_within, "
+                        "MS, F-statistic, and the legacy =FDIST p-value. The "
+                        "instructions also point to Data → Data Analysis → "
+                        "Anova: Single Factor for the ToolPak path.\n"
+                        "11. **RegressionAnalysis sheet** — Excel's Data Analysis → "
+                        "Regression output recreated with universal formulas: "
+                        "Regression Statistics block (Multiple R, R Square, Adjusted "
+                        "R Square, Standard Error, Observations), ANOVA block, and a "
+                        "Coefficients table with Coefficient, Standard Error, t Stat "
+                        "and P-value for both intercept and slope."
                     )
 
         # Show the saved answer history so students can revisit past sessions.
