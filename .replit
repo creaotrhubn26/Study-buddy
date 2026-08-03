@@ -1,6 +1,11 @@
 modules = ["python-3.11"]
 [deployment]
-deploymentTarget = "autoscale"
+# Progress is persisted to a JSON file on local disk (see study_buddy_state.py).
+# "autoscale" gives every request a fresh, ephemeral filesystem and can run
+# several instances at once, which loses or splits that file. A reserved VM
+# keeps one instance with durable disk. If you move back to autoscale, first
+# point STUDY_BUDDY_STATE_FILE at shared storage or switch to a database.
+deploymentTarget = "vm"
 run = ["streamlit", "run", "app.py", "--server.port", "5000"]
 
 [nix]

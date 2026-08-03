@@ -1,8 +1,20 @@
+# Secrets and local environment
 .env
 .env.local
+.streamlit/secrets.toml
+.venv/
+
+# Per-user study progress, written at runtime (plus atomic-write temp files)
 .study_buddy_state.json
+.study_buddy_state.json.*.tmp
+
+# Build and dependency output
 __pycache__/
+*.py[cod]
+node_modules/
 test-results/
 .pw_*.js
-.venv/
-.streamlit/secrets.toml
+
+# Editor/agent snapshots of app.py — git history is the real backup
+app.py.last-commit.py
+app.py.before-restore-*.py

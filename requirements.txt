@@ -1,16 +1,15 @@
-streamlit>=1.52.2
-streamlit-quill>=0.0.3
-pandas>=2.3.3
-numpy>=2.4.0
-scipy>=1.16.3
-openai>=2.14.0
-openpyxl>=3.1.5
-mistune>=3.2.0
-pyspellchecker>=0.8.0
+# Keep this list in sync with [project.dependencies] in pyproject.toml.
+# Only packages the application actually imports belong here; libraries that
+# appear solely inside lesson code examples are not runtime dependencies.
 altair>=5.0.0
 matplotlib>=3.7.0
-seaborn>=0.13.0
-schedule>=1.2.0
-textblob>=0.18.0
+mistune>=3.2.0
+numpy>=2.4.0
+openai>=2.14.0
+openpyxl>=3.1.5
+pandas>=2.3.3
 pypdf>=4.0.0
 python-docx>=1.1.0
+scipy>=1.16.3
+streamlit>=1.52.2
+streamlit-quill>=0.0.3

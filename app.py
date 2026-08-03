@@ -43,6 +43,7 @@ def html(body, height=None, width=None, scrolling=None, key=None):
         iframe_kwargs["height"] = height
     st.iframe(body, **iframe_kwargs)
 
+import study_buddy_state
 from study_buddy_state import (
     COURSE_PROGRESSION_MAP,
     PROGRAM_DEADLINES,
@@ -1442,6 +1443,16 @@ def make_glossary_span(display_text, canonical_term, meta):
     read_more = meta.get("read_more") or ""
     scope_label = meta.get("_scope_label") or ""
     tooltip = meta.get("tooltip") or context or plain or canonical_term
+    read_more_html = (
+        f'<span class="glossary-hover-readmore">{html_escape(read_more)}</span>'
+        if read_more
+        else ""
+    )
+    scope_html = (
+        f'<span class="glossary-hover-scope">{html_escape(scope_label)}</span>'
+        if scope_label
+        else ""
+    )
     return (
         f'<span class="glossary-term" tabindex="0" '
         f'data-glossary-term="{html_escape(canonical_term)}" '
@@ -1451,8 +1462,8 @@ def make_glossary_span(display_text, canonical_term, meta):
         f'<span class="glossary-hover-term">{html_escape(canonical_term)}</span>'
         f'<span class="glossary-hover-plain">{html_escape(plain)}</span>'
         f'<span class="glossary-hover-context">{html_escape(context)}</span>'
-        f'{f"<span class=\"glossary-hover-readmore\">{html_escape(read_more)}</span>" if read_more else ""}'
-        f'{f"<span class=\"glossary-hover-scope\">{html_escape(scope_label)}</span>" if scope_label else ""}'
+        f'{read_more_html}'
+        f'{scope_html}'
         f'</span></span>'
     )
 
@@ -1523,6 +1534,11 @@ def make_selection_highlight_span(display_text, selected_text, explanation_outpu
     read_more = meta["read_more"]
     scope_label = meta["scope_label"]
     tooltip = meta["tooltip"]
+    read_more_html = (
+        f'<span class="glossary-hover-readmore">{html_escape(read_more)}</span>'
+        if read_more
+        else ""
+    )
     return (
         f'<span class="glossary-term selection-explain-highlight" tabindex="0" '
         f'data-selection-highlight="true" '
@@ -1533,7 +1549,7 @@ def make_selection_highlight_span(display_text, selected_text, explanation_outpu
         f'<span class="glossary-hover-term">{html_escape(selected_text)}</span>'
         f'<span class="glossary-hover-plain">{html_escape(plain)}</span>'
         f'<span class="glossary-hover-context">{html_escape(context)}</span>'
-        f'{f"<span class=\"glossary-hover-readmore\">{html_escape(read_more)}</span>" if read_more else ""}'
+        f'{read_more_html}'
         f'<span class="glossary-hover-scope">{html_escape(scope_label)}</span>'
         f'</span></span>'
     )
@@ -83657,4 +83673,8 @@ elif page == "Progression Plan":
     st.markdown("---")
     st.caption("📋 Source: PROGRESSION PLAN DA1 FT (JAN 2026 cohort) · Updated 16 December 2025")
 
-save_persisted_state(st.session_state)
+if not save_persisted_state(st.session_state):
+    st.sidebar.error(
+        "Your progress could not be saved to disk, so changes made in this "
+        f"session may be lost. Details: {study_buddy_state.LAST_SAVE_ERROR}"
+    )

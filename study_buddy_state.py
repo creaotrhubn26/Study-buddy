@@ -1,7 +1,29 @@
 import json
+import os
+import tempfile
 from pathlib import Path
 
-STATE_FILE = Path(".study_buddy_state.json")
+
+def _resolve_state_file():
+    """Where progress is persisted.
+
+    Set STUDY_BUDDY_STATE_FILE to a path on durable storage when deploying;
+    otherwise the file lives next to this module. Anchoring to the module
+    directory rather than the process working directory matters because
+    Streamlit can be launched from anywhere, and a relative path would
+    silently start every session from an empty state file.
+    """
+    configured = str(os.getenv("STUDY_BUDDY_STATE_FILE", "") or "").strip()
+    if configured:
+        return Path(configured).expanduser()
+    return Path(__file__).resolve().parent / ".study_buddy_state.json"
+
+
+STATE_FILE = _resolve_state_file()
+
+# Set by save_persisted_state so the UI can surface a write failure instead of
+# losing the user's progress silently.
+LAST_SAVE_ERROR = None
 
 PERSIST_KEYS = [
     "completed_courses",
@@ -93,8 +115,43 @@ def load_persisted_state(session_state):
 
 
 def save_persisted_state(session_state):
+    """Persist the tracked session keys. Returns True on success.
+
+    The write goes to a temporary file in the same directory and is then
+    moved into place, so an interrupted save cannot leave a half-written
+    file that the next load would discard as corrupt.
+    """
+    global LAST_SAVE_ERROR
+
     payload = {key: session_state.get(key) for key in PERSIST_KEYS if key in session_state}
+    serialized = json.dumps(payload, ensure_ascii=False, indent=2)
+
+    temp_path = None
     try:
-        STATE_FILE.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-    except Exception:
-        pass
+        STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
+        handle = tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            dir=str(STATE_FILE.parent),
+            prefix=STATE_FILE.name + ".",
+            suffix=".tmp",
+            delete=False,
+        )
+        with handle:
+            temp_path = Path(handle.name)
+            handle.write(serialized)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temp_path, STATE_FILE)
+        temp_path = None
+        LAST_SAVE_ERROR = None
+        return True
+    except Exception as error:
+        LAST_SAVE_ERROR = f"{type(error).__name__}: {error}"
+        return False
+    finally:
+        if temp_path is not None:
+            try:
+                temp_path.unlink()
+            except OSError:
+                pass
