@@ -62758,6 +62758,75 @@ The relationship between the two columns is the reason the classification exists
 
 For evaluation work the non-financial metrics need **more** scrutiny, not less. Precisely because they are less tangible, their definitions drift, which brings us back to written definitions and version control at the end of this lesson.
 
+#### Data collection methods for quantitative KPIs
+
+Quantitative KPIs largely hinge on **structured data**, which by design is responsive to **automation**. Structured data aligns neatly in tables, rows and columns, which makes it ripe for quick analysis.
+
+That sentence explains why the quantitative half of the classification is the automated half. A number that already lives in a column can be pulled, aggregated and refreshed on a schedule. A qualitative signal cannot, which is why qualitative KPIs are collected deliberately rather than continuously.
+
+##### Standard tools and methodologies
+
+| Source | Typical platforms | KPIs it produces | What to check before trusting it |
+|---|---|---|---|
+| **Web analytics tools** | Google Analytics | Visitor count, average time on page, bounce rate, traffic source, conversion | Tracking is client-side and lossy. Ad blockers, consent refusals and untagged pages all remove real visits |
+| **CRM systems** | Salesforce, HubSpot, Microsoft Dynamics | Customer acquisition cost, average deal size, pipeline value, win rate, sales cycle length | Fields are filled in by people. A stage that is updated late makes every cycle-length KPI wrong |
+| **HRM software** | Workday, SAP SuccessFactors | Employee turnover rate, average time to hire, training cost per head | Whether departures are classified as regretted or unregretted, and whether the denominator is average or closing headcount |
+| **Inventory and supply chain** | Oracle NetSuite, SAP Integrated Business Planning | Inventory turnover, order fulfilment rate, supply chain wastefulness | Whether the stock count is live or from the last stocktake, and how returns and write-offs are treated |
+| **Financial software** | QuickBooks, Sage | Revenue growth rate, net profit margin, cash conversion cycle | Which margin variant the dashboard means, and whether figures are accrual or cash basis |
+| **Custom in-house tools** | Tailored software built for a specific need | Anything the standard platforms do not cover, often pulled from several systems at once | There is no vendor documentation. The definitions live only in the code and in whoever wrote it |
+
+**Web analytics tools** are essential for digital businesses or organisations with an online presence. Google Analytics tracks many metrics, integrates with other tools, and can be configured to report KPIs automatically.
+
+**CRM systems** facilitate tracking sales-related KPIs and offer a treasure trove of quantitative data, from customer acquisition cost to average deal size. These platforms often feature built-in analytics, letting teams create custom dashboards for selected KPIs.
+
+**HRM software** provides comprehensive employee-related KPIs. Turnover, time to hire and training costs can be automated and monitored in real time.
+
+**Inventory and supply chain tools** provide KPIs that are pivotal for organisations relying heavily on logistics, including inventory turnover, order fulfilment rates and supply chain wastefulness.
+
+**Financial software** tracks financial KPIs and usually features real-time dashboards for continual performance assessment.
+
+**Custom in-house tools** are built when a business has a need the standard platforms do not meet. They can integrate with existing systems to pull data from several sources, giving a more comprehensive overview than any single platform.
+
+Data collection for quantitative KPIs has evolved considerably thanks to this suite of specialised software. These tools not only gather and store structured data, they also provide in-depth analytics features for more granular analysis.
+
+##### Where each of the six named metrics comes from
+
+| Metric | Collected from |
+|---|---|
+| Sales revenue | Financial software, reconciled against CRM closed-won deals |
+| Profit margins | Financial software |
+| Return on Investment | Financial software, plus whatever tracks the investment's own returns |
+| Customer Acquisition Cost | CRM for customer counts, marketing platforms and financial software for spend |
+| Website traffic | Web analytics |
+| Employee turnover rate | HRM software |
+
+Note that CAC needs **two** systems. That is normal, and it is where most definitional disputes begin: marketing counts a customer at first purchase, finance counts them at first invoice, and the two produce different CACs from the same quarter.
+
+##### What automation does and does not give you
+
+This is the evaluation point of the whole section, and it is worth stating explicitly in an assignment answer.
+
+| Automation gives you | Automation does not give you |
+|---|---|
+| The number, on time, every period | A guarantee the number means what you think |
+| Consistency of calculation | Consistency of **definition** across teams |
+| Freedom from manual transcription errors | Freedom from logic and interpretation errors |
+| A dashboard that always refreshes | Any signal that a definition changed underneath it |
+
+A dashboard fed automatically from a CRM will keep reporting a churn rate long after somebody changed what counts as churn. Nothing breaks, no cell shows an error, and the number simply stops meaning what it used to. This is exactly the case examined at the end of this lesson, and it is why the version control section follows this one.
+
+##### Questions to ask about any KPI source
+
+Use these when an assignment hands you a figure and asks whether you trust it:
+
+1. **Which system produced this, and who owns that system?**
+2. **Is the field automated or typed in by a person?** A manually updated CRM stage is a human process wearing an automated dashboard's clothes.
+3. **What is excluded?** Analytics misses blocked and non-consenting visitors; a CRM misses deals that never got entered.
+4. **When was the definition last changed, and is that change recorded anywhere?**
+5. **Can the figure be reached by a second, independent route?** Web orders from analytics should reconcile against the order system; CRM closed-won should reconcile against invoiced revenue in the financial software.
+
+Question 5 is the strongest of the five. Two independent sources for the same figure is **data ensembling in miniature**: agreement raises confidence, and disagreement locates the problem. It costs very little and it catches the errors that automation cannot.
+
 #### Qualitative KPIs
 
 Not every important indicator reduces to a number. Qualitative KPIs capture structured judgement: customer sentiment themes drawn from open-text feedback, audit and compliance ratings, code review quality, or the outcome of a service review.
@@ -63216,6 +63285,9 @@ One more, easily missed: a documentation note typed as `=B8-B11` becomes a live 
                 "The non-financial metrics are CAC, website traffic and employee turnover, and they indirectly affect financial health by acting as early indicators",
                 "Each of those six is only evaluable in context: revenue needs margin, CAC needs lifetime value, traffic needs conversion, and turnover needs regretted-versus-unregretted segmentation",
                 "Further axes each expose a different weakness: the input-process-output-outcome ladder, quantitative versus qualitative, by function, and primary versus guard",
+                "Quantitative KPIs hinge on structured data, which aligns in tables, rows and columns and is therefore responsive to automation",
+                "The standard collection sources are web analytics, CRM, HRM, inventory and supply chain, financial software, and custom in-house tools, each with its own characteristic blind spot",
+                "Automation delivers the number on time but guarantees nothing about its definition, which is why a dashboard keeps reporting a KPI long after its meaning changed",
                 "Isolated numbers seldom tell the whole tale: a KPI gains meaning only against historical data, goals, benchmarks, segments and normal variation",
                 "Correctly aligned with organisational goals and values, KPIs act as both a navigational aid and a diagnostic tool",
                 "Across every industry the characteristic KPI failure has the same shape: the proxy was improved without the goal being improved",
@@ -64944,6 +65016,41 @@ CURATED_FLASHCARD_SETS = {
             "tags": ["kpi", "non-financial metrics", "evo"]
         },
         {
+            "front": "Why are quantitative KPIs the automatable half of the classification?",
+            "back": "Because they hinge on structured data, which by design aligns in tables, rows and columns and is therefore responsive to automation. A number already sitting in a column can be pulled, aggregated and refreshed on a schedule; a qualitative signal cannot, so it has to be collected deliberately.",
+            "tags": ["data collection", "structured data", "evo"]
+        },
+        {
+            "front": "Name the six standard sources for collecting quantitative KPIs and one KPI from each.",
+            "back": "Web analytics such as Google Analytics for website traffic and bounce rate; CRM systems such as Salesforce, HubSpot or Microsoft Dynamics for customer acquisition cost and average deal size; HRM software such as Workday or SAP SuccessFactors for employee turnover and time to hire; inventory and supply chain tools such as Oracle NetSuite or SAP IBP for inventory turnover and order fulfilment; financial software such as QuickBooks or Sage for revenue growth and net profit margin; and custom in-house tools for needs the standard platforms do not cover.",
+            "tags": ["data collection", "tools", "evo"]
+        },
+        {
+            "front": "What is the characteristic blind spot of web analytics as a KPI source?",
+            "back": "Tracking is client-side and lossy. Ad blockers, refused consent and untagged pages all remove real visits, so the figure systematically undercounts. That is why web orders should be reconciled against the order system rather than trusted from analytics alone.",
+            "tags": ["data collection", "web analytics", "evo"]
+        },
+        {
+            "front": "Why is a CRM-sourced KPI only as good as the sales process behind it?",
+            "back": "CRM fields are filled in by people. A deal stage updated late makes every sales-cycle-length KPI wrong, and a deal never entered is invisible to the dashboard. An automated dashboard on a manually updated field is a human process wearing automation's clothes.",
+            "tags": ["data collection", "crm", "evo"]
+        },
+        {
+            "front": "What does automated KPI collection give you, and what does it not?",
+            "back": "It gives the number on time every period, consistency of calculation, freedom from transcription errors, and a dashboard that always refreshes. It does not guarantee that the number means what you think, that the definition is shared across teams, that logic and interpretation errors are absent, or that you will be told when a definition changes underneath it.",
+            "tags": ["data collection", "automation", "evo"]
+        },
+        {
+            "front": "Why does Customer Acquisition Cost usually need two systems, and what problem does that create?",
+            "back": "Customer counts come from the CRM while spend comes from marketing platforms and financial software. That is where most definitional disputes begin: marketing may count a customer at first purchase and finance at first invoice, producing different CACs from the same quarter.",
+            "tags": ["data collection", "cac", "definitions", "evo"]
+        },
+        {
+            "front": "What is the strongest question to ask about any KPI source?",
+            "back": "Can the figure be reached by a second, independent route? Reconciling web orders against the order system, or CRM closed-won against invoiced revenue, is data ensembling in miniature: agreement raises confidence and disagreement locates the problem. It costs little and catches the errors automation cannot.",
+            "tags": ["data collection", "reconciliation", "evo"]
+        },
+        {
             "front": "Why is Customer Acquisition Cost not interpretable on its own?",
             "back": "CAC only means something relative to customer lifetime value; a low CAC against LTV indicates a healthy business model. A falling CAC alone can mean the business became efficient, or that it started acquiring cheaper customers who are worth less. Those are opposite conclusions from the same movement.",
             "tags": ["kpi", "cac", "evo"]
@@ -66520,6 +66627,16 @@ CURATED_PRACTICE_QUESTION_BANK = {
             "type": "knowledge",
             "question": "Why does contextualisation matter when interpreting a KPI?",
             "answer": "Because isolated numbers seldom tell the whole tale. A KPI gains significance only when juxtaposed with benchmarks, goals, or historical data. Saying churn is 4.1 percent means nothing; saying it is 4.1 percent, flat within normal month-to-month variation, below the sector median, still above the 3.0 percent target, and concentrated among customers under three months old, is a decision. The last of those, whether a movement exceeds normal variation, is a statistical question rather than a presentational one, which is why it connects directly to variance and confidence levels."
+        },
+        {
+            "type": "knowledge",
+            "question": "Explain how quantitative KPIs are collected in practice, and why the sources matter for evaluation.",
+            "answer": "Quantitative KPIs hinge on structured data, which aligns in tables, rows and columns and is therefore responsive to automation. Six sources are standard: web analytics such as Google Analytics for traffic, bounce rate and time on page; CRM systems such as Salesforce, HubSpot or Microsoft Dynamics for acquisition cost, average deal size and win rate; HRM software such as Workday or SAP SuccessFactors for turnover, time to hire and training cost; inventory and supply chain platforms such as Oracle NetSuite or SAP Integrated Business Planning for inventory turnover, fulfilment rate and supply chain wastefulness; financial software such as QuickBooks or Sage for revenue growth, net profit margin and the cash conversion cycle; and custom in-house tools built for needs the standard platforms do not meet. The sources matter because each carries a characteristic blind spot. Analytics tracking is client-side and lossy, CRM fields are typed in by people so a late stage update corrupts every cycle-length KPI, and custom tools have no vendor documentation so their definitions live only in the code. Knowing which system produced a figure is what makes it traceable, and tracing is what evaluation depends on."
+        },
+        {
+            "type": "skills",
+            "question": "A churn dashboard has refreshed automatically every day for a year without failing. Why is that not evidence that the churn figure is correct?",
+            "answer": "Automation guarantees delivery, not meaning. It gives the number on time, a consistent calculation, freedom from transcription errors and a dashboard that always refreshes. It does not guarantee that the definition behind the number is the one you assume, that other teams use the same definition, that no logic or interpretation error exists in the transformation, or that anyone will be told if the definition changes. A dashboard fed from a CRM will keep reporting churn long after somebody changed what counts as churn: nothing breaks, no cell errors, and the number simply stops meaning what it used to. The checks that do help are asking which system owns the field, whether it is automated or typed in by a person, what it excludes, when the definition last changed and whether that is recorded, and above all whether the figure can be reached by a second independent route."
         },
         {
             "type": "knowledge",
