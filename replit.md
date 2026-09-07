@@ -63,15 +63,23 @@ the official Module 1 structure from the LMS:
 
 Also has curated flashcards, exam-bank entries, and practice questions.
 
-**Activities 1.1.1 and 1.1.2** each appear in two places: the brief, method and a
-worked example form a section of lesson 1.1, and interactive exercises sit in the
-`KPIs & Decision Heuristics` training module (6 for 1.1.1, 5 for 1.1.2, 13 exercises
-in total with the two pre-existing ones). Both are worked for the same hypothetical
-business, Nordtre AS, so the second activity's collection design can be checked
-against KPIs the first one defined. Full solutions at the project root:
+**Activities 1.1.1, 1.1.2 and 1.1.3** each appear in two places: the brief, method
+and a worked example form a section of lesson 1.1, and interactive exercises sit in
+the `KPIs & Decision Heuristics` training module (6 for 1.1.1, 5 for 1.1.2, 4 for
+1.1.3, 17 exercises in total with the two pre-existing ones). All three are worked
+for the same hypothetical business, Nordtre AS, so each activity's findings can be
+checked against the KPIs the earlier ones defined. Full solutions at the project
+root:
 
 - `EVO_1.1.1_Activity_Solution.md` + `EVO_1.1.1_KPI_Analysis_Nordtre.xlsx` (53 live formulas)
 - `EVO_1.1.2_Activity_Solution.md` + `EVO_1.1.2_KPI_Data_Collection_Nordtre.xlsx` (37 live formulas)
+- `EVO_1.1.3_Activity_Solution.md` + `EVO_1.1.3_Social_Monitoring_Workbook.xlsx` (37 live formulas)
+
+Note on 1.1.3: that activity requires firsthand social media monitoring, which
+cannot be delegated. Its workbook is therefore an *instrument* — a blank capture
+sheet, coding rules and a live COUNTIF analysis sheet — plus a clearly labelled
+constructed dataset about the fictional Nordtre AS, used to show the shape of a
+complete answer. It contains no observed data and no real brand.
 
 **Training modules** (hands-on, in the Training Center):
 - **KPIs & Decision Heuristics**: KPIs as heuristics, thresholds/alerts, decision trees, KPI-driven escalation

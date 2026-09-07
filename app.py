@@ -11855,6 +11855,34 @@ Keep a decision log linking KPIs to actions for:
                 "hint": "Name a specific blind spot for each tool category, then classify each KPI you collected as leading or lagging."
             },
             {
+                "title": "Activity 1.1.3 - Steps 1 and 2: Design the monitoring session",
+                "type": "practical",
+                "question": "Before you spend 45 minutes monitoring a brand on social media, five things should be decided in advance. Name them and explain what goes wrong if each is left until later.",
+                "answer": "1. PLATFORMS - choose two, not one. Complaint culture differs sharply between platforms, so a theme appearing on only one cannot be distinguished from that community's norms. In the worked example Reddit ran 38.1% negative against Instagram's 18.8%, and a session on Instagram alone would have reported far higher sentiment and missed most of the delivery complaints. 2. SEARCH TERMS - write them down first. Searching 'brand problems' and 'brand review' return different populations, so choosing terms after seeing results is selective evaluation: you end up finding more of whatever you already expected. 3. CODING RULES - agree the tie-breakers before reading. A tally is meaningful only if the same post would get the same code on Monday and on Friday; without written rules the codes drift across the session. 4. CAPTURE METHOD - fill the sheet as you read, not from memory afterwards. Coding from memory over-weights the vivid items, which is the same bias the lesson opened with when it argued that gut instinct remembers dramatic cases rather than typical ones. 5. STOPPING RULE - stop when the timer stops. A fixed window makes the sample defensible; stopping when you have gathered enough of what you expected does not. A sixth point is scope: record every item in the window including the neutral ones, because skipping the boring posts inflates both tails and is the most common way this exercise goes wrong.",
+                "hint": "For each decision, ask what a reader could accuse you of if you made it after seeing the data."
+            },
+            {
+                "title": "Activity 1.1.3 - Step 3: Code the feedback consistently",
+                "type": "practical",
+                "question": "Code these four items and state the rule you applied: (a) 'Took three weeks to arrive' written calmly; (b) 'Costs more than IKEA'; (c) 'Better than I expected'; (d) 'Beautiful timber but the delivery was a nightmare'.",
+                "answer": "(a) NEGATIVE. The rule is code the EXPERIENCE, not the tone. A politely worded complaint describes a bad experience, and coding on how angry a post sounds tracks the poster's manner rather than what happened to them. Tone-based coding also drifts with your own mood across a 45-minute session. (b) NEUTRAL. It is a factual comparison with no evaluation attached. It becomes negative only if the poster says the price is bad. Reading an implied criticism into a neutral statement is how a coder's expectations leak into the tally. (c) POSITIVE. It expresses satisfaction, even though it implies the poster's expectations were low. The code records what they express about the product, not what it reveals about their prior beliefs. (d) MIXED, coded on its PRIMARY point with the secondary recorded as a theme. The rule is one post, one code: if a mixed post is counted in both positive and negative, the sentiment total exceeds the number of posts captured and every percentage computed from it is wrong. Which point is primary is a judgement, so write your tie-breaker down and apply it consistently. Finally, run the self-consistency check: re-code the first ten items blind at the end, and if more than one or two differ, the rules were too loose and the tally is softer than it looks.",
+                "hint": "Three of the four are settled by a written rule. Only one requires judgement."
+            },
+            {
+                "title": "Activity 1.1.3 - Step 4: Frequency is not importance",
+                "type": "scenario",
+                "question": "Your monitoring session found 9 mentions of slow delivery and 2 mentions of checkout payment failures. Your company's D2C conversion rate is 1.16%, down 12.4% year on year while sessions rose 38%. Which theme do you prioritise, and why?",
+                "answer": "The checkout theme, despite being mentioned four and a half times less often. The reasoning is that a theme's importance comes from what it attaches to, not from how many people mentioned it. Two posts describing failed card payments are the qualitative CAUSE of a quantitative effect that is already measured and already costing revenue: conversion fell 12.4% while traffic rose 38%, so roughly half the traffic growth produced nothing. The delivery complaints are real and worth fixing, but they describe a problem the business already knows about and they are not attached to a quantified loss. This is the lesson's central claim demonstrated: the quantitative half supplies the SIZE and the qualitative half supplies the CAUSE, and neither is sufficient alone. The conversion rate said how much revenue was being lost but nothing about why people abandoned the checkout; the two posts explain why but could never have sized it. It is also a warning about the tally itself. A frequency count answers the question 'what do people mention most', which is a different question from 'what should we fix first'. Ranking themes purely by count is the default and it would have buried the most actionable finding under the loudest one. In the report I would rank by expected impact, state the count alongside each theme so the reader can see I am not confusing the two, and say explicitly why a two-mention theme sits at the top.",
+                "hint": "Ask which theme connects to a number you have already measured."
+            },
+            {
+                "title": "Activity 1.1.3 - Step 5: What this method cannot support",
+                "type": "scenario",
+                "question": "Your session captured 58 items, 29 of them positive. A colleague wants to report 'customer satisfaction is 50%'. Respond, and say what social media monitoring is genuinely good for.",
+                "answer": "That statement misuses the data. 50% of the 58 posts captured were positive; those posts are not a sample of the customer base. Social media is the most self-selected source covered in this lesson: people post when they are delighted or furious, so the volume is dominated by the tails while the satisfied middle never appears at all. The figure also depends on the search terms chosen, the two platforms selected and a single 45-minute window, none of which were random. Reporting it as a satisfaction level would state a population value from a sample that cannot support one. WHAT IT IS GENUINELY GOOD FOR: immediacy and unprompted content. A survey asks the questions you thought to ask, while social media surfaces the ones you did not - nobody would have written a survey question about card payment failures because nobody knew the problem existed. It identifies recurring THEMES, which are real signal because they repeat across independent posters. And it detects CHANGE reliably if you repeat the session with the same terms, platforms and window, which makes two sessions comparable even though neither gives a level. It is also a leading indicator, since complaints appear before churn does. HOW TO REPORT IT PROPERLY: give the themes and the counts, state that the counts describe the captured posts and not the customer base, and pair it with a method that reaches the middle, such as post-purchase NPS with an open-text follow-up. A theme appearing in both sources is real; one appearing in only one tells you something about the source rather than about the customers.",
+                "hint": "Separate what the sample can support from what the method is useful for."
+            },
+            {
                 "title": "Design a KPI Dashboard",
                 "type": "practical",
                 "question": "You've built a customer churn prediction model. Design a KPI dashboard with 5 metrics, thresholds, and what action to take when each threshold is breached.",
@@ -63699,6 +63727,85 @@ Thirty-five respondents sit at exactly 6, one point from being passive. A ten-po
 
 **Full worked solution.** `EVO_1.1.2_Activity_Solution.md` and `EVO_1.1.2_KPI_Data_Collection_Nordtre.xlsx` in the project folder contain all four steps, the tool exploration with a fit verdict per platform, both instruments with live formulas, and a Method and Rationale sheet.
 
+#### Activity 1.1.3 - Understanding Customer Satisfaction Through Social Media Monitoring
+
+The third lesson task, and the one that puts the qualitative collection material into practice.
+
+**Objective.** To provide firsthand experience in collecting and analysing qualitative data for KPIs via social media platforms.
+
+| Step | Instructions |
+|---|---|
+| **1. Choose a brand or product** | Select one you are familiar with or interested in - a snack, a tech gadget, a clothing brand |
+| **2. Conduct social media monitoring** | Dedicate 30-60 minutes to monitoring it on your chosen platform. Search the brand or product name, find posts, comments and reviews, note both positive and negative feedback, and look for common themes, recurring issues and compliments |
+| **3. Analyse the feedback** | Categorise it as positive, negative or neutral, count each category, and identify patterns or common issues |
+| **4. Summarise your findings** | What is the general sentiment? What are the common praises or complaints? Are multiple customers asking for the same thing? |
+| **5. Reflection** | What did you learn about the brand from customer feedback, and how is social media monitoring valuable for understanding customer satisfaction? |
+
+##### This one has to be done firsthand
+
+The activity asks for **firsthand** experience, and that part cannot be delegated or invented. Fabricating plausible posts about a real brand and presenting them as observed feedback would be the exact **data-integrity** failure described in the ethics section above, and it is a failure no reader could detect, which is what makes it worth naming.
+
+What can be prepared in advance is everything around the observation: the search terms, the coding rules, the capture sheet and the analysis structure. Prepare those, then spend the 45 minutes.
+
+##### Decide these before you start reading
+
+| Decision | Do this | Why |
+|---|---|---|
+| **Platforms** | Choose two, not one | Complaint culture differs sharply by platform, so two lets you tell a real theme from one community's norms |
+| **Search terms** | Write them down first | Searching "brand problems" and "brand review" return different populations. Choosing terms after seeing results is selective evaluation |
+| **Coding rules** | Agree your tie-breakers first | A tally means something only if the same post gets the same code on Monday and on Friday |
+| **Capture** | Fill the sheet as you read | Coding from memory over-weights the vivid, which is the bias this lesson opened with |
+| **Scope** | Record every item, including neutral ones | Skipping the boring posts inflates both tails, and is the most common way this exercise goes wrong |
+| **Stopping** | Stop when the timer stops | A fixed window makes the sample defensible; stopping when you have enough of what you expected does not |
+
+##### The coding frame
+
+| Code | Assign when | Worked edge case |
+|---|---|---|
+| Positive | Satisfaction, praise, or would recommend | "Better than I expected" is positive, even though it implies low expectations |
+| Negative | Dissatisfaction, a problem, or would not recommend | "Took three weeks to arrive" is negative even if stated calmly |
+| Neutral | A question, a fact, or a comparison with no evaluation | "Costs more than IKEA" is neutral unless the poster says that is bad |
+| Mixed | Praise and complaint in one post | Code the primary point and note the secondary as a theme. Never count one post twice |
+
+Three rules prevent the common failures: **one post, one code**, or the total exceeds the post count and every percentage is wrong; **code the experience, not the tone**, because tone-based coding drifts across 45 minutes; and **record the neutral items**, because they are data.
+
+A five-minute check worth running: at the end, re-code the first ten items without looking at your original codes. If more than one or two differ, the rules were too loose. This is the single-coder version of inter-rater reliability, and reporting that you ran it is worth more than a clean number nobody checked.
+
+##### Worked example, on constructed data
+
+The figures below come from an invented 58-item dataset about Nordtre AS, the fictional company from Activities 1.1.1 and 1.1.2. No real person wrote any of it. It is here to show the shape of a complete answer.
+
+| Category | Count | Share |
+|---|---|---|
+| Positive | 29 | 50.0% |
+| Negative | 19 | 32.8% |
+| Neutral | 10 | 17.2% |
+| **Net sentiment** | | **+17.2** |
+
+Top themes: timber and build quality (11, positive), **delivery time (9, negative)**, assembly experience (8, positive), sustainability credentials (6, positive), fit and dimension questions (6, neutral), missing hardware (5, negative), **checkout problems (2, negative)**.
+
+**Platform split:** Reddit 42 items with 38.1% negative; Instagram 16 items with 18.8% negative. Twice the negative rate on one platform is a **culture difference, not a product finding** - and a session run on Instagram alone would have reported far higher sentiment and missed most of the delivery complaints. That is why two platforms.
+
+##### The most important finding is not the most frequent one
+
+Delivery time is mentioned nine times. Checkout problems appear twice. The checkout theme is the more actionable finding, because Activity 1.1.2 measured D2C conversion at **1.16%, down 12.4% year on year** while sessions rose 38%. Two posts about failed card payments are the qualitative **cause** of a quantitative effect already costing measurable revenue.
+
+This is the lesson's central claim in one example: the quantitative half supplies the **size**, the qualitative half supplies the **cause**. Ranking themes by count alone would have buried it.
+
+It is also a warning about the tally itself. A frequency count answers "what do people mention most", which is a different question from "what should we fix first".
+
+##### What this method can and cannot support
+
+| Can | Cannot |
+|---|---|
+| Identify recurring themes and generate hypotheses worth testing | State the **level** of customer satisfaction |
+| Detect a change, if you repeat the same search with the same terms and window | Support any percentage as a population estimate |
+| Surface problems nobody thought to ask about in a survey | Reach the satisfied middle, which never posts |
+
+Social media is the most self-selected source in this lesson. People post when delighted or furious. Reporting "50% of customers are positive" from such data is a straightforward misuse: 50% of *those posts* were positive, and the posts are not a sample of anything. Pair it with a method that reaches the middle, such as post-purchase NPS with an open-text follow-up, and reconcile the themes - one appearing in both sources is real.
+
+**Full worked solution and instrument.** `EVO_1.1.3_Activity_Solution.md` and `EVO_1.1.3_Social_Monitoring_Workbook.xlsx` in the project folder. The workbook contains a blank capture sheet for your own session, the coding rules, and an analysis sheet whose counts are live COUNTIF formulas, so pasting your own captured data over the example recomputes everything.
+
 #### Common assignment traps
 
 - Describing a KPI as if it were the goal. It is a proxy.
@@ -63750,7 +63857,8 @@ Thirty-five respondents sit at exactly 6, one point from being passive. A ten-po
                 "Inclusivity in KPI selection is not the same as transparency in data collection, and confusing them breaks the anonymity that produced honest answers",
                 "KPIs, version control and ethics are load-bearing for each other: an untraceable KPI's transparency is a claim, and an auditable record of a misleading number is still misleading",
                 "Activity 1.1.1 applies all of this: build a hypothetical business with channels of different economics, compute the financial and non-financial KPIs, and show how they interact",
-                "Activity 1.1.2 applies the collection material: explore the tools, judge their fit rather than only their features, collect one quantitative and one qualitative KPI, and keep the raw survey responses"
+                "Activity 1.1.2 applies the collection material: explore the tools, judge their fit rather than only their features, collect one quantitative and one qualitative KPI, and keep the raw survey responses",
+                "Activity 1.1.3 is firsthand social media monitoring: fix platforms, search terms and coding rules before reading, capture as you go, and remember that frequency is not importance"
             ],
             "visual_elements": {
                 "diagrams": True,
