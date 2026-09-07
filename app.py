@@ -18633,8 +18633,8 @@ flowchart TD
             }
         },
         {
-            "lesson_number": "1.2",
-            "title": "It's All About Data",
+            "lesson_number": "1.2b",
+            "title": "It's All About Data - Data Representation",
             "content": '''
 ### Data Representation
 
@@ -62372,7 +62372,1223 @@ A strong Statistical Tools answer usually:
                 "highlighted_sections": True
             }
         }
-    ]
+    ],
+    "FI1BBEO10": [
+        {
+            "lesson_number": "1.0",
+            "title": "Course Overview and Assignment Strategy",
+            "content": """
+### 1.0. Evaluation of Outcomes - Course Overview and Assignment Strategy
+
+#### Course Overview
+
+This course provides the knowledge of **reviewing the outcomes** achieved from using statistical tools and model choices. Candidates learn technical skills to **review, assess, and appraise** the results of successful analytical models. Additionally, candidates learn how to **identify faulty results** and apply problem-solving techniques to express feedback and construct an understanding for **iterative error elimination**.
+
+This course relies on the candidate passing the previous semester's required grade, so that a foundation-level understanding of data is achieved before the key analytical skills are taught.
+
+The main goal of this course is to teach candidates **how to evaluate the outcomes of a given data model**. This is a fundamental skill that must be learned through practice, which is why the course is quintessential for the advanced skills and techniques required to do so. The course also introduces candidates to broader technical concepts used in industry to evaluate complex problems with **multiple possible outcomes**.
+
+#### Where this course sits in the programme
+
+Semester 1 taught you how to **produce** an analysis. Evaluation of Outcomes teaches you how to **judge** one.
+
+| Semester 1 asked | Evaluation of Outcomes asks |
+|---|---|
+| Can you clean and organise the data? | Is the cleaned data still trustworthy? |
+| Can you run the correct statistical tool? | Was that the right tool, and is the output believable? |
+| Can you produce a KPI? | Does the KPI actually track what the business cares about? |
+| Can you build a model? | Is the model fit for its intended use, and how do you know? |
+| Can you state a result? | How confident are you, and what happens if you are wrong? |
+
+<div class="mermaid">
+flowchart LR
+    A[Semester 1<br/>Produce the analysis] --> B[Evaluation of Outcomes<br/>Review, assess, appraise]
+    B --> C[Identify faulty results]
+    C --> D[Iterative error elimination]
+    D --> B
+    B --> E[Feedback others can act on]
+
+    style A fill:#e3f2fd,stroke:#2196F3,stroke-width:2px
+    style B fill:#fff3cd,stroke:#ffc107,stroke-width:2px
+    style C fill:#ffe0e0,stroke:#e57373,stroke-width:2px
+    style D fill:#c8e6c9,stroke:#4CAF50,stroke-width:2px
+    style E fill:#f3e5f5,stroke:#9C27B0,stroke-width:2px
+</div>
+
+Notice that the loop does not end. **Iterative** error elimination means you evaluate, correct, and then evaluate again. An assignment answer that presents evaluation as a single one-off check is usually weaker than one that presents it as a cycle.
+
+#### Course facts
+
+| Field | Value |
+|---|---|
+| Course code | FI1BBEO10 |
+| Level of study | 5.1 |
+| Programme | Data Analyst 1 |
+| Credits | 10 |
+| Assessment | Course Assignment |
+| Grading scale | Pass / Fail |
+| Grouping | Individual |
+| Duration | 1 week |
+
+#### Learning Outcomes
+
+In this course we cover the following **knowledge** learning outcomes. The candidate:
+
+- has knowledge of Key Performance Indicators (KPI) and their use as heuristics in decision making
+- has knowledge of analysing result tables using statistical inferences, specifically sampled sets, linear regression, measurement of variance, five-point summaries, and z-testing
+- has knowledge of confidence levels and to ascertain multiple probability outcomes for a particular model
+- has knowledge of process and tools related to iterative error elimination
+- has knowledge of the industry statistical techniques used for ensambling data
+- understands the importance of version control and keeping track of changes in data within a collaborative framework
+- can update their knowledge of using quantitative and qualitative methods to analyse data at an industry level
+- has insights into ETL systems and how they are integrated at key points within the data analysis lifecycle design
+
+The following **skills** learning outcomes. The candidate:
+
+- can apply knowledge of statistical inferences to identify and solve problems with a given data set
+- can apply knowledge of iterative error elimination techniques to significantly improve results
+- can apply knowledge of confidence levels to create multiple outcome scenarios
+- masters relevant tools and techniques used to critically assess and analyse data models
+- can study data sets to identify and improve reliability using ensambling and related techniques
+- can find information and material related to the evaluation of outcomes to solve data driven problems
+
+And the following **general competence** learning outcomes. The candidate:
+
+- understands the ethical principles to independently assess and critique analysis approaches and suggest alternatives
+- has developed an ethical approach to solving data problems using statistical inferences
+- can deliver insights into erroneous data among project members and facilitate solution discussions
+- can develop work methods related to data confidence levels given a particular problem domain
+
+#### Course map
+
+| Lesson | Topic | Core question it answers |
+|---|---|---|
+| 1.1 | KPIs as heuristics | Is this the right signal to judge the outcome by? |
+| 1.2 | Sampled sets, variance, five-point summaries | Is the result stable, or is it noise? |
+| 1.3 | Linear regression and z-testing | Does the relationship hold, and is this value unusual? |
+| 1.4 | Confidence levels and multiple outcomes | How sure am I, and what are the alternatives? |
+| 1.5 | Iterative error elimination | Where did it go wrong, and how do I stop it recurring? |
+| 1.6 | Ensembling and reliability | Can several weaker signals give a stronger answer? |
+| 1.7 | ETL systems and version control | Can this evaluation be reproduced and reviewed by others? |
+
+#### How the Course Assignment tends to be framed
+
+Evaluation of Outcomes is assessed by a **one-week individual Course Assignment**, graded Pass / Fail. There is no timed written exam, which changes how you should prepare: you are not being tested on recall under time pressure, you are being asked to produce a piece of evaluation work that a reader can follow and check.
+
+That has three practical consequences:
+
+- **Showing your reasoning counts more than the final verdict.** A well-argued "I cannot accept this result yet, and here is exactly what I would check" is a stronger submission than an unsupported "the model is fine".
+- **You have time to be thorough.** A week is long enough that omitting an obvious check, such as looking at spread or sample size, reads as an oversight rather than as time pressure.
+- **It is individual work.** You may research freely, and one of the skills outcomes is explicitly about finding relevant information and material, but the analysis and the writing must be your own.
+
+Assignment tasks rarely ask you to compute something and stop. They usually hand you a **result that somebody else produced** and ask you to appraise it. Typical shapes:
+
+1. **The suspicious result.** A model reports a strong effect. You are asked whether to trust it, and what you would check first.
+2. **The disagreeing stakeholders.** Two teams read the same output differently. You are asked to structure the discussion and propose a resolution.
+3. **The faulty pipeline.** A KPI dashboard shows an impossible jump. You are asked to trace the error and describe how to prevent a repeat.
+4. **The uncertain forecast.** A single number forecast is presented. You are asked to turn it into scenarios with confidence levels.
+
+#### A reusable answer structure
+
+For almost any evaluation question, this four-step structure produces a well-organised answer:
+
+| Step | What you write | Why the assessor rewards it |
+|---|---|---|
+| **1. State what is being claimed** | Restate the result and the decision it is meant to support | Shows you understood the scope before judging it |
+| **2. Assess the evidence** | Sample size, variance, spread, method fit, data quality | This is the technical core of the course |
+| **3. Express the uncertainty** | Confidence level, scenarios, what would change the conclusion | This is the level 5.1 expectation and the most common gap in a Fail |
+| **4. Recommend an action** | Accept, accept with conditions, investigate further, or reject | Evaluation exists to support a decision, not to end in a verdict |
+
+#### The ethical dimension
+
+One of the competence outcomes is developing an **ethical approach** to solving data problems. In this course, that is not a separate topic bolted on at the end. It shows up every time you evaluate:
+
+- Reporting a result you know is fragile, without saying so, is an ethical failure and not only a technical one.
+- Choosing the sample, the model, or the confidence level that flatters the conclusion you wanted is **selective evaluation**.
+- Evaluation findings often affect people. A model that misclassifies a group is an outcome that must be evaluated, not just an accuracy number.
+
+A strong submission names the ethical issue explicitly rather than leaving it implied. The competence outcome asks you not only to critique an approach but to **suggest alternatives**, so identifying a problem without proposing a better route is only half the answer.
+
+#### Key takeaways for the Course Assignment
+
+Before the assignment week, make sure you can confidently do all of the following:
+
+- Explain why a KPI is a **heuristic** rather than the truth itself
+- Read a five-point summary and say what it implies about spread and outliers
+- Interpret a regression output without overclaiming causation
+- Explain what a z-score tells you and what it does not tell you
+- Turn a single-point forecast into several outcomes with confidence levels
+- Run a structured root-cause process on a faulty result
+- Explain how bagging, boosting, and stacking improve reliability
+- Explain why ETL design and version control are evaluation topics, not just engineering topics
+            """,
+            "key_points": [
+                "Evaluation of Outcomes is about judging an analysis, not producing one: review, assess, appraise",
+                "The course builds directly on Semester 1, which is why passing the required grade is a stated prerequisite",
+                "Iterative error elimination is a loop, not a single check, and assignment answers should present it that way",
+                "Assessment is a one-week individual Course Assignment graded Pass / Fail, not a timed exam, so shown reasoning matters more than a fast verdict",
+                "Most assignment tasks hand you somebody else's result and ask whether it can be trusted",
+                "A reusable answer structure is: state the claim, assess the evidence, express uncertainty, recommend an action",
+                "Evaluation exists to support a decision, so an answer that stops at a verdict is incomplete",
+                "The ethical outcome is assessed through evaluation choices such as sample, method, and how fragility is reported, and it requires suggesting alternatives rather than only criticising"
+            ],
+            "visual_elements": {
+                "diagrams": True,
+                "tables": True,
+                "highlighted_sections": True
+            }
+        },
+        {
+            "lesson_number": "1.1",
+            "title": "KPIs as Heuristics for Evaluating Outcomes",
+            "content": """
+### 1.1. Key Performance Indicators as Heuristics in Decision Making
+
+#### What a heuristic actually is
+
+A **heuristic** is a practical rule that gets you to a good-enough judgement quickly, without requiring complete information. It is not a guarantee of correctness. That distinction is the whole point of this lesson.
+
+When the curriculum says KPIs are heuristics **in decision making**, it means:
+
+- A KPI is a **proxy** for something the business cares about, not the thing itself
+- It is chosen because it is measurable, timely, and cheap enough to track continuously
+- It supports a decision faster than a full analysis would
+- It can therefore be **wrong**, and evaluating an outcome includes evaluating the KPI itself
+
+<div class="mermaid">
+flowchart TD
+    A[Business goal<br/>What we actually care about] --> B[KPI<br/>Measurable proxy]
+    B --> C[Threshold / target]
+    C --> D{Signal fires?}
+    D -->|Yes| E[Investigate or act]
+    D -->|No| F[Continue monitoring]
+    E --> G[Evaluate the outcome]
+    G -->|KPI misled us| A
+
+    style A fill:#e3f2fd,stroke:#2196F3,stroke-width:2px
+    style B fill:#fff3cd,stroke:#ffc107,stroke-width:2px
+    style E fill:#c8e6c9,stroke:#4CAF50,stroke-width:2px
+    style G fill:#f3e5f5,stroke:#9C27B0,stroke-width:2px
+</div>
+
+The arrow from **Evaluate the outcome** back to **Business goal** is the part students most often leave out. If a KPI repeatedly triggers actions that do not improve the goal, the KPI is the thing that needs fixing.
+
+#### Goal, KPI, metric, and target
+
+These four words are used loosely in workplaces and precisely in assessment. Keep them apart.
+
+| Term | Definition | Example |
+|---|---|---|
+| **Goal** | The outcome the organisation wants | Reduce customer churn |
+| **KPI** | The chosen indicator that tracks progress toward the goal | Monthly churn rate |
+| **Metric** | Any measurement being collected, whether key or not | Number of support tickets |
+| **Target** | The value the KPI should reach | Churn below 3 percent by Q4 |
+| **Threshold** | The value that triggers investigation | Churn above 5 percent raises an alert |
+
+Every KPI is a metric. Not every metric is a KPI. A KPI earns the K by being tied to a decision.
+
+#### What makes a KPI fit for evaluation
+
+A KPI you can evaluate an outcome with should be:
+
+**1. Aligned.** It moves when the goal moves. If churn falls but the KPI does not react, the KPI is not aligned.
+
+**2. Measurable and defined once.** The definition must be written down. "Active user" meaning one thing in marketing and another in finance is one of the most common causes of a disputed evaluation.
+
+**3. Timely.** A KPI that arrives three months late cannot support an intervention decision.
+
+**4. Resistant to gaming.** If staff can improve the KPI without improving the goal, the KPI will eventually be improved without the goal improving. Closing support tickets faster looks good until you measure reopened tickets.
+
+**5. Paired.** Most useful KPIs come in pairs where one guards the other.
+
+| Primary KPI | Guard KPI | What the pair prevents |
+|---|---|---|
+| Average handling time (down) | Repeat contact rate | Rushing customers off the phone |
+| Sales volume (up) | Return rate | Selling the wrong product to hit a number |
+| Model accuracy (up) | Accuracy per subgroup | A model that is accurate overall but fails one group |
+| Delivery speed (up) | Damage rate | Speed achieved by careless handling |
+
+The guard KPI idea is directly assessable, and it also connects to the ethical competence outcome: a single unguarded KPI is how well-intentioned targets produce harmful behaviour.
+
+#### KPIs as decision heuristics in practice
+
+A KPI becomes a heuristic when it is attached to a **decision rule**.
+
+| Zone | Condition | Standing decision |
+|---|---|---|
+| **Green** | KPI within target | Continue, no action |
+| **Amber** | KPI drifting toward threshold | Investigate cause, prepare response |
+| **Red** | KPI past threshold | Escalate and intervene |
+
+This is called a **RAG** status. Its value is that it converts a continuous number into a small number of actions, which is exactly what a heuristic is for. Its risk is that the thresholds are chosen by people and are rarely re-examined.
+
+When evaluating an outcome, ask about the thresholds as well as the values:
+
+- Where did this threshold come from, and when was it last reviewed?
+- Does the threshold account for normal seasonal variation, or will it fire every December?
+- Is a single reading enough to fire, or should the rule require a sustained move?
+
+A threshold that fires on ordinary noise creates alert fatigue, and a team that has learned to ignore its alerts has effectively no KPI at all.
+
+#### Evaluating whether a KPI did its job
+
+At the end of a period, the KPI itself should be appraised. A structured way to do this:
+
+| Question | What a weak answer looks like | What a strong answer looks like |
+|---|---|---|
+| Did the KPI move? | "Yes, it improved by 8 percent" | "It improved 8 percent, which is inside normal month-to-month variation" |
+| Did the goal move? | Not mentioned | "Churn fell, and the retention goal improved in the same direction" |
+| Did the KPI mislead? | Not mentioned | "It fired twice on seasonal noise, so the threshold needs a sustained-move rule" |
+| Should it change? | "Keep it" | "Keep it, add a guard KPI for reopened cases, and review the threshold quarterly" |
+
+#### Worked example: a support desk
+
+A support desk sets a KPI of **average handling time** with a target of under six minutes. After one quarter, handling time has fallen from 7.4 to 5.6 minutes. The team reports success.
+
+An evaluation of that outcome would proceed like this:
+
+**Step 1 - State the claim.** The claim is that support efficiency improved, evidenced by handling time falling below target.
+
+**Step 2 - Assess the evidence.** Handling time did fall. But handling time is a proxy for efficient service, not for good service. Checking the guard signals: repeat contact rate rose from 11 to 19 percent, and customer satisfaction fell by four points.
+
+**Step 3 - Express the uncertainty.** The handling-time drop is large relative to normal quarterly variation, so the movement itself is probably real. The interpretation is what is uncertain: the same pattern is consistent with both genuine efficiency and with calls being closed prematurely.
+
+**Step 4 - Recommend an action.** Do not report this as a success. Pair handling time with repeat contact rate, evaluate them together, and re-run the comparison next quarter. Raise the finding with the team as a measurement problem rather than as a performance accusation, since the staff were responding rationally to the KPI they were given.
+
+Notice that step 4 also delivers on the competence outcome about **facilitating solution discussions**. How you deliver a negative evaluation determines whether it gets acted on.
+
+#### Common assignment traps
+
+- Describing a KPI as if it were the goal. It is a proxy.
+- Listing KPI properties without connecting any of them to a decision.
+- Reporting a KPI movement without asking whether the movement is larger than normal variation. That is a Lesson 1.2 question, and the assessor expects you to link the two.
+- Treating a KPI as permanent. Evaluation includes retiring KPIs that no longer track the goal.
+            """,
+            "key_points": [
+                "A KPI is a heuristic: a measurable proxy that supports a fast decision and can therefore be wrong",
+                "Goal, KPI, metric, target and threshold are distinct terms and the assignment expects them used precisely",
+                "A KPI becomes a decision heuristic only when attached to a rule such as RAG thresholds",
+                "Guard KPIs prevent a single unguarded target from driving harmful behaviour, which is an ethical point as well as a technical one",
+                "Evaluating an outcome includes evaluating the KPI and its thresholds, not only the value it reported",
+                "Thresholds that fire on ordinary noise cause alert fatigue, which leaves a team with no working KPI",
+                "How a negative evaluation is delivered determines whether it leads to a solution discussion or to defensiveness"
+            ],
+            "visual_elements": {
+                "diagrams": True,
+                "tables": True,
+                "highlighted_sections": True
+            }
+        },
+        {
+            "lesson_number": "1.2",
+            "title": "Statistical Inference: Sampled Sets, Variance and Five-Point Summaries",
+            "content": """
+### 1.2. Statistical Inference from Sampled Sets
+
+#### What inference means here
+
+**Statistical inference** is the act of saying something about a whole population using only a sample of it. Almost every evaluation you perform is an inference, because you rarely have the whole population:
+
+- You evaluate a model on a test set, not on every future case
+- You evaluate a campaign on the customers who were exposed, not on all customers
+- You evaluate a process change on one quarter, not on all quarters
+
+This means every evaluation carries **sampling uncertainty**, and an evaluation that does not acknowledge it is incomplete.
+
+<div class="mermaid">
+flowchart LR
+    A[Population<br/>What we want to know about] -->|Sampling| B[Sample<br/>What we can measure]
+    B -->|Descriptive statistics| C[Sample statistics<br/>mean, variance, quartiles]
+    C -->|Inference| D[Claim about the population]
+    D -->|Uncertainty| E[Confidence level<br/>Lesson 1.4]
+
+    style A fill:#e3f2fd,stroke:#2196F3,stroke-width:2px
+    style B fill:#fff3cd,stroke:#ffc107,stroke-width:2px
+    style C fill:#c8e6c9,stroke:#4CAF50,stroke-width:2px
+    style D fill:#f3e5f5,stroke:#9C27B0,stroke-width:2px
+    style E fill:#ffe0e0,stroke:#e57373,stroke-width:2px
+</div>
+
+#### How the sample was drawn decides what you may conclude
+
+Before any statistic is calculated, evaluate the sampling method. No amount of correct arithmetic repairs a badly drawn sample.
+
+| Sampling method | How it works | Evaluation risk |
+|---|---|---|
+| **Random** | Every member has an equal chance | Low bias, but needs a complete list of the population |
+| **Stratified** | Population split into groups, sampled within each | Good for subgroup evaluation, but strata must be defined correctly |
+| **Systematic** | Every nth member | Fails badly if the list has a repeating pattern |
+| **Convenience** | Whoever is easiest to reach | High bias, very common in practice, often unstated |
+| **Self-selected** | Respondents opt in | Strong bias toward people with strong opinions |
+
+Two failures worth naming in an evaluation write-up:
+
+**Selection bias.** The sample systematically differs from the population. A satisfaction survey answered only by customers who contacted support does not measure customer satisfaction. It measures the satisfaction of customers who contacted support.
+
+**Survivorship bias.** You only see the cases that made it. Evaluating why customers stay by studying current customers omits everyone who already left, which is precisely the group a churn evaluation needs.
+
+#### Sample size and why small samples mislead
+
+Larger samples produce more stable estimates. The practical consequence for evaluation is that **small samples produce extreme results more often**, in both directions.
+
+| Sample size | Typical behaviour |
+|---|---|
+| Very small (under 30) | Estimates swing widely, one outlier dominates, differences look dramatic |
+| Moderate (30 to a few hundred) | Estimates settle, ordinary tools become usable |
+| Large (thousands) | Estimates are stable, but trivial differences start to look significant |
+
+The last row is its own trap. With a very large sample, a difference can be statistically detectable and still be far too small to matter to the business. A complete evaluation reports both **whether** a difference exists and **whether it is big enough to act on**.
+
+#### Variance and standard deviation
+
+**Variance** measures how far values spread from the mean. **Standard deviation** is its square root, expressed in the same unit as the data, which makes it the one you usually report.
+
+Why an evaluation course cares:
+
+- Two datasets with the same mean can behave completely differently. Mean delivery time of 3 days with a standard deviation of 0.4 days is a reliable service. The same mean with a standard deviation of 4 days is not.
+- Spread is often the outcome the business actually experiences. Customers notice the unpredictable delivery, not the average one.
+- Variance drives everything in Lesson 1.4. Wide spread means wide confidence intervals means less certainty.
+
+| Situation | Mean | Standard deviation | Evaluation reading |
+|---|---|---|---|
+| Process A | 3.0 days | 0.4 days | Stable and predictable |
+| Process B | 3.0 days | 4.1 days | Same average, unusable reliability |
+| Process C | 3.4 days | 0.5 days | Slower on average but far more dependable |
+
+If asked to choose between A and B, the answer is A, and the reason is spread rather than average. If asked between B and C, C is usually preferable for the same reason, and a strong answer says explicitly that a slightly worse mean can be the better outcome when variance falls.
+
+A note on the formula you use in a spreadsheet: sample variance divides by n minus 1 rather than n. That correction exists because a sample tends to understate the spread of the population it came from. In Excel this is the difference between the sample functions and the population functions, and picking the wrong one is a small error that quietly biases every downstream confidence statement.
+
+#### The five-point summary
+
+The **five-point summary** describes a distribution using five values:
+
+| Value | Meaning |
+|---|---|
+| **Minimum** | Smallest observed value |
+| **Q1** | First quartile, 25 percent of values fall below it |
+| **Median (Q2)** | Middle value, 50 percent fall below it |
+| **Q3** | Third quartile, 75 percent fall below it |
+| **Maximum** | Largest observed value |
+
+Two derived quantities do most of the evaluation work:
+
+- **Interquartile range (IQR)** is Q3 minus Q1. It is the spread of the middle half of the data and is resistant to outliers.
+- The **outlier fences** are Q1 minus 1.5 times IQR, and Q3 plus 1.5 times IQR. Values outside them are flagged for investigation.
+
+<div class="mermaid">
+flowchart LR
+    A[Minimum] --> B[Q1]
+    B --> C[Median]
+    C --> D[Q3]
+    D --> E[Maximum]
+    B -.IQR = Q3 - Q1.- D
+
+    style B fill:#c8e6c9,stroke:#4CAF50,stroke-width:2px
+    style C fill:#fff3cd,stroke:#ffc107,stroke-width:2px
+    style D fill:#c8e6c9,stroke:#4CAF50,stroke-width:2px
+</div>
+
+#### Reading a five-point summary
+
+This is a very common assignment task: you are given five numbers and asked what they tell you. Work through it in a fixed order.
+
+**Example.** Response times in minutes: Min 2, Q1 6, Median 8, Q3 11, Max 96.
+
+**Step 1 - Centre.** The median is 8 minutes. Half of all cases are handled faster than that.
+
+**Step 2 - Spread of the middle.** IQR is 11 minus 6, which is 5 minutes. The typical case sits in a fairly narrow band.
+
+**Step 3 - Symmetry.** The median sits 2 above Q1 and 3 below Q3, so the middle half is roughly balanced with a slight right lean.
+
+**Step 4 - Tails.** The maximum of 96 is enormously far from Q3. The upper fence is 11 plus 1.5 times 5, which is 18.5. A value of 96 is far beyond it.
+
+**Step 5 - Evaluation conclusion.** The typical experience is good and stable, but there is a long tail of extreme cases. Reporting only the mean would blend these together and describe an experience nobody actually has. The correct next step is to investigate the tail rather than to delete it: those 96-minute cases may be a broken routing rule, a data-entry error, or a genuinely difficult case type. Each of those requires a different response.
+
+That final point matters. **A flagged outlier is a request for investigation, not a licence to delete.** Removing outliers to make a model look better is a form of selective evaluation, and it is exactly the ethical failure the competence outcomes ask you to avoid.
+
+#### Mean versus median in evaluation reporting
+
+| Use the mean when | Use the median when |
+|---|---|
+| The distribution is roughly symmetric | The distribution is skewed |
+| Totals matter, since mean times count gives the total | A typical case is what the audience needs |
+| No extreme outliers dominate | Outliers are present and genuine |
+
+Reporting both, with a sentence explaining why they differ, is usually the strongest answer. When the mean sits far above the median, the data has a long right tail, and saying so demonstrates that you read the distribution rather than just quoting a number.
+
+#### Common assignment traps
+
+- Calculating statistics correctly on a sample that could never support the conclusion
+- Treating a large sample as automatically trustworthy, when a large convenience sample is still biased
+- Reporting a mean for skewed data without mentioning the skew
+- Describing an outlier as an error before investigating it
+- Confusing the sample and population variance functions in a spreadsheet, which biases every later confidence statement
+            """,
+            "key_points": [
+                "Almost every evaluation is an inference from a sample, so sampling uncertainty is always present",
+                "How the sample was drawn limits what may be concluded, and no correct arithmetic repairs a biased sample",
+                "Selection bias and survivorship bias are the two sampling failures most worth naming in an evaluation write-up",
+                "Small samples produce extreme results often, while very large samples make trivial differences look detectable",
+                "Variance and standard deviation describe reliability, and a lower spread can be the better outcome even with a slightly worse mean",
+                "The five-point summary plus the IQR fences gives a fast, outlier-resistant read of a distribution",
+                "A flagged outlier is a request for investigation, never an automatic licence to delete the value"
+            ],
+            "visual_elements": {
+                "diagrams": True,
+                "tables": True,
+                "highlighted_sections": True
+            }
+        },
+        {
+            "lesson_number": "1.3",
+            "title": "Linear Regression and Z-Testing as Evaluation Tools",
+            "content": """
+### 1.3. Reading Result Tables: Linear Regression and Z-Testing
+
+#### Why these two together
+
+The curriculum lists **linear regression** and **z-testing** in the same outcome as sampled sets, variance, and five-point summaries, because they answer the two questions an evaluator asks about a result table:
+
+- **Regression:** does the relationship this model claims actually hold, and how strongly?
+- **Z-testing:** is this particular value unusual enough to take seriously?
+
+Neither tool is new to you. Statistical Tools taught you to **run** them. This course teaches you to **appraise the output**, including the cases where the output looks convincing and is not.
+
+#### Part 1: Linear regression
+
+A simple linear regression models one outcome variable from one predictor. The fitted line is usually written as an intercept plus a slope multiplied by the predictor.
+
+| Component | What it means | What to check when evaluating |
+|---|---|---|
+| **Intercept** | Predicted outcome when the predictor is zero | Is a predictor value of zero meaningful at all? Often it is not |
+| **Slope (coefficient)** | Change in the outcome per one-unit change in the predictor | Is the size plausible in business terms, not just statistically detectable? |
+| **R squared** | Share of variation in the outcome explained by the model | High is not automatically good, and low is not automatically useless |
+| **p-value** | How surprising this result would be if there were truly no relationship | Small p-value means detectable, not important |
+| **Residuals** | Difference between actual and predicted values | Patterns in residuals mean the model shape is wrong |
+
+<div class="mermaid">
+flowchart TD
+    A[Regression output] --> B{Is the relationship detectable?<br/>p-value}
+    B -->|No| C[Report no reliable relationship found]
+    B -->|Yes| D{Is the effect large enough to matter?<br/>slope size}
+    D -->|No| E[Statistically detectable, practically irrelevant]
+    D -->|Yes| F{Do residuals look random?}
+    F -->|No| G[Wrong model shape, revisit]
+    F -->|Yes| H{Could a third variable explain it?}
+    H -->|Yes| I[Correlation, not causation]
+    H -->|No| J[Usable for the stated decision]
+
+    style C fill:#ffe0e0,stroke:#e57373,stroke-width:2px
+    style E fill:#fff3cd,stroke:#ffc107,stroke-width:2px
+    style G fill:#ffe0e0,stroke:#e57373,stroke-width:2px
+    style I fill:#fff3cd,stroke:#ffc107,stroke-width:2px
+    style J fill:#c8e6c9,stroke:#4CAF50,stroke-width:2px
+</div>
+
+#### Reading R squared honestly
+
+R squared runs from 0 to 1 and reports the share of variation in the outcome that the model accounts for.
+
+| R squared | Naive reading | Evaluator's reading |
+|---|---|---|
+| 0.95 in a business dataset | Excellent model | Suspiciously high. Check whether a predictor secretly contains the outcome |
+| 0.60 | Decent | Reasonable for many business problems, worth using with stated limits |
+| 0.15 in human behaviour data | Useless | Possibly normal. Human behaviour is noisy, and a small reliable effect can still be worth acting on |
+| 0.99 on training data, 0.40 on new data | Great model | Overfitting. The model memorised the sample rather than the pattern |
+
+That last row is the single most important regression failure in this course. A model evaluated only on the data it was fitted to will always look better than it is. **Evaluate on data the model has not seen.** If the assignment gives you only one dataset, say explicitly that a hold-out evaluation would be required before the result could be trusted in production.
+
+The suspicious-high case has a name worth using: **leakage**. It happens when a predictor contains information that would not be available at prediction time, or that is derived from the outcome itself. Predicting total invoice value from a column that includes the invoice value produces a superb model that is worth nothing.
+
+#### Correlation is not causation, stated usefully
+
+Every student knows this sentence. Few use it well. The way to use it in an evaluation is to name **which** alternative explanation applies:
+
+| Alternative explanation | What it means | Example |
+|---|---|---|
+| **Reverse causation** | The arrow points the other way | Support contacts do not cause dissatisfaction; dissatisfaction causes contacts |
+| **Confounding variable** | A third factor drives both | Ice cream sales and drownings both rise with temperature |
+| **Selection effect** | The sample was built in a way that creates the link | Studying only successful customers makes any of their habits look effective |
+| **Coincidence** | Enough comparisons will produce some strong ones by chance | Testing 40 variables will usually turn up two that look significant |
+
+An answer that says "correlation is not causation, and here the likely confounder is seasonality, which affects both variables" is doing real evaluation work. An answer that only recites the phrase is not.
+
+#### Part 2: Z-testing and z-scores
+
+A **z-score** expresses how far a value sits from the mean, measured in standard deviations. A z-score of 2.5 means the value is two and a half standard deviations above the mean.
+
+Its role in evaluation is to give an **objective, comparable** measure of unusualness. Two variables measured in different units, such as kroner and minutes, cannot be compared directly, but their z-scores can.
+
+| Absolute z-score | Rough interpretation under a bell-shaped distribution |
+|---|---|
+| Below 1 | Ordinary, well inside the normal range |
+| 1 to 2 | Somewhat unusual, roughly the outer third |
+| 2 to 3 | Unusual, worth a look |
+| Above 3 | Rare, investigate |
+
+**What a z-score does not tell you:**
+
+- It does not say the value is wrong. It says the value is far from the mean.
+- It assumes a roughly bell-shaped distribution. On a strongly skewed distribution, such as income or response time, z-scores mislabel ordinary values as extreme. On skewed data, the IQR fences from Lesson 1.2 are usually the better tool.
+- It is computed from a mean and standard deviation that the outlier itself inflates. A single enormous value drags the mean up and the standard deviation up, which can hide it and mask other genuine outliers.
+
+That last point is worth stating in an assignment answer, because it shows you understand the tool rather than just applying it.
+
+#### Z-testing as a significance check
+
+A **z-test** compares an observed result against what would be expected if nothing had changed. The logic is:
+
+1. State the null position: there is no real difference.
+2. Compute how far the observed result sits from the expected value, in standard-error units.
+3. If that distance is large, the null position is hard to sustain.
+
+The practical evaluation questions to attach to it:
+
+- **Was the direction predicted in advance?** Deciding after the fact which direction counted as success is a well-known way to manufacture a positive result.
+- **How many tests were run?** Testing many variables and reporting only the significant one inflates false positives. This is why pre-registering what you will test matters even in a business setting.
+- **Is significance being confused with importance?** With a large sample, a 0.2 percent difference can be significant and commercially meaningless.
+
+#### Worked example: appraising a result table
+
+A colleague submits this summary and recommends rolling a new checkout page out to all users.
+
+| Statistic | Value |
+|---|---|
+| Sample | 180 sessions, all from one Tuesday |
+| Mean order value, new page | 612 NOK |
+| Mean order value, old page | 548 NOK |
+| Standard deviation | 410 NOK |
+| p-value | 0.04 |
+| R squared of the supporting model | 0.91 |
+
+**Step 1 - State the claim.** The claim is that the new checkout page raises average order value by 64 NOK, and that this justifies a full rollout.
+
+**Step 2 - Assess the evidence.**
+
+- The **sample** is 180 sessions from a single Tuesday. That is a convenience sample in time. Tuesday shoppers may not represent weekend shoppers, and one day cannot capture weekly or seasonal variation.
+- The **spread** is very large. A standard deviation of 410 NOK against a 64 NOK difference means the difference is small relative to ordinary session-to-session variation.
+- The **p-value** of 0.04 is just past the conventional line. It is weak evidence, not strong evidence, and it is fragile to small changes in the data.
+- The **R squared** of 0.91 on business behaviour data is implausibly high and is the first thing I would investigate for leakage.
+
+**Step 3 - Express the uncertainty.** Given the spread and the single-day sample, the plausible range for the true effect comfortably includes zero and also includes a much larger effect. The honest statement is that the direction is encouraging and the magnitude is unknown.
+
+**Step 4 - Recommend an action.** Do not roll out to all users. Extend the test across at least two full weeks to cover the weekly cycle, re-run with a hold-out evaluation, and audit the supporting model for leakage before the R squared is quoted anywhere. If a decision is needed sooner, a limited rollout to a defined percentage with continued measurement is a defensible middle path.
+
+Notice what makes this a Pass-level answer: every criticism is tied to a specific number in the table, and it ends with an alternative the colleague can actually act on. The competence outcome asks you to critique **and suggest alternatives**.
+
+#### Common assignment traps
+
+- Quoting R squared as a quality score without asking about overfitting or leakage
+- Treating a p-value below 0.05 as proof rather than as one piece of evidence
+- Applying z-scores to strongly skewed data where the IQR fences are the right tool
+- Reciting "correlation is not causation" without naming the alternative explanation that applies
+- Evaluating a model only on the data it was trained on
+- Reporting statistical significance as if it settled the business question
+            """,
+            "key_points": [
+                "Statistical Tools taught you to run regression and z-tests; this course is about appraising their output",
+                "R squared must be read in context: implausibly high values usually indicate leakage or overfitting",
+                "Always ask whether the model was evaluated on data it has not seen, and say so if it was not",
+                "Naming the specific alternative explanation, such as confounding or reverse causation, beats reciting the correlation-causation phrase",
+                "A z-score measures distance from the mean in standard deviations, and assumes a roughly bell-shaped distribution",
+                "An extreme value inflates the very mean and standard deviation used to compute its own z-score, which can mask it",
+                "Statistical significance and practical importance are different questions, and a complete evaluation answers both"
+            ],
+            "visual_elements": {
+                "diagrams": True,
+                "tables": True,
+                "highlighted_sections": True
+            }
+        },
+        {
+            "lesson_number": "1.4",
+            "title": "Confidence Levels and Multiple Probability Outcomes",
+            "content": """
+### 1.4. Confidence Levels and Ascertaining Multiple Probability Outcomes
+
+#### The core idea
+
+A single-number answer hides everything the decision-maker needs. This lesson replaces it with two things:
+
+1. A **confidence level** that states how sure the estimate is
+2. A set of **multiple probability outcomes** that describe what else could happen
+
+The knowledge outcome is phrased as ascertaining "multiple probability outcomes for a particular model", and the competence outcome asks you to develop **work methods** for confidence levels in a given problem domain. Both point at the same skill: turning one estimate into a decision-ready picture of what might occur.
+
+<div class="mermaid">
+flowchart LR
+    A[Single point estimate<br/>Sales will be 4.2M] --> B[Add confidence level<br/>95 percent confident]
+    B --> C[Add interval<br/>3.6M to 4.8M]
+    C --> D[Add scenarios<br/>Best / Likely / Worst]
+    D --> E[Decision that survives<br/>being wrong]
+
+    style A fill:#ffe0e0,stroke:#e57373,stroke-width:2px
+    style C fill:#fff3cd,stroke:#ffc107,stroke-width:2px
+    style D fill:#c8e6c9,stroke:#4CAF50,stroke-width:2px
+    style E fill:#f3e5f5,stroke:#9C27B0,stroke-width:2px
+</div>
+
+#### What a confidence level actually claims
+
+A 95 percent confidence interval is a statement about the **method**, not a probability about the specific interval you happen to have. Precisely: if you repeated the sampling and interval-building procedure many times, about 95 percent of the intervals produced would contain the true population value.
+
+The plain-language version that is safe to write: **"Our best estimate is X, and given the data we have, values between A and B are consistent with what we observed. We used a 95 percent confidence level."**
+
+Two phrasings to avoid, because they are the standard marked errors:
+
+| Wrong phrasing | Why it is wrong |
+|---|---|
+| "There is a 95 percent chance the true value is in this interval" | The true value is fixed; the interval is what varies between samples |
+| "We are 95 percent sure the result is correct" | Confidence covers sampling variation only, not bias, bad data, or a wrong model |
+
+That second row matters more than the first for this course. A confidence interval says nothing about a biased sample, a leaking model, or a mis-defined KPI. You can have a beautifully narrow interval around a completely wrong number. **Confidence quantifies noise, not error.**
+
+#### What drives the width of an interval
+
+| Factor | Effect on the interval | Practical consequence |
+|---|---|---|
+| **Larger sample** | Narrower | The main lever you control |
+| **Larger variance in the data** | Wider | Reducing process variability narrows future intervals |
+| **Higher confidence level** | Wider | 99 percent is wider than 95 percent, which is wider than 90 percent |
+
+The third row is the trade-off students most often miss. You cannot simply demand more confidence and more precision at the same time. Raising the confidence level while holding the sample fixed buys certainty by widening the range until it is less useful. If a narrower interval is needed at the same confidence, the answer is more data or less variance, not a different number in the formula.
+
+#### Choosing a confidence level for the problem domain
+
+The competence outcome asks for **work methods related to data confidence levels given a particular problem domain**. This is a direct instruction to stop treating 95 percent as a universal default and instead justify the choice from the cost of being wrong.
+
+| Domain | Typical level | Reasoning |
+|---|---|---|
+| **Medical and safety** | 99 percent or higher | A false positive result can cause direct harm; the cost of error is asymmetric and severe |
+| **Financial and regulatory** | 99 percent | Audited figures, legal exposure, and reputational cost |
+| **Operational and process** | 95 percent | Standard balance; decisions are reversible and repeatable |
+| **Marketing and experimentation** | 90 to 95 percent | Cheap to test, cheap to reverse, speed has real value |
+| **Exploratory research** | 90 percent | Purpose is to generate hypotheses, not to settle them |
+
+A defensible work method for setting the level, which you can reproduce in an assignment:
+
+1. **Name the decision** the number will support.
+2. **Describe the cost of a false positive**, meaning acting when you should not have.
+3. **Describe the cost of a false negative**, meaning failing to act when you should have.
+4. **Set the level from the asymmetry.** The more expensive and less reversible the error, the higher the level.
+5. **Write the choice down with its reason** so that a reviewer can challenge the reasoning rather than the number.
+6. **Re-examine it** when the decision context changes.
+
+Step 5 is what turns a number into a work method, and it is what the competence outcome is asking for.
+
+#### Building multiple probability outcomes
+
+Once the uncertainty is quantified, express it as scenarios. A three-scenario structure is the standard minimum:
+
+| Scenario | Typical basis | What it is used for |
+|---|---|---|
+| **Best case** | Upper end of the plausible range | Capacity planning, upside preparation |
+| **Most likely** | Central estimate | The default plan |
+| **Worst case** | Lower end of the plausible range | Risk planning, contingency budgeting |
+
+A stronger version attaches rough probabilities and, crucially, a **response** to each:
+
+| Scenario | Estimate | Rough probability | Planned response |
+|---|---|---|---|
+| Best | 4.8M | 20 percent | Bring forward hiring, secure extra stock |
+| Likely | 4.2M | 60 percent | Proceed with current plan |
+| Worst | 3.6M | 20 percent | Defer discretionary spend, review pricing |
+
+The planned-response column is what makes it useful. Scenarios without prepared responses are a description of uncertainty. Scenarios with responses are a decision that survives being wrong.
+
+#### Sensitivity: which assumption is doing the work
+
+A short but high-value addition to any scenario set is a **sensitivity check**: vary one assumption at a time and see how much the outcome moves.
+
+| Assumption varied | Range tested | Effect on forecast |
+|---|---|---|
+| Conversion rate | 2.0 to 3.0 percent | Large, moves the forecast by roughly 1.0M |
+| Average order value | 500 to 620 NOK | Moderate, roughly 0.4M |
+| Return rate | 4 to 7 percent | Small, under 0.1M |
+
+This immediately tells the decision-maker where to spend effort: the conversion rate estimate is what the whole forecast rests on, so improving that estimate is worth more than refining anything else. Identifying the dominant assumption is a strong, concrete contribution in an evaluation write-up.
+
+#### Worked example: a domain-appropriate work method
+
+A clinic wants to know whether a new triage process reduces average waiting time. The analyst reports: "Waiting time fell by 6 minutes."
+
+**Step 1 - Name the decision.** Whether to adopt the new triage process across all departments.
+
+**Step 2 - Cost of a false positive.** Rolling out a process that does not work consumes staff retraining time and disrupts a functioning clinical workflow. In a health setting, disruption carries patient risk.
+
+**Step 3 - Cost of a false negative.** Failing to adopt a process that does work means patients continue to wait longer than necessary.
+
+**Step 4 - Set the level.** Both errors carry patient impact, and the change is operationally disruptive to reverse. A 99 percent confidence level is appropriate rather than the default 95.
+
+**Step 5 - Report with the level and the scenarios.**
+
+| Scenario | Waiting time change | Rough probability | Response |
+|---|---|---|---|
+| Best | 9 minutes faster | 20 percent | Full rollout, publish the method |
+| Likely | 6 minutes faster | 55 percent | Rollout to two more departments, keep measuring |
+| Worst | 1 minute faster | 25 percent | Do not roll out; the disruption is not justified |
+
+**Step 6 - State the limits.** The confidence level covers sampling variation. It does not cover the fact that the pilot ran in one department with unusually experienced staff, which is a **bias** the interval cannot capture and which should be stated separately.
+
+That final paragraph is what separates a competent answer from a mechanical one.
+
+#### Common assignment traps
+
+- Reporting a point estimate with no uncertainty attached
+- Using the "95 percent chance the true value lies in this interval" phrasing
+- Treating a confidence interval as if it covered bias and data-quality problems
+- Defaulting to 95 percent without justifying it from the problem domain
+- Producing scenarios without attaching a response to each one
+- Asking for both higher confidence and a narrower interval without adding data or reducing variance
+            """,
+            "key_points": [
+                "Replace a single number with a confidence level plus multiple probability outcomes",
+                "A confidence level is a statement about the method across repeated sampling, not a probability about the specific interval",
+                "Confidence quantifies sampling noise only; it says nothing about bias, leakage, or a wrong model",
+                "Interval width is driven by sample size, data variance, and the chosen confidence level, and you cannot raise confidence and precision at once",
+                "The competence outcome asks for a documented work method that sets the confidence level from the cost asymmetry of the decision",
+                "Scenarios become decisions only when each one carries a planned response",
+                "A sensitivity check identifies which assumption the whole forecast actually rests on"
+            ],
+            "visual_elements": {
+                "diagrams": True,
+                "tables": True,
+                "highlighted_sections": True
+            }
+        },
+        {
+            "lesson_number": "1.5",
+            "title": "Iterative Error Elimination: Processes and Tools",
+            "content": """
+### 1.5. Iterative Error Elimination
+
+#### Why iterative
+
+The knowledge outcome names "process and tools related to **iterative** error elimination". The word iterative is doing real work. A single pass finds the errors you thought to look for. Repeated passes find the errors that only became visible once the first layer was cleared.
+
+<div class="mermaid">
+flowchart TD
+    A[Detect<br/>Something looks wrong] --> B[Isolate<br/>Reproduce it minimally]
+    B --> C[Diagnose<br/>Find the root cause]
+    C --> D[Correct<br/>Fix the cause, not the symptom]
+    D --> E[Verify<br/>Confirm the fix and check nothing broke]
+    E --> F[Prevent<br/>Add a check that catches a repeat]
+    F --> A
+
+    style A fill:#ffe0e0,stroke:#e57373,stroke-width:2px
+    style C fill:#fff3cd,stroke:#ffc107,stroke-width:2px
+    style D fill:#c8e6c9,stroke:#4CAF50,stroke-width:2px
+    style F fill:#f3e5f5,stroke:#9C27B0,stroke-width:2px
+</div>
+
+The two stages students skip are **Verify** and **Prevent**. Skipping verify is how a fix that did not work gets reported as done. Skipping prevent is how the same error returns next quarter.
+
+#### A taxonomy of errors worth memorising
+
+Being able to name the error type quickly is half the diagnosis.
+
+| Error type | Symptom | Typical cause | Typical fix |
+|---|---|---|---|
+| **Missing values** | Blanks, nulls, zeros standing in for unknown | Optional fields, failed joins, dropped records | Decide and document: impute, exclude, or flag |
+| **Duplicates** | Inflated counts and totals | Repeated imports, joins on non-unique keys | Deduplicate on a defined business key |
+| **Type and format** | Numbers stored as text, mixed date formats | Manual entry, CSV round-trips, locale differences | Enforce types at ingestion |
+| **Range and validity** | Impossible values such as negative ages | No validation at entry, unit confusion | Validation rules with defined bounds |
+| **Consistency** | The same entity spelled several ways | No controlled vocabulary | Standardise against a reference list |
+| **Structural** | Wrong granularity, one row meaning different things | Misunderstood source system | Redefine the grain and rebuild |
+| **Logic** | Formula correct in syntax, wrong in meaning | Wrong denominator, wrong filter, wrong join type | Re-derive from the business definition |
+| **Interpretation** | Numbers are right, conclusion is wrong | Confusing correlation with causation, ignoring spread | Re-read against Lessons 1.2 to 1.4 |
+
+The last two rows are the ones this course cares about most, because they survive every automated data-quality check. A pipeline can validate that every value is a valid number and still produce a completely wrong KPI because the denominator was the wrong population.
+
+#### Root cause analysis: the Five Whys
+
+The **Five Whys** technique asks why repeatedly until you reach a cause you can actually change.
+
+**Symptom:** The regional sales dashboard shows a 300 percent jump for the North region in March.
+
+1. **Why?** March revenue for North is triple February's.
+2. **Why?** The March file contains roughly three times as many rows for North.
+3. **Why?** The same source file was loaded three times.
+4. **Why?** The nightly load job retried after a timeout, and each retry appended rather than replaced.
+5. **Why?** The load step has no idempotency check and no unique constraint on the natural key.
+
+**Root cause:** The pipeline appends without a duplicate guard.
+
+**Correction:** Remove the duplicated rows for March.
+
+**Prevention:** Add a unique constraint on the natural key, make the load step idempotent, and add a row-count check that alerts when a daily load deviates sharply from its recent range.
+
+Notice that stopping at level 2 gives you "there were too many rows", which invites the symptom fix of deleting rows. Only level 5 gives you a fix that stops the error recurring. **An answer that stops at the symptom is the most common way to lose marks on this topic.**
+
+#### The fishbone view for wider problems
+
+When the cause is not a single chain, group candidate causes by category before investigating. For data work the useful categories are:
+
+| Category | Example causes |
+|---|---|
+| **Data** | Source changed, encoding issue, missing period, schema drift |
+| **Process** | No review step, unclear ownership, undocumented manual edit |
+| **Tools** | Version mismatch, silent type coercion, formula dragged one row short |
+| **People** | Definition misunderstood, handover gap, training gap |
+| **Measurement** | KPI defined differently across teams, wrong denominator |
+
+This is useful in an assignment when the task is open-ended, because it demonstrates a systematic search rather than a lucky guess.
+
+#### Tools that support the process
+
+The outcome mentions **tools** as well as process. The relevant categories:
+
+| Tool category | What it does for error elimination |
+|---|---|
+| **Validation rules** | Reject bad values at entry instead of cleaning them later |
+| **Profiling** | Summarise a dataset's types, ranges, nulls and cardinality before you trust it |
+| **Reconciliation checks** | Compare totals against an independent source such as the finance ledger |
+| **Row-count and freshness checks** | Detect loads that ran twice, ran short, or did not run |
+| **Automated tests on transformations** | Confirm a rule still behaves correctly after a change |
+| **Version control** | Identify exactly which change introduced the error (Lesson 1.7) |
+| **Audit and change logs** | Show who changed what and when |
+
+A useful principle to state: **the earlier in the pipeline an error is caught, the cheaper it is to fix.** An error caught at entry costs a correction. The same error caught in a board report costs a correction, a re-issued report, and credibility.
+
+#### Delivering error findings to a team
+
+The competence outcome is explicit: the candidate "can deliver insights into erroneous data among project members and facilitate solution discussions". Finding the error is only half the task.
+
+| Do | Avoid |
+|---|---|
+| Describe the error and its impact in business terms | Leading with technical detail nobody can act on |
+| Attribute to the process, not the person | Naming who made the mistake |
+| Bring a proposed fix and a proposed prevention | Presenting a problem with no route forward |
+| State what is still uncertain | Overstating how well you understand the cause |
+| Agree who owns the fix and by when | Leaving it as a shared observation nobody owns |
+
+A workable opening: *"The March North figure is inflated by a duplicate load, so the regional totals in that report should not be used yet. I have identified the cause in the load job and can have corrected figures by Thursday. I would also suggest adding a row-count check so this is caught automatically next time."*
+
+That single paragraph does the whole competence outcome: it delivers the insight, protects the decision, proposes the fix, and opens the prevention discussion without blaming anyone.
+
+#### Common assignment traps
+
+- Fixing the symptom rather than the root cause
+- Stopping the Five Whys at the first plausible answer
+- Omitting the verification step, so the fix is never confirmed
+- Omitting the prevention step, so the same error recurs
+- Presenting error findings as an accusation instead of as a process problem
+- Assuming automated data-quality checks catch logic and interpretation errors, which they do not
+            """,
+            "key_points": [
+                "The cycle is detect, isolate, diagnose, correct, verify, prevent, and it repeats",
+                "Verify and prevent are the two stages most often skipped, and skipping them is why errors return",
+                "Naming the error type quickly, from missing values through to interpretation errors, is half the diagnosis",
+                "Logic and interpretation errors survive every automated data-quality check, which is why human evaluation is required",
+                "The Five Whys must be carried to a cause you can change, not stopped at the first plausible answer",
+                "The earlier in the pipeline an error is caught, the cheaper it is to fix",
+                "Delivering a finding well means business impact, no blame, a proposed fix, a proposed prevention, and a named owner"
+            ],
+            "visual_elements": {
+                "diagrams": True,
+                "tables": True,
+                "highlighted_sections": True
+            }
+        },
+        {
+            "lesson_number": "1.6",
+            "title": "Ensembling Techniques and Model Reliability",
+            "content": """
+### 1.6. Industry Statistical Techniques Used for Ensambling Data
+
+#### The core insight
+
+**Ensembling** combines several models instead of relying on one. It works because different models make different mistakes. When their errors are not correlated, combining them cancels part of the error and keeps the shared signal.
+
+The curriculum spells this as "ensambling", which is the spelling used in the Noroff course description. The standard industry term is **ensembling**, and both refer to the same techniques.
+
+<div class="mermaid">
+flowchart TD
+    A[Training data] --> B[Model 1]
+    A --> C[Model 2]
+    A --> D[Model 3]
+    B --> E[Combine<br/>vote or average]
+    C --> E
+    D --> E
+    E --> F[Ensemble prediction<br/>usually more reliable]
+
+    style E fill:#fff3cd,stroke:#ffc107,stroke-width:2px
+    style F fill:#c8e6c9,stroke:#4CAF50,stroke-width:2px
+</div>
+
+The condition in bold: ensembling helps when the members are **diverse**. Three copies of the same model trained the same way on the same data make identical mistakes, and averaging identical mistakes changes nothing.
+
+#### Bias and variance, the reason ensembling works
+
+Two different failure modes explain almost every ensembling decision.
+
+| Failure | What it looks like | Cause |
+|---|---|---|
+| **High bias (underfitting)** | Model is wrong in the same direction consistently, poor on both training and new data | Model is too simple for the pattern |
+| **High variance (overfitting)** | Excellent on training data, poor on new data, unstable between samples | Model memorised the sample including its noise |
+
+The two main ensembling families each target one of these:
+
+- **Bagging reduces variance.** It stabilises a model that swings too much.
+- **Boosting reduces bias.** It strengthens a model that is systematically too simple.
+
+Knowing which failure you are looking at tells you which technique to reach for. That mapping is the single most assessable idea in this lesson.
+
+#### Bagging
+
+**Bagging** stands for bootstrap aggregating.
+
+1. Draw several random samples from the training data, with replacement.
+2. Train one model on each sample.
+3. Combine by averaging for numeric outcomes, or by majority vote for categories.
+
+Because each model sees a slightly different sample, each makes slightly different errors, and averaging cancels much of the instability.
+
+| Property | Detail |
+|---|---|
+| Targets | High variance |
+| Training | Models are independent, so they can be trained in parallel |
+| Best-known example | Random forest, which bags decision trees and also samples the features |
+| Main risk | Does little for a model that is systematically biased |
+
+#### Boosting
+
+**Boosting** trains models in sequence, each one focusing on the cases the previous ones got wrong.
+
+1. Train a simple model.
+2. Identify the cases it predicted badly and increase their weight.
+3. Train the next model with that emphasis.
+4. Repeat, then combine as a weighted sum.
+
+| Property | Detail |
+|---|---|
+| Targets | High bias |
+| Training | Sequential by construction, so it cannot be parallelised the same way |
+| Best-known examples | Gradient boosting and its variants |
+| Main risk | Because it chases hard cases, it can chase noise and overfit; it is also sensitive to mislabelled data |
+
+That last risk is an evaluation point worth making: **boosting amplifies the effect of erroneous records**, because a wrong label looks exactly like a hard case. This connects Lesson 1.5 to this lesson. Error elimination is a prerequisite for boosting to behave.
+
+#### Stacking
+
+**Stacking** trains several different model types, then trains a further model to learn how best to combine their predictions.
+
+| Property | Detail |
+|---|---|
+| Targets | Both, by exploiting complementary strengths |
+| Training | Base models, then a combining model on their outputs |
+| Main strength | Can beat any single member when the members are genuinely different |
+| Main risk | Complex, easy to leak information between layers, and hard to explain to stakeholders |
+
+#### Choosing between them
+
+| Symptom in evaluation | Likely diagnosis | Technique to consider |
+|---|---|---|
+| Results swing a lot between samples or reruns | High variance | Bagging |
+| Consistently wrong in the same direction on both training and new data | High bias | Boosting |
+| Several models each capture a different part of the pattern | Complementary strengths | Stacking |
+| Model looks strong on training data only | Overfitting | Bagging, plus proper hold-out evaluation |
+| Data contains known label errors | Any boosting will amplify them | Fix the data first (Lesson 1.5) |
+
+#### Ensembling beyond models
+
+The outcome talks about "ensambling **data**", and the same logic applies outside modelling. This is the part most directly useful in an evaluation assignment:
+
+| Ensembling applied to | How it works | Why it improves reliability |
+|---|---|---|
+| **Multiple data sources** | Reconcile a figure against an independent source | An error in one source is unlikely to appear identically in another |
+| **Multiple methods** | Estimate the same quantity two different ways | Agreement raises confidence; disagreement locates a problem |
+| **Multiple time windows** | Check whether the finding holds across periods | Guards against a one-off anomaly driving the conclusion |
+| **Multiple analysts** | Have a second person derive the KPI independently | Catches definition and interpretation errors that tools cannot |
+
+The middle two rows are exactly what a good evaluation does anyway, which is why this outcome sits in this course rather than in a modelling course.
+
+#### What ensembling does not fix
+
+State these limits in an assignment answer, because they are where the marks are:
+
+- It does not fix **biased data**. Every member trained on the same skewed sample inherits the same skew, and averaging biased models gives a confidently biased answer.
+- It does not fix a **wrong target**. Predicting the wrong thing accurately is still wrong.
+- It reduces **explainability**. A single decision tree can be shown to a stakeholder. A stacked ensemble usually cannot, which matters wherever a decision must be justified to a person it affects.
+- It increases **cost and complexity** in training, serving, and maintenance.
+
+The explainability point is an ethical one as well as a technical one. A more accurate model that cannot be explained may be the wrong choice in a domain where people have a right to an explanation of a decision made about them.
+
+#### Common assignment traps
+
+- Describing bagging and boosting without saying which failure each one targets
+- Claiming ensembling improves reliability without mentioning that member diversity is required
+- Ignoring that boosting amplifies mislabelled and erroneous data
+- Presenting an ensemble as a fix for biased data
+- Omitting the explainability and maintenance costs when recommending an ensemble
+            """,
+            "key_points": [
+                "Ensembling works only when members are diverse, because it cancels uncorrelated errors",
+                "Bagging targets high variance and trains members independently in parallel; random forest is the classic example",
+                "Boosting targets high bias by training sequentially on the previously mispredicted cases",
+                "Boosting amplifies mislabelled records, so error elimination must come first",
+                "Stacking learns how to combine different model types and can beat any single member, at the cost of complexity",
+                "Ensembling applies to data too: multiple sources, methods, time windows, and analysts all raise reliability",
+                "It does not fix biased data or a wrong target, and it reduces explainability, which is an ethical cost as well as a technical one"
+            ],
+            "visual_elements": {
+                "diagrams": True,
+                "tables": True,
+                "highlighted_sections": True
+            }
+        },
+        {
+            "lesson_number": "1.7",
+            "title": "ETL Systems and Version Control in Collaborative Evaluation",
+            "content": """
+### 1.7. ETL Systems in the Lifecycle, and Version Control for Collaborative Data Work
+
+#### Why an evaluation course covers pipelines
+
+Two of the knowledge outcomes look at first glance like engineering topics:
+
+- insights into **ETL systems** and how they integrate at key points within the data analysis lifecycle design
+- understanding the importance of **version control** and keeping track of changes in data within a collaborative framework
+
+They belong here because of one fact: **most faulty results are not caused by the analysis step.** They are caused upstream, in how data was extracted, transformed, and loaded, or by an undocumented change somebody made. If you can only evaluate the final number, you can detect that something is wrong but not what.
+
+#### ETL and the lifecycle
+
+**ETL** is Extract, Transform, Load.
+
+| Stage | What happens | What can go wrong | Evaluation check |
+|---|---|---|---|
+| **Extract** | Pull data from source systems | Source schema changed, partial pull, API limit hit, wrong date range | Row counts against the source, freshness timestamps |
+| **Transform** | Clean, join, aggregate, derive fields | Wrong join type, wrong grain, silent type coercion, wrong filter | Reconcile totals before and after, test on known cases |
+| **Load** | Write into the warehouse or analysis layer | Duplicate load, partial load, overwritten history | Unique constraints, idempotent loads, load audit log |
+
+<div class="mermaid">
+flowchart LR
+    A[Source systems] -->|Extract| B[Raw layer]
+    B -->|Transform| C[Cleaned layer]
+    C -->|Load| D[Analysis layer]
+    D --> E[Models and KPIs]
+    E --> F[Evaluation]
+    F -.traces error back.-> B
+    F -.traces error back.-> C
+    F -.traces error back.-> D
+
+    style B fill:#e3f2fd,stroke:#2196F3,stroke-width:2px
+    style C fill:#fff3cd,stroke:#ffc107,stroke-width:2px
+    style D fill:#c8e6c9,stroke:#4CAF50,stroke-width:2px
+    style F fill:#f3e5f5,stroke:#9C27B0,stroke-width:2px
+</div>
+
+The dotted arrows are the point of the lesson. An evaluation is only as good as its ability to trace a suspicious number back to where it was created.
+
+**ELT** is a common variant where raw data is loaded first and transformed inside the warehouse. For evaluation it has one clear advantage: the raw data is retained, so you can always re-derive a figure and see where a transformation went wrong. With classic ETL, a transformation error can destroy the evidence needed to diagnose it.
+
+#### The evaluation properties a pipeline should have
+
+| Property | What it means | Why an evaluator needs it |
+|---|---|---|
+| **Idempotent** | Running the same load twice gives the same result | Prevents the duplicate-load error from Lesson 1.5 |
+| **Traceable (lineage)** | You can follow any field back to its source | Lets you locate the cause instead of guessing |
+| **Reproducible** | The same inputs and code give the same outputs | Without it, you cannot confirm a fix worked |
+| **Monitored** | Row counts, freshness, and failures raise alerts | Catches errors before they reach a report |
+| **Documented** | Definitions and business rules are written down | Prevents the same KPI meaning two things |
+
+**Reproducibility deserves emphasis.** If a colleague cannot re-run your analysis and get your numbers, then neither your result nor your evaluation of it can be checked. In a Pass / Fail assignment, describing how your work could be reproduced is a cheap and reliable way to demonstrate this outcome.
+
+#### Version control for collaborative data work
+
+Version control keeps a complete history of changes: what changed, when, by whom, and why.
+
+| Concept | Meaning | Evaluation value |
+|---|---|---|
+| **Repository** | The tracked project and its full history | One authoritative version instead of files named final_v3 |
+| **Commit** | A recorded change with a message | The message explains *why*, which no diff can |
+| **Branch** | An isolated line of work | Experiment without breaking the working analysis |
+| **Merge** | Bringing a branch back in | The point where conflicting changes surface |
+| **Diff** | The exact difference between versions | Pinpoints which change introduced an error |
+| **Blame / history** | Which change last touched a line | Traces a faulty rule to the change that created it |
+| **Tag / release** | A named, frozen version | Lets you say exactly which version produced a published figure |
+
+The single most valuable capability for this course: when a KPI breaks, you can find the exact change that broke it, read why it was made, and revert it. Without version control, that investigation is guesswork.
+
+#### Versioning the data, not only the code
+
+The outcome says "keeping track of changes **in data**". Code versioning alone is not enough, because the same code on different data gives different results.
+
+| Technique | What it does |
+|---|---|
+| **Snapshots** | Retain a copy of the dataset as at a point in time |
+| **Slowly changing dimensions** | Keep history when an attribute changes, rather than overwriting it |
+| **Immutable raw layer** | Never modify raw data; derive everything downstream |
+| **Data version tags** | Record which dataset version produced which result |
+| **Change log** | Record schema and definition changes with dates |
+
+The **immutable raw layer** is the most broadly useful of these. If raw data is never altered, then any transformation error is recoverable, and any historical figure can be re-derived and checked. A pipeline that overwrites its raw data makes some evaluation questions permanently unanswerable.
+
+Slowly changing dimensions matter more than they first appear. If a customer moves from one region to another and the record is simply overwritten, then last year's regional totals silently change every time you re-run the report. Keeping the history means a past figure stays reproducible.
+
+#### Documenting an evaluation so it can be reviewed
+
+For a collaborative framework, the record of an evaluation should let a reviewer reconstruct the reasoning:
+
+| Element | What to record |
+|---|---|
+| **Question** | What decision this evaluation supports |
+| **Data version** | Which dataset and which snapshot or date range |
+| **Method** | Which tools were used and why they fit |
+| **Confidence** | The level chosen and the reason for that level |
+| **Findings** | Results with their uncertainty, not bare numbers |
+| **Limitations** | What the evidence cannot support |
+| **Decision** | Recommended action and its conditions |
+
+This maps directly onto the four-step answer structure from Lesson 1.0, and it is a reasonable skeleton for the Course Assignment submission itself.
+
+#### Worked example: tracing a broken KPI
+
+The customer retention KPI drops from 82 to 61 percent overnight with no business explanation.
+
+| Step | Action | Tool used |
+|---|---|---|
+| 1 | Confirm the drop is in the data, not in the dashboard's filters | Query the analysis layer directly |
+| 2 | Check the load audit log for that night | Pipeline monitoring |
+| 3 | Compare row counts against the previous run | Row-count check |
+| 4 | Find the code changes deployed that day | Version control history |
+| 5 | Read the diff and the commit message | Version control diff |
+| 6 | Re-run the previous version against the same data snapshot | Data versioning plus reproducible pipeline |
+| 7 | Confirm the KPI returns to 82 percent | Verification |
+| 8 | Identify the cause: the retention definition changed from 12-month to 3-month window | Diff plus documentation |
+| 9 | Decide whether the change was intended and communicate it | Solution discussion |
+| 10 | Add a test asserting the definition, and a change-log entry | Prevention |
+
+Step 8 is the real lesson. The pipeline never failed and no value was invalid. Every automated data-quality check would have passed. The error was a **definition change**, which only version control and documentation could expose. That is why these outcomes sit in an evaluation course.
+
+Step 9 also matters: the change may have been entirely intentional and simply uncommunicated. Establishing that before raising it as an error is the difference between facilitating a solution discussion and starting an argument.
+
+#### Common assignment traps
+
+- Treating ETL and version control as engineering topics unrelated to evaluating outcomes
+- Assuming a pipeline that runs without errors produced correct data
+- Overlooking data versioning and covering only code versioning
+- Failing to mention reproducibility as a precondition for any evaluation being checkable
+- Reporting a KPI change as an error before checking whether a definition changed intentionally
+            """,
+            "key_points": [
+                "Most faulty results originate upstream in ETL or in an undocumented change, not in the analysis step",
+                "Extract, transform, and load each have characteristic failures and a matching evaluation check",
+                "A pipeline should be idempotent, traceable, reproducible, monitored and documented for its output to be evaluable",
+                "ELT keeps the raw data, so a transformation error can still be diagnosed after the fact",
+                "Version control lets you find the exact change that broke a KPI and read why it was made",
+                "Data must be versioned as well as code: immutable raw layers, snapshots, and slowly changing dimensions keep past figures reproducible",
+                "A definition change passes every automated data-quality check, so only version control and documentation can expose it"
+            ],
+            "visual_elements": {
+                "diagrams": True,
+                "tables": True,
+                "highlighted_sections": True
+            }
+        }
+    ],
 }
 
 
@@ -62600,29 +63816,73 @@ courses_data = [
         "credits": 10, 
         "semester": "2025 Fall",
         "semester_number": 2,
+        "level_of_study": "5.1",
+        "programme": "Data Analyst 1",
+        "assessment": "Course Assignment",
+        "grading_scale": "Pass / Fail",
+        "assessment_grouping": "Individual",
+        "assessment_duration": "1 week",
         "weeks": 8,
         "hours": 336,
-        "description": "Learn to review, assess, and appraise the results of analytical models. Covers statistical inferences, confidence levels, and iterative error elimination.",
+        "description": "This course provides the knowledge of reviewing the outcomes achieved from using statistical tools and model choices. Candidates learn technical skills to review, assess, and appraise the results of successful analytical models, how to identify faulty results, and how to apply problem-solving techniques to express feedback and construct an understanding for iterative error elimination. The course relies on the candidate passing the previous semester's required grade so that a foundation level understanding of data is achieved before key analytical skills are taught. Its main goal is to teach candidates how to evaluate the outcomes of a given data model, and it introduces the broader technical concepts used in industry to evaluate complex problems with multiple possible outcomes.",
         "knowledge": [
-            "Key Performance Indicators (KPI) as heuristics in decision making",
-            "Statistical inferences: sampled sets, linear regression, variance, five-point summaries, z-testing",
-            "Confidence levels and multiple probability outcomes",
-            "Iterative error elimination processes and tools",
-            "Ensambling data techniques",
-            "Version control for collaborative data work",
-            "ETL systems in data analysis lifecycle"
+            "Key Performance Indicators (KPI) and their use as heuristics in decision making",
+            "Analysing result tables using statistical inferences: sampled sets, linear regression, measurement of variance, five-point summaries, and z-testing",
+            "Confidence levels, and ascertaining multiple probability outcomes for a particular model",
+            "Processes and tools related to iterative error elimination",
+            "Industry statistical techniques used for ensambling data",
+            "The importance of version control and keeping track of changes in data within a collaborative framework",
+            "Quantitative and qualitative methods used to analyse data at an industry level",
+            "ETL systems and how they are integrated at key points within the data analysis lifecycle design"
         ],
         "skills": [
-            "Apply statistical inferences to identify and solve problems",
-            "Apply iterative error elimination to improve results",
-            "Create multiple outcome scenarios with confidence levels",
-            "Critically assess and analyse data models",
-            "Improve reliability using ensambling techniques"
+            "Apply knowledge of statistical inferences to identify and solve problems with a given data set",
+            "Apply knowledge of iterative error elimination techniques to significantly improve results",
+            "Apply knowledge of confidence levels to create multiple outcome scenarios",
+            "Master relevant tools and techniques used to critically assess and analyse data models",
+            "Study data sets to identify and improve reliability using ensambling and related techniques",
+            "Find information and material related to the evaluation of outcomes to solve data driven problems"
         ],
         "competence": [
-            "Independently assess and critique analysis approaches",
-            "Develop ethical approach to solving data problems",
-            "Facilitate solution discussions among project members"
+            "Understand the ethical principles to independently assess and critique analysis approaches and suggest alternatives",
+            "Develop an ethical approach to solving data problems using statistical inferences",
+            "Deliver insights into erroneous data among project members and facilitate solution discussions",
+            "Develop work methods related to data confidence levels given a particular problem domain"
+        ],
+        "learning_outcomes": [
+            {
+                "category": "Knowledge",
+                "items": [
+                    "Has knowledge of Key Performance Indicators (KPI) and their use as heuristics in decision making",
+                    "Has knowledge of analysing result tables using statistical inferences, specifically sampled sets, linear regression, measurement of variance, five-point summaries, and z-testing",
+                    "Has knowledge of confidence levels and to ascertain multiple probability outcomes for a particular model",
+                    "Has knowledge of process and tools related to iterative error elimination",
+                    "Has knowledge of the industry statistical techniques used for ensambling data",
+                    "Understands the importance of version control and keeping track of changes in data within a collaborative framework",
+                    "Can update their knowledge of using quantitative and qualitative methods to analyse data at an industry level",
+                    "Has insights into ETL systems and how they are integrated at key points within the data analysis lifecycle design"
+                ]
+            },
+            {
+                "category": "Skills",
+                "items": [
+                    "Can apply knowledge of statistical inferences to identify and solve problems with a given data set",
+                    "Can apply knowledge of iterative error elimination techniques to significantly improve results",
+                    "Can apply knowledge of confidence levels to create multiple outcome scenarios",
+                    "Masters relevant tools and techniques used to critically assess and analyse data models",
+                    "Can study data sets to identify and improve reliability using ensambling and related techniques",
+                    "Can find information and material related to the evaluation of outcomes to solve data driven problems"
+                ]
+            },
+            {
+                "category": "Competence",
+                "items": [
+                    "Understands the ethical principles to independently assess and critique analysis approaches and suggest alternatives",
+                    "Has developed an ethical approach to solving data problems using statistical inferences",
+                    "Can deliver insights into erroneous data among project members and facilitate solution discussions",
+                    "Can develop work methods related to data confidence levels given a particular problem domain"
+                ]
+            }
         ]
     },
     {
@@ -63043,6 +64303,173 @@ CURATED_FLASHCARD_SETS = {
             "front": "Why must the analytical method match the scenario?",
             "back": "Different problems require different methods. A summary report, root-cause investigation, forecast, and action recommendation are not the same task, so the wrong method can lead to weak decisions.",
             "tags": ["method selection", "scenarios", "ddm"]
+        }
+    ],
+    "FI1BBEO10": [
+        {
+            "front": "Why is a KPI described as a heuristic rather than as the truth?",
+            "back": "A KPI is a measurable proxy for something the business actually cares about. It is chosen because it is timely and cheap to track, which means it supports a fast decision but can also be wrong. Evaluating an outcome therefore includes evaluating the KPI itself.",
+            "tags": ["kpi", "heuristics", "evo"]
+        },
+        {
+            "front": "What is a guard KPI and why does it matter?",
+            "back": "A guard KPI is a second indicator paired with a primary one to stop the primary being improved at the expense of the goal. Average handling time guarded by repeat contact rate is the classic example. Unguarded targets are how well-intentioned KPIs produce harmful behaviour.",
+            "tags": ["kpi", "ethics", "evo"]
+        },
+        {
+            "front": "Name the two sampling biases most worth citing in an evaluation.",
+            "back": "Selection bias, where the sample systematically differs from the population, and survivorship bias, where you only observe the cases that made it. A churn study of current customers suffers both.",
+            "tags": ["sampling", "bias", "evo"]
+        },
+        {
+            "front": "Two datasets have the same mean. What else must you check before judging them?",
+            "back": "The spread. Variance and standard deviation decide reliability. A mean of 3 days with a standard deviation of 0.4 days is a dependable service; the same mean with a standard deviation of 4 days is not. A slightly worse mean with much lower spread is often the better outcome.",
+            "tags": ["variance", "spread", "evo"]
+        },
+        {
+            "front": "What are the five values in a five-point summary, and which two derived quantities matter most?",
+            "back": "Minimum, Q1, median, Q3, and maximum. The interquartile range (Q3 minus Q1) gives the outlier-resistant spread of the middle half, and the fences at Q1 minus 1.5 IQR and Q3 plus 1.5 IQR flag values for investigation.",
+            "tags": ["five-point summary", "iqr", "evo"]
+        },
+        {
+            "front": "A value falls outside the IQR fences. What is the correct next step?",
+            "back": "Investigate it, not delete it. A flagged outlier may be a genuine extreme case, a data-entry error, or a broken process, and each requires a different response. Removing outliers to improve a result is selective evaluation and an ethical failure.",
+            "tags": ["outliers", "ethics", "evo"]
+        },
+        {
+            "front": "An R squared of 0.95 on business behaviour data should prompt which suspicion?",
+            "back": "Leakage or overfitting. Leakage means a predictor contains information derived from the outcome or unavailable at prediction time. The check is to evaluate on data the model has not seen.",
+            "tags": ["regression", "r squared", "leakage", "evo"]
+        },
+        {
+            "front": "How do you use 'correlation is not causation' well in an evaluation?",
+            "back": "By naming which alternative explanation applies: reverse causation, a confounding variable, a selection effect, or coincidence from testing many variables. Reciting the phrase alone does no evaluation work.",
+            "tags": ["regression", "causation", "evo"]
+        },
+        {
+            "front": "What does a z-score measure, and when is it the wrong tool?",
+            "back": "It measures distance from the mean in standard deviations. It assumes a roughly bell-shaped distribution, so on strongly skewed data such as income or response times it mislabels ordinary values as extreme. There, the IQR fences are better.",
+            "tags": ["z-score", "outliers", "evo"]
+        },
+        {
+            "front": "Why can a single extreme value hide itself from a z-score check?",
+            "back": "The z-score is computed from a mean and a standard deviation that the extreme value itself inflates. It drags both upward, which shrinks its own z-score and can mask other genuine outliers.",
+            "tags": ["z-score", "outliers", "evo"]
+        },
+        {
+            "front": "State a 95 percent confidence interval correctly.",
+            "back": "If the sampling and interval-building procedure were repeated many times, about 95 percent of the intervals produced would contain the true population value. Saying 'there is a 95 percent chance the true value is in this interval' is the standard marked error, because the true value is fixed and the interval is what varies.",
+            "tags": ["confidence", "inference", "evo"]
+        },
+        {
+            "front": "What does a confidence level NOT cover?",
+            "back": "Bias, bad data, leakage, or a wrong model. Confidence quantifies sampling noise only. You can have a very narrow interval around a completely wrong number.",
+            "tags": ["confidence", "bias", "evo"]
+        },
+        {
+            "front": "Why can you not simply demand both a higher confidence level and a narrower interval?",
+            "back": "Raising the confidence level widens the interval when the sample is fixed. To get more precision at the same confidence you need a larger sample or less variance in the data, not a different number in the formula.",
+            "tags": ["confidence", "sample size", "evo"]
+        },
+        {
+            "front": "Describe a work method for choosing a confidence level in a given problem domain.",
+            "back": "Name the decision, describe the cost of a false positive, describe the cost of a false negative, set the level from the asymmetry, write the choice down with its reason, and re-examine it when the context changes. Medical and financial work usually justifies 99 percent, operational work 95 percent, exploratory work 90 percent.",
+            "tags": ["confidence", "work methods", "evo"]
+        },
+        {
+            "front": "What turns a set of scenarios into a decision?",
+            "back": "A planned response attached to each scenario. Best, likely and worst cases with rough probabilities describe uncertainty; adding what you will do in each case produces a decision that survives being wrong.",
+            "tags": ["scenarios", "probability", "evo"]
+        },
+        {
+            "front": "What does a sensitivity check tell a decision-maker?",
+            "back": "Which assumption the forecast actually rests on. By varying one assumption at a time you find the one that moves the outcome most, which is where further estimation effort is worth spending.",
+            "tags": ["sensitivity", "scenarios", "evo"]
+        },
+        {
+            "front": "List the six stages of iterative error elimination.",
+            "back": "Detect, isolate, diagnose, correct, verify, prevent, and then repeat. Verify and prevent are the two stages most often skipped, which is why the same errors return.",
+            "tags": ["error elimination", "process", "evo"]
+        },
+        {
+            "front": "Which two error types survive every automated data-quality check?",
+            "back": "Logic errors, where a formula is syntactically correct but uses the wrong denominator, filter, or join, and interpretation errors, where the numbers are right but the conclusion is wrong. Both require human evaluation.",
+            "tags": ["error types", "error elimination", "evo"]
+        },
+        {
+            "front": "When has a Five Whys analysis gone deep enough?",
+            "back": "When it reaches a cause you can actually change, so that the fix prevents recurrence. Stopping at 'there were too many rows' invites deleting rows; reaching 'the load step has no idempotency check' produces a real fix.",
+            "tags": ["root cause", "five whys", "evo"]
+        },
+        {
+            "front": "How should an error finding be delivered to a project team?",
+            "back": "State the business impact, attribute it to the process rather than a person, bring a proposed fix and a proposed prevention, say what is still uncertain, and agree an owner and a date. How it is delivered decides whether it leads to a solution discussion or to defensiveness.",
+            "tags": ["communication", "competence", "evo"]
+        },
+        {
+            "front": "What condition must hold for ensembling to improve reliability?",
+            "back": "The members must be diverse, so that their errors are uncorrelated. Three identical models trained the same way on the same data make identical mistakes, and averaging identical mistakes changes nothing.",
+            "tags": ["ensembling", "reliability", "evo"]
+        },
+        {
+            "front": "Bagging and boosting target which failure each?",
+            "back": "Bagging reduces variance, stabilising a model that swings between samples, and trains members independently in parallel. Boosting reduces bias, training sequentially so each model focuses on the previous ones' mistakes.",
+            "tags": ["bagging", "boosting", "evo"]
+        },
+        {
+            "front": "Why must error elimination come before boosting?",
+            "back": "Boosting increases the weight of cases the previous models got wrong, and a mislabelled record looks exactly like a hard case. Boosting therefore amplifies erroneous data.",
+            "tags": ["boosting", "error elimination", "evo"]
+        },
+        {
+            "front": "What is stacking, and what does it cost?",
+            "back": "Stacking trains several different model types and then trains a further model to learn how best to combine their predictions. It can beat any single member, but it is complex, easy to leak information between layers, and hard to explain to stakeholders.",
+            "tags": ["stacking", "ensembling", "evo"]
+        },
+        {
+            "front": "How does ensembling apply to data rather than to models?",
+            "back": "By reconciling a figure against an independent source, estimating the same quantity two different ways, checking whether a finding holds across several time windows, or having a second analyst derive the KPI independently. Agreement raises confidence and disagreement locates a problem.",
+            "tags": ["ensembling", "reliability", "evo"]
+        },
+        {
+            "front": "Name three things ensembling does not fix.",
+            "back": "Biased data, since every member inherits the same skew; a wrong target, since predicting the wrong thing accurately is still wrong; and explainability, which it actively reduces. The last is an ethical cost wherever a decision must be justified to the person it affects.",
+            "tags": ["ensembling", "limits", "ethics", "evo"]
+        },
+        {
+            "front": "Why do ETL and version control belong in an evaluation course?",
+            "back": "Because most faulty results originate upstream, in how data was extracted, transformed and loaded, or in an undocumented change. If you can only evaluate the final number, you can detect that something is wrong but not what.",
+            "tags": ["etl", "version control", "evo"]
+        },
+        {
+            "front": "Which five properties make a pipeline's output evaluable?",
+            "back": "Idempotent, traceable through lineage, reproducible, monitored, and documented. Without reproducibility, neither the result nor your evaluation of it can be checked by anyone else.",
+            "tags": ["etl", "reproducibility", "evo"]
+        },
+        {
+            "front": "Why does ELT help an evaluator compared with classic ETL?",
+            "back": "ELT loads raw data first and transforms it in the warehouse, so the raw data is retained and any figure can be re-derived. In classic ETL a transformation error can destroy the very evidence needed to diagnose it.",
+            "tags": ["etl", "elt", "evo"]
+        },
+        {
+            "front": "Why is versioning code alone not enough?",
+            "back": "The same code on different data gives different results. Data must also be versioned, through immutable raw layers, snapshots, slowly changing dimensions, and change logs, so that a past figure stays reproducible.",
+            "tags": ["version control", "data versioning", "evo"]
+        },
+        {
+            "front": "A KPI shifts overnight, the pipeline reported no errors, and every value is valid. What should you check?",
+            "back": "Whether a definition changed. A retention window changing from 12 months to 3 months passes every automated data-quality check. Only version control history and documentation can expose it, and it may have been an intentional change that was simply uncommunicated.",
+            "tags": ["version control", "kpi", "error elimination", "evo"]
+        },
+        {
+            "front": "What four steps structure almost any evaluation answer?",
+            "back": "State what is being claimed, assess the evidence, express the uncertainty, and recommend an action. Evaluation exists to support a decision, so an answer that ends at a verdict is incomplete.",
+            "tags": ["assignment strategy", "structure", "evo"]
+        },
+        {
+            "front": "How is Evaluation of Outcomes assessed, and what does that change?",
+            "back": "A one-week individual Course Assignment graded Pass or Fail, with no timed exam. Shown reasoning matters more than a fast verdict, there is time to be thorough so omitting an obvious check reads as an oversight, and the analysis and writing must be your own.",
+            "tags": ["assessment", "assignment strategy", "evo"]
         }
     ]
 }
@@ -64200,6 +65627,134 @@ CURATED_EXAM_QUESTION_BANK = {
                 "Spreadsheet pattern: `=(A2-MIN($A$2:$A$13))/(MAX($A$2:$A$13)-MIN($A$2:$A$13))`."
             )
         }
+    ],
+    "FI1BBEO10": [
+        {
+            "type": "knowledge",
+            "source": "core_curated",
+            "question": "Explain what it means to say that a Key Performance Indicator is a heuristic in decision making.",
+            "answer": "A heuristic is a practical rule that produces a good-enough judgement quickly without requiring complete information. A KPI works the same way: it is a measurable proxy for something the organisation actually cares about, chosen because it is timely and cheap enough to track continuously. That makes it useful for fast decisions and also means it can be wrong. The consequence for this course is that evaluating an outcome includes evaluating the KPI itself, and its thresholds, rather than treating the KPI as the truth."
+        },
+        {
+            "type": "knowledge",
+            "source": "core_curated",
+            "question": "Distinguish between a goal, a KPI, a metric, a target and a threshold.",
+            "answer": "The goal is the outcome the organisation wants, such as reducing churn. The KPI is the chosen indicator that tracks progress toward it, such as monthly churn rate. A metric is any measurement being collected, whether it is key or not. The target is the value the KPI should reach, and the threshold is the value that triggers investigation. Every KPI is a metric, but a metric only becomes a KPI when it is tied to a decision."
+        },
+        {
+            "type": "knowledge",
+            "source": "core_curated",
+            "question": "Why does an evaluation of a sampled result depend on how the sample was drawn?",
+            "answer": "Because the sampling method limits what may legitimately be concluded, and no amount of correct arithmetic repairs a badly drawn sample. Random and stratified sampling support inference about the population; convenience and self-selected sampling do not, because the sample systematically differs from the population. Two failures are worth naming explicitly: selection bias, where the sample differs from the population, and survivorship bias, where only the cases that survived are observed. A churn analysis based on current customers suffers from both, because everyone who already left is missing."
+        },
+        {
+            "type": "knowledge",
+            "source": "core_curated",
+            "question": "Explain the five-point summary and the two derived quantities that do most of the evaluation work.",
+            "answer": "The five-point summary describes a distribution using the minimum, the first quartile, the median, the third quartile and the maximum. The interquartile range, Q3 minus Q1, is the spread of the middle half of the data and is resistant to outliers. The outlier fences, at Q1 minus 1.5 times the IQR and Q3 plus 1.5 times the IQR, flag values for investigation. Together these give a fast, outlier-resistant read of centre, spread, symmetry and tails, which a mean on its own cannot provide."
+        },
+        {
+            "type": "knowledge",
+            "source": "core_curated",
+            "question": "State what a 95 percent confidence level claims, and what it does not claim.",
+            "answer": "It is a statement about the procedure rather than about the specific interval: if the sampling and interval-building process were repeated many times, about 95 percent of the intervals produced would contain the true population value. It does not mean there is a 95 percent chance that the true value lies inside this particular interval, because the true value is fixed and the interval is what varies between samples. More importantly for evaluation, it covers sampling variation only. It says nothing about bias, poor data quality, leakage, or a wrong model, so a very narrow interval can sit around a completely wrong number."
+        },
+        {
+            "type": "knowledge",
+            "source": "core_curated",
+            "question": "Describe the iterative error elimination cycle and explain why the word iterative matters.",
+            "answer": "The cycle is detect, isolate, diagnose, correct, verify, prevent, and then repeat. It is iterative because a single pass only finds the errors you thought to look for, while repeated passes surface errors that were only visible once the first layer was cleared. The two stages most often skipped are verify, which is how a fix that did not work gets reported as done, and prevent, which is how the same error returns the following quarter."
+        },
+        {
+            "type": "knowledge",
+            "source": "core_curated",
+            "question": "Explain bagging, boosting and stacking, and say which model failure each addresses.",
+            "answer": "Bagging, or bootstrap aggregating, draws several random samples with replacement, trains one model on each, and combines by averaging or majority vote. It reduces variance, so it stabilises a model whose results swing between samples, and its members can be trained in parallel. Boosting trains models in sequence, each focusing on the cases the previous ones predicted badly, and combines them as a weighted sum. It reduces bias, so it strengthens a model that is systematically too simple. Stacking trains several different model types and then trains a further model to learn how best to combine their predictions, exploiting complementary strengths. Ensembling only helps when the members are diverse, because it works by cancelling errors that are not correlated."
+        },
+        {
+            "type": "knowledge",
+            "source": "core_curated",
+            "question": "Why do ETL systems and version control appear as learning outcomes in a course about evaluating outcomes?",
+            "answer": "Because most faulty results are not created in the analysis step. They are created upstream, in how data was extracted, transformed and loaded, or by an undocumented change that somebody made. If an analyst can only evaluate the final number, they can detect that something is wrong but not what caused it. ETL knowledge lets an evaluator trace a suspicious figure back to the stage that produced it, and version control lets them identify the exact change that introduced an error, read why it was made, and revert it. Without both, root-cause analysis becomes guesswork."
+        },
+        {
+            "type": "skills",
+            "source": "core_curated",
+            "question": "A support desk reports that average handling time fell from 7.4 to 5.6 minutes against a six-minute target, and calls this a success. Evaluate the claim.",
+            "answer": "First I would state the claim: support efficiency is said to have improved, evidenced by handling time falling below target. Then I would assess the evidence. Handling time did fall, but it is a proxy for efficient service and not for good service, so I would check its guard signals. If repeat contact rate rose from 11 to 19 percent and satisfaction fell, the same pattern is equally consistent with calls being closed prematurely. On uncertainty, the drop is large relative to normal quarterly variation so the movement is probably real, but the interpretation is what remains uncertain. My recommendation would be not to report this as a success, to pair handling time with repeat contact rate and evaluate them together, and to raise it with the team as a measurement problem rather than a performance accusation, since staff responded rationally to the KPI they were given."
+        },
+        {
+            "type": "skills",
+            "source": "core_curated",
+            "question": "Response times in minutes have this five-point summary: minimum 2, Q1 6, median 8, Q3 11, maximum 96. What do you conclude, and what would you do next?",
+            "answer": "The median of 8 minutes means half of all cases are handled faster than that. The interquartile range is 5 minutes, so the typical case sits in a fairly narrow band, and the middle half is roughly balanced with a slight right lean. The upper fence is Q3 plus 1.5 times the IQR, which is 18.5 minutes, so the maximum of 96 lies far beyond it. The conclusion is that the typical experience is good and stable but there is a long tail of extreme cases, and reporting only the mean would blend these into an experience nobody actually has. The next step is to investigate the tail rather than remove it, because those cases may be a broken routing rule, a data-entry error, or a genuinely difficult case type, and each requires a different response."
+        },
+        {
+            "type": "skills",
+            "source": "core_curated",
+            "question": "A regression model reports an R squared of 0.93 on customer behaviour data and is presented as highly reliable. How do you appraise it?",
+            "answer": "An R squared that high on human behaviour data is implausible and should be treated as a warning rather than as evidence of quality. The two explanations to check first are leakage, where a predictor contains information derived from the outcome or unavailable at prediction time, and overfitting, where the model has memorised the sample including its noise. The decisive test is evaluation on data the model has not seen: if performance collapses on a hold-out set, the model memorised rather than learned. I would also check that the residuals look random, since a pattern in them indicates the model shape is wrong, and confirm that the effect size is large enough to matter in business terms rather than merely being statistically detectable."
+        },
+        {
+            "type": "skills",
+            "source": "core_curated",
+            "question": "Turn the single forecast 'sales will be 4.2 million next quarter' into a decision-ready statement.",
+            "answer": "I would attach a confidence level and a plausible range, for example a best estimate of 4.2 million with values between 3.6 and 4.8 million consistent with the data at a 95 percent confidence level. I would then express it as multiple probability outcomes with a planned response for each: a best case of 4.8 million at roughly 20 percent, where hiring is brought forward and extra stock secured; a likely case of 4.2 million at roughly 60 percent, where the current plan proceeds; and a worst case of 3.6 million at roughly 20 percent, where discretionary spend is deferred and pricing reviewed. The planned-response column is what turns a description of uncertainty into a decision that survives being wrong. I would add a sensitivity check to show which assumption the forecast rests on, and state that the interval covers sampling variation only, not bias in how the data was collected."
+        },
+        {
+            "type": "skills",
+            "source": "core_curated",
+            "question": "A regional dashboard shows a 300 percent jump for one region. Apply a root cause analysis and state the correction and the prevention.",
+            "answer": "Using the Five Whys: revenue for the region is triple the previous month because the file contains roughly three times as many rows, because the same source file was loaded three times, because the nightly load job retried after a timeout, and because each retry appended rather than replaced since the load step has no idempotency check or unique constraint on the natural key. The root cause is that the pipeline appends without a duplicate guard. The correction is to remove the duplicated rows for that month. The prevention is to add a unique constraint on the natural key, make the load step idempotent, and add a row-count check that alerts when a daily load deviates sharply from its recent range. Stopping at the second why would have produced only the symptom fix of deleting rows, which would leave the error free to recur."
+        },
+        {
+            "type": "skills",
+            "source": "core_curated",
+            "question": "Explain how you would set a confidence level for a clinical process change, and why the default of 95 percent may not be appropriate.",
+            "answer": "I would use a documented work method rather than a default. First, name the decision: whether to adopt a new triage process across all departments. Second, describe the cost of a false positive: rolling out a process that does not work consumes retraining time and disrupts a functioning clinical workflow, which carries patient risk. Third, describe the cost of a false negative: patients continue waiting longer than necessary. Fourth, set the level from the asymmetry, and since both errors carry patient impact and the change is disruptive to reverse, 99 percent is more appropriate than 95. Fifth, write the choice down with its reason so a reviewer can challenge the reasoning rather than the number. Finally, state separately that the confidence level covers sampling variation only, so a pilot run in one department with unusually experienced staff carries a bias the interval cannot capture."
+        },
+        {
+            "type": "case_study",
+            "source": "core_curated",
+            "question": "A colleague recommends rolling out a new checkout page based on 180 sessions from one Tuesday, a 64 NOK difference in mean order value, a standard deviation of 410 NOK, a p-value of 0.04, and a supporting model with R squared of 0.91. Appraise the recommendation.",
+            "answer": "The claim is that the new page raises average order value by 64 NOK and that this justifies a full rollout. Assessing the evidence: the sample is a convenience sample in time, since 180 sessions from a single Tuesday cannot capture weekly or seasonal variation, and Tuesday shoppers may differ from weekend shoppers. The spread is very large, so a 64 NOK difference against a 410 NOK standard deviation is small relative to ordinary session-to-session variation. The p-value of 0.04 is just past the conventional line, making it weak and fragile evidence rather than strong evidence. The R squared of 0.91 on behavioural data is implausibly high and is the first thing I would investigate for leakage. On uncertainty, given the spread and the single-day sample the plausible range for the true effect comfortably includes zero as well as a much larger effect, so the honest statement is that the direction is encouraging and the magnitude is unknown. My recommendation is not to roll out to all users: extend the test across at least two full weeks, re-run with a hold-out evaluation, and audit the supporting model for leakage before the R squared is quoted anywhere. If a decision is needed sooner, a limited rollout to a defined percentage with continued measurement is a defensible middle path."
+        },
+        {
+            "type": "case_study",
+            "source": "core_curated",
+            "question": "A customer retention KPI drops from 82 to 61 percent overnight. The pipeline reported no failures and every value in the data is valid. Describe how you would investigate and what you would do with the finding.",
+            "answer": "I would first confirm the drop exists in the data rather than in the dashboard's filters by querying the analysis layer directly. Then I would check the load audit log for that night and compare row counts against the previous run to rule out a partial or duplicate load. Next I would look at the code changes deployed that day in version control, read the diff and the commit message, and re-run the previous version against the same data snapshot. If the KPI returns to 82 percent, the cause is in the change. In this kind of case the cause is very often a definition change, for example a retention window moving from 12 months to 3 months, which passes every automated data-quality check because the pipeline never failed and no value is invalid. Only version control history and documentation can expose it. Before raising it as an error I would establish whether the change was intentional but uncommunicated, because that distinction is the difference between facilitating a solution discussion and starting an argument. The prevention would be a test asserting the definition, plus a change-log entry so a redefinition is announced rather than discovered."
+        },
+        {
+            "type": "case_study",
+            "source": "core_curated",
+            "question": "A team proposes replacing a single decision tree with a stacked ensemble because it scores higher on accuracy. The model decides which loan applications are declined. Evaluate the proposal.",
+            "answer": "I would start by acknowledging what the proposal gets right: stacking combines different model types and can beat any single member when those members are genuinely diverse, so a real accuracy gain is plausible. Then I would test the evidence. Was the comparison made on data neither model has seen, and is the gain larger than the variation between reruns? Is overall accuracy the right measure, or should accuracy per subgroup be checked, since a model can be more accurate overall while performing worse for one group? Are there known label errors in the training data, since any boosting inside the ensemble will amplify them? The decisive issue here is explainability. A single decision tree can be shown to an applicant; a stacked ensemble usually cannot. In a lending decision the applicant has a legitimate interest in an explanation, so a more accurate model that cannot be explained may be the wrong choice. My recommendation would be to require subgroup accuracy alongside overall accuracy, to quantify the gain on a proper hold-out set, and to weigh that gain explicitly against the loss of explainability and the added maintenance cost, proposing the ensemble only if the gain is substantial and an explanation mechanism can be provided."
+        },
+        {
+            "type": "case_study",
+            "source": "core_curated",
+            "question": "Two teams read the same analysis output differently and the disagreement has stalled a decision. How would you structure the discussion?",
+            "answer": "I would first separate the kinds of disagreement, because they need different treatment. A disagreement about the numbers is settled by reproducing the analysis, which requires a stated data version and a reproducible pipeline. A disagreement about definitions, such as what counts as an active user, is settled by writing the definition down and applying it consistently, and it is one of the most common causes of a disputed evaluation. A disagreement about the level of confidence required is settled by naming the decision and the cost of each type of error, then setting the level from that asymmetry. Only a genuine disagreement about interpretation remains, and there I would present the evidence as scenarios with confidence levels rather than as a single verdict, so both readings can be stated with what each would require to be true. Throughout, I would keep the discussion attached to the process rather than to individuals, bring a proposed route forward rather than only the problem, and agree who owns the next step and by when. This is what the competence outcome means by delivering insights and facilitating solution discussions."
+        },
+        {
+            "type": "case_study",
+            "source": "core_curated",
+            "question": "An analyst improves a model's reported accuracy by removing all values flagged as outliers. Evaluate this decision.",
+            "answer": "This is not an improvement to the model; it is an improvement to the reported number, and the two are different. A flagged outlier is a request for investigation, not a licence to delete. Each flagged value may be a genuine extreme case that the model must handle, a data-entry error that should be corrected upstream, or evidence of a broken process that is itself the finding, and the three demand entirely different responses. Deleting them without investigation discards exactly the cases most likely to carry information, and it makes the model look reliable on a population that no longer exists. There is also a method problem: if the flags came from z-scores on skewed data, ordinary values were mislabelled as extreme, and the IQR fences would have been the correct tool. Finally there is the ethical dimension, since choosing the data treatment that flatters the desired conclusion is selective evaluation, and the competence outcome requires an ethical approach to solving data problems using statistical inferences. The alternative I would propose is to investigate the flagged values, classify them by cause, correct genuine errors at source, retain genuine extremes, and report model performance both with and without them so the reader can see the effect."
+        },
+        {
+            "type": "general",
+            "source": "core_curated",
+            "question": "What four-step structure produces a well-organised evaluation answer, and why does the final step matter?",
+            "answer": "State what is being claimed, restating the result and the decision it is meant to support; assess the evidence, covering sample, variance, spread, method fit and data quality; express the uncertainty, giving a confidence level, scenarios, and what would change the conclusion; and recommend an action, whether that is accept, accept with conditions, investigate further, or reject. The final step matters because evaluation exists to support a decision. An answer that ends at a verdict leaves the reader with a judgement they cannot act on, and the competence outcome asks explicitly for critique accompanied by suggested alternatives."
+        },
+        {
+            "type": "general",
+            "source": "core_curated",
+            "question": "How does the Course Assignment format for this course change how you should prepare and write?",
+            "answer": "Evaluation of Outcomes is assessed by a one-week individual Course Assignment graded Pass or Fail, with no timed written exam. That changes three things. Shown reasoning counts more than the final verdict, so a well-argued account of why a result cannot yet be accepted, together with exactly what you would check, is stronger than an unsupported approval. There is time to be thorough, so omitting an obvious check such as spread, sample size, or hold-out evaluation reads as an oversight rather than as time pressure. And it is individual work: the skills outcome explicitly rewards finding relevant information and material, so research is expected, but the analysis and the writing must be your own."
+        }
     ]
 }
 
@@ -64286,6 +65841,108 @@ CURATED_PRACTICE_QUESTION_BANK = {
             "type": "general",
             "question": "Why should an analyst compare several decision criteria instead of relying on only one rule in uncertain business situations?",
             "answer": "Different criteria reflect different assumptions about uncertainty, probabilities, and risk tolerance. Comparing them helps the analyst explain tradeoffs clearly and show whether a recommendation is robust or sensitive to managerial preferences."
+        }
+    ],
+    "FI1BBEO10": [
+        {
+            "type": "knowledge",
+            "question": "Why does evaluating an outcome include evaluating the KPI itself?",
+            "answer": "Because a KPI is only a proxy for the goal. If it repeatedly triggers actions that do not improve the goal, the KPI is the thing that needs fixing rather than the team's behaviour. Evaluation should therefore appraise the indicator and its thresholds, not only the value it reported."
+        },
+        {
+            "type": "knowledge",
+            "question": "What problem do RAG thresholds solve, and what risk do they introduce?",
+            "answer": "They convert a continuous number into a small set of standing decisions, which is exactly what a heuristic is for. The risk is that the thresholds were chosen by people, are rarely reviewed, and may fire on ordinary seasonal noise. A team that has learned to ignore its alerts effectively has no KPI at all."
+        },
+        {
+            "type": "knowledge",
+            "question": "Why can a very large sample still mislead an evaluation?",
+            "answer": "For two reasons. A large convenience sample is still biased, because size does not correct for how the sample was drawn. And with a very large sample a difference can be statistically detectable while being far too small to matter commercially, so a complete evaluation reports both whether a difference exists and whether it is big enough to act on."
+        },
+        {
+            "type": "knowledge",
+            "question": "When should you report the median rather than the mean, and what is the strongest option?",
+            "answer": "Use the median when the distribution is skewed or genuine outliers are present, and the mean when the distribution is roughly symmetric or totals matter. The strongest option is usually to report both with a sentence explaining why they differ, since a mean far above the median indicates a long right tail."
+        },
+        {
+            "type": "knowledge",
+            "question": "What is leakage in a predictive model, and how does it show up in an evaluation?",
+            "answer": "Leakage means a predictor contains information derived from the outcome, or information that would not be available at prediction time. It shows up as an implausibly strong result, such as a very high R squared on noisy behavioural data, and it produces a model that performs superbly in testing and is worth nothing in use."
+        },
+        {
+            "type": "knowledge",
+            "question": "Name three factors that determine how wide a confidence interval is.",
+            "answer": "Sample size, which narrows the interval as it grows; the variance in the data, which widens it; and the chosen confidence level, where 99 percent is wider than 95 percent, which is wider than 90 percent. The trade-off is that you cannot raise the confidence level and narrow the interval at the same time without more data or less variance."
+        },
+        {
+            "type": "knowledge",
+            "question": "Which two stages of the error elimination cycle are most often skipped, and what happens as a result?",
+            "answer": "Verify and prevent. Skipping verification is how a fix that did not actually work gets reported as done. Skipping prevention is how the same error returns the following quarter, because nothing was added to catch a repeat."
+        },
+        {
+            "type": "knowledge",
+            "question": "What does it mean for a data pipeline to be idempotent, and why does an evaluator care?",
+            "answer": "It means running the same load twice produces the same result rather than duplicating rows. An evaluator cares because a non-idempotent load that retried after a timeout is one of the most common causes of an impossible jump in a KPI, and idempotency is the prevention for it."
+        },
+        {
+            "type": "skills",
+            "question": "A KPI improved by 8 percent this month. What is the first question to ask before reporting it as a success?",
+            "answer": "Whether an 8 percent move is larger than the normal month-to-month variation in that KPI. If ordinary variation is of the same size, the move is not evidence of anything yet. The second question is whether the goal moved in the same direction, since a KPI improving while the goal does not is a sign the KPI is misaligned."
+        },
+        {
+            "type": "skills",
+            "question": "You are given a mean of 3.0 days with a standard deviation of 4.1 days, and an alternative process with a mean of 3.4 days and a standard deviation of 0.5 days. Which do you recommend?",
+            "answer": "The second one. Although its average is slightly worse, its spread is dramatically lower, which makes it far more dependable. Customers experience the unpredictable delivery rather than the average one, so a slightly worse mean can be the better outcome when variance falls. Stating that the reason is spread rather than average is the point of the answer."
+        },
+        {
+            "type": "skills",
+            "question": "How would you decide between z-scores and IQR fences for flagging unusual values?",
+            "answer": "By checking the shape of the distribution. Z-scores assume a roughly bell-shaped distribution, so they work well on symmetric data. On strongly skewed data such as income or response times they mislabel ordinary values as extreme, and there the IQR fences are the better tool because they are resistant to outliers and make no distributional assumption."
+        },
+        {
+            "type": "skills",
+            "question": "A result is reported as statistically significant with a p-value of 0.03. What three follow-up questions would you ask?",
+            "answer": "Was the direction predicted in advance, since deciding afterwards which direction counted as success manufactures positive results? How many tests were run, since reporting only the significant one out of many inflates false positives? And is the effect large enough to matter in business terms, since significance and importance are different questions?"
+        },
+        {
+            "type": "skills",
+            "question": "Your ensemble is not performing better than its best single member. What would you check first?",
+            "answer": "Member diversity. Ensembling works by cancelling errors that are not correlated, so if the members were trained the same way on the same data they make the same mistakes and combining them changes nothing. I would also check whether the problem is bias rather than variance, since bagging will not help a model that is systematically too simple."
+        },
+        {
+            "type": "skills",
+            "question": "How would you demonstrate reproducibility in an evaluation write-up?",
+            "answer": "By recording which dataset and which snapshot or date range was used, which tools and methods were applied and why, the confidence level chosen and the reason for it, and the limitations of the evidence. A reviewer should be able to re-run the work and obtain the same numbers, because without that neither the result nor the evaluation of it can be checked."
+        },
+        {
+            "type": "case_study",
+            "question": "A sales forecast rests on three assumptions. Varying conversion rate moves the forecast by 1.0 million, average order value by 0.4 million, and return rate by under 0.1 million. What do you tell the decision-maker?",
+            "answer": "That the forecast rests almost entirely on the conversion rate assumption, so effort spent improving that estimate is worth more than refining either of the others. This is the value of a sensitivity check: it identifies the dominant assumption and directs further work to where it changes the answer."
+        },
+        {
+            "type": "case_study",
+            "question": "A team wants to raise a KPI's confidence level from 95 to 99 percent while keeping the same interval width, using the data they already have. How do you respond?",
+            "answer": "That this is not possible without changing something else. With a fixed sample, raising the confidence level necessarily widens the interval, because more certainty is bought by covering a wider range of values. To keep the width at a higher confidence level they need either a larger sample or lower variance in the underlying process. I would then ask which decision the number supports, so the level can be justified from the cost of being wrong rather than chosen by preference."
+        },
+        {
+            "type": "case_study",
+            "question": "You discover that a colleague's published figure is inflated by a duplicate data load. How do you raise it?",
+            "answer": "I would lead with the business impact and the protective action: the figure is inflated by a duplicate load, so those totals should not be used until corrected. I would attribute it to the process rather than to the person, since the load job lacked a duplicate guard. I would bring both a fix, correcting the affected rows, and a prevention, adding a unique constraint and a row-count check. I would state what is still uncertain, and agree who owns the fix and by when. Delivering it this way is what turns a finding into a solution discussion rather than an accusation."
+        },
+        {
+            "type": "case_study",
+            "question": "A model is accurate overall but noticeably less accurate for one customer group. The team argues that overall accuracy is what the business asked for. How do you evaluate this?",
+            "answer": "Overall accuracy is a single unguarded KPI, and this is exactly the pattern a guard KPI exists to catch. Accuracy per subgroup should be reported alongside it, because a model that is accurate on average while failing one group produces an outcome the business has not actually evaluated. The competence outcome requires an ethical approach and the suggestion of alternatives, so I would propose subgroup reporting as a standing part of the evaluation, quantify the size of the gap, and set out what would need to change for the model to be acceptable rather than simply objecting to it."
+        },
+        {
+            "type": "general",
+            "question": "What distinguishes this course from the Semester 1 courses that came before it?",
+            "answer": "Semester 1 taught how to produce an analysis: cleaning data, running the right tool, building a KPI, stating a result. Evaluation of Outcomes teaches how to judge one: whether the cleaned data is still trustworthy, whether that was the right tool, whether the KPI tracks what the business cares about, and how confident the result actually is. It is the difference between doing the analysis and appraising it."
+        },
+        {
+            "type": "general",
+            "question": "Where does the ethical competence outcome show up in day-to-day evaluation work?",
+            "answer": "In the choices that shape a result: which sample is used, which method is chosen, whether flagged outliers are investigated or quietly deleted, whether a fragile result is reported as fragile, and whether subgroup effects are examined. Reporting a result you know is unstable without saying so is an ethical failure, not only a technical one. The outcome also requires suggesting alternatives, so identifying a problem without proposing a better route is only half the answer."
         }
     ]
 }
@@ -76079,7 +77736,13 @@ elif page == "Learn & Practice":
     
     with tab1:
         st.subheader(f"📚 {course['name']}")
-        st.markdown(f"**{course['credits']} credits** | {course['weeks']} weeks | {course['hours']} hours | {course['semester']}")
+        st.markdown(f"**{course['credits']} credits** | {course['weeks']} weeks | {course['hours']} hours | Semester {course['semester_number']}")
+        if course.get("assessment"):
+            _assessment_bits = [course["assessment"]]
+            for _field in ("grading_scale", "assessment_grouping", "assessment_duration"):
+                if course.get(_field):
+                    _assessment_bits.append(course[_field])
+            st.caption("📝 Assessment: " + " · ".join(_assessment_bits))
         st.markdown(f"*{course['description']}*")
         
         st.markdown("---")
