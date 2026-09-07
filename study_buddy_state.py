@@ -98,3 +98,65 @@ def save_persisted_state(session_state):
         STATE_FILE.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
     except Exception:
         pass
+
+
+SEMESTER_BY_SHORT_CODE = {
+    "IC": 1,
+    "DAF": 1,
+    "SPF": 1,
+    "DDM": 1,
+    "STT": 1,
+    "SP1": 1,
+    "EVO": 2,
+    "DVS": 2,
+    "ARP": 2,
+    "EP1": 2,
+}
+
+
+def get_active_study_stage(today=None):
+    """Return the stage of STUDY_PATH_JAN2026 the student is currently in.
+
+    Falls back to the next upcoming stage when today lands in a gap, and to the
+    final stage once the study path is finished. Returns
+    ``(short_code, course_name, start_date, end_date)`` or ``None`` when the
+    study path is empty.
+    """
+    from datetime import date, datetime
+
+    if today is None:
+        today = date.today()
+    elif isinstance(today, datetime):
+        today = today.date()
+    elif isinstance(today, str):
+        today = datetime.strptime(today, "%Y-%m-%d").date()
+
+    stages = []
+    for short_code, name, start_s, end_s in STUDY_PATH_JAN2026:
+        try:
+            start = datetime.strptime(start_s, "%Y-%m-%d").date()
+            end = datetime.strptime(end_s, "%Y-%m-%d").date()
+        except (TypeError, ValueError):
+            continue
+        stages.append((short_code, name, start, end))
+
+    if not stages:
+        return None
+
+    for stage in stages:
+        if stage[2] <= today <= stage[3]:
+            return stage
+
+    for stage in stages:
+        if today < stage[2]:
+            return stage
+
+    return stages[-1]
+
+
+def get_active_semester_number(today=None):
+    """Semester number (1-4) the student is currently working through."""
+    stage = get_active_study_stage(today)
+    if not stage:
+        return 1
+    return SEMESTER_BY_SHORT_CODE.get(stage[0], 1)

@@ -46,7 +46,10 @@ def html(body, height=None, width=None, scrolling=None, key=None):
 from study_buddy_state import (
     COURSE_PROGRESSION_MAP,
     PROGRAM_DEADLINES,
+    SEMESTER_BY_SHORT_CODE,
     STUDY_PATH_JAN2026,
+    get_active_semester_number,
+    get_active_study_stage,
     load_persisted_state,
     save_persisted_state,
 )
@@ -8388,7 +8391,7 @@ This tells the full story: significant, meaningful, and practical!
         ]
     },
     "Data Structures Basics": {
-        "course": "Data Structures",
+        "course": "Data Driven Decision-Making",
         "description": "Learn the basic ideas behind arrays, indexing, and simple structured storage.",
         "lessons": [
             {
@@ -62381,6 +62384,7 @@ courses_data = [
         "type": "Core Course", 
         "credits": 5, 
         "semester": "2025 Spring",
+        "semester_number": 1,
         "weeks": 3,
         "hours": 126,
         "description": "This course delivers an introductory overview of Data Analysis. It provides the foundational material required to build a strong theoretical understanding of why data analysis is required in industry and how using analytics tools can shape decision making in the real world.",
@@ -62412,6 +62416,7 @@ courses_data = [
         "type": "Core Course", 
         "credits": 5, 
         "semester": "2025 Spring",
+        "semester_number": 1,
         "weeks": 3,
         "hours": 126,
         "description": "This course teaches a foundation level introduction to the spreadsheet work environment, specifically Microsoft Excel. Learn to gather, clean, manage, and organize data. Also covers Google Sheets for collaborative work.",
@@ -62442,6 +62447,7 @@ courses_data = [
         "type": "Core Course", 
         "credits": 7.5, 
         "semester": "2025 Spring",
+        "semester_number": 1,
         "weeks": 4,
         "hours": 168,
         "description": "This course establishes the core concepts of decision-making techniques applied to relevant data models. It prepares candidates to use data for informed decisions, act proactively on predictions, explore real-world industry use cases, and apply decision-making techniques and criteria through the full data lifecycle.",
@@ -62505,6 +62511,7 @@ courses_data = [
         "type": "Core Course", 
         "credits": 5, 
         "semester": "2025 Spring",
+        "semester_number": 1,
         "weeks": 3,
         "hours": 126,
         "description": "This course provides candidates with the knowledge of using integrated spreadsheet tools and introductory statistical modelling software. Candidates apply organized datasets using the decision-making metrics learned, develop stronger technical skills, and use built-in spreadsheet tools and industry-standard practices as a starting point for creating bespoke solutions to contextualized real-world problems. The course builds directly on the competence gained from Spreadsheet Fundamentals and prepares candidates to use statistical tools to analyse data further, extract heuristics, improve data quality, and reduce the impact of erroneous data points on the rest of the model.",
@@ -62563,6 +62570,7 @@ courses_data = [
         "type": "Core Course", 
         "credits": 7.5, 
         "semester": "2025 Spring",
+        "semester_number": 1,
         "weeks": 4,
         "hours": 168,
         "description": "Apply first semester knowledge to a practical data analysis project. Demonstrate understanding of data fundamentals, spreadsheets, and decision-making.",
@@ -62591,6 +62599,7 @@ courses_data = [
         "type": "Core Course", 
         "credits": 10, 
         "semester": "2025 Fall",
+        "semester_number": 2,
         "weeks": 8,
         "hours": 336,
         "description": "Learn to review, assess, and appraise the results of analytical models. Covers statistical inferences, confidence levels, and iterative error elimination.",
@@ -62622,6 +62631,7 @@ courses_data = [
         "type": "Core Course", 
         "credits": 7.5, 
         "semester": "2025 Fall",
+        "semester_number": 2,
         "weeks": 5,
         "hours": 210,
         "description": "Learn visualization and graphing techniques to represent data using graphical illustrations. Create intuitive graphs for professional settings and presentations.",
@@ -62651,6 +62661,7 @@ courses_data = [
         "type": "Core Course", 
         "credits": 5, 
         "semester": "2025 Fall",
+        "semester_number": 2,
         "weeks": 3,
         "hours": 126,
         "description": "Learn conclusive report writing methodologies to communicate results clearly and concisely. Cover technical vs non-technical reporting.",
@@ -62679,6 +62690,7 @@ courses_data = [
         "type": "Core Course", 
         "credits": 7.5, 
         "semester": "2025 Fall",
+        "semester_number": 2,
         "weeks": 6,
         "hours": 252,
         "description": "Complete a comprehensive exam project demonstrating first-year competencies in data analysis, visualization, and reporting.",
@@ -62706,6 +62718,7 @@ courses_data = [
         "type": "Core Course", 
         "credits": 7.5, 
         "semester": "2026 Spring",
+        "semester_number": 3,
         "weeks": 4,
         "hours": 168,
         "description": "Learn core concepts of databases, SQL language, and cloud-based data services. Cover ETL practices, data warehouses, and on-premises vs cloud databases.",
@@ -62735,6 +62748,7 @@ courses_data = [
         "type": "Core Course", 
         "credits": 10, 
         "semester": "2026 Spring",
+        "semester_number": 3,
         "weeks": 6,
         "hours": 252,
         "description": "Introduction to programming using Python 3.x. Learn data types, operators, collections, objects, file I/O, libraries, and APIs. Use Jupyter Notebook for documentation.",
@@ -62765,6 +62779,7 @@ courses_data = [
         "type": "Core Course", 
         "credits": 5, 
         "semester": "2026 Spring",
+        "semester_number": 3,
         "weeks": 3,
         "hours": 126,
         "description": "Apply programming skills to automate and enhance data analysis workflows. Use pandas, numpy, and create reproducible analysis pipelines.",
@@ -62794,6 +62809,7 @@ courses_data = [
         "type": "Core Course", 
         "credits": 7.5, 
         "semester": "2026 Spring",
+        "semester_number": 3,
         "weeks": 4,
         "hours": 168,
         "description": "Apply second-year skills including databases, programming, and programmatic analysis to a comprehensive technical project.",
@@ -62821,6 +62837,7 @@ courses_data = [
         "type": "Core Course", 
         "credits": 7.5, 
         "semester": "2026 Fall",
+        "semester_number": 4,
         "weeks": 5,
         "hours": 210,
         "description": "Learn industry-standard tools used by professional data analysts including Business Intelligence tools, ETL processes, and data warehousing.",
@@ -62850,6 +62867,7 @@ courses_data = [
         "type": "Core Course", 
         "credits": 5, 
         "semester": "2026 Fall",
+        "semester_number": 4,
         "weeks": 4,
         "hours": 168,
         "description": "Develop critical thinking skills for evaluating data and analysis quality. Cover data quality, bias, source credibility, and ethical data practices.",
@@ -62879,6 +62897,7 @@ courses_data = [
         "type": "Core Course", 
         "credits": 5, 
         "semester": "2026 Fall",
+        "semester_number": 4,
         "weeks": 4,
         "hours": 168,
         "description": "Explore big data technologies and advanced analytical concepts including distributed computing, data lakes, and machine learning basics.",
@@ -62908,6 +62927,7 @@ courses_data = [
         "type": "Core Course", 
         "credits": 5, 
         "semester": "2026 Fall",
+        "semester_number": 4,
         "weeks": 3,
         "hours": 126,
         "description": "Create interactive dashboards for data exploration. Cover dashboard design, universal design principles, real-time data integration, and tools like Tableau/Power BI.",
@@ -62937,6 +62957,7 @@ courses_data = [
         "type": "Core Course", 
         "credits": 7.5, 
         "semester": "2026 Fall",
+        "semester_number": 4,
         "weeks": 6,
         "hours": 126,
         "description": "Complete a final capstone project demonstrating all program competencies. Full data analysis lifecycle from problem identification to stakeholder presentation.",
@@ -64414,6 +64435,84 @@ def build_curated_practice_question(course_code, question_type="general"):
 
     selected_item = random.choice(filtered_bank)
     return f"{selected_item['question']}\n\nANSWER: {selected_item['answer']}"
+
+
+def render_current_semester_focus():
+    """Compact banner showing which semester and course the student is on now.
+
+    Everything is derived from the JAN 2026 progression plan, so the banner
+    keeps pointing at the right semester as the study path advances.
+    """
+    from datetime import date as _focus_date, datetime as _focus_dt
+
+    stage = get_active_study_stage()
+    if not stage:
+        return
+
+    active_code, active_name, active_start, active_end = stage
+    semester_number = get_active_semester_number()
+    today = _focus_date.today()
+
+    semester_courses = [
+        (short_code, name, start_s, end_s)
+        for short_code, name, start_s, end_s in STUDY_PATH_JAN2026
+        if SEMESTER_BY_SHORT_CODE.get(short_code) == semester_number
+    ]
+
+    days_left = (active_end - today).days
+    if days_left < 0:
+        status_text = "Deadline passed"
+        status_colour = "#ff6b6b"
+    elif days_left == 0:
+        status_text = "Due today"
+        status_colour = "#ff6b6b"
+    elif days_left <= 7:
+        status_text = f"{days_left} days left"
+        status_colour = "#ffa94d"
+    else:
+        status_text = f"{days_left} days left"
+        status_colour = "#51cf66"
+
+    rows = []
+    for short_code, name, start_s, end_s in semester_courses:
+        try:
+            end = _focus_dt.strptime(end_s, "%Y-%m-%d").date()
+        except (TypeError, ValueError):
+            continue
+        if short_code == active_code:
+            marker, colour = "▶", "#f0f0f0"
+        elif end < today:
+            marker, colour = "✓", "#7d8a97"
+        else:
+            marker, colour = "·", "#b0b8c1"
+        rows.append(
+            f'<span style="color:{colour}; margin-right:16px; white-space:nowrap;">'
+            f'{marker} <b>{html_escape(short_code)}</b> '
+            f'<span style="font-size:11px;">{html_escape(end.strftime("%d %b"))}</span></span>'
+        )
+
+    st.markdown(
+        f"""
+<div style="background:#0d1e2d; border-left:5px solid {status_colour}; border-radius:8px;
+            padding:10px 16px; margin:4px 0 12px 0;">
+  <div style="display:flex; align-items:center; gap:14px;">
+    <div style="flex:1;">
+      <span style="font-weight:700; color:#f0f0f0;">🎯 Current focus — Semester {semester_number}</span><br>
+      <span style="font-size:12px; color:#bbb;">
+        {html_escape(active_code)} · {html_escape(active_name)}
+        &nbsp;·&nbsp; deadline <b style="color:#ddd;">{active_end.strftime('%a %d %b %Y')}</b>
+      </span>
+    </div>
+    <div style="text-align:right; white-space:nowrap;">
+      <span style="font-size:15px; font-weight:700; color:{status_colour};">{status_text}</span>
+    </div>
+  </div>
+  <div style="margin-top:8px; font-size:12px;">{''.join(rows)}</div>
+</div>
+""",
+        unsafe_allow_html=True,
+    )
+
 
 knowledge_outcomes = [
     "Concepts and theories used in data analysis",
@@ -74920,19 +75019,17 @@ if page == "Overview":
 elif page == "Training Center":
     st.title("🎓 Training Center")
     st.markdown("*Hands-on learning with step-by-step lessons, exercises, and quizzes*")
+
+    render_current_semester_focus()
     st.markdown("---")
     
     # Organize topics by semester and course (with official course codes)
+    # Derived from courses_data so the filter can never drift away from the
+    # official course catalogue. Training modules whose course is not part of
+    # the catalogue (for example the generic tool trainers) fall back to "Other".
     course_to_semester = {
-        "Data Analysis Fundamentals": ("Semester 1", "FI1BBDF05"),
-        "Spreadsheet Fundamentals": ("Semester 1", "FI1BBSF05"),
-        "Statistical Tools": ("Semester 1", "FI1BBST05"),
-        "Programming Fundamentals": ("Semester 1", "FI1BBPF20"),
-        "Databases and Cloud Services": ("Semester 2", "FI1BBDC20"),
-        "Data Visualisation": ("Semester 2", "FI1BBDV15"),
-        "Data Driven Decision-Making": ("Semester 2", "FI1BBDD75"),
-        "Semester Project 1": ("Semester 2", "FI1BBP175"),
-        "Evaluation of Outcomes": ("Semester 3", "FI1BBEO10")
+        course["name"]: (f"Semester {course['semester_number']}", course["code"])
+        for course in courses_data
     }
     
     # Group topics by semester and course
@@ -74959,9 +75056,15 @@ elif page == "Training Center":
         # Semester filter
         available_semesters = sorted(organized_topics.keys())
         semester_options = ["All Semesters"] + available_semesters
-        default_semester = st.session_state.get("tc_semester_filter", "All Semesters")
+        # Default to the semester the student is actually working through, so a
+        # fresh session opens on the current semester rather than everything.
+        active_semester_label = f"Semester {get_active_semester_number()}"
+        fallback_semester = (
+            active_semester_label if active_semester_label in semester_options else "All Semesters"
+        )
+        default_semester = st.session_state.get("tc_semester_filter", fallback_semester)
         if default_semester not in semester_options:
-            default_semester = "All Semesters"
+            default_semester = fallback_semester
         selected_semester = st.selectbox(
             "📅 Semester:",
             options=semester_options,
@@ -75518,7 +75621,8 @@ elif page == "Course Plan":
         "Credits": c["credits"],
         "Weeks": c["weeks"],
         "Hours": c["hours"],
-        "Semester": c["semester"],
+        "Semester": f"Semester {c['semester_number']}",
+        "Catalogue Term": c["semester"],
         "Start Date": (_study_path_by_name.get(c["name"], (None, None, None))[1] or "-"),
         "End Date": (_study_path_by_name.get(c["name"], (None, None, None))[2] or "-"),
         "Assessment Start": (_assessment_by_name.get(c["name"], (None, None))[0] or "-"),
