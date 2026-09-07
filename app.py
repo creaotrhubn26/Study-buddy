@@ -63413,6 +63413,71 @@ These are not abstractions. Each maps onto a section of this lesson and a techni
 
 **The pattern to carry forward:** none of these is defeated by trying harder to be rational. Each is defeated by an **artefact** — a recorded baseline, a stated review date, a dated anchor. That is why this lesson keeps returning to written definitions, version control and documented method. The purpose of those practices is not administrative tidiness; it is that a written record is the only thing a cognitive shortcut cannot quietly rewrite.
 
+#### How KPIs guide decision-making
+
+KPIs are invaluable **signposts** within the complex landscape of business decision-making. They are not just data points but strategic metrics serving specific purposes.
+
+**Data-driven decisions.** KPIs offer empirical data, often in real time, serving as a **counterbalance to the cognitive biases** that commonly infiltrate decision-making. They provide factual ammunition for robust business choices. For example, if a KPI highlights an increasing customer churn rate, that is a concrete impetus to investigate and rectify issues related to customer satisfaction.
+
+**Focus and prioritisation.** Given the sea of information decision-makers must navigate, KPIs act like a **lighthouse**, directing attention to critical performance aspects. They streamline focus, ensuring energy is spent where the impact will be most significant.
+
+**Accountability and objectivity.** KPIs allow performance evaluation that **transcends individual biases and subjectivities**. They set a bar against which outcomes can be objectively measured. Performance bonuses tied to KPIs, for instance, can be an equitable way of incentivising staff, since everyone knows the success criteria.
+
+##### All three claims are conditional, and the conditions are this lesson
+
+Each of the three is true — and true only when specific practices are in place. Stating the condition alongside the claim is what separates an evaluation answer from a summary.
+
+| The claim | It holds when | It fails when |
+|---|---|---|
+| KPIs counterbalance cognitive bias | The KPI is contextualised against history, target, benchmark and normal variation | The KPI is a bare number, in which case it *is* the anchor and it *is* what availability bias feeds on |
+| KPIs direct focus to what matters | The KPI set is balanced across leading and lagging, quantitative and qualitative | The beam points at one part of the business and everything outside it gets darker |
+| KPIs give objective evaluation | The definition is written, versioned, and agreed before the period being measured | The definition can move, in which case the objectivity is procedural theatre |
+
+The first row deserves emphasis, because it is the section's own headline claim and it is the one most easily inverted. **A dashboard number is exactly the kind of evidence availability bias runs on.** It is recent, it is on a screen, and it comes to mind instantly — which is precisely why the previous section warned that a daily number feels more real than last quarter's survey finding, regardless of which is relevant. A KPI counterbalances bias when it is presented with its context, and amplifies bias when it is presented alone.
+
+##### The lighthouse, taken literally
+
+The metaphor is precise, in the same way that "bedrock" and "key" were precise earlier in this lesson, and it is worth reading closely:
+
+- A lighthouse shows you **where the rocks are**. It does not tell you where to sail. A KPI signals a problem; it does not contain the decision.
+- A lighthouse illuminates **where it points**. Everything outside the beam is not merely unlit — it is *harder* to see, because your eyes have adjusted to the light. This is the "lens" point from earlier in the lesson: a badly chosen KPI does not give a wrong reading, it makes part of the business invisible.
+- A lighthouse is **fixed**. It marks the hazard it was built for. When the channel shifts, the light keeps marking the old one, which is why KPIs and their thresholds need review dates.
+
+##### The accountability claim is the one to handle carefully
+
+Tying bonuses to KPIs can be equitable, exactly as the text says: everyone knows the success criteria in advance, and performance is judged against a stated bar rather than a manager's impression. That is a real gain in fairness, and it is why the practice exists.
+
+It is also the single most reliable way to turn a proxy into a target that gets optimised at the goal's expense. The economist **Charles Goodhart** observed in 1975 that a statistical regularity tends to collapse once pressure is placed on it for control purposes — often summarised as *when a measure becomes a target, it ceases to be a good measure*. Attaching money to a KPI is the strongest possible pressure.
+
+Both things are true at once, so the useful question is what makes the difference:
+
+| Makes it equitable | Makes it harmful |
+|---|---|
+| The KPI is close to the outcome the business actually wants | The KPI is a distant proxy that can be moved without moving the goal |
+| It is **paired with a guard KPI** | It stands alone, so improving it at another KPI's expense is invisible |
+| Criteria are fixed before the period and not changed inside it | Targets move once the result is visible, which is selective evaluation with money attached |
+| The measure is hard to influence except by doing the work | The measure has a cheap shortcut, and the shortcut will be found |
+| It is reviewed for gaming after each period | Nobody checks how the number was achieved, only that it was |
+
+The right-hand column is where the support desk from Case study 1 ended up: average handling time fell, the bonus was earned, repeat contacts rose 8 points, and the staff behaved entirely rationally given the KPI they were given. **The failure was in the measure, not in the people.**
+
+##### Tracing the churn example through this lesson
+
+The section's own example is a good test of whether the machinery has landed. A KPI shows customer churn rising. What does an evaluator do before acting?
+
+| Step | Question | Where it comes from |
+|---|---|---|
+| 1 | Is the rise larger than normal month-to-month variation? | Contextualisation, and Lesson 1.3 on variance |
+| 2 | Which definition of churn, and has it changed? | The versioned-definition point, and Case study 6 |
+| 3 | Is it concentrated in a segment, or spread evenly? | Segment comparison; blended figures hide mix effects |
+| 4 | What else changed in the same window? | The availability heuristic — the obvious cause is the available one |
+| 5 | What does the qualitative evidence say about *why*? | Quantitative gives the size, qualitative gives the cause |
+| 6 | What action, and what would tell us it worked? | Evaluation exists to support a decision |
+
+Only step 6 is the decision. Steps 1 to 5 are the evaluation, and skipping them is how a business rectifies a problem it did not have.
+
+Note what has happened here: the KPI did its job perfectly. It directed attention, which is what a signpost is for. **The signpost points; it does not arrive.**
+
 #### Goal, KPI, metric, target, threshold
 
 These five words are used loosely in workplaces and precisely in assessment. Keep them apart.
@@ -64088,7 +64153,12 @@ Two further insights worth including:
                 "Availability trades surface-level insight for rapid response, and names the most recent change as the cause while ignoring what else moved in the same window",
                 "Representativeness trades misclassification for intuitive pattern comparison, and files an unfamiliar case under a familiar label before its own timescale has run",
                 "Anchoring trades distortion for a consistent reference, and lets a promotional first month become the norm every later month is judged against",
-                "All three substitute an easier question for the harder one, which is why naming the substitution identifies which is operating"
+                "All three substitute an easier question for the harder one, which is why naming the substitution identifies which is operating",
+                "KPIs guide decisions in three ways: data-driven decisions that counterbalance cognitive bias, focus and prioritisation like a lighthouse, and accountability through objective criteria",
+                "All three claims are conditional: a bare KPI is itself an anchor and is exactly what availability bias feeds on, so context is what makes it a counterbalance rather than an amplifier",
+                "A lighthouse shows where the rocks are without saying where to sail, illuminates only where it points, and keeps marking the old hazard after the channel shifts",
+                "Tying bonuses to a KPI is equitable when the measure is close to the goal, paired with a guard, fixed before the period and reviewed for gaming, and harmful otherwise",
+                "The signpost points; it does not arrive. A rising churn KPI is the start of an evaluation, not the conclusion of one"
                 "A KPI differs from a cognitive heuristic in being chosen deliberately, so it can be written down, inspected and evaluated as an intuition cannot",
                 "The higher the stakes, the less a shortcut is worth, which is the same rule the confidence-level work method formalises",
                 "KPIs are the lens an organisation sees itself through and the yardstick it measures by, so a bad KPI makes part of the business invisible",
@@ -66046,6 +66116,36 @@ CURATED_FLASHCARD_SETS = {
             "tags": ["kpi", "definitions", "version control", "evo"]
         },
         {
+            "front": "Name the three ways KPIs guide decision-making.",
+            "back": "Data-driven decisions: KPIs give empirical, often real-time data that counterbalances the cognitive biases infiltrating decision-making, so a rising churn rate becomes a concrete impetus to investigate. Focus and prioritisation: in a sea of information they act like a lighthouse, directing attention to critical performance aspects so energy goes where impact is greatest. Accountability and objectivity: they allow evaluation that transcends individual bias, setting a bar outcomes can be measured against, which is why bonuses tied to KPIs can be equitable when everyone knows the criteria.",
+            "tags": ["kpi", "decision-making", "evo"]
+        },
+        {
+            "front": "Under what condition does a KPI counterbalance cognitive bias rather than amplify it?",
+            "back": "When it is presented with its context: history, target, benchmark, segment and normal variation. A bare number does the opposite. It IS the anchor, and it is exactly the kind of evidence availability bias runs on, since it is recent, on a screen and instantly available. A KPI counterbalances bias when contextualised and amplifies it when presented alone.",
+            "tags": ["kpi", "cognitive bias", "contextualisation", "evo"]
+        },
+        {
+            "front": "Read the lighthouse metaphor literally. What three things does it tell you about KPIs?",
+            "back": "A lighthouse shows where the rocks are but not where to sail, so a KPI signals a problem without containing the decision. It illuminates only where it points, and everything outside the beam is harder to see because your eyes adjusted to the light, which is how a badly chosen KPI makes part of the business invisible. And it is fixed, marking the hazard it was built for, so when the channel shifts it keeps marking the old one - which is why KPIs and thresholds need review dates.",
+            "tags": ["kpi", "lighthouse", "evo"]
+        },
+        {
+            "front": "When is tying a bonus to a KPI equitable, and when is it harmful?",
+            "back": "Equitable when the KPI is close to the outcome the business wants, paired with a guard KPI, fixed before the period and not changed inside it, hard to influence except by doing the work, and reviewed for gaming afterwards. Harmful when it is a distant proxy that can move without the goal moving, stands alone so trade-offs are invisible, has targets that shift once results appear, has a cheap shortcut that will be found, and where nobody checks how the number was achieved.",
+            "tags": ["kpi", "incentives", "ethics", "evo"]
+        },
+        {
+            "front": "What did Goodhart observe, and why does it matter for bonus-linked KPIs?",
+            "back": "Charles Goodhart observed in 1975 that a statistical regularity tends to collapse once pressure is placed on it for control purposes, often summarised as: when a measure becomes a target, it ceases to be a good measure. Attaching money to a KPI is the strongest possible pressure, which is why the accountability benefit and the gaming risk arrive together and why guard KPIs matter most exactly where a bonus is attached.",
+            "tags": ["goodhart", "incentives", "evo"]
+        },
+        {
+            "front": "A KPI shows customer churn rising. What comes before the decision?",
+            "back": "Six checks. Is the rise larger than normal month-to-month variation? Which definition of churn, and has it changed? Is it concentrated in a segment or spread evenly? What else changed in the same window, since the obvious cause is the available one? What does qualitative evidence say about why? Only then: what action, and what would tell us it worked? Skipping the first five is how a business rectifies a problem it did not have. The signpost points; it does not arrive.",
+            "tags": ["kpi", "evaluation", "churn", "evo"]
+        },
+        {
             "front": "Define a heuristic, and say why the brain uses them.",
             "back": "A heuristic is a mental shortcut or rule of thumb that simplifies decision-making and problem-solving. Instead of methodically analysing every aspect, it produces a quick and often subconscious judgment. These shortcuts result from the brain's strategy to save effort and function efficiently, especially under uncertainty or information overload.",
             "tags": ["heuristics", "evo"]
@@ -67403,6 +67503,18 @@ CURATED_EXAM_QUESTION_BANK = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "type": "knowledge",
+            "source": "core_curated",
+            "question": "Explain how KPIs guide decision-making, and state the condition each benefit depends on.",
+            "answer": "KPIs act as signposts in business decision-making, and they guide it in three ways. First, data-driven decisions: they supply empirical, often real-time data that counterbalances the cognitive biases infiltrating judgement, so a rising churn rate becomes a concrete impetus to investigate customer satisfaction rather than an impression. Second, focus and prioritisation: in a sea of information they act like a lighthouse, directing attention to critical performance aspects so effort is spent where impact is greatest. Third, accountability and objectivity: they permit evaluation that transcends individual subjectivity by setting a bar outcomes can be measured against, which is why performance bonuses tied to KPIs can be equitable when everyone knows the criteria in advance. Each benefit is conditional, and stating the condition is what makes this an evaluation answer. The counterbalance to bias holds only when the KPI is contextualised against history, target, benchmark and normal variation; a bare number is itself an anchor and is exactly the recent, on-screen, instantly available evidence that availability bias runs on. The focus benefit holds only when the KPI set is balanced across leading and lagging and quantitative and qualitative, because a beam pointed at one part of the business leaves everything outside it harder to see. And the objectivity benefit holds only when the definition is written, versioned and agreed before the period being measured, because a definition that can move afterwards makes the objectivity procedural theatre."
+        },
+        {
+            "type": "skills",
+            "source": "core_curated",
+            "question": "Management proposes tying quarterly bonuses to a single KPI. Evaluate the proposal and set out what would make it defensible.",
+            "answer": "The proposal has a genuine benefit that should be acknowledged first: criteria known in advance are fairer than a manager's impression, and staff can see what success requires. That is why the practice exists. The risk is that attaching money to a KPI is the strongest possible pressure on it, and Goodhart observed in 1975 that a statistical regularity collapses once pressure is placed on it for control purposes, usually summarised as a measure ceasing to be a good measure once it becomes a target. Five conditions decide which outcome follows. The KPI must be close to the outcome the business actually wants rather than a distant proxy that can be moved without moving the goal. It must be paired with a guard KPI, because a single unguarded measure makes it invisible when it is improved at another measure's expense. The criteria must be fixed before the period and not adjusted once results are visible, since moving a target after seeing the data is selective evaluation with money attached. The measure should be hard to influence except by doing the work, because any cheap shortcut will be found. And it should be reviewed for gaming after each period, checking how the number was achieved rather than only that it was. The support desk case in this lesson is what the failure looks like: average handling time fell below target, repeat contact rate rose eight points, and the staff behaved entirely rationally given the KPI they were given. The failure was in the measure, not in the people, which is also why the response should be to redesign the measure rather than to discipline the team."
+        },
         {
             "type": "knowledge",
             "source": "core_curated",
