@@ -62829,16 +62829,105 @@ Question 5 is the strongest of the five. Two independent sources for the same fi
 
 #### Qualitative KPIs
 
-Not every important indicator reduces to a number. Qualitative KPIs capture structured judgement: customer sentiment themes drawn from open-text feedback, audit and compliance ratings, code review quality, or the outcome of a service review.
+Qualitative KPIs capture the more subtle aspects of business performance. Unlike their quantitative counterparts, these metrics concentrate on **non-numerical data**, rendering them **subjective**. Their power lies in offering nuanced insight into areas of the business that are less responsive to straightforward numerical measurement.
+
+Two areas dominate in practice: **customer satisfaction** and **employee engagement**.
+
+<div class="mermaid">
+flowchart TD
+    Q[Qualitative KPIs] --> C[Customer satisfaction]
+    Q --> E[Employee engagement]
+    C --> C1[Surveys]
+    C --> C2[Customer interviews]
+    C --> C3[Net Promoter Score]
+    E --> E1[Performance reviews]
+    E --> E2[Employee satisfaction surveys]
+    E --> E3[One-on-one interviews]
+
+    style Q fill:#f3e5f5,stroke:#9C27B0,stroke-width:2px
+    style C fill:#e3f2fd,stroke:#2196F3,stroke-width:2px
+    style E fill:#c8e6c9,stroke:#4CAF50,stroke-width:2px
+</div>
+
+##### Customer satisfaction
+
+This metric delves into the **emotional and psychological** aspects of customer interaction. A satisfied customer typically means repeat business and word-of-mouth promotion, though neither is directly measurable in the way quantitative financial data is.
+
+**Surveys.** Businesses deploy detailed questionnaires using Likert scales, multiple-choice questions, or open-text fields to gauge customer sentiment.
+
+**Customer interviews.** These are in-depth and tailored to extract detailed feedback. The qualitative nature of the data is its strength: it reveals nuances that broader surveys miss.
+
+**Net Promoter Score (NPS).** Even though NPS appears numeric, the insight extracted usually requires qualitative interpretation. Why did a customer give a nine or a ten? Understanding the *why* falls into the qualitative space.
+
+> **The Likert scale** is a commonly used tool for measuring people's attitudes and opinions. Respondents react to statements by showing their level of agreement or disagreement on a scale, typically running from "Strongly Disagree" to "Strongly Agree". It helps researchers quantify and analyse attitudes systematically and is used across psychology, the social sciences and marketing, letting collected data be summarised and interpreted to understand people's opinions.
+
+##### Employee engagement
+
+Employee engagement serves as a **barometer for the internal health** of an organisation. A highly engaged employee is often more productive, more devoted, and more likely to stay with the company long-term.
+
+**Performance reviews.** These offer dual perspectives: how employees view their own roles and contributions, and how management perceives them. Reviews cover skills, competencies and areas for improvement, generating nuanced but crucial data.
+
+**Employee satisfaction surveys.** These range from anonymous online questionnaires to more detailed assessments, focusing on work-life balance, career progression or office culture.
+
+**One-on-one interviews.** These informal checks are an opportunity to understand employee sentiment more deeply. A one-on-one setting often elicits more candid, nuanced feedback than formal review mechanisms.
+
+##### Reading qualitative KPIs as an evaluator
+
+Subjectivity is the defining property of these KPIs, so it is also where the evaluation work is. Three questions matter more than the score itself.
+
+| Question | Why it matters | What to look for |
+|---|---|---|
+| **Who answered?** | Surveys are self-selected, so respondents are rarely representative | Response rate, and whether the silent majority differs from the vocal minority |
+| **Who scored it?** | Different raters apply the same scale differently | Whether the same person rates across periods, and whether raters were calibrated |
+| **Has anything changed but the wording?** | A reworded question produces a different score from the same underlying attitude | The questionnaire's own version history |
+
+**The self-selection problem is the most common.** A satisfaction survey answered mainly by customers who contacted support does not measure customer satisfaction; it measures the satisfaction of customers who contacted support. That is the selection bias from Lesson 1.2, appearing here in its most frequent real-world form.
+
+##### Two method traps worth naming
+
+**A Likert scale is ordinal, not interval.** The distance between "Strongly Disagree" and "Disagree" is not guaranteed to equal the distance between "Agree" and "Strongly Agree". Averaging Likert responses and reporting "3.7 out of 5" therefore does arithmetic on ranks and treats them as measurements. It is extremely common, and it is defensible only if you say so. The safer summary is the **distribution**: the share choosing each option, or the share in the top two boxes. A mean of 3.7 can come from everyone answering 3 and 4, or from half answering 1 and half answering 5 — two completely different businesses.
+
+**NPS discards most of its own data.** The 0–10 responses are collapsed into promoters (9–10), passives (7–8) and detractors (0–6), and the score is the promoter share minus the detractor share. Two consequences follow. A large improvement inside a band, say every detractor moving from 2 to 6, changes the score by nothing. And a customer at 6 counts as a detractor while a customer at 7 counts as neutral, so a one-point move across that boundary shifts the score materially. This is why the course text says the insight requires **qualitative interpretation**: the score tells you the direction, and only the open-text follow-up tells you the reason.
+
+##### Qualitative KPIs as leading indicators
+
+This is where the section connects to everything before it. Both areas are **leading** indicators for a lagging financial outcome:
+
+| Qualitative KPI | Leads | Typical lag |
+|---|---|---|
+| Customer satisfaction, NPS | Churn rate, then revenue | One to three quarters |
+| Employee engagement | Regretted turnover, then productivity and replacement cost | Two to four quarters |
+
+In the employee-turnover material later in this lesson, engagement surveys are proposed as the early-warning mechanism for exactly this reason: by the time turnover appears in an HRM dashboard, the departure has already happened and the cost is already committed.
+
+##### Method selection: which technique for which question
+
+| If you need | Use | Because |
+|---|---|---|
+| A comparable trend over time | Survey with a fixed Likert instrument | Consistency of wording is what makes periods comparable |
+| To understand *why* a trend moved | Interviews, or open-text follow-up | Only a person can tell you the mechanism |
+| Candour from employees | Anonymous survey | People do not report a manager problem to that manager |
+| Depth from employees | One-on-one interview | Candid and nuanced, but not anonymous, so it cannot replace the survey |
+| Management's and the employee's view together | Performance review | Its value is precisely that it holds both perspectives |
+
+The anonymity trade-off is worth stating in an assignment answer. Anonymous surveys buy honesty and lose the ability to follow up. One-on-ones buy depth and lose anonymity. Running only one of the two produces a predictable blind spot, which is why mature organisations run both.
+
+##### Why both halves of the classification are needed
+
+When employed carefully, qualitative KPIs **complement** quantitative KPIs to provide a **holistic view** of an organisation's performance. They allow a nuanced understanding of operational aspects and are indispensable for informed decision-making.
+
+The division of labour, stated for an evaluation:
 
 | | Quantitative KPI | Qualitative KPI |
 |---|---|---|
-| Form | A number | A structured judgement, often scored or themed |
-| Strength | Comparable, trackable, testable | Captures meaning and cause that a number cannot |
-| Weakness | Silent about why | Harder to compare across periods and across raters |
+| Form | A number from structured data | A judgement from non-numerical data |
+| Answers | How much, how many, how often | Why, in what way, what it means to people |
+| Collection | Automated and continuous | Deliberate and periodic |
+| Strength | Comparable, trackable, testable | Captures meaning and cause a number cannot |
+| Weakness | Silent about mechanism | Subjective, harder to compare across periods and raters |
 | Evaluation risk | Measuring the measurable rather than the important | Inconsistent scoring makes a trend meaningless |
 
-The knowledge outcome about **quantitative and qualitative methods at an industry level** lives here. Mature organisations run both: the quantitative KPI detects that something changed, the qualitative evidence explains what changed. Case study 5 later in this lesson is exactly that pairing.
+The knowledge outcome about **quantitative and qualitative methods at an industry level** lives here. The quantitative KPI detects that something changed; the qualitative evidence explains what changed. Case study 5 later in this lesson is exactly that pairing: on-time delivery was genuinely 96%, and only the driver notes and customer complaints revealed that parcels were being left in unsafe locations to register the on-time scan.
 
 #### Contextualisation: why an isolated number tells you nothing
 
@@ -63288,6 +63377,11 @@ One more, easily missed: a documentation note typed as `=B8-B11` becomes a live 
                 "Quantitative KPIs hinge on structured data, which aligns in tables, rows and columns and is therefore responsive to automation",
                 "The standard collection sources are web analytics, CRM, HRM, inventory and supply chain, financial software, and custom in-house tools, each with its own characteristic blind spot",
                 "Automation delivers the number on time but guarantees nothing about its definition, which is why a dashboard keeps reporting a KPI long after its meaning changed",
+                "Qualitative KPIs concentrate on non-numerical data and are therefore subjective; the two dominant areas are customer satisfaction and employee engagement",
+                "Customer satisfaction is captured by surveys, customer interviews and NPS, where even NPS needs qualitative interpretation to explain the why behind a score",
+                "Employee engagement is captured by performance reviews, satisfaction surveys and one-on-one interviews, trading anonymity against depth",
+                "A Likert scale is ordinal, so averaging it treats ranks as measurements; reporting the distribution or the top-two-box share is safer",
+                "Both qualitative areas are leading indicators: satisfaction leads churn and revenue, engagement leads regretted turnover and replacement cost",
                 "Isolated numbers seldom tell the whole tale: a KPI gains meaning only against historical data, goals, benchmarks, segments and normal variation",
                 "Correctly aligned with organisational goals and values, KPIs act as both a navigational aid and a diagnostic tool",
                 "Across every industry the characteristic KPI failure has the same shape: the proxy was improved without the goal being improved",
@@ -65016,6 +65110,41 @@ CURATED_FLASHCARD_SETS = {
             "tags": ["kpi", "non-financial metrics", "evo"]
         },
         {
+            "front": "What defines a qualitative KPI, and which two areas dominate in practice?",
+            "back": "Qualitative KPIs capture the subtler aspects of business performance by concentrating on non-numerical data, which makes them subjective. Their power is offering nuanced insight into areas less responsive to straightforward numerical measurement. The two dominant areas are customer satisfaction and employee engagement.",
+            "tags": ["qualitative kpi", "classification", "evo"]
+        },
+        {
+            "front": "Name the three ways customer satisfaction is captured.",
+            "back": "Surveys using Likert scales, multiple-choice or open-text fields; customer interviews that are in-depth and tailored, revealing nuances broader surveys miss; and Net Promoter Score, which looks numeric but whose insight requires qualitative interpretation of why a customer gave the score they did.",
+            "tags": ["qualitative kpi", "customer satisfaction", "evo"]
+        },
+        {
+            "front": "Name the three ways employee engagement is captured, and the trade-off between them.",
+            "back": "Performance reviews, which hold both the employee's view of their role and management's perception; employee satisfaction surveys, from anonymous questionnaires to detailed assessments covering work-life balance, career progression and culture; and one-on-one interviews, which elicit more candid, nuanced feedback than formal mechanisms. The trade-off is anonymity against depth: anonymous surveys buy honesty and lose follow-up, one-on-ones buy depth and lose anonymity.",
+            "tags": ["qualitative kpi", "employee engagement", "evo"]
+        },
+        {
+            "front": "What is a Likert scale, and what is the method trap when summarising it?",
+            "back": "It measures attitudes by asking respondents to state their level of agreement with statements, typically from Strongly Disagree to Strongly Agree, letting attitudes be quantified and analysed systematically. The trap is that it is ordinal, not interval: the gap between Strongly Disagree and Disagree is not guaranteed to equal the gap between Agree and Strongly Agree, so averaging it does arithmetic on ranks. Report the distribution or the top-two-box share instead, since a mean of 3.7 can come from everyone answering 3 and 4 or from half answering 1 and half answering 5.",
+            "tags": ["likert", "qualitative kpi", "method", "evo"]
+        },
+        {
+            "front": "Why does NPS need qualitative interpretation despite looking numeric?",
+            "back": "The score itself only gives direction. It collapses 0-10 responses into promoters, passives and detractors and reports promoter share minus detractor share, so a large improvement inside a band changes nothing while a one-point move across the 6/7 boundary shifts the score materially. Only the open-text follow-up explains why a customer scored as they did, and that reason is what the business can act on.",
+            "tags": ["nps", "qualitative kpi", "evo"]
+        },
+        {
+            "front": "What do customer satisfaction and employee engagement lead, and with what lag?",
+            "back": "Customer satisfaction and NPS lead churn rate and then revenue, typically by one to three quarters. Employee engagement leads regretted turnover and then productivity and replacement cost, typically by two to four quarters. Both are leading indicators, which is why engagement surveys work as an early-warning mechanism: by the time turnover shows in an HRM dashboard, the departure has happened and the cost is committed.",
+            "tags": ["qualitative kpi", "leading", "evo"]
+        },
+        {
+            "front": "What are the three questions an evaluator asks about a qualitative KPI?",
+            "back": "Who answered, since surveys are self-selected and respondents are rarely representative; who scored it, since different raters apply the same scale differently; and whether anything changed but the wording, since a reworded question produces a different score from the same underlying attitude. The self-selection problem is the most common: a survey answered mainly by customers who contacted support measures only their satisfaction.",
+            "tags": ["qualitative kpi", "bias", "evo"]
+        },
+        {
             "front": "Why are quantitative KPIs the automatable half of the classification?",
             "back": "Because they hinge on structured data, which by design aligns in tables, rows and columns and is therefore responsive to automation. A number already sitting in a column can be pulled, aggregated and refreshed on a schedule; a qualitative signal cannot, so it has to be collected deliberately.",
             "tags": ["data collection", "structured data", "evo"]
@@ -66627,6 +66756,21 @@ CURATED_PRACTICE_QUESTION_BANK = {
             "type": "knowledge",
             "question": "Why does contextualisation matter when interpreting a KPI?",
             "answer": "Because isolated numbers seldom tell the whole tale. A KPI gains significance only when juxtaposed with benchmarks, goals, or historical data. Saying churn is 4.1 percent means nothing; saying it is 4.1 percent, flat within normal month-to-month variation, below the sector median, still above the 3.0 percent target, and concentrated among customers under three months old, is a decision. The last of those, whether a movement exceeds normal variation, is a statistical question rather than a presentational one, which is why it connects directly to variance and confidence levels."
+        },
+        {
+            "type": "knowledge",
+            "question": "Explain what qualitative KPIs are, how they are captured, and why they complement quantitative KPIs.",
+            "answer": "Qualitative KPIs capture the subtler aspects of business performance by concentrating on non-numerical data, which makes them subjective. Their power is offering nuanced insight into areas less responsive to straightforward numerical measurement. Two areas dominate. Customer satisfaction delves into the emotional and psychological aspects of customer interaction, and is captured through surveys using Likert scales, multiple-choice or open-text fields, through in-depth tailored customer interviews that reveal nuances broader surveys miss, and through Net Promoter Score, which appears numeric but whose insight requires qualitative interpretation of why a customer scored as they did. Employee engagement serves as a barometer for internal health, since a highly engaged employee is typically more productive, more devoted and more likely to stay, and it is captured through performance reviews holding both the employee's and management's perspective, through satisfaction surveys covering work-life balance, career progression and culture, and through one-on-one interviews that elicit more candid feedback than formal mechanisms. Employed carefully they complement quantitative KPIs to give a holistic view: the quantitative KPI detects that something changed, and the qualitative evidence explains what changed."
+        },
+        {
+            "type": "skills",
+            "question": "A team reports employee satisfaction as 3.7 out of 5, up from 3.5. What would you question before accepting that as an improvement?",
+            "answer": "First, the summary method. A Likert scale is ordinal rather than interval, so the gap between Strongly Disagree and Disagree is not guaranteed to equal the gap between Agree and Strongly Agree, and averaging it does arithmetic on ranks. A mean of 3.7 can come from everyone answering 3 and 4 or from half answering 1 and half answering 5, which are completely different organisations, so I would ask for the distribution or the top-two-box share. Second, who answered: surveys are self-selected, so I would want the response rate and whether the silent majority is likely to differ from the respondents. Third, who scored and whether anything changed but the wording, since a reworded question produces a different score from the same underlying attitude. Fourth, whether a 0.2 move exceeds normal period-to-period variation at all. Finally I would note that engagement is a leading indicator for regretted turnover, so the useful follow-up is whether the qualitative comments explain the movement, not whether the mean rose."
+        },
+        {
+            "type": "case_study",
+            "question": "NPS rose from 22 to 31 this quarter and marketing wants to announce it. How do you evaluate the claim?",
+            "answer": "I would start with what NPS actually measures. It collapses 0-10 responses into promoters at 9-10, passives at 7-8 and detractors at 0-6, and reports promoter share minus detractor share, which discards most of the underlying data. Two things follow. A large genuine improvement inside a band, for example detractors moving from 2 to 6, changes the score by nothing, so the score can understate real progress. And a one-point move across the 6 to 7 boundary shifts the score materially, so a nine-point rise can rest on a small number of customers crossing one threshold. I would therefore ask for the full 0-10 distribution rather than the headline, the response rate and who answered, since self-selection is the standard survey bias, and whether the questionnaire wording changed. Then I would go to the open-text follow-up, because the score gives direction and only the qualitative comments give the reason, which is the part the business can act on. Finally I would check the lagging partner: NPS leads churn by roughly one to three quarters, so if the improvement is real it should show there next, and saying so in advance makes the claim testable rather than promotional."
         },
         {
             "type": "knowledge",
