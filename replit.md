@@ -75,6 +75,7 @@ root:
 - `EVO_1.1.2_Activity_Solution.md` + `EVO_1.1.2_KPI_Data_Collection_Nordtre.xlsx` (37 live formulas)
 - `EVO_1.1.3_Activity_Solution.md` + `EVO_1.1.3_Social_Monitoring_Workbook.xlsx` (37 live formulas)
 - `EVO_1.1.4_Activity_Solution.md` (analysis only; this activity has no calculations)
+- `EVO_1.1_Task_Solution.md` (the main lesson task: all 22 questions answered)
 
 Note on 1.1.3: that activity requires firsthand social media monitoring, which
 cannot be delegated. Its workbook is therefore an *instrument* — a blank capture

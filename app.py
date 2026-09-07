@@ -63787,6 +63787,30 @@ Dashboards are instrumental in **goal monitoring**. Organisations set targets an
 
 The fifth row is the one most often missing. Progress against a goal is meaningless without the time axis: the same percentage is a success or a crisis depending on where in the period it appears.
 
+##### Accountability through visibility
+
+A dashboard also enhances **accountability** across an organisation, and the mechanism is simply that the metrics are **visible**. A clear, shared display of performance means teams and individuals are attuned to their responsibilities and can see, in real time, how their efforts contribute to the organisation's principal objectives.
+
+> *The evaluation note.* Visibility cuts both ways, and which way it cuts depends on what is visible alongside the number. A tile showing only a team's primary KPI makes that team accountable for the proxy. A tile showing the primary **with its guard** makes them accountable for the outcome. The support desk in Case study 1 was highly accountable for average handling time, and that was precisely the problem.
+
+##### Different users need different views
+
+Different users have different needs, so a dashboard should offer **customisation**, letting people tailor views to their role, objectives and preferences.
+
+| User | Typically needs | Because their decisions are about |
+|---|---|---|
+| **CFO** | Financial KPIs: margin, cash conversion, cost lines, ROI | Capital allocation and financial position |
+| **Sales manager** | Lead and conversion metrics, pipeline, win rate, cycle length | Where the pipeline is stalling this week |
+| **Operations lead** | Fulfilment time, throughput, defect and damage rate | What to fix on the floor today |
+| **HR lead** | Turnover, time to hire, engagement scores | Whether the organisation can keep the people it needs |
+
+This is step one of the building process applied per person: **define the audience and the decisions they make, then select the KPIs tied to those decisions.** A single view serving everyone serves nobody, which is the data-overload problem in its most common form.
+
+Two cautions, though, since customisation has a cost:
+
+- **Everyone should still be able to see the shared set.** If each role only ever sees its own metrics, the trade-offs between them become invisible — which is the guard-KPI failure at organisational scale.
+- **The definitions must not fork with the views.** Two roles filtering the same KPI differently is fine; two roles computing it differently is the disputed-evaluation problem, and it is what written, versioned definitions exist to prevent.
+
 ##### What a dashboard is, and what it is not
 
 | A dashboard is | A dashboard is not |
@@ -64370,6 +64394,43 @@ Two further insights worth including:
 - Treating version control as an engineering topic rather than as what makes a KPI auditable.
 - Versioning code but not data, then being unable to reproduce a figure from last quarter.
 
+#### The Task - Lesson 1.1
+
+The main lesson task: 22 questions covering the whole lesson. Unlike Activities 1.1.1 to 1.1.4, which each exercise one part, this tests the lot.
+
+##### What the 22 questions cover
+
+| Questions | Topic | Where in this lesson |
+|---|---|---|
+| 1-4 | Quantitative and qualitative KPIs, two financial and two non-financial, their importance, and how each is measured and interpreted | Classification of KPIs; the six named metrics |
+| 5-6 | Tools for collecting quantitative KPIs, then one researched in depth | Data collection methods for quantitative KPIs |
+| 7-9 | One customer satisfaction and one employee engagement metric, how each is assessed, and the challenges | Qualitative KPIs and their collection methods |
+| 10-11 | The four ethical considerations, and a reflection on their effect on decision-making | Ethical considerations in relation to KPIs |
+| 12-14 | What heuristics are, who popularised them, benefits and drawbacks | Heuristics: an overview |
+| 15-16 | The availability heuristic in a KPI scenario, and anchoring in sales | Understanding heuristics in the context of KPIs |
+| 17-19 | The role of KPIs in decision-making, rectifying customer satisfaction issues, and Amazon's KPIs | How KPIs guide decision-making; the Amazon case study |
+| 20-22 | Dashboards and accountability, different users, and update frequency | KPI dashboards; best practices |
+
+##### Five questions where the obvious answer is only half the answer
+
+The lesson text supports a fuller answer on several of these, and the extra half is where the marks are at level 5.1:
+
+| Question | The obvious answer | What completes it |
+|---|---|---|
+| **Q3-4** on measuring KPIs | Definitions and formulas | That none of them means anything as a bare number. "Profit margin" is ambiguous across gross, operating and net; blended CAC is total spend over total customers, never the average of segments |
+| **Q9** on qualitative challenges | Subjectivity and non-standard metrics | Self-selection, rater inconsistency, and averaging an ordinal Likert scale. Plus the defences: report the response rate, fix the wording between periods, report box shares |
+| **Q11** on why ethics matters | It builds trust and avoids legal risk | That most ethical failure is not falsification but **selective evaluation** — defensible choices that all point one way. And that ethics is inspectable through **artefacts**, not intentions |
+| **Q17** on the role of KPIs | The three purposes from the text | That the counterbalance to bias is **conditional**: presented alone, a KPI is exactly the recent, on-screen evidence availability bias runs on |
+| **Q22** on update frequency | More recent data is better | The **refresh-rate trap**. More frequent display means more chances to mistake normal variation for signal, and correcting on each one produces over-steering |
+
+##### The thread through all 22
+
+Almost every answer resolves to the same move. A KPI is a heuristic; a heuristic can be wrong; a wrong heuristic is invisible from the inside — so you **replace a judgement with a record**.
+
+That is what a written definition is, what version control is, what a dated anchor is, what "what else changed in the window" is, what a stated response rate is, and what a documented method is. The task looks like 22 questions. It is one habit, tested 22 times.
+
+**Full worked solution.** `EVO_1.1_Task_Solution.md` in the project folder answers all 22, each grounded in the lesson text first and then extended with the evaluation depth the course expects.
+
 #### What did I learn in this lesson?
 
 This lesson provided the following insights:
@@ -64482,6 +64543,8 @@ Four activities accompany this lesson, and each exercises a different part of it
                 "KPIs shape a business through attention, incentive, resource allocation and the definition of success, so a KPI review is a business intervention",
                 "A dashboard is a heuristic made visual: define the audience and decisions first, write definitions and owners, show trend and target, keep it small, and review on a schedule",
                 "A dashboard's three purposes are data visualisation, informed decision-making and goal monitoring, and each carries a matching failure mode",
+                "Dashboards enhance accountability through visibility, so what appears beside a KPI decides whether a team is accountable for the proxy or for the outcome",
+                "Different users need customised views, a CFO on financial KPIs and a sales manager on lead and conversion metrics, but the shared set must stay visible and the definitions must not fork with the views",
                 "Concise visual format means information was removed, and a chart can mislead faster than a table because a reader checks a number but absorbs a picture",
                 "The refresh-rate trap: the more often a metric is displayed, the more chances to mistake normal variation for a signal, so require a sustained move",
                 "Adjusting in real time becomes over-steering when most deviations are noise, since each correction lands after the next has already been made",
@@ -64502,6 +64565,7 @@ Four activities accompany this lesson, and each exercises a different part of it
                 "Activity 1.1.2 applies the collection material: explore the tools, judge their fit rather than only their features, collect one quantitative and one qualitative KPI, and keep the raw survey responses",
                 "Activity 1.1.3 is firsthand social media monitoring: fix platforms, search terms and coding rules before reading, capture as you go, and remember that frequency is not importance",
                 "Activity 1.1.4 identifies the three heuristics in real scenarios: give every example twice, once everyday and once from KPI work, and end on the artefact that defeats each one",
+                "The main lesson task is 22 questions covering the whole lesson, and on several of them the lesson text supports a fuller answer than the obvious one",
                 "The lesson summary names statistical inference and applying statistical methodology, which are introduced here and developed in full in Lessons 1.2 and 1.3",
                 "The whole lesson resolves to one habit approached six times: a KPI is a heuristic, a heuristic can be wrong, a wrong heuristic is invisible from the inside, so replace a judgement with a record"
             ],
