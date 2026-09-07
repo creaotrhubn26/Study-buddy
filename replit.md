@@ -48,6 +48,23 @@ A comprehensive student study app for the Data Analyst 2 (PDAN) vocational progr
 - **Soft Skills for Data Analysts**: Communicating with non-technical stakeholders, active listening, working with different roles, handling feedback
 
 ### Evaluation of Outcomes (FI1BBEO10)
+Semester 2 course. Assessed by a one-week individual Course Assignment graded
+Pass / Fail (level 5.1), so the lesson material is written around producing a
+reviewable piece of evaluation work rather than around a timed exam.
+
+**Detailed lessons** (in `course_lessons`, shown in Learn & Practice):
+- **1.0 Course Overview and Assignment Strategy**: where the course sits in the programme, official learning outcomes, the four-step evaluation answer structure, the ethical dimension
+- **1.1 KPIs as Heuristics**: goal vs KPI vs metric vs target vs threshold, guard KPIs, RAG decision rules, appraising whether a KPI did its job
+- **1.2 Sampled Sets, Variance and Five-Point Summaries**: sampling methods and their biases, sample size effects, variance as reliability, IQR fences, outliers as investigations
+- **1.3 Linear Regression and Z-Testing**: reading R squared honestly, leakage and overfitting, naming the alternative explanation, what a z-score does not tell you
+- **1.4 Confidence Levels and Multiple Probability Outcomes**: what a confidence level claims, interval width trade-offs, a work method for choosing the level by problem domain, scenarios with planned responses, sensitivity checks
+- **1.5 Iterative Error Elimination**: the detect-to-prevent cycle, error taxonomy, Five Whys, fishbone categories, tooling, delivering findings to a team
+- **1.6 Ensembling and Model Reliability**: bias vs variance, bagging, boosting, stacking, ensembling applied to data, and what ensembling does not fix
+- **1.7 ETL Systems and Version Control**: pipeline failure points, evaluation properties of a pipeline, ELT, versioning data as well as code, tracing a broken KPI
+
+Also has curated flashcards, exam-bank entries, and practice questions.
+
+**Training modules** (hands-on, in the Training Center):
 - **KPIs & Decision Heuristics**: KPIs as heuristics, thresholds/alerts, decision trees, KPI-driven escalation
 - **Statistical Result Analysis**: Regression interpretation, variance/spread analysis, z-testing for significance, sampled sets and statistical inference
 - **Confidence Levels & Scenarios**: Understanding confidence intervals, probability scenario building, decision-making under uncertainty
@@ -103,6 +120,26 @@ Hands-on practice tools with editable data:
 - **Confidence Level Planner**: Domain-specific work methods (Medical, Financial, Marketing, Operations, Research), interactive CI calculator, work method document generator
 - **Report Writing Workshop**: Executive summary builder, clarity rewriter, report structure planner, caption writer
 - **Exam Project Toolkit**: Problem statement builder, project scope planner, quality self-assessment, presentation planner
+
+## Semester Structure
+Each entry in `courses_data` carries a `semester_number` (1-4). That field is the
+single source of truth for semester grouping: the Training Center derives its
+semester/course filter from it, and the Course Plan filters on it. Do not add a
+second hardcoded course-to-semester map, which is how the two previously drifted
+apart.
+
+The student's actual dates come from `STUDY_PATH_JAN2026` in
+`study_buddy_state.py` (JAN 2026 full-time intake). `get_active_study_stage()`
+and `get_active_semester_number()` resolve which course and semester are in
+progress today, which drives the Training Center's default filter and the
+"Current focus" banner.
+
+| Semester | Courses |
+|---|---|
+| 1 | IC, DAF, SPF, DDM, STT, SP1 |
+| 2 | EVO, DVS, ARP, EP1 |
+| 3 | Databases and Cloud Services, Programming Fundamentals, Programmatic Data Analysis, Semester Project 2 |
+| 4 | Industry Tools, Critical Data Thinking, Big Data, Interactive Dashboards, Exam Project 2 |
 
 ## Data Source
 Course content is sourced from the official Noroff study catalog:
