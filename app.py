@@ -64581,11 +64581,237 @@ Four activities accompany this lesson, and each exercises a different part of it
             "content": """
 ### 1.2. Statistical Inference, Result Table Analysis, and Critical Tools
 
+#### Introduction
+
+In the intricate realm of data analysis and evaluation of outcomes, understanding the underlying structures and nuances is pivotal for extracting meaningful insights. **Statistical inference** is the backbone, providing a structured method to draw reliable conclusions from a subset of data and generalise them to broader populations.
+
+Adding to this, **result table analysis** provides a clear, tabulated visualisation of data findings, streamlining the interpretation process and highlighting key trends and anomalies. Alongside, there are **critical tools** – software and methodologies specifically designed to facilitate these processes, ensuring accuracy, efficiency, and depth in analyses. Together, these elements form a triad, guiding analysts in transforming raw data into actionable intelligence.
+
+##### The triad, and why it takes all three
+
+The introduction names three things and calls them a triad. That is worth unpacking, because each one fails in a way the other two cannot repair.
+
+| Element | What it contributes | What is lost without it |
+|---|---|---|
+| **Statistical inference** | Licence to speak about the population from the sample | You have described the rows you happened to measure. Nothing you say extends beyond them |
+| **Result table analysis** | A legible, comparable presentation of what was found | The finding stays inside the analyst's head. Nobody can check it, reproduce it, or disagree with it on evidence |
+| **Critical tools** | Accuracy, efficiency and depth at a scale hand calculation cannot reach | Either the analysis is too small to be worth doing, or it is done by hand and quietly wrong |
+
+Note the order the text puts them in, because the order is the argument. Inference comes **first**: it is the reasoning that makes any of it mean something. The table comes **second**: presentation of a conclusion already reached. Tools come **third**, described as things that *facilitate these processes* — not as things that produce the conclusion.
+
+That ranking is the opposite of how the work usually feels. In practice you open the tool first, and the tool prints a table, and the inference is whatever you decide the table says. The lesson's ordering is a corrective: **the tool is the last of the three, not the first.**
+
+##### The failure that belongs to each
+
+Each element in the triad has a characteristic way of going wrong, and knowing which is which is most of what result-table evaluation consists of.
+
+| Failure | Looks like | Example |
+|---|---|---|
+| **Inference failure** | The arithmetic is perfect and the conclusion still does not hold | A satisfaction figure computed correctly from a self-selected sample, then reported as the customer base's satisfaction |
+| **Presentation failure** | The table is accurate and the reader draws the wrong conclusion anyway | A coefficient reported without its confidence interval, so a highly uncertain estimate reads as a firm number |
+| **Tool failure** | The software returned a number, and it is not the number you asked for | The ROI cell in the Activity 1.1.1 workbook: `=B2/B3*100` where the reference should have pointed elsewhere. Excel was working perfectly |
+
+The third row is the one this course keeps returning to. A tool does not warn you when it computes the wrong quantity flawlessly, and the output of a wrong calculation is formatted exactly like the output of a right one.
+
+##### "Raw data into actionable intelligence"
+
+The closing phrase is a ladder, and each rung is a different kind of work:
+
+| Rung | What it is | What moves you up |
+|---|---|---|
+| **Raw data** | Rows as they were captured | Cleaning, joining, defining |
+| **Information** | Summarised, tabulated, comparable | Descriptive statistics and the result table |
+| **Insight** | A claim about the population, with its uncertainty stated | Inference |
+| **Intelligence** | A claim with a decision attached | Contextualisation and a threshold |
+
+Lesson 1.1 already supplied the test for the top rung: a number is *actionable* only if a decision changes at some value of it. So the same test that separated an actionable metric from a vanity metric applies here to the output of a whole analysis. A regression table that nobody would act on differently at any coefficient value has produced information, not intelligence — however sound the statistics.
+
+##### Where this sits relative to Lesson 1.1
+
+Lesson 1.1 asked **which number to watch**. This lesson asks **whether the number you are watching is telling the truth about anything beyond the rows you measured** — and, once it is, how to read the table that carries it.
+
+The link between them is direct. A KPI is almost always computed on a sample: this month rather than all months, respondents rather than all customers, the test set rather than every future case. Lesson 1.1 called a KPI a proxy for a goal. This lesson adds the second gap: the KPI is also an **estimate** of the quantity it names, and both gaps are open at once.
+
+##### What this lesson covers, and what moves to Lesson 1.3
+
 The knowledge outcome for this lesson is precise: the candidate "has knowledge of **analysing result tables** using statistical inferences, specifically sampled sets, linear regression, measurement of variance, five-point summaries, and z-testing". This lesson covers the inference framing, the sampled sets, the regression and the z-testing. Measurement of variance and five-point summaries are developed in Lesson 1.3.
 
 The skills outcome that goes with it is the one about **mastering relevant tools and techniques used to critically assess and analyse data models**, which is what "critical tools" in the lesson title refers to.
 
-#### Part 1: What statistical inference means here
+#### Advanced result table analysis in data analysis
+
+Diving deeper into data analysis, understanding the particulars of result tables becomes critical. These tables don't merely present data; they house significant insights, demand careful interpretation, and interact extensively with statistical inferences. Alongside, specific critical tools enhance the depth and precision of this analysis.
+
+> *Read that second sentence closely, because it is the whole section in miniature.* A result table **houses** insights rather than displaying them — the insight is not the printed number, it is what the number licenses you to say. It **demands careful interpretation**, which is an admission that the same table supports a correct and an incorrect reading equally well. And it **interacts with statistical inference**, meaning the table is one end of an argument whose other end is the sample it came from.
+
+#### Unpacking the insights: hypothesis testing, confidence intervals, and effect sizes in result tables
+
+A result table typically carries three different kinds of statement, and confusing them is the most common error in evaluation work.
+
+| The statement | The question it answers | The quantity |
+|---|---|---|
+| **Hypothesis test** | Is there a detectable effect at all? | The test statistic and its p-value |
+| **Confidence interval** | Within what range does the true value plausibly lie? | The interval and its confidence level |
+| **Effect size** | How big is the effect, in units that mean something? | Cohen's d, a slope, a percentage-point difference |
+
+Each answers a question the other two cannot. A test says *detectable*, an interval says *how precisely known*, an effect size says *how much*. A result reported with only one of the three is incomplete, and which one is missing tells you what the reader is likely to get wrong.
+
+**Confidence intervals are named here and developed in Lesson 1.3**, alongside confidence levels and multiple probability outcomes. This lesson takes the first and third.
+
+##### Testing hypotheses: hypothesis basics
+
+The **hypothesis test** is at the core of many statistical analyses — a method to determine if a particular claim about a population parameter is valid. Hypotheses are often presented as pairs:
+
+- The **null hypothesis** (often shown as H₀), which is a statement of **no effect**
+- The **alternative hypothesis** (often shown as Hₐ or H₁), which claims **some effect**
+
+**Why the pair is asymmetric.** The two hypotheses are not two competing guesses given equal treatment. The null is the **default**, held unless the evidence is strong enough to abandon it, and the entire calculation is performed *assuming the null is true*. That asymmetry has two consequences worth carrying into an assignment:
+
+| Consequence | What it means |
+|---|---|
+| You never *accept* the null | Failing to reject means the evidence was not strong enough, not that there is no effect. A small sample fails to reject almost everything |
+| The burden falls on the claim of effect | Which is deliberate. It is the statistical version of "the number has to earn its conclusion" — the same stance this course takes toward a KPI |
+
+**Writing the pair properly.** In an assignment, state both hypotheses in the units of the problem, not in the abstract:
+
+| Poor | Adequate |
+|---|---|
+| H₀: no difference | H₀: mean order value on the redesigned page equals mean order value on the old page (μ₁ = μ₂) |
+| Hₐ: the new page is better | Hₐ: mean order value differs between the two pages (μ₁ ≠ μ₂) |
+
+Note the second row. "Better" is a **one-tailed** claim; "differs" is **two-tailed**. Choosing one-tailed halves the p-value and must therefore be decided *before* seeing the data, for a reason stated in the goal direction of the study. Choosing it afterwards because the two-tailed p came out at 0.07 is a documented research malpractice, and it is the statistical cousin of the anchoring problem from Lesson 1.1: the threshold moved to fit the answer.
+
+**The two errors.** Every test can be wrong in two directions, and an evaluation should say which one it would rather risk.
+
+| | The null is actually true | The null is actually false |
+|---|---|---|
+| **You reject the null** | **Type I error** — a false alarm. Its probability is the significance level, α, usually 0.05 | Correct decision |
+| **You fail to reject** | Correct decision | **Type II error** — a missed effect. Its probability is β; 1 − β is the test's **power** |
+
+Which error costs more is a business question, not a statistical one. Rolling out an ineffective redesign is a Type I cost; abandoning a redesign that actually worked is a Type II cost. Setting α = 0.05 without asking that question is a convention being applied where a decision was needed.
+
+##### Interpreting p-values
+
+The **p-value** is a measure that helps us make decisions about hypotheses. It is the probability of observing a test statistic **as extreme as, or more extreme than**, the one calculated from our sample, **assuming that the null hypothesis is true**.
+
+A low p-value (typically less than 0.05) indicates that the null hypothesis may be false. In other words, the p-value tells us how likely it is to see a result as extreme as the one we observed if our null hypothesis is true. If the p-value is low, our result is unlikely to have occurred by chance under the null, and we can therefore reject the null hypothesis. For example, in a clinical trial, a p-value below 0.05 might suggest that a new drug has a statistically significant difference in effect compared to a placebo.
+
+*A note on the source: the course text prints this explanation and its clinical-trial example twice, in consecutive sentences with slightly different wording. It is a copy-paste artefact of the same kind as the duplicated paragraph in Activity 1.1.3 — the content is correct, and only one pass of it is needed.*
+
+**Every clause of that definition is load-bearing.** Strip any one of them and the p-value turns into something it is not.
+
+| The clause | What it rules out |
+|---|---|
+| "as extreme **as, or more extreme than**" | It is a tail probability, not the probability of your exact result. Your exact result has a vanishing probability whatever is true |
+| "**assuming the null hypothesis is true**" | It is conditional *on* the null. It therefore cannot be a probability *about* the null |
+| "the probability of **observing a test statistic**" | It is a statement about data, not about hypotheses |
+
+##### What a p-value is not
+
+This table is worth memorising, because each misreading appears in real reports and each one changes the conclusion.
+
+| The misreading | Why it is wrong | What is actually true |
+|---|---|---|
+| "p = 0.03 means there is a 3% chance the null is true" | The p-value is calculated *assuming* the null; it cannot also measure how likely the null is | The probability of data this extreme *if* the null holds is 3% |
+| "p = 0.03 means a 97% chance the alternative is true" | 1 − p is not the probability of anything | Nothing follows about the alternative's probability |
+| "p = 0.03 means the result is 97% likely to replicate" | Replication depends on the true effect size and the new sample's size | The p-value says nothing about the next study |
+| "p = 0.06 means there is no effect" | Not detectable at this α with this sample is not the same as absent | Report the effect size and the interval, then say the test did not reach the threshold |
+| "p = 0.001 means a big effect" | With a large enough sample, a trivial difference produces a tiny p | Detectability and magnitude are different questions — hence effect size |
+| "p < 0.05 so we should act" | Statistical significance carries no cost–benefit information | Act when the effect is large enough to matter *and* reliably detected |
+
+**The multiple-comparison trap.** At α = 0.05, one test in twenty gives a false alarm when nothing is happening. Test twenty KPIs against last quarter and, on average, one comes back "significant" from noise alone. This is the exact mechanism behind a dashboard review that always finds something: the finding was manufactured by the number of comparisons, not by the business.
+
+Two defences, both cheap to state in an assignment: decide **in advance** which comparison is the one being tested, or apply a correction (a Bonferroni adjustment divides α by the number of tests — twenty tests at an overall 0.05 means judging each against 0.0025).
+
+##### Cohen's d: effect size
+
+**Cohen's d** is a statistical measure used to indicate the size of the difference between two groups' means in terms of **standard deviations**. It is calculated as:
+
+> **d = (mean of group 1 − mean of group 2) ÷ pooled standard deviation**
+
+| Value | Interpretation |
+|---|---|
+| **d = 0.2** | **Small effect size** — a slight difference between the two groups' means |
+| **d = 0.5** | **Medium effect size** — a moderate difference between the two groups' means |
+| **d = 0.8** | **Large effect size** — a substantial difference between the two groups' means |
+
+This metric, among others, is crucial for understanding the data presented in result tables and making informed decisions based on that analysis.
+
+**Why it is divided by a standard deviation.** A raw difference in means is in the units of the measurement, so it cannot be compared across different measures and carries no sense of scale. Dividing by the spread converts it into a **common yardstick**: d = 0.5 means the two group means sit half a standard deviation apart, whether the measurement is kroner, minutes or Likert points. That is what makes an effect size comparable where a raw difference is not.
+
+**The pooled standard deviation.** The denominator combines the two groups' spreads, weighted by their sizes:
+
+> **s_pooled = √( [ (n₁ − 1)·s₁² + (n₂ − 1)·s₂² ] ÷ (n₁ + n₂ − 2) )**
+
+where n is each group's size and s each group's standard deviation.
+
+**The thresholds are conventions, not laws.** Cohen offered 0.2, 0.5 and 0.8 as rough benchmarks in the absence of a field-specific standard, and said so. In a field where interventions are typically weak, d = 0.3 can be a strong result; in a field where they are typically strong, d = 0.5 can be disappointing. The defensible move in an assignment is to report d, name the convention you are reading it against, and say what the difference means **in business units** as well.
+
+##### Worked example: significant, and small
+
+Nordtre AS runs its redesigned product page against the old one for a month.
+
+| | Old page | New page |
+|---|---|---|
+| Sessions in test (n) | 180 | 176 |
+| Mean order value | NOK 742 | NOK 791 |
+| Standard deviation | NOK 210 | NOK 224 |
+
+**Step 1 — pooled standard deviation.**
+
+s_pooled = √( [179 × 210² + 175 × 224²] ÷ 354 ) = √( [7 893 900 + 8 780 800] ÷ 354 ) = √47 103.7 = **NOK 217.03**
+
+**Step 2 — Cohen's d.**
+
+d = (791 − 742) ÷ 217.03 = 49 ÷ 217.03 = **0.23** → a **small** effect by Cohen's benchmarks.
+
+**Step 3 — the significance test on the same data.**
+
+Standard error = 217.03 × √(1/180 + 1/176) = 217.03 × 0.1060 = 23.01
+t = 49 ÷ 23.01 = **2.13**, with 354 degrees of freedom, giving **p ≈ 0.034**
+
+**Step 4 — read the two together.**
+
+p = 0.034 clears the 0.05 threshold, so the difference is **detectable**. d = 0.23 says it is **small**. Both are true at once, and neither settles the decision on its own.
+
+**Step 5 — convert to business units, which is what actually decides it.**
+
+NOK 49 per order × 250 orders per month = **NOK 12 250 per month**, or **NOK 147 000 per year**. Against a redesign that cost NOK 240 000, that is a payback of **1.63 years** — the same ROI logic as Activity 1.1.1, now applied to a test result rather than to a project.
+
+**What to write.** "The redesign increased mean order value by NOK 49 (p = 0.034, d = 0.23). The effect is statistically detectable but small by conventional benchmarks, and worth roughly NOK 147 000 annually at current order volume, giving payback on the NOK 240 000 build in about 20 months. I would recommend rollout, on the ROI rather than on the p-value, and note that the test ran for one month and so does not capture seasonal variation."
+
+That last sentence is what separates a pass from a good answer. The statistics were the easy part.
+
+##### The four cases, and what each one means
+
+Significance and effect size vary independently, which gives four situations rather than two.
+
+| | **Small effect** | **Large effect** |
+|---|---|---|
+| **Significant** (p < α) | Real but minor. Decide on cost–benefit, as in the worked example. Very common with large samples | The clean case. Act, and state the magnitude |
+| **Not significant** | Genuinely uninformative. Could be no effect, could be an underpowered test | **The dangerous cell.** A large observed effect that missed the threshold usually means the sample was too small. Do not report this as "no effect" — report the effect size and say the study lacked power |
+
+The bottom-right cell is where most misreporting happens, and it is the practical reason effect size must be reported alongside the test. Without d, a large-but-underpowered result and a genuinely null result look identical in the table.
+
+##### How this is applied in an exam task
+
+A result table question in this course will usually give you two group means, two standard deviations, two sample sizes, and a p-value. The routine:
+
+| Step | What you do | Formula |
+|---|---|---|
+| 1 | State H₀ and Hₐ in the units of the problem, and say one- or two-tailed | — |
+| 2 | Compute the pooled standard deviation | `=SQRT(((n1-1)*s1^2+(n2-1)*s2^2)/(n1+n2-2))` |
+| 3 | Compute Cohen's d and classify it | `=(m1-m2)/s_pooled` |
+| 4 | Compute the standard error and the test statistic | `=s_pooled*SQRT(1/n1+1/n2)` then `=(m1-m2)/SE` |
+| 5 | Get the p-value, or compare against the given α | `=T.DIST.2T(ABS(t),n1+n2-2)` |
+| 6 | Read significance and effect size **together**, using the four-case table | — |
+| 7 | Convert the difference into business units and attach a decision | — |
+
+Steps 6 and 7 are where the marks are. Steps 2 to 5 are arithmetic a spreadsheet does; the examiner is testing whether you know that a small p and a small d can coexist, and what you would do about it.
+
+*A spreadsheet caution carried over from Activity 1.1.1: build each of these as its own cell referencing named inputs, never as one long formula. A single compound expression is unreviewable, and an unreviewable formula is how the wrong cell reference survived into the ROI figure in that workbook.*
+
+#### What statistical inference means here
 
 **Statistical inference** is the act of saying something about a whole population using only a sample of it. Almost every evaluation you perform is an inference, because you rarely have the whole population:
 
@@ -64609,7 +64835,7 @@ flowchart LR
     style E fill:#ffe0e0,stroke:#e57373,stroke-width:2px
 </div>
 
-#### Part 2: Sampled sets, and how the sample was drawn
+#### Sampled sets, and how the sample was drawn
 
 Before any statistic in a result table is read, evaluate the sampling method. No amount of correct arithmetic repairs a badly drawn sample.
 
@@ -64652,7 +64878,7 @@ One of the knowledge outcomes is about updating your knowledge of **quantitative
 
 The practical use in an assignment: when a KPI moves and the result table cannot say why, qualitative evidence is where the explanation usually lives. In the support-desk case from Lesson 1.1, the numbers showed handling time falling and repeat contacts rising; only the call notes or a few staff interviews explain that agents were closing calls early to hit the target.
 
-#### Part 3: Result table analysis with linear regression
+#### Result table analysis with linear regression
 
 A simple linear regression models one outcome variable from one predictor. Reading its result table is a named outcome of this course.
 
@@ -64709,7 +64935,7 @@ Every student knows this sentence. Few use it well. The way to use it in an eval
 
 An answer that says "correlation is not causation, and here the likely confounder is seasonality, which affects both variables" is doing real evaluation work. An answer that only recites the phrase is not.
 
-#### Part 4: Z-testing and z-scores
+#### Z-testing and z-scores
 
 A **z-score** expresses how far a value sits from the mean, measured in standard deviations. A z-score of 2.5 means the value is two and a half standard deviations above the mean.
 
@@ -64732,7 +64958,7 @@ That last point is worth stating in an assignment answer, because it shows you u
 
 #### Z-testing as a significance check
 
-A **z-test** compares an observed result against what would be expected if nothing had changed. The logic is:
+A **z-test** is one specific instance of the hypothesis-testing machinery set out earlier in this lesson: the same null and alternative pair, the same p-value, the same α. What makes it a z-test rather than a t-test is that the standard deviation is known, or the sample is large enough for the difference not to matter. It compares an observed result against what would be expected if nothing had changed. The logic is:
 
 1. State the null position: there is no real difference.
 2. Compute how far the observed result sits from the expected value, in standard-error units.
@@ -64744,7 +64970,7 @@ The practical evaluation questions to attach to it:
 - **How many tests were run?** Testing many variables and reporting only the significant one inflates false positives.
 - **Is significance being confused with importance?** With a large sample, a 0.2 percent difference can be significant and commercially meaningless.
 
-#### Part 5: Critical tools, and choosing between them
+#### Critical tools, and choosing between them
 
 "Mastering relevant tools and techniques used to critically assess and analyse data models" means knowing which tool answers which question. This table is the lesson in one place.
 
@@ -66252,6 +66478,66 @@ CURATED_FLASHCARD_SETS = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "front": "State the null and alternative hypothesis pair, and explain why the two are treated asymmetrically.",
+            "back": "A hypothesis test determines whether a particular claim about a population parameter is valid. The pair is the null hypothesis, H0, which is a statement of no effect, and the alternative hypothesis, Ha or H1, which claims some effect. They are not two competing guesses given equal treatment: the null is the default, held unless the evidence is strong enough to abandon it, and the whole calculation is performed assuming the null is true. Two consequences follow. You never accept the null, only fail to reject it, because failing to reject means the evidence was not strong enough rather than that no effect exists, and a small sample fails to reject almost anything. And the burden of proof falls on the claim of effect, which is the statistical version of the stance this course takes toward a KPI: the number has to earn its conclusion.",
+            "tags": ["hypothesis testing", "null hypothesis", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "Define the p-value precisely, and say which clause of the definition rules out which misreading.",
+            "back": "The p-value is the probability of observing a test statistic as extreme as, or more extreme than, the one calculated from the sample, assuming the null hypothesis is true. A low p-value, typically below 0.05, indicates the null may be false. Every clause carries weight. 'As extreme as or more extreme than' makes it a tail probability, not the probability of your exact result, which has a vanishing probability whatever is true. 'Assuming the null hypothesis is true' makes it conditional on the null, so it cannot also be a probability about the null. 'The probability of observing a test statistic' makes it a statement about data, not about hypotheses.",
+            "tags": ["p-value", "hypothesis testing", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "Name six things a p-value is not.",
+            "back": "p = 0.03 is not a 3 percent chance the null is true, because the p-value is calculated assuming the null and cannot also measure how likely the null is. It is not a 97 percent chance the alternative is true, because 1 minus p is not the probability of anything. It is not a 97 percent chance of replication, because replication depends on the true effect size and the next sample's size. p = 0.06 does not mean no effect; it means not detectable at that alpha with that sample. p = 0.001 does not mean a big effect, because with a large enough sample a trivial difference produces a tiny p. And p below 0.05 is not on its own a reason to act, because statistical significance carries no cost-benefit information.",
+            "tags": ["p-value", "misinterpretation", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "What are Type I and Type II errors, and who decides which one matters more?",
+            "back": "A Type I error is rejecting a null that is actually true, a false alarm, and its probability is the significance level alpha, conventionally 0.05. A Type II error is failing to reject a null that is actually false, a missed effect, with probability beta; 1 minus beta is the test's power. Which error costs more is a business question rather than a statistical one: rolling out an ineffective redesign is a Type I cost, while abandoning a redesign that actually worked is a Type II cost. Setting alpha at 0.05 without asking that question is applying a convention where a decision was needed.",
+            "tags": ["type i error", "type ii error", "power", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "What is Cohen's d, how is it calculated, and what are the benchmark values?",
+            "back": "Cohen's d indicates the size of the difference between two groups' means in terms of standard deviations. It is d = (mean of group 1 minus mean of group 2) divided by the pooled standard deviation, where the pooled standard deviation is the square root of ((n1-1)s1 squared plus (n2-1)s2 squared) divided by (n1+n2-2). The benchmarks are d = 0.2 for a small effect, a slight difference between the means, d = 0.5 for a medium effect, a moderate difference, and d = 0.8 for a large effect, a substantial difference. Dividing by the spread is what makes the measure comparable across different scales: d = 0.5 means the means sit half a standard deviation apart whether the units are kroner, minutes or Likert points. The benchmarks are conventions Cohen offered in the absence of field-specific standards, not laws.",
+            "tags": ["cohen's d", "effect size", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "Significance and effect size vary independently. What are the four cases and which is the dangerous one?",
+            "back": "Significant with a small effect means real but minor, decided on cost-benefit, and it is very common with large samples. Significant with a large effect is the clean case: act, and state the magnitude. Not significant with a small effect is genuinely uninformative, since it could be no effect or an underpowered test. Not significant with a large effect is the dangerous cell: a large observed difference that missed the threshold usually means the sample was too small, and it must not be reported as no effect. Report the effect size and say the study lacked power. Without d, an underpowered result and a genuinely null result look identical in the table, which is the practical reason effect size must always be reported alongside the test.",
+            "tags": ["effect size", "significance", "power", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "What is the multiple-comparison trap and what defends against it?",
+            "back": "At alpha 0.05, one test in twenty produces a false alarm when nothing is happening. Testing twenty KPIs against last quarter therefore yields, on average, one significant result from noise alone. This is the mechanism behind a dashboard review that always finds something: the finding was manufactured by the number of comparisons rather than by the business. Two defences: decide in advance which comparison is the one being tested, or apply a correction such as Bonferroni, which divides alpha by the number of tests, so twenty tests at an overall 0.05 means judging each against 0.0025.",
+            "tags": ["multiple comparisons", "p-value", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "Why must a one-tailed test be chosen before seeing the data?",
+            "back": "A one-tailed alternative claims a direction, such as the new page being better, while a two-tailed alternative claims only a difference. Choosing one-tailed halves the p-value, so it must be decided in advance and justified by the direction of the study. Switching to one-tailed after seeing a two-tailed p of 0.07 is documented research malpractice, and it is the statistical cousin of the anchoring problem from Lesson 1.1: the threshold moved to fit the answer rather than the answer being judged against the threshold.",
+            "tags": ["one-tailed", "hypothesis testing", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "Lesson 1.2 calls statistical inference, result table analysis and critical tools a triad. What does each contribute?",
+            "back": "Statistical inference is the backbone: it provides the structured method for drawing reliable conclusions from a subset of data and generalising them to a broader population. Result table analysis gives a clear, tabulated visualisation of the findings, which streamlines interpretation and highlights key trends and anomalies. Critical tools are the software and methodologies designed to facilitate those processes, supplying accuracy, efficiency and depth. Together they guide the analyst in transforming raw data into actionable intelligence. The order matters: inference is the reasoning that makes the result mean anything, the table is the presentation of a conclusion already reached, and the tool is described as facilitating those processes rather than producing the conclusion, so the tool is the last of the three and not the first.",
+            "tags": ["inference", "triad", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "Name the characteristic failure attached to each element of the Lesson 1.2 triad.",
+            "back": "Inference failure: the arithmetic is perfect and the conclusion still does not hold, for example a satisfaction figure computed correctly from a self-selected sample and then reported as the whole customer base's satisfaction. Presentation failure: the table is accurate and the reader draws the wrong conclusion anyway, for example a coefficient reported without its confidence interval so an uncertain estimate reads as a firm number. Tool failure: the software returned a number and it is not the number you asked for, as in the Activity 1.1.1 workbook where the ROI cell referenced the wrong pair of cells while Excel worked perfectly. A tool never warns you that it computed the wrong quantity flawlessly, and the output of a wrong calculation is formatted exactly like the output of a right one.",
+            "tags": ["inference", "failure modes", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "What are the four rungs from raw data to actionable intelligence, and what moves you up each one?",
+            "back": "Raw data is the rows as captured, and cleaning, joining and defining move you up. Information is data summarised, tabulated and made comparable, reached through descriptive statistics and the result table. Insight is a claim about the population with its uncertainty stated, reached through inference. Intelligence is a claim with a decision attached, reached through contextualisation and a threshold. The top rung uses the same test Lesson 1.1 applied to vanity metrics: if no decision would change at any value of the result, the analysis has produced information rather than intelligence, however sound the statistics behind it.",
+            "tags": ["intelligence", "actionable", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "How does Lesson 1.2 relate to Lesson 1.1?",
+            "back": "Lesson 1.1 asked which number to watch. Lesson 1.2 asks whether the number you are watching is telling the truth about anything beyond the rows you measured, and how to read the table that carries it. A KPI is almost always computed on a sample: this month rather than all months, respondents rather than all customers, the test set rather than every future case. Lesson 1.1 established that a KPI is a proxy for a goal; Lesson 1.2 adds a second gap, because the KPI is also an estimate of the quantity it names. Both gaps are open at the same time, and an evaluation has to account for each separately.",
+            "tags": ["kpi", "inference", "lesson 1.2", "evo"]
+        },
         {
             "front": "Why is a KPI described as a heuristic rather than as the truth?",
             "back": "A KPI is a measurable proxy for something the business actually cares about. It is chosen because it is timely and cheap to track, which means it supports a fast decision but can also be wrong. Evaluating an outcome therefore includes evaluating the KPI itself.",
@@ -67963,6 +68249,24 @@ CURATED_EXAM_QUESTION_BANK = {
         {
             "type": "skills",
             "source": "core_curated",
+            "question": "A team tests a redesigned product page. Old page: n = 180, mean order value NOK 742, standard deviation NOK 210. New page: n = 176, mean NOK 791, standard deviation NOK 224. The redesign cost NOK 240 000 and the shop takes 250 orders a month. Compute Cohen's d and the significance test, then give the recommendation.",
+            "answer": "Step 1, the pooled standard deviation. s_pooled = square root of (((180-1) times 210 squared plus (176-1) times 224 squared) divided by (180+176-2)) = square root of ((179 times 44 100 plus 175 times 50 176) divided by 354) = square root of ((7 893 900 plus 8 780 800) divided by 354) = square root of 47 103.7 = NOK 217.03. Step 2, Cohen's d = (791 minus 742) divided by 217.03 = 49 divided by 217.03 = 0.23, which is a small effect on Cohen's benchmarks of 0.2 small, 0.5 medium and 0.8 large. Step 3, the significance test on the same data. The standard error is 217.03 times the square root of (1/180 plus 1/176) = 217.03 times 0.1060 = 23.01, so t = 49 divided by 23.01 = 2.13 on 354 degrees of freedom, giving p of approximately 0.034. Step 4, read the two together: p = 0.034 clears the 0.05 threshold so the difference is detectable, while d = 0.23 says it is small. Both are true at once and neither settles the decision alone. Step 5, convert to business units, which is what actually decides it: NOK 49 per order times 250 orders per month is NOK 12 250 a month or NOK 147 000 a year, so against a NOK 240 000 build the payback is 1.63 years. The recommendation: the redesign increased mean order value by NOK 49 (p = 0.034, d = 0.23); the effect is statistically detectable but small by conventional benchmarks, worth roughly NOK 147 000 annually at current order volume, giving payback in about 20 months. I would recommend rollout on the ROI rather than on the p-value, and note that the test ran for one month and so does not capture seasonal variation. Exam use: the arithmetic in steps 1 to 3 is what a spreadsheet does; the marks are in steps 4 and 5, which show that you know a small p and a small d can coexist and what to do about it."
+        },
+        {
+            "type": "knowledge",
+            "source": "core_curated",
+            "question": "A result table carries three different kinds of statement. Name them, say what each answers, and explain why reporting only one is incomplete.",
+            "answer": "A hypothesis test answers whether there is a detectable effect at all, and its quantities are the test statistic and the p-value. A confidence interval answers within what range the true value plausibly lies, and its quantities are the interval and its confidence level. An effect size answers how big the effect is in units that mean something, expressed as Cohen's d, a slope, or a percentage-point difference. Each answers a question the other two cannot: the test says detectable, the interval says how precisely known, the effect size says how much. Reporting only one is incomplete, and which one is missing predicts what the reader will get wrong. With only a p-value, a reader treats detectability as magnitude, so a trivial difference measured on a very large sample reads as an important finding. With only an effect size, a reader treats a difference that could easily be noise as established. With only an interval, the reader has the precision but no stated decision rule. The worst case is a large observed effect reported without its effect size when the test did not reach significance, because an underpowered study and a genuinely null result then look identical. Exam use: when asked to appraise a result table, check for all three and name explicitly which is absent and what conclusion that absence invites."
+        },
+        {
+            "type": "knowledge",
+            "source": "core_curated",
+            "question": "Lesson 1.2 introduces statistical inference, result table analysis and critical tools as a triad. Explain what each contributes, why the order they are given in matters, and the failure mode that belongs to each.",
+            "answer": "Statistical inference is the backbone of the triad: it is the structured method for drawing reliable conclusions from a subset of data and generalising them to broader populations, and it is what gives an analyst licence to say anything about the population from the sample at all. Result table analysis provides a clear, tabulated visualisation of the findings, streamlining interpretation and highlighting key trends and anomalies, which is what makes a conclusion legible, checkable and open to disagreement on evidence rather than locked inside the analyst's head. Critical tools are the software and methodologies designed to facilitate those processes and ensure accuracy, efficiency and depth, without which the analysis is either too small to be worth doing or done by hand and quietly wrong. Together they transform raw data into actionable intelligence. The order is an argument rather than a list: inference comes first because it is the reasoning that makes any of it mean something, the table comes second because it presents a conclusion already reached, and tools come third and are described only as facilitating those processes, not as producing the conclusion. That ranking is the opposite of how the work usually feels, because in practice you open the tool first, the tool prints a table, and the inference becomes whatever you decide the table says. Each element has its own failure. An inference failure means the arithmetic is perfect and the conclusion still does not hold, as when a satisfaction figure computed correctly from a self-selected sample is reported as the customer base's satisfaction. A presentation failure means the table is accurate and the reader still draws the wrong conclusion, as when a coefficient is reported without its confidence interval so a highly uncertain estimate reads as a firm number. A tool failure means the software returned a number and it is not the number you asked for, as in the Activity 1.1.1 workbook where the ROI cell divided the wrong pair of references while Excel worked perfectly. Exam use: if a question asks you to evaluate an analysis, work the three failures in that order, because a tool check will never catch a sampling problem and a sampling check will never catch a wrong cell reference."
+        },
+        {
+            "type": "skills",
+            "source": "core_curated",
             "question": "A team reports that their new dashboard delivered a 30 percent improvement in decision-making speed, measured before and after implementation. Evaluate the claim.",
             "answer": "The measurement approach is the one the course text itself suggests, analysing efficiency, decision speed and outcomes before and after implementation, so the team has done the right kind of thing. The problem is that this is a before-and-after study without a control group, and three specific issues follow. First, other things changed: a dashboard is rarely introduced alone, and new reporting usually arrives together with new processes, new management attention and sometimes new staff, so the 30 percent is attributed to whichever change is most visible rather than to whichever change caused it. That is the availability heuristic operating on a project evaluation. Second, the attention effect: measuring a process tends to improve it regardless of the tool used, so some of the gain belongs to being watched. Third, the ROI numerator problem from Activity 1.1.1: crediting one investment with the whole improvement is exactly how a reported ROI is inflated, and only the incremental gain attributable to the dashboard belongs in it. I would also ask how decision speed was defined, whether that definition existed before the measurement or was chosen afterwards, and whether 30 percent exceeds normal variation in that measure. What I would propose instead is a qualified claim: decision speed improved by a stated amount over a stated period, with a list of what else changed in the window and an explicit statement of what share is plausibly attributable to the dashboard. That is a weaker claim than 30 percent and it is the one that survives scrutiny. There is a symmetry worth naming in the answer: a dashboard exists to help an organisation evaluate its outcomes, and it is itself an outcome requiring evaluation, with the same tools, the same caveats and the same temptation to report the flattering figure."
         },
@@ -68217,6 +68521,31 @@ CURATED_PRACTICE_QUESTION_BANK = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "type": "knowledge",
+            "question": "What does a p-value of 0.04 actually tell you?",
+            "answer": "It says that if the null hypothesis were true, the probability of observing a test statistic as extreme as, or more extreme than, the one computed from this sample is 4 percent. Because it is below the conventional 0.05 threshold, the result is treated as unlikely to have arisen under the null and the null is rejected. What it does not say is that there is a 4 percent chance the null is true, that there is a 96 percent chance the alternative is true, that the result is 96 percent likely to replicate, or that the effect is large. It is a statement about data conditional on the null, not a statement about hypotheses, and it carries no information about magnitude, which is why an effect size such as Cohen's d has to be reported alongside it."
+        },
+        {
+            "type": "skills",
+            "question": "A colleague reports that a change was not statistically significant and recommends abandoning it. The observed difference was large. What would you say?",
+            "answer": "I would ask for the effect size and the sample size before accepting the recommendation, because a large observed effect that fails to reach significance is the classic underpowered study rather than evidence of no effect. Not significant means the evidence was not strong enough to reject the null at the chosen alpha; it does not mean the null is true, and a small sample fails to reject almost anything. The four-case reading of significance against effect size makes this concrete: not significant with a small effect is genuinely uninformative, while not significant with a large effect points at insufficient power. Without a reported d, those two situations look identical in the table, and abandoning the change treats the second as if it were the first. My recommendation would be to report the effect size, state that the test lacked power, and either extend the test or compute what sample size would be needed to detect an effect of that magnitude, rather than reporting no effect."
+        },
+        {
+            "type": "skills",
+            "question": "A quarterly review compares twenty KPIs against last quarter and reports the one that came back significant at p < 0.05. What is wrong?",
+            "answer": "At alpha 0.05, one test in twenty produces a false alarm even when nothing has changed, so testing twenty KPIs and reporting the significant one manufactures the finding out of the number of comparisons rather than out of the business. This is why some dashboard reviews always find something. The defences are to decide in advance which single comparison is the one being tested, or to apply a correction such as Bonferroni, which divides alpha by the number of tests: twenty tests at an overall 0.05 means each is judged against 0.0025, and a result at p = 0.04 would no longer qualify. I would also ask whether the direction of interest was stated before the data was seen, since choosing a one-tailed test afterwards halves the p-value and is the same error in another form."
+        },
+        {
+            "type": "knowledge",
+            "question": "What does it mean that the analysis produced information rather than actionable intelligence?",
+            "answer": "Raw data becomes information when it is summarised, tabulated and made comparable, and information becomes insight when inference turns it into a claim about the population with its uncertainty stated. It becomes intelligence only when a decision is attached, through contextualisation and a threshold. So an analysis that has produced information rather than intelligence may be statistically sound and still leave nobody able to say what they would do differently at any value of the result. This is the same test Lesson 1.1 used to identify a vanity metric, applied to the output of a whole analysis rather than to a single number."
+        },
+        {
+            "type": "skills",
+            "question": "A colleague shows you a regression output from a statistics package and says the tool confirms the relationship. What is wrong with that framing?",
+            "answer": "It inverts the triad from the lesson introduction. The text places inference first, result table analysis second and critical tools third, and describes tools as facilitating those processes rather than producing conclusions. A package does not confirm a relationship; it computes whatever the specification asked for, on whatever sample was supplied, and formats a wrong calculation exactly like a right one. So I would work backwards through the triad: whether the number in the table is the number intended, which is the tool question; whether the table is being read correctly, including the uncertainty around the estimate and not only the point value, which is the presentation question; and whether the sample supports a claim about the population at all, which is the inference question and the one no amount of tooling can answer. Only the last of those is what confirming a relationship would mean."
+        },
         {
             "type": "knowledge",
             "question": "Explain the classification of quantitative KPIs into financial and non-financial metrics, and why both are monitored.",
