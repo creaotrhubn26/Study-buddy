@@ -1599,6 +1599,27 @@ def annotate_text_with_glossary(text, glossary_entries, occurrence_counts=None, 
 
     protected_text, code_replacements = protect_code_segments(text)
     occurrence_counts = occurrence_counts if occurrence_counts is not None else {}
+
+    # Markdown headings are left unannotated. A glossary span carries a
+    # block-level hover card, and inside a heading that forces the heading to
+    # wrap onto two lines. Only the first couple of occurrences of a term are
+    # highlighted, so whichever heading happens to hold the first one would
+    # break; protecting headings keeps the highlighting in the body text where
+    # it belongs.
+    heading_replacements = {}
+
+    def _protect_heading(match):
+        placeholder = f"@@GLOSSARYHEADING{len(heading_replacements)}@@"
+        heading_replacements[placeholder] = match.group(0)
+        return placeholder
+
+    protected_text = re.sub(
+        r"^[ \t]{0,3}#{1,6}[ \t].*$",
+        _protect_heading,
+        protected_text,
+        flags=re.MULTILINE,
+    )
+
     html_parts = re.split(r"(<[^>]+>)", protected_text)
     annotated_parts = []
     glossary_replacements = {}
@@ -1628,6 +1649,8 @@ def annotate_text_with_glossary(text, glossary_entries, occurrence_counts=None, 
         annotated_parts.append(annotated_segment)
 
     restored = restore_code_segments("".join(annotated_parts), code_replacements)
+    for placeholder, heading_line in heading_replacements.items():
+        restored = restored.replace(placeholder, heading_line)
     for placeholder, html_value in glossary_replacements.items():
         restored = restored.replace(placeholder, html_value)
     return restored
@@ -63177,9 +63200,64 @@ To summarise this first block: KPIs are not just numbers or metrics. They are **
 
 For this course, add one clause to that summary: because they are tools rather than truths, **they are themselves objects of evaluation**. Everything that follows in this module is about how to carry that out.
 
-#### What a heuristic actually is
+#### Heuristics: an overview
 
-The module introduction defines a **heuristic** as a mental shortcut or rule of thumb that simplifies decision-making but can sometimes lead to errors. Hold on to both halves.
+**Heuristics** are the mental shortcuts or rules of thumb that people use to simplify decision-making and problem-solving. Instead of methodically analysing every aspect of a decision or problem, heuristics speed up the process by facilitating quick, often **subconscious** judgments. These cognitive shortcuts result from the brain's strategy to save effort and function efficiently, especially under conditions of **uncertainty or information overload**.
+
+##### Origins and evolution
+
+The concept of heuristics in cognitive psychology was popularised by two researchers, **Daniel Kahneman and Amos Tversky**, in the 1970s. They studied how people make decisions and solve problems, and discovered that individuals often use heuristics, especially when facing complex issues or incomplete information.
+
+Their work matters to this course for a specific reason: it established that these shortcuts are **systematic**. People do not make random errors under uncertainty; they make the *same* errors in the *same* directions. A predictable error can be anticipated and designed against, which is what the rest of this lesson is doing.
+
+##### Benefits and drawbacks
+
+| | |
+|---|---|
+| **Benefits** | |
+| **Efficiency** | Heuristics allow quicker decisions without the need for detailed analysis |
+| **Functionality in uncertainty** | In many real-world situations complete information is unavailable. Heuristics let people function and decide despite this |
+| **Drawbacks** | |
+| **Inaccuracy** | These shortcuts can sometimes lead to errors or biases |
+| **Over-reliance** | Depending on heuristics without considering their limitations leads to **systematic** errors or consistent biases in judgment |
+
+Note the asymmetry between the two drawbacks. **Inaccuracy** is occasional and tolerable — it is the price of speed. **Over-reliance** is the serious one, because a consistent bias does not average out over many decisions. It accumulates in the same direction.
+
+##### Relation to cognitive biases
+
+While heuristics can be beneficial, they often lead to **cognitive biases**: systematic patterns of deviation from norm or rationality in judgment.
+
+For example, because of the **availability heuristic**, someone might overemphasise recent experiences — such as a recent plane crash — and develop an irrational fear of flying, even though statistically flying is much safer than many daily activities.
+
+The mechanism is worth stating precisely, because it recurs throughout this course: the availability heuristic substitutes *how easily an example comes to mind* for *how common it actually is*. Vivid, recent and emotionally charged events come to mind easily, so they feel frequent. This is the same substitution that makes a manager's memory of two angry customers outweigh a survey of four hundred.
+
+##### The biases that show up in KPI and evaluation work
+
+The general point becomes useful when it is made specific. Each of these appears elsewhere in this course under a different name:
+
+| Bias | The substitution it makes | How it appears in evaluation work |
+|---|---|---|
+| **Availability** | Ease of recall stands in for frequency | A daily dashboard number feels more real than last quarter's survey finding, regardless of which is relevant |
+| **Anchoring** | The first number seen sets the frame | A threshold set three years ago keeps being treated as the right one, because it is the number in front of everyone |
+| **Confirmation** | Evidence for a held view is sought and weighed more heavily | Testing until a result appears, then stopping — the selective evaluation of Lesson 1.4 |
+| **Recency** | Latest observations dominate the picture | One bad month reads as a trend, when it sits inside normal variation |
+| **Survivorship** | Only the surviving cases are visible | Studying current customers to understand churn, which omits everyone who left |
+| **Base-rate neglect** | A vivid specific case outweighs the underlying rate | A single dramatic complaint drives a change that the complaint rate never justified |
+
+Every one of these is defeated the same way: by an artefact. A written definition beats anchoring, a documented method beats confirmation bias, a comparison against normal variation beats recency, and a stated sampling frame beats survivorship. **The habit this course teaches is to replace a judgement with a record.**
+
+##### KPIs are heuristics chosen on purpose
+
+There is one important difference between a cognitive heuristic and a KPI, and it is the reason KPIs can be managed at all.
+
+| | Cognitive heuristic | A KPI |
+|---|---|---|
+| How it arises | Automatically and subconsciously | Deliberately chosen by an organisation |
+| Where it lives | In one person's head | In a written definition |
+| Can it be inspected? | No | Yes |
+| Can it be evaluated? | Only indirectly | Directly, which is what this course does |
+
+A KPI is a heuristic an organisation **adopts on purpose**. That makes it documentable, auditable and improvable in a way an intuition is not. It also means the organisation owns the consequences: nobody chose to have an availability bias, but somebody chose average handling time as the support KPI.
 
 When the curriculum says KPIs serve as heuristics **in decision making**, it means:
 
@@ -63205,6 +63283,26 @@ flowchart TD
 </div>
 
 The arrow from **Evaluate the outcome** back to **Business goal** is the part students most often leave out. If a KPI repeatedly triggers actions that do not improve the goal, the KPI is the thing that needs fixing.
+
+##### Conclusion: when to stop using the shortcut
+
+Heuristics play a fundamental role in human cognition and decision-making. They offer speed and efficiency, and we must be aware of their limitations and potential biases. Recognising when we are relying on a shortcut helps us make more informed, rational decisions, **especially in crucial or high-stakes situations**.
+
+That last clause is a decision rule, not a caveat, and it is the same rule Lesson 1.3 builds into a work method for confidence levels. The higher the cost of being wrong, the less a shortcut is worth:
+
+| Situation | What the shortcut costs | What to do |
+|---|---|---|
+| Routine, reversible, frequent | Almost nothing. An occasional error is cheaper than analysing every case | Use the heuristic. That is what it is for |
+| Consequential but recoverable | A real but survivable error | Use the heuristic, then verify before committing |
+| Crucial, expensive, or hard to reverse | The error is the whole cost | Slow down. Replace the shortcut with analysis and state your confidence |
+
+This is why the confidence-level work method in Lesson 1.3 starts by naming the decision and the cost of each type of error. Setting a confidence level *is* the formal version of deciding how much you are willing to rely on a shortcut.
+
+Three practical signals that you are relying on a heuristic when you should not be:
+
+1. **You reached the conclusion before you looked.** Confirmation bias in its most detectable form.
+2. **The evidence you can name is a vivid example rather than a rate.** Availability and base-rate neglect together.
+3. **You are comparing against the number that happens to be in front of you** rather than against a benchmark, a target, or normal variation. Anchoring, and the reason contextualisation has its own section in this lesson.
 
 #### Goal, KPI, metric, target, threshold
 
@@ -63820,6 +63918,12 @@ Social media is the most self-selected source in this lesson. People post when d
             "key_points": [
                 "Gut instinct generates hypotheses; quantifiable metrics with well-defined goals are what test them, and only the second can be checked by someone else",
                 "A KPI is a heuristic exactly as the module defines it: a shortcut that simplifies decision-making and can sometimes lead to errors",
+                "Heuristics were popularised in cognitive psychology by Kahneman and Tversky in the 1970s, who showed the resulting errors are systematic rather than random",
+                "Their benefits are efficiency and functionality under uncertainty; their drawbacks are inaccuracy and, more seriously, over-reliance, since a consistent bias does not average out",
+                "The availability heuristic substitutes ease of recall for actual frequency, which is why a recent vivid event feels common",
+                "Availability, anchoring, confirmation, recency, survivorship and base-rate neglect each appear in evaluation work, and each is defeated by replacing a judgement with a record",
+                "A KPI differs from a cognitive heuristic in being chosen deliberately, so it can be written down, inspected and evaluated as an intuition cannot",
+                "The higher the stakes, the less a shortcut is worth, which is the same rule the confidence-level work method formalises",
                 "KPIs are the lens an organisation sees itself through and the yardstick it measures by, so a bad KPI makes part of the business invisible",
                 "The two main types are lagging (the outcome, verified late) and leading (a predictor, actionable early), and they should be paired so a broken predictive link becomes visible",
                 "KPIs classify first as quantitative or qualitative, and quantitative KPIs divide again into financial and non-financial metrics",
@@ -65774,6 +65878,46 @@ CURATED_FLASHCARD_SETS = {
             "tags": ["kpi", "definitions", "version control", "evo"]
         },
         {
+            "front": "Define a heuristic, and say why the brain uses them.",
+            "back": "A heuristic is a mental shortcut or rule of thumb that simplifies decision-making and problem-solving. Instead of methodically analysing every aspect, it produces a quick and often subconscious judgment. These shortcuts result from the brain's strategy to save effort and function efficiently, especially under uncertainty or information overload.",
+            "tags": ["heuristics", "evo"]
+        },
+        {
+            "front": "Who established the study of heuristics in cognitive psychology, and why does it matter here?",
+            "back": "Daniel Kahneman and Amos Tversky popularised the concept in the 1970s, studying how people decide and solve problems and finding that individuals rely on heuristics especially when facing complex issues or incomplete information. It matters because they showed the resulting errors are systematic rather than random: people make the same errors in the same directions, and a predictable error can be designed against.",
+            "tags": ["heuristics", "kahneman", "tversky", "evo"]
+        },
+        {
+            "front": "What are the two benefits and two drawbacks of heuristics, and which drawback is more serious?",
+            "back": "Benefits: efficiency, since they allow quicker decisions without detailed analysis, and functionality in uncertainty, since complete information is often unavailable. Drawbacks: inaccuracy, since shortcuts can lead to errors or biases, and over-reliance, where depending on them without regard to their limits produces systematic errors. Over-reliance is the serious one, because occasional inaccuracy is the tolerable price of speed while a consistent bias does not average out and accumulates in one direction.",
+            "tags": ["heuristics", "evo"]
+        },
+        {
+            "front": "What is a cognitive bias, and how does the availability heuristic produce one?",
+            "back": "A cognitive bias is a systematic pattern of deviation from norm or rationality in judgment. The availability heuristic substitutes how easily an example comes to mind for how common it actually is. Vivid, recent and emotionally charged events come to mind easily, so they feel frequent: a recent plane crash can produce an irrational fear of flying even though flying is statistically far safer than many daily activities.",
+            "tags": ["cognitive bias", "availability", "evo"]
+        },
+        {
+            "front": "Name six biases that appear in evaluation work and the substitution each makes.",
+            "back": "Availability substitutes ease of recall for frequency. Anchoring lets the first number seen set the frame. Confirmation seeks and over-weights evidence for a held view. Recency lets the latest observations dominate. Survivorship makes only the surviving cases visible. Base-rate neglect lets a vivid specific case outweigh the underlying rate. All six are defeated the same way: replace a judgement with a record, such as a written definition, a documented method or a stated sampling frame.",
+            "tags": ["cognitive bias", "evaluation", "evo"]
+        },
+        {
+            "front": "How does a KPI differ from a cognitive heuristic?",
+            "back": "A cognitive heuristic arises automatically and subconsciously, lives in one person's head, and cannot be inspected. A KPI is adopted deliberately, lives in a written definition, and can be inspected and evaluated directly. That is why KPIs can be managed at all, and it also means the organisation owns the consequences: nobody chose to have an availability bias, but somebody chose average handling time as the support KPI.",
+            "tags": ["heuristics", "kpi", "evo"]
+        },
+        {
+            "front": "When should you stop relying on a heuristic?",
+            "back": "The higher the cost of being wrong, the less a shortcut is worth. For routine, reversible, frequent decisions, use the heuristic - an occasional error is cheaper than analysing every case. For consequential but recoverable ones, use it and then verify before committing. For crucial, expensive or hard-to-reverse decisions, slow down, replace the shortcut with analysis, and state your confidence. Setting a confidence level is the formal version of deciding how much to rely on a shortcut.",
+            "tags": ["heuristics", "high stakes", "evo"]
+        },
+        {
+            "front": "Name three signals that you are relying on a heuristic when you should not be.",
+            "back": "You reached the conclusion before you looked, which is confirmation bias in its most detectable form. The evidence you can name is a vivid example rather than a rate, which is availability and base-rate neglect together. And you are comparing against whatever number happens to be in front of you rather than against a benchmark, a target or normal variation, which is anchoring.",
+            "tags": ["heuristics", "self-check", "evo"]
+        },
+        {
             "front": "What is a guard KPI and why does it matter?",
             "back": "A guard KPI is a second indicator paired with a primary one to stop the primary being improved at the expense of the goal. Average handling time guarded by repeat contact rate is the classic example. Unguarded targets are how well-intentioned KPIs produce harmful behaviour.",
             "tags": ["kpi", "ethics", "evo"]
@@ -67091,6 +67235,18 @@ CURATED_EXAM_QUESTION_BANK = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "type": "knowledge",
+            "source": "core_curated",
+            "question": "Explain what heuristics are, where the concept comes from, and what their benefits and drawbacks are.",
+            "answer": "Heuristics are the mental shortcuts or rules of thumb people use to simplify decision-making and problem-solving. Rather than methodically analysing every aspect of a problem, they produce quick and often subconscious judgments, and they arise from the brain's strategy to save effort and function efficiently under uncertainty or information overload. The concept was popularised in cognitive psychology by Daniel Kahneman and Amos Tversky in the 1970s, who studied how people decide and solve problems and found that individuals rely on heuristics especially when facing complex issues or incomplete information. Their benefits are efficiency, since decisions can be reached without detailed analysis, and functionality in uncertainty, since complete information is usually unavailable and heuristics let people act anyway. Their drawbacks are inaccuracy, since shortcuts sometimes produce errors or biases, and over-reliance, where depending on them without regard to their limitations produces systematic errors and consistent biases. The second is the more serious, because occasional inaccuracy is the tolerable price of speed while a consistent bias does not average out over many decisions but accumulates in the same direction. Heuristics often lead to cognitive biases, meaning systematic patterns of deviation from norm or rationality: the availability heuristic, for example, substitutes how easily an example comes to mind for how common it is, so a recent plane crash can produce a fear of flying despite flying being statistically far safer than many daily activities."
+        },
+        {
+            "type": "skills",
+            "source": "core_curated",
+            "question": "A manager rejects a survey of 400 customers, saying two customers complained to them personally last week about the same thing. Name what is happening and explain how you would respond.",
+            "answer": "This is the availability heuristic producing base-rate neglect. The availability heuristic substitutes how easily an example comes to mind for how common the thing actually is, and two direct personal conversations are vivid, recent and emotionally charged, so they come to mind far more readily than four hundred anonymous responses. Base-rate neglect is the consequence: the vivid specific cases outweigh the underlying rate. It is worth saying that the manager is not being irrational in any unusual way, since this is a systematic pattern that Kahneman and Tversky showed applies to everyone, which is precisely why it can be anticipated and designed against rather than treated as a personal failing. How I would respond: first, take the two complaints seriously as qualitative evidence, because they may identify a real theme and unprompted feedback surfaces problems no survey question anticipated. Second, separate the two questions the manager is conflating: whether the problem is real, which the two complaints support, and how widespread it is, which only the survey can answer. Third, look for the theme in the survey data, since if it appears there at a low rate both sources agree and the disagreement dissolves, and if it does not appear at all that is itself informative. The general defence is the one this lesson teaches throughout: replace a judgement with a record, and compare against a rate rather than against whichever example is most memorable."
+        },
         {
             "type": "knowledge",
             "source": "core_curated",
