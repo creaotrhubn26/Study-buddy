@@ -11820,6 +11820,41 @@ Keep a decision log linking KPIs to actions for:
                 "hint": "Ask which category of error survives type checking, range validation and completeness checks."
             },
             {
+                "title": "Activity 1.1.2 - Step 1: Explore the tools and judge their fit",
+                "type": "practical",
+                "question": "Research web analytics (Google Analytics), CRM (Salesforce, HubSpot), HRM (Workday, SAP SuccessFactors) and financial software (QuickBooks) for a 34-person company. What does each offer, and what does an honest fit assessment conclude?",
+                "answer": "WHAT EACH OFFERS: Google Analytics 4 gives sessions, unique users, time on page, bounce rate, traffic source and conversion events, integrates with ad platforms, and can report KPIs automatically. CRM systems give pipeline value, deal stage, win rate, average deal size, sales cycle length and customer acquisition cost, with built-in analytics and custom dashboards. HRM software gives turnover rate, average time to hire, training cost per head and headcount history in real time. Financial software gives revenue growth rate, net profit margin, the cash conversion cycle and cost lines on real-time dashboards. THE FIT ASSESSMENT: at 34 employees, GA4 is a strong fit and free at that volume. HubSpot fits a small B2B arm while Salesforce is built for far larger sales organisations and would cost more in configuration than it returns. Workday and SAP SuccessFactors are sized for thousands of employees; the same KPIs come from the payroll system plus a maintained leavers register. QuickBooks is good in principle, but a Norwegian company needs software handling MVA and SAF-T reporting, so the local equivalent fits better. CAC needs a small custom job, because customer counts live in the CRM and spend lives in finance and the ad platforms, and no single tool holds both. THE POINT: judging fit is part of the exercise, not a failure to complete it. Choosing a tool is a decision with a cost, and the KPI being available in Workday is not a reason to buy Workday. The definition matters more than the platform, because the definition is what drifts.",
+                "hint": "For each platform ask what it costs to run at your organisation's size, not only what it can measure."
+            },
+            {
+                "title": "Activity 1.1.2 - Step 1: Collect a quantitative KPI with two sources",
+                "type": "practical",
+                "question": "GA4 reports 21,500 monthly sessions and 231 purchase events. The order system reports 250 orders. Calculate the conversion rate, and explain why you would collect the same figure from two systems rather than one.",
+                "answer": "CALCULATION: conversion rate from the authoritative source is 250 / 21,500 x 100 = 1.16%. From GA4's own purchase events it is 231 / 21,500 x 100 = 1.07%. The discrepancy is (250 - 231) / 250 x 100 = 7.6%. WHY TWO SOURCES: using two independent tools for one figure is data ensembling in miniature - agreement raises confidence and disagreement locates the problem. Analytics tracking is client-side and therefore lossy: ad blockers, refused consent and untagged pages all remove real events, which is why GA4 undercounts purchases. The order system is authoritative for orders because an order cannot exist without being recorded there. RECONCILE, DO NOT AVERAGE: the correct response is to take orders from the order system, keep the GA4 figure for trend continuity, and monitor the gap. A stable 7-8% gap is a known and acceptable measurement property; a gap that suddenly widens is a tagging or consent problem worth investigating. Knowing the size of the gap is what makes the GA4 conversion figure usable at all. Not knowing it is how a KPI quietly understates performance every month while nothing appears to be wrong.",
+                "hint": "Which of the two systems could an order possibly not appear in, and why?"
+            },
+            {
+                "title": "Activity 1.1.2 - Step 2: Collect a qualitative KPI and read it properly",
+                "type": "scenario",
+                "question": "A post-purchase NPS survey went to 1,200 customers and got 348 responses distributed as 0:3, 1:2, 2:4, 3:6, 4:9, 5:18, 6:35, 7:47, 8:57, 9:72, 10:95. Calculate the response rate and NPS, then show two things the banded score cannot tell you.",
+                "answer": "RESPONSE RATE: 348 / 1,200 x 100 = 29.0%, which is high for a post-purchase survey. Report it, because a score without a response rate cannot be evaluated - self-selection is the standard survey bias. NPS: promoters (9-10) = 72 + 95 = 167, or 48.0%. Passives (7-8) = 47 + 57 = 104, or 29.9%. Detractors (0-6) = 3 + 2 + 4 + 6 + 9 + 18 + 35 = 77, or 22.1%. NPS = 48.0 - 22.1 = +25.9. Mean score = SUMPRODUCT of scores and counts divided by 348 = 2,747 / 348 = 7.89, a different and equally valid summary. TEST 1 - a boundary crossing: if every respondent scoring 6 moved to 7, detractors fall to 42 (12.1%) and NPS rises to 48.0 - 12.1 = +35.9, a jump of 10.1 points without gaining a single promoter. Thirty-five people sit at exactly 6, one point from being passive, so a large NPS swing can rest on a handful of customers crossing one boundary. TEST 2 - improvement inside a band: if every respondent scoring 0-5 improved to 6, that is 42 genuinely unhappy customers becoming far less unhappy, and NPS does not move at all, because they remain detractors. CONCLUSION: banding discards most of the data, so keep the full 0-10 distribution. The score gives direction; the open-text follow-up gives the reason, and the reason is the part the business can act on. This is exactly why the course text says NPS insight requires qualitative interpretation.",
+                "hint": "Recompute NPS twice: once moving the 6s up one point, and once moving everyone below 6 up to 6."
+            },
+            {
+                "title": "Activity 1.1.2 - Step 2: Summarising a Likert engagement survey",
+                "type": "scenario",
+                "question": "27 of 34 staff answered 'I have a clear path to develop in this company': Strongly Disagree 6, Disagree 9, Neutral 5, Agree 5, Strongly Agree 2. Summarise it, and explain which summary you would put in front of management.",
+                "answer": "MEAN: coding 1 to 5, (1x6 + 2x9 + 3x5 + 4x5 + 5x2) / 27 = 69 / 27 = 2.56 out of 5. BOX SHARES: bottom-two-box (Strongly Disagree + Disagree) = 15 / 27 = 55.6%. Top-two-box (Agree + Strongly Agree) = 7 / 27 = 25.9%. Response rate = 27 / 34 = 79.4%. WHICH TO REPORT: the box shares, with the mean shown for contrast. A Likert scale is ORDINAL, not interval: the distance from Strongly Disagree to Disagree is not guaranteed to equal the distance from Agree to Strongly Agree, so averaging the codes does arithmetic on ranks and pulls the result toward the middle. The two summaries carry very different messages from the same 27 answers - '2.6 out of 5' reads as mildly disappointing, while '56% disagree' describes a retention problem. The box shares also preserve the shape of the distribution, which the mean destroys. WHAT TO DO WITH IT: this statement is about career progression, which is a leading indicator for regretted turnover by roughly two to four quarters. If turnover in that team later rises, this survey identified the cause before the departures happened, which is the entire argument for collecting qualitative KPIs rather than waiting for the HRM dashboard to report a fact that is already committed.",
+                "hint": "Compute the mean, then compute the share who disagreed. Ask which number a manager could act on."
+            },
+            {
+                "title": "Activity 1.1.2 - Steps 3 and 4: What each data type contributes",
+                "type": "scenario",
+                "question": "Write the reflection: what did using different tools teach you, and how do quantitative and qualitative KPIs together give a comprehensive view?",
+                "answer": "ON THE TOOLS: the transferable lesson is not how any single platform works, but that every collection tool has a characteristic blind spot and knowing the blind spot is part of knowing the number. Analytics undercounts because tracking is client-side. CRM data is only as current as the last person who updated a field, so an automated dashboard on a manually maintained stage is a human process wearing automation's clothes. HRM systems are accurate but sized for organisations that need them. Financial software is precise and almost entirely backward-looking. A KPI cannot be evaluated without knowing which system produced it and what that system cannot see. ON THE TWO DATA TYPES: quantitative data shows trends and efficiencies while qualitative feedback uncovers satisfaction and areas for improvement. Working through both for one organisation makes the relationship concrete: the quantitative KPIs were lagging or constraining measures of things already happening, while both qualitative instruments were leading - customer satisfaction leads churn by one to three quarters, and employee engagement leads regretted turnover by two to four. The qualitative side is where a business gets warning; the quantitative side is where it gets proof. Neither is sufficient alone: a conversion rate says how much revenue is being lost but nothing about why customers leave the checkout, and the survey comments explain the why but cannot size it. ON AUTOMATION AND REGULAR MONITORING: automation delivers the number on time, calculated consistently and free of transcription errors, but guarantees nothing about whether the definition still means what you assume. And every finding in this activity came from a comparison rather than a snapshot - two sources against each other, one band against another, the mean against the distribution. A KPI measured once is a number; a KPI measured repeatedly is a signal.",
+                "hint": "Name a specific blind spot for each tool category, then classify each KPI you collected as leading or lagging."
+            },
+            {
                 "title": "Design a KPI Dashboard",
                 "type": "practical",
                 "question": "You've built a customer churn prediction model. Design a KPI dashboard with 5 metrics, thresholds, and what action to take when each threshold is breached.",
@@ -63353,6 +63388,75 @@ One more, easily missed: a documentation note typed as `=B8-B11` becomes a live 
 
 **Full worked solution.** `EVO_1.1.1_Activity_Solution.md` and `EVO_1.1.1_KPI_Analysis_Nordtre.xlsx` in the project folder contain the complete six-step answer, a formula reference sheet, a Method and Rationale sheet recording why each calculation was done the way it was, and a Checks sheet of five reconciliation tests.
 
+#### Activity 1.1.2 - Understanding and Practising Data Collection for KPIs
+
+The second lesson task. It follows directly from the two classification sections above, and from the data collection section: 1.1.1 asked you to define KPIs, 1.1.2 asks you to **collect** them.
+
+**Objective.** To familiarise yourself with practical tools and methods for quantitative and qualitative KPI data collection.
+
+| Step | Instructions |
+|---|---|
+| **1. Explore quantitative tools** | Research web analytics such as Google Analytics; CRM systems such as Salesforce or HubSpot; HRM software such as Workday and SAP SuccessFactors; financial software such as QuickBooks. **Practical:** choose a hypothetical or actual organisation, define at least one quantitative KPI, and use one of the tools to collect data for it |
+| **2. Understand qualitative KPIs** | Learn customer satisfaction through surveys, customer interviews and NPS. Familiarise yourself with employee engagement through performance reviews and satisfaction surveys. **Practical:** define one qualitative KPI for the same organisation and choose an appropriate collection method |
+| **3. Report** | Summarise the findings and the experience of using the different tools. Reflect on how quantitative and qualitative KPIs together give a comprehensive view of performance |
+| **4. Reflection** | Reflect on the importance of using different tools for different KPI data types, and how each type contributes to understanding organisational performance |
+
+##### Three things that lift this above a tool summary
+
+**1. Judge fit, not just features.** The platforms named in the activity are enterprise tools. If your organisation is small, saying so is a finding rather than a failure to complete the step: choosing a tool is a decision with a cost, and "the KPI is available in Workday" is not a reason to buy Workday. The KPI **definition** matters more than the platform, because the definition is the part that drifts.
+
+**2. Collect the same figure two ways.** The activity says to use *a* tool. Using two independent sources for one figure is data ensembling in miniature: agreement raises confidence, disagreement locates the problem. Web analytics tracking is client-side and lossy, so its purchase events typically run several percent below the order system. Measuring that gap turns an unknown into a known.
+
+**3. Keep the raw responses.** NPS bands 0-10 into three groups and reports promoters minus detractors, which discards most of the underlying data. Keep the full distribution so you can still answer questions the banded score cannot.
+
+##### Formulas this activity needs
+
+| Measure | Formula | Watch out for |
+|---|---|---|
+| Conversion rate | Orders / Sessions x 100 | Take orders from the order system, not analytics |
+| Source discrepancy | (Source A - Source B) / Source A x 100 | Reconcile the two; do not average them |
+| Survey response rate | Responses / Sent x 100 | Without it, a score cannot be evaluated |
+| NPS | % Promoters (9-10) - % Detractors (0-6) | Passives are excluded from the calculation but not from the denominator |
+| Mean survey score | SUMPRODUCT(scores, counts) / total responses | Report it beside NPS, not instead of it |
+| Top-two-box | (Agree + Strongly Agree) / total x 100 | Safer than a Likert mean, which is ordinal |
+
+##### Worked example: Nordtre AS
+
+Continuing the same business from Activity 1.1.1, so the collection design can be checked against KPIs that already exist.
+
+**Quantitative KPI: D2C website conversion rate**, collected from GA4 for sessions and the order system for orders.
+
+| Measure | Value |
+|---|---|
+| Sessions (GA4) | 21,500/month |
+| Orders (order system) | 250/month |
+| Orders as GA4 records them | 231/month |
+| Conversion rate | **1.16%** |
+| **Discrepancy between sources** | **7.6%**, explained by consent refusals and ad blockers |
+
+**Qualitative KPI: customer satisfaction**, collected by NPS with a mandatory open-text follow-up. 1,200 surveys sent, 348 responses, a 29% response rate.
+
+| Band | Responses | Share |
+|---|---|---|
+| Promoters (9-10) | 167 | 48.0% |
+| Passives (7-8) | 104 | 29.9% |
+| Detractors (0-6) | 77 | 22.1% |
+| **NPS** | | **+25.9** |
+| Mean score | | 7.89 |
+
+**What the banding hides**, computed from the same distribution:
+
+| Scenario | New NPS | Change | What actually happened |
+|---|---|---|---|
+| Every 6 moves to a 7 | +35.9 | **+10.1** | 35 detractors become passives. Not one new promoter |
+| Every 0-5 improves to a 6 | +25.9 | **0.0** | 42 unhappy customers become far less unhappy. Nothing moves |
+
+Thirty-five respondents sit at exactly 6, one point from being passive. A ten-point NPS swing can rest entirely on a handful of customers crossing that single boundary.
+
+**An engagement instrument explored alongside.** Eight Likert statements, 27 of 34 staff responding. For "I have a clear path to develop in this company": mean **2.56 out of 5**, but bottom-two-box **55.6%**. Same 27 answers, two very different messages, and the second is the one that describes a retention problem. That statement targets precisely the career-progression factor behind Nordtre's production turnover in Activity 1.1.1, so the instrument would have flagged it before the departures happened.
+
+**Full worked solution.** `EVO_1.1.2_Activity_Solution.md` and `EVO_1.1.2_KPI_Data_Collection_Nordtre.xlsx` in the project folder contain all four steps, the tool exploration with a fit verdict per platform, both instruments with live formulas, and a Method and Rationale sheet.
+
 #### Common assignment traps
 
 - Describing a KPI as if it were the goal. It is a proxy.
@@ -63389,7 +63493,8 @@ One more, easily missed: a documentation note typed as `=B8-B11` becomes a live 
                 "A dashboard is a heuristic made visual: define the audience and decisions first, write definitions and owners, show trend and target, keep it small, and review on a schedule",
                 "Version control gives data integrity and team collaboration, and a KPI you cannot trace is a KPI you cannot evaluate",
                 "Data must be versioned as well as code, since a definition change passes every automated quality check while silently breaking a KPI",
-                "Activity 1.1.1 applies all of this: build a hypothetical business with channels of different economics, compute the financial and non-financial KPIs, and show how they interact"
+                "Activity 1.1.1 applies all of this: build a hypothetical business with channels of different economics, compute the financial and non-financial KPIs, and show how they interact",
+                "Activity 1.1.2 applies the collection material: explore the tools, judge their fit rather than only their features, collect one quantitative and one qualitative KPI, and keep the raw survey responses"
             ],
             "visual_elements": {
                 "diagrams": True,
