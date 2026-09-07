@@ -63445,6 +63445,101 @@ Two lessons follow, and both are assessable:
 1. A KPI is only as trustworthy as the documented definition behind it, which is why "defined once and written down" appeared in the quality list above.
 2. Before raising a change like this as an error, establish whether it was **intentional but uncommunicated**. That distinction is the difference between facilitating a solution discussion and starting an argument, which Lesson 1.4 develops in full.
 
+#### Ethical considerations in relation to KPIs
+
+The ethical dimensions of KPI selection and interpretation frequently get sidelined, but they are **integral** for responsible and effective decision-making.
+
+**Transparency.** Transparency is not merely an optional best practice; it is an **ethical imperative**. A lack of clarity in how KPIs are calculated can result in suspicion, undermine trust, and even lead to legal scrutiny. Transparency safeguards against these pitfalls and sets the stage for more informed decision-making.
+
+**Data integrity.** Manipulating data to produce more favourable KPIs is unethical and potentially disastrous in the long term. Cooking the books to show better financial performance can lead to stock market devaluation, legal repercussions, and a tarnished reputation.
+
+**Inclusivity.** Ensuring that various stakeholders — from different departments and different levels of seniority — have a say in KPI selection mitigates the risk of **biased or myopic indicators**. Broad input leads to a more representative and fair set of performance indicators.
+
+**Ethical responsibility to shareholders and stakeholders.** Manipulating or misrepresenting KPIs can cascade beyond the organisation. It can affect shareholders, employees, and even the market at large.
+
+##### Ethics you can point at
+
+The weakness of every ethics list is that it describes intentions. An evaluator cannot inspect an intention. What can be inspected is the **artefact** each principle produces, and that is what to look for, and what to build.
+
+| Principle | What violation looks like | The artefact that demonstrates it |
+|---|---|---|
+| **Transparency** | A KPI whose calculation nobody outside the team can describe | A written, versioned definition anyone can read, with the change history |
+| **Data integrity** | Figures adjusted until they clear a threshold | A reproducible pipeline: same inputs and code, same output, every time |
+| **Inclusivity** | A KPI set chosen entirely by the department it measures | A record of who was consulted on the selection, and what was rejected |
+| **Responsibility to stakeholders** | A published figure the organisation knows is fragile, published without saying so | Stated limitations alongside the number, and the confidence level behind it |
+
+Notice that all four artefacts already appeared in this lesson. Transparency is the written definition from the KPI quality list and the change history from the version control section. Data integrity is reproducibility. Responsibility to stakeholders is the uncertainty statement that Lesson 1.3 develops into confidence levels. **The ethics of this course are not a separate subject bolted on; they are the same practices, seen from the outside.**
+
+##### The gradient from framing to falsification
+
+Cooking the books is the blatant end and it is rare. The far more common failure is a sequence of individually defensible choices that all happen to point the same way.
+
+| | Selective framing | Selective evaluation | Falsification |
+|---|---|---|---|
+| What happens | The true number is presented in its most flattering light | Method choices are made after seeing which answer they give | The number itself is changed |
+| Example | Quoting gross margin because it is the highest of the three | Removing outliers until the model looks good; extending the time window until the trend appears | Recording revenue that did not occur |
+| How common | Constant | Common, and usually unintentional | Rare |
+| Detectable by | Asking which variant was used | Asking whether the method was decided before the result was seen | Audit and reconciliation |
+
+The middle column is the one this course spends most time on, and it is treated in full in Lesson 1.4. The defence against all three is the same and it is procedural: **decide and document the method before you see the result, and report what you did even when it did not work.**
+
+##### Inclusivity, and what it protects against
+
+A KPI set chosen entirely by the people it measures optimises for those people. Broad input across departments and seniority levels guards against two specific failures already named in this lesson:
+
+- **Myopic indicators.** A support KPI chosen only by the support team will measure support activity, not customer outcome. This is the average-handling-time case from Case study 1 in its origin form.
+- **Biased indicators.** A KPI set designed without the people it affects can miss a group entirely — the model accurate overall and failing one subgroup, which is why accuracy per subgroup appeared in the guard KPI table.
+
+One boundary worth stating so the principle is not misapplied: **inclusivity in KPI selection is not the same as transparency in data collection.** A confidential engagement survey stays confidential; the inclusive part is that employees had a say in *what* is measured, not that their individual answers become visible. Confusing the two breaks the anonymity that produced the honest answers in the first place.
+
+##### The cascade, and why it makes this more than an internal matter
+
+The final principle is about reach. A KPI is often not an internal number:
+
+| Audience | What a misrepresented KPI does to them |
+|---|---|
+| Shareholders | Value an investment on a picture that is not true |
+| Employees | Are measured, rewarded and sometimes let go on a false basis |
+| Customers | Receive a service optimised for a metric rather than for them |
+| The market | Prices a whole sector against a peer's overstated figures |
+
+The consequences the course names — stock market devaluation, legal repercussions, a tarnished reputation — are the mechanism by which this returns to the organisation. But the ethical argument does not depend on the consequences. The people in the table above did not consent to being wrong about something.
+
+##### An ethics checklist for KPI work
+
+Runnable in a few minutes, and directly usable in the Course Assignment:
+
+1. Can someone outside my team read how this KPI is calculated?
+2. Is that definition versioned, so a change is announced rather than discovered?
+3. Did I decide the method before I saw which answer it gave?
+4. Would I be comfortable if the people this measures read exactly how it was evaluated?
+5. Have I reported what this evidence cannot support, as well as what it can?
+6. Was anyone consulted about this KPI other than the team it measures?
+7. If I am criticising a KPI or an approach, have I proposed an alternative?
+
+Question 7 is the competence outcome in one line: the course asks you to **critique and suggest alternatives**, so a criticism with no proposed route forward is only half the work.
+
+##### Bringing the lesson together
+
+By integrating an understanding of KPIs, their importance, the utility of version control, and the ethical considerations involved, professionals equip themselves for more rigorous, data-driven, yet **ethically sound** decision-making practices.
+
+Those three strands are the three parts of this lesson, and they are load-bearing for each other:
+
+<div class="mermaid">
+flowchart LR
+    K[KPIs<br/>What we measure<br/>and why it is a proxy] --> V[Version control<br/>Whether the number<br/>can be traced and reproduced]
+    V --> E[Ethics<br/>Whether it is reported<br/>honestly and fairly]
+    E --> D[Decisions that hold up<br/>to scrutiny]
+    E -.improves the choice of.-> K
+
+    style K fill:#e3f2fd,stroke:#2196F3,stroke-width:2px
+    style V fill:#fff3cd,stroke:#ffc107,stroke-width:2px
+    style E fill:#f3e5f5,stroke:#9C27B0,stroke-width:2px
+    style D fill:#c8e6c9,stroke:#4CAF50,stroke-width:2px
+</div>
+
+A KPI without version control cannot be traced, so its transparency is a claim rather than a fact. Version control without ethics produces a perfectly auditable record of a misleading number. And ethics without either is a good intention with nothing to point at.
+
 #### Activity 1.1.1 - KPI Analysis and Development for a Hypothetical Business
 
 This is the lesson task. Work through it before reading the worked example below it.
@@ -63649,6 +63744,11 @@ Thirty-five respondents sit at exactly 6, one point from being passive. A ten-po
                 "A dashboard is a heuristic made visual: define the audience and decisions first, write definitions and owners, show trend and target, keep it small, and review on a schedule",
                 "Version control gives data integrity and team collaboration, and a KPI you cannot trace is a KPI you cannot evaluate",
                 "Data must be versioned as well as code, since a definition change passes every automated quality check while silently breaking a KPI",
+                "The ethical dimensions of KPI work are transparency, data integrity, inclusivity, and responsibility to shareholders and stakeholders",
+                "Each ethical principle produces an inspectable artefact: a versioned definition, a reproducible pipeline, a record of who was consulted, and stated limitations",
+                "The common failure is not falsification but selective framing and selective evaluation, defeated by documenting the method before seeing the result",
+                "Inclusivity in KPI selection is not the same as transparency in data collection, and confusing them breaks the anonymity that produced honest answers",
+                "KPIs, version control and ethics are load-bearing for each other: an untraceable KPI's transparency is a claim, and an auditable record of a misleading number is still misleading",
                 "Activity 1.1.1 applies all of this: build a hypothetical business with channels of different economics, compute the financial and non-financial KPIs, and show how they interact",
                 "Activity 1.1.2 applies the collection material: explore the tools, judge their fit rather than only their features, collect one quantitative and one qualitative KPI, and keep the raw survey responses"
             ],
@@ -65371,6 +65471,36 @@ CURATED_FLASHCARD_SETS = {
             "tags": ["kpi", "non-financial metrics", "evo"]
         },
         {
+            "front": "Name the four ethical considerations in relation to KPIs.",
+            "back": "Transparency, which is an ethical imperative rather than an optional best practice, since unclear calculation breeds suspicion, undermines trust and can invite legal scrutiny. Data integrity, since manipulating data for more favourable KPIs risks stock market devaluation, legal repercussions and a tarnished reputation. Inclusivity, since involving stakeholders across departments and seniority levels mitigates biased or myopic indicators. And ethical responsibility to shareholders and stakeholders, because misrepresenting KPIs cascades beyond the organisation to shareholders, employees and the market at large.",
+            "tags": ["ethics", "kpi", "evo"]
+        },
+        {
+            "front": "Why is an artefact more useful than an intention when assessing KPI ethics?",
+            "back": "Because an evaluator cannot inspect an intention, only what it produces. Transparency produces a written, versioned definition anyone can read. Data integrity produces a reproducible pipeline giving the same output from the same inputs. Inclusivity produces a record of who was consulted and what was rejected. Responsibility to stakeholders produces stated limitations and a confidence level alongside the number.",
+            "tags": ["ethics", "artefacts", "evo"]
+        },
+        {
+            "front": "Describe the gradient from selective framing to falsification.",
+            "back": "Selective framing presents a true number in its most flattering light, such as quoting gross margin because it is the highest of the three, and it is constant. Selective evaluation makes method choices after seeing which answer they give, such as removing outliers until the model looks good, and it is common and usually unintentional. Falsification changes the number itself and is rare. The defence against all three is procedural: decide and document the method before seeing the result, and report what you did even when it did not work.",
+            "tags": ["ethics", "selective evaluation", "evo"]
+        },
+        {
+            "front": "What two failures does inclusivity in KPI selection guard against, and what is its boundary?",
+            "back": "Myopic indicators, where a KPI chosen only by the team it measures tracks that team's activity rather than the customer outcome, and biased indicators, where a KPI set designed without the affected people misses a group entirely. The boundary is that inclusivity in SELECTION is not transparency in COLLECTION: employees having a say in what is measured does not mean their individual confidential answers become visible, and confusing the two breaks the anonymity that produced the honest answers.",
+            "tags": ["ethics", "inclusivity", "evo"]
+        },
+        {
+            "front": "Who does a misrepresented KPI reach beyond the organisation?",
+            "back": "Shareholders value an investment on a picture that is not true; employees are measured, rewarded and sometimes let go on a false basis; customers receive a service optimised for a metric rather than for them; and the market prices a whole sector against overstated peer figures. The consequences the course names, devaluation and legal repercussions, are how it returns to the organisation, but the ethical argument does not depend on them.",
+            "tags": ["ethics", "stakeholders", "evo"]
+        },
+        {
+            "front": "How do KPIs, version control and ethics depend on each other?",
+            "back": "A KPI without version control cannot be traced, so its transparency is a claim rather than a fact. Version control without ethics produces a perfectly auditable record of a misleading number. Ethics without either is a good intention with nothing to point at. Integrating all three is what equips professionals for rigorous, data-driven and ethically sound decision-making.",
+            "tags": ["ethics", "version control", "evo"]
+        },
+        {
             "front": "How does the course describe the roles of quantitative and qualitative KPIs?",
             "back": "Quantitative KPIs offer a solid, factual foundation for decision-making, acting as the bedrock upon which strategies can be built. Qualitative KPIs deliver nuanced, complex insights that often hold the key to long-term success. Blending them gives a balanced and comprehensive performance view, incorporating complex data alongside softer, more human-centric insights.",
             "tags": ["balanced approach", "classification", "evo"]
@@ -67087,6 +67217,16 @@ CURATED_PRACTICE_QUESTION_BANK = {
             "type": "knowledge",
             "question": "Why does contextualisation matter when interpreting a KPI?",
             "answer": "Because isolated numbers seldom tell the whole tale. A KPI gains significance only when juxtaposed with benchmarks, goals, or historical data. Saying churn is 4.1 percent means nothing; saying it is 4.1 percent, flat within normal month-to-month variation, below the sector median, still above the 3.0 percent target, and concentrated among customers under three months old, is a decision. The last of those, whether a movement exceeds normal variation, is a statistical question rather than a presentational one, which is why it connects directly to variance and confidence levels."
+        },
+        {
+            "type": "knowledge",
+            "question": "Explain the ethical considerations that apply to KPI selection and interpretation.",
+            "answer": "Four apply. Transparency is an ethical imperative rather than an optional best practice: a lack of clarity in how a KPI is calculated breeds suspicion, undermines trust and can invite legal scrutiny, while transparency guards against all three and enables better-informed decisions. Data integrity means not manipulating data to produce more favourable KPIs; cooking the books to show better financial performance risks stock market devaluation, legal repercussions and a tarnished reputation. Inclusivity means ensuring stakeholders from different departments and levels of seniority have a say in KPI selection, which mitigates biased or myopic indicators and produces a more representative and fair set. And there is an ethical responsibility to shareholders and stakeholders, because manipulating or misrepresenting KPIs cascades beyond the organisation to shareholders, employees and the market at large. The useful move for an evaluator is to look for the artefact each principle produces rather than the intention behind it: a versioned written definition, a reproducible pipeline, a record of who was consulted, and stated limitations alongside the number."
+        },
+        {
+            "type": "case_study",
+            "question": "A department reports a KPI you cannot reproduce. The team says the calculation is 'well understood internally' and there is no written definition. Nothing suggests dishonesty. Is there an ethical problem?",
+            "answer": "Yes, and it is worth separating it from any accusation of dishonesty. Transparency is not a description of someone's intentions; it is a property of what exists. A KPI whose calculation lives only in the heads of the team producing it is not transparent regardless of how honest that team is, because nobody outside can check it, challenge it, or reproduce it after the people involved move on. Three concrete consequences follow. The figure cannot be audited, so if it is ever questioned there is nothing to examine. It cannot be compared with another team's version, because there is no way to know whether they mean the same thing. And a definition change cannot be announced, only discovered, which is exactly the failure that broke the retention KPI in this lesson without any data being wrong. The remedy is procedural rather than disciplinary: write the definition down, put it under version control so changes carry a date and a reason, and make the pipeline reproducible so the same inputs give the same output. That converts transparency from a claim into an artefact. I would raise it as a process gap with a proposed fix rather than as a concern about the team's conduct, since attributing it to the process rather than to people is what turns a finding into a solution discussion."
         },
         {
             "type": "knowledge",
