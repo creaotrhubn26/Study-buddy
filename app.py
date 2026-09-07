@@ -63478,6 +63478,77 @@ Only step 6 is the decision. Steps 1 to 5 are the evaluation, and skipping them 
 
 Note what has happened here: the KPI did its job perfectly. It directed attention, which is what a signpost is for. **The signpost points; it does not arrive.**
 
+#### Real-world decision-making: case study on Amazon
+
+Amazon is a typical example when discussing the seamless integration of KPIs and statistical inference into a cohesive decision-making strategy.
+
+**Customer-oriented KPIs.** Amazon does not focus on customer satisfaction broadly. It drills into metrics like **Customer Lifetime Value (CLV)**, **Net Promoter Score (NPS)** and **customer retention rate**, and tailors many facets of the business from them — inventory, pricing, customer service, even technological innovation.
+
+**Operational efficiency KPIs.** Beyond customer-centric metrics, operational KPIs such as **Order Fulfilment Time** and **Inventory Turnover Rate** are scrutinised rigorously. Amazon's one-day delivery is not a marketing gimmick but a logistical feat guided by exacting, real-time KPIs.
+
+**Statistical inferences.** Amazon's expertise in complex statistical methodologies supports its success. Forecasting models leveraging **machine learning, linear regression and time-series analysis** optimise everything from stock levels to workforce management.
+
+**Ethical considerations.** Amazon is continually under the microscope for its moral choices, which it addresses through **Corporate Social Responsibility (CSR) KPIs**. These metrics remain an area of intense debate, highlighting the importance of ethical considerations even when using KPIs for decision-making (Amazon, 2023).
+
+> **Customer Lifetime Value (CLV)** predicts the revenue a business can reasonably expect from a single customer account. It considers a customer's entire revenue-generating history, projecting the total revenue contribution across the whole customer relationship.
+>
+> **Net Promoter Score (NPS)** assesses customer loyalty by measuring customers' willingness to recommend a company's products or services to others. It is calculated by subtracting the percentage of detractors, who would not recommend the product, from the percentage of promoters, who would endorse it (Amazon, 2023).
+
+##### CLV and LTV are the same measure under two names
+
+The course text uses **CLV**; earlier in this lesson and in Activities 1.1.1 and 1.1.2 the same quantity appears as **LTV**, lifetime value. They are interchangeable, and an assignment may use either. What matters is the pairing rather than the label: **CLV is what makes CAC interpretable.** A falling acquisition cost is good news or bad news depending entirely on whether the customers being acquired are worth more or less over their lifetime, which is the finding Activity 1.1.1 turned on.
+
+One caution the Amazon framing invites. CLV is a **projection**, not an observation. It rests on assumptions about purchase frequency, margin and how long a relationship lasts, and it is therefore a model output that must be evaluated like any other: what horizon does it assume, what churn rate, and does it use revenue or gross profit? A CLV built on revenue rather than contribution overstates the value of every customer in it.
+
+##### Why this case is a compact version of the whole module
+
+The four bullets are not an arbitrary list. They map onto the four things this course teaches you to evaluate:
+
+| Amazon's bullet | What it is in course terms | Where the module treats it |
+|---|---|---|
+| Customer-oriented KPIs | **Leading** indicators — CLV, NPS and retention move before revenue does | Lagging versus leading, this lesson |
+| Operational efficiency KPIs | **Process** KPIs, measured in real time | The input–process–output–outcome ladder, this lesson |
+| Statistical inferences | Regression, time-series and forecasting on sampled data | Lessons 1.2 and 1.3 |
+| Ethical considerations | Whether the measurement itself is defensible | Lesson 1.4, and the ethics section of this lesson |
+
+Read that way, the case says something stronger than "Amazon uses KPIs well". It says a mature KPI practice needs **all four layers**: signals that arrive early, process measures that arrive continuously, statistical method to turn them into predictions, and an ethical frame for what is being measured and why. An organisation with three of the four has a predictable weakness.
+
+##### The operational bullet, and the guard it implies
+
+"One-day delivery is a logistical feat guided by exacting, real-time KPIs" is a claim about **fulfilment speed** being measured and optimised. The evaluation question follows immediately from the guard KPI table earlier in this lesson: delivery speed is a primary KPI, and its guard is whatever speed can be bought at the expense of.
+
+For a logistics operation, speed can be bought with damage rate, with return rate, with cost per parcel, or with conditions in the warehouse and on the road. **Which of those is reported alongside fulfilment time, and by whom, is the evaluation question** — and it is exactly the question the fourth bullet says remains under debate.
+
+This is not a claim about what Amazon does or does not report. It is the general principle, applied: a primary KPI optimised in real time and at scale needs its guard reported at the same cadence, or the trade-off it is making stays invisible for as long as the guard goes unmeasured.
+
+##### The ethics bullet is the honest one
+
+Note what the course text does *not* say. It does not say CSR KPIs resolve the ethical questions. It says they are how Amazon **addresses** them, and that the metrics "remain an area of intense debate".
+
+That distinction is worth taking seriously, because it identifies the hardest case in KPI design:
+
+- A CSR KPI is a **proxy for a value**, and the gap between proxy and goal is widest exactly where the goal is a value rather than a quantity. "Emissions per parcel" is measurable; "behaving responsibly" is not, and the first does not contain the second.
+- **Reporting a CSR KPI is transparency, not compliance.** Publishing a number demonstrates the artefact from the ethics section of this lesson; it does not by itself establish that the underlying conduct is good. Those are different claims and it is easy to let the first imply the second.
+- **Who chose the CSR KPIs?** The inclusivity principle applies with unusual force here: a set of ethical indicators chosen entirely by the organisation being measured will tend to measure what that organisation is already doing well.
+
+None of that makes CSR KPIs worthless. It makes them a case where the evaluation questions in this course matter more than usual, not less.
+
+##### A note on the source
+
+The case study cites **(Amazon, 2023)** — the company's own material. That is normal and it is usable, and it is also a provenance point worth making explicitly, because this course spends a lot of time on where a figure came from.
+
+A company's account of its own KPI practice is not an independent source. It will be accurate about *what is measured* and selective about *what is not*. For the first three bullets that hardly matters, since there is no incentive to misstate that forecasting uses time-series analysis. For the fourth it matters a great deal, because the debate the text acknowledges is precisely a debate about whether the company's own measures capture the thing being disputed.
+
+The evaluator's habit from the data collection section applies unchanged: **ask which system produced this, who owns it, and what it excludes.** That question is not hostile. It is the same question you would ask of your own dashboard.
+
+##### What to take from this case
+
+1. A mature KPI practice runs **leading and process KPIs together**, and uses statistical method to connect them to a forecast.
+2. **CLV exists to make CAC interpretable.** Neither is meaningful alone.
+3. Real-time optimisation of a primary KPI raises the stakes on its **guard**, because a trade-off made at scale and at speed compounds before anyone notices.
+4. Ethical KPIs are the **hardest proxies to design**, since the goal is a value, and reporting one is transparency rather than proof.
+5. Even an exemplary case should be read with its **source** in view.
+
 #### Goal, KPI, metric, target, threshold
 
 These five words are used loosely in workplaces and precisely in assessment. Keep them apart.
@@ -64158,7 +64229,13 @@ Two further insights worth including:
                 "All three claims are conditional: a bare KPI is itself an anchor and is exactly what availability bias feeds on, so context is what makes it a counterbalance rather than an amplifier",
                 "A lighthouse shows where the rocks are without saying where to sail, illuminates only where it points, and keeps marking the old hazard after the channel shifts",
                 "Tying bonuses to a KPI is equitable when the measure is close to the goal, paired with a guard, fixed before the period and reviewed for gaming, and harmful otherwise",
-                "The signpost points; it does not arrive. A rising churn KPI is the start of an evaluation, not the conclusion of one"
+                "The signpost points; it does not arrive. A rising churn KPI is the start of an evaluation, not the conclusion of one",
+                "The Amazon case shows a mature KPI practice running four layers together: customer-oriented leading KPIs, operational process KPIs, statistical inference, and ethical considerations",
+                "CLV and LTV are the same measure under two names, and CLV exists to make CAC interpretable since neither is meaningful alone",
+                "CLV is a projection rather than an observation, so it must be evaluated for its horizon, its churn assumption, and whether it uses revenue or gross profit",
+                "A primary KPI optimised in real time and at scale raises the stakes on its guard, because the trade-off compounds before anyone notices",
+                "A CSR KPI is a proxy for a value, so reporting one demonstrates transparency rather than establishing that the conduct is good",
+                "A company's account of its own KPI practice is accurate about what is measured and selective about what is not, so ask what it excludes"
                 "A KPI differs from a cognitive heuristic in being chosen deliberately, so it can be written down, inspected and evaluated as an intuition cannot",
                 "The higher the stakes, the less a shortcut is worth, which is the same rule the confidence-level work method formalises",
                 "KPIs are the lens an organisation sees itself through and the yardstick it measures by, so a bad KPI makes part of the business invisible",
@@ -66116,6 +66193,36 @@ CURATED_FLASHCARD_SETS = {
             "tags": ["kpi", "definitions", "version control", "evo"]
         },
         {
+            "front": "What four layers does the Amazon case study show a mature KPI practice running together?",
+            "back": "Customer-oriented KPIs such as CLV, NPS and retention rate, which tailor inventory, pricing, service and innovation. Operational efficiency KPIs such as order fulfilment time and inventory turnover rate, scrutinised in real time. Statistical inference using machine learning, linear regression and time-series analysis to optimise stock levels and workforce management. And ethical considerations addressed through CSR KPIs, which the text itself notes remain an area of intense debate.",
+            "tags": ["amazon", "case study", "evo"]
+        },
+        {
+            "front": "Define Customer Lifetime Value, and say what it is for.",
+            "back": "CLV predicts the revenue a business can reasonably expect from a single customer account, considering the customer's entire revenue-generating history and projecting the total contribution across the whole relationship. It exists to make CAC interpretable: a falling acquisition cost is good or bad news depending entirely on whether the customers acquired are worth more or less over their lifetime. CLV and LTV are the same measure under two names.",
+            "tags": ["clv", "ltv", "cac", "evo"]
+        },
+        {
+            "front": "Why must a CLV figure itself be evaluated?",
+            "back": "Because it is a projection, not an observation. It rests on assumptions about purchase frequency, margin and how long a relationship lasts, so it is a model output. Ask what horizon it assumes, what churn rate it builds in, and whether it uses revenue or gross profit - a CLV built on revenue rather than contribution overstates the value of every customer in it.",
+            "tags": ["clv", "model evaluation", "evo"]
+        },
+        {
+            "front": "What evaluation question does real-time optimisation of a primary KPI raise?",
+            "back": "What its guard is, and whether that guard is reported at the same cadence. Fulfilment speed can be bought with damage rate, return rate, cost per parcel or working conditions. A primary KPI optimised at scale and at speed compounds its trade-off before anyone notices, so if the guard goes unmeasured the trade-off stays invisible for exactly as long.",
+            "tags": ["guard kpi", "operational", "evo"]
+        },
+        {
+            "front": "Why are CSR KPIs the hardest proxies to design?",
+            "back": "Because the goal is a value rather than a quantity, so the gap between proxy and goal is at its widest. Emissions per parcel is measurable; behaving responsibly is not, and the first does not contain the second. Reporting a CSR KPI demonstrates transparency, which is an artefact, but it does not by itself establish that the underlying conduct is good - those are different claims. Inclusivity also applies with unusual force, since ethical indicators chosen entirely by the organisation being measured will tend to measure what it already does well.",
+            "tags": ["csr", "ethics", "evo"]
+        },
+        {
+            "front": "The Amazon case cites (Amazon, 2023). Why is that worth noting?",
+            "back": "Because a company's account of its own KPI practice is not an independent source. It will be accurate about what is measured and selective about what is not. That barely matters for the claim that forecasting uses time-series analysis, and matters a great deal for the ethics bullet, since the debate the text acknowledges is precisely about whether the company's own measures capture the disputed thing. The habit is the same one used for any data source: ask which system produced this, who owns it, and what it excludes.",
+            "tags": ["provenance", "sources", "evo"]
+        },
+        {
             "front": "Name the three ways KPIs guide decision-making.",
             "back": "Data-driven decisions: KPIs give empirical, often real-time data that counterbalances the cognitive biases infiltrating decision-making, so a rising churn rate becomes a concrete impetus to investigate. Focus and prioritisation: in a sea of information they act like a lighthouse, directing attention to critical performance aspects so energy goes where impact is greatest. Accountability and objectivity: they allow evaluation that transcends individual bias, setting a bar outcomes can be measured against, which is why bonuses tied to KPIs can be equitable when everyone knows the criteria.",
             "tags": ["kpi", "decision-making", "evo"]
@@ -67503,6 +67610,12 @@ CURATED_EXAM_QUESTION_BANK = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "type": "case_study",
+            "source": "core_curated",
+            "question": "Using the Amazon case study, explain what a mature KPI practice looks like and what an evaluator should still question about it.",
+            "answer": "The case shows four layers running together. Customer-oriented KPIs are drilled into rather than kept broad: Customer Lifetime Value, Net Promoter Score and customer retention rate, used to tailor inventory, pricing, customer service and technological innovation. Operational efficiency KPIs such as order fulfilment time and inventory turnover rate are scrutinised in real time, which is what makes one-day delivery a logistical feat rather than a marketing claim. Statistical inference sits underneath both, with machine learning, linear regression and time-series forecasting optimising stock levels and workforce management. And ethical considerations are addressed through CSR KPIs, which the text itself says remain an area of intense debate. Those four map onto the course: leading indicators, process indicators, statistical method, and whether the measurement is defensible. An organisation with three of the four has a predictable weakness. What an evaluator should still question: first, CLV is a projection rather than an observation, so its horizon, churn assumption and whether it uses revenue or gross profit all need stating, since a CLV built on revenue overstates every customer in it. Second, a primary KPI optimised in real time at scale raises the stakes on its guard, because speed can be bought with damage rate, return rate, cost per parcel or working conditions, and a trade-off made at that speed compounds before anyone notices. Third, a CSR KPI is a proxy for a value, so the gap between proxy and goal is at its widest, and publishing one demonstrates transparency rather than establishing that the conduct is good. Finally the source: the case cites Amazon's own material, which is accurate about what is measured and selective about what is not. That is immaterial for the statistical bullet and material for the ethical one."
+        },
         {
             "type": "knowledge",
             "source": "core_curated",
