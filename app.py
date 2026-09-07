@@ -64369,6 +64369,64 @@ Two further insights worth including:
 - Using only quantitative evidence when the question is why something changed.
 - Treating version control as an engineering topic rather than as what makes a KPI auditable.
 - Versioning code but not data, then being unable to reproduce a figure from last quarter.
+
+#### What did I learn in this lesson?
+
+This lesson provided the following insights:
+
+- What KPIs are, why they are important and how they work
+- The importance of version control
+- The heuristics of decision-making
+- The basics of statistical inference
+- How to apply statistical methodology
+- A closer look at KPI dashboards
+
+##### Where each of those is covered
+
+| The insight | Where it is treated |
+|---|---|
+| **What KPIs are, why they matter, how they work** | This lesson: the lens and yardstick, lagging and leading, the quantitative and qualitative classification, contextualisation, strategic alignment, how KPIs guide decisions, and the Amazon case |
+| **The importance of version control** | This lesson: data integrity and collaboration, versioning the data as well as the code, and the KPI that broke without any data being wrong |
+| **The heuristics of decision-making** | This lesson: the overview, then availability, representativeness and anchoring in KPI context |
+| **The basics of statistical inference** | Introduced here through contextualisation and normal variation. Treated in full in **Lesson 1.2**, which covers sampled sets, result table analysis, regression and z-testing |
+| **How to apply statistical methodology** | **Lesson 1.3**: variance measurement, five-point summaries, confidence levels, multiple probability outcomes, and the problem-solving routine |
+| **A closer look at KPI dashboards** | This lesson: what a dashboard does, the steps for building one, and the best practices, challenges and ROI |
+
+The two statistical items are named in this lesson's summary and developed in the two that follow. That is worth knowing before the assignment: if you are looking for how to compute and interpret a confidence interval, it is in Lesson 1.3, not here.
+
+##### A self-check
+
+If you can do these without looking back, the lesson has landed.
+
+| Can you… | Tested by |
+|---|---|
+| Explain why a KPI is a **proxy** and what follows from that | Any question asking whether a KPI movement is good news |
+| Say which **margin** you mean, and why the variant matters | Activity 1.1.1 |
+| State why **CAC alone is uninterpretable** | Activity 1.1.1 and the Amazon case |
+| Name the **two main types** and the failure of a set made only of one | The lagging and leading section |
+| Distinguish **quantitative from qualitative** KPIs and say how each is collected | Activity 1.1.2 |
+| Explain why an **isolated number** tells you nothing | The contextualisation section |
+| Name the three **heuristics** and the substitution each makes | Activity 1.1.4 |
+| Say what **version control** protects that no data-quality check can | Case study 6, the definition change |
+| Name an **artefact** for each ethical principle | The ethics section |
+| Design a **dashboard tile** that carries a decision rather than a number | The dashboard sections |
+
+##### The one sentence to carry forward
+
+Every part of this lesson resolves to the same move. A KPI is a heuristic; a heuristic can be wrong; a wrong heuristic is invisible from the inside — so you **replace a judgement with a record**.
+
+That is what a written definition is, what version control is, what a dated anchor is, what a stated confidence level is, and what a documented method is. The lesson looks like six topics. It is one habit, approached six times.
+
+##### Lesson tasks
+
+Four activities accompany this lesson, and each exercises a different part of it:
+
+| Activity | What it exercises |
+|---|---|
+| **1.1.1** | Building and analysing a KPI set: revenue sources, margins, ROI, CAC, traffic, turnover, and how they interact |
+| **1.1.2** | Collecting KPIs in practice: tool exploration, one quantitative and one qualitative KPI, and what each data type contributes |
+| **1.1.3** | Firsthand qualitative collection through social media monitoring, coded and analysed |
+| **1.1.4** | Identifying availability, representativeness and anchoring in real decisions, and naming what defeats each |
             """,
             "key_points": [
                 "Gut instinct generates hypotheses; quantifiable metrics with well-defined goals are what test them, and only the second can be checked by someone else",
@@ -64443,7 +64501,9 @@ Two further insights worth including:
                 "Activity 1.1.1 applies all of this: build a hypothetical business with channels of different economics, compute the financial and non-financial KPIs, and show how they interact",
                 "Activity 1.1.2 applies the collection material: explore the tools, judge their fit rather than only their features, collect one quantitative and one qualitative KPI, and keep the raw survey responses",
                 "Activity 1.1.3 is firsthand social media monitoring: fix platforms, search terms and coding rules before reading, capture as you go, and remember that frequency is not importance",
-                "Activity 1.1.4 identifies the three heuristics in real scenarios: give every example twice, once everyday and once from KPI work, and end on the artefact that defeats each one"
+                "Activity 1.1.4 identifies the three heuristics in real scenarios: give every example twice, once everyday and once from KPI work, and end on the artefact that defeats each one",
+                "The lesson summary names statistical inference and applying statistical methodology, which are introduced here and developed in full in Lessons 1.2 and 1.3",
+                "The whole lesson resolves to one habit approached six times: a KPI is a heuristic, a heuristic can be wrong, a wrong heuristic is invisible from the inside, so replace a judgement with a record"
             ],
             "visual_elements": {
                 "diagrams": True,
