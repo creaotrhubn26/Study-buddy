@@ -11906,6 +11906,34 @@ Keep a decision log linking KPIs to actions for:
                 "hint": "Separate what the sample can support from what the method is useful for."
             },
             {
+                "title": "Activity 1.1.4 - Steps 1 and 2: Identify the three heuristics in real scenarios",
+                "type": "practical",
+                "question": "Give one everyday example and one KPI-work example for each of the availability, representativeness and anchoring heuristics, and state the substitution each one makes.",
+                "answer": "AVAILABILITY - it substitutes 'what comes to mind most readily' for 'how common is this'. Everyday: driving instead of taking the train after one memorable delay, while the nine-in-ten punctuality rate never comes to mind because nothing about it was memorable. KPI work: a conversion drop blamed on the webshop redesign everyone knows about, while a payment-provider outage and the start of the holiday season sat in the same window and appear on no dashboard. REPRESENTATIVENESS - it substitutes 'how much does this resemble a pattern I know' for 'how probable is this'. Everyday: judging a restaurant by whether it looks like a good restaurant, busy at eight with a short handwritten menu, so a good new place fails a test it cannot yet pass. KPI work: a B2B enquiry silent for eleven weeks marked lost because normal deals close in six, when it was a municipal procurement where five to six months is ordinary. ANCHORING - it substitutes 'how far is this from the first number I saw' for 'what is the right value'. Everyday: a sofa marked 'was 12,000, now 7,900' evaluated against the 12,000 rather than against what a sofa is worth. KPI work: a launch month of 980,000 driven by promotion becoming the reference every later month is judged against, so a sustainable 600,000 reads as a shortfall. THE POINT OF PAIRING: Step 4 asks how awareness improves KPI interpretation, so pairing each example from the start makes that bridge structural rather than an afterthought, and the mechanism is easier to see in the everyday case before it is recognised in the business one.",
+                "hint": "For each heuristic, name the easier question it answers instead of the real one."
+            },
+            {
+                "title": "Activity 1.1.4 - Step 3: Analyse efficiency, error and consequences",
+                "type": "scenario",
+                "question": "Take the anchoring example - a promoted launch month of NOK 980,000 becoming the baseline that a sustainable NOK 600,000 is judged against. Analyse it fully, including whether more time and information would have helped.",
+                "answer": "HOW IT IS EFFICIENT: anchoring provides a consistent reference, and analysis needs a fixed point. Without a baseline every month is evaluated from scratch and comparison becomes impossible, so anchoring is what makes a baseline usable at all. State this honestly, because a heuristic with no advantage would not be used. HOW IT ERRS: over-reliance on the initial value. The launch figure was produced by promotional spend and press coverage, so it is unrepresentative, and because an anchor feels like neutral background rather than a claim, nobody re-examines it. CONSEQUENCES, INCLUDING THE DELAYED ONES: months of genuinely good performance are reported as failure. That pushes the team toward discounting to close the perceived gap, which cuts gross margin in order to hit a revenue figure that was never sustainable. That is a KPI-driven behaviour actively harming the goal, which is the guard-KPI failure described elsewhere in this lesson. Morale suffers for a target that was an artefact of the reference point. WOULD MORE TIME AND INFORMATION HAVE HELPED? More time would not have, and this is the most useful part of the answer. Additional months of data would have changed nothing, because the problem was never a shortage of information about later months - it was that nobody questioned the reference. What would have helped is one sentence of information ABOUT THE ANCHOR: 'month one was 40% promotional and is not a baseline'. The remedy is to date the anchor and record the conditions that produced it.",
+                "hint": "Separate 'more data about the months' from 'information about where the baseline came from'."
+            },
+            {
+                "title": "Activity 1.1.4 - Steps 4 and 5: Awareness, artefacts and insights",
+                "type": "scenario",
+                "question": "Write the reflection: what are the advantages and drawbacks of heuristics, and how does awareness of them improve KPI interpretation?",
+                "answer": "ADVANTAGES: cognitive efficiency, since decisions can be reached without full analysis, which matters because full analysis is often unavailable and always expensive. Functionality under uncertainty, since complete information is usually absent and acting on partial information generally beats not acting. And a shared reference, since anchoring makes comparison possible at all. DRAWBACKS: inaccuracy, which is tolerable as the price of speed; over-reliance, which is the serious one because a consistent bias does not average out but accumulates in the same direction, so an organisation that anchors on every launch month misjudges every product it ships in the same way every time; and invisibility, since none of the three announces itself and each feels like ordinary reasoning from the inside. HOW AWARENESS IMPROVES KPI INTERPRETATION: availability causes overreaction to recent trends, defeated by asking what else changed in the window and comparing against normal variation, history, target and benchmark before naming a cause. Representativeness files an anomaly under a familiar label and stops examining it, defeated by setting a review date rather than a verdict. Anchoring lets a misleading initial figure drive budgets and targets, defeated by dating the anchor and recording the conditions that produced it. THE KEY INSIGHT: none of the three is defeated by trying harder to be rational. Each is defeated by an ARTEFACT - a recorded baseline, a stated review date, a dated anchor. That reframes what documentation is for: written definitions, version control and a documented method are not administrative tidiness, they exist because a written record is the only thing a cognitive shortcut cannot quietly rewrite. Awareness fades; a dated note does not.",
+                "hint": "End on what defeats each heuristic, and notice that all three answers have the same shape."
+            },
+            {
+                "title": "Activity 1.1.4 - The insight most answers miss",
+                "type": "scenario",
+                "question": "Two deeper observations are available in this activity beyond listing advantages and drawbacks. Identify them and explain why each matters for evaluation work.",
+                "answer": "FIRST: all three heuristics break on the UNUSUAL case - the anomaly, the new pattern, the unrepresentative baseline - while routine cases are exactly where they work well. Since evaluation work is disproportionately about anomalies (why did this move, is this result trustworthy, is this outlier an error), heuristics are least reliable in precisely the situations this course exists to handle. That is not an argument against using them; it is an argument for knowing when you have left the routine case. SECOND: a belief can manufacture its own supporting data. The B2B example is the sharpest version. Classifying slow deals as lost removes them from the dataset, so the computed average sales cycle stays short, which confirms that six weeks is normal, which justifies classifying the next slow deal as lost. A KPI computed on a filtered set can validate the filter that produced it. This is worth watching for anywhere a KPI and a classification rule touch each other, and it connects to survivorship bias, where studying only the surviving cases makes the survivors' characteristics look causal. A THIRD, PRACTICAL ONE: peer discussion has a mechanism rather than being a courtesy. These shortcuts are invisible from the inside and comparatively easy to see in someone else's reasoning, because a colleague never saw your first number and so is not anchored by it. Building that into a process - a second person deriving a KPI independently, or reviewing a conclusion before it circulates - is the same ensembling logic the course applies to data, where several independent views cancel errors any single view carries.",
+                "hint": "Ask what happens to the dataset when a classification rule removes cases from it."
+            },
+            {
                 "title": "Design a KPI Dashboard",
                 "type": "practical",
                 "question": "You've built a customer churn prediction model. Design a KPI dashboard with 5 metrics, thresholds, and what action to take when each threshold is breached.",
@@ -63233,7 +63261,7 @@ The mechanism is worth stating precisely, because it recurs throughout this cour
 
 ##### The biases that show up in KPI and evaluation work
 
-The general point becomes useful when it is made specific. Each of these appears elsewhere in this course under a different name:
+The general point becomes useful when it is made specific. Each of these appears elsewhere in this course under a different name, and the first three are treated in full in the next section:
 
 | Bias | The substitution it makes | How it appears in evaluation work |
 |---|---|---|
@@ -63303,6 +63331,87 @@ Three practical signals that you are relying on a heuristic when you should not 
 1. **You reached the conclusion before you looked.** Confirmation bias in its most detectable form.
 2. **The evidence you can name is a vivid example rather than a rate.** Availability and base-rate neglect together.
 3. **You are comparing against the number that happens to be in front of you** rather than against a benchmark, a target, or normal variation. Anchoring, and the reason contextualisation has its own section in this lesson.
+
+#### Understanding heuristics in the context of KPIs
+
+Heuristics play a significant role in decision-making processes, especially where decisions are time-sensitive or must be made on **partial information**. In the business world, where KPIs provide real-time snapshots of performance, understanding the impact of heuristics can be invaluable.
+
+Three matter most for KPI work. Each is presented below with what it is, what it is good for, where it fails, and a real-world case.
+
+##### The availability heuristic
+
+**What it is.** Decision-making based on the **most readily available information** — the most recent data, or information that has left a strong impression.
+
+| | |
+|---|---|
+| **Strength: rapid response** | Quick decisions are crucial in some industries and scenarios, such as crisis management or live events. The availability heuristic lets stakeholders act without delay on the most recent KPIs |
+| **Weakness: surface-level insights** | Relying exclusively on immediately available insights produces superficial analyses that miss deeper, less apparent trends or anomalies |
+
+**Real-world application.** A social media company notices a sudden drop in user engagement. Using the availability heuristic, it focuses on a recent platform update as the culprit. But the decline could be part of a broader industry trend, or a concurrent event — a major global sports event distracting users.
+
+> *The defence.* Before accepting the most available explanation, ask what else changed in the same window. The platform update is salient because you know about it; a sports final is not on your dashboard at all. Compare the drop against normal variation and against the same period last year before naming any cause.
+
+##### The representativeness heuristic
+
+**What it is.** Predicting outcomes based on how closely **new data resembles existing patterns or models**.
+
+| | |
+|---|---|
+| **Strength: intuitive comparisons** | When a company has a robust history of KPI data, pattern-based prediction is fast and often right, which speeds decision-making |
+| **Weakness: potential misclassification** | Anomalies get automatically fitted into known patterns, which leads to misinterpretation |
+
+**Real-world application.** A subscription-based online magazine finds that articles of a particular length and style gain the most readership. When a new, lengthy investigative piece does not immediately gain traction, the representativeness heuristic pushes the company to label it a misfit or a failure prematurely. The article might later become a **slow-burn hit**, showing that not everything fits neatly into established categories.
+
+> *The defence.* Notice that the error here is a **timing** error as much as a classification error. The magazine judged an unfamiliar item on a familiar item's timescale. Where a case does not resemble the pattern, set a review date rather than a verdict, and state what evidence would change the classification.
+
+##### The anchoring heuristic
+
+**What it is.** The tendency to rely on an **initial piece of information**, the *anchor*, when making subsequent judgments.
+
+| | |
+|---|---|
+| **Strength: consistent reference** | Anchoring stabilises analysis, giving a constant point of reference even as more KPI data arrives |
+| **Weakness: over-reliance on the initial** | If the initial data or benchmark is flawed or outdated, it distorts every analysis that follows |
+
+**Real-world application.** In sales, the initial monthly revenue after a product launch sets expectations. If the first month is high because of promotional effort, anchoring establishes that figure as the norm, and subsequent months are perceived as underperforming even when they reflect a **more sustainable** sales pattern.
+
+> *The defence.* Date the anchor and record what produced it. "Month one was 40% promotional" is a single sentence that prevents a year of misreading. When the anchor is a threshold, put a review date on it, since the RAG thresholds discussed earlier in this lesson are anchors that are rarely re-examined.
+
+##### What the three have in common
+
+All three do the same underlying thing: they **substitute an easier question for the harder one actually being asked**. Naming the substitution is the fastest way to spot which one is operating.
+
+| Heuristic | The hard question | The easy question it substitutes |
+|---|---|---|
+| **Availability** | How common or likely is this? | What comes to mind most readily? |
+| **Representativeness** | How probable is this outcome? | How much does this resemble a pattern I know? |
+| **Anchoring** | What is the right value? | How far is it from the first number I saw? |
+
+The substituted question is always answerable faster, which is exactly why the shortcut exists — and always answers something slightly different, which is exactly why it can mislead.
+
+##### A diagnostic: which one is operating?
+
+Useful when an assignment hands you a decision and asks what went wrong.
+
+| Symptom in the room | Likely heuristic | What to ask next |
+|---|---|---|
+| The cause named is the thing that happened most recently | Availability | What else changed in the same window that is not on our dashboard? |
+| An unusual case is being filed under a familiar label | Representativeness | What would this look like if it were genuinely new? What evidence would change the label? |
+| Performance is judged against a number nobody can date | Anchoring | Where did that figure come from, when, and under what conditions? |
+| Only the vivid example can be named, not a rate | Availability plus base-rate neglect | What does the underlying rate say? |
+| The conclusion arrived before the analysis | Confirmation | Was the method fixed before the result was seen? |
+
+##### Where each one shows up in this course
+
+These are not abstractions. Each maps onto a section of this lesson and a technique later in the module:
+
+| Heuristic | Where it appears | The practice that defeats it |
+|---|---|---|
+| **Availability** | The daily dashboard number outweighing last quarter's survey, from the balanced-approach section | Contextualisation: compare against history, target, benchmark, segment and normal variation |
+| **Representativeness** | Treating a flagged outlier as a known category instead of investigating it | Lesson 1.3: an outlier is a request for investigation, not a licence to classify or delete |
+| **Anchoring** | RAG thresholds set once and never reviewed; a year-one ROI treated as the horizon | Lesson 1.3: date the reference, and state the horizon with the number |
+
+**The pattern to carry forward:** none of these is defeated by trying harder to be rational. Each is defeated by an **artefact** — a recorded baseline, a stated review date, a dated anchor. That is why this lesson keeps returning to written definitions, version control and documented method. The purpose of those practices is not administrative tidiness; it is that a written record is the only thing a cognitive shortcut cannot quietly rewrite.
 
 #### Goal, KPI, metric, target, threshold
 
@@ -63904,6 +64013,60 @@ Social media is the most self-selected source in this lesson. People post when d
 
 **Full worked solution and instrument.** `EVO_1.1.3_Activity_Solution.md` and `EVO_1.1.3_Social_Monitoring_Workbook.xlsx` in the project folder. The workbook contains a blank capture sheet for your own session, the coding rules, and an analysis sheet whose counts are live COUNTIF formulas, so pasting your own captured data over the example recomputes everything.
 
+#### Activity 1.1.4 - Understanding and Identifying Heuristics
+
+The fourth lesson task, and the one that follows directly from the two heuristics sections above.
+
+**Objective.** To identify and analyse the application of heuristics - availability, representativeness and anchoring - in real-world decision-making scenarios.
+
+| Step | Instructions |
+|---|---|
+| **1. Understand the heuristics** | Read the overview above. Understand availability, representativeness and anchoring |
+| **2. Identify real-world scenarios** | Think of or research scenarios where you or others make decisions - purchasing, choosing a route, choosing a restaurant. Find at least one example for each of the three, and write them down |
+| **3. Analyse the scenarios** | For each, analyse how the heuristic could lead to efficient decision-making or to bias and error. Consider the possible outcomes. Could the decision have been better with more time and information? |
+| **4. Reflect on the impact** | What are the advantages and drawbacks? How does awareness contribute to better decisions, especially when interpreting KPIs in a business context? |
+| **5. Document your insights** | Summarise your findings. Optionally share them with peers or mentors for their perspective |
+
+##### The move that lifts this above a definitions exercise
+
+**Give every example twice: once everyday, once from KPI work.** Step 4 explicitly asks how awareness improves KPI interpretation, so an answer built only from restaurants and smartwatches has to bridge to business at the end. Pairing each example from the start makes the bridge structural. The mechanism is also easier to see in the everyday case, then recognisable in the business one.
+
+##### Worked pairs
+
+| Heuristic | Everyday | In KPI work |
+|---|---|---|
+| **Availability** | Driving instead of taking the train after one memorable delay, while the nine-in-ten punctuality rate never comes to mind because nothing about it was memorable | A conversion drop blamed on the webshop redesign everyone knows about, while a payment-provider outage and the start of the holiday season sit in the same window and on no dashboard |
+| **Representativeness** | Judging a restaurant by whether it looks like a good restaurant - busy at eight, short handwritten menu - so a good new place fails a test it cannot yet pass | A B2B enquiry silent for eleven weeks marked lost because normal deals close in six. It was a municipal procurement, where five to six months is ordinary |
+| **Anchoring** | A sofa marked "was 12 000, now 7 900" evaluated against the 12 000 rather than against what a sofa is worth | A launch month of NOK 980 000, driven by promotion, becoming the reference every later month is judged against, so a sustainable NOK 600 000 reads as a shortfall |
+
+##### What Step 3 should actually contain
+
+For each example, four things, and the third is where most answers stop short:
+
+1. **How it is efficient.** State this honestly. If the heuristic had no advantage nobody would use it.
+2. **How it errs.** Availability gives surface-level insight, representativeness misclassifies anomalies, anchoring over-relies on a flawed initial value.
+3. **The consequences, including the delayed ones.** The rolled-back redesign leaves the real cause running *and* discards a possible improvement. The dropped B2B deal also truncates the dataset the sales-cycle KPI is computed from, so the belief that six weeks is normal is confirmed by data the belief itself created. The anchored revenue target pushes the team to discount, cutting gross margin to hit a figure that was never sustainable.
+4. **Whether more time and information would have helped.** Sometimes the answer is no. For the anchor, more months of data would not have helped at all; one sentence recording that month one was 40% promotional would have.
+
+##### The finding to build the reflection around
+
+None of the three is defeated by trying harder to be rational. Each is defeated by an **artefact**:
+
+| Heuristic | The artefact that defeats it |
+|---|---|
+| Availability | A recorded baseline and a comparison against normal variation, history, target and benchmark before naming a cause |
+| Representativeness | A stated review date instead of a verdict where a case does not fit the pattern |
+| Anchoring | A dated anchor with the conditions that produced it written next to it |
+
+That reframes what documentation is for. Written definitions, version control and a documented method are not administrative tidiness. **A written record is the only thing a cognitive shortcut cannot quietly rewrite.** Awareness alone fades; a dated note does not.
+
+Two further insights worth including:
+
+- **All three break on the unusual case** - the anomaly, the new pattern, the unrepresentative baseline. Routine cases are exactly where they work. Since evaluation is disproportionately about anomalies, heuristics are least reliable in precisely the situations this course is about.
+- **Peer discussion has a mechanism, not just a courtesy.** These shortcuts are invisible from the inside and comparatively easy to see in someone else's reasoning: a colleague spots your anchor faster than you do, because they never saw the first number. That is the same ensembling logic the course applies to data.
+
+**Full worked solution.** `EVO_1.1.4_Activity_Solution.md` in the project folder contains all five steps, both examples for each heuristic with full analysis, and a blank template for your own three scenarios.
+
 #### Common assignment traps
 
 - Describing a KPI as if it were the goal. It is a proxy.
@@ -63922,6 +64085,10 @@ Social media is the most self-selected source in this lesson. People post when d
                 "Their benefits are efficiency and functionality under uncertainty; their drawbacks are inaccuracy and, more seriously, over-reliance, since a consistent bias does not average out",
                 "The availability heuristic substitutes ease of recall for actual frequency, which is why a recent vivid event feels common",
                 "Availability, anchoring, confirmation, recency, survivorship and base-rate neglect each appear in evaluation work, and each is defeated by replacing a judgement with a record",
+                "Availability trades surface-level insight for rapid response, and names the most recent change as the cause while ignoring what else moved in the same window",
+                "Representativeness trades misclassification for intuitive pattern comparison, and files an unfamiliar case under a familiar label before its own timescale has run",
+                "Anchoring trades distortion for a consistent reference, and lets a promotional first month become the norm every later month is judged against",
+                "All three substitute an easier question for the harder one, which is why naming the substitution identifies which is operating"
                 "A KPI differs from a cognitive heuristic in being chosen deliberately, so it can be written down, inspected and evaluated as an intuition cannot",
                 "The higher the stakes, the less a shortcut is worth, which is the same rule the confidence-level work method formalises",
                 "KPIs are the lens an organisation sees itself through and the yardstick it measures by, so a bad KPI makes part of the business invisible",
@@ -63962,7 +64129,8 @@ Social media is the most self-selected source in this lesson. People post when d
                 "KPIs, version control and ethics are load-bearing for each other: an untraceable KPI's transparency is a claim, and an auditable record of a misleading number is still misleading",
                 "Activity 1.1.1 applies all of this: build a hypothetical business with channels of different economics, compute the financial and non-financial KPIs, and show how they interact",
                 "Activity 1.1.2 applies the collection material: explore the tools, judge their fit rather than only their features, collect one quantitative and one qualitative KPI, and keep the raw survey responses",
-                "Activity 1.1.3 is firsthand social media monitoring: fix platforms, search terms and coding rules before reading, capture as you go, and remember that frequency is not importance"
+                "Activity 1.1.3 is firsthand social media monitoring: fix platforms, search terms and coding rules before reading, capture as you go, and remember that frequency is not importance",
+                "Activity 1.1.4 identifies the three heuristics in real scenarios: give every example twice, once everyday and once from KPI work, and end on the artefact that defeats each one"
             ],
             "visual_elements": {
                 "diagrams": True,

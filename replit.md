@@ -55,7 +55,7 @@ reviewable piece of evaluation work rather than around a timed exam.
 **Detailed lessons** (in `course_lessons`, shown in Learn & Practice). These follow
 the official Module 1 structure from the LMS:
 - **1.0 Course Overview and Assignment Strategy**: module overview and structure, official learning outcomes, outcome-to-lesson map, the four-step evaluation answer structure, the ethical dimension
-- **1.1 Data Analysis, Key Performance Indicators (KPIs), and Version Control**: why gut instinct is insufficient, KPIs as lens and yardstick, lagging vs leading as the two main types, quantitative KPIs split into financial and non-financial metrics with the six named metrics, data collection sources for quantitative KPIs, qualitative KPIs (customer satisfaction and employee engagement) and their manual collection methods, a balanced approach to KPIs with a four-axis balance test, contextualisation, strategic alignment, heuristics with their origins, benefits, drawbacks and the cognitive biases they produce, KPI types and industry applications, six real-world case studies, steps for establishing a KPI dashboard, version control for data integrity and collaboration, the four ethical considerations closing the lesson, and **Activities 1.1.1 and 1.1.2** (the lesson tasks) with its formula list, method, and a worked example
+- **1.1 Data Analysis, Key Performance Indicators (KPIs), and Version Control**: why gut instinct is insufficient, KPIs as lens and yardstick, lagging vs leading as the two main types, quantitative KPIs split into financial and non-financial metrics with the six named metrics, data collection sources for quantitative KPIs, qualitative KPIs (customer satisfaction and employee engagement) and their manual collection methods, a balanced approach to KPIs with a four-axis balance test, contextualisation, strategic alignment, heuristics with their origins, benefits, drawbacks and the cognitive biases they produce, the availability, representativeness and anchoring heuristics in KPI context, KPI types and industry applications, six real-world case studies, steps for establishing a KPI dashboard, version control for data integrity and collaboration, the four ethical considerations closing the lesson, and **Activities 1.1.1 and 1.1.2** (the lesson tasks) with its formula list, method, and a worked example
 - **1.2 Statistical Inference, Result Table Analysis, and Critical Tools**: sampled sets and sampling bias, sample size, quantitative vs qualitative evidence, reading a regression result table, R squared and leakage, z-scores and z-testing, a critical-tools table of what each tool cannot tell you
 - **1.3 Variance Measurement, Confidence Levels, and Problem Solving**: variance and standard deviation as reliability, five-point summaries and IQR fences, what a confidence level claims, a work method for setting the level by problem domain, multiple probability outcomes with planned responses, sensitivity checks, a problem-solving routine
 - **1.4 Iterative Error Elimination Techniques, Ethical Principles, and Solution Facilitation**: the detect-to-prevent cycle, error taxonomy, Five Whys, fishbone categories, tooling, ethical principles and selective evaluation, delivering findings and facilitating solution discussions
@@ -66,7 +66,7 @@ Also has curated flashcards, exam-bank entries, and practice questions.
 **Activities 1.1.1, 1.1.2 and 1.1.3** each appear in two places: the brief, method
 and a worked example form a section of lesson 1.1, and interactive exercises sit in
 the `KPIs & Decision Heuristics` training module (6 for 1.1.1, 5 for 1.1.2, 4 for
-1.1.3, 17 exercises in total with the two pre-existing ones). All three are worked
+1.1.3, 4 for 1.1.4, 21 exercises in total with the two pre-existing ones). All three are worked
 for the same hypothetical business, Nordtre AS, so each activity's findings can be
 checked against the KPIs the earlier ones defined. Full solutions at the project
 root:
@@ -74,6 +74,7 @@ root:
 - `EVO_1.1.1_Activity_Solution.md` + `EVO_1.1.1_KPI_Analysis_Nordtre.xlsx` (53 live formulas)
 - `EVO_1.1.2_Activity_Solution.md` + `EVO_1.1.2_KPI_Data_Collection_Nordtre.xlsx` (37 live formulas)
 - `EVO_1.1.3_Activity_Solution.md` + `EVO_1.1.3_Social_Monitoring_Workbook.xlsx` (37 live formulas)
+- `EVO_1.1.4_Activity_Solution.md` (analysis only; this activity has no calculations)
 
 Note on 1.1.3: that activity requires firsthand social media monitoring, which
 cannot be delegated. Its workbook is therefore an *instrument* — a blank capture
