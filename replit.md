@@ -52,15 +52,14 @@ Semester 2 course. Assessed by a one-week individual Course Assignment graded
 Pass / Fail (level 5.1), so the lesson material is written around producing a
 reviewable piece of evaluation work rather than around a timed exam.
 
-**Detailed lessons** (in `course_lessons`, shown in Learn & Practice):
-- **1.0 Course Overview and Assignment Strategy**: where the course sits in the programme, official learning outcomes, the four-step evaluation answer structure, the ethical dimension
-- **1.1 KPIs as Heuristics**: goal vs KPI vs metric vs target vs threshold, guard KPIs, RAG decision rules, appraising whether a KPI did its job
-- **1.2 Sampled Sets, Variance and Five-Point Summaries**: sampling methods and their biases, sample size effects, variance as reliability, IQR fences, outliers as investigations
-- **1.3 Linear Regression and Z-Testing**: reading R squared honestly, leakage and overfitting, naming the alternative explanation, what a z-score does not tell you
-- **1.4 Confidence Levels and Multiple Probability Outcomes**: what a confidence level claims, interval width trade-offs, a work method for choosing the level by problem domain, scenarios with planned responses, sensitivity checks
-- **1.5 Iterative Error Elimination**: the detect-to-prevent cycle, error taxonomy, Five Whys, fishbone categories, tooling, delivering findings to a team
-- **1.6 Ensembling and Model Reliability**: bias vs variance, bagging, boosting, stacking, ensembling applied to data, and what ensembling does not fix
-- **1.7 ETL Systems and Version Control**: pipeline failure points, evaluation properties of a pipeline, ELT, versioning data as well as code, tracing a broken KPI
+**Detailed lessons** (in `course_lessons`, shown in Learn & Practice). These follow
+the official Module 1 structure from the LMS:
+- **1.0 Course Overview and Assignment Strategy**: module overview and structure, official learning outcomes, outcome-to-lesson map, the four-step evaluation answer structure, the ethical dimension
+- **1.1 Data Analysis, Key Performance Indicators (KPIs), and Version Control**: why gut instinct is insufficient, KPIs as lens and yardstick, lagging vs leading as the two main types, financial vs non-financial, contextualisation, strategic alignment, heuristics, KPI types and industry applications, six real-world case studies, steps for establishing a KPI dashboard, version control for data integrity and collaboration
+- **1.2 Statistical Inference, Result Table Analysis, and Critical Tools**: sampled sets and sampling bias, sample size, quantitative vs qualitative evidence, reading a regression result table, R squared and leakage, z-scores and z-testing, a critical-tools table of what each tool cannot tell you
+- **1.3 Variance Measurement, Confidence Levels, and Problem Solving**: variance and standard deviation as reliability, five-point summaries and IQR fences, what a confidence level claims, a work method for setting the level by problem domain, multiple probability outcomes with planned responses, sensitivity checks, a problem-solving routine
+- **1.4 Iterative Error Elimination Techniques, Ethical Principles, and Solution Facilitation**: the detect-to-prevent cycle, error taxonomy, Five Whys, fishbone categories, tooling, ethical principles and selective evaluation, delivering findings and facilitating solution discussions
+- **1.5 Supplementary: Ensembling Techniques and ETL Systems**: covers the two curriculum outcomes (ensambling, ETL) that are not among the four Module 1 lesson titles — bias vs variance, bagging, boosting, stacking, ensembling applied to data, pipeline failure points, ELT, versioning data as well as code
 
 Also has curated flashcards, exam-bank entries, and practice questions.
 
