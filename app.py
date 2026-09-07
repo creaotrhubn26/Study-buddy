@@ -11778,6 +11778,48 @@ Keep a decision log linking KPIs to actions for:
         ],
         "exercises": [
             {
+                "title": "Activity 1.1.1 - Step 1: Design the hypothetical business",
+                "type": "practical",
+                "question": "Create a profile for a fictional company: industry, products or services, and target market. One design decision decides whether the rest of this activity has anything to find. What is it, and why?",
+                "answer": "The decision is to give the business channels or segments with GENUINELY DIFFERENT unit economics, rather than a single revenue stream. A single-channel business makes every blended KPI correct by accident: blended CAC equals segment CAC, blended margin equals channel margin, and the Step 4 interaction analysis has nothing to reveal. With three channels of different order values and margins, the blended figures start hiding things, which is the whole point of an evaluation exercise. Example profile: Nordtre AS, sustainable flat-pack furniture in FSC-certified Norwegian timber, sold to urban Norwegian households and small businesses aged 28-45, through three channels - D2C e-commerce (high volume, low order value), retail partnerships (thinnest margin, since the partner takes a share), and B2B contract fit-out (low volume, high contract value). Also fix the reporting currency and period up front, and state a prior period to compare against, since almost every finding in Step 4 comes from a comparison rather than a snapshot.",
+                "hint": "Ask yourself what a blended KPI would hide in your business. If the answer is nothing, the business is too simple."
+            },
+            {
+                "title": "Activity 1.1.1 - Step 2: Financial KPIs, margins and ROI",
+                "type": "practical",
+                "question": "Your business reports revenue of NOK 18,400,000 across three channels, COGS of NOK 10,120,000 and operating expenses of NOK 6,440,000. It also invested NOK 3,000,000 in equipment that generates NOK 780,000 of incremental operating profit per year. Calculate the margins and the ROI, and state the two things most candidates get wrong.",
+                "answer": "MARGINS: Gross profit = 18,400,000 - 10,120,000 = 8,280,000, so gross margin = 8,280,000 / 18,400,000 x 100 = 45.0%. Total expenses = 10,120,000 + 6,440,000 = 16,560,000, so operating profit = 1,840,000 and operating margin = 10.0%. After 22% tax, net profit = 1,435,200 and net margin = 7.8%. ROI: 780,000 / 3,000,000 x 100 = 26.0% in year one. Payback period = 3,000,000 / 780,000 = 3.85 years. Cumulative ROI over three years = (780,000 x 3 - 3,000,000) / 3,000,000 x 100 = -22.0%. THE TWO ERRORS: (1) Reporting a single 'profit margin'. The three variants differ here by nearly six times, so any target, bonus or channel comparison stated as 'profit margin' is ambiguous until the variant is named. (2) Using TOTAL company profit as the ROI numerator. ROI measures the return of a specific investment, so only profit caused by that investment belongs in it; dividing whole-business profit by one machine credits that machine with everything the company did. Always report payback alongside ROI, because +26% in year one and -22% cumulatively are both correct and quoting only one changes the decision.",
+                "hint": "Compute all three margins, and ask what horizon the ROI figure covers."
+            },
+            {
+                "title": "Activity 1.1.1 - Step 3: CAC, and why it needs a partner metric",
+                "type": "practical",
+                "question": "This year you spent NOK 890,000 acquiring 8,900 D2C customers and NOK 700,000 acquiring 140 B2B accounts. Last year it was NOK 651,000 for 6,200 D2C and NOK 924,000 for 210 B2B. Calculate CAC properly, and explain why the year-on-year movement is not the good news it appears to be.",
+                "answer": "SEGMENT CAC this year: D2C = 890,000 / 8,900 = NOK 100. B2B = 700,000 / 140 = NOK 5,000. BLENDED CAC = total spend / total customers = 1,590,000 / 9,040 = NOK 175.88. Last year: D2C = NOK 105, B2B = NOK 4,400, blended = 1,575,000 / 6,410 = NOK 245.71. Blended CAC therefore fell 28.4%. WHY THIS IS NOT GOOD NEWS: the fall is a mix artefact, not an efficiency gain. B2B new accounts fell 33% (210 to 140) and B2B CAC actually ROSE 13.6%. Acquisition simply shifted toward cheap, low-value D2C customers. To prove it, hold lifetime value constant and compare total acquired value: with D2C LTV of NOK 1,728 and B2B LTV of NOK 65,208, this year acquired 8,900 x 1,728 + 140 x 65,208 = NOK 24,508,320 against last year's 6,200 x 1,728 + 210 x 65,208 = NOK 24,407,280. That is FLAT (+0.4%) while customer count rose 41%. The business is working much harder for the same future value. NOTE ALSO: blended CAC is total spend over total customers, never the average of the two segment CACs. Averaging NOK 100 and NOK 5,000 gives NOK 2,550, wrong by a factor of fourteen, because one segment has 64 times the volume.",
+                "hint": "CAC is only interpretable relative to lifetime value. Compute total acquired LTV for both years."
+            },
+            {
+                "title": "Activity 1.1.1 - Step 3: Website traffic and turnover",
+                "type": "scenario",
+                "question": "Monthly sessions rose from 15,600 to 21,500 and monthly D2C orders from 207 to 250. Separately, 7 of an average 34 staff left: 5 of 19 in production, 2 of 15 in design, and 4 of the 7 were regretted. What do you report, and what monitoring would you propose?",
+                "answer": "TRAFFIC: sessions rose 37.8% but orders only 20.8%, because conversion fell from 207/15,600 = 1.33% to 250/21,500 = 1.16%, a 12.4% decline. Roughly 45% of the traffic growth produced no revenue. Website traffic is a leading indicator, so its value depends entirely on the outcome following; here the leading indicator improved sharply while its lagging partner improved half as much, which is a broken predictive link and a finding rather than a success. MONITORING: track sessions, unique visitors and average session duration separately, since they measure activity, reach and depth; segment traffic by source so a rise can be attributed; take orders from the order system rather than analytics, so two independent sources can be reconciled; always report conversion beside traffic; and set targets on revenue per session rather than on sessions, so the target cannot be met by buying low-intent traffic. TURNOVER: company rate = 7/34 = 20.6%. Production = 5/19 = 26.3%. Design = 2/15 = 13.3%. Regretted-only = 4/34 = 11.8%. The design rate is the LOWEST and carries the most risk, because both leavers were senior product designers feeding the pipeline that D2C revenue depends on. Price it: at NOK 95,000 per replacement, 7 departures cost NOK 665,000, equal to 36.1% of operating profit. Mitigations: level production planning across the quarter instead of overtime at launch peaks, create a progression route out of the warehouse, give senior designers roadmap ownership, and run a quarterly engagement survey as a leading indicator. Use average headcount as the denominator, not closing headcount, which distorts when headcount changes mid-year.",
+                "hint": "For traffic, compute the conversion rate. For turnover, split regretted from unregretted and price it against operating profit."
+            },
+            {
+                "title": "Activity 1.1.1 - Step 4: KPI interactions and which matter most",
+                "type": "scenario",
+                "question": "Using the figures from the previous exercises, describe how the KPIs interact, then rank the most crucial KPIs for the business and justify each choice against the obvious alternative.",
+                "answer": "INTERACTIONS: (1) CAC to mix to LTV - blended CAC fell 28% while total acquired lifetime value stayed flat, so acquisition efficiency did not improve; the customer mix changed. (2) Traffic to conversion to revenue - sessions rose 38%, conversion fell 12%, orders rose 21%, so part of the media spend is waste. (3) Turnover to cost to margin - NOK 665,000 of replacement cost is 36% of operating profit, making an HR metric a direct margin lever. (4) Turnover to product to revenue - the two senior designers who left feed the product pipeline that drives D2C, so a low departmental turnover rate is masking a future revenue problem. (5) Margin variant to decision - gross 45.0%, operating 10.0%, net 7.8% means any 'profit margin' target is ambiguous. (6) ROI to horizon - +26% year one against -22% cumulative over three years. MOST CRUCIAL, RANKED: 1. LTV:CAC by segment, because it is the only form in which acquisition efficiency is interpretable, and blended CAC moved 28% for reasons unrelated to efficiency. 2. Gross margin by channel, because channel mix drives blended margin and blended margin can hold steady while a profitable channel shrinks. 3. D2C conversion rate, because it is the intermediary between traffic paid for and revenue earned. 4. Regretted turnover by team, because it leads the product pipeline and the company-wide rate averages away the departures that matter. Operating margin and ROI remain essential for reporting and capital decisions, but they are LAGGING: by the time they move, the causes above have been running for a year.",
+                "hint": "For each ranked KPI, say explicitly why the blended or headline alternative is weaker."
+            },
+            {
+                "title": "Activity 1.1.1 - Check your spreadsheet for logic errors",
+                "type": "practical",
+                "question": "A KPI workbook has an ROI cell containing =B2/B3*100 and a CAC cell containing =B2/B3, where B2 is Online Sales and B3 is Retail Sales. Both return numbers, no cell shows an error, and every value in the sheet is a valid number. What kind of error is this, why does no data-quality check catch it, and what would?",
+                "answer": "This is a LOGIC ERROR: the syntax is valid, the output is a plausible number, and the formula simply points at the wrong cells. Both were copied from an earlier calculation block without adjusting the references. The ROI cell returns Online Sales / Retail Sales rather than Net Profit / Investment, and the CAC cell returns the same ratio rather than Marketing Spend / New Customers. WHY NO CHECK CATCHES IT: type validation passes because the result is numeric, range validation passes because the value is plausible, and completeness checks pass because nothing is missing. Logic and interpretation errors survive every automated data-quality rule, which is precisely why human evaluation is required. WHAT WOULD CATCH IT: reconciliation against an independent statement of the same figure. Here the accompanying report text states 133.3% and R30 while the spreadsheet computes 150% and 1.5, so simply comparing the two exposes it. Build the checks into the workbook: confirm components sum to their totals, confirm gross margin exceeds operating margin exceeds net margin, reach at least one headline figure by a second independent route, confirm blended CAC is total spend over total customers rather than the average of segments, and confirm every percentage change divides by the OLD value. One further trap: a documentation note typed as =B8-B11 becomes a live formula and silently computes something wrong, so explanatory text must not begin with an equals sign.",
+                "hint": "Ask which category of error survives type checking, range validation and completeness checks."
+            },
+            {
                 "title": "Design a KPI Dashboard",
                 "type": "practical",
                 "question": "You've built a customer churn prediction model. Design a KPI dashboard with 5 metrics, thresholds, and what action to take when each threshold is breached.",
@@ -63063,6 +63105,96 @@ Two lessons follow, and both are assessable:
 1. A KPI is only as trustworthy as the documented definition behind it, which is why "defined once and written down" appeared in the quality list above.
 2. Before raising a change like this as an error, establish whether it was **intentional but uncommunicated**. That distinction is the difference between facilitating a solution discussion and starting an argument, which Lesson 1.4 develops in full.
 
+#### Activity 1.1.1 - KPI Analysis and Development for a Hypothetical Business
+
+This is the lesson task. Work through it before reading the worked example below it.
+
+**Objective.** To understand the practical application of quantitative KPIs by classifying and analysing them for a hypothetical organisation.
+
+| Step | Instructions |
+|---|---|
+| **1. Create a hypothetical business** | Develop a basic profile: industry, products or services, and target market |
+| **2. Identify financial KPIs** | Identify at least three potential sources of sales revenue. Calculate hypothetical profit margins, and ROI for a hypothetical investment related to the business |
+| **3. Non-financial KPIs** | Determine an appropriate customer acquisition cost. Propose strategies for monitoring website traffic if the business operates online. Consider factors influencing employee turnover and strategies to mitigate them |
+| **4. Analysis** | Analyse the hypothetical data and consider how the KPIs interact. Determine which KPIs are most crucial for the business's success, and justify those choices |
+| **5. Report** | Prepare a brief report outlining the business and the identified KPIs. Explain the potential impact of each KPI and any proposed strategies for improvement or maintenance |
+| **6. Reflection** | Reflect on the importance of both financial and non-financial KPIs, their role in understanding business health and making strategic decisions, and the necessity of monitoring them regularly |
+
+##### The one design decision that makes this activity work
+
+Give your hypothetical business **channels or segments with genuinely different economics**. A single-channel business makes every blended KPI correct by accident, and Step 4 then has nothing to find. Three channels with different order values and margins is enough.
+
+##### Formulas you will need
+
+| KPI | Formula | Do not forget |
+|---|---|---|
+| Gross margin | Gross profit / Revenue x 100 | Name which margin you used |
+| Operating margin | Operating profit / Revenue x 100 | It is not the same as gross |
+| Net margin | Net profit / Revenue x 100 | After tax |
+| ROI | Gain from investment / Cost of investment x 100 | Use **incremental** profit, not total company profit |
+| Payback period | Investment / Annual return | Report it beside ROI to expose the horizon |
+| CAC | Acquisition spend / New customers | Per segment, not only blended |
+| Blended CAC | **Total** spend / **Total** customers | Never the average of segment CACs |
+| Lifetime value | Avg order value x **gross margin** x purchases per lifetime | Gross margin, not revenue |
+| LTV:CAC | LTV / CAC | Above 3x is the usual health rule |
+| Conversion rate | Orders / Sessions x 100 | Always report it beside traffic |
+| Employee turnover | Departures / **Average** headcount x 100 | Split regretted from unregretted |
+| Percentage change | (New - Old) / **Old** x 100 | Divide by the old value |
+
+##### How to turn each step into an evaluation, not a definition list
+
+The marks are not in the arithmetic. They are in what you compute **alongside** each figure.
+
+| For this step | Compute the obvious thing | Then add its partner |
+|---|---|---|
+| Profit margin | One margin | All three, and say why the variant matters |
+| ROI | ROI percentage | Payback period and cumulative multi-year ROI |
+| CAC | Blended CAC | CAC per segment, plus LTV and LTV:CAC |
+| Website traffic | Sessions | Conversion rate, and orders from the order system |
+| Turnover | Company rate | By team, and regretted-only, priced against operating profit |
+
+##### Worked example: Nordtre AS
+
+A short version of one complete answer, to show the shape rather than to be copied. Nordtre AS is a Norwegian sustainable furniture company with three channels: D2C e-commerce, retail partnerships, and B2B contract fit-out.
+
+| KPI | Value | What the headline hides |
+|---|---|---|
+| Revenue | NOK 18.4m across three channels | Channel mix drives everything below |
+| Gross / operating / net margin | 45.0% / 10.0% / 7.8% | "Profit margin" is ambiguous across a factor of nearly six |
+| ROI year 1 | 26.0% | Payback is 3.85 years, so cumulative 3-year ROI is **-22%** |
+| Blended CAC | NOK 176, down 28% | Total lifetime value acquired was **flat**, so the fall is a mix artefact |
+| CAC by segment | D2C NOK 100, B2B NOK 5,000 | Blended describes neither customer |
+| LTV:CAC | D2C 17.3x, B2B 13.0x | Both healthy; the problem is the mix, not the efficiency |
+| Website sessions | 21,500/month, up 38% | Conversion fell 12%, so orders rose only 21% |
+| Employee turnover | 20.6% | Regretted-only is 11.8%, and both design leavers were senior designers |
+| Turnover cost | NOK 665,000 | Equal to **36% of operating profit** |
+
+The three findings that only appear after decomposition:
+
+1. **Blended CAC fell 28% while total acquired lifetime value was flat.** Acquisition shifted toward cheap, low-LTV D2C customers while B2B new accounts fell 33% and became 14% more expensive. The company acquired 41% more customers for the same future value.
+2. **Sessions rose 38% but conversion fell 12%**, so roughly 45% of the traffic growth produced no revenue. Traffic is a leading indicator whose predictive link has weakened.
+3. **Company turnover of 20.6% hides the two departures that matter.** Design turnover was only 13.3%, but both leavers were senior product designers feeding the pipeline that D2C revenue depends on.
+
+Most crucial KPIs, in order: LTV:CAC by segment, gross margin by channel, D2C conversion rate, and regretted turnover by team. Operating margin and ROI stay essential for reporting, but they are lagging: by the time they move, the causes above have been running for a year.
+
+##### A note on checking your own spreadsheet
+
+The most damaging spreadsheet errors are **logic errors**: formulas that are syntactically valid, return a plausible number, and point at the wrong cells. No data-quality rule catches them.
+
+The workbook supplied with this activity contains two. Its ROI cell and its CAC cell were both copied from the first calculation block without adjusting the references, so both compute Online Sales divided by Retail Sales. They return 150% and 1.5 against the 133.3% and R30 stated in the accompanying report text. The written report is right; the spreadsheet is not.
+
+Build reconciliation checks into your own workbook so this class of error cannot survive:
+
+- Do the component figures sum to the total you reported?
+- Does gross margin exceed operating margin, which exceeds net margin?
+- Can you reach at least one headline figure by a second, independent route?
+- Is blended CAC total spend over total customers, rather than the average of the segments?
+- Is every percentage change divided by the **old** value?
+
+One more, easily missed: a documentation note typed as `=B8-B11` becomes a live formula and silently computes something wrong. Enter explanatory text so it does not begin with an equals sign.
+
+**Full worked solution.** `EVO_1.1.1_Activity_Solution.md` and `EVO_1.1.1_KPI_Analysis_Nordtre.xlsx` in the project folder contain the complete six-step answer, a formula reference sheet, a Method and Rationale sheet recording why each calculation was done the way it was, and a Checks sheet of five reconciliation tests.
+
 #### Common assignment traps
 
 - Describing a KPI as if it were the goal. It is a proxy.
@@ -63090,7 +63222,8 @@ Two lessons follow, and both are assessable:
                 "KPIs shape a business through attention, incentive, resource allocation and the definition of success, so a KPI review is a business intervention",
                 "A dashboard is a heuristic made visual: define the audience and decisions first, write definitions and owners, show trend and target, keep it small, and review on a schedule",
                 "Version control gives data integrity and team collaboration, and a KPI you cannot trace is a KPI you cannot evaluate",
-                "Data must be versioned as well as code, since a definition change passes every automated quality check while silently breaking a KPI"
+                "Data must be versioned as well as code, since a definition change passes every automated quality check while silently breaking a KPI",
+                "Activity 1.1.1 applies all of this: build a hypothetical business with channels of different economics, compute the financial and non-financial KPIs, and show how they interact"
             ],
             "visual_elements": {
                 "diagrams": True,

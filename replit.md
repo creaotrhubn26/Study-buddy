@@ -55,13 +55,19 @@ reviewable piece of evaluation work rather than around a timed exam.
 **Detailed lessons** (in `course_lessons`, shown in Learn & Practice). These follow
 the official Module 1 structure from the LMS:
 - **1.0 Course Overview and Assignment Strategy**: module overview and structure, official learning outcomes, outcome-to-lesson map, the four-step evaluation answer structure, the ethical dimension
-- **1.1 Data Analysis, Key Performance Indicators (KPIs), and Version Control**: why gut instinct is insufficient, KPIs as lens and yardstick, lagging vs leading as the two main types, financial vs non-financial, contextualisation, strategic alignment, heuristics, KPI types and industry applications, six real-world case studies, steps for establishing a KPI dashboard, version control for data integrity and collaboration
+- **1.1 Data Analysis, Key Performance Indicators (KPIs), and Version Control**: why gut instinct is insufficient, KPIs as lens and yardstick, lagging vs leading as the two main types, quantitative KPIs split into financial and non-financial metrics with the six named metrics, contextualisation, strategic alignment, heuristics, KPI types and industry applications, six real-world case studies, steps for establishing a KPI dashboard, version control for data integrity and collaboration, and **Activity 1.1.1** (the lesson task) with its formula list, method, and a worked example
 - **1.2 Statistical Inference, Result Table Analysis, and Critical Tools**: sampled sets and sampling bias, sample size, quantitative vs qualitative evidence, reading a regression result table, R squared and leakage, z-scores and z-testing, a critical-tools table of what each tool cannot tell you
 - **1.3 Variance Measurement, Confidence Levels, and Problem Solving**: variance and standard deviation as reliability, five-point summaries and IQR fences, what a confidence level claims, a work method for setting the level by problem domain, multiple probability outcomes with planned responses, sensitivity checks, a problem-solving routine
 - **1.4 Iterative Error Elimination Techniques, Ethical Principles, and Solution Facilitation**: the detect-to-prevent cycle, error taxonomy, Five Whys, fishbone categories, tooling, ethical principles and selective evaluation, delivering findings and facilitating solution discussions
 - **1.5 Supplementary: Ensembling Techniques and ETL Systems**: covers the two curriculum outcomes (ensambling, ETL) that are not among the four Module 1 lesson titles — bias vs variance, bagging, boosting, stacking, ensembling applied to data, pipeline failure points, ELT, versioning data as well as code
 
 Also has curated flashcards, exam-bank entries, and practice questions.
+
+**Activity 1.1.1** (KPI analysis for a hypothetical business) appears in two places:
+the brief, method and worked example are a section of lesson 1.1, and six interactive
+exercises sit in the `KPIs & Decision Heuristics` training module. The full worked
+solution lives in `EVO_1.1.1_Activity_Solution.md` and
+`EVO_1.1.1_KPI_Analysis_Nordtre.xlsx` at the project root.
 
 **Training modules** (hands-on, in the Training Center):
 - **KPIs & Decision Heuristics**: KPIs as heuristics, thresholds/alerts, decision trees, KPI-driven escalation
