@@ -64656,7 +64656,7 @@ A result table typically carries three different kinds of statement, and confusi
 
 Each answers a question the other two cannot. A test says *detectable*, an interval says *how precisely known*, an effect size says *how much*. A result reported with only one of the three is incomplete, and which one is missing tells you what the reader is likely to get wrong.
 
-**Confidence intervals are named here and developed in Lesson 1.3**, alongside confidence levels and multiple probability outcomes. This lesson takes the first and third.
+**All three are treated in this lesson.** Confidence intervals get their own section below, after the sales-strategy case study; Lesson 1.3 then develops confidence *levels* further, alongside multiple probability outcomes and the five-point summary.
 
 ##### Testing hypotheses: hypothesis basics
 
@@ -64778,9 +64778,15 @@ p = 0.034 clears the 0.05 threshold, so the difference is **detectable**. d = 0.
 
 NOK 49 per order × 250 orders per month = **NOK 12 250 per month**, or **NOK 147 000 per year**. Against a redesign that cost NOK 240 000, that is a payback of **1.63 years** — the same ROI logic as Activity 1.1.1, now applied to a test result rather than to a project.
 
-**What to write.** "The redesign increased mean order value by NOK 49 (p = 0.034, d = 0.23). The effect is statistically detectable but small by conventional benchmarks, and worth roughly NOK 147 000 annually at current order volume, giving payback on the NOK 240 000 build in about 20 months. I would recommend rollout, on the ROI rather than on the p-value, and note that the test ran for one month and so does not capture seasonal variation."
+**Step 6 — the interval, which is what the point estimate was hiding.**
 
-That last sentence is what separates a pass from a good answer. The statistics were the easy part.
+95% CI on the difference = 49 ± 1.967 × 23.01 = **[NOK 3.75, NOK 94.25]**
+
+It excludes zero, consistent with p = 0.034. But carried through to the annual figure it spans **NOK 11 300 to NOK 282 700**, so payback on the NOK 240 000 build lies somewhere between **10 months and 21 years**. The point estimate said 20 months and looked decisive; the interval says the honest answer is that we do not yet know whether this pays back. The confidence intervals section below works through why this matters.
+
+**What to write.** "The redesign increased mean order value by NOK 49 (p = 0.034, d = 0.23, 95% CI [3.75, 94.25]). The effect is statistically detectable but small by conventional benchmarks. At the point estimate it is worth roughly NOK 147 000 a year at current order volume, giving payback on the NOK 240 000 build in about 20 months — but the interval puts the annual value anywhere between NOK 11 300 and NOK 282 700, so payback ranges from 10 months to 21 years and the test as run does not settle the investment case. I would recommend extending the test rather than deciding on the point estimate; if a decision is needed now, roll out while continuing to measure, with the uncertainty stated. Note also that the test ran for one month and so does not capture seasonal variation."
+
+That last answer is what separates a pass from a good one, and notice what did the work in it. Nothing in the arithmetic was wrong at step 5. The p-value was right, the effect size was right, and the payback calculation was right. What was missing was the **precision**, and its absence made a genuinely uncertain result read as a settled one. The statistics were the easy part.
 
 ##### The four cases, and what each one means
 
@@ -64810,6 +64816,154 @@ A result table question in this course will usually give you two group means, tw
 Steps 6 and 7 are where the marks are. Steps 2 to 5 are arithmetic a spreadsheet does; the examiner is testing whether you know that a small p and a small d can coexist, and what you would do about it.
 
 *A spreadsheet caution carried over from Activity 1.1.1: build each of these as its own cell referencing named inputs, never as one long formula. A single compound expression is unreviewable, and an unreviewable formula is how the wrong cell reference survived into the ROI figure in that workbook.*
+
+#### Case study: testing the efficacy of a new sales strategy
+
+**Background.** XYZ Corporation, a famous electronics manufacturer, recently implemented a new sales strategy. The strategy involved a revamped marketing campaign, bundling products for discounts, and an aggressive social media presence. Given the resources and time invested, the company's leadership wants to validate the effectiveness of this strategy.
+
+##### Hypothesis formation
+
+| | The hypothesis |
+|---|---|
+| **Null hypothesis (H₀)** | The introduction of the new sales strategy has **not** led to a statistically significant increase in sales. In technical terms: if average monthly sales before the strategy were M₁ units, the null suggests that average monthly sales after implementation remain M₁ |
+| **Alternative hypothesis (Hₐ)** | The new sales strategy **has** resulted in a statistically important increase in sales. If previous average monthly sales were M₁ units, then with the strategy in place sales are **greater than** M₁ |
+
+**Data collection and analysis.** The sales data rolls in over the next few months and the analysts get to work. They compare the average sales figures before and after the strategy's introduction. Using appropriate statistical tests, they derive a p-value to determine the probability of observing the given data, or something more extreme, if the null hypothesis were true.
+
+**Interpretation of results.** The result table shows a **p-value of 0.03**. A convention in many fields is to treat a p-value below 0.05 as evidence against the null. A p-value of 0.03 therefore suggests there is only a 3% chance that the observed increase in sales, or something more extreme, would occur if the new sales strategy had no real effect.
+
+**Conclusion.** Given the low p-value, XYZ Corporation concludes that the observed sales increase is statistically significant and likely the result of the new sales strategy. While this does not rule out other contributing factors, the data supports the strategy's effectiveness. The company may therefore decide to invest in this strategy, refine it, or expand its application to other segments or regions.
+
+Through a systematic approach of forming hypotheses, collecting data, and interpreting results using p-values, XYZ Corporation has gained a data-driven perspective on the effectiveness of its new sales strategy. This underscores the power of hypothesis testing in guiding strategic business decisions.
+
+##### Four things to notice about this case
+
+The case is a clean illustration of the mechanics, and it is also the kind of write-up this course asks you to appraise. Four points, in the order an evaluator would raise them.
+
+**1. The alternative is one-tailed, and it was declared in advance.** "Sales are *greater than* M₁" claims a direction, not merely a difference. That is legitimate here — the company invested in the strategy expecting an increase, and the direction was stated before the data arrived. It halves the p-value relative to a two-tailed test, so it must be justified by the design and not chosen after seeing the result.
+
+**2. There is no control group.** The design compares *before* against *after* in the same company, which is the same structure as the dashboard ROI claim from Lesson 1.1 and carries the same three weaknesses: other things changed in the window, the measurement itself draws attention to the process, and the whole improvement gets credited to one intervention. For an electronics manufacturer, the obvious confounders are seasonality, a product launch, a competitor's problems, and general market movement. The strategy also bundled **three** changes at once — campaign, discounts, social media — so even a genuine effect cannot be attributed to any one of them.
+
+**3. The effect size is missing.** The case reports a p-value and nothing else. From the earlier table: p says *detectable*, not *how much*. If the sales history is long enough, a 0.5% lift produces p = 0.03 just as readily as a 15% lift does, and the decisions those two support are completely different. The result table should carry the mean difference, its confidence interval, and an effect size alongside the p-value.
+
+**4. "Proves" is the wrong word.** The course text's own sentence acknowledges that other contributing factors are not ruled out, and a p-value cannot establish a cause in the first place. What p = 0.03 supports is that the observed increase would be unusual if the strategy had no effect. **A hypothesis test never proves anything** — it fails to reject, or it rejects. Writing "the data supports the strategy's effectiveness, under the stated assumptions" costs one clause and is defensible; writing "proves" is not.
+
+##### How the case should be reported
+
+| Element | The case as given | What to add |
+|---|---|---|
+| Hypotheses | Stated, one-tailed | Keep, and note the direction was pre-declared |
+| Test result | p = 0.03 | The test used, the sample period, and the degrees of freedom |
+| Magnitude | Absent | Mean monthly difference in units, and Cohen's d |
+| Precision | Absent | The 95% confidence interval on the difference |
+| Design | Before/after | Name the confounders; note the three bundled changes |
+| Conclusion | "Proves" | "Supports, under the stated assumptions", with the alternatives not excluded |
+
+That version reaches the same business decision — invest further in the strategy — and it survives a question from someone who wants to know how much of the lift was Christmas.
+
+#### Confidence intervals
+
+**Defining the range.** A **confidence interval** offers a range of values within which a population parameter, such as a mean or a proportion, is likely to lie. A **confidence level** accompanies it — often 95% — which indicates the probability that the interval contains the true population parameter.
+
+**Reading between the lines.** The **width** of the confidence interval gives an idea of the estimate's precision. Narrow intervals suggest greater accuracy; wider intervals indicate more uncertainty.
+
+**Effect sizes.** Beyond significance, it is crucial to understand the magnitude of the effects observed. Many result tables, especially in experimental setups, provide effect sizes, which help determine the practical significance of findings.
+
+##### Where the confidence level's probability actually lives
+
+This is the one point about intervals that examiners test and that reports get wrong, so it is worth stating carefully.
+
+Once an interval has been calculated from a particular sample, that interval either contains the true value or it does not. The 95% describes the **procedure**, not the individual interval: if the study were repeated many times and an interval computed the same way each time, about 95% of **those intervals** would contain the true parameter.
+
+| The wording | Status |
+|---|---|
+| "95% of intervals built this way capture the true value" | Correct, and the safest phrasing to use |
+| "We are 95% confident the true value lies in this range" | The standard phrasing, used in the poll example below. Acceptable shorthand for the statement above |
+| "There is a 95% probability the true value is in *this* interval" | Loose. The true value is fixed; it is the interval that varies from sample to sample |
+| "95% of the *data* falls in this range" | Wrong, and a different quantity entirely. That is a prediction interval, and it is much wider |
+
+The last row is the substantive error rather than a philosophical quibble. A confidence interval is about the **estimate of a parameter**, not about the spread of individual observations.
+
+##### What determines the width
+
+Three things, and only one of them is under your control after the fact.
+
+| Driver | Effect on width | Note |
+|---|---|---|
+| **Sample size (n)** | Wider when small | Width shrinks with √n, so quartering the width costs sixteen times the sample |
+| **Variability in the data (s)** | Wider when the data is spread out | A property of what you are measuring |
+| **Confidence level** | Wider at 99%, narrower at 90% | Buying more confidence costs precision. There is no setting that gives both |
+
+The √n relationship is the practically important one. Doubling a sample narrows the interval by about 29%, not by half. That is why "collect more data" is often a weaker answer than it sounds, and why the sample size should be planned before the study rather than extended afterwards until the result reaches significance.
+
+##### The interval and the test are the same statement
+
+A 95% confidence interval and a two-tailed test at α = 0.05 always agree, because they are computed from the same quantities.
+
+> **If the 95% confidence interval for a difference excludes zero, the two-tailed test rejects the null at 0.05. If it includes zero, the test does not reject.**
+
+The interval is the more informative of the two, because it carries the test's verdict *and* the magnitude *and* the precision in one line. A p-value carries only the verdict. When a result table gives you both, read the interval.
+
+##### Applying it to the Nordtre worked example
+
+The redesign test earlier in this lesson gave a difference of NOK 49 with a standard error of NOK 23.01 on 354 degrees of freedom. The 95% interval is:
+
+> 49 ± 1.967 × 23.01 = 49 ± 45.25 = **[NOK 3.75, NOK 94.25]**
+
+Two things follow, and the second one changes the recommendation.
+
+**It excludes zero**, which is exactly consistent with p = 0.034. No new information there — the interval and the test are the same statement.
+
+**It is very wide.** Carried through to the annual figure at 250 orders a month, the true effect is somewhere between **NOK 11 300 and NOK 282 700 a year**. Against the NOK 240 000 build, that is a payback anywhere from **10 months to 21 years**.
+
+The point estimate said 20 months and looked decisive. The interval says the honest answer is *we do not yet know whether this pays back*. That is the value of reporting precision alongside magnitude: same data, same p-value, and a materially different decision. The defensible recommendation becomes **extend the test** rather than roll out on the point estimate — and if the business needs an answer now, roll out while continuing to measure, with the uncertainty stated rather than hidden.
+
+*This is worth sitting with, because it is the most transferable lesson in the section. Nothing in the analysis was wrong. The p-value was correct, the effect size was correct, and the payback calculation was correct. What was missing was the interval, and its absence made a genuinely uncertain result read as a settled one.*
+
+#### Understanding a political poll with the use of a confidence interval
+
+Suppose a political poll is conducted to gauge support for a candidate. The poll results indicate that the candidate's support is **52%**. Along with this estimate, the poll provides a **95% confidence interval that ranges from 50% to 54%**.
+
+This confidence interval means that, based on the data collected, pollsters are **95% confident that the actual support level for the candidate in the entire population lies between 50% and 54%**. In other words, if the poll were conducted multiple times, 95% of those polls would capture the true support level within that range.
+
+*A precision note on the closing sentence: what repeats across polls is the **interval**, not the range 50–54 itself. Each repetition produces its own interval from its own sample, and about 95% of those intervals contain the true value. The 50–54 range came from this particular sample and would move if the poll were run again. The distinction matters because the loose reading suggests future polls will report between 50 and 54, which is a different and stronger claim than the interval makes.*
+
+##### Reading this poll as an evaluator
+
+**The margin of error is ±2 percentage points**, since the interval is symmetric around 52%. That single number tells you roughly how large the sample was. For a proportion near 50%, the margin at 95% is about 1.96 × √(p(1−p)/n), so:
+
+> 1.96 × √(0.52 × 0.48 ÷ n) = 0.02  →  n ≈ **2 400 respondents**
+
+Being able to run that backwards is a useful check. A poll claiming ±2 points on 400 respondents is claiming something its sample cannot support: at n = 1 000 the margin is already ±3.1 points.
+
+**The lower bound is exactly 50%, and that is the finding.** In a two-candidate race, 50% is the line between leading and tied. The interval reaches down to it, so the poll is consistent with the candidate holding a majority *and* consistent with the race being level. The headline "Candidate 01 leads with 52%" is therefore not supported by this poll's own interval — which is precisely why the two placards in the illustration, one reading 51% and one reading 53%, are both compatible with the same result.
+
+**What the interval does not cover.** The ±2 points is **sampling error only**. It assumes the sample was drawn properly and says nothing about the errors that usually dominate a real poll:
+
+| Source of error | Inside the ±2? |
+|---|---|
+| Random sampling variation | Yes — this is the whole of it |
+| Non-response bias (who declines to answer) | No |
+| Question wording and order | No |
+| Coverage bias (who is reachable at all) | No |
+| Respondents misreporting their intention | No |
+| Turnout — support is not the same as votes cast | No |
+
+This is the connection back to the sampled-sets section below. A confidence interval quantifies the uncertainty from *sampling*; it cannot quantify the uncertainty from a *badly drawn* sample, and it will look reassuringly narrow either way. **A tight interval on a biased sample is a precise wrong answer.**
+
+##### Exam use
+
+A question of this shape usually asks you to interpret an interval, and the marks sit in four moves:
+
+| Step | What to write | Formula |
+|---|---|---|
+| 1 | State the interval and the confidence level explicitly | — |
+| 2 | Interpret it in terms of the procedure, not of this one interval | — |
+| 3 | Read the width as precision, and say what decision the width does or does not support | Margin = z × √(p(1−p)/n) for a proportion; t × SE for a mean |
+| 4 | Name what the interval excludes: it covers sampling error only | — |
+| 5 | If asked, recover the sample size or the required sample size | n = z²·p(1−p) ÷ margin² |
+
+Spreadsheet patterns: `=1.96*SQRT(p*(1-p)/n)` for a proportion's margin, `=CONFIDENCE.NORM(0.05, sd, n)` for a mean with known spread, and `=T.INV.2T(0.05, df)*SE` for the t-based interval used in the Nordtre example.
 
 #### What statistical inference means here
 
@@ -66478,6 +66632,41 @@ CURATED_FLASHCARD_SETS = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "front": "Set out the XYZ Corporation sales-strategy case: the hypotheses, the result, and the conclusion drawn.",
+            "back": "XYZ Corporation, an electronics manufacturer, implemented a new sales strategy combining a revamped marketing campaign, product bundling for discounts, and an aggressive social media presence, and leadership wanted the effectiveness validated. The null hypothesis was that the strategy had not led to a statistically significant increase in sales: if average monthly sales before were M1 units, they remain M1. The alternative was that sales are now greater than M1. Analysts compared average sales before and after and derived a p-value of 0.03. Since the convention treats p below 0.05 as evidence against the null, a p of 0.03 means only a 3 percent chance the observed increase, or something more extreme, would occur if the strategy had no real effect. XYZ concluded the increase was statistically significant and likely due to the strategy, and could then invest further, refine it, or expand it to other segments or regions.",
+            "tags": ["case study", "hypothesis testing", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "Four evaluation criticisms of the XYZ sales-strategy case. What are they?",
+            "back": "First, the alternative is one-tailed, claiming sales are greater than M1 rather than merely different. That is legitimate here because the direction was declared before the data arrived, but it halves the p-value and so must be justified by the design. Second, there is no control group: comparing before against after in the same company carries the same three weaknesses as the dashboard ROI claim, since other things changed, measurement itself draws attention, and one intervention gets credited with the whole improvement. Seasonality, a product launch, a competitor's problems and general market movement are the obvious confounders, and the strategy bundled three changes at once so no single one can be credited. Third, the effect size is missing: p says detectable, not how much, and with a long enough sales history a 0.5 percent lift produces p = 0.03 as readily as a 15 percent lift. Fourth, proves is the wrong word, since a hypothesis test either rejects or fails to reject and can never prove; supports, under the stated assumptions, is the defensible phrasing.",
+            "tags": ["case study", "critique", "confounding", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "What is a confidence interval, what does its width tell you, and what accompanies it?",
+            "back": "A confidence interval offers a range of values within which a population parameter, such as a mean or a proportion, is likely to lie. It is accompanied by a confidence level, often 95 percent, indicating the probability that the interval contains the true population parameter. The width gives an idea of the estimate's precision: narrow intervals suggest greater accuracy, wider intervals more uncertainty. Alongside significance and precision, effect sizes give the magnitude of the effect observed, which is what establishes practical rather than merely statistical significance. Width is driven by sample size, by the variability in the data, and by the confidence level chosen: it shrinks with the square root of n, so quartering the width costs sixteen times the sample, and buying more confidence always costs precision.",
+            "tags": ["confidence interval", "precision", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "Where does the 95 percent in a 95 percent confidence interval actually live?",
+            "back": "In the procedure, not in the individual interval. Once an interval has been calculated from a particular sample it either contains the true value or it does not. The correct statement is that if the study were repeated many times and an interval computed the same way each time, about 95 percent of those intervals would contain the true parameter. We are 95 percent confident the true value lies in this range is the standard shorthand for that and is acceptable. There is a 95 percent probability the true value is in this interval is loose, because the true value is fixed and it is the interval that varies from sample to sample. And 95 percent of the data falls in this range is simply a different quantity, a prediction interval, which is much wider: a confidence interval is about the estimate of a parameter, not about the spread of individual observations.",
+            "tags": ["confidence interval", "interpretation", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "How do a confidence interval and a hypothesis test relate?",
+            "back": "They are the same statement computed from the same quantities. If the 95 percent confidence interval for a difference excludes zero, the two-tailed test rejects the null at 0.05; if it includes zero, the test does not reject. The interval is the more informative of the two because it carries the verdict, the magnitude and the precision in one line, while a p-value carries only the verdict. When a result table gives both, read the interval.",
+            "tags": ["confidence interval", "hypothesis testing", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "The political poll example: what does a 52 percent result with a 95 percent interval of 50 to 54 percent tell an evaluator?",
+            "back": "Based on the data collected, pollsters are 95 percent confident the candidate's actual support in the population lies between 50 and 54 percent. The margin of error is plus or minus 2 percentage points, and running that backwards through 1.96 times the square root of p(1-p)/n gives a sample of roughly 2 400 respondents, which is a useful check on any poll claiming a tight margin on a small sample: at n = 1 000 the margin is already plus or minus 3.1 points. The substantive finding is that the lower bound is exactly 50 percent, the line between leading and tied in a two-candidate race, so the poll is consistent both with a majority and with a level race and does not support a headline that the candidate leads. Finally, the interval covers sampling error only: non-response, question wording, coverage, misreported intentions and turnout all sit outside it, so a tight interval on a biased sample is a precise wrong answer.",
+            "tags": ["confidence interval", "polling", "margin of error", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "Why can a correct p-value, effect size and payback calculation still produce the wrong recommendation?",
+            "back": "Because precision was not reported. In the Nordtre redesign example the difference was NOK 49 with a standard error of NOK 23.01, giving a 95 percent interval of NOK 3.75 to NOK 94.25. That excludes zero, consistent with p = 0.034, but carried through to the annual figure it spans NOK 11 300 to NOK 282 700, so payback on a NOK 240 000 build ranges from 10 months to 21 years. The point estimate of 20 months looked decisive; the interval says the investment case is not settled. Nothing in the arithmetic was wrong, and the missing interval alone made a genuinely uncertain result read as a settled one. The defensible recommendation is to extend the test, or to roll out while continuing to measure with the uncertainty stated.",
+            "tags": ["confidence interval", "precision", "decision-making", "lesson 1.2", "evo"]
+        },
         {
             "front": "State the null and alternative hypothesis pair, and explain why the two are treated asymmetrically.",
             "back": "A hypothesis test determines whether a particular claim about a population parameter is valid. The pair is the null hypothesis, H0, which is a statement of no effect, and the alternative hypothesis, Ha or H1, which claims some effect. They are not two competing guesses given equal treatment: the null is the default, held unless the evidence is strong enough to abandon it, and the whole calculation is performed assuming the null is true. Two consequences follow. You never accept the null, only fail to reject it, because failing to reject means the evidence was not strong enough rather than that no effect exists, and a small sample fails to reject almost anything. And the burden of proof falls on the claim of effect, which is the statistical version of the stance this course takes toward a KPI: the number has to earn its conclusion.",
@@ -68249,6 +68438,18 @@ CURATED_EXAM_QUESTION_BANK = {
         {
             "type": "skills",
             "source": "core_curated",
+            "question": "An electronics manufacturer implemented a new sales strategy combining a marketing campaign, product bundling and a social media push. Comparing average monthly sales before and after gives p = 0.03, and the company concludes the data proves the strategy's effectiveness. Appraise the analysis and say how it should be reported.",
+            "answer": "The mechanics are sound and the write-up is not. Taking the mechanics first: the hypotheses are correctly framed, with a null that average monthly sales remain at their prior level M1 and an alternative that they are now greater than M1, and p = 0.03 correctly means that under the null there is a 3 percent chance of an increase this large or larger. Four criticisms follow. One, the alternative is one-tailed, since greater than M1 claims a direction rather than a difference. That is defensible here because the company invested expecting an increase and the direction preceded the data, but it halves the p-value and so has to be justified by the design rather than chosen after the result. Two, there is no control group. Before-and-after in the same company has the same structure as the dashboard ROI claim and the same three weaknesses: other things changed in the window, measuring a process tends to improve it, and the whole improvement is credited to one intervention. For an electronics manufacturer the obvious confounders are seasonality, a product launch, a competitor's difficulties and general market movement, and because the strategy bundled three changes at once even a genuine effect cannot be attributed to any one of them. Three, the effect size is absent. A p-value says detectable, not how much, and with a long enough sales history a 0.5 percent lift produces p = 0.03 as readily as a 15 percent lift, yet those two support entirely different decisions. Four, proves is the wrong word, and the text's own admission that other contributing factors are not ruled out contradicts it: a test rejects or fails to reject, it never proves. How it should be reported: keep the hypotheses and note the direction was pre-declared; give the test used, the sample period and the degrees of freedom alongside p = 0.03; add the mean monthly difference in units and Cohen's d for magnitude; add the 95 percent confidence interval on the difference for precision; name the confounders and the three bundled changes; and conclude that the data supports the strategy's effectiveness under the stated assumptions. That version reaches the same business decision and survives a question from someone who wants to know how much of the lift was Christmas."
+        },
+        {
+            "type": "knowledge",
+            "source": "core_curated",
+            "question": "A poll puts a candidate's support at 52 percent with a 95 percent confidence interval of 50 to 54 percent. Interpret it correctly, say what the width implies, and state what the interval does not cover.",
+            "answer": "The interval means that, based on the data collected, pollsters are 95 percent confident the candidate's actual support in the entire population lies between 50 and 54 percent. Stated more precisely, the 95 percent describes the procedure rather than this one interval: if the poll were repeated many times and an interval computed the same way each time, about 95 percent of those intervals would contain the true support level. What repeats across polls is the interval, not the 50 to 54 range itself, which came from this particular sample and would move if the poll were rerun. The width implies two things. First, the margin of error is plus or minus 2 percentage points, and since the margin for a proportion near 50 percent is about 1.96 times the square root of p(1-p)/n, setting that equal to 0.02 recovers a sample of roughly 2 400 respondents; a poll claiming plus or minus 2 points on 400 respondents is claiming more than its sample can support, since at n = 1 000 the margin is already plus or minus 3.1 points. Second, and substantively, the lower bound is exactly 50 percent, which in a two-candidate race is the line between leading and tied, so the poll is consistent with a majority and equally consistent with a level race, and a headline saying the candidate leads is not supported by the poll's own interval. What the interval does not cover is everything except random sampling variation: non-response bias, question wording and order, coverage bias in who is reachable at all, respondents misreporting their intention, and turnout, since support is not the same as votes cast. A confidence interval quantifies uncertainty from sampling and cannot quantify uncertainty from a badly drawn sample, and it looks equally narrow either way. A tight interval on a biased sample is a precise wrong answer. Exam use: state the interval and level, interpret it in terms of the procedure, read the width as precision and say what decision it does or does not support, name what it excludes, and recover the sample size with n = z squared times p(1-p) divided by the margin squared if asked."
+        },
+        {
+            "type": "skills",
+            "source": "core_curated",
             "question": "A team tests a redesigned product page. Old page: n = 180, mean order value NOK 742, standard deviation NOK 210. New page: n = 176, mean NOK 791, standard deviation NOK 224. The redesign cost NOK 240 000 and the shop takes 250 orders a month. Compute Cohen's d and the significance test, then give the recommendation.",
             "answer": "Step 1, the pooled standard deviation. s_pooled = square root of (((180-1) times 210 squared plus (176-1) times 224 squared) divided by (180+176-2)) = square root of ((179 times 44 100 plus 175 times 50 176) divided by 354) = square root of ((7 893 900 plus 8 780 800) divided by 354) = square root of 47 103.7 = NOK 217.03. Step 2, Cohen's d = (791 minus 742) divided by 217.03 = 49 divided by 217.03 = 0.23, which is a small effect on Cohen's benchmarks of 0.2 small, 0.5 medium and 0.8 large. Step 3, the significance test on the same data. The standard error is 217.03 times the square root of (1/180 plus 1/176) = 217.03 times 0.1060 = 23.01, so t = 49 divided by 23.01 = 2.13 on 354 degrees of freedom, giving p of approximately 0.034. Step 4, read the two together: p = 0.034 clears the 0.05 threshold so the difference is detectable, while d = 0.23 says it is small. Both are true at once and neither settles the decision alone. Step 5, convert to business units, which is what actually decides it: NOK 49 per order times 250 orders per month is NOK 12 250 a month or NOK 147 000 a year, so against a NOK 240 000 build the payback is 1.63 years. The recommendation: the redesign increased mean order value by NOK 49 (p = 0.034, d = 0.23); the effect is statistically detectable but small by conventional benchmarks, worth roughly NOK 147 000 annually at current order volume, giving payback in about 20 months. I would recommend rollout on the ROI rather than on the p-value, and note that the test ran for one month and so does not capture seasonal variation. Exam use: the arithmetic in steps 1 to 3 is what a spreadsheet does; the marks are in steps 4 and 5, which show that you know a small p and a small d can coexist and what to do about it."
         },
@@ -68521,6 +68722,21 @@ CURATED_PRACTICE_QUESTION_BANK = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "type": "skills",
+            "question": "A result table reports a significant difference with p = 0.02 but no confidence interval. Why is that a problem even though the test is correct?",
+            "answer": "Because the p-value carries the verdict and nothing else. It says the difference is detectable; it does not say how large it is or how precisely it is known. The confidence interval carries all three in one line, and it always agrees with the test, since an interval excluding zero corresponds to rejection at 0.05 for a two-tailed test. The practical consequence is visible in the Nordtre redesign example: the difference of NOK 49 was significant at p = 0.034 and gave an apparently decisive payback of 20 months, but the 95 percent interval ran from NOK 3.75 to NOK 94.25, which puts the annual value between NOK 11 300 and NOK 282 700 and payback anywhere from 10 months to 21 years. Nothing in the arithmetic was wrong; the missing interval alone turned an unsettled investment case into one that read as decided. So I would ask for the interval before treating any significant result as a basis for spending."
+        },
+        {
+            "type": "knowledge",
+            "question": "Someone says a 95 percent confidence interval means 95 percent of the data falls within that range. What is wrong?",
+            "answer": "That describes a prediction interval, which is a different and much wider quantity. A confidence interval is about the estimate of a population parameter such as a mean or a proportion, not about the spread of individual observations. The 95 percent also belongs to the procedure rather than to the particular interval: once computed from a given sample, the interval either contains the true value or it does not, and what is true is that about 95 percent of intervals constructed the same way across repeated samples would capture the parameter. Saying we are 95 percent confident the true value lies in this range is accepted shorthand for that; saying there is a 95 percent probability the true value is in this interval is loose, because the parameter is fixed and it is the interval that varies from sample to sample."
+        },
+        {
+            "type": "skills",
+            "question": "A poll reports 52 percent support with a margin of error of plus or minus 2 points at 95 percent confidence. Roughly how many people were surveyed, and how would you check a poll that claims a smaller margin?",
+            "answer": "For a proportion the margin is about z times the square root of p(1-p)/n, so 1.96 times the square root of 0.52 times 0.48 divided by n equals 0.02, giving n of approximately 2 400 respondents. Rearranged, n equals z squared times p(1-p) divided by the margin squared, which is the form to use when a question asks what sample would be needed for a stated precision. To check a poll claiming a smaller margin, run the same calculation from its reported sample size: at n = 1 000 the margin near 50 percent is already plus or minus 3.1 points, so a claim of plus or minus 2 points on a sample of a few hundred is claiming precision the sample cannot support. Note also that the margin covers sampling error only, so a poll can have an impeccable margin and still be badly wrong through non-response, coverage or turnout."
+        },
         {
             "type": "knowledge",
             "question": "What does a p-value of 0.04 actually tell you?",
