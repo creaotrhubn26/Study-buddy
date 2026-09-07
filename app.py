@@ -62648,21 +62648,86 @@ Lagging indicators are the yardstick. Leading indicators are the early lens. A u
 
 **Pairing them is the fix.** Track the leading indicator to steer, and the lagging indicator to verify that steering worked. When a leading indicator improves and its lagging partner does not, the predictive link has broken, and that is a finding in its own right. Website traffic doubling while revenue stays flat is exactly that finding, and it is a stronger observation than either number on its own.
 
-#### Another dimension: the source of the KPI
+#### Classification of KPIs
 
-KPIs can also be categorised by where they come from.
+Lagging and leading describe **when** a KPI tells you something. A second classification describes **what kind of thing** it measures. At the top level KPIs are either **quantitative** or **qualitative**, and the quantitative ones divide again into **financial** and **non-financial** metrics.
 
-| | **Financial KPIs** | **Non-financial KPIs** |
+<div class="mermaid">
+flowchart TD
+    K[KPIs] --> Q[Quantitative KPIs<br/>Expressed as numbers]
+    K --> L[Qualitative KPIs<br/>Structured judgement]
+    Q --> F[Financial metrics<br/>Sales revenue, profit margins, ROI]
+    Q --> N[Non-financial metrics<br/>CAC, website traffic, employee turnover]
+
+    style K fill:#e3f2fd,stroke:#2196F3,stroke-width:2px
+    style Q fill:#fff3cd,stroke:#ffc107,stroke-width:2px
+    style L fill:#f3e5f5,stroke:#9C27B0,stroke-width:2px
+    style F fill:#c8e6c9,stroke:#4CAF50,stroke-width:2px
+    style N fill:#c8e6c9,stroke:#4CAF50,stroke-width:2px
+</div>
+
+#### Quantitative KPIs: financial metrics
+
+This category is indispensable for determining the **monetary quality** of an organisation. Each metric is a financial indicator that reveals distinct features of financial performance.
+
+**Sales revenue.** As one of the most straightforward financial KPIs, sales revenue measures the total income generated from business operations **before expenses are deducted**. It is essential for determining market demand and for planning future growth.
+
+> *Evaluation note.* Because it sits before expenses, revenue says nothing about whether the business kept any of it. Revenue rising while margin falls is a common and genuinely bad pattern, and it is invisible if revenue is reported alone. This is the guard-KPI idea in its most basic form.
+
+**Profit margins.** This metric measures profitability and indicates how efficiently a business transforms revenue into profit. The higher the profit margin, the more the organisation retains on each unit of currency earned.
+
+> *Evaluation note.* Always establish **which** margin. Gross, operating and net margins answer different questions and can move in opposite directions in the same period. A comparison across teams or quarters is meaningless until the definition is fixed and written down.
+
+**Return on Investment (ROI).** ROI serves as a comprehensive measure of the effectiveness of an investment. It measures the return received relative to the invested capital and is often expressed as a percentage. This metric is pivotal for decision-making concerning capital allocation.
+
+> *Evaluation note.* ROI is the easiest financial KPI to flatter, because both halves of the ratio are choices. Excluding overhead, staff time, or the cost of the failed attempts shrinks the denominator; choosing a short horizon can inflate or deflate the numerator. When appraising a reported ROI, ask what was counted as cost and over what period **before** discussing the number itself.
+
+#### Quantitative KPIs: non-financial metrics
+
+Though not directly linked to financial data, non-financial KPIs **indirectly impact** an organisation's financial health. These metrics often serve as **early indicators** of operational issues that could later manifest as financial problems. In the lagging-and-leading language above, this is where most leading indicators live.
+
+**Customer Acquisition Cost (CAC).** This metric shows the cost of acquiring a single customer and is fundamental to evaluating the effectiveness of marketing campaigns. A **low CAC relative to the customer's lifetime value** represents a healthy business model.
+
+> *Evaluation note.* Note that the official phrasing already pairs it: CAC is only interpretable **relative to lifetime value**. A falling CAC read on its own can mean the business has become efficient, or that it has started acquiring cheaper customers who are worth less. Those are opposite conclusions from the same movement, which is why CAC without LTV is not an evaluable KPI.
+
+**Website traffic.** For businesses operating in the digital space, website traffic is a critical indicator of **brand visibility and market reach**. Metrics such as distinctive (unique) visitors, page views, and average session duration can provide valuable insights.
+
+> *Evaluation note.* Those three sub-metrics measure genuinely different things and should not be treated as interchangeable. Unique visitors measure reach, page views measure volume of activity, and average session duration measures depth of engagement — and a rise in duration can mean interest or confusion. Traffic is also the classic **vanity metric**: traffic rising while conversion stays flat is the leading-indicator failure from the previous section, and it is a finding rather than a success.
+
+**Employee turnover rates.** Turnover can act as an **organisational health check**. High turnover often suggests employee dissatisfaction or a problematic work environment, and it can signal potential financial implications because of the costs involved in hiring and training new staff.
+
+> *Evaluation note.* Overall turnover hides the thing that matters. Separate **regretted** from **unregretted** departures, and segment by team and tenure. A stable 12 percent company-wide figure is consistent with a healthy business and also with every experienced engineer leaving while a fast-growing junior team masks it in the average. This is the granularity problem that returns in Lesson 1.2 as data subsets.
+
+#### Why both categories are needed
+
+Financial and non-financial quantitative KPIs provide a **rounded understanding** of an organisation's performance when monitored effectively. They collectively influence decision-making processes, assist in setting strategic goals, and help identify improvement areas.
+
+| | **Financial metrics** | **Non-financial metrics** |
 |---|---|---|
-| Source | Directly from the balance sheet or income statement | Operational systems, surveys, behavioural data |
-| Examples | Revenue, gross margin, operating cash flow, cost per unit | Customer loyalty, net promoter score, employee engagement, on-time delivery |
-| Strength | Precise, auditable, comparable across periods and companies | Capture value that money cannot express, and often lead the financial numbers |
-| Weakness | Almost always lagging, and slow to reveal a developing problem | Less tangible, harder to define consistently, easier to dispute |
-| Evaluation question | Does this figure reflect the period it is attributed to? | Is this measured consistently enough to compare over time? |
+| Source | Balance sheet and income statement | Operational systems, marketing platforms, HR records, behavioural data |
+| Examples | Sales revenue, profit margins, ROI | CAC, website traffic, employee turnover |
+| Tell you | The monetary quality of what already happened | Where the money is likely to come from or go next |
+| Timing | Almost always lagging | Frequently leading |
+| Strength | Precise, auditable, comparable across periods and organisations | Early warning; capture causes rather than consequences |
+| Weakness | Slow to reveal a developing problem | Less tangible, definitions drift more easily, easier to dispute |
+| Evaluation question | What exactly was counted, and over what period? | Is this measured consistently enough to compare over time? |
 
-Financial KPIs are precise about the past. Non-financial KPIs are informative about the future. A net promoter score falling this quarter often shows up as revenue falling two quarters later, which is precisely why an organisation that reports only financial KPIs is steering by the rear-view mirror.
+The relationship between the two columns is the reason the classification exists: **non-financial metrics tend to move first**. Employee turnover rising and CAC creeping upward this quarter is often next year's margin problem, already visible. An organisation reporting only financial KPIs is steering by the rear-view mirror.
 
-For evaluation work, the non-financial ones need more scrutiny, not less. Because they are less tangible, their definitions drift more easily, which brings us back to written definitions and version control at the end of this lesson.
+For evaluation work the non-financial metrics need **more** scrutiny, not less. Precisely because they are less tangible, their definitions drift, which brings us back to written definitions and version control at the end of this lesson.
+
+#### Qualitative KPIs
+
+Not every important indicator reduces to a number. Qualitative KPIs capture structured judgement: customer sentiment themes drawn from open-text feedback, audit and compliance ratings, code review quality, or the outcome of a service review.
+
+| | Quantitative KPI | Qualitative KPI |
+|---|---|---|
+| Form | A number | A structured judgement, often scored or themed |
+| Strength | Comparable, trackable, testable | Captures meaning and cause that a number cannot |
+| Weakness | Silent about why | Harder to compare across periods and across raters |
+| Evaluation risk | Measuring the measurable rather than the important | Inconsistent scoring makes a trend meaningless |
+
+The knowledge outcome about **quantitative and qualitative methods at an industry level** lives here. Mature organisations run both: the quantitative KPI detects that something changed, the qualitative evidence explains what changed. Case study 5 later in this lesson is exactly that pairing.
 
 #### Contextualisation: why an isolated number tells you nothing
 
@@ -62760,20 +62825,9 @@ Beyond the two main types, several other axes are useful in evaluation, because 
 
 Organisations drift toward measuring inputs, processes and outputs because they are easy to count. **Outcomes are what the goal is made of**, and an evaluation that only inspects outputs is exactly the failure this course exists to correct.
 
-**2. Quantitative versus qualitative**
+**2. By business function**
 
-| | Quantitative KPI | Qualitative KPI |
-|---|---|---|
-| Form | A number | A structured judgement, often scored |
-| Example | Churn rate, defect rate | Customer sentiment theme, audit rating, code review quality |
-| Strength | Comparable, trackable, testable | Captures meaning a number cannot |
-| Weakness | Silent about why | Harder to compare across periods and raters |
-
-The knowledge outcome about **quantitative and qualitative methods at an industry level** lives here. Mature organisations run both: the quantitative KPI detects that something changed, the qualitative evidence explains what changed.
-
-**3. By business function**
-
-This axis cuts across the financial and non-financial dimension above: the financial row is drawn from the statements, the rest are operational.
+This axis cuts across the financial and non-financial split above: the financial row is drawn from the statements, the rest are operational.
 
 | Function | Typical KPIs |
 |---|---|
@@ -62784,7 +62838,7 @@ This axis cuts across the financial and non-financial dimension above: the finan
 | **People** | Staff turnover, absence rate, time to hire |
 | **Risk and compliance** | Incident count, audit findings, time to remediate |
 
-**4. Primary versus guard**
+**3. Primary versus guard**
 
 Most useful KPIs come in pairs where one guards the other. This is the single most practical idea in the lesson.
 
@@ -63025,7 +63079,10 @@ Two lessons follow, and both are assessable:
                 "A KPI is a heuristic exactly as the module defines it: a shortcut that simplifies decision-making and can sometimes lead to errors",
                 "KPIs are the lens an organisation sees itself through and the yardstick it measures by, so a bad KPI makes part of the business invisible",
                 "The two main types are lagging (the outcome, verified late) and leading (a predictor, actionable early), and they should be paired so a broken predictive link becomes visible",
-                "KPIs are also categorised by source: financial KPIs come from the balance sheet or income statement and are precise about the past, non-financial ones such as loyalty and NPS are less tangible but often lead the financial numbers",
+                "KPIs classify first as quantitative or qualitative, and quantitative KPIs divide again into financial and non-financial metrics",
+                "The financial metrics are sales revenue (income before expenses), profit margins (efficiency of converting revenue to profit) and ROI (return relative to invested capital)",
+                "The non-financial metrics are CAC, website traffic and employee turnover, and they indirectly affect financial health by acting as early indicators",
+                "Each of those six is only evaluable in context: revenue needs margin, CAC needs lifetime value, traffic needs conversion, and turnover needs regretted-versus-unregretted segmentation",
                 "Further axes each expose a different weakness: the input-process-output-outcome ladder, quantitative versus qualitative, by function, and primary versus guard",
                 "Isolated numbers seldom tell the whole tale: a KPI gains meaning only against historical data, goals, benchmarks, segments and normal variation",
                 "Correctly aligned with organisational goals and values, KPIs act as both a navigational aid and a diagnostic tool",
@@ -64724,6 +64781,61 @@ CURATED_FLASHCARD_SETS = {
             "tags": ["kpi", "heuristics", "evo"]
         },
         {
+            "front": "How are KPIs classified, and where do financial and non-financial metrics sit?",
+            "back": "At the top level KPIs are quantitative or qualitative. The quantitative ones divide again into financial metrics, taken from the balance sheet and income statement, and non-financial metrics, taken from operational, marketing and HR systems. Financial and non-financial together give a rounded understanding of performance.",
+            "tags": ["kpi", "classification", "evo"]
+        },
+        {
+            "front": "Name the three financial quantitative KPIs from the lesson and what each measures.",
+            "back": "Sales revenue is total income from business operations before expenses are deducted, useful for gauging market demand and planning growth. Profit margins measure how efficiently revenue is converted into profit. Return on Investment measures the return received relative to the invested capital, usually as a percentage, and is pivotal for capital allocation decisions.",
+            "tags": ["kpi", "financial metrics", "evo"]
+        },
+        {
+            "front": "Why is sales revenue insufficient on its own?",
+            "back": "It is measured before expenses are deducted, so it says nothing about whether the business kept any of it. Revenue rising while profit margin falls is a common and genuinely bad pattern that is invisible when revenue is reported alone.",
+            "tags": ["kpi", "sales revenue", "evo"]
+        },
+        {
+            "front": "What must you establish before comparing profit margins?",
+            "back": "Which margin is meant. Gross, operating and net margins answer different questions and can move in opposite directions in the same period, so any comparison across teams or quarters is meaningless until the definition is fixed and written down.",
+            "tags": ["kpi", "profit margins", "definitions", "evo"]
+        },
+        {
+            "front": "Why is ROI the easiest financial KPI to flatter?",
+            "back": "Both halves of the ratio are choices. Excluding overhead, staff time or the cost of failed attempts shrinks the denominator, and choosing a convenient time horizon changes the numerator. When appraising a reported ROI, ask what was counted as cost and over what period before discussing the number.",
+            "tags": ["kpi", "roi", "evo"]
+        },
+        {
+            "front": "Name the three non-financial quantitative KPIs from the lesson and why they matter.",
+            "back": "Customer Acquisition Cost, website traffic, and employee turnover rates. They are not drawn from financial data but indirectly affect financial health, and they often act as early indicators of operational issues that later appear as financial problems.",
+            "tags": ["kpi", "non-financial metrics", "evo"]
+        },
+        {
+            "front": "Why is Customer Acquisition Cost not interpretable on its own?",
+            "back": "CAC only means something relative to customer lifetime value; a low CAC against LTV indicates a healthy business model. A falling CAC alone can mean the business became efficient, or that it started acquiring cheaper customers who are worth less. Those are opposite conclusions from the same movement.",
+            "tags": ["kpi", "cac", "evo"]
+        },
+        {
+            "front": "Website traffic is reported as unique visitors, page views and average session duration. Why not treat them as interchangeable?",
+            "back": "They measure different things: unique visitors measure reach, page views measure volume of activity, and average session duration measures depth of engagement, where a rise can indicate either interest or confusion. Traffic is also the classic vanity metric, since traffic rising while conversion stays flat is a finding rather than a success.",
+            "tags": ["kpi", "website traffic", "evo"]
+        },
+        {
+            "front": "What does an overall employee turnover rate hide?",
+            "back": "Which departures mattered. Regretted and unregretted departures should be separated and the figure segmented by team and tenure. A stable 12 percent company-wide rate is consistent with a healthy business and also with every experienced specialist leaving while a growing junior team masks it in the average.",
+            "tags": ["kpi", "employee turnover", "segmentation", "evo"]
+        },
+        {
+            "front": "Why does an organisation reporting only financial KPIs steer by the rear-view mirror?",
+            "back": "Financial metrics are almost always lagging, describing the monetary quality of what already happened. Non-financial metrics tend to move first, so rising employee turnover and creeping CAC this quarter are often next year's margin problem, already visible.",
+            "tags": ["kpi", "lagging", "leading", "evo"]
+        },
+        {
+            "front": "Why do non-financial KPIs need more scrutiny in evaluation, not less?",
+            "back": "Because they are less tangible, their definitions drift more easily than audited financial figures. That makes written definitions, documented ownership and version control more important for them, not less.",
+            "tags": ["kpi", "definitions", "version control", "evo"]
+        },
+        {
             "front": "What is a guard KPI and why does it matter?",
             "back": "A guard KPI is a second indicator paired with a primary one to stop the primary being improved at the expense of the goal. Average handling time guarded by repeat contact rate is the classic example. Unguarded targets are how well-intentioned KPIs produce harmful behaviour.",
             "tags": ["kpi", "ethics", "evo"]
@@ -66256,6 +66368,26 @@ CURATED_PRACTICE_QUESTION_BANK = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "type": "knowledge",
+            "question": "Explain the classification of quantitative KPIs into financial and non-financial metrics, and why both are monitored.",
+            "answer": "Quantitative KPIs are those expressed as numbers, and they divide into financial metrics taken directly from the balance sheet or income statement, such as sales revenue, profit margins and return on investment, and non-financial metrics taken from operational, marketing and HR systems, such as customer acquisition cost, website traffic and employee turnover. Financial metrics determine the monetary quality of the organisation but are almost always lagging. Non-financial metrics are not directly linked to financial data yet indirectly affect financial health, because they act as early indicators of operational issues that later appear as financial problems. Monitored together they give a rounded understanding of performance, influence decision-making, help set strategic goals, and identify areas for improvement."
+        },
+        {
+            "type": "skills",
+            "question": "A marketing team reports that Customer Acquisition Cost fell 20 percent and calls the quarter a success. What would you check?",
+            "answer": "I would ask for customer lifetime value alongside it, because CAC is only interpretable relative to LTV. A falling CAC is consistent with genuine marketing efficiency and equally consistent with the campaign having shifted toward cheaper customers who are worth less over their lifetime, and those are opposite conclusions from the same movement. I would also check whether the drop is larger than normal quarter-to-quarter variation before treating it as a change at all, and I would look at whether any guard signal, such as retention of the newly acquired cohort, moved in the wrong direction."
+        },
+        {
+            "type": "skills",
+            "question": "Website traffic is up 40 percent while conversion rate is unchanged. Is this a success?",
+            "answer": "Not on its own, and reporting it as one would be treating a vanity metric as an outcome. Website traffic is a leading, non-financial indicator of brand visibility and market reach, so its value depends on whether the predicted outcome follows. Traffic rising with conversion flat means more visitors are arriving and the same proportion are converting, which may reflect lower-intent traffic rather than improved reach. I would separate unique visitors, page views and average session duration, since they measure reach, activity and depth respectively, and I would check whether the lagging partner, revenue or sign-ups, moved at all. A leading indicator improving while its lagging partner does not is a finding about the broken predictive link, not a success."
+        },
+        {
+            "type": "knowledge",
+            "question": "Why does contextualisation matter when interpreting a KPI?",
+            "answer": "Because isolated numbers seldom tell the whole tale. A KPI gains significance only when juxtaposed with benchmarks, goals, or historical data. Saying churn is 4.1 percent means nothing; saying it is 4.1 percent, flat within normal month-to-month variation, below the sector median, still above the 3.0 percent target, and concentrated among customers under three months old, is a decision. The last of those, whether a movement exceeds normal variation, is a statistical question rather than a presentational one, which is why it connects directly to variance and confidence levels."
+        },
         {
             "type": "knowledge",
             "question": "Why does evaluating an outcome include evaluating the KPI itself?",
