@@ -62964,6 +62964,100 @@ The division of labour, stated for an evaluation:
 
 The knowledge outcome about **quantitative and qualitative methods at an industry level** lives here. The quantitative KPI detects that something changed; the qualitative evidence explains what changed. Case study 5 later in this lesson is exactly that pairing: on-time delivery was genuinely 96%, and only the driver notes and customer complaints revealed that parcels were being left in unsafe locations to register the on-time scan.
 
+#### Data collection methods for qualitative KPIs
+
+The methods for collecting data for qualitative KPIs are as **nuanced as the data itself**. Qualitative KPIs usually draw upon **non-structured, often raw sources**, unlike their quantitative equivalents, which come from automated or semi-automated systems. The collection process is therefore typically **manual**, involving direct human interaction or observation.
+
+That one difference drives everything else in this section. Manual collection is slower, costlier per response, and harder to repeat identically — and in exchange it reaches the reasons that no automated system can see.
+
+| | Quantitative collection | Qualitative collection |
+|---|---|---|
+| Source | Structured data in tables, rows and columns | Non-structured, often raw |
+| Process | Automated or semi-automated | Manual, through human interaction or observation |
+| Cadence | Continuous, refreshed on a schedule | Periodic, and deliberately scheduled |
+| Cost per data point | Near zero once configured | Real, and it scales with volume |
+| Consistency | Guaranteed by the system | Depends on the interviewer, moderator or observer |
+| What it delivers | How much, how many, how often | Why, in what way, what it means to people |
+
+##### Customer satisfaction
+
+**Customer interviews.** One-on-one interviews can unearth valuable insights. They usually follow **semi-structured** guidelines but leave room to explore unexpected topics that arise during the conversation.
+
+> *Evaluation note.* Semi-structured is the deliberate middle ground: fully structured interviews produce comparable answers and miss whatever you failed to ask about, while fully unstructured ones surface the unexpected and cannot be compared across respondents. Keep the fixed questions identical between interviews so the comparable part stays comparable.
+
+**Focus groups.** Moderated discussions among a group of customers. They give the opportunity to gauge **real-time reactions** and build a more comprehensive understanding of customer attitudes or beliefs about a service or product.
+
+> *Evaluation note.* The group is the strength and the weakness. A confident participant can pull the room toward their view, and quieter participants converge rather than disagree, so a focus group can produce a consensus that no individual actually held. Treat a focus group as a source of hypotheses to test, not as a measurement.
+
+**Social media monitoring.** Tracking and analysing customer opinions on social platforms provides valuable qualitative data. **Sentiment analysis** tools help interpret these non-structured pieces of data into actionable insights.
+
+> *Evaluation note.* This is the most self-selected source of all. People post when they are delighted or furious, so the volume is dominated by the tails and the satisfied middle is invisible. It is genuinely useful for detecting a sudden change and unreliable as a level.
+
+**Customer feedback forms.** Found on websites or sent by email, these let customers respond in a **non-structured** format — comments, suggestions, or complaints.
+
+> *Evaluation note.* Complaint bias is the standard failure: a form linked from a support page collects support experiences. Where the link sits determines what you collect, so record it alongside the responses.
+
+> **Sentiment analysis** is a Natural Language Processing (NLP) technique that assesses the **emotional tone** in text data. It determines whether sentiment is positive, negative, neutral, or a mix. The process involves **text preprocessing and classification** to understand sentiment in various text forms, such as reviews or social media posts.
+>
+> **NLP** is a field of artificial intelligence focused on enhancing computers' understanding of human language. It involves text analysis, machine translation, speech recognition, and language processing.
+
+##### Sentiment analysis is itself a model, so its outcome must be evaluated
+
+This is the point where the section folds back into the course. A sentiment score is not an observation; it is the **output of a classifier**. Everything this course says about evaluating a model applies to it:
+
+| Question | Why it matters here |
+|---|---|
+| What is its accuracy, and on what data? | A model evaluated only on the text it was trained on will always look better than it is |
+| Is accuracy equal across groups? | Models trained on English handle Norwegian, and Norwegian dialects, considerably worse |
+| How does it handle negation, sarcasm and domain language? | "Ikke verst" is positive in Norwegian and negative to a literal reading. "Sick" is a compliment in some contexts |
+| Was a sample checked by a human? | Reading 100 classified posts and counting the misclassifications is cheap and settles the question |
+
+Reporting "sentiment improved 12%" without knowing the classifier's error rate is reporting a model output as if it were a measurement. That is precisely the failure the course exists to correct.
+
+##### Employee engagement
+
+**Confidential surveys.** Anonymous surveys let employees express genuine feelings about their work environment, managers and peers **without fear of repercussion**.
+
+> *Evaluation note.* Anonymity is what buys the honesty, and it costs you follow-up. It also has a size limit: in a small company, segmenting results by team can identify individuals. If a department has four people, publishing its scores separately is not anonymous, whatever the survey promised. Set a minimum group size before you report, and say what it is.
+
+**Direct observations.** Managers or HR professionals observing employee behaviour in the workplace. Observations offer a candid look into **team dynamics, morale and the general work environment**.
+
+> *Evaluation note.* Being watched changes behaviour, which is the observer effect. Observation is strongest for things people cannot easily perform — how a handover actually works, where a process stalls — and weakest for anything a person would present differently while a manager is present.
+
+**Suggestion boxes.** Old-fashioned, but a valuable tool for confidentially gathering **unfiltered** employee feedback.
+
+> *Evaluation note.* Volume is low and entirely self-selected, so it is useless as a measure of anything. Its value is as a zero-cost early-warning channel: one suggestion can identify a problem worth investigating properly, and that is a different job from measuring.
+
+**Exit interviews.** Performed when an employee is leaving, these give honest assessments of the work environment and suggest areas for improvement.
+
+> *Evaluation note.* Exit interviews are the only method here that is **lagging by construction** — the departure has already happened and the cost is already committed. They are still worth doing, because the leaver has least to lose and often says what nobody still employed will. But an organisation that learns about engagement mainly from exit interviews is learning about it exactly one departure too late. They also carry a quiet bias: a leaver who wants a reference may soften the account.
+
+##### Which method for which question
+
+| If you need | Use | Because |
+|---|---|---|
+| Depth on one person's reasoning | Customer interview | Semi-structured lets you follow the unexpected |
+| Reactions and group dynamics | Focus group | Real-time interaction is the whole point |
+| Early detection of a sudden change | Social media monitoring | Volume and immediacy, though the level is unreliable |
+| Continuous, low-effort input | Feedback forms, suggestion boxes | Always open, near-zero cost, self-selected |
+| Honest employee sentiment | Confidential survey | Anonymity is what buys the candour |
+| How work actually happens | Direct observation | People describe processes differently from how they run them |
+| What made someone leave | Exit interview | Least to lose, but the cost is already committed |
+
+##### Anonymity, ethics and employee data
+
+Employee feedback is personal data and the competence outcomes of this course are explicitly ethical, so two rules are worth stating in an assignment answer.
+
+**Do not break a promise of anonymity through segmentation.** Publishing a confidential survey by team, tenure and role at once can identify a single person even when no name is recorded. Agree a minimum reporting group size in advance.
+
+**Do not collect what you will not act on.** Asking employees about a problem and then doing nothing measurably reduces the response rate of every subsequent survey. A collection method has a cost to the people supplying the data, and repeated non-action spends their goodwill.
+
+##### How this connects to the rest of the lesson
+
+Qualitative collection is where the **leading indicators** come from. Both areas here lead a lagging financial outcome — customer satisfaction leads churn and then revenue, and employee engagement leads regretted turnover and then replacement cost. That is why the effort is worth it despite being manual, and it is why an exit interview, which arrives after the fact, cannot substitute for a confidential survey that arrives before it.
+
+Activity 1.1.2 below puts this into practice: you choose one qualitative KPI and an appropriate collection method for it, and the choice of method is as assessable as the KPI.
+
 #### Contextualisation: why an isolated number tells you nothing
 
 It is imperative to underscore the role of **contextualisation** in effectively interpreting KPIs. **Isolated numbers seldom tell the whole tale.** They gain significance only when juxtaposed with benchmarks, goals, or historical data.
@@ -63486,6 +63580,11 @@ Thirty-five respondents sit at exactly 6, one point from being passive. A ten-po
                 "Employee engagement is captured by performance reviews, satisfaction surveys and one-on-one interviews, trading anonymity against depth",
                 "A Likert scale is ordinal, so averaging it treats ranks as measurements; reporting the distribution or the top-two-box share is safer",
                 "Both qualitative areas are leading indicators: satisfaction leads churn and revenue, engagement leads regretted turnover and replacement cost",
+                "Qualitative KPIs draw on non-structured raw sources, so collection is manual through human interaction or observation rather than automated",
+                "Customer satisfaction is collected by interviews, focus groups, social media monitoring and feedback forms; employee engagement by confidential surveys, direct observation, suggestion boxes and exit interviews",
+                "Sentiment analysis is an NLP classifier, so its output is a model result that must itself be evaluated for accuracy, language coverage and handling of negation and sarcasm",
+                "Exit interviews are lagging by construction: the departure has already happened, so they cannot substitute for a confidential survey that arrives first",
+                "Anonymity buys candour and costs follow-up, and segmenting a small team's results can break the promise of anonymity that produced the answers",
                 "Isolated numbers seldom tell the whole tale: a KPI gains meaning only against historical data, goals, benchmarks, segments and normal variation",
                 "Correctly aligned with organisational goals and values, KPIs act as both a navigational aid and a diagnostic tool",
                 "Across every industry the characteristic KPI failure has the same shape: the proxy was improved without the goal being improved",
@@ -65215,6 +65314,51 @@ CURATED_FLASHCARD_SETS = {
             "tags": ["kpi", "non-financial metrics", "evo"]
         },
         {
+            "front": "Why is qualitative KPI collection manual, and what does that cost?",
+            "back": "Because qualitative KPIs draw on non-structured, often raw sources rather than the structured data that automated systems produce. Collection therefore happens through direct human interaction or observation. The cost is that it is slower, real money per data point, harder to repeat identically, and dependent on the interviewer, moderator or observer for consistency. What it buys is the reasons no automated system can see.",
+            "tags": ["data collection", "qualitative kpi", "evo"]
+        },
+        {
+            "front": "Name the four methods for collecting customer satisfaction data.",
+            "back": "Customer interviews, one-on-one and semi-structured so unexpected topics can be explored; focus groups, moderated discussions giving real-time reactions and group attitudes; social media monitoring, tracking opinions on platforms and interpreting them with sentiment analysis; and customer feedback forms on websites or by email, collecting comments, suggestions and complaints in non-structured form.",
+            "tags": ["data collection", "customer satisfaction", "evo"]
+        },
+        {
+            "front": "Name the four methods for collecting employee engagement data.",
+            "back": "Confidential surveys, anonymous so employees can express genuine feelings without fear of repercussion; direct observations by managers or HR, showing team dynamics, morale and the work environment; suggestion boxes, old-fashioned but valuable for unfiltered confidential feedback; and exit interviews, giving honest assessments when someone leaves.",
+            "tags": ["data collection", "employee engagement", "evo"]
+        },
+        {
+            "front": "What are sentiment analysis and NLP?",
+            "back": "Sentiment analysis is a Natural Language Processing technique that assesses the emotional tone in text data, determining whether sentiment is positive, negative, neutral or mixed, through text preprocessing and classification of forms such as reviews or social media posts. NLP is the field of artificial intelligence focused on enhancing computers' understanding of human language, covering text analysis, machine translation, speech recognition and language processing.",
+            "tags": ["sentiment analysis", "nlp", "evo"]
+        },
+        {
+            "front": "Why must a sentiment score itself be evaluated before it is reported?",
+            "back": "Because it is the output of a classifier, not an observation, so everything the course says about evaluating a model applies. Ask what its accuracy is and on what data, whether accuracy is equal across languages and groups since models trained on English handle Norwegian far worse, how it handles negation and sarcasm, and whether a human has checked a sample. Reporting that sentiment improved 12% without knowing the error rate reports a model output as if it were a measurement.",
+            "tags": ["sentiment analysis", "model evaluation", "evo"]
+        },
+        {
+            "front": "Why is a focus group a source of hypotheses rather than a measurement?",
+            "back": "Because the group dynamic is both its strength and its weakness. A confident participant can pull the room toward their view and quieter participants converge rather than disagree, so a focus group can produce a consensus that no individual actually held. Use it to generate things worth testing, then test them by another method.",
+            "tags": ["focus group", "qualitative kpi", "evo"]
+        },
+        {
+            "front": "Why can an organisation not rely on exit interviews for engagement insight?",
+            "back": "Because they are lagging by construction: the departure has already happened and the replacement cost is already committed. They are still valuable, since a leaver has least to lose and often says what nobody still employed will, though a leaver wanting a reference may soften the account. An organisation learning about engagement mainly from exit interviews is learning it exactly one departure too late.",
+            "tags": ["exit interviews", "lagging", "evo"]
+        },
+        {
+            "front": "How can segmentation break a promise of anonymity?",
+            "back": "Publishing a confidential survey broken down by team, tenure and role at once can identify a single person even when no name was recorded. In a small company a four-person department reported separately is not anonymous whatever the survey promised. Agree a minimum reporting group size in advance and state it.",
+            "tags": ["anonymity", "ethics", "evo"]
+        },
+        {
+            "front": "Why is social media monitoring good for detecting change but unreliable as a level?",
+            "back": "It is the most self-selected source of all. People post when they are delighted or furious, so the volume is dominated by the tails while the satisfied middle is invisible. That makes it genuinely useful for spotting a sudden shift, and a poor basis for stating how satisfied customers are.",
+            "tags": ["social media", "self-selection", "evo"]
+        },
+        {
             "front": "What defines a qualitative KPI, and which two areas dominate in practice?",
             "back": "Qualitative KPIs capture the subtler aspects of business performance by concentrating on non-numerical data, which makes them subjective. Their power is offering nuanced insight into areas less responsive to straightforward numerical measurement. The two dominant areas are customer satisfaction and employee engagement.",
             "tags": ["qualitative kpi", "classification", "evo"]
@@ -66861,6 +67005,21 @@ CURATED_PRACTICE_QUESTION_BANK = {
             "type": "knowledge",
             "question": "Why does contextualisation matter when interpreting a KPI?",
             "answer": "Because isolated numbers seldom tell the whole tale. A KPI gains significance only when juxtaposed with benchmarks, goals, or historical data. Saying churn is 4.1 percent means nothing; saying it is 4.1 percent, flat within normal month-to-month variation, below the sector median, still above the 3.0 percent target, and concentrated among customers under three months old, is a decision. The last of those, whether a movement exceeds normal variation, is a statistical question rather than a presentational one, which is why it connects directly to variance and confidence levels."
+        },
+        {
+            "type": "knowledge",
+            "question": "Describe the methods used to collect qualitative KPI data, and explain why the collection process differs from the quantitative one.",
+            "answer": "Qualitative KPIs draw upon non-structured, often raw sources, unlike quantitative KPIs which come from automated or semi-automated systems working on structured data. The collection process is therefore typically manual, involving direct human interaction or observation. For customer satisfaction the methods are customer interviews, one-on-one and semi-structured so unexpected topics can be explored; focus groups, moderated discussions that gauge real-time reactions and build a comprehensive picture of attitudes; social media monitoring, tracking and analysing opinions on platforms with sentiment analysis tools interpreting the unstructured text; and customer feedback forms on websites or by email collecting comments, suggestions and complaints. For employee engagement the methods are confidential surveys, anonymous so employees can speak without fear of repercussion; direct observation of behaviour in the workplace, showing team dynamics and morale; suggestion boxes, old-fashioned but valuable for unfiltered confidential feedback; and exit interviews when someone leaves. The consequence of manual collection is that it is slower, costs real money per data point, is harder to repeat identically, and depends on the interviewer or observer for consistency. What it buys is access to the reasons behind a number, which no automated system can supply."
+        },
+        {
+            "type": "skills",
+            "question": "A team reports that social media sentiment for your brand improved 12% this quarter, measured with a sentiment analysis tool. How would you evaluate that claim?",
+            "answer": "I would start by noting that a sentiment score is not an observation, it is the output of a classifier, so everything this course says about evaluating a model applies to it. First, accuracy: what is the tool's error rate, and was it measured on text the model had not been trained on? Second, language and group coverage: models trained mainly on English handle Norwegian, and Norwegian dialects, considerably worse, so an accuracy figure quoted from the vendor may not hold for this data. Third, the known hard cases: negation, sarcasm and domain language. In Norwegian, ikke verst is positive while a literal reading makes it negative. Fourth, and cheapest, a human check: reading a hundred classified posts and counting the misclassifications settles the question in an hour. Then I would turn to the sample itself. Social media is the most self-selected source there is, since people post when delighted or furious and the satisfied middle never appears, so the measure is useful for detecting a sudden change and unreliable as a level. Finally I would ask whether 12% exceeds normal quarter-to-quarter variation. My recommendation would be to keep the metric as a change detector, report it with the classifier's error rate attached, and pair it with a source that reaches the middle, such as a post-purchase survey."
+        },
+        {
+            "type": "case_study",
+            "question": "An organisation says it understands employee engagement well because it conducts thorough exit interviews. Evaluate that position and propose an alternative.",
+            "answer": "Exit interviews are genuinely valuable: a leaver has least to lose and often says what nobody still employed will, so they produce honest assessments of the work environment and concrete areas for improvement. But they are lagging by construction. The departure has already happened, the replacement cost is already committed, and at roughly 95,000 kroner per replacement that cost cannot be recovered by understanding it afterwards. An organisation that learns about engagement mainly from exit interviews is learning it exactly one departure too late. There is also a quiet bias: a leaver who wants a reference may soften the account, so even the honesty is not guaranteed. The alternative I would propose is not to stop exit interviews but to add the leading methods the course names. A confidential anonymous survey is the primary instrument, because anonymity is what buys candour, reported as top-two-box and bottom-two-box shares rather than as a Likert mean, with a minimum group size agreed in advance so segmenting by team does not identify individuals. Direct observation adds what people cannot easily perform, such as where a handover actually stalls. A suggestion box costs nothing and works as an early-warning channel rather than a measure. Together those arrive before the departure, which is the whole reason engagement is worth collecting: it leads regretted turnover by roughly two to four quarters, so acting on it is still possible."
         },
         {
             "type": "knowledge",
