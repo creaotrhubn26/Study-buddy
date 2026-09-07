@@ -63839,6 +63839,90 @@ Design points worth stating in an assignment:
 
 These practices exist to counteract the failure modes named in the previous section: the trend and target defeat the bare-number problem, the context line defeats mistaking noise for signal, and the freshness stamp defeats the stale tile that still looks current.
 
+#### Best practices and considerations in KPI dashboards
+
+| Practice | What it means |
+|---|---|
+| **Consistent design** | Uniformity in colour schemes, fonts and iconography ensures a smooth user experience and minimises confusion |
+| **Avoiding vanity metrics** | Some metrics look impressive without driving actionable insight. Prioritise metrics that lead to action over those that merely look good |
+| **Security measures** | Particularly for sensitive business data, dashboards need strong protocols including data encryption and robust user authentication |
+| **Mobile responsiveness** | With mobile devices now standard in business, dashboards must be viewable and usable on smaller screens |
+| **Feedback mechanisms** | Encouraging users to give feedback ensures the dashboard evolves to serve its audience better |
+| **Continuous evaluation** | As business goals and environments change, the KPIs on a dashboard need revisiting and revising |
+| **Training** | Ensuring all users know how to interpret the dashboard's data is crucial to its success |
+
+*A note on wording: the course text prints this item as "mobile responsibility". The description it gives — designing for smaller screens — is **mobile responsiveness**, which is the standard term. Worth knowing both, since the source uses one and industry uses the other.*
+
+##### A test for vanity metrics
+
+This practice has more teeth than the others, and it is the one most often waved at rather than applied. Three questions identify a vanity metric reliably:
+
+| Question | A vanity metric | An actionable metric |
+|---|---|---|
+| **Can it go down?** | Practically never — cumulative totals, all-time signups, page views | Moves in both directions, so a fall means something |
+| **Is a decision attached?** | No. Nobody can say what they would do differently at a different value | Yes, with a threshold and a standing response |
+| **Does it have a denominator?** | No. A raw count with nothing to divide by | Yes — a rate, a share, a per-visitor or per-customer figure |
+
+Website traffic, discussed earlier in this lesson, fails the first and third: sessions rise as the business grows and a raw session count carries no denominator. Its actionable partner, conversion rate, passes all three. The same holds for the SaaS case study: daily active users is a count that mostly rises, while the share of accounts completing a core workflow each week is a rate with a decision attached.
+
+**The dashboard consequence.** A tile showing a vanity metric is worse than a blank tile, because it occupies the scarcest resource on the dashboard — the reader's attention — while carrying no decision.
+
+##### Security, and the anonymity threshold
+
+Encryption and authentication are the baseline. Two further points matter for this course specifically:
+
+**Access should follow the decision, not the org chart.** Someone who cannot act on a figure rarely needs the row-level data behind it. Aggregates for most viewers, detail for the people who investigate, is both a security control and a data-minimisation principle.
+
+**Segmentation can break an anonymity promise.** This is the sharpest practical case. A confidential engagement survey guarantees anonymity; a dashboard that lets a viewer filter those results by team, tenure and role at once can identify individuals from data that was collected on the promise it could not. The survey did not break the promise — the dashboard did. Set and enforce a **minimum group size** for any tile built on confidential data.
+
+##### Continuous evaluation, and why it is hard
+
+"KPIs need revisiting as goals and environments change" is easy to agree with and rarely done, for a reason this lesson has already named: **thresholds and definitions are anchors.** They stop looking like decisions and start looking like background. Nobody re-examines the furniture.
+
+What makes it happen in practice is a date rather than an intention. Put a review date on the dashboard itself, and treat retiring a KPI as a normal outcome of that review rather than an admission that choosing it was a mistake.
+
+##### Training, and what it is actually for
+
+Training on a dashboard is usually described as teaching people to read the interface. The more valuable half is teaching them what each KPI **means and excludes**: which definition of churn is on that tile, that web analytics undercounts by several percent, that a Likert mean is ordinal.
+
+This is the practical mechanism behind a written definition. A definition nobody has read is documentation; a definition everyone has been walked through is a **shared** definition, and a shared definition is what stops two teams reading the same tile differently.
+
+#### Challenges and strategies for overcoming them
+
+**Data overload.** The temptation to display vast amounts of data can overwhelm users. A focused approach, zeroing in on the most crucial metrics, ensures clarity.
+
+> The steps in the previous section address this directly: define the audience and their decisions first, then select only KPIs tied to those decisions. Data overload is nearly always the symptom of skipping step one, because a dashboard built for everybody serves nobody.
+
+**Data accuracy.** The insights from a dashboard are only as good as the data fed into it. Regular data validation and cleaning are essential.
+
+> *The important qualification.* Validation and cleaning catch **value** errors — impossible ranges, wrong types, missing entries, duplicates. They do not catch **logic** or **interpretation** errors, where every value is valid and the calculation or the reading is wrong. The retention KPI that halved because someone changed the window from twelve months to three would pass every validation rule ever written. So would the ROI cell pointing at the wrong two cells.
+>
+> "Only as good as the data fed into it" is therefore true and incomplete. A dashboard is only as good as its data **and** its definitions **and** its transformations. The defences for the second and third are different: written versioned definitions, and reconciliation against an independent source.
+
+#### Evaluating the impact and ROI of KPI dashboards
+
+**Feedback loop.** Regular user feedback helps refine the dashboard, ensuring it remains a valuable tool for decision-making.
+
+**Return on Investment measurement.** By analysing efficiency, decision-making speed, and outcomes before and after dashboard implementation, businesses can gauge its tangible impact.
+
+Note that the feedback loop appears in both lists — as a best practice and as an impact measure. That is not repetition. As a practice it improves the dashboard; as a measure, *whether people bother to give feedback at all* is itself a signal. A dashboard nobody comments on is usually a dashboard nobody uses.
+
+##### Turning the course's own methods on the dashboard
+
+This last item is worth taking seriously, because it asks you to evaluate an intervention — which is exactly what this course teaches, so every caution already covered applies to it.
+
+A before-and-after comparison of efficiency and decision speed is a **before/after study without a control group**. Three problems follow immediately:
+
+| Problem | Why it applies here | What to do |
+|---|---|---|
+| **Other things changed** | A dashboard is rarely introduced alone. New reporting usually arrives with new processes, new attention from management, and often new staff | List what else changed in the window before attributing anything |
+| **Attention effect** | Measuring a process tends to improve it regardless of the tool. Some of the gain belongs to being watched, not to the dashboard | Compare against a team or period that got the attention but not the dashboard, if one exists |
+| **The ROI numerator problem** | From Activity 1.1.1: crediting an investment with the whole improvement inflates its ROI | Attribute only the incremental gain, and state the horizon |
+
+The honest version is usually a **qualified** claim: decision speed improved by a stated amount over a stated period, alongside a note of what else changed and what proportion is plausibly attributable. That is a weaker claim than "the dashboard delivered X% ROI", and it is the one that survives scrutiny.
+
+There is a pleasing symmetry here. A dashboard exists to help an organisation evaluate its outcomes, and the dashboard is itself an outcome requiring evaluation — with the same tools, the same caveats, and the same temptation to report the flattering figure.
+
 #### Version control: data integrity and collaboration
 
 Data is a dynamic entity. It changes, definitions change, and code that transforms it changes. **Version control** keeps a complete history of those changes: what changed, when, by whom, and why. It sits in this lesson because a KPI you cannot trace is a KPI you cannot evaluate.
@@ -64344,6 +64428,11 @@ Two further insights worth including:
                 "The refresh-rate trap: the more often a metric is displayed, the more chances to mistake normal variation for a signal, so require a sustained move",
                 "Adjusting in real time becomes over-steering when most deviations are noise, since each correction lands after the next has already been made",
                 "A goal-monitoring tile needs time remaining as well as value, target, trend, normal variation and a freshness stamp, since 60 percent of target is excellent in month two and alarming in month eleven",
+                "Dashboard best practice covers consistent design, avoiding vanity metrics, security, mobile responsiveness, feedback mechanisms, continuous evaluation and training",
+                "A vanity metric fails three tests: it can barely go down, no decision is attached to it, and it has no denominator",
+                "A dashboard that segments confidential survey results by team, tenure and role can identify individuals, so it can break an anonymity promise the survey itself kept",
+                "Validation and cleaning catch value errors but never logic or interpretation errors, so a dashboard is only as good as its data AND its definitions AND its transformations",
+                "Measuring a dashboard's own ROI is a before-and-after study without a control group, so other changes, the attention effect and the ROI numerator problem all apply",
                 "Version control gives data integrity and team collaboration, and a KPI you cannot trace is a KPI you cannot evaluate",
                 "Data must be versioned as well as code, since a definition change passes every automated quality check while silently breaking a KPI",
                 "The ethical dimensions of KPI work are transparency, data integrity, inclusivity, and responsibility to shareholders and stakeholders",
@@ -66270,6 +66359,36 @@ CURATED_FLASHCARD_SETS = {
             "tags": ["kpi", "definitions", "version control", "evo"]
         },
         {
+            "front": "Name the seven dashboard best practices.",
+            "back": "Consistent design in colours, fonts and iconography; avoiding vanity metrics in favour of ones that drive action; security measures including encryption and robust authentication; mobile responsiveness for smaller screens; feedback mechanisms so the dashboard evolves with its audience; continuous evaluation as goals and environments change; and training, so every user can interpret the data. The course text prints the fourth as 'mobile responsibility', but the standard term for what it describes is responsiveness.",
+            "tags": ["dashboard", "best practice", "evo"]
+        },
+        {
+            "front": "What three tests identify a vanity metric?",
+            "back": "Can it go down? A vanity metric practically never falls, being a cumulative total or all-time count. Is a decision attached? Nobody can say what they would do differently at a different value. Does it have a denominator? A raw count with nothing to divide by. Website traffic fails the first and third; conversion rate passes all three. A tile showing a vanity metric is worse than a blank tile, because it occupies the reader's attention while carrying no decision.",
+            "tags": ["vanity metrics", "dashboard", "evo"]
+        },
+        {
+            "front": "How can a dashboard break an anonymity promise the survey behind it kept?",
+            "back": "Through segmentation. A confidential engagement survey guarantees anonymity, but a dashboard letting a viewer filter those results by team, tenure and role at once can identify individuals from data collected on the promise that it could not. The survey did not break the promise, the dashboard did. The control is a minimum group size enforced on any tile built on confidential data, plus access that follows the decision rather than the org chart.",
+            "tags": ["dashboard", "security", "anonymity", "evo"]
+        },
+        {
+            "front": "Why is 'a dashboard is only as good as the data fed into it' true but incomplete?",
+            "back": "Because validation and cleaning catch value errors - impossible ranges, wrong types, missing entries, duplicates - and never catch logic or interpretation errors, where every value is valid and the calculation or the reading is wrong. A retention KPI that halved because someone changed the window from twelve months to three passes every validation rule ever written. A dashboard is only as good as its data AND its definitions AND its transformations, and the defences for the latter two are versioned written definitions and reconciliation against an independent source.",
+            "tags": ["data accuracy", "dashboard", "evo"]
+        },
+        {
+            "front": "What is wrong with measuring a dashboard's ROI by comparing before and after?",
+            "back": "It is a before-and-after study without a control group, so three problems apply. Other things changed, since a dashboard rarely arrives alone and usually comes with new processes and new management attention. The attention effect means measuring a process tends to improve it regardless of the tool. And the ROI numerator problem from Activity 1.1.1 means crediting the dashboard with the whole improvement inflates its return. The honest version is a qualified claim stating the period, what else changed, and what share is plausibly attributable.",
+            "tags": ["roi", "dashboard", "evaluation", "evo"]
+        },
+        {
+            "front": "Why does the feedback loop appear both as a best practice and as an impact measure?",
+            "back": "Because it serves two purposes. As a practice it improves the dashboard, since user feedback refines what is shown. As a measure, whether people bother to give feedback at all is itself a signal: a dashboard nobody comments on is usually a dashboard nobody uses.",
+            "tags": ["dashboard", "feedback", "evo"]
+        },
+        {
             "front": "What is a KPI dashboard, and what are its three stated purposes?",
             "back": "A visual interface offering a consolidated view of business performance against key metrics. Data visualisation, collecting vast data in a concise visual format so insight comes from a glance rather than from sifting raw tables. Informed decision-making, giving a clear snapshot so managers can view metrics in real time, understand trends, compare against benchmarks and decide on actual data rather than intuition or outdated reports. And goal monitoring, showing progress towards targets so strategies can be adjusted and deviations addressed promptly.",
             "tags": ["dashboard", "evo"]
@@ -67717,6 +67836,12 @@ CURATED_EXAM_QUESTION_BANK = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "type": "skills",
+            "source": "core_curated",
+            "question": "A team reports that their new dashboard delivered a 30 percent improvement in decision-making speed, measured before and after implementation. Evaluate the claim.",
+            "answer": "The measurement approach is the one the course text itself suggests, analysing efficiency, decision speed and outcomes before and after implementation, so the team has done the right kind of thing. The problem is that this is a before-and-after study without a control group, and three specific issues follow. First, other things changed: a dashboard is rarely introduced alone, and new reporting usually arrives together with new processes, new management attention and sometimes new staff, so the 30 percent is attributed to whichever change is most visible rather than to whichever change caused it. That is the availability heuristic operating on a project evaluation. Second, the attention effect: measuring a process tends to improve it regardless of the tool used, so some of the gain belongs to being watched. Third, the ROI numerator problem from Activity 1.1.1: crediting one investment with the whole improvement is exactly how a reported ROI is inflated, and only the incremental gain attributable to the dashboard belongs in it. I would also ask how decision speed was defined, whether that definition existed before the measurement or was chosen afterwards, and whether 30 percent exceeds normal variation in that measure. What I would propose instead is a qualified claim: decision speed improved by a stated amount over a stated period, with a list of what else changed in the window and an explicit statement of what share is plausibly attributable to the dashboard. That is a weaker claim than 30 percent and it is the one that survives scrutiny. There is a symmetry worth naming in the answer: a dashboard exists to help an organisation evaluate its outcomes, and it is itself an outcome requiring evaluation, with the same tools, the same caveats and the same temptation to report the flattering figure."
+        },
         {
             "type": "knowledge",
             "source": "core_curated",
