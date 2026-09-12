@@ -65237,22 +65237,39 @@ Only the first two justify removing a data point, and both require the reason to
 
 Notice that all three are ways of asking **what the headline number is not telling you** — which is what "diving deeper" into a result table actually consists of.
 
-#### What statistical inference means here
+#### Understanding the significance of statistical inferences
 
-**Statistical inference** is the act of saying something about a whole population using only a sample of it. Almost every evaluation you perform is an inference, because you rarely have the whole population:
+##### Statistical inference defined
 
-- You evaluate a model on a test set, not on every future case
-- You evaluate a campaign on the customers who were exposed, not on all customers
-- You evaluate a process change on one quarter, not on all quarters
+At its core, **statistical inference is the process of drawing conclusions from data subject to random variations.** That involves using **sampled data** to make generalisations or predictions about a larger, often unknown, **population**. This process is crucial for researchers, analysts and scientists aiming to interpret their collected data meaningfully and make informed decisions on the basis of it.
 
-This means every evaluation carries **sampling uncertainty**, and an evaluation that does not acknowledge it is incomplete.
+*Two notes on the wording. The course text prints "the process of concluding data subject to random variations" — "drawing conclusions from data" is what is meant. And "a more significant population" means a **larger** one; "significant" is being used in its everyday sense here, not the technical sense this lesson gives it everywhere else. Worth separating the two, because in this course a significant result and a significant population are unrelated ideas.*
+
+**The phrase carrying the weight is "subject to random variations."**
+
+Inference is the mathematics of **random** variation — the fact that a different sample of the same population would have given slightly different numbers. It quantifies that and nothing else. It does not quantify **systematic** variation, which is bias.
+
+| | Random variation | Systematic variation (bias) |
+|---|---|---|
+| What it is | The luck of which units ended up in the sample | A sample that differs from the population in a consistent direction |
+| Example | This month's 348 survey responses happened to include a few more satisfied customers | Only customers who contacted support were surveyed |
+| Does more data fix it? | **Yes** — the interval narrows as n grows | **No.** More of a biased sample is more bias, measured more precisely |
+| Does inference measure it? | **Yes** — that is exactly what it does | **No.** Nothing in a p-value or an interval detects it |
+
+This is why the sampling section that follows is not an optional preliminary. A confidence interval widens with noise; it does not widen with bias, and it looks equally reassuring either way.
+
+##### Bridging sample and population
+
+One of the primary goals of many studies is to understand and draw conclusions about a broader **population**. Studying an entire population is often impractical, if not impossible, so studies usually focus on a **sample**.
+
+Statistical inference provides the tools that determine **how closely the sampled data aligns with the population.** It allows results to be extrapolated from the sample to the broader population **with a known degree of accuracy**.
 
 <div class="mermaid">
 flowchart LR
-    A[Population<br/>What we want to know about] -->|Sampling| B[Sample<br/>What we can measure]
+    A[Population<br/>What we want to know about<br/>parameters: μ, σ, π] -->|Sampling| B[Sample<br/>What we can measure<br/>statistics: x̄, s, p̂]
     B -->|Descriptive statistics| C[Result table<br/>means, coefficients, p-values]
     C -->|Inference| D[Claim about the population]
-    D -->|Uncertainty| E[Confidence level<br/>Lesson 1.3]
+    D -->|Quantified uncertainty| E[Interval and confidence level]
 
     style A fill:#e3f2fd,stroke:#2196F3,stroke-width:2px
     style B fill:#fff3cd,stroke:#ffc107,stroke-width:2px
@@ -65260,6 +65277,57 @@ flowchart LR
     style D fill:#f3e5f5,stroke:#9C27B0,stroke-width:2px
     style E fill:#ffe0e0,stroke:#e57373,stroke-width:2px
 </div>
+
+**"With a known degree of accuracy" is the clause that separates inference from guessing.** A sample always misses the population by some amount. What makes inference a discipline rather than an estimate is that the *size of the likely miss can be calculated* — and every quantity in this lesson is a way of stating it. The p-value, the confidence interval and the margin of error are all answers to "how far wrong might this be?"
+
+**Why it can be known at all.** Because random sampling behaves predictably in aggregate. Draw many samples from the same population and their means form their own distribution — the **sampling distribution** — which is narrower than the population and tightens as n grows. For sample means it is approximately normal for a reasonably large n *whatever shape the population has*, which is why the z and t procedures in this lesson work on business data that is nowhere near bell-shaped.
+
+That word *random* is load-bearing. The known accuracy is known **only if the sampling was random**. Take a convenience sample and the arithmetic still runs, still prints an interval, and the interval no longer means what it says.
+
+##### Parameter and statistic: the notation this lesson uses
+
+The population has **parameters** you want to know. The sample has **statistics** you can compute. Inference is the bridge from the second to the first, and keeping the symbols apart is how an assignment shows it understands the direction of travel.
+
+| Quantity | Population parameter | Sample statistic |
+|---|---|---|
+| Mean | **μ** (mu) | **x̄** (x-bar) |
+| Standard deviation | **σ** (sigma) | **s** |
+| Proportion | **π** or **p** | **p̂** (p-hat) |
+| Regression slope | **β** (beta) | **b** |
+
+Two places this has already come up in the lesson: the z-score is written **Z = (x − μ) ÷ σ** with population values and **z = (x − x̄) ÷ s** with sample estimates, and the poll's 52% is a **p̂** used to estimate an unknown **π**. A parameter is a fixed number you do not know; a statistic is a number you do know that varies from sample to sample. **All the uncertainty in this lesson comes from that second property.**
+
+##### The two branches, and where this lesson uses each
+
+Everything in this lesson is one of two moves.
+
+| Branch | The question | The tools | Where in this lesson |
+|---|---|---|---|
+| **Estimation** | What is the value, and how precisely do we know it? | Point estimate, confidence interval, margin of error, effect size | The poll's 52% ± 2, the Nordtre interval of [3.75, 94.25], Cohen's d |
+| **Hypothesis testing** | Is this consistent with a specific claim? | Null and alternative, test statistic, p-value, α | The XYZ sales strategy, the z-test, the regression p-values |
+
+They are two views of the same arithmetic — an interval that excludes zero and a test that rejects at 0.05 are the same statement — but they answer different questions, and estimation is the more informative of the two, because a range with a magnitude tells you more than a verdict.
+
+##### Every evaluation you perform is an inference
+
+Almost every evaluation in this course is an inference, because you rarely have the whole population:
+
+- You evaluate a model on a **test set**, not on every future case
+- You evaluate a campaign on the customers who **were exposed**, not on all customers
+- You evaluate a process change on **one quarter**, not on all quarters
+- You evaluate satisfaction on the customers who **answered**, not on all customers
+
+So every evaluation carries **sampling uncertainty**, and an evaluation that does not acknowledge it is incomplete. This is the second gap named in the lesson introduction: a KPI is a proxy for a goal *and* an estimate of the quantity it names, and both gaps are open at once.
+
+##### The case where inference is unnecessary — and the error it causes
+
+If you genuinely have the **whole population**, there is no sampling uncertainty, and a p-value has nothing to be about.
+
+Every order the company took last year, every current employee, every transaction in the database: these are censuses, not samples. The difference between two departments' average tenure, computed from all employees, **is** the difference. There is no "could this be chance?" question, because no sampling occurred.
+
+Running a significance test on a complete population is a common and quiet error. It produces a p-value that appears to mean something and does not, and with a large enough population it will declare a difference of no consequence to be significant.
+
+**The one qualification.** Sometimes a complete dataset is still treated as a sample — of a *process* rather than of a group. All of last year's orders are the whole population of last year, and a sample of what the business does over time. If the conclusion is about last year, no inference is needed. If it is about next year, it is an inference again, and the honest version says so and states that the process is assumed stable.
 
 #### Sampled sets, and how the sample was drawn
 
@@ -67125,6 +67193,31 @@ CURATED_FLASHCARD_SETS = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "front": "Define statistical inference, and say which kind of variation it does and does not handle.",
+            "back": "Statistical inference is the process of drawing conclusions from data subject to random variations, using sampled data to make generalisations or predictions about a larger and often unknown population. The load-bearing phrase is subject to random variations: inference is the mathematics of random variation, meaning the fact that a different sample of the same population would have given slightly different numbers. It quantifies that and nothing else. It does not quantify systematic variation, which is bias. Random variation is the luck of which units ended up in the sample, it shrinks as n grows, and a p-value or interval measures it exactly. Bias is a sample differing from the population in a consistent direction, more data makes it worse rather than better because it is more bias measured more precisely, and nothing in a p-value or an interval detects it. A confidence interval widens with noise and does not widen with bias, and it looks equally reassuring either way.",
+            "tags": ["statistical inference", "bias", "definition", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "What does it mean that inference extrapolates from sample to population 'with a known degree of accuracy', and how can the accuracy be known?",
+            "back": "A sample always misses the population by some amount, and what makes inference a discipline rather than a guess is that the size of the likely miss can be calculated. The p-value, the confidence interval and the margin of error are all answers to the question of how far wrong the result might be. It can be known because random sampling behaves predictably in aggregate: draw many samples from the same population and their means form their own distribution, the sampling distribution, which is narrower than the population and tightens as n grows. For sample means it is approximately normal at a reasonably large n whatever shape the population has, which is why the z and t procedures work on business data that is nowhere near bell-shaped. The word random is load-bearing: the accuracy is known only if the sampling was random. On a convenience sample the arithmetic still runs and still prints an interval, and the interval no longer means what it says.",
+            "tags": ["statistical inference", "sampling distribution", "accuracy", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "Distinguish a population parameter from a sample statistic, and give the notation for each.",
+            "back": "A parameter is a fixed number describing the population that you do not know; a statistic is a number computed from the sample that you do know but that varies from sample to sample, and all the uncertainty in inference comes from that second property. The mean is mu for the population and x-bar for the sample. The standard deviation is sigma and s. The proportion is pi, or p, and p-hat. The regression slope is beta and b. Two places this appears in the lesson: the z-score is Z = (x minus mu) divided by sigma with population values and z = (x minus x-bar) divided by s with sample estimates, and the poll's 52 percent is a p-hat used to estimate an unknown pi. Inference is the bridge from the statistic to the parameter, and keeping the symbols apart is how an answer shows it understands the direction of travel.",
+            "tags": ["parameter", "statistic", "notation", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "What are the two branches of statistical inference, and where does lesson 1.2 use each?",
+            "back": "Estimation asks what the value is and how precisely it is known, using point estimates, confidence intervals, margins of error and effect sizes; in this lesson that is the poll's 52 percent plus or minus 2, the Nordtre interval of NOK 3.75 to 94.25, and Cohen's d. Hypothesis testing asks whether the data is consistent with a specific claim, using a null and alternative pair, a test statistic, a p-value and alpha; in this lesson that is the XYZ sales strategy case, the z-test, and the regression p-values. They are two views of the same arithmetic, since an interval excluding zero and a test rejecting at 0.05 are the same statement, but they answer different questions, and estimation is the more informative because a range with a magnitude tells you more than a verdict.",
+            "tags": ["estimation", "hypothesis testing", "inference", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "When is statistical inference unnecessary, and what error follows from ignoring that?",
+            "back": "When you genuinely have the whole population. Every order the company took last year, every current employee, every transaction in the database: these are censuses rather than samples, so there is no sampling uncertainty and a p-value has nothing to be about. The difference between two departments' average tenure computed from all employees is the difference; there is no could-this-be-chance question, because no sampling occurred. Running a significance test on a complete population is a common and quiet error that produces a p-value which appears to mean something and does not, and with a large enough population it will declare a difference of no consequence to be significant. One qualification: a complete dataset can still be a sample of a process rather than of a group. All of last year's orders are the whole population of last year and a sample of what the business does over time, so a conclusion about last year needs no inference while a conclusion about next year is an inference again, and the honest version says so and states that the process is assumed stable.",
+            "tags": ["census", "population", "inference", "lesson 1.2", "evo"]
+        },
         {
             "front": "Name the three categories of critical tool from lesson 1.2 and what each contributes.",
             "back": "Statistical software such as R, Python with pandas and statsmodels, and SPSS generate comprehensive result tables and provide the functionality to delve deeper, test assumptions and run post-hoc tests. Visualisation tools such as Tableau, Power BI, Seaborn and Matplotlib in Python and ggplot2 in R translate table results into visual formats, which aids interpretation especially with complex multivariate results. Model diagnostics, whether specialised tools or functions inside broader platforms, assess model fit, multicollinearity and other issues that affect what can be read from a result table. Together they make depth practical, but the ordering from the lesson introduction still holds: tools facilitate the process rather than producing the conclusion, and software will run a regression on a hopelessly biased sample and print a beautifully formatted table in which every number is correct and worthless.",
@@ -69313,6 +69406,16 @@ CURATED_PRACTICE_QUESTION_BANK = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "type": "skills",
+            "question": "A colleague argues that their satisfaction survey is reliable because 4 000 customers responded, and the confidence interval is only plus or minus 1.5 points. What would you say?",
+            "answer": "That the interval is answering a question they are not asking. A confidence interval quantifies random variation, meaning the luck of which units ended up in the sample, and it narrows as n grows. It does not quantify systematic variation, which is bias, and more of a biased sample is simply more bias measured more precisely. If the 4 000 respondents are self-selected, or drawn only from customers who contacted support, or reachable only by email, the sample differs from the customer base in a consistent direction and no sample size fixes that. The interval will still print at plus or minus 1.5 and will look equally reassuring either way. So the questions I would ask are about the sampling frame and the response rate rather than the sample size: who was invited, who could have been reached at all, what proportion replied, and whether the non-responders plausibly differ from the responders. A tight interval on a badly drawn sample is a precise wrong answer."
+        },
+        {
+            "type": "knowledge",
+            "question": "Your analysis covers every transaction in the company database. Should you report a p-value?",
+            "answer": "Generally no, if the conclusion is about the period the data covers. A p-value quantifies the chance that a difference this large could arise from the luck of sampling, and if the dataset is the whole population then no sampling occurred and there is nothing for the p-value to be about. The observed difference between two segments simply is the difference. Reporting a test here produces a number that looks meaningful and is not, and with a large population it will flag differences of no practical consequence as significant. The qualification is that a complete dataset can still be a sample of a process rather than of a group: every transaction last year is the whole population of last year and a sample of how the business behaves over time. So if the claim is about last year, report the difference and its size and skip the test; if the claim is about what will happen next year, it is an inference again, and the answer should say so and state that the process is assumed stable."
+        },
         {
             "type": "knowledge",
             "question": "A residual plot shows a clear fan and a Breusch-Pagan test confirms heteroscedasticity. Is the whole regression unusable?",
