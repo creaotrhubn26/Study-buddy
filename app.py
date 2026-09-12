@@ -1656,6 +1656,87 @@ def annotate_text_with_glossary(text, glossary_entries, occurrence_counts=None, 
     return restored
 
 
+LESSON_ATTACHMENT_ICONS = {
+    ".xlsx": "📊",
+    ".xlsm": "📊",
+    ".csv": "📄",
+    ".md": "📝",
+    ".pdf": "📕",
+    ".docx": "📘",
+    ".txt": "📄",
+}
+
+LESSON_ATTACHMENT_MIME = {
+    ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ".xlsm": "application/vnd.ms-excel.sheet.macroEnabled.12",
+    ".csv": "text/csv",
+    ".md": "text/markdown",
+    ".pdf": "application/pdf",
+    ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ".txt": "text/plain",
+}
+
+
+def find_lesson_attachments(content):
+    """Return files named in backticks inside a lesson that actually exist on disk.
+
+    Lesson text refers to its deliverables by filename, for example
+    `EVO_1.2.1_Statistical_Toolkit.xlsx`. Rather than maintaining a separate
+    per-lesson list that can drift out of step with the prose, this scans the
+    content for backticked filenames with a known extension and keeps the ones
+    present in the project folder. Order of first mention is preserved.
+    """
+    base = Path(__file__).resolve().parent
+    seen = []
+    for match in re.finditer(r"`([A-Za-z0-9._\-]+\.(?:xlsx|xlsm|csv|md|pdf|docx|txt))`", content):
+        name = match.group(1)
+        if name in seen:
+            continue
+        candidate = base / name
+        try:
+            resolved = candidate.resolve()
+        except OSError:
+            continue
+        # Never serve anything outside the project folder.
+        if resolved.parent != base or not resolved.is_file():
+            continue
+        seen.append(name)
+    return [(name, base / name) for name in seen]
+
+
+def render_lesson_attachments(content, key_prefix):
+    """Render download buttons for the deliverables a lesson names."""
+    attachments = find_lesson_attachments(content)
+    if not attachments:
+        return
+
+    st.markdown("---")
+    st.markdown("### 📎 Files for this lesson")
+    st.caption(
+        "The solution documents and workbooks this lesson refers to. "
+        "Workbooks carry live formulas, so changing an input recomputes everything downstream."
+    )
+    columns = st.columns(min(len(attachments), 3))
+    for index, (name, path) in enumerate(attachments):
+        suffix = path.suffix.lower()
+        icon = LESSON_ATTACHMENT_ICONS.get(suffix, "📎")
+        try:
+            payload = path.read_bytes()
+        except OSError:
+            continue
+        size_kb = max(1, round(len(payload) / 1024))
+        with columns[index % len(columns)]:
+            st.download_button(
+                f"{icon} {name}",
+                data=payload,
+                file_name=name,
+                mime=LESSON_ATTACHMENT_MIME.get(suffix, "application/octet-stream"),
+                key=f"{key_prefix}_attachment_{index}",
+                use_container_width=True,
+            )
+            st.caption(f"{size_kb} KB")
+
+
 def render_glossary_bank(glossary_entries, context_label="this lesson"):
     if not glossary_entries:
         st.info("No glossary terms were detected for this section yet.")
@@ -81563,6 +81644,8 @@ elif page == "Learn & Practice":
                         with st.expander("Exam Question Solver", expanded=False):
                             render_data_types_exam_solver()
                     
+                    render_lesson_attachments(content, f"lesson_{course_code}_{lesson_number}")
+
                     st.markdown("---")
                     
                     # Key Takeaways with visual emphasis
