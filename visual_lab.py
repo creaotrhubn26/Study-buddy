@@ -1147,10 +1147,148 @@ def _confounding():
     )
 
 
+
+@st.cache_data(show_spinner=False)
+def _house_data(expo, noise, hi, n, seed):
+    """Prices follow a power law, so price per square metre falls as size rises."""
+    A = 4.5e6 / 50 ** expo
+    rng = np.random.default_rng(seed)
+    size = rng.uniform(45, hi, n)
+    price = A * size ** expo * np.exp(rng.normal(0, noise, n))
+    return size, price, A
+
+
+def _real_estate():
+    st.markdown("#### 14 · Boligprisene — når en rett linje er nesten riktig")
+    st.caption(
+        "Leksjonens eiendomscase. Meglerkontoret plotter areal mot pris og ser en kurve: "
+        "prisen per kvadratmeter faller når boligene blir større."
+    )
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        model = st.radio("Modell", ["Rett linje", "Polynom (kvadratledd)", "Logaritmisk (log-log)"],
+                         key="vl_re_model")
+    with c2:
+        expo = st.slider("Hvor kraftig avtar prisen per m²?", 0.45, 1.0, 0.60, 0.05, key="vl_re_expo",
+                         help="1,0 = ingen avtakende effekt, altså en ekte rett linje")
+    with c3:
+        target = st.slider("Vurder en bolig på (m²)", 60, 750, 700, 10, key="vl_re_tgt")
+
+    size, price, A = _house_data(expo, 0.08, 450, 140, 7)
+    grid = np.linspace(45, max(460, target + 20), 300)
+
+    lin = np.polyfit(size, price, 1)
+    quad = np.polyfit(size, price, 2)
+    lg = np.polyfit(np.log(size), np.log(price), 1)
+
+    def predict(x, which):
+        if which == "Rett linje":
+            return np.polyval(lin, x)
+        if which == "Polynom (kvadratledd)":
+            return np.polyval(quad, x)
+        return np.exp(np.polyval(lg, np.log(x)))
+
+    fitted = predict(size, model)
+    resid = price - fitted
+
+    def r2(y, pred):
+        return 1 - ((y - pred) ** 2).sum() / ((y - y.mean()) ** 2).sum()
+
+    pts = pd.DataFrame({"areal": size, "pris": price / 1e6,
+                        "per_m2": price / size / 1000, "residual": resid / 1e6,
+                        "tilpasset": fitted / 1e6})
+    curve = pd.DataFrame({"areal": grid, "pris": predict(grid, model) / 1e6, "hva": "Valgt modell"})
+    truth = pd.DataFrame({"areal": grid, "pris": A * grid ** expo / 1e6, "hva": "Sann sammenheng"})
+    band = pd.DataFrame({"x": [45, 450]})
+
+    sc = alt.Chart(pts).mark_circle(size=55, opacity=0.5, color=INK_MUTED).encode(
+        x=alt.X("areal:Q", title="Areal (m²)"), y=alt.Y("pris:Q", title="Pris (mill. kr)"),
+        tooltip=[alt.Tooltip("areal:Q", format=".0f", title="m²"),
+                 alt.Tooltip("pris:Q", format=".2f", title="MNOK")])
+    lines = alt.Chart(pd.concat([curve, truth])).mark_line(size=2.5).encode(
+        x="areal:Q", y="pris:Q",
+        color=alt.Color("hva:N", scale=alt.Scale(domain=["Valgt modell", "Sann sammenheng"],
+                                                 range=[C_ORANGE, C_BLUE]),
+                        legend=alt.Legend(title=None, orient="top")),
+        strokeDash=alt.StrokeDash("hva:N", legend=None))
+    edge = alt.Chart(band).mark_rule(color=S_WARNING, strokeDash=[5, 4], size=2).encode(x="x:Q")
+    st.altair_chart((sc + lines + edge).properties(height=330), use_container_width=True)
+    st.caption("De gule strekene markerer hvor dataene slutter. Alt utenfor dem er ekstrapolering.")
+
+    left = alt.Chart(pts).mark_circle(size=55, opacity=0.6, color=C_AQUA).encode(
+        x=alt.X("areal:Q", title="Areal (m²)"),
+        y=alt.Y("per_m2:Q", title="Pris per m² (tusen kr)"),
+        tooltip=[alt.Tooltip("areal:Q", format=".0f"), alt.Tooltip("per_m2:Q", format=".1f")])
+    trend = left.transform_regression("areal", "per_m2").mark_line(size=2.5, color=C_BLUE)
+    right = alt.Chart(pts).mark_circle(size=55, opacity=0.6, color=C_ORANGE).encode(
+        x=alt.X("tilpasset:Q", title="Modellens prediksjon (mill. kr)"),
+        y=alt.Y("residual:Q", title="Residual (mill. kr)"),
+        tooltip=[alt.Tooltip("tilpasset:Q", format=".2f"), alt.Tooltip("residual:Q", format=".2f")])
+    zero = alt.Chart(pd.DataFrame({"y": [0]})).mark_rule(
+        color=INK_MUTED, strokeDash=[4, 3], size=2).encode(y="y:Q")
+    st.altair_chart(
+        ((left + trend).properties(title="Det meglerne la merke til: pris per m² faller", height=250)
+         | (right + zero).properties(title="Residualene til valgt modell", height=250)),
+        use_container_width=True)
+
+    order = np.argsort(size)
+    thirds = np.array_split(resid[order], 3)
+    arc = [t.mean() / 1e6 for t in thirds]
+    true_at = A * target ** expo
+    pred_at = float(predict(np.array([target]), model)[0])
+
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("R² for valgt modell", f"{r2(price, fitted):.3f}")
+    m2.metric("R², rett linje", f"{r2(price, np.polyval(lin, size)):.3f}")
+    m3.metric("Residualsnitt: lav / midt / høy", " · ".join(f"{a:+.2f}" for a in arc))
+    m4.metric(f"Bom på {target} m²", f"{(pred_at/true_at-1)*100:+.1f} %",
+              delta=f"{(pred_at-true_at)/1e6:+.2f} MNOK", delta_color="inverse")
+
+    inside = target <= 450
+    if model == "Rett linje":
+        _callout(
+            f"**Se på de to R²-ene: {r2(price, fitted):.3f} mot {r2(price, np.polyval(lin, size)):.3f}.** "
+            f"Den rette linja forklarer nesten like mye av variasjonen som de krumme modellene. "
+            f"**R² skiller dem knapt** — og det er derfor R² alene ikke er en modellsjekk.\n\n"
+            f"**Residualene skiller dem umiddelbart.** Snittet i lav, midtre og høy tredjedel er "
+            f"{arc[0]:+.2f}, {arc[1]:+.2f} og {arc[2]:+.2f} millioner: modellen bommer *nedover* i begge "
+            f"ender og *oppover* på midten, hver eneste gang. Det er buen, og den er systematisk, "
+            f"ikke tilfeldig.\n\n"
+            f"**Og prisen betales i enden.** På {target} m² bommer linja med "
+            f"{(pred_at-true_at)/1e6:+.2f} millioner — {(pred_at/true_at-1)*100:+.0f} %. "
+            + ("Det er innenfor datagrunnlaget, så feilen er moderat. **Dra arealet forbi 450 m² og se hva som skjer.**"
+               if inside else
+               "Det er *utenfor* datagrunnlaget: her legger ekstrapolering seg oppå feil modellform, "
+               "og en rett linje gjennom en metningskurve overdriver alltid oppover."),
+            S_CRITICAL if not inside else S_WARNING,
+            "rgba(208,59,59,0.08)" if not inside else "rgba(250,178,25,0.10)")
+    else:
+        _callout(
+            f"**Buen er borte.** Residualsnittene er nå {arc[0]:+.2f}, {arc[1]:+.2f} og {arc[2]:+.2f} "
+            f"millioner — ingen systematisk retning igjen, og bommen på {target} m² er nede i "
+            f"{(pred_at/true_at-1)*100:+.1f} %.\n\n"
+            + ("**Log-log-modellen gjør noe mer:** koeffisienten er en *elastisitet*. "
+               f"Her er den {lg[0]:.2f}, altså «10 % større bolig gir omtrent {lg[0]*10:.1f} % høyere pris» — "
+               "presis den formuleringen meglerkontoret trenger, og den kommer gratis av transformasjonen."
+               if model.startswith("Log") else
+               "**Kvadratleddet koster én kolonne** og fanger krumningen. Merk at dette fortsatt er "
+               "lineær regresjon: modellen er lineær i *parametrene*, ikke i variablene."),
+            S_GOOD, "rgba(12,163,12,0.08)")
+
+    _point(
+        "**Hvorfor kurven i det hele tatt oppstår** er en forretningsforklaring, ikke en statistisk: "
+        "store boliger ligger oftere utenfor sentrum, og luksusboliger betaler for andre kvaliteter enn "
+        "areal. Modellformen bør velges ut fra hva du vet om markedet, ikke bare ut fra hva som passer.\n\n"
+        "**Rekkefølgen å svare i på eksamen:** plott dataene og se kurven · bekreft den i residualplottet · "
+        "forklar *hvorfor* sammenhengen krummer · velg transformasjon · vis at buen forsvant · og si "
+        "eksplisitt hvilket areal-intervall modellen gjelder for."
+    )
+
+
 SECTIONS = {
     "A · Utvalg og usikkerhet": [_sampling_distribution, _coverage, _bias_vs_noise],
     "B · Test og effektstørrelse": [_p_vs_d, _power, _multiple_comparisons],
-    "C · Regresjon og residualer": [_leverage, _residuals, _omitted_variable, _confounding],
+    "C · Regresjon og residualer": [_leverage, _residuals, _real_estate, _omitted_variable, _confounding],
     "D · Z-score og overtilpasning": [_zscore, _overfitting],
     "E · Eksamensdrill": [_drill],
 }
@@ -1158,7 +1296,7 @@ SECTIONS = {
 _INTRO = {
     "A · Utvalg og usikkerhet": "Hvorfor et utvalg kan si noe om en populasjon, hva de 95 prosentene faktisk lover, og hvorfor mer data ikke redder et skjevt utvalg.",
     "B · Test og effektstørrelse": "Hvorfor en p-verdi og en effektstørrelse svarer på to forskjellige spørsmål, hva styrke er, og hvordan tjue sammenligninger produserer et funn av ingenting.",
-    "C · Regresjon og residualer": "Hvordan én observasjon kan vri hele linja, hva strukturen i et residualplott betyr, hvorfor en koeffisient endrer seg når en variabel til kommer inn, og sammenhengen som snur fortegn når du deler opp dataene.",
+    "C · Regresjon og residualer": "Hvordan én observasjon kan vri hele linja, hva strukturen i et residualplott betyr, eiendomscaset der en rett linje er nesten riktig, hvorfor en koeffisient endrer seg når en variabel til kommer inn, og sammenhengen som snur fortegn når du deler opp dataene.",
     "D · Z-score og overtilpasning": "Z-scoren brukt begge veier, og hvorfor et høyt R² kan bety at modellen er blitt verre.",
     "E · Eksamensdrill": "Oppgavetypene fra aktivitetene, med nye tall hver gang og tilbakemelding på hvert steg underveis.",
 }

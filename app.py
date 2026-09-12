@@ -65736,6 +65736,50 @@ So the assignment-grade move is to say which shape you expected from the domain,
 
 *A note on the source: the course text prints "Among these two are particularly pivotal", where "Among these, two are particularly pivotal" is meant. The second is developed in the next section.*
 
+##### Case: boligpriser — the example the course gives
+
+**Scenario.** A real estate agency is trying to determine how the **size of a house influences its price**.
+
+**Analysis.** Plotting house sizes against their prices, a **curved pattern** emerges: as houses become larger, their **price per square foot seems to decrease**. This non-linear relationship might arise from factors such as luxury homes carrying other amenities, or larger homes sitting outside city centres.
+
+**Action.** The agency could consider transformations such as **polynomial regression** or **logarithmic scaling** to capture the underlying relationship better.
+
+##### Why this case is the right one to remember
+
+Three things make it a better teaching example than a textbook curve.
+
+**1. The diagnostic came from a derived quantity, not the raw plot.** What the agency noticed was *price per square metre falling* — not "the scatter looks bent". A price-versus-size plot of real housing data looks fairly straight to the eye; dividing price by size makes the curvature obvious. **When you suspect non-linearity, plotting the ratio is often sharper than plotting the level.**
+
+**2. The explanation is a business fact, not a statistical one.** The text names the reason: large homes are disproportionately outside city centres, and luxury properties are paying for things other than floor area. That matters because it tells you the curve is *real and stable* rather than an artefact of this sample — which is what justifies changing the model rather than collecting more data.
+
+**3. Both remedies keep it a linear regression.** Polynomial regression adds a squared term; logarithmic scaling transforms the variables. Neither abandons the method, because both remain **linear in the parameters**.
+
+##### The trap this case sets, and it is the exam-relevant part
+
+Fit a straight line to housing data over a normal size range and **R² comes out high** — around 0.93 on a realistic dataset. By that number alone the model looks good.
+
+It is still wrong, in a specific and costly way:
+
+| | What the straight line does |
+|---|---|
+| **Inside the data** | Under-predicts small and large homes, over-predicts mid-sized ones. Systematically, every time |
+| **The implied claim** | That every square metre is worth the same — which contradicts the very pattern the agency observed |
+| **Outside the data** | A 700 m² property gets valued 12–19% too high, because a line through a saturating curve keeps climbing when reality flattens |
+| **On the average error** | Looks fine. The over- and under-predictions cancel in aggregate |
+
+**So the valuation of an ordinary flat is roughly right and the valuation of a mansion is badly wrong** — and the second is where the money and the reputational risk sit.
+
+##### What the log model buys beyond fixing the fit
+
+Logarithmic scaling is worth choosing over a polynomial here for a reason beyond fit. In a log-log model, the coefficient is an **elasticity**:
+
+> A coefficient of 0.60 means **a 10% larger home costs about 6% more**, at any size.
+
+That is a sentence an estate agent can use, it holds across the whole range, and it falls straight out of the transformation. A quadratic term fits the curve just as well and produces nothing a client could repeat.
+
+> 🔬 Simulator **14 · Boligprisene** in the Visual Lab runs this case. Switch between the three models and watch two things: R² barely moves, while the arc in the residuals appears and disappears. Then push the size slider past 450 m² — beyond where the data ends — and watch the straight line's error grow.
+
+
 #### Result table analysis with linear regression
 
 A simple linear regression models one outcome variable from one predictor. Reading its result table is a named outcome of this course. The multivariate case — several predictors at once, and what that does to a coefficient — was covered under diving deeper above; this section takes the components of the table one at a time.
@@ -67572,6 +67616,21 @@ CURATED_FLASHCARD_SETS = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "front": "The real estate case: what did the agency observe, why does the relationship curve, and what should they do?",
+            "back": "An agency plotting house size against price found a curved pattern: as houses get larger, the price per square foot decreases. The explanation is a business fact rather than a statistical one, since large homes are disproportionately outside city centres and luxury properties are paying for amenities other than floor area, which means the curve is real and stable rather than an artefact of the sample. The remedy is a transformation, either polynomial regression, which adds a squared term, or logarithmic scaling, which transforms the variables. Note that the diagnostic came from a derived quantity: what they noticed was price per square metre falling, not that the scatter looked bent. A price-against-size plot of real housing data looks fairly straight, and dividing price by size makes the curvature obvious, so when you suspect non-linearity, plotting the ratio is often sharper than plotting the level. Both remedies keep it a linear regression, because both remain linear in the parameters.",
+            "tags": ["linearity", "case study", "real estate", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "Fitting a straight line to housing data gives R² around 0.93. Why is the model still wrong, and where does it cost money?",
+            "back": "Because a high R² does not detect a systematic pattern in the errors. Inside the data the line under-predicts small and large homes and over-predicts mid-sized ones, every time, and the average error looks acceptable because those cancel in aggregate. The implied claim is that every square metre is worth the same, which directly contradicts the pattern the agency observed. Outside the data it is worse: a 700 square metre property gets valued 12 to 19 percent too high, because a line through a saturating curve keeps climbing when reality flattens. So the valuation of an ordinary flat is roughly right and the valuation of a mansion is badly wrong, and the second is where the money and the reputational risk sit. Only the residual plot reveals this, which is why R² alone is not a model check.",
+            "tags": ["r squared", "linearity", "extrapolation", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "Why prefer logarithmic scaling over a polynomial term in the housing case?",
+            "back": "Both fit the curve about equally well, but the log-log model produces a coefficient that is an elasticity. A coefficient of 0.60 means a 10 percent larger home costs about 6 percent more, at any size. That is a sentence an estate agent can actually use with a client, it holds across the whole range rather than only locally, and it falls straight out of the transformation at no extra cost. A quadratic term fits the curve just as well and produces nothing anyone could repeat. Log-transforming the outcome also tends to fix heteroscedasticity at the same time, which is a second benefit a polynomial does not provide.",
+            "tags": ["log transformation", "elasticity", "regression", "lesson 1.2", "evo"]
+        },
         {
             "front": "State the linearity assumption of regression and explain what 'proportional' is really claiming.",
             "back": "The assumption proposes a straight-line relationship between the independent, explanatory variable and the dependent, response variable, meaning the alteration in the dependent variable is proportional to the alteration in the independent one. If it is not met, predictions and insights from the model may be inaccurate or misleading. The word doing the work is proportional: it claims the effect of one extra unit of x is the same everywhere, at the bottom of the range and at the top. One more kNOK of advertising adds b1 to revenue whether you are spending 20 kNOK or 200, so a single number is being asked to describe the whole range. Business relationships routinely violate this through diminishing returns in advertising and discounting, saturation in market penetration, threshold effects at price points, and accelerating returns from network effects.",
@@ -69872,6 +69931,11 @@ CURATED_PRACTICE_QUESTION_BANK = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "type": "skills",
+            "question": "An agency's model values a 700 square metre property using a straight-line regression fitted on homes between 45 and 450 square metres. What is wrong and what would you do?",
+            "answer": "Two faults stacked on each other. First, the model form is wrong: house prices show diminishing returns to area, since price per square metre falls as homes get larger, and a straight line forces a single constant value per square metre across the whole range. Inside the data that produces a systematic pattern, under-predicting small and large homes and over-predicting mid-sized ones, which the average error hides because the two offset. Second, 700 square metres is outside the fitted range entirely, so this is extrapolation on top of a wrong shape, and a line through a saturating curve keeps climbing where reality flattens. The two together typically overstate a property of that size by 12 to 19 percent, which on a valuation of that magnitude is millions of kroner. What I would do: refit with a log-log specification, which both captures the curvature and yields an elasticity such as a 10 percent larger home costing about 6 percent more; confirm the arc has gone from the residual plot; state explicitly the size range the model is valid over; and treat any valuation beyond that range as an assumption requiring comparable sales rather than a model output. I would also note that a high R squared on the original straight line, around 0.93, is not evidence against any of this."
+        },
         {
             "type": "skills",
             "question": "A regression of revenue on advertising spend is used to justify increasing the budget from 120 to 200 kNOK. What would you check about linearity, and why does it matter more here than elsewhere?",
