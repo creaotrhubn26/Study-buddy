@@ -946,31 +946,243 @@ def _drill():
 # Page
 # --------------------------------------------------------------------------
 
+
+def _zscore():
+    st.markdown("#### 11 · Z-score, begge veier")
+    st.caption("Z = (x − μ) ÷ σ. Framover beskriver den én observasjon; bakover setter den en terskel.")
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        mu = st.slider("Gjennomsnitt μ", 100, 2000, 742, 10, key="vl_z_mu")
+    with c2:
+        sigma = st.slider("Standardavvik σ", 20, 800, 210, 10, key="vl_z_sd")
+    with c3:
+        x = st.slider("Observasjon x", 0, 3000, 1240, 10, key="vl_z_x")
+
+    z = (x - mu) / sigma
+    tail = float(stats.norm.sf(abs(z)))
+    grid = np.linspace(mu - 4 * sigma, mu + 4 * sigma, 500)
+    dens = pd.DataFrame({"x": grid, "tetthet": stats.norm.pdf(grid, mu, sigma)})
+    lo_t, hi_t = (grid <= min(x, 2 * mu - x)), (grid >= max(x, 2 * mu - x))
+    shade = dens[lo_t | hi_t]
+
+    base = alt.Chart(dens).mark_area(color=C_BLUE, opacity=0.25, line={"size": 2, "color": C_BLUE}).encode(
+        x=alt.X("x:Q", title="Verdi"),
+        y=alt.Y("tetthet:Q", title="Tetthet", axis=alt.Axis(labels=False, grid=False)))
+    tails = alt.Chart(shade).mark_area(color=S_CRITICAL, opacity=0.55).encode(x="x:Q", y="tetthet:Q")
+    rule = alt.Chart(pd.DataFrame({"x": [x]})).mark_rule(color=S_CRITICAL, size=2.5).encode(x="x:Q")
+    mean_rule = alt.Chart(pd.DataFrame({"x": [mu]})).mark_rule(
+        color=INK_MUTED, strokeDash=[4, 3], size=2).encode(x="x:Q")
+    st.altair_chart((base + tails + mean_rule + rule).properties(height=260), use_container_width=True)
+
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("Z", f"{z:+.3f}")
+    m2.metric("Andel lenger ut (én hale)", f"{tail:.2%}")
+    m3.metric("Begge haler", f"{2*tail:.2%}")
+    reading = ("vanlig variasjon" if abs(z) < 1 else "noe uvanlig" if abs(z) < 1.96
+               else "uvanlig — verdt et blikk" if abs(z) < 2.58 else "sjelden — undersøk")
+    m4.metric("Lesning", reading)
+
+    st.markdown("**Og bakover — den retningen som faktisk brukes:**")
+    zt = st.select_slider("Velg terskel i Z", [1.0, 1.645, 1.96, 2.576, 3.0], value=1.96,
+                          format_func=lambda v: f"Z = {v}", key="vl_z_thr")
+    st.info(f"x = μ + Z × σ = {mu:,} + {zt} × {sigma:,} = **{mu + zt*sigma:,.0f}**  ·  "
+            f"nedre terskel: **{mu - zt*sigma:,.0f}**")
+    _point(
+        f"**Framover** svarer den «hvor uvanlig var denne observasjonen» — her {z:+.2f} standardavvik, "
+        f"med {tail:.1%} av fordelingen lenger ut i den halen.\n\n"
+        f"**Bakover** svarer den «hvilken verdi skal alarmen stå på», og det er den retningen som gjør "
+        f"en z-score til noe operativt: den oversetter et valgt konfidensnivå til et tall i kroner. "
+        f"Det er slik en terskel settes fra dataene i stedet for fra magefølelsen.\n\n"
+        f"**To forbehold.** Tolkningen forutsetter en tilnærmet symmetrisk fordeling — på skjeve data "
+        f"som ordreverdier stempler den vanlige verdier som ekstreme. Og μ og σ er selv estimater som "
+        f"uteliggeren din er med på å blåse opp."
+    )
+
+
+@st.cache_data(show_spinner=False)
+def _overfit_data(seed=11, n_train=18, n_hold=40):
+    rng = np.random.default_rng(seed)
+    xt = np.sort(rng.uniform(0, 10, n_train))
+    yt = 2 + 1.4 * xt + rng.normal(0, 2.2, n_train)
+    xh = np.sort(rng.uniform(0, 10, n_hold))
+    yh = 2 + 1.4 * xh + rng.normal(0, 2.2, n_hold)
+    return xt, yt, xh, yh
+
+
+def _overfitting():
+    st.markdown("#### 12 · R² som ser bedre ut jo verre modellen blir")
+    st.caption(
+        "Den sanne sammenhengen er en rett linje med støy. Skru opp modellens fleksibilitet og se "
+        "de to R²-ene skille lag."
+    )
+    deg = st.select_slider("Modellens fleksibilitet (polynomgrad)", [1, 2, 3, 4, 5, 7, 9, 11, 13],
+                           value=1, key="vl_of_deg")
+    xt, yt, xh, yh = _overfit_data()
+    coef = np.polyfit(xt, yt, deg)
+
+    def r2(y, pred):
+        return 1 - ((y - pred) ** 2).sum() / ((y - y.mean()) ** 2).sum()
+    r2_train, r2_hold = r2(yt, np.polyval(coef, xt)), r2(yh, np.polyval(coef, xh))
+
+    grid = np.linspace(0, 10, 300)
+    curve = pd.DataFrame({"x": grid, "y": np.polyval(coef, grid)})
+    curve = curve[(curve["y"] > -10) & (curve["y"] < 30)]
+    pts = pd.concat([
+        pd.DataFrame({"x": xt, "y": yt, "sett": "Treningsdata (modellen så disse)"}),
+        pd.DataFrame({"x": xh, "y": yh, "sett": "Hold-out (modellen har aldri sett disse)"}),
+    ])
+    sc = alt.Chart(pts).mark_point(size=75, filled=True, opacity=0.7).encode(
+        x=alt.X("x:Q", title="Prediktor"),
+        y=alt.Y("y:Q", title="Utfall", scale=alt.Scale(domain=[-10, 30])),
+        color=alt.Color("sett:N", scale=alt.Scale(
+            domain=["Treningsdata (modellen så disse)", "Hold-out (modellen har aldri sett disse)"],
+            range=[C_ORANGE, C_BLUE]), legend=alt.Legend(title=None, orient="top", columns=1)),
+        shape=alt.Shape("sett:N", legend=None),
+        tooltip=[alt.Tooltip("sett:N"), alt.Tooltip("x:Q", format=".2f"), alt.Tooltip("y:Q", format=".2f")])
+    ln = alt.Chart(curve).mark_line(size=2.5, color=S_CRITICAL).encode(x="x:Q", y="y:Q")
+    st.altair_chart((sc + ln).properties(height=320), use_container_width=True)
+
+    m1, m2, m3 = st.columns(3)
+    m1.metric("R² på treningsdata", f"{r2_train:.3f}")
+    m2.metric("R² på hold-out", f"{r2_hold:,.3f}" if r2_hold > -100 else f"{r2_hold:,.0f}")
+    m3.metric("Gapet", f"{r2_train - r2_hold:,.3f}" if r2_hold > -100 else "kollapset")
+
+    if deg == 1:
+        _callout(
+            f"**Riktig modell.** R² på treningsdata er {r2_train:.2f} og på hold-out {r2_hold:.2f} — "
+            f"nær hverandre, som de skal være når modellformen stemmer med virkeligheten. "
+            f"Skru nå fleksibiliteten oppover.", S_GOOD, "rgba(12,163,12,0.08)")
+    elif r2_hold < 0:
+        _callout(
+            f"**Se på de to tallene.** Treningsdataene sier {r2_train:.3f} — nesten perfekt. "
+            f"Hold-out sier {r2_hold:,.0f}, altså verre enn å gjette gjennomsnittet hver gang.\n\n"
+            f"Modellen har memorert de {len(xt)} punktene den fikk se, inkludert støyen i dem. "
+            f"**Og den eneste av de to tallene et resultattabell-utdrag vanligvis viser, er det første.**",
+            S_CRITICAL, "rgba(208,59,59,0.08)")
+    else:
+        _callout(
+            f"**Gapet åpner seg.** R² på treningsdata stiger til {r2_train:.3f} mens hold-out faller "
+            f"til {r2_hold:.3f}. Modellen blir bedre til å beskrive fortiden og dårligere til å "
+            f"forutsi noe.", S_WARNING, "rgba(250,178,25,0.10)")
+
+    _point(
+        "**Dette er hvorfor et høyt R² ikke er en anbefaling.** R² kan alltid heves ved å legge til "
+        "fleksibilitet, og hver eneste andre diagnostikk i tabellen spør om modellen beskriver *dette* "
+        "datasettet godt. Bare en hold-out spør om den virker på data den ikke har sett — som er "
+        "spørsmålet en forretningsbeslutning faktisk hviler på.\n\n"
+        "**Får du bare ett datasett i en oppgave,** si eksplisitt at en hold-out-evaluering ville "
+        "vært nødvendig før resultatet kunne stoles på i drift. Det er ofte verdt et poeng i seg selv."
+    )
+
+
+@st.cache_data(show_spinner=False)
+def _simpson_data(strength, seed=3, per=30):
+    rng = np.random.default_rng(seed)
+    rows = []
+    for i, (cx, cy) in enumerate([(20, 300), (45, 520), (70, 760), (95, 1000)]):
+        x = rng.normal(cx, 7, per)
+        y = cy - strength * (x - cx) + rng.normal(0, 25, per)
+        rows.append(pd.DataFrame({"x": x, "y": y, "segment": f"Segment {i+1}"}))
+    return pd.concat(rows, ignore_index=True)
+
+
+def _confounding():
+    st.markdown("#### 13 · Sammenhengen som snur når du deler opp dataene")
+    st.caption(
+        "Rabattdybde mot omsetning per kunde. Se på skyen samlet, og se så på hvert kundesegment for seg."
+    )
+    c1, c2 = st.columns(2)
+    with c1:
+        strength = st.slider("Effekt innad i hvert segment", -4.0, 4.0, 3.2, 0.2, key="vl_sp_str",
+                             help="Positiv verdi = fallende sammenheng innad i segmentet")
+    with c2:
+        split = st.toggle("Del opp i segmenter", value=False, key="vl_sp_split")
+
+    df = _simpson_data(strength)
+    overall = np.polyfit(df["x"], df["y"], 1)[0]
+    within = [np.polyfit(g["x"], g["y"], 1)[0] for _, g in df.groupby("segment")]
+
+    if split:
+        pts = alt.Chart(df).mark_point(size=55, filled=True, opacity=0.7).encode(
+            x=alt.X("x:Q", title="Rabattdybde (%)"), y=alt.Y("y:Q", title="Omsetning per kunde"),
+            color=alt.Color("segment:N", scale=alt.Scale(range=[C_BLUE, C_ORANGE, C_AQUA, S_WARNING]),
+                            legend=alt.Legend(title=None, orient="top")),
+            tooltip=["segment:N", alt.Tooltip("x:Q", format=".1f"), alt.Tooltip("y:Q", format=".0f")])
+        lines = pts.transform_regression("x", "y", groupby=["segment"]).mark_line(size=2.5)
+    else:
+        pts = alt.Chart(df).mark_point(size=55, filled=True, opacity=0.6, color=INK_MUTED).encode(
+            x=alt.X("x:Q", title="Rabattdybde (%)"), y=alt.Y("y:Q", title="Omsetning per kunde"),
+            tooltip=[alt.Tooltip("x:Q", format=".1f"), alt.Tooltip("y:Q", format=".0f")])
+        lines = pts.transform_regression("x", "y").mark_line(size=3, color=S_CRITICAL)
+    st.altair_chart((pts + lines).properties(height=340), use_container_width=True)
+
+    m1, m2, m3 = st.columns(3)
+    m1.metric("Samlet stigningstall", f"{overall:+.2f}")
+    m2.metric("Innad i segmentene", " · ".join(f"{w:+.1f}" for w in within))
+    m3.metric("Snur fortegnet?", "JA" if overall * np.mean(within) < 0 else "nei")
+
+    if overall * np.mean(within) < 0:
+        _callout(
+            f"**Samlet sett stiger sammenhengen ({overall:+.2f}). Innad i hvert eneste segment faller "
+            f"den ({np.mean(within):+.1f} i snitt).** Begge er korrekt regnet ut på de samme dataene.\n\n"
+            f"Forklaringen er den skjulte variabelen: segmentene ligger på forskjellige nivåer *og* får "
+            f"forskjellig rabatt. Når du ser på skyen samlet, måler du forskjellen **mellom** segmenter "
+            f"og tror du måler effekten **innad** i dem.\n\n"
+            f"Dette har et navn — **Simpsons paradoks** — og det er den skarpeste illustrasjonen av "
+            f"hvorfor korrelasjon ikke er årsakssammenheng. Ingen mengde flere datapunkter oppdager det. "
+            f"Bare det å spørre «hva mer skiller disse observasjonene?» gjør det.",
+            S_CRITICAL, "rgba(208,59,59,0.08)")
+    else:
+        _point(
+            "Nå peker samlet og innad samme vei. **Dra «effekt innad» over på den andre siden av null** "
+            "og se hva som skjer med det samlede stigningstallet.")
+
+    _point(
+        "**Den praktiske testen:** før du tolker et stigningstall, spør hva som ellers skiller "
+        "observasjonene fra hverandre, og om den variabelen henger sammen både med prediktoren og med "
+        "utfallet. Hvis ja, er den en **konfunder**, og koeffisienten din svarer på et annet spørsmål "
+        "enn du tror.\n\n"
+        "Det er også nøyaktig samme mekanisme som simulator 9: å legge inn segmentet som prediktor er "
+        "det som skiller *innad*-effekten fra *mellom*-effekten."
+    )
+
+
 SECTIONS = {
     "A · Utvalg og usikkerhet": [_sampling_distribution, _coverage, _bias_vs_noise],
     "B · Test og effektstørrelse": [_p_vs_d, _power, _multiple_comparisons],
-    "C · Regresjon og residualer": [_leverage, _residuals, _omitted_variable],
-    "D · Eksamensdrill": [_drill],
+    "C · Regresjon og residualer": [_leverage, _residuals, _omitted_variable, _confounding],
+    "D · Z-score og overtilpasning": [_zscore, _overfitting],
+    "E · Eksamensdrill": [_drill],
 }
 
 _INTRO = {
     "A · Utvalg og usikkerhet": "Hvorfor et utvalg kan si noe om en populasjon, hva de 95 prosentene faktisk lover, og hvorfor mer data ikke redder et skjevt utvalg.",
     "B · Test og effektstørrelse": "Hvorfor en p-verdi og en effektstørrelse svarer på to forskjellige spørsmål, hva styrke er, og hvordan tjue sammenligninger produserer et funn av ingenting.",
-    "C · Regresjon og residualer": "Hvordan én observasjon kan vri hele linja, hva strukturen i et residualplott betyr, og hvorfor en koeffisient endrer seg når en variabel til kommer inn.",
-    "D · Eksamensdrill": "Oppgavetypene fra aktivitetene, med nye tall hver gang og tilbakemelding på hvert steg underveis.",
+    "C · Regresjon og residualer": "Hvordan én observasjon kan vri hele linja, hva strukturen i et residualplott betyr, hvorfor en koeffisient endrer seg når en variabel til kommer inn, og sammenhengen som snur fortegn når du deler opp dataene.",
+    "D · Z-score og overtilpasning": "Z-scoren brukt begge veier, og hvorfor et høyt R² kan bety at modellen er blitt verre.",
+    "E · Eksamensdrill": "Oppgavetypene fra aktivitetene, med nye tall hver gang og tilbakemelding på hvert steg underveis.",
 }
 
 
 def render_visual_lab():
-    st.title("🔬 Visual Lab — Statistisk inferens")
+    from visual_lab_kpi import INTRO_11, SECTIONS_11
+
+    st.title("🔬 Visual Lab")
     st.markdown(
-        "Simulatorer for **EVO leksjon 1.2**. Leksjonen forklarer dette i tekst og tabeller; her kan du "
+        "Simulatorer for **EVO modul 1**. Leksjonene forklarer dette i tekst og tabeller; her kan du "
         "dra i det. Hver graf står med poenget sitt under, så et skjermbilde er verdt noe alene."
     )
-    tabs = st.tabs(list(SECTIONS.keys()))
-    for tab, (name, fns) in zip(tabs, SECTIONS.items()):
+    lesson = st.radio(
+        "Leksjon",
+        ["1.1 — KPI-er, dashbord og beslutninger", "1.2 — Statistisk inferens"],
+        horizontal=True, key="vl_lesson",
+    )
+    groups, intros = ((SECTIONS_11, INTRO_11) if lesson.startswith("1.1") else (SECTIONS, _INTRO))
+    st.divider()
+    tabs = st.tabs(list(groups.keys()))
+    for tab, (name, fns) in zip(tabs, groups.items()):
         with tab:
-            st.caption(_INTRO[name])
+            st.caption(intros[name])
             for i, fn in enumerate(fns):
                 if i:
                     st.divider()

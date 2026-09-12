@@ -62891,6 +62891,8 @@ Before the assignment week, make sure you can confidently do all of the followin
             "content": """
 ### 1.1. Data Analysis, Key Performance Indicators (KPIs), and Version Control
 
+> 🔬 **Denne leksjonen har en interaktiv følgesvenn.** CAC mot LTV, de tre marginene, ROI-en som snur med horisonten, vanity-metrikken, ledende mot etterslepende signal, terskelen som utløser seg selv, KPI-en som stupte da definisjonen endret seg, NPS-ens blindsoner og snittet som skjuler polarisering — alt kan dras i på **Visual Lab**-siden (Learning → Visual Lab, velg leksjon 1.1).
+
 #### Introduction
 
 Today we focus on the critical importance of **Key Performance Indicators (KPIs)** and their role in decision-making. In today's complex business landscape, reliance on gut instinct alone is insufficient; **quantifiable metrics and well-defined goals** become the golden standard. This lesson aims to understand KPIs as indispensable tools for effective decision-making in a comprehensive manner.
@@ -64755,7 +64757,7 @@ Four activities accompany this lesson, and each exercises a different part of it
             "content": """
 ### 1.2. Statistical Inference, Result Table Analysis, and Critical Tools
 
-> 🔬 **Denne leksjonen har en interaktiv følgesvenn.** Alt under — utvalgsfordelingen, hva de 95 prosentene lover, p mot effektstørrelse, styrke, multippel testing, uteliggere, residualmønstre og utelatt-variabel-effekten — kan dras i på **Visual Lab**-siden (Learning → Visual Lab). Den har også en eksamensdrill med nye tall og tilbakemelding på hvert steg.
+> 🔬 **Denne leksjonen har en interaktiv følgesvenn.** Alt under — utvalgsfordelingen, hva de 95 prosentene lover, skjevhet mot støy, p mot effektstørrelse, styrke, multippel testing, uteliggere, residualmønstre, utelatt-variabel-effekten, Simpsons paradoks, z-scoren begge veier og overtilpasning — kan dras i på **Visual Lab**-siden (Learning → Visual Lab, velg leksjon 1.2). Den har også en eksamensdrill med nye tall og tilbakemelding på hvert steg.
 
 #### Introduction
 
