@@ -12558,6 +12558,48 @@ CI: 86% ± 1.4% (based on std error)
                 "question": "A model answer to this activity states: 'XYZ Corporation can conclude that the new sales strategy led to a statistically significant increase in sales. The results suggest the strategy is effective.' Appraise it.",
                 "answer": "The arithmetic behind it is right and the claim built on it is wider than the arithmetic supports, which is the shape of nearly every error this course teaches you to catch. Two problems. First, 'led to' is a causal statement and the design does not support it: a before-and-after comparison with no control group cannot separate the strategy from seasonality, from concurrent changes, or from the attention effect, and the strategy is itself a bundle of three interventions so even a genuine effect cannot be attributed to any one of them. The defensible version changes two words: sales increased significantly following the strategy's introduction, which is consistent with the strategy having worked. This is the same error the lesson's own case study makes when it says the data proves the strategy's effectiveness one sentence after conceding that other contributing factors are not ruled out. Second, 'effective' is a claim about magnitude and the p-value carries none: the same p = 0.03 is produced by a 9.7 percent lift with d = 0.81 and by a 2.3 percent lift with d = 0.19, and only one of those is likely to justify a marketing campaign, a discount programme and a social media operation. A conclusion about effectiveness needs the effect size, the confidence interval and the cost. What is worth noting is that the same model answer set is better than the lesson text in one place: it says 95 percent of the resulting intervals would contain the true support level, which is the precise formulation, where the lesson's poll section says 95 percent of polls would fall within the 50 to 54 range, which is loose.",
                 "hint": "Check the verb. 'Led to' and 'proves' are causal claims that a before-and-after design cannot carry"
+            },
+            {
+                "title": "Activity 1.2.2 · Define inference, and the clause people drop",
+                "type": "scenario",
+                "question": "Define statistical inference in your own words, and explain its primary purpose in research and analysis. What clause do most definitions leave out?",
+                "answer": "Statistical inference is saying something about a population you cannot observe, using a sample you can, and stating how far wrong you might be. The clause most definitions drop is the last one, and it is the discipline: anyone can extrapolate from a sample, but inference attaches a quantified uncertainty to the extrapolation so the claim carries its own margin for error. The course phrases it as drawing conclusions from data subject to random variations, and that qualifier is the entire scope of the field, since inference is the mathematics of the variation caused by which units happened to be sampled and says nothing about variation caused by a badly drawn sample. The primary purpose is to let a decision be made about a population on partial evidence with the strength of that evidence stated rather than assumed, which breaks into three jobs: estimation, which produces a value plus the range it plausibly occupies; testing, which produces a verdict on whether the data is consistent with a specific claim; and generalisation, which is licence to apply a finding beyond the units measured. If a single sentence is wanted: inference exists so that the honest answer to how confident are you is a number rather than an adjective.",
+                "hint": "The definition is easy. The clause about stating how far wrong you might be is what makes it a discipline"
+            },
+            {
+                "title": "Activity 1.2.2 · How extrapolation actually works",
+                "type": "scenario",
+                "question": "How does statistical inference assist in extrapolating results from a sample to a broader population, and what condition does the extrapolation depend on?",
+                "answer": "By supplying a model of how samples behave, which converts the leap from sample to population into a calculation. The mechanism is the sampling distribution: one sample gives one number, but the results of many samples drawn the same way form their own distribution, and that distribution is describable. It is centred on the population value if the sampling was random; its spread, the standard error, shrinks in proportion to the square root of n, being s divided by root n for a mean and the square root of p(1-p)/n for a proportion; and for sample means it is approximately normal at reasonable n whatever shape the population has. Because that behaviour is known, the distance between the sample result and the population value can be bounded, and the confidence interval, the margin of error and the p-value are all expressions of it. The condition is twofold. The extrapolation is valid only to the population the sample was actually drawn from, so a sample of one city extrapolates to that city. And random selection is what centres the sampling distribution on the truth: without it the arithmetic still runs, still prints an interval, and the interval no longer means what it says.",
+                "hint": "Name the sampling distribution, its three properties, and what randomness buys"
+            },
+            {
+                "title": "Activity 1.2.2 · Test a public claim",
+                "type": "practical",
+                "question": "A coffee chain states publicly that customers rate it at least 4.5 out of 5. A random sample of 120 customers gives a mean of 4.34 with a standard deviation of 0.82. Set up and run the test, then say what the company should do.",
+                "answer": "Set up first. The parameter is mu, the mean rating across all customers. H0 is mu greater than or equal to 4.5, meaning the claim stands, and Ha is mu less than 4.5, meaning it is no longer supported. That is a one-sample, one-tailed t-test with alpha at 0.05 fixed before the data. The calculation: the standard error is 0.82 divided by the square root of 120, which is 0.0749; t is (4.34 minus 4.5) divided by 0.0749, which is minus 2.14 on 119 degrees of freedom; and the one-tailed p-value is 0.017. The 95 percent confidence interval is 4.34 plus or minus 1.980 times 0.0749, giving 4.19 to 4.49, which excludes 4.5 and is exactly consistent with the test. Since p is below alpha, H0 is rejected: the evidence does not support a mean of 4.5 or above. The part that earns the marks is reading the magnitude alongside it. The shortfall is 0.16 of a point on a five-point scale, so Cohen's d is 0.16 divided by 0.82, which is 0.195, sitting right on the benchmark for a small effect. The finding is therefore statistically established and practically minor, which makes it a compliance matter rather than a customer-experience crisis: the public claim is not defensible as stated and should be restated as 4.3, which costs almost nothing. One further point of method: putting the claim in Ha is what forces it to earn its place, because had the company made the claim its null and merely failed to reject, that would have established nothing, since you never prove a null.",
+                "hint": "One-tailed t-test, then read d alongside p before recommending anything"
+            },
+            {
+                "title": "Activity 1.2.2 · A pilot before launch",
+                "type": "practical",
+                "question": "A hardware firm tests a new device with 200 recruited users; 124 say they would buy it at the proposed price. What does inference give them, and what are the three things the number cannot survive without?",
+                "answer": "124 of 200 is 62 percent, and the margin of error is 1.96 times the square root of 0.62 times 0.38 divided by 200, which is plus or minus 6.7 percentage points, giving a 95 percent interval of 55.3 to 68.7 percent. That interval is 13.5 points wide, which is serviceable for a go or no-go decision and far too vague to size a production run: planning inventory at 62 percent when the honest range reaches 55 is how a launch ends in unsold stock. Three things the number cannot survive without. First, intent is not purchase. Stated intent overstates behaviour substantially and by an amount that varies by category, so if roughly half converts the real range is 28 to 34 percent and at a third it is 18 to 23 percent. The confidence interval is exact about the wrong quantity and no amount of extra sampling fixes that. Second, how the 200 were recruited: if they are enthusiasts, existing customers or a self-selected panel, the inference runs from a favourable sample to a general market and the interval understates the real uncertainty badly, so the recruitment method belongs in the report. Third, a pilot is not a rollout, since pilots get attention, dedicated staff and novelty a national launch cannot reproduce, which makes the pilot figure an upper bound rather than a forecast. The defensible use is to treat the test as evidence that demand is plausibly in a stated range under stated assumptions, launch regionally with a comparison area, and size the first production run from the lower bound.",
+                "hint": "Compute the interval, then ask what quantity it is exact about"
+            },
+            {
+                "title": "Activity 1.2.2 · Chance is not the only enemy",
+                "type": "scenario",
+                "question": "A model answer says statistical inference ensures conclusions are 'not based solely on chance' and works by 'validating whether patterns are statistically significant'. What is missing?",
+                "answer": "Two things, and both matter. First, significance guards against chance and does nothing whatever about bias. A biased sample produces a pattern that is entirely real within the sample and entirely wrong about the population, and it passes significance testing comfortably, in fact more comfortably than a good sample would, because bias is systematic and shows up consistently. So a significant result is not thereby credible: inference is the defence against coincidence, while the defence against bias is the sampling design and it has to be inspected separately. Second, at alpha 0.05 one significant result in twenty is a coincidence by construction. Testing twenty KPIs against last quarter yields, on average, one significant result from noise alone, which is the mechanism behind a review that always finds something. Significance does not eliminate coincidences; it prices them, at a rate you chose. That is why multiple-comparison corrections exist, such as Bonferroni dividing alpha by the number of tests, so twenty tests at an overall 0.05 means judging each against 0.0025. No answer about guarding against coincidence is complete without naming both the pricing and the correction.",
+                "hint": "Ask what a significance test does when the sample itself is skewed"
+            },
+            {
+                "title": "Activity 1.2.2 · What a manager actually needs",
+                "type": "scenario",
+                "question": "How does statistical inference inform managers about the likely outcomes and risks of different decisions, and what can it not do?",
+                "answer": "By converting evidence into a range of outcomes with probabilities attached, which is the form a decision actually needs. The point estimate gives the likely outcome; the confidence interval gives the range, and specifically its bad end, which is the risk; the test says whether an observed difference is real; the effect size, converted into money, says whether it is big enough to act on; and the interval width says how wrong the decision could be. The part most often skipped is that the interval is the risk statement. A point estimate of a 20-month payback reads as decisive, while an interval running from 10 months to 21 years says the investment case is unresolved, and that is the same data and the same p-value with opposite decisions attached. Managers are the ones bearing the downside, so the lower bound is the number they most need. What inference cannot do is weigh the cost of being wrong in one direction against the other: that is the Type I against Type II trade-off, and it is a management judgement rather than a calculation. Inference sizes the risk; someone still has to decide how much of it to accept.",
+                "hint": "Which end of the interval does the person carrying the downside care about?"
             }
         ],
         "quiz": [
@@ -65914,6 +65956,81 @@ The statistics in this activity are not difficult. The discipline of saying exac
 |---|---|
 | `EVO_1.2.1_Activity_Solution.md` | All seven questions answered in full, with the reasoning behind each wording, a formula reference, and an appraisal of the supplied model answers |
 | `EVO_1.2.1_Statistical_Toolkit.xlsx` | A reusable calculator: two-sample t-test with effect size and interval, confidence intervals for a mean and a proportion, a sample-size solver, z-scores in both directions, and the "same p, different business" demonstration as live formulas |
+
+#### Activity 1.2.2 — Exploring the role of statistical inferences
+
+Fifteen short questions on what inference is and what it is for. They look like definition recall, and the marks are not there — they are in saying **exactly as much as the evidence supports and no more**. This section covers the answers where that distinction bites; the full fifteen are in the solution document.
+
+##### The definition worth memorising
+
+> **Statistical inference is saying something about a population you cannot observe, using a sample you can — and stating how far wrong you might be.**
+
+The second clause is the discipline. Anyone can extrapolate from a sample; inference attaches a *quantified* uncertainty to the extrapolation.
+
+##### How the extrapolation actually works (Q4)
+
+Through the **sampling distribution**. One sample gives one number, but the results of many samples drawn the same way form their own describable distribution: centred on the truth if the sampling was random, with spread shrinking as √n, and approximately normal for means at reasonable n whatever shape the population has.
+
+> **SE of a mean = s ÷ √n** · **SE of a proportion = √(p(1−p)/n)**
+
+The interval, the margin and the p-value are all expressions of that spread. **The condition:** the extrapolation is valid only to the population the sample was drawn from, and randomness is what centres the distribution on the truth.
+
+##### Worked example for Q8 — testing a claim
+
+A coffee chain claims customers rate it **at least 4.5 / 5**. A random sample of **n = 120** gives **x̄ = 4.34**, **s = 0.82**.
+
+| Step | |
+|---|---|
+| H₀ | μ ≥ 4.5 — the claim stands |
+| Hₐ | μ < 4.5 — one-tailed, α = 0.05 set beforehand |
+| SE | 0.82 ÷ √120 = **0.0749** |
+| t | (4.34 − 4.5) ÷ 0.0749 = **−2.14**, df = 119 |
+| p | **0.017** — below α, so reject H₀ |
+| 95% CI | **[4.19, 4.49]** — excludes 4.5, exactly consistent with the test |
+| Cohen's d | 0.16 ÷ 0.82 = **0.195** — right on the "small" benchmark |
+
+**The reading that earns the marks.** The claim is not defensible as stated *and* the shortfall is a fifth of a standard deviation. Statistically established, practically minor — a compliance matter rather than a customer-experience crisis. Restating the claim as 4.3 costs almost nothing.
+
+**Which side the claim sits on matters.** Putting it in **Hₐ** forces it to earn its place. Had the company made the claim its null and merely failed to reject, that would establish nothing — you never prove a null.
+
+##### Worked example for Q10 — a pilot before launch
+
+200 recruited users, **124 (62%)** say they would buy.
+
+> Margin = 1.96 × √(0.62 × 0.38 ÷ 200) = **±6.7 pp** → 95% CI **[55.3%, 68.7%]**
+
+A **13.5-point** span: serviceable for go/no-go, far too vague to size a production run. Three things it cannot survive without:
+
+1. **Intent is not purchase.** If half of stated intent converts, real demand is **28–34%**; at a third, **18–23%**. The interval is exact about the wrong quantity, and more sampling does not fix that.
+2. **How were the 200 recruited?** Enthusiasts or a self-selected panel make this an inference from a favourable sample to a general market.
+3. **A pilot is an upper bound**, not a forecast — it gets attention a rollout cannot reproduce.
+
+##### The three places the model answers overreach
+
+The activity ships with model answers. Most are correct and appropriately brief. Three phrasings will cost marks in a course about evaluating outcomes, and they share one shape.
+
+| The model answer | Why it overreaches |
+|---|---|
+| Q4: inference lets us *"quantify the likelihood that the sample results accurately reflect the population"* | Reads as the probability that **this** result is accurate. Inference describes how the **procedure** behaves across repeated sampling — about 95% of intervals built this way capture the truth |
+| Q5: p-values *"express how likely the sample results are to represent the true population values"* | A p-value is the probability of **data this extreme given H₀**. It is conditional *on* a hypothesis, never a probability *about* the truth. This is the most examined error in the material |
+| Q11 / Q12: inference ensures findings are *"not based solely on chance"* and *"validates whether patterns are statistically significant"* | Significance guards against **chance**, and does nothing about **bias**. A biased sample produces a pattern real within the sample and wrong about the population — and it passes testing *more* comfortably, because bias is systematic |
+
+**And a second gap in Q12.** At α = 0.05, one significant result in twenty **is** a coincidence. Significance does not eliminate coincidences; it prices them, at a rate you chose. That is why multiple-comparison corrections exist, and no answer about guarding against coincidence is complete without one.
+
+**Two answers are thin rather than wrong.** Q9 says inference gives managers "estimates and confidence levels" — the specific thing it gives them is the **range**, and particularly its **bad end**, since a decision-maker bearing the downside needs the lower bound more than the point estimate. Q10 omits the intent-versus-purchase gap and the recruitment question.
+
+##### The pattern, and why it is the assessed skill
+
+All five criticisms are the same shape: **the statement is true of the arithmetic and slightly wider than the arithmetic supports.** A conditional probability described as unconditional. A defence against chance described as a defence against error in general. A sample estimate quoted without the conditions that make it transferable.
+
+None of these fifteen questions is hard. The discipline of not overclaiming is the thing being assessed — and it is the same discipline the XYZ case in Activity 1.2.1 tested with "led to" and "proves".
+
+##### Deliverables
+
+| File | What it contains |
+|---|---|
+| `EVO_1.2.2_Activity_Solution.md` | All fifteen questions answered in full, a formula reference with the exam routine, and the appraisal of the model answers |
+| `EVO_1.2.1_Statistical_Toolkit.xlsx` | Now carries an **Activity 1.2.2 examples** sheet with both worked cases above as live formulas — change an input and the verdict, interval and effect size recompute |
 
 #### Common assignment traps
 
