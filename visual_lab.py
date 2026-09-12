@@ -1317,7 +1317,9 @@ def render_visual_lab():
     )
     groups, intros = ((SECTIONS_11, INTRO_11) if lesson.startswith("1.1") else (SECTIONS, _INTRO))
     st.divider()
-    tabs = st.tabs(list(groups.keys()))
+
+    own = "📂 Egne data"
+    tabs = st.tabs(list(groups.keys()) + [own])
     for tab, (name, fns) in zip(tabs, groups.items()):
         with tab:
             st.caption(intros[name])
@@ -1325,3 +1327,11 @@ def render_visual_lab():
                 if i:
                     st.divider()
                 fn()
+    with tabs[-1]:
+        st.caption(
+            "Last opp din egen CSV eller Excel-fil og kjør de samme analysene på den — "
+            "beskrivende statistikk, konfidensintervall, gruppesammenligning og regresjon med "
+            "residualdiagnostikk."
+        )
+        from visual_lab_data import render_own_data
+        render_own_data()
