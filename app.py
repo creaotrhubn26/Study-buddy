@@ -64965,6 +64965,125 @@ A question of this shape usually asks you to interpret an interval, and the mark
 
 Spreadsheet patterns: `=1.96*SQRT(p*(1-p)/n)` for a proportion's margin, `=CONFIDENCE.NORM(0.05, sd, n)` for a mean with known spread, and `=T.INV.2T(0.05, df)*SE` for the t-based interval used in the Nordtre example.
 
+#### Diving deeper with result table analysis
+
+Beyond a single test statistic, three features turn up in more advanced result tables. Each is named in the course text, and each has a characteristic way of being misread.
+
+##### Multivariate analyses
+
+Advanced tables might showcase outcomes from **multivariate tests**, where multiple factors and their interactions are analysed simultaneously. Interpreting **coefficients**, especially in tables emerging from regression analyses, provides insights into relationships between variables.
+
+**The clause that changes everything.** In a multiple regression, a coefficient is the change in the outcome for a one-unit change in that predictor **holding the other predictors constant**. That phrase is not decoration. It means a coefficient's value depends on which other variables are in the model, so the *same predictor can have a different coefficient in two models fitted to the same data*, and both are correct answers to different questions.
+
+**Worked example — Nordtre AS, 36 months of data.** Predicting monthly revenue (kNOK) from advertising spend (kNOK) and average discount depth (percentage points).
+
+| Predictor | Simple model | Multiple model | SE | t | p |
+|---|---|---|---|---|---|
+| Advertising spend | **8.2** | **5.1** | 1.6 | 3.19 | 0.003 |
+| Average discount depth | not in model | **21.4** | 6.8 | 3.15 | 0.004 |
+| R² | 0.41 | 0.63 | | | |
+| Adjusted R² | 0.39 | 0.60 | | | |
+
+Read the first row. Advertising's coefficient falls from 8.2 to 5.1 — a drop of **38%** — when discount depth enters the model. Nothing about advertising changed; what changed is the question. In the simple model, "8.2" answers *how much more revenue comes with an extra kNOK of advertising*, and it silently includes the fact that heavier campaigns also ran deeper discounts. In the multiple model, "5.1" answers *how much more comes with an extra kNOK of advertising among months with the same discount depth.*
+
+This is the **omitted-variable effect**, and it is the single most useful thing to know about multivariate tables. A coefficient reported without the model's full variable list is uninterpretable.
+
+**Three further cautions.**
+
+| Issue | What happens | How you spot it |
+|---|---|---|
+| **Interactions** | The effect of one predictor depends on the level of another. An interaction term (ad spend × discount) tests exactly this. Without it, the model forces a single effect that holds everywhere | The interaction term's own coefficient and p-value |
+| **Multicollinearity** | Two predictors move together, so the model cannot separate them. Coefficients become unstable and standard errors inflate — a predictor can be jointly important and individually "insignificant" | Large SEs, coefficients that flip sign when a variable is added, a variance inflation factor above roughly 5 |
+| **R² always rises** | Adding *any* predictor, even random noise, never lowers R². So R² cannot be used to compare models with different numbers of predictors | Compare **adjusted R²** instead, which penalises extra predictors. Here it rose from 0.39 to 0.60, so the second variable earned its place |
+
+**And the limit that no coefficient escapes.** "Holding discount constant" is a statement about the arithmetic, not about the world. It does not mean the company could raise advertising while holding discounts fixed and collect 5.1 — that is a causal claim, and this is observational data. The regression section later in this lesson develops that point.
+
+##### Normalised metrics
+
+Some tables present **normalised or standardised values**, such as **z-scores**. Recognising these and their implications provides insight into how individual data points compare to overall distributions.
+
+A **z-score** expresses a value as its distance from the mean in standard deviations:
+
+> **z = (x − mean) ÷ standard deviation**
+
+A z of 0 is exactly average, +1 is one standard deviation above, −2 is two below. The point of the transformation is **comparability**: it strips the units away, so a customer's order value and their order frequency — measured in kroner and in counts — can be placed on the same scale and compared.
+
+| z | Roughly where it sits in a normal distribution |
+|---|---|
+| ±1 | Outer 32% — ordinary variation |
+| ±1.96 | Outer 5% — the conventional 95% cut |
+| ±2.58 | Outer 1% |
+| ±3 | Outer 0.3% — rare enough to investigate |
+
+*This lesson's z-testing section below applies the same quantity to a difference between groups rather than to a single observation. It is the same arithmetic used for a different purpose.*
+
+**Standardised coefficients, and what they are for.** Regression tables often carry a standardised coefficient (a **beta**) beside the raw one. It answers a question the raw coefficient cannot: *which predictor matters more?*
+
+> **β = b × (standard deviation of the predictor ÷ standard deviation of the outcome)**
+
+Applying it to the Nordtre model, where advertising spend has s = 42 kNOK, discount depth s = 3.1 pp, and revenue s = 380 kNOK:
+
+| Predictor | Raw b | β |
+|---|---|---|
+| Advertising spend | 5.1 | **0.56** |
+| Average discount depth | 21.4 | **0.17** |
+
+The raw coefficients suggest discount depth is four times as powerful. The standardised ones say the opposite: advertising has more than three times the practical influence, because discount depth barely varies month to month while advertising spend varies a great deal. **A raw coefficient is per unit; a standardised one is per unit of realistic variation**, and only the second answers "which lever should we pull".
+
+**Two cautions on normalised values.**
+
+1. **Standardising hides the scale.** Once a table reports only z-scores or betas, the reader can no longer tell whether a strong relationship is worth any money. Report both, or convert back to business units before recommending anything — the habit from the Cohen's d example.
+2. **The reference distribution must be stated.** A z-score is relative to *some* mean and standard deviation. Standardised against this month, against the year, or against the industry, the same customer gets three different z-scores. An unlabelled z-score is a number without a denominator.
+
+##### Residual analysis
+
+Result tables might present **residuals** in models like linear regression. Analysing these residuals is crucial in determining **model fit** and pinpointing potential **anomalies or outliers**.
+
+A **residual** is simply what the model got wrong for one observation:
+
+> **residual = actual value − predicted value**
+
+The residuals are where a model's failures are stored. The coefficients tell you what the model believes; the residuals tell you where that belief broke down, which is why a fitted model is never evaluated on its R² alone.
+
+**What a residual plot is being checked for.** Plot residuals against predicted values and look for structure. Structure means the model shape is wrong; formless scatter means it is not.
+
+| Pattern | What it means | What to do |
+|---|---|---|
+| Formless cloud around zero | The model shape is adequate | Nothing — this is the target |
+| A curve or arc | The relationship is **non-linear** and a straight line was fitted to it | Add a squared term, transform the variable, or use a different model |
+| A fan or cone, widening to the right | **Heteroscedasticity** — the error grows with the size of the prediction | The coefficients are still usable; the standard errors and p-values are not. Transform the outcome, or use robust standard errors |
+| A few points far from the rest | **Outliers** — see below | Investigate before doing anything |
+| Drift or waves over time | **Autocorrelation** — a time pattern the model does not contain | Add a seasonal or trend term |
+
+**Standardised residuals, and the flag rule.** Dividing each residual by the residual standard deviation puts them on the z-scale, so the thresholds above apply directly. Beyond about ±2 is worth a look, beyond ±3 is worth a genuine investigation.
+
+**Worked example — the month the model missed.** The Nordtre revenue model has a residual standard deviation of NOK 232 000. One month came in NOK 640 000 above prediction:
+
+> standardised residual = 640 ÷ 232 = **+2.76**
+
+That clears the ±2 flag comfortably. The month was November, and the campaign was Black Friday.
+
+**What follows is the point of the whole section.** The temptation is to call this an outlier and drop it. That would be the wrong move, and for a reason that runs through this entire course: the residual is not telling you the data is dirty, it is telling you **the model is missing a variable**. There is nothing anomalous about November; the model simply has no seasonality term, so every November will produce a large positive residual and every January a large negative one. Deleting the point makes the diagnostic look better and the model worse.
+
+| The residual is large because… | The correct response |
+|---|---|
+| The value was recorded wrong | Fix it, and say in the write-up that you did |
+| The observation belongs to a different population (a bulk B2B order in a D2C dataset) | Exclude it, state the exclusion rule, and state it **before** looking at the effect on the result |
+| The model is missing a real driver | **Add the driver.** Do not delete the observation |
+| No reason you can find | Keep it. Report the result with and without it, and let the reader see how much rests on one point |
+
+Only the first two justify removing a data point, and both require the reason to be written down. Removing observations until the model fits is not analysis — it is the data-integrity failure from Lesson 1.1 with a statistical vocabulary.
+
+##### The three together
+
+| Feature | The question it answers | The misreading to avoid |
+|---|---|---|
+| **Multivariate coefficients** | What is this predictor's contribution, given the others? | Reading a coefficient without the model's variable list, or as a causal effect |
+| **Normalised metrics** | How does this compare, across different scales? | Losing the business units, or not stating the reference distribution |
+| **Residual analysis** | Where does the model fail, and is its shape right? | Treating a large residual as dirt to be cleaned rather than as information about the model |
+
+Notice that all three are ways of asking **what the headline number is not telling you** — which is what "diving deeper" into a result table actually consists of.
+
 #### What statistical inference means here
 
 **Statistical inference** is the act of saying something about a whole population using only a sample of it. Almost every evaluation you perform is an inference, because you rarely have the whole population:
@@ -65034,7 +65153,7 @@ The practical use in an assignment: when a KPI moves and the result table cannot
 
 #### Result table analysis with linear regression
 
-A simple linear regression models one outcome variable from one predictor. Reading its result table is a named outcome of this course.
+A simple linear regression models one outcome variable from one predictor. Reading its result table is a named outcome of this course. The multivariate case — several predictors at once, and what that does to a coefficient — was covered under diving deeper above; this section takes the components of the table one at a time.
 
 | Component | What it means | What to check when evaluating |
 |---|---|---|
@@ -65091,7 +65210,7 @@ An answer that says "correlation is not causation, and here the likely confounde
 
 #### Z-testing and z-scores
 
-A **z-score** expresses how far a value sits from the mean, measured in standard deviations. A z-score of 2.5 means the value is two and a half standard deviations above the mean.
+A **z-score** expresses how far a value sits from the mean, measured in standard deviations, and was introduced under normalised metrics earlier in this lesson as z = (x − mean) ÷ standard deviation. A z-score of 2.5 means the value is two and a half standard deviations above the mean. This section adds what the measure does *not* tell you, and then turns it into a test.
 
 Its role in evaluation is to give an **objective, comparable** measure of unusualness. Two variables measured in different units, such as kroner and minutes, cannot be compared directly, but their z-scores can.
 
@@ -66632,6 +66751,36 @@ CURATED_FLASHCARD_SETS = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "front": "In a multivariate result table, why can the same predictor have different coefficients in two models fitted to the same data?",
+            "back": "Because a coefficient in a multiple regression is the change in the outcome for a one-unit change in that predictor holding the other predictors constant, so its value depends on which other variables are in the model. Both values are correct answers to different questions. In the Nordtre example, advertising spend has a coefficient of 8.2 alone and 5.1 once average discount depth enters, a drop of 38 percent. The first answers how much more revenue comes with an extra kNOK of advertising, silently including the fact that heavier campaigns also ran deeper discounts; the second answers how much more comes with an extra kNOK of advertising among months with the same discount depth. This is the omitted-variable effect, and the practical consequence is that a coefficient reported without the model's full variable list is uninterpretable.",
+            "tags": ["multivariate", "regression", "coefficients", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "Name three cautions specific to multivariate result tables.",
+            "back": "Interactions: the effect of one predictor may depend on the level of another, and an interaction term such as ad spend times discount tests exactly that. Without one, the model forces a single effect that holds everywhere. Multicollinearity: two predictors that move together cannot be separated by the model, so coefficients become unstable and standard errors inflate, and a predictor can be jointly important yet individually insignificant. Spot it through large standard errors, coefficients that flip sign when a variable is added, or a variance inflation factor above roughly 5. And R squared always rises when any predictor is added, even random noise, so it cannot compare models with different numbers of predictors. Use adjusted R squared, which penalises extra predictors. There is also a limit no coefficient escapes: holding a variable constant is a statement about the arithmetic, not about the world, and it does not license a causal claim on observational data.",
+            "tags": ["multivariate", "multicollinearity", "adjusted r squared", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "What is a z-score, what is it for, and what is a standardised coefficient?",
+            "back": "A z-score expresses a value as its distance from the mean in standard deviations: z = (x minus mean) divided by the standard deviation. Zero is exactly average, plus 1 is one standard deviation above, minus 2 is two below. Its purpose is comparability, since stripping the units lets a customer's order value in kroner and their order frequency as a count sit on the same scale. Roughly, plus or minus 1 is the outer 32 percent, plus or minus 1.96 the outer 5 percent, plus or minus 2.58 the outer 1 percent and plus or minus 3 the outer 0.3 percent. A standardised coefficient, or beta, applies the same idea to a regression: beta equals b times the standard deviation of the predictor divided by the standard deviation of the outcome, and it answers which predictor matters more, which the raw coefficient cannot.",
+            "tags": ["z-score", "normalised metrics", "standardised coefficient", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "In the Nordtre model, discount depth has a raw coefficient of 21.4 and advertising spend only 5.1. Why does advertising still matter more?",
+            "back": "Because the raw coefficients are per unit while the standardised ones are per unit of realistic variation. With advertising spend having a standard deviation of 42 kNOK, discount depth 3.1 percentage points, and revenue 380 kNOK, the standardised coefficients are 5.1 times 42 divided by 380 = 0.56 for advertising and 21.4 times 3.1 divided by 380 = 0.17 for discount depth. So advertising has more than three times the practical influence, because discount depth barely varies month to month while advertising spend varies a great deal. Only the standardised version answers which lever should be pulled. Two cautions apply: standardising hides the scale, so a reader can no longer tell whether a strong relationship is worth any money and the figures must be converted back into business units before any recommendation; and the reference distribution must be stated, since the same customer standardised against this month, the year or the industry gets three different z-scores.",
+            "tags": ["standardised coefficient", "z-score", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "What is a residual, and what does each pattern in a residual plot mean?",
+            "back": "A residual is the actual value minus the predicted value, so residuals are where a model's failures are stored: the coefficients say what the model believes and the residuals say where that belief broke down. Plotted against predicted values, a formless cloud around zero means the model shape is adequate. A curve or arc means the relationship is non-linear and a straight line was fitted to it, so add a squared term, transform the variable, or change model. A fan widening to the right is heteroscedasticity, where error grows with the size of the prediction: the coefficients remain usable but the standard errors and p-values do not, so transform the outcome or use robust standard errors. A few points far from the rest are outliers to be investigated. Drift or waves over time is autocorrelation, a time pattern the model does not contain, so add a seasonal or trend term. Dividing each residual by the residual standard deviation puts them on the z-scale, where beyond plus or minus 2 is worth a look and beyond plus or minus 3 a genuine investigation.",
+            "tags": ["residuals", "model fit", "heteroscedasticity", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "A month came in NOK 640 000 above prediction against a residual standard deviation of NOK 232 000. What should you do, and what should you not do?",
+            "back": "The standardised residual is 640 divided by 232 = 2.76, which clears the plus or minus 2 flag. The month was November and the campaign was Black Friday. The temptation is to call it an outlier and drop it, and that is wrong: the residual is not saying the data is dirty, it is saying the model is missing a variable. There is nothing anomalous about November; the model has no seasonality term, so every November produces a large positive residual and every January a large negative one. Deleting the point makes the diagnostic look better and the model worse. Only two situations justify removing an observation: the value was recorded wrong, which you fix and disclose, or the observation belongs to a different population, such as a bulk B2B order in a D2C dataset, which you exclude under a stated rule declared before looking at the effect on the result. If the model is missing a real driver, add the driver. If no reason can be found, keep the point and report the result with and without it. Removing observations until the model fits is the data-integrity failure from Lesson 1.1 in statistical vocabulary.",
+            "tags": ["residuals", "outliers", "data integrity", "lesson 1.2", "evo"]
+        },
         {
             "front": "Set out the XYZ Corporation sales-strategy case: the hypotheses, the result, and the conclusion drawn.",
             "back": "XYZ Corporation, an electronics manufacturer, implemented a new sales strategy combining a revamped marketing campaign, product bundling for discounts, and an aggressive social media presence, and leadership wanted the effectiveness validated. The null hypothesis was that the strategy had not led to a statistically significant increase in sales: if average monthly sales before were M1 units, they remain M1. The alternative was that sales are now greater than M1. Analysts compared average sales before and after and derived a p-value of 0.03. Since the convention treats p below 0.05 as evidence against the null, a p of 0.03 means only a 3 percent chance the observed increase, or something more extreme, would occur if the strategy had no real effect. XYZ concluded the increase was statistically significant and likely due to the strategy, and could then invest further, refine it, or expand it to other segments or regions.",
@@ -68438,6 +68587,18 @@ CURATED_EXAM_QUESTION_BANK = {
         {
             "type": "skills",
             "source": "core_curated",
+            "question": "A regression of monthly revenue on advertising spend gives a coefficient of 8.2 with R squared 0.41. Adding average discount depth gives advertising 5.1 (SE 1.6, p = 0.003) and discount 21.4 (SE 6.8, p = 0.004), with R squared 0.63 and adjusted R squared 0.60. Interpret the table and say what you would and would not conclude.",
+            "answer": "The first thing to explain is why advertising's coefficient fell by 38 percent, from 8.2 to 5.1, when nothing about advertising changed. A coefficient in a multiple regression is the change in the outcome per one-unit change in that predictor holding the other predictors constant, so the two numbers answer different questions. The 8.2 says how much more revenue comes with an extra kNOK of advertising and silently includes the fact that heavier campaigns also ran deeper discounts; the 5.1 says how much more comes with an extra kNOK of advertising among months at the same discount depth. That is the omitted-variable effect, and it is why a coefficient quoted without the model's variable list cannot be interpreted. Second, the model improved genuinely rather than mechanically. R squared always rises when any predictor is added, even random noise, so it cannot compare models of different sizes; adjusted R squared penalises extra predictors and rose from 0.39 to 0.60, so discount depth earned its place. Third, on relative importance, the raw coefficients suggest discount is four times as powerful, and that is an artefact of the units. Standardising with beta equal to b times the predictor's standard deviation divided by the outcome's, and taking advertising s = 42, discount s = 3.1 and revenue s = 380, gives 0.56 for advertising and 0.17 for discount. Advertising has more than three times the practical influence because discount depth barely varies month to month. Raw coefficients are per unit; standardised ones are per unit of realistic variation, and only the second answers which lever to pull. What I would not conclude is anything causal. Holding discount constant is a statement about the arithmetic and not about the world, and this is observational data, so it does not follow that the company could raise advertising with discounts fixed and collect 5.1 per kNOK. I would also want the residual plot before trusting any of it, check for multicollinearity between the two predictors given that they move together, and ask whether an interaction term is needed, since advertising may work differently at different discount depths. Exam use: whenever a coefficient changes between two models, name the omitted-variable effect explicitly, compare adjusted R squared rather than R squared, and standardise before ranking predictors."
+        },
+        {
+            "type": "knowledge",
+            "source": "core_curated",
+            "question": "Explain residual analysis: what a residual is, what patterns to look for, and when an outlier may be removed.",
+            "answer": "A residual is the actual value minus the value the model predicted, so the residuals are where a model's failures are stored: coefficients say what the model believes and residuals say where that belief broke down, which is why a fitted model is never judged on R squared alone. Plotting residuals against predicted values and looking for structure is the diagnostic. A formless cloud around zero is the target and means the model shape is adequate. A curve or arc means the relationship is non-linear and a straight line was fitted to it, so a squared term, a transformation or a different model is needed. A fan widening to the right is heteroscedasticity, where the error grows with the size of the prediction: the coefficients are still usable but the standard errors and therefore the p-values are not, so transform the outcome or use robust standard errors. Drift or waves over time is autocorrelation, meaning a time pattern the model lacks, so add a seasonal or trend term. A few points far from the rest are outliers, and dividing each residual by the residual standard deviation puts them on the z-scale, where beyond about plus or minus 2 deserves a look and beyond plus or minus 3 a real investigation. On removal, only two situations justify deleting an observation and both require the reason to be written down: the value was recorded wrong, which you fix and disclose, or the observation belongs to a different population, such as a bulk B2B order sitting in a D2C dataset, which you exclude under a rule stated before you look at its effect on the result. If the model is missing a real driver, the answer is to add the driver, not to delete the point: a November residual of plus 2.76 standard deviations in a model with no seasonality term is telling you about the model, and deleting it makes the diagnostic look better and the model worse. If no reason can be found, keep the observation and report the result both with and without it so the reader can see how much rests on one point. Removing observations until the model fits is not analysis; it is the data-integrity failure from Lesson 1.1 with a statistical vocabulary."
+        },
+        {
+            "type": "skills",
+            "source": "core_curated",
             "question": "An electronics manufacturer implemented a new sales strategy combining a marketing campaign, product bundling and a social media push. Comparing average monthly sales before and after gives p = 0.03, and the company concludes the data proves the strategy's effectiveness. Appraise the analysis and say how it should be reported.",
             "answer": "The mechanics are sound and the write-up is not. Taking the mechanics first: the hypotheses are correctly framed, with a null that average monthly sales remain at their prior level M1 and an alternative that they are now greater than M1, and p = 0.03 correctly means that under the null there is a 3 percent chance of an increase this large or larger. Four criticisms follow. One, the alternative is one-tailed, since greater than M1 claims a direction rather than a difference. That is defensible here because the company invested expecting an increase and the direction preceded the data, but it halves the p-value and so has to be justified by the design rather than chosen after the result. Two, there is no control group. Before-and-after in the same company has the same structure as the dashboard ROI claim and the same three weaknesses: other things changed in the window, measuring a process tends to improve it, and the whole improvement is credited to one intervention. For an electronics manufacturer the obvious confounders are seasonality, a product launch, a competitor's difficulties and general market movement, and because the strategy bundled three changes at once even a genuine effect cannot be attributed to any one of them. Three, the effect size is absent. A p-value says detectable, not how much, and with a long enough sales history a 0.5 percent lift produces p = 0.03 as readily as a 15 percent lift, yet those two support entirely different decisions. Four, proves is the wrong word, and the text's own admission that other contributing factors are not ruled out contradicts it: a test rejects or fails to reject, it never proves. How it should be reported: keep the hypotheses and note the direction was pre-declared; give the test used, the sample period and the degrees of freedom alongside p = 0.03; add the mean monthly difference in units and Cohen's d for magnitude; add the 95 percent confidence interval on the difference for precision; name the confounders and the three bundled changes; and conclude that the data supports the strategy's effectiveness under the stated assumptions. That version reaches the same business decision and survives a question from someone who wants to know how much of the lift was Christmas."
         },
@@ -68722,6 +68883,21 @@ CURATED_PRACTICE_QUESTION_BANK = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "type": "skills",
+            "question": "Someone quotes you a regression coefficient without saying what else was in the model. Why is that not enough?",
+            "answer": "Because a coefficient in a multiple regression means the change in the outcome per one-unit change in that predictor holding the other predictors constant, so its value depends entirely on which other variables the model contains. The same predictor fitted to the same data can carry very different coefficients in two models and both be correct answers to different questions. In the Nordtre example advertising spend is 8.2 on its own and 5.1 once discount depth is included, because heavier campaigns also ran deeper discounts and the simple model credited advertising with both effects. Without the variable list I cannot tell which question the number answers, so I would ask for the full specification, the adjusted R squared, the standard errors, and the residual plot before using it for anything."
+        },
+        {
+            "type": "knowledge",
+            "question": "Why compare adjusted R squared rather than R squared when a model gains a predictor?",
+            "answer": "Because R squared never falls when a predictor is added, even if that predictor is pure noise, so it always favours the larger model and cannot be used to compare models with different numbers of predictors. Adjusted R squared penalises extra predictors, so it rises only when the new variable explains more than it costs in degrees of freedom. In the Nordtre model R squared went from 0.41 to 0.63 and adjusted R squared from 0.39 to 0.60, and it is the second pair that establishes discount depth earned its place rather than merely being added."
+        },
+        {
+            "type": "skills",
+            "question": "A residual plot fans out to the right. What does that mean and what should be done?",
+            "answer": "That is heteroscedasticity: the size of the error grows with the size of the prediction, so the model is less accurate for large values than for small ones. The important consequence is selective. The coefficients themselves remain usable estimates, but the standard errors are wrong, and since p-values and confidence intervals are computed from the standard errors, every significance statement in the table is unreliable. The remedies are to transform the outcome, often with a log, or to use robust standard errors. It should also be reported rather than quietly fixed, because a reader comparing this table with an earlier one needs to know which standard errors were used."
+        },
         {
             "type": "skills",
             "question": "A result table reports a significant difference with p = 0.02 but no confidence interval. Why is that a problem even though the test is correct?",
