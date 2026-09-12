@@ -65851,6 +65851,74 @@ The last row is the one an assignment usually wants. You are rarely able to fix 
 > 🔬 Simulator **15 · Forutsetningen residualplottet ikke kan sjekke** runs both mechanisms against a known true slope of 5.1. Watch the estimate move while the residual plot stays flawless and the residual-to-x correlation stays pinned at zero.
 
 
+##### Case: educational impact — class size, and the instrument that could backfire
+
+**Scenario.** A study is designed to evaluate the impact of **class size on student performance**.
+
+**Analysis.** Schools with smaller class sizes might have **more resources**, leading to better overall education quality. If this is not accounted for, the effect of class size on performance might be **overestimated** due to omitted variable bias.
+
+**Action.** To address potential endogeneity, researchers could employ an **instrumental variable**, such as state-wide educational policies, that affect class sizes but are not directly tied to individual school resources.
+
+##### Signing the bias, and why "overestimated" needs unpacking
+
+The true coefficient here is **negative** — larger classes, worse results — so "overestimated" is ambiguous until you work the signs.
+
+> bias = b_resources × cov(class size, resources) ÷ var(class size)
+
+| Term | Sign | Why |
+|---|---|---|
+| b_resources | **+** | Resources improve performance |
+| cov(class size, resources) | **−** | Better-resourced schools run *smaller* classes |
+| Product | **−** | The bias is negative |
+
+A negative bias on an already-negative coefficient makes it **larger in magnitude**. In words: **the benefit of shrinking classes is exaggerated.** Write it that way; a marker wants to see that you know which direction, not just that bias exists.
+
+**How much?** Simulated against a known true effect of −0.80 points per pupil:
+
+| | Estimate |
+|---|---|
+| **True effect** | **−0.800** |
+| Naive OLS, resources omitted | **−1.575** — nearly **double** the apparent benefit |
+| Predicted by the bias formula | −0.779, giving −1.579 against −1.575 observed |
+| Controlling for resources | −0.819 |
+| 2SLS with a valid instrument | −0.841 |
+
+The formula predicts the observed bias to within 0.004. **Omitted variable bias is calculable, and here it roughly doubles the policy conclusion.**
+
+##### Testing the proposed instrument against the three conditions
+
+| Condition | Verdict on "state-wide educational policies" |
+|---|---|
+| **Relevance** — the instrument moves class size | **Probably satisfied**, and testable. Report the **first-stage F**; below about 10 the instrument is weak |
+| **Exclusion** — it affects performance *only* through class size | **Doubtful.** Class-size legislation arrives bundled with funding, facilities and teacher training — which is precisely the confounder being escaped. Not testable with a single instrument; it has to be argued from how the policy actually worked |
+| **Independence** — the instrument is as good as random | **Questionable.** States that pass such laws differ politically and economically from those that do not |
+
+##### The finding worth carrying: a bad instrument is worse than none
+
+If the instrument has its own path to the outcome, 2SLS does not partially fix the bias — **it substitutes a new one, which can point further from the truth**:
+
+| Policy's direct effect on performance | 2SLS estimate |
+|---|---|
+| None — valid instrument | **−0.782**, correct |
+| Moderate | −1.259 |
+| Large | **−2.344** — nearly three times the truth, and worse than the naive −1.575 |
+
+And a **weak** instrument fails differently but just as badly: as the first-stage F falls from 1 529 to 4, the estimate drifts from −0.783 back toward −1.109, that is, back toward the OLS bias it was meant to remove.
+
+##### What a defensible design looks like
+
+| Approach | Why |
+|---|---|
+| **Randomised assignment** | Class size becomes independent of resources by construction. The Tennessee **Project STAR** experiment is the well-known instance |
+| **A discontinuity in a rule** | Where a cap forces a cohort of 30 to split into classes of 15 and 16, schools either side of the threshold are otherwise alike. **Angrist and Lavy's use of Maimonides' rule** is the classic study, and this is the answer to name in an exam |
+| **Measure the confounder** | Add per-pupil spending and teacher experience — but only removes what you can measure, and measurement error re-introduces bias through attenuation |
+| **Report the direction** | Weakest, and still honest: state that the naive estimate is an upper bound on the benefit of small classes |
+
+> 🔬 Simulator **16 · Klassestørrelse** runs this case. The two sliders are the two IV conditions: one moves the instrument's strength, the other breaks its exclusion. Watch 2SLS recover −0.80 when both are healthy, and watch it overshoot the naive estimate when the policy brings funding with it.
+>
+> 📄 The full worked case, with the sign analysis, all three conditions, the alternatives ranked, and a written answer, is in `EVO_1.2_ClassSize_Case_Solution.md`.
+
+
 #### Result table analysis with linear regression
 
 A simple linear regression models one outcome variable from one predictor. Reading its result table is a named outcome of this course. The multivariate case — several predictors at once, and what that does to a coefficient — was covered under diving deeper above; this section takes the components of the table one at a time.
@@ -67687,6 +67755,21 @@ CURATED_FLASHCARD_SETS = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "front": "The class-size case: sign the omitted variable bias and say what it does in plain words.",
+            "back": "The bias equals the resource effect on performance times the covariance between class size and resources, divided by the variance of class size. The resource effect is positive, since resources improve performance. The covariance is negative, since better-resourced schools run smaller classes. The product is therefore negative, and a negative bias added to an already-negative true coefficient makes the estimate larger in magnitude. In plain words: the benefit of shrinking classes is exaggerated. Simulated against a known true effect of minus 0.80 points per pupil, the naive regression returns minus 1.575, nearly double the real benefit, and the bias formula predicts that to within 0.004. Say it in words as well as signs, because overestimated applied to a negative coefficient is ambiguous and a marker wants to see you know which direction it runs.",
+            "tags": ["omitted variable bias", "class size", "case study", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "Name the three conditions an instrumental variable must satisfy, and assess 'state-wide educational policies' against each.",
+            "back": "Relevance, meaning the instrument actually moves the endogenous regressor, which is testable through the first-stage F, where below roughly 10 counts as weak. Probably satisfied here, since policies do change class sizes. Exclusion, meaning the instrument affects the outcome only through the regressor, with no other path. Doubtful here, because class-size legislation typically arrives bundled with funding, facilities and teacher training, which is precisely the confounder being escaped, and it is not testable with a single instrument so it must be argued from how the policy actually worked. Independence, meaning the instrument is as good as randomly assigned. Questionable here, since states that pass such laws differ politically, economically and demographically from those that do not, and those differences may affect performance directly.",
+            "tags": ["instrumental variables", "exclusion restriction", "relevance", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "Why can a bad instrument be worse than no instrument at all?",
+            "back": "Because an invalid instrument does not partially fix the bias, it substitutes a new one that can point further from the truth. In the class-size simulation with a true effect of minus 0.80, a valid instrument recovers minus 0.782 while the naive regression gives minus 1.575. Let the policy also affect performance directly, as it does when the reform brings funding, and 2SLS returns minus 1.259 at a moderate leak and minus 2.344 at a large one, which is nearly three times the truth and worse than doing nothing. A weak instrument fails differently but just as badly: as the first-stage F falls from 1 529 to 4, the estimate drifts from minus 0.783 back toward minus 1.109, meaning back toward the very OLS bias it was meant to remove. This is why the first-stage F must always be reported, and why the exclusion restriction has to be argued from institutional knowledge rather than assumed.",
+            "tags": ["instrumental variables", "weak instrument", "lesson 1.2", "evo"]
+        },
         {
             "front": "State the second pivotal regression assumption, and say what the error term contains.",
             "back": "The independent variables and the error term should not be correlated. Internal causation can arise from omitted variable bias, measurement errors, or simultaneous causality between independent and dependent variables. Violating it leads to biased and inconsistent parameter estimates, which makes it hard to establish causality or derive meaningful insights. The assumption is easier to hold onto once you know what the error term is: everything that affects y and is not in the model, meaning every driver left out, every mismeasurement and every piece of randomness. So the requirement that x must not correlate with the error means that whatever else moves the outcome must not also move with your predictor, because if it does the model cannot tell which of the two produced the change and hands the whole thing to x, since x is the only one it can see. The standard names are exogeneity when satisfied and endogeneity when violated.",
@@ -70027,6 +70110,11 @@ CURATED_PRACTICE_QUESTION_BANK = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "type": "skills",
+            "question": "Researchers propose using state-wide educational policy as an instrument for class size. Evaluate the proposal and suggest something better.",
+            "answer": "The family of solution is right and the specific instrument is too coarse to be credible as stated. Test it against the three conditions. Relevance is probably satisfied, since policies do change class sizes, and it is testable: report the first-stage F, where below about 10 means weak, and a weak instrument is not merely imprecise but drifts back toward the OLS bias it was meant to remove. Exclusion is the doubtful one, because class-size legislation typically arrives bundled with funding, facilities money and teacher training, and that funding is precisely the confounder being escaped; a sudden state-wide demand for teachers can also lower average teacher quality, which is a second direct path. Exclusion is not testable with a single instrument, so it has to be argued from how the policy actually operated: which policy, what exactly it changed, and what else changed at the same time. Independence is questionable too, since states passing such laws differ politically and economically from those that do not. The cost of getting exclusion wrong is severe rather than partial: simulation with a known true effect of minus 0.80 shows a valid instrument recovering minus 0.78, while a policy with its own effect on performance drives 2SLS to minus 2.34, further from the truth than the naive minus 1.58. What I would propose instead is a discontinuity in an existing rule, comparing cohorts either side of the enrolment threshold where a cap forces a class to split, since the rule moves class size for reasons unrelated to school resources or pupil ability. Randomised assignment is stronger still where it is feasible."
+        },
         {
             "type": "skills",
             "question": "A regression of monthly sales on advertising spend gives a coefficient of 8.4 with a very tight confidence interval from 15 000 observations. The analyst says the large sample makes the estimate reliable. What is wrong?",

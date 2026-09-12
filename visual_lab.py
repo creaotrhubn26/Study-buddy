@@ -1389,10 +1389,139 @@ def _endogeneity():
     )
 
 
+
+@st.cache_data(show_spinner=False)
+def _classsize_data(z_strength, leak, seed=11, n=1200):
+    """Class size is driven by unobserved resources, so OLS is biased.
+
+    z is a policy instrument. `leak` is its direct effect on performance, which
+    is the exclusion restriction being violated.
+    """
+    rng = np.random.default_rng(seed)
+    resources = rng.normal(size=n)
+    z = rng.normal(size=n)
+    size = 24 - 3.0 * resources - z_strength * z + rng.normal(0, 1.5, n)
+    perf = 70 - 0.8 * size + 4.0 * resources + leak * z + rng.normal(0, 3, n)
+    return size, perf, resources, z
+
+
+def _instrumental_variables():
+    st.markdown("#### 16 · Klassestørrelse — og instrumentet som kan gjøre vondt verre")
+    st.caption(
+        "Leksjonens utdanningscase. Den sanne effekten er **−0,80** poeng per ekstra elev i klassen. "
+        "Ressurser påvirker både klassestørrelse og resultat, og er ikke i modellen."
+    )
+    c1, c2 = st.columns(2)
+    with c1:
+        z_strength = st.slider("Hvor mye flytter politikken klassestørrelsen?", 0.1, 3.0, 2.0, 0.1,
+                               key="vl_iv_z", help="Relevans — første trinn i 2SLS")
+    with c2:
+        leak = st.slider("Politikkens direkte effekt på resultatet", 0.0, 3.0, 0.0, 0.25,
+                         key="vl_iv_leak",
+                         help="0 = gyldig instrument. Over 0 er eksklusjonskravet brutt — "
+                              "reformen kom med penger også")
+
+    size, perf, res, z = _classsize_data(z_strength, leak)
+
+    def ols(y, *xs):
+        X = np.column_stack([np.ones(len(y))] + list(xs))
+        return np.linalg.lstsq(X, y, rcond=None)[0]
+
+    naive = ols(perf, size)[1]
+    controlled = ols(perf, size, res)[1]
+    first = ols(size, z)
+    size_hat = first[0] + first[1] * z
+    iv = ols(perf, size_hat)[1]
+    resid_first = size - size_hat
+    se_pi = np.std(resid_first, ddof=2) / np.sqrt(((z - z.mean()) ** 2).sum())
+    f_stat = (first[1] / se_pi) ** 2 if se_pi else np.inf
+
+    est = pd.DataFrame({
+        "metode": ["Sann effekt", "Naiv regresjon\n(ressurser utelatt)",
+                   "Kontrollert for ressurser", "2SLS med instrumentet"],
+        "verdi": [-0.8, naive, controlled, iv],
+    })
+    est["avvik"] = (est["verdi"] - (-0.8)).abs()
+    est["status"] = np.where(est["metode"] == "Sann effekt", "Sannheten",
+                             np.where(est["avvik"] < 0.15, "Treffer", "Bommer"))
+    bars = (
+        alt.Chart(est).mark_bar(cornerRadiusEnd=4, size=40)
+        .encode(
+            y=alt.Y("metode:N", sort=None, title=None),
+            x=alt.X("verdi:Q", title="Estimert effekt av én elev mer i klassen"),
+            color=alt.Color("status:N", scale=alt.Scale(
+                domain=["Sannheten", "Treffer", "Bommer"], range=[INK_MUTED, C_BLUE, S_CRITICAL]),
+                legend=alt.Legend(title=None, orient="top")),
+            tooltip=[alt.Tooltip("metode:N"), alt.Tooltip("verdi:Q", format="+.3f")],
+        ).properties(height=190)
+    )
+    labs = alt.Chart(est).mark_text(align="right", dx=-8, fontSize=12, color="white").encode(
+        y=alt.Y("metode:N", sort=None), x="verdi:Q", text=alt.Text("verdi:Q", format="+.2f"))
+    truth = alt.Chart(pd.DataFrame({"x": [-0.8]})).mark_rule(
+        color=INK_MUTED, strokeDash=[4, 3], size=2).encode(x="x:Q")
+    st.altair_chart(bars + labs + truth, use_container_width=True)
+
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("Naiv regresjon", f"{naive:+.3f}", delta=f"{naive+0.8:+.3f} fra sannheten",
+              delta_color="inverse")
+    m2.metric("2SLS", f"{iv:+.3f}", delta=f"{iv+0.8:+.3f} fra sannheten", delta_color="inverse")
+    m3.metric("Første trinns F", f"{f_stat:,.0f}",
+              help="Under ca. 10 er instrumentet svakt")
+    m4.metric("Overdriver gevinsten med", f"{abs(naive)/0.8:.2f}×")
+
+    if leak == 0 and f_stat >= 10:
+        _callout(
+            f"**Instrumentet virker.** Den naive regresjonen sier {naive:+.2f} — den framstiller "
+            f"gevinsten av små klasser som **{abs(naive)/0.8:.1f} ganger** så stor som den er, fordi "
+            f"velutstyrte skoler både har små klasser og gode resultater.\n\n"
+            f"2SLS henter fram {iv:+.2f} **uten å måle ressurser i det hele tatt**. Det er hele "
+            f"poenget med et instrument: politikken flytter klassestørrelsen av grunner som ikke har "
+            f"noe med den enkelte skolens ressurser å gjøre, så bare den delen av variasjonen brukes.",
+            S_GOOD, "rgba(12,163,12,0.08)")
+    elif leak > 0:
+        worse = abs(iv + 0.8) > abs(naive + 0.8)
+        _callout(
+            f"**Eksklusjonskravet er brutt, og se hva det gjør.** Reformen påvirker nå resultatet "
+            f"også direkte — den kom med penger, ikke bare med mindre klasser.\n\n"
+            f"2SLS gir {iv:+.2f} mot sanne −0,80. "
+            + (f"**Det er lenger unna sannheten enn den naive regresjonens {naive:+.2f}.** "
+               f"Et ugyldig instrument er ikke en delvis reparasjon — det er en ny skjevhet, og den "
+               f"kan peke lenger bort enn problemet den skulle løse."
+               if worse else
+               f"Fortsatt nærmere enn naiv ({naive:+.2f}), men skjevheten er tilbake og vokser med lekkasjen.")
+            + f"\n\n**Og dette kan du ikke teste deg ut av** med ett instrument. Eksklusjonskravet "
+              f"må begrunnes fra hvordan reformen faktisk virket, ikke fra tallene.",
+            S_CRITICAL, "rgba(208,59,59,0.08)")
+    else:
+        _callout(
+            f"**Instrumentet er for svakt.** Første trinns F er {f_stat:,.0f}, og tommelfingerregelen "
+            f"er at under 10 duger det ikke. Politikken flytter knapt klassestørrelsen, så det finnes "
+            f"nesten ingen ren variasjon å bruke.\n\n"
+            f"Et svakt instrument er ikke bare upresist. Estimatet blir **ustabilt**, og det er "
+            f"forventningsrett trukket mot den naive regresjonen — altså mot nøyaktig den skjevheten "
+            f"du prøvde å unnslippe. Én enkelt kjøring kan derfor lande hvor som helst: her gir 2SLS "
+            f"{iv:+.2f} mot naiv {naive:+.2f} og sanne −0,80. Dra styrken sakte oppover og se hvor "
+            f"urolig tallet er før F passerer 10.",
+            S_WARNING, "rgba(250,178,25,0.10)")
+
+    _point(
+        "**Tre ting å ta med videre.**\n\n"
+        "**Retningen kan regnes ut på forhånd:** skjevheten er ressurseffekten på resultatet (positiv) "
+        "ganger samvariasjonen mellom klassestørrelse og ressurser (negativ), altså negativ — lagt til "
+        "en allerede negativ koeffisient blir tallet større i tallverdi. Gevinsten av små klasser "
+        "*overdrives*.\n\n"
+        "**Rapporter alltid første trinns F.** En IV-analyse uten den er en påstand.\n\n"
+        "**Og det beste designet er ikke et instrument i det hele tatt**, men en regel som allerede "
+        "finnes: der et tak tvinger et kull på 30 til å deles i to klasser på 15 og 16, er skolene på "
+        "hver side av terskelen ellers like. Da flytter klassestørrelsen seg av en grunn som ikke har "
+        "noe med elevene eller ressursene å gjøre."
+    )
+
+
 SECTIONS = {
     "A · Utvalg og usikkerhet": [_sampling_distribution, _coverage, _bias_vs_noise],
     "B · Test og effektstørrelse": [_p_vs_d, _power, _multiple_comparisons],
-    "C · Regresjon og residualer": [_leverage, _residuals, _real_estate, _omitted_variable, _confounding, _endogeneity],
+    "C · Regresjon og residualer": [_leverage, _residuals, _real_estate, _omitted_variable, _confounding, _endogeneity, _instrumental_variables],
     "D · Z-score og overtilpasning": [_zscore, _overfitting],
     "E · Eksamensdrill": [_drill],
 }
