@@ -65284,6 +65284,45 @@ flowchart LR
 
 That word *random* is load-bearing. The known accuracy is known **only if the sampling was random**. Take a convenience sample and the arithmetic still runs, still prints an interval, and the interval no longer means what it says.
 
+##### What statistical inference is for: five roles
+
+The course text sets out five things inference does. They are not five separate techniques — they are five uses of the same machinery, and the lesson has already met the tools behind each.
+
+**1. Quantifying uncertainty.** Raw data often comes with noise and variations. Statistical inference offers methodologies, like **confidence intervals**, to measure the degree of ambiguity in the results. A statement such as *"we are 95% confident that between 30% and 40% of voters favour candidate A"* is an outcome of statistical inference, and gives a more nuanced understanding than a simple point estimate.
+
+> *Note what that example does that "35% favour candidate A" cannot.* It carries a **width** — ten percentage points — and a width is a statement about how much the data actually pins down. A ±5-point interval and a ±1-point interval can sit around the same point estimate and support entirely different decisions. This is the same lesson the Nordtre redesign taught: the point estimate said 20 months' payback and the interval said somewhere between 10 months and 21 years.
+
+**2. Hypothesis testing.** A fundamental component of inference is **hypothesis testing**, which provides a framework to test assumptions or theories about a parameter in the population. If a company wants to know whether a new website layout increases sales, inference supplies the tools to determine whether any increase or decrease is **statistically significant** or **likely due to random chance**.
+
+> *The website-layout example is the XYZ case in miniature, and it carries the same warning.* The test can tell you the change is unlikely to be chance. It cannot tell you the layout caused it, and it cannot tell you the increase is worth the redesign. Those need a control group and an effect size respectively.
+
+**3. Driving decisions.** In business, decisions need grounding in data. Inference can inform managers about the likely **outcomes and risks** of different decisions. Before launching a new product, a company might test it in a smaller market; the success in that sample market, evaluated through inference, guides whether a wider release is a good idea.
+
+> *The test market is itself a sample, and the question is what it is a sample of.* If the pilot city was chosen because it is convenient, or because the product was expected to do well there, then the inference runs from a **self-selected sample** to a national population and the interval understates the real uncertainty badly. A test market has to be chosen for how well it represents the target market, and the write-up should say on what basis it was chosen. This is the third bullet's hidden condition: inference informs a decision only when the sample and the decision are about the same population.
+
+**4. Enhancing reliability and credibility.** Audiences seek robustness in findings, particularly in academic and professional settings. Inference provides methodologies to ensure results are not mere **artefacts of the sample** or coincidences, but reflect deeper patterns. Research and decisions grounded in sound inference gain more trust and acceptance.
+
+> *The honest qualification.* Statistical machinery earns trust, and it earns trust whether or not it was applied well — a p-value confers credibility on the page regardless of how it was produced. That is exactly why the multiple-comparison problem matters: twenty comparisons and one reported significant result looks identical, in a report, to one comparison planned in advance. What actually makes a finding credible is not the presence of a test but **what was decided before the data was seen**: the hypothesis, the direction, the α, the exclusion rules and the comparison. Say those things and the credibility is earned; omit them and the reader is trusting the format.
+
+**5. Handling complexity and multifaceted data.** Modern data comes from diverse sources and is multi-dimensional. Inference offers tools such as **multivariate regression** to understand relationships between several variables simultaneously, adding depth to the analysis.
+
+> *This is the material from the multivariate section above.* And it carries that section's central caution: adding variables changes what every coefficient means, because each is now read holding the others constant. Handling complexity is not the same as removing it.
+
+##### The conclusion, and the metaphor
+
+> Statistical inference is more than just crunching numbers. It is about deriving meaning, ensuring reliability, understanding relationships, quantifying uncertainties and making informed decisions. In the vast world of data analysis, it acts as a **compass**, guiding researchers and analysts towards meaningful and trustworthy conclusions.
+
+The compass is a good image, and it is worth taking literally, because a compass has precise limits:
+
+| A compass | Statistical inference |
+|---|---|
+| Gives you a **direction**, not a destination | Tells you what the data supports, not what to do |
+| Is useless without a **map** — knowing where you are | Is useless without knowing what population the sample came from |
+| Points to magnetic north, which is **not quite true north** | Answers a question adjacent to the one you asked: it measures sampling error, not bias |
+| Still works if you walk the wrong way | Still prints an interval on a badly drawn sample |
+
+The instrument is reliable. Whether it takes you somewhere useful depends on things outside the instrument — which is the argument this whole lesson makes about tools.
+
 ##### Parameter and statistic: the notation this lesson uses
 
 The population has **parameters** you want to know. The sample has **statistics** you can compute. Inference is the bridge from the second to the first, and keeping the symbols apart is how an assignment shows it understands the direction of travel.
@@ -65299,7 +65338,7 @@ Two places this has already come up in the lesson: the z-score is written **Z = 
 
 ##### The two branches, and where this lesson uses each
 
-Everything in this lesson is one of two moves.
+The first two of those five roles are the two branches of inference, and everything in this lesson is one or the other of them.
 
 | Branch | The question | The tools | Where in this lesson |
 |---|---|---|---|
@@ -65329,9 +65368,89 @@ Running a significance test on a complete population is a common and quiet error
 
 **The one qualification.** Sometimes a complete dataset is still treated as a sample — of a *process* rather than of a group. All of last year's orders are the whole population of last year, and a sample of what the business does over time. If the conclusion is about last year, no inference is needed. If it is about next year, it is an inference again, and the honest version says so and states that the process is assumed stable.
 
-#### Sampled sets, and how the sample was drawn
+#### Statistical inferences for sampled sets
 
-Before any statistic in a result table is read, evaluate the sampling method. No amount of correct arithmetic repairs a badly drawn sample.
+Sample sets are invaluable across the research landscape, from clinical studies to market research. **Sampling provides a window to larger populations, making investigations feasible, timely and cost-effective.** But navigating this territory requires an understanding of the methodologies and their pitfalls.
+
+##### Purpose and necessity
+
+Consider a multinational company wanting to gauge employee satisfaction across its global offices. Surveying every single employee would be a monumental task. Instead, a **sampled set from each region** can offer insights reflective of the whole.
+
+Three reasons sampling is used, and one that is usually overlooked:
+
+| Reason | Why |
+|---|---|
+| **Cost** | A survey of 400 costs a fraction of a survey of 40 000 |
+| **Time** | A result that arrives after the decision has been made is worth nothing |
+| **Feasibility** | Some populations cannot be enumerated at all — future customers, for instance |
+| **Quality** | *The overlooked one.* A well-run sample often beats a badly-run census. Resources concentrated on 400 people can chase non-responders, check answers and control the conditions; the same budget spread over 40 000 cannot, and a census with a 20% response rate is a self-selected sample wearing a census's clothes |
+
+That fourth row matters for an assignment, because "we surveyed everyone" is usually offered as a strength and is often the opposite.
+
+##### The principle of representativeness
+
+Imagine a pharmaceutical company testing a new drug. If only a specific age group is sampled, the results may not apply to older or younger individuals. **Ensuring the sample's diversity is crucial.**
+
+Two things this principle actually requires:
+
+**Representative of what?** Representativeness is not a property of a sample on its own — it is a relationship between a sample and a **stated target population**. A sample of 25–40-year-olds is unrepresentative of adults and perfectly representative of 25–40-year-olds. So the target population has to be written down *first*, and the honest move when the sample is narrow is to narrow the claim rather than widen the sample in the write-up.
+
+**Representative on the variables that matter.** No sample matches the population on everything. What it must match on is anything that plausibly affects the outcome — age and comorbidity for a drug, segment and tenure for a customer survey, region and role for an employee one. Matching on irrelevant variables buys nothing.
+
+**Why the drug example is the sharpest one.** In most business cases an unrepresentative sample produces a wrong number. In the pharmaceutical case it produces a **wrong number that will be applied to people it was never measured on** — and the direction of the error is unknown, because the very thing missing is data about how the drug behaves in those groups. That is why regulators require diversity in trial populations rather than merely encouraging it, and it is the clearest illustration in this course of why the inclusivity principle from Lesson 1.1's ethics section is a measurement issue and not only a fairness one.
+
+#### Random vs. stratified sampling
+
+##### Random sampling
+
+In studying a town's television viewing habits, **randomly selecting households ensures that every resident — irrespective of age, gender or occupation — has an equal chance of being included.**
+
+That equal chance is what licenses the whole inferential apparatus: it is the condition under which the margin of error means what it says. Two practical requirements are easy to miss:
+
+- You need a **complete list** of the population to draw from. If the list is the phone book, everyone not in it has a zero chance, and the sample is no longer random over the town
+- **Random is not the same as haphazard.** Stopping whoever walks past feels arbitrary and is not random; it systematically over-samples people who walk past that spot
+
+##### Stratified sampling
+
+Suppose a car manufacturer wants to understand customer satisfaction across its various models. They would divide the customer base by model — the **strata** — and then **randomly select individuals from each group**, ensuring each model's owners are represented.
+
+Stratified sampling buys three things a simple random sample does not:
+
+| What it buys | Why |
+|---|---|
+| **Guaranteed coverage** of every stratum | A simple random sample *can* miss a small group by chance. Stratified sampling makes that impossible |
+| **A usable estimate per stratum** | You can report satisfaction for each model, not just overall |
+| **A narrower overall interval** | When the strata genuinely differ, removing between-stratum variation from the sampling error tightens the whole estimate |
+
+**A worked comparison.** Nordtre's customers are 82% D2C and 18% B2B, and the company wants a satisfaction figure.
+
+| | Simple random, n = 400 | Stratified, 200 per segment |
+|---|---|---|
+| D2C respondents | ~328 | 200 |
+| B2B respondents | **~72** | 200 |
+| Margin on the B2B figure | **±11.5 pp** | **±6.9 pp** |
+| Margin on the overall figure | ±4.9 pp | ±4.9 pp, **after re-weighting** |
+
+The simple random sample supports an overall claim and barely supports a B2B one. The stratified design supports both — but only if the final overall figure is **re-weighted back to the real population shares**.
+
+**The trap in that last cell**, and it is a common assignment error. With 200 in each stratum, the raw combined average treats B2B as half the customer base when it is 18%. If D2C satisfaction is 74 and B2B is 61, the unweighted average is **67.5** and the correct weighted figure is:
+
+> 0.82 × 74 + 0.18 × 61 = **71.7**
+
+An error of over four points, and note that it runs in the *unflattering* direction here — the bias from ignoring weights has no fixed sign, it simply reproduces whatever the sampling shares were. It comes entirely from forgetting that a stratified sample is deliberately **not** proportional. **Disproportionate allocation must be undone by weights before any overall number is quoted.**
+
+##### Choosing between them
+
+| Use | When |
+|---|---|
+| **Simple random** | The population is fairly homogeneous, you have a complete list, and you only need an overall figure |
+| **Stratified** | Subgroups differ on the outcome, some are small, or you need per-subgroup estimates |
+| **Proportional stratified** | You want the stratified guarantee but only an overall figure — allocate each stratum its population share and no weighting is needed |
+| **Disproportionate stratified** | You need precision within small subgroups — oversample them, then weight back |
+
+**And the requirement stratification carries.** You must know the strata and their sizes *in advance*. Splitting by car model works because the manufacturer knows who owns what. Splitting by a variable you would have to survey people to discover is not available to you at sampling time — which is why stratification usually runs on administrative facts (segment, region, model, tenure) rather than on attitudes.
+
+##### The five sampling methods, and the risk in each
 
 | Sampling method | How it works | Evaluation risk |
 |---|---|---|
@@ -65346,6 +65465,8 @@ Two failures worth naming in an evaluation write-up:
 **Selection bias.** The sample systematically differs from the population. A satisfaction survey answered only by customers who contacted support does not measure customer satisfaction. It measures the satisfaction of customers who contacted support.
 
 **Survivorship bias.** You only see the cases that made it. Evaluating why customers stay by studying current customers omits everyone who already left, which is precisely the group a churn evaluation needs.
+
+**And the point that makes this section non-optional.** Before any statistic in a result table is read, evaluate the sampling method. No amount of correct arithmetic repairs a badly drawn sample, and no confidence interval reveals one.
 
 #### Sample size and why small samples mislead
 
@@ -67193,6 +67314,36 @@ CURATED_FLASHCARD_SETS = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "front": "Name the five roles of statistical inference from lesson 1.2, and the tool behind each.",
+            "back": "Quantifying uncertainty, through confidence intervals, which measure the degree of ambiguity in a result: 'we are 95 percent confident that between 30 and 40 percent of voters favour candidate A' carries a width where a point estimate does not, and the width is what tells you how much the data pins down. Hypothesis testing, which frames whether an observed change, such as sales after a new website layout, is statistically significant or likely due to random chance. Driving decisions, where a product tested in a small market guides whether a wider release is sensible, informing managers about likely outcomes and risks. Enhancing reliability and credibility, by establishing that findings are not artefacts of the sample or coincidences, so results gain trust and acceptance. And handling complexity, through tools such as multivariate regression that examine several variables simultaneously. They are five uses of the same machinery rather than five techniques, and the first two are the two branches of inference, estimation and testing.",
+            "tags": ["statistical inference", "five roles", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "The course calls statistical inference a compass. Where does that metaphor hold, and where does it stop?",
+            "back": "It holds because a compass is a reliable instrument that gives direction. It stops in four places, each a real limit. A compass gives a direction, not a destination, just as inference tells you what the data supports and not what to do. A compass is useless without a map telling you where you are, just as inference is useless without knowing what population the sample came from. A compass points to magnetic north, which is not quite true north, just as inference answers a question adjacent to the one you asked, since it measures sampling error and not bias. And a compass still works if you walk the wrong way, just as the arithmetic still prints an interval on a badly drawn sample. The instrument is reliable; whether it takes you somewhere useful depends on things outside the instrument.",
+            "tags": ["statistical inference", "limits", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "Why is a well-run sample sometimes better than a census?",
+            "back": "Sampling is normally justified by cost, time and feasibility, since a survey of 400 costs a fraction of one of 40 000, a result arriving after the decision is worth nothing, and some populations such as future customers cannot be enumerated at all. The overlooked fourth reason is quality. Resources concentrated on 400 people can chase non-responders, verify answers and control the conditions, while the same budget spread over 40 000 cannot, so a census with a 20 percent response rate is a self-selected sample wearing a census's clothes. This matters in an assignment because 'we surveyed everyone' is usually offered as a strength and is often the opposite.",
+            "tags": ["sampling", "census", "response rate", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "What does the principle of representativeness actually require?",
+            "back": "Two things. First, representative of what: representativeness is not a property of a sample alone but a relationship between a sample and a stated target population, so a sample of 25 to 40 year olds is unrepresentative of adults and perfectly representative of 25 to 40 year olds. The target population must be written down first, and when the sample is narrow the honest move is to narrow the claim rather than widen the sample in the write-up. Second, representative on the variables that matter: no sample matches the population on everything, and what it must match on is whatever plausibly affects the outcome, such as age and comorbidity for a drug or segment and tenure for a customer survey. The pharmaceutical example is the sharpest because an unrepresentative trial sample produces a wrong number that will be applied to people it was never measured on, with the direction of the error unknown, which is why regulators require trial diversity rather than encouraging it.",
+            "tags": ["representativeness", "sampling", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "Compare random and stratified sampling, and say what stratified sampling buys.",
+            "back": "Random sampling gives every member of the population an equal chance of inclusion, as when households in a town are selected at random to study television viewing habits irrespective of age, gender or occupation. That equal chance is what licenses the inferential apparatus and makes the margin of error mean what it says. It requires a complete list of the population, and random is not the same as haphazard, since stopping whoever walks past over-samples people who walk past that spot. Stratified sampling divides the population into strata, such as a car manufacturer splitting customers by model, then randomly selects within each. It buys three things: guaranteed coverage of every stratum, where a simple random sample can miss a small group by chance; a usable estimate per stratum rather than only an overall figure; and a narrower overall interval when the strata genuinely differ. Its requirement is that you must know the strata and their sizes in advance, which is why stratification usually runs on administrative facts such as segment, region or model rather than on attitudes.",
+            "tags": ["random sampling", "stratified sampling", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "A stratified survey takes 200 D2C and 200 B2B customers, from a base that is 82 percent D2C. D2C satisfaction is 74 and B2B is 61. What is the overall figure?",
+            "back": "71.7, not 67.5. A disproportionate stratified sample is deliberately not proportional, so the raw combined average treats B2B as half the customer base when it is 18 percent. The correct figure re-weights back to the real population shares: 0.82 times 74 plus 0.18 times 61 = 71.7, where the unweighted average of 74 and 61 gives 67.5, an error of over four points. This is also why the design was chosen: at n = 400 drawn at random only about 72 respondents would be B2B, giving that subgroup a margin of roughly plus or minus 11.5 percentage points, where 200 per stratum brings it to about plus or minus 6.9. The design buys subgroup precision and the price is that weights must be applied before any overall number is quoted.",
+            "tags": ["stratified sampling", "weighting", "lesson 1.2", "evo"]
+        },
         {
             "front": "Define statistical inference, and say which kind of variation it does and does not handle.",
             "back": "Statistical inference is the process of drawing conclusions from data subject to random variations, using sampled data to make generalisations or predictions about a larger and often unknown population. The load-bearing phrase is subject to random variations: inference is the mathematics of random variation, meaning the fact that a different sample of the same population would have given slightly different numbers. It quantifies that and nothing else. It does not quantify systematic variation, which is bias. Random variation is the luck of which units ended up in the sample, it shrinks as n grows, and a p-value or interval measures it exactly. Bias is a sample differing from the population in a consistent direction, more data makes it worse rather than better because it is more bias measured more precisely, and nothing in a p-value or an interval detects it. A confidence interval widens with noise and does not widen with bias, and it looks equally reassuring either way.",
@@ -69104,6 +69255,12 @@ CURATED_EXAM_QUESTION_BANK = {
         {
             "type": "skills",
             "source": "core_curated",
+            "question": "A company plans a national product launch and will first test in one city. Design the sampling reasoning, say what inference can and cannot tell them, and identify the failure most likely to invalidate the result.",
+            "answer": "The test market is itself a sample, and the whole inference depends on what it is a sample of. If the pilot city was chosen because it is convenient, because the company already has a strong presence there, or because the product was expected to do well there, then the inference runs from a self-selected sample to a national population, and the confidence interval computed from the pilot will understate the real uncertainty badly. It will look narrow and be wrong. So the city has to be selected for how well it represents the national target market on the variables that plausibly affect uptake, which typically means demographics, income distribution, competitor presence and existing brand awareness, and the write-up must state on what basis it was chosen. That is the hidden condition in the course's third role for inference: it informs a decision only when the sample and the decision are about the same population. What inference can then tell them is the size of the uptake with a stated interval, whether the uptake differs from a benchmark by more than random variation would explain, and what range of national outcomes is consistent with the pilot. What it cannot tell them is whether the pilot city is representative, since that is a design question no statistic detects; whether the product caused the uptake, absent a control area; or whether the launch is profitable, which needs the effect size converted into revenue against cost. The failure most likely to invalidate the result is therefore selection of the market itself, not the arithmetic. A secondary one is scale: a pilot benefits from attention, dedicated staff and novelty that a national rollout cannot reproduce, so the pilot result is an upper bound rather than a forecast. I would recommend two or three contrasting pilot cities chosen in advance, a comparison area with no launch, the criteria for city selection documented before the data arrives, and the national projection reported as a range with the assumptions named."
+        },
+        {
+            "type": "skills",
+            "source": "core_curated",
             "question": "An analyst compares average satisfaction across four store regions, runs six pairwise t-tests, finds one significant at p = 0.04, and reports that region C differs from region A. Their model output was produced by clicking through a menu-driven package and the steps were not recorded. Identify the problems and say how the analysis should have been done.",
             "answer": "Two separate failures, one statistical and one procedural. The statistical failure is the multiple-comparison trap. Comparing four groups pairwise means six tests, and at alpha 0.05 the probability of at least one false alarm when nothing is happening is roughly 26 percent rather than 5 percent, so a single result at p = 0.04 out of six tests is close to what pure noise produces. The correct route is an omnibus test first, such as ANOVA, which answers only whether there is a difference somewhere, followed if it is significant by a post-hoc procedure such as Tukey's HSD, Bonferroni-corrected pairwise comparisons or Scheffe, which answers which groups differ and builds the correction for multiplicity in. Running six unadjusted t-tests is the same comparison without the correction. I would also want the assumptions checked before either: independence of observations, homoscedasticity across the four groups, and, given the sample sizes, whether normality matters, since satisfaction is usually measured on an ordinal Likert scale, which raises the question of whether a mean is the right summary at all. And I would want the effect size and confidence interval for the A to C difference, because significance alone does not say whether the gap is large enough for a regional intervention. The procedural failure is reproducibility. A point-and-click analysis leaves no record of what was done, so nobody can establish six months later which cases were included, which options were ticked, or whether the six tests were the only six run. That is the version control argument from Lesson 1.1 applied to the analysis rather than to the data: you replace a judgement with a record. The remedy is a script, or failing that a written method stating the test used, the sample, the alpha, the exclusion rules and every comparison performed, including the ones that were not significant. Exam use: whenever a question involves three or more groups, check first whether multiplicity was handled, because that single point is usually worth more marks than recomputing the test."
         },
@@ -69406,6 +69563,16 @@ CURATED_PRACTICE_QUESTION_BANK = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "type": "knowledge",
+            "question": "Why does the presence of a p-value in a report not, by itself, make the finding credible?",
+            "answer": "Because statistical machinery earns trust whether or not it was applied well, and a p-value confers credibility on the page regardless of how it was produced. Twenty comparisons with one significant result reported looks identical, in a written report, to one comparison planned in advance, and at alpha 0.05 the first produces a significant result about half the time from noise alone. What actually makes a finding credible is what was decided before the data was seen: the hypothesis, the direction of the test, the alpha, the exclusion rules, and which comparison was the one being made. State those and the credibility is earned; omit them and the reader is trusting the format rather than the finding. This is the qualification that belongs on the course's claim that inference enhances reliability and credibility."
+        },
+        {
+            "type": "skills",
+            "question": "A team reports overall customer satisfaction of 67.5 from a stratified survey of 200 D2C and 200 B2B customers. The customer base is 82 percent D2C. What is wrong?",
+            "answer": "They have quoted the unweighted average of the two strata, which treats B2B as half the customer base when it is 18 percent. A stratified sample with equal allocation is deliberately not proportional, and disproportionate allocation has to be undone with weights before any overall number is quoted. If D2C satisfaction is 74 and B2B is 61, the correct overall figure is 0.82 times 74 plus 0.18 times 61 = 71.7, so the reported 67.5 understates satisfaction by more than four points. The design itself is sound and was probably chosen deliberately: at n = 400 drawn at random only about 72 respondents would be B2B, giving that subgroup a margin of roughly plus or minus 11.5 percentage points against about plus or minus 6.9 at n = 200. The design buys subgroup precision, and weighting is the price of it."
+        },
         {
             "type": "skills",
             "question": "A colleague argues that their satisfaction survey is reliable because 4 000 customers responded, and the confidence interval is only plus or minus 1.5 points. What would you say?",
