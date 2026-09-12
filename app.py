@@ -64973,6 +64973,8 @@ Beyond a single test statistic, three features turn up in more advanced result t
 
 Advanced tables might showcase outcomes from **multivariate tests**, where multiple factors and their interactions are analysed simultaneously. Interpreting **coefficients**, especially in tables emerging from regression analyses, provides insights into relationships between variables.
 
+*If regression is new, the linear regression section below defines it and sets out the equation. The short version: it fits a straight line through the data and reports the line's slope, and that slope is the coefficient.*
+
 **The clause that changes everything.** In a multiple regression, a coefficient is the change in the outcome for a one-unit change in that predictor **holding the other predictors constant**. That phrase is not decoration. It means a coefficient's value depends on which other variables are in the model, so the *same predictor can have a different coefficient in two models fitted to the same data*, and both are correct answers to different questions.
 
 **Worked example — Nordtre AS, 36 months of data.** Predicting monthly revenue (kNOK) from advertising spend (kNOK) and average discount depth (percentage points).
@@ -65171,6 +65173,66 @@ One of the knowledge outcomes is about updating your knowledge of **quantitative
 | Evaluation weakness | Silent about mechanism | Hard to generalise, easy to over-read |
 
 The practical use in an assignment: when a KPI moves and the result table cannot say why, qualitative evidence is where the explanation usually lives. In the support-desk case from Lesson 1.1, the numbers showed handling time falling and repeat contacts rising; only the call notes or a few staff interviews explain that agents were closing calls early to hit the target.
+
+#### Linear regression
+
+**Linear regression is a method to model the correlation between a dependent variable and one or more independent variables by using a linear equation to observed data.**
+
+In other words: it draws the straight line that best follows a cloud of points, and then reports the equation of that line so the relationship can be described, quantified and used to predict.
+
+##### Anatomy of the equation
+
+> **y = b₀ + b₁x + ε**
+
+| Term | Name | What it is |
+|---|---|---|
+| **y** | Dependent variable | The outcome being explained. Also called the response or target |
+| **x** | Independent variable | The predictor doing the explaining. Also called the explanatory variable or feature |
+| **b₀** | Intercept | The predicted value of y when x is zero |
+| **b₁** | Slope, or coefficient | The change in y for a one-unit increase in x — the number a result table reports |
+| **ε** | Error term | Everything about y the line does not capture. Its realised values are the **residuals** from the section above |
+
+**One independent variable** makes it a *simple* linear regression, which is the case the illustration shows. **More than one** makes it *multiple* linear regression, which is the multivariate case covered earlier, where each coefficient is read holding the others constant.
+
+##### How "best" is decided: least squares
+
+The line is not drawn by eye. It is the line that makes the **sum of the squared residuals** as small as possible — hence *ordinary least squares*, the method behind almost every regression table you will meet.
+
+Why squared rather than simply added up? Two reasons, and both matter for evaluation:
+
+| | Consequence |
+|---|---|
+| **Squaring removes the sign** | Positive and negative misses cannot cancel each other out. Without it, a line that overshoots by 100 and undershoots by 100 would score as perfect |
+| **Squaring punishes large misses disproportionately** | A residual of 10 counts a hundred times a residual of 1. The fitted line therefore bends toward outliers — which is precisely why the residual analysis above is not optional. A single extreme point can move the whole line |
+
+##### Two precision notes on the definition
+
+**"Correlation" is doing informal work here.** Strictly, a regression models the **conditional mean of y given x** — the average value of y at each level of x — rather than a correlation. The distinction has practical consequences:
+
+| | Correlation (r) | Regression (b₁) |
+|---|---|---|
+| Symmetry | Symmetric. r between x and y is the same as between y and x | **Asymmetric.** Regressing y on x gives a different line from regressing x on y |
+| Units | Unitless, always between −1 and +1 | In the units of the problem: kroner per kNOK spent, minutes per extra order |
+| Answers | *Is there a linear association, and how tight?* | *How much does y change per unit of x?* |
+| Use | Screening for relationships | Quantifying and predicting |
+
+They are connected: **in a simple linear regression, R² is exactly r²**. That is a useful check on a result table, and it stops being true the moment a second predictor enters.
+
+**"To observe data" reads as a slip for "to observed data".** The method fits a linear equation *to data that has been observed*, which is the standard phrasing. Minor, but worth reading past rather than puzzling over.
+
+##### What the picture shows, and what it leaves out
+
+The illustration — points scattered around a rising orange line — is the honest picture of a regression, and three things in it deserve naming.
+
+| In the picture | What it means |
+|---|---|
+| The points do not sit **on** the line | The line is an average, not a rule. Every point's vertical distance from it is a residual |
+| The scatter is **even along the line** | This is what a well-behaved model looks like. A cloud that fans out to the right would be the heteroscedasticity from the section above |
+| The line **stops where the data stops** | And so should any prediction made from it. Extending the line beyond the observed range of x is **extrapolation**, and the model has no evidence there |
+
+The third is the one an assignment tests. A model fitted on advertising budgets between 20 and 120 kNOK says nothing about what 400 kNOK would do — the relationship may flatten, saturate or reverse, and the regression cannot tell you, because it never saw that region.
+
+**And the caution that outranks all of them.** The line quantifies how y moves with x. It does not establish that x *causes* y, no matter how tightly the points hug it. The correlation-is-not-causation section below states the tests that separate the two.
 
 #### Result table analysis with linear regression
 
@@ -66772,6 +66834,26 @@ CURATED_FLASHCARD_SETS = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "front": "Define linear regression and name every term in its equation.",
+            "back": "Linear regression is a method to model the correlation between a dependent variable and one or more independent variables by fitting a linear equation to observed data. Put plainly, it draws the straight line that best follows a cloud of points and reports that line's equation so the relationship can be described, quantified and used to predict. The equation is y = b0 + b1x + epsilon. y is the dependent variable, the outcome being explained, also called the response or target. x is the independent variable, the predictor, also called the explanatory variable or feature. b0 is the intercept, the predicted value of y when x is zero. b1 is the slope or coefficient, the change in y per one-unit increase in x, and it is the number a result table reports. Epsilon is the error term, everything about y the line does not capture, whose realised values are the residuals. One independent variable makes it simple linear regression; more than one makes it multiple linear regression, where each coefficient is read holding the others constant.",
+            "tags": ["linear regression", "definition", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "How does least squares choose the regression line, and why square the residuals?",
+            "back": "The line is the one that makes the sum of the squared residuals as small as possible, which is why the method is called ordinary least squares. Squaring does two things. It removes the sign, so positive and negative misses cannot cancel out: without it, a line overshooting by 100 and undershooting by 100 would score as perfect. And it punishes large misses disproportionately, since a residual of 10 counts a hundred times a residual of 1. The second property has a direct evaluation consequence: the fitted line bends toward outliers, so a single extreme point can move the whole line, which is exactly why residual analysis is not optional.",
+            "tags": ["least squares", "linear regression", "residuals", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "What is the difference between correlation and regression, and how are they connected?",
+            "back": "Correlation is symmetric, so r between x and y equals r between y and x, while regression is asymmetric and regressing y on x gives a different line from regressing x on y. Correlation is unitless and always between minus 1 and plus 1; a regression coefficient is in the units of the problem, such as kroner per kNOK spent. Correlation answers whether there is a linear association and how tight it is, and is used for screening; regression answers how much y changes per unit of x, and is used for quantifying and predicting. Strictly, a regression models the conditional mean of y given x rather than a correlation, which is why the course text's wording is informal. They are connected in one exact way: in a simple linear regression, R squared is exactly r squared. That is a useful check on a result table, and it stops holding the moment a second predictor enters.",
+            "tags": ["correlation", "regression", "r squared", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "Reading the standard linear regression scatter plot: what do the three visible features mean?",
+            "back": "First, the points do not sit on the line. The line is an average, not a rule, and every point's vertical distance from it is a residual. Second, the scatter is even along the line, which is what a well-behaved model looks like; a cloud fanning out to the right would be heteroscedasticity, where the standard errors and therefore the p-values become unreliable. Third, the line stops where the data stops, and so should any prediction made from it. Extending it beyond the observed range of x is extrapolation and the model has no evidence there: a model fitted on advertising budgets between 20 and 120 kNOK says nothing about 400 kNOK, since the relationship may flatten, saturate or reverse and the regression cannot tell you because it never saw that region. Above all of these, the line quantifies how y moves with x but does not establish that x causes y, however tightly the points hug it.",
+            "tags": ["linear regression", "extrapolation", "interpretation", "lesson 1.2", "evo"]
+        },
         {
             "front": "Write the z-score formula with its standard symbols, and use it in both directions.",
             "back": "Z = (x minus mu) divided by sigma, where x is the individual data point, mu is the mean of the distribution and sigma its standard deviation; the result is the distance from the mean counted in standard deviations. Mu and sigma are the population values, and when working from a sample the same formula is written with the sample estimates, z = (x minus x-bar) divided by s. Forwards: with Nordtre order values averaging NOK 742 with a standard deviation of NOK 210, an order of NOK 1 240 gives Z = 498 divided by 210 = 2.37, so it sits 2.37 standard deviations above average, unusual but not extraordinary. Backwards, which is the more useful direction: at Z = 1.96, the 95 percent cut, x = 742 plus 1.96 times 210 = NOK 1 154. That is how a z-score becomes a threshold on a dashboard rather than a number in a report. Note that the course text prints the denominator as delta; the standard symbol is sigma, since delta conventionally means a small change.",
@@ -68909,6 +68991,16 @@ CURATED_PRACTICE_QUESTION_BANK = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "type": "knowledge",
+            "question": "Why is squaring the residuals, rather than just adding them, both necessary and a source of fragility?",
+            "answer": "Necessary because residuals carry signs, so a line that overshoots some points and undershoots others by the same amounts would sum to zero and appear perfect. Squaring removes the sign and forces every miss to count. The fragility comes from the same property: squaring makes a residual of 10 count a hundred times a residual of 1, so the least-squares line is pulled disproportionately toward extreme points. One unusual observation can visibly tilt the whole line and change every coefficient in the table. That is why the fitted line should never be trusted without looking at the residuals, and why an extreme point has to be investigated for its cause rather than either kept silently or deleted silently."
+        },
+        {
+            "type": "skills",
+            "question": "A model fitted on advertising budgets between 20 and 120 kNOK is used to forecast the revenue from a 400 kNOK campaign. What is wrong?",
+            "answer": "That is extrapolation: the prediction sits far outside the range of x the model was fitted on, and the regression has no evidence there. Within the observed range the straight line is a reasonable summary of how revenue moved with spend; beyond it, the true relationship may flatten as the audience saturates, may reverse if heavy spending damages margin, or may hold, and nothing in the fitted model distinguishes those cases because it never saw that region. The line will still print a number, confidently and with a narrow-looking interval, which is what makes the error easy to miss. What I would do instead is state the range the model supports, present the 400 kNOK figure as an assumption rather than a prediction if it is needed at all, and recommend a staged test that extends the observed range before committing the budget."
+        },
         {
             "type": "skills",
             "question": "Order values average NOK 742 with a standard deviation of NOK 210. What order value would you set as an alert threshold at the 95 percent level, and why is that the more useful way to use a z-score?",
