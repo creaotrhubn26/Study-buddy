@@ -65450,6 +65450,61 @@ An error of over four points, and note that it runs in the *unflattering* direct
 
 **And the requirement stratification carries.** You must know the strata and their sizes *in advance*. Splitting by car model works because the manufacturer knows who owns what. Splitting by a variable you would have to survey people to discover is not available to you at sampling time — which is why stratification usually runs on administrative facts (segment, region, model, tenure) rather than on attitudes.
 
+#### Importance of sampling methods in outcome evaluation
+
+**Accuracy and precision.** A beverage company launching a new soft drink might use **stratified sampling**, selecting individuals from different age groups. This ensures they do not miss insights specific to teenagers or seniors, leading to more accurate marketing strategies.
+
+> *Accuracy and precision are two different properties, and the pairing is the most useful idea in this section.* **Accuracy** is how close the estimate sits to the truth — its freedom from bias. **Precision** is how tightly the estimate is pinned down — how little it would move on a repeat.
+
+| | High precision | Low precision |
+|---|---|---|
+| **High accuracy** | The target. Tight *and* centred on the truth | Right on average, but too vague to act on. Fix: more data |
+| **Low accuracy** | **The dangerous case.** Tight, confident, and wrong. A large convenience sample lives here | Vague and wrong. At least it looks unreliable |
+
+The bottom-left cell is the one this whole lesson circles. **A confidence interval measures precision, not accuracy.** It narrows as n grows and it is silent about bias, so a large biased sample produces exactly the reassuring output that an excellent study produces. Stratification helps accuracy by guaranteeing that every age group is present; sample size helps precision. They are different problems with different fixes, and only one of them is visible in the result table.
+
+**Generalisability.** In health research, a sample that closely mirrors the general population's demographics ensures that findings — such as the effectiveness of a new vaccine — can be **generalised to the broader community**.
+
+> *This is external validity, and it trades against internal validity.* A trial that tightly controls who takes part gets a cleaner answer about a narrower group; a trial that admits everybody gets a messier answer about a group you actually care about. The vaccine case has its own vocabulary for the gap: **efficacy** is what the trial measured under controlled conditions, **effectiveness** is what happens in the field with real adherence, real storage and a population the trial under-represented. The second is always the lower number, and reporting the first as if it were the second is a generalisability error, not an arithmetic one.
+
+**Efficiency.** An e-commerce platform assessing user experience might find stratified sampling more efficient, **dividing users by purchase frequency or category**. That gets insights from frequent buyers and occasional shoppers without surveying every user.
+
+> *"Efficient" here has a precise meaning worth knowing.* Stratifying removes the between-group variation from the sampling error, so for the same n the interval is narrower — or equivalently, the same precision costs a smaller sample. The saving is largest when the strata differ a lot from each other and are internally similar, which is exactly the case for frequent versus occasional buyers. If the strata do not really differ, stratifying costs effort and buys nothing.
+
+#### Potential pitfalls and biases in sampled sets
+
+**Selection bias.** A study of modern reading habits that surveys only e-book readers, neglecting those who read exclusively in print, skews toward digital preferences and misses many traditional readers.
+
+The general shape: the sample systematically differs from the population, so the estimate is wrong in a consistent direction. Two more instances from this course: a satisfaction survey answered only by customers who contacted support measures the satisfaction of customers who contacted support; and **survivorship bias**, where studying why customers stay by surveying current customers omits everyone who already left — precisely the group a churn evaluation needs.
+
+**Non-response bias.** In a city's public transport satisfaction survey, if disgruntled commuters tend to respond while satisfied ones ignore it, the results paint an unduly pessimistic picture.
+
+> *This one deserves arithmetic, because it is the pitfall people most consistently underestimate.* Suppose 1 000 commuters are invited, **200 respond**, and 40% of them are satisfied. The margin of error on 200 is ±6.9 points, which sounds respectably tight. Now suppose the 800 who ignored the survey were 70% satisfied — plausible, since contentment is not motivating.
+>
+> True satisfaction = 0.20 × 40% + 0.80 × 70% = **64%**
+>
+> The survey reports 40% ± 6.9. The truth is 64%. **The bias is 24 points and the stated margin is 7.** Non-response bias is not a refinement on the margin of error; it is routinely several times larger than it, and nothing in the survey's own output reveals it. This is why the **response rate** belongs in every write-up alongside the sample size, and why a low response rate is a bigger warning sign than a small sample.
+
+**Sampling error.** A fast-food chain sampling customer preferences at just one outlet might find spicy burgers are a hit — a result that need not hold across outlets with different regional tastes.
+
+> *A precision note on this example.* "Sampling error" in its strict sense is the **random** difference between a sample and its population, the thing the margin of error quantifies and more data shrinks. The single-outlet case is not really that. Sampling from one outlet is a **cluster** or convenience sample, and the problem is systematic: surveying 5 000 customers at that one outlet would produce a very precise measurement of that outlet's preferences and would not get one step closer to the chain's. The distinction matters, because the two have opposite remedies — random error is fixed by **more data**, coverage error only by **better coverage**.
+
+**Overfitting in analysis.** A financial analyst predicting market trends from a small sample taken during a particularly volatile week may build a model tailored to that week's anomalies, which falters over a broader timeframe.
+
+> *This is the R² trap from earlier in the lesson, in its natural habitat.* The model will show an excellent fit — small samples of volatile periods contain plenty of structure to fit — and that fit is a measurement of how well the model memorised the week, not of how well it predicts. The defence is the one named in the regression section: **evaluate on data the model has not seen.** A hold-out period, or cross-validation, is the only diagnostic that catches this, and it is the one a result table never shows.
+
+##### The four pitfalls, sorted by what fixes them
+
+| Pitfall | Type | Does more data fix it? | The actual fix |
+|---|---|---|---|
+| Selection bias | Systematic | **No** | A sampling frame covering the whole target population |
+| Non-response bias | Systematic | **No** | Raise the response rate; compare responders with non-responders; weight |
+| Sampling error (strict sense) | Random | **Yes** | A larger sample |
+| Coverage / cluster error (the one-outlet case) | Systematic | **No** | Sample across outlets, not more within one |
+| Overfitting | Analytical | Partly | Hold-out evaluation; a simpler model |
+
+**Only one row says yes.** That is the summary of this whole section: the single problem that sample size solves is the one the margin of error already tells you about, and every other pitfall here is invisible to the statistics and survives any amount of extra data.
+
 ##### The five sampling methods, and the risk in each
 
 | Sampling method | How it works | Evaluation risk |
@@ -65460,13 +65515,23 @@ An error of over four points, and note that it runs in the *unflattering* direct
 | **Convenience** | Whoever is easiest to reach | High bias, very common in practice, often unstated |
 | **Self-selected** | Respondents opt in | Strong bias toward people with strong opinions |
 
-Two failures worth naming in an evaluation write-up:
+Before any statistic in a result table is read, evaluate the sampling method. **No amount of correct arithmetic repairs a badly drawn sample, and no confidence interval reveals one.**
 
-**Selection bias.** The sample systematically differs from the population. A satisfaction survey answered only by customers who contacted support does not measure customer satisfaction. It measures the satisfaction of customers who contacted support.
+##### The keyhole
 
-**Survivorship bias.** You only see the cases that made it. Evaluating why customers stay by studying current customers omits everyone who already left, which is precisely the group a churn evaluation needs.
+> Understanding the nuances of statistical inference in sampled sets is akin to mastering the art of **looking through a keyhole** to understand the room beyond. With the proper techniques, the potential pitfalls in mind, and real-world examples as guiding posts, analysts can transform these glimpses into accurate reflections of larger realities.
 
-**And the point that makes this section non-optional.** Before any statistic in a result table is read, evaluate the sampling method. No amount of correct arithmetic repairs a badly drawn sample, and no confidence interval reveals one.
+The image is well chosen, and it repays being pushed a little further:
+
+| Through a keyhole | In a sample |
+|---|---|
+| What you see is **genuinely there** | The sample is real data. The problem is never that it is fake |
+| You see a **cone**, and cannot see its edges from inside | A sample tells you nothing about who it excluded. The gap does not announce itself |
+| **Pressing your eye closer** sharpens the same slice | More data through the same biased frame is a clearer view of the same partial room |
+| You can infer the room if you know **where the door is** | You can generalise if you know how the sample relates to the population |
+| Two keyholes in different walls beat one | Triangulating across sources beats one very large sample |
+
+The third row is the practical one. Nearly every instinct when a result looks shaky is to collect more data, and for random error that is right. For everything else in this section, it sharpens the same partial view — which is why the sampling design has to be evaluated before the sample size.
 
 #### Sample size and why small samples mislead
 
@@ -67314,6 +67379,36 @@ CURATED_FLASHCARD_SETS = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "front": "Accuracy and precision are different properties. Set out the four combinations and say which is dangerous.",
+            "back": "Accuracy is how close an estimate sits to the truth, meaning its freedom from bias. Precision is how tightly it is pinned down, meaning how little it would move on a repeat. High accuracy with high precision is the target. High accuracy with low precision is right on average but too vague to act on, and more data fixes it. Low accuracy with low precision is vague and wrong, which at least looks unreliable. The dangerous cell is low accuracy with high precision: tight, confident and wrong, which is where a large convenience sample lives. This matters because a confidence interval measures precision, not accuracy: it narrows as n grows and is silent about bias, so a large biased sample produces exactly the reassuring output an excellent study produces. Stratification helps accuracy by guaranteeing every group is present; sample size helps precision. Different problems, different fixes, and only one of them is visible in the result table.",
+            "tags": ["accuracy", "precision", "bias", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "What do accuracy and precision, generalisability and efficiency each contribute as reasons to choose a sampling method?",
+            "back": "Accuracy and precision: a beverage company launching a soft drink uses stratified sampling across age groups so insights specific to teenagers or seniors are not missed, giving more accurate marketing strategies. Generalisability: in health research a sample mirroring the general population's demographics lets a finding such as vaccine effectiveness be generalised to the broader community. This is external validity, and it trades against internal validity, since a tightly controlled trial gives a cleaner answer about a narrower group. The vaccine case has vocabulary for the gap: efficacy is what the trial measured under controlled conditions and effectiveness is what happens in the field, the second always lower. Efficiency: an e-commerce platform dividing users by purchase frequency gets insights from frequent and occasional buyers without surveying everyone. Efficient has a precise meaning here, since stratifying removes between-group variation from the sampling error, so the same precision costs a smaller sample. The saving is largest when strata differ from each other and are internally similar, and if they do not really differ, stratifying buys nothing.",
+            "tags": ["sampling methods", "generalisability", "efficiency", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "A transport survey invites 1000 commuters, 200 respond, and 40 percent of them are satisfied. Why is the margin of error the wrong thing to worry about?",
+            "back": "Because non-response bias is routinely several times larger than the margin, and nothing in the survey's own output reveals it. The margin on 200 responses is plus or minus 6.9 percentage points, which sounds respectably tight. But if the 800 who ignored the survey were 70 percent satisfied, which is plausible since contentment is not motivating, then true satisfaction is 0.20 times 40 percent plus 0.80 times 70 percent, which is 64 percent. The survey reports 40 plus or minus 6.9 and the truth is 64: the bias is 24 points against a stated margin of 7. This is why the response rate belongs in every write-up alongside the sample size, and why a low response rate is a bigger warning sign than a small sample.",
+            "tags": ["non-response bias", "response rate", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "A fast-food chain surveys one outlet and finds spicy burgers are a hit. Is this sampling error?",
+            "back": "Not in the strict sense, and the distinction changes the remedy. Sampling error properly means the random difference between a sample and its population, which is what the margin of error quantifies and what more data shrinks. Sampling from a single outlet is a cluster or convenience sample, and its problem is systematic: surveying 5 000 customers at that one outlet would measure that outlet's preferences very precisely and would not get one step closer to the chain's. Random error is fixed by more data; coverage error is fixed only by better coverage, meaning sampling across outlets rather than more within one. Confusing the two leads to the most common wrong response in practice, which is collecting more data from the same flawed frame.",
+            "tags": ["sampling error", "coverage", "cluster sampling", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "Which sampling pitfalls does a larger sample actually fix?",
+            "back": "Only one. Selection bias is systematic and needs a sampling frame covering the whole target population. Non-response bias is systematic and needs a higher response rate, a comparison of responders with non-responders, or weighting. Coverage or cluster error, such as the single fast-food outlet, is systematic and needs sampling across the population rather than more within one part of it. Overfitting is analytical and needs hold-out evaluation or a simpler model, with more data helping only partly. Sampling error in the strict sense is the single random one, and a larger sample does fix it. So the one problem sample size solves is the one the margin of error already tells you about, and every other pitfall is invisible to the statistics and survives any amount of extra data.",
+            "tags": ["pitfalls", "bias", "sample size", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "The course likens inference from a sample to looking through a keyhole. What does the image get right?",
+            "back": "Five things. What you see through a keyhole is genuinely there, just as a sample is real data and the problem is never that it is fake. You see a cone and cannot see its edges from inside, just as a sample tells you nothing about who it excluded and the gap does not announce itself. Pressing your eye closer sharpens the same slice, just as more data through the same biased frame gives a clearer view of the same partial room. You can infer the room if you know where the door is, just as you can generalise if you know how the sample relates to the population. And two keyholes in different walls beat one, just as triangulating across sources beats one very large sample. The third is the practical one: nearly every instinct when a result looks shaky is to collect more data, which is right for random error and merely sharpens the same partial view for everything else, which is why the sampling design is evaluated before the sample size.",
+            "tags": ["keyhole", "sampling", "inference", "lesson 1.2", "evo"]
+        },
         {
             "front": "Name the five roles of statistical inference from lesson 1.2, and the tool behind each.",
             "back": "Quantifying uncertainty, through confidence intervals, which measure the degree of ambiguity in a result: 'we are 95 percent confident that between 30 and 40 percent of voters favour candidate A' carries a width where a point estimate does not, and the width is what tells you how much the data pins down. Hypothesis testing, which frames whether an observed change, such as sales after a new website layout, is statistically significant or likely due to random chance. Driving decisions, where a product tested in a small market guides whether a wider release is sensible, informing managers about likely outcomes and risks. Enhancing reliability and credibility, by establishing that findings are not artefacts of the sample or coincidences, so results gain trust and acceptance. And handling complexity, through tools such as multivariate regression that examine several variables simultaneously. They are five uses of the same machinery rather than five techniques, and the first two are the two branches of inference, estimation and testing.",
@@ -69255,6 +69350,12 @@ CURATED_EXAM_QUESTION_BANK = {
         {
             "type": "skills",
             "source": "core_curated",
+            "question": "A satisfaction survey reports 40 percent satisfied with a margin of error of plus or minus 6.9 points from 200 responses to 1000 invitations, and the team proposes raising the sample to 4000 invitations to tighten the result. Evaluate the proposal.",
+            "answer": "The proposal treats a systematic problem as a random one, so it will buy precision the study does not need and leave the error that is actually driving the number untouched. The 20 percent response rate is the finding here. Non-response bias arises when responders differ systematically from non-responders, and dissatisfaction is far more motivating than contentment, so the responding fifth is likely to skew negative. The arithmetic shows the scale: if the 800 who did not answer were 70 percent satisfied, true satisfaction is 0.20 times 40 plus 0.80 times 70, which is 64 percent. The survey reports 40 plus or minus 6.9 while the truth is 64, so the bias is 24 points against a stated margin of 7, and nothing in the survey's output reveals it. Quadrupling the invitations at the same response rate yields 800 responses and a margin of about plus or minus 3.5 points, which means the same 24-point error reported with twice the confidence. That is the low-accuracy, high-precision cell: tight, confident and wrong. What I would do instead is attack the response rate, since every point of it removes bias where sample size only removes noise; compare responders against non-responders on whatever administrative data exists, such as ticket type, route or usage frequency, to measure how they differ; follow up a random subsample of non-responders intensively, because a hundred hard-won responses from that group tell you more about the bias than three thousand more of the easy kind; and weight the results by any characteristic where responders are shown to be unrepresentative. I would also insist the response rate is reported next to the sample size in every version of the write-up. Exam use: whenever a question offers a larger sample as the fix, first establish whether the error is random or systematic, because more data fixes only the first."
+        },
+        {
+            "type": "skills",
+            "source": "core_curated",
             "question": "A company plans a national product launch and will first test in one city. Design the sampling reasoning, say what inference can and cannot tell them, and identify the failure most likely to invalidate the result.",
             "answer": "The test market is itself a sample, and the whole inference depends on what it is a sample of. If the pilot city was chosen because it is convenient, because the company already has a strong presence there, or because the product was expected to do well there, then the inference runs from a self-selected sample to a national population, and the confidence interval computed from the pilot will understate the real uncertainty badly. It will look narrow and be wrong. So the city has to be selected for how well it represents the national target market on the variables that plausibly affect uptake, which typically means demographics, income distribution, competitor presence and existing brand awareness, and the write-up must state on what basis it was chosen. That is the hidden condition in the course's third role for inference: it informs a decision only when the sample and the decision are about the same population. What inference can then tell them is the size of the uptake with a stated interval, whether the uptake differs from a benchmark by more than random variation would explain, and what range of national outcomes is consistent with the pilot. What it cannot tell them is whether the pilot city is representative, since that is a design question no statistic detects; whether the product caused the uptake, absent a control area; or whether the launch is profitable, which needs the effect size converted into revenue against cost. The failure most likely to invalidate the result is therefore selection of the market itself, not the arithmetic. A secondary one is scale: a pilot benefits from attention, dedicated staff and novelty that a national rollout cannot reproduce, so the pilot result is an upper bound rather than a forecast. I would recommend two or three contrasting pilot cities chosen in advance, a comparison area with no launch, the criteria for city selection documented before the data arrives, and the national projection reported as a range with the assumptions named."
         },
@@ -69563,6 +69664,16 @@ CURATED_PRACTICE_QUESTION_BANK = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "type": "knowledge",
+            "question": "What is the difference between efficacy and effectiveness, and why does the distinction belong in a discussion of generalisability?",
+            "answer": "Efficacy is what a trial measures under controlled conditions, with selected participants, monitored adherence and ideal handling. Effectiveness is what happens in the field, with real adherence, real storage conditions and a population the trial probably under-represented. Effectiveness is essentially always the lower number. The distinction belongs to generalisability because it names the gap between the population studied and the population the finding will be applied to, which is external validity. It also shows the trade-off with internal validity: tightening who takes part gives a cleaner answer about a narrower group, while admitting everyone gives a messier answer about the group you actually care about. Reporting efficacy as though it were effectiveness is a generalisability error rather than an arithmetic one, and no statistic in the trial's own output detects it."
+        },
+        {
+            "type": "skills",
+            "question": "An analyst builds a stock prediction model on one volatile week of data and reports an excellent fit. What is happening and what would you require?",
+            "answer": "Overfitting. A small sample from a volatile period contains plenty of structure for a flexible model to fit, so the excellent fit measures how well the model memorised that week rather than how well it predicts anything. The fit statistic will look best precisely when the problem is worst, which is what makes this hard to catch by inspection. I would require evaluation on data the model has not seen: a hold-out period from a different market regime, or cross-validation across several periods, with the gap between in-sample and out-of-sample performance reported explicitly. I would also ask whether the model has more parameters than the week can support, and prefer the simpler specification where the two perform comparably out of sample. The general point is that every other diagnostic in a result table asks whether the model describes this dataset well, and only a hold-out asks whether it will work on data it has not seen, which is the question a trading decision actually depends on."
+        },
         {
             "type": "knowledge",
             "question": "Why does the presence of a p-value in a report not, by itself, make the finding credible?",
