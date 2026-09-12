@@ -1,0 +1,977 @@
+"""Interactive simulators for EVO lesson 1.2 - Statistical Inference.
+
+The lesson explains sampling, testing and regression in prose and tables. These
+simulators let the same ideas be handled: move a slider and watch the interval
+narrow, re-roll and watch five intervals in a hundred miss the truth, drag an
+outlier and watch the least-squares line follow it.
+
+Every section states the point it is making underneath the chart, so a screenshot
+is still worth something on its own.
+
+Colours come from the validated categorical palette (slots 1-3) and the fixed
+status palette. Aqua sits below 3:1 on a light surface, so every chart that uses
+it also carries direct labels or a table - the relief rule.
+"""
+
+import altair as alt
+import mistune
+import numpy as np
+import pandas as pd
+import streamlit as st
+from scipy import stats
+
+# Categorical slots 1-3 - validated all-pairs in both modes.
+C_BLUE = "#2a78d6"
+C_ORANGE = "#eb6834"
+C_AQUA = "#1baf7a"
+# Status palette - fixed, never themed. Always paired with a label.
+S_GOOD = "#0ca30c"
+S_CRITICAL = "#d03b3b"
+S_WARNING = "#fab219"
+INK_MUTED = "#52514e"
+
+CHART_H = 260
+
+# Opening draws. Each is an ordinary draw, not a filtered one; the re-roll button
+# shows how much the picture moves, which is itself part of the lesson.
+_SEEDS = {"a2": 7, "b3": 1, "drill": 7}
+
+
+def _chart_base(df):
+    return alt.Chart(df).properties(height=CHART_H)
+
+
+_MD = mistune.create_markdown()
+
+
+def _callout(msg, colour=C_BLUE, tint="rgba(42,120,214,0.06)"):
+    """A coloured callout whose body is real markdown.
+
+    Streamlit does not process markdown inside a raw HTML block, so the text is
+    rendered to HTML here first - otherwise **bold** reaches the page as asterisks.
+    """
+    body = _MD(msg)
+    st.markdown(
+        f'<div style="border-left:3px solid {colour};padding:0.55rem 0.95rem;'
+        f'margin:0.4rem 0 1.2rem 0;background:{tint};">{body}</div>',
+        unsafe_allow_html=True,
+    )
+
+
+def _point(msg):
+    """The teaching line under a chart."""
+    _callout(msg)
+
+
+def _seed_control(key, label="Re-roll the random draw"):
+    state_key = f"vl_seed_{key}"
+    if state_key not in st.session_state:
+        st.session_state[state_key] = _SEEDS.get(key, 7)
+    if st.button(f"🎲 {label}", key=f"vl_btn_{key}"):
+        st.session_state[state_key] += 1
+    return st.session_state[state_key]
+
+
+# --------------------------------------------------------------------------
+# A. Sampling and uncertainty
+# --------------------------------------------------------------------------
+
+@st.cache_data(show_spinner=False)
+def _population(shape, size=200_000, seed=0):
+    rng = np.random.default_rng(seed)
+    if shape == "Normal":
+        return rng.normal(742, 210, size)
+    if shape == "Right-skewed (order values)":
+        return 300 + rng.lognormal(mean=5.9, sigma=0.75, size=size)
+    if shape == "Bimodal (two customer types)":
+        pick = rng.random(size) < 0.62
+        return np.where(pick, rng.normal(520, 120, size), rng.normal(1180, 190, size))
+    return rng.uniform(200, 1300, size)
+
+
+@st.cache_data(show_spinner=False)
+def _sample_means(shape, n, reps, seed):
+    pop = _population(shape)
+    rng = np.random.default_rng(seed)
+    idx = rng.integers(0, pop.size, size=(reps, n))
+    return pop[idx].mean(axis=1)
+
+
+def _sampling_distribution():
+    st.markdown("#### 1 · Utvalgsfordelingen og √n")
+    st.caption(
+        "Populasjonen kan ha hvilken som helst form. Gjennomsnittene av utvalg fra den "
+        "blir likevel tilnærmet normalfordelte — og sprer seg mindre jo større n er."
+    )
+    c1, c2 = st.columns([1, 1])
+    with c1:
+        shape = st.selectbox(
+            "Populasjonens form",
+            ["Right-skewed (order values)", "Normal", "Bimodal (two customer types)", "Uniform"],
+            key="vl_a1_shape",
+        )
+    with c2:
+        n = st.select_slider("Utvalgsstørrelse n", [5, 10, 25, 50, 100, 200, 400], value=25, key="vl_a1_n")
+
+    pop = _population(shape)
+    means = _sample_means(shape, n, 4000, 11)
+    mu, sigma = pop.mean(), pop.std(ddof=0)
+    se_theory = sigma / np.sqrt(n)
+
+    lo, hi = np.percentile(pop, 0.2), np.percentile(pop, 99.8)
+    # Bin in numpy rather than in Vega: 200k rows would blow Altair's row limit,
+    # and the browser has no use for the raw values.
+    edges = np.linspace(lo, hi, 46)
+
+    def _binned(values):
+        counts, _ = np.histogram(np.clip(values, lo, hi), bins=edges)
+        return pd.DataFrame({"verdi": (edges[:-1] + edges[1:]) / 2, "andel": counts / counts.sum()})
+
+    pop_df, mean_df = _binned(pop), _binned(means)
+    width = float(edges[1] - edges[0])
+
+    left = (
+        _chart_base(pop_df)
+        .mark_bar(color=C_BLUE, cornerRadiusTopLeft=3, cornerRadiusTopRight=3, size=max(3, 520 / 46))
+        .encode(
+            x=alt.X("verdi:Q", scale=alt.Scale(domain=[lo, hi]), title="Populasjonen"),
+            y=alt.Y("andel:Q", title="Andel", axis=alt.Axis(format="%", grid=True)),
+            tooltip=[alt.Tooltip("verdi:Q", format=",.0f", title="Verdi"),
+                     alt.Tooltip("andel:Q", format=".2%", title="Andel")],
+        )
+        .properties(title="Populasjonen — hele fordelingen")
+    )
+    right = (
+        _chart_base(mean_df)
+        .mark_bar(color=C_ORANGE, cornerRadiusTopLeft=3, cornerRadiusTopRight=3, size=max(3, 520 / 46))
+        .encode(
+            x=alt.X("verdi:Q", scale=alt.Scale(domain=[lo, hi]),
+                    title=f"Gjennomsnitt av utvalg på n = {n}"),
+            y=alt.Y("andel:Q", title="Andel", axis=alt.Axis(format="%", grid=True)),
+            tooltip=[alt.Tooltip("verdi:Q", format=",.0f", title="Gjennomsnitt"),
+                     alt.Tooltip("andel:Q", format=".2%", title="Andel")],
+        )
+        .properties(title="Utvalgsfordelingen — 4 000 utvalgsgjennomsnitt")
+    )
+    rule = alt.Chart(pd.DataFrame({"x": [mu]})).mark_rule(color=INK_MUTED, strokeDash=[4, 3], size=2).encode(x="x:Q")
+    st.altair_chart((left + rule) | (right + rule), use_container_width=True)
+
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("Populasjonens μ", f"{mu:,.0f}")
+    m2.metric("Populasjonens σ", f"{sigma:,.0f}")
+    m3.metric("SE = σ/√n", f"{se_theory:,.1f}")
+    m4.metric("Faktisk spredning", f"{means.std(ddof=1):,.1f}")
+
+    halved = sigma / np.sqrt(n * 2)
+    _point(
+        f"**Begge histogrammene har samme x-akse.** Populasjonen er bred; gjennomsnittene klumper seg. "
+        f"Det er dette som gjør inferens mulig.\n\n"
+        f"**Og legg merke til √n:** dobler du n fra {n} til {n*2}, faller SE fra {se_theory:,.1f} til "
+        f"{halved:,.1f} — en forbedring på **{(1 - halved/se_theory)*100:.0f} %**, ikke 50 %. "
+        f"Å halvere usikkerheten koster fire ganger utvalget."
+    )
+
+
+@st.cache_data(show_spinner=False)
+def _coverage_runs(shape, n, level, runs, seed):
+    pop = _population(shape)
+    mu = pop.mean()
+    rng = np.random.default_rng(seed)
+    idx = rng.integers(0, pop.size, size=(runs, n))
+    draws = pop[idx]
+    xbar = draws.mean(axis=1)
+    s = draws.std(axis=1, ddof=1)
+    tcrit = stats.t.ppf(1 - (1 - level) / 2, n - 1)
+    half = tcrit * s / np.sqrt(n)
+    return mu, xbar, xbar - half, xbar + half
+
+
+@st.cache_data(show_spinner=False)
+def _true_coverage(shape, n, level, runs=20_000):
+    """Actual coverage of the t-interval, measured rather than assumed.
+
+    On a skewed population the sample mean is not yet normal at small n, so the
+    interval covers less often than its label claims. That gap is worth showing.
+    """
+    pop = _population(shape)
+    mu = pop.mean()
+    rng = np.random.default_rng(99)
+    idx = rng.integers(0, pop.size, size=(runs, n))
+    draws = pop[idx]
+    xbar = draws.mean(axis=1)
+    s = draws.std(axis=1, ddof=1)
+    half = stats.t.ppf(1 - (1 - level) / 2, n - 1) * s / np.sqrt(n)
+    return float(((xbar - half <= mu) & (xbar + half >= mu)).mean())
+
+
+def _coverage():
+    st.markdown("#### 2 · Hva 95 % faktisk betyr")
+    st.caption(
+        "Hvert vannrett strek er ett intervall fra ett utvalg. Den stiplede linja er den sanne "
+        "populasjonsverdien — som du i virkeligheten aldri ser."
+    )
+    c1, c2, c3, c4 = st.columns([1.2, 1, 1, 1])
+    with c1:
+        shape = st.selectbox("Populasjonens form",
+                             ["Normal", "Right-skewed (order values)", "Bimodal (two customer types)"],
+                             key="vl_a2_shape")
+    with c2:
+        n = st.select_slider("Utvalgsstørrelse n", [10, 20, 40, 80, 160], value=40, key="vl_a2_n")
+    with c3:
+        level = st.select_slider("Konfidensnivå", [0.80, 0.90, 0.95, 0.99], value=0.95,
+                                 format_func=lambda v: f"{v:.0%}", key="vl_a2_lvl")
+    with c4:
+        st.write("")
+        seed = _seed_control("a2", "Trekk 100 nye utvalg")
+
+    mu, xbar, lo, hi = _coverage_runs(shape, n, level, 100, seed)
+    hit = (lo <= mu) & (hi >= mu)
+    df = pd.DataFrame({
+        "kjøring": np.arange(1, 101), "lav": lo, "høy": hi, "snitt": xbar,
+        "treff": np.where(hit, "Fanger sannheten", "Bommer"),
+    })
+
+    bars = (
+        alt.Chart(df).mark_rule(size=3, strokeCap="round")
+        .encode(
+            y=alt.Y("kjøring:O", axis=None),
+            x=alt.X("lav:Q", title="Estimert gjennomsnitt", scale=alt.Scale(zero=False)),
+            x2="høy:Q",
+            color=alt.Color("treff:N",
+                            scale=alt.Scale(domain=["Fanger sannheten", "Bommer"], range=[C_BLUE, S_CRITICAL]),
+                            legend=alt.Legend(title=None, orient="top")),
+            tooltip=[alt.Tooltip("kjøring:O", title="Kjøring"),
+                     alt.Tooltip("lav:Q", title="Nedre", format=",.0f"),
+                     alt.Tooltip("høy:Q", title="Øvre", format=",.0f"),
+                     alt.Tooltip("treff:N", title="Utfall")],
+        ).properties(height=420)
+    )
+    dots = alt.Chart(df).mark_point(size=14, filled=True, opacity=0.85).encode(
+        y=alt.Y("kjøring:O", axis=None), x="snitt:Q",
+        color=alt.Color("treff:N", scale=alt.Scale(domain=["Fanger sannheten", "Bommer"],
+                                                   range=[C_BLUE, S_CRITICAL]), legend=None),
+    )
+    truth = alt.Chart(pd.DataFrame({"x": [mu]})).mark_rule(
+        color=INK_MUTED, strokeDash=[5, 4], size=2).encode(x="x:Q")
+    st.altair_chart(bars + dots + truth, use_container_width=True)
+
+    misses = int((~hit).sum())
+    true_cov = _true_coverage(shape, n, level)
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("Bommer", f"{misses} av 100")
+    m2.metric("Lovet", f"{(1-level)*100:.0f} av 100")
+    m3.metric("Faktisk over 20 000 kjøringer", f"{(1-true_cov)*100:.1f} av 100")
+    m4.metric("Snittbredde", f"{np.mean(hi - lo):,.0f}")
+    _point(
+        f"**De {level:.0%} beskriver prosedyren, ikke det enkelte intervallet.** "
+        f"Her bommet {misses} av 100. Trykk «Trekk 100 nye utvalg» noen ganger: tallet svinger en god del "
+        f"rundt {(1-level)*100:.0f} — hundre kjøringer er i seg selv et lite utvalg.\n\n"
+        f"**Prøv 99 %:** færre bommer, og hvert intervall blir bredere. Du kan ikke kjøpe sikkerhet "
+        f"uten å betale i presisjon. Og et enkelt intervall inneholder sannheten eller ikke — "
+        f"du får aldri vite hvilket."
+    )
+
+    shortfall = (1 - level) - (1 - true_cov)
+    if abs(shortfall) > 0.008:
+        _callout(
+            f"**Og her er noe verdt å oppdage: løftet holdes ikke helt.** Over 20 000 kjøringer fanger "
+            f"disse intervallene sannheten **{true_cov:.1%}** av gangene, ikke {level:.0%}.\n\n"
+            f"Det er ikke en feil i simulatoren. t-intervallet forutsetter at *utvalgsgjennomsnittet* er "
+            f"tilnærmet normalfordelt, og på en skjev populasjon tar det større n før det blir sant. "
+            f"Med n = {n} her er det ikke sant nok ennå.\n\n"
+            f"**Skru n oppover og se dekningen krype mot {level:.0%}.** Dette er sentralgrenseteoremet "
+            f"observert i praksis — og en påminnelse om at «95 %» er en *forutsetning som må holde*, "
+            f"ikke en garanti som følger med formelen.",
+            S_WARNING, "rgba(250,178,25,0.10)")
+
+
+def _bias_vs_noise():
+    st.markdown("#### 3 · Skjevhet mot støy — det smale og feilaktige intervallet")
+    st.caption(
+        "Skru opp utvalget og se intervallet smalne. Skru så på skjevheten og se at det fortsatt "
+        "smalner — rundt feil verdi."
+    )
+    c1, c2 = st.columns(2)
+    with c1:
+        bias = st.slider("Skjevhet i utvalget (i standardavvik)", 0.0, 1.0, 0.35, 0.05, key="vl_a3_bias",
+                         help="F.eks. bare kunder som kontaktet support svarte")
+    with c2:
+        max_n = st.select_slider("Hvor stort utvalg tar vi til slutt?", [100, 400, 1600, 6400],
+                                 value=1600, key="vl_a3_n")
+
+    mu, sigma = 742.0, 210.0
+    ns = np.unique(np.round(np.geomspace(20, max_n, 22)).astype(int))
+    se = sigma / np.sqrt(ns)
+    centre = mu + bias * sigma
+    df = pd.DataFrame({"n": ns, "senter": centre, "lav": centre - 1.96 * se, "høy": centre + 1.96 * se})
+    df["fanger"] = np.where((df["lav"] <= mu) & (df["høy"] >= mu), "Fanger sannheten", "Bommer")
+
+    band = alt.Chart(df).mark_area(opacity=0.22, color=C_BLUE).encode(
+        x=alt.X("n:Q", scale=alt.Scale(type="log"), title="Utvalgsstørrelse (log-skala)"),
+        y=alt.Y("lav:Q", title="Estimert gjennomsnitt", scale=alt.Scale(zero=False)), y2="høy:Q",
+    )
+    line = alt.Chart(df).mark_line(size=2, color=C_BLUE).encode(x="n:Q", y="senter:Q")
+    pts = alt.Chart(df).mark_point(size=55, filled=True).encode(
+        x="n:Q", y="senter:Q",
+        color=alt.Color("fanger:N", scale=alt.Scale(domain=["Fanger sannheten", "Bommer"],
+                                                    range=[C_BLUE, S_CRITICAL]),
+                        legend=alt.Legend(title=None, orient="top")),
+        tooltip=[alt.Tooltip("n:Q", title="n"), alt.Tooltip("lav:Q", format=",.0f", title="Nedre"),
+                 alt.Tooltip("høy:Q", format=",.0f", title="Øvre"), alt.Tooltip("fanger:N", title="Utfall")],
+    )
+    truth = alt.Chart(pd.DataFrame({"y": [mu], "etikett": ["Sann verdi 742"]})).mark_rule(
+        color=INK_MUTED, strokeDash=[5, 4], size=2).encode(y="y:Q")
+    tlabel = alt.Chart(pd.DataFrame({"y": [mu], "t": ["Sann verdi = 742"]})).mark_text(
+        align="left", dx=6, dy=-8, color=INK_MUTED, fontSize=11).encode(y="y:Q", text="t:N")
+    st.altair_chart((band + line + pts + truth + tlabel).properties(height=320), use_container_width=True)
+
+    first_miss = df.loc[df["fanger"] == "Bommer", "n"]
+    m1, m2 = st.columns(2)
+    m1.metric("Skjevhet i kroner", f"{bias*sigma:,.0f}")
+    m2.metric("Bommer fra og med n =", f"{int(first_miss.iloc[0]):,}" if len(first_miss) else "bommer aldri")
+    if bias == 0:
+        _point("**Uten skjevhet:** intervallet smalner rundt sannheten, og fanger den nesten alltid. "
+               "Dette er den situasjonen all formelverket forutsetter. Dra nå i skjevhets-slideren.")
+    else:
+        _point(
+            f"**Intervallet blir smalere og mer selvsikkert — og beveger seg aldri mot sannheten.** "
+            f"Skjevheten på {bias*sigma:,.0f} kr forsvinner ikke med mer data; den blir bare målt mer presist. "
+            f"\n\nDet er dette som menes med at et konfidensintervall måler **presisjon, ikke nøyaktighet**. "
+            f"Store utvalg gjør et skjevt estimat *farligere*, ikke tryggere, fordi rapporten ser mer overbevisende ut."
+        )
+
+
+# --------------------------------------------------------------------------
+# B. Testing and effect size
+# --------------------------------------------------------------------------
+
+def _p_vs_d():
+    st.markdown("#### 4 · p-verdi mot effektstørrelse")
+    st.caption("Samme forskjell kan gi en knusende p-verdi eller ingen, avhengig av n. Effektstørrelsen bryr seg ikke om n.")
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        diff = st.slider("Forskjell mellom gruppene (kr)", 0, 200, 49, 1, key="vl_b1_diff")
+    with c2:
+        sd = st.slider("Standardavvik", 50, 400, 217, 1, key="vl_b1_sd")
+    with c3:
+        n = st.select_slider("n per gruppe", [10, 25, 50, 100, 178, 400, 1000, 4000], value=178, key="vl_b1_n")
+
+    se = sd * np.sqrt(2 / n)
+    t = diff / se if se else 0.0
+    dfree = 2 * n - 2
+    p = float(2 * stats.t.sf(abs(t), dfree))
+    d = diff / sd
+
+    x = np.linspace(-3.6 * sd, 3.6 * sd, 400)
+    curves = pd.concat([
+        pd.DataFrame({"x": x, "tetthet": stats.norm.pdf(x, 0, sd), "gruppe": "Kontroll"}),
+        pd.DataFrame({"x": x, "tetthet": stats.norm.pdf(x, diff, sd), "gruppe": "Ny variant"}),
+    ])
+    chart = (
+        alt.Chart(curves).mark_area(opacity=0.45, line={"size": 2})
+        .encode(
+            x=alt.X("x:Q", title="Ordreverdi (avvik fra kontrollgjennomsnittet)"),
+            y=alt.Y("tetthet:Q", title="Tetthet", axis=alt.Axis(labels=False, grid=False)),
+            color=alt.Color("gruppe:N", scale=alt.Scale(domain=["Kontroll", "Ny variant"],
+                                                        range=[C_BLUE, C_ORANGE]),
+                            legend=alt.Legend(title=None, orient="top")),
+            tooltip=[alt.Tooltip("gruppe:N", title="Gruppe"), alt.Tooltip("x:Q", format=",.0f", title="Verdi")],
+        ).properties(height=240)
+    )
+    st.altair_chart(chart, use_container_width=True)
+
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("t", f"{t:,.2f}")
+    m2.metric("p (tosidig)", f"{p:.4f}")
+    m3.metric("Cohen's d", f"{d:.3f}")
+    label = "under liten" if abs(d) < 0.2 else "liten" if abs(d) < 0.5 else "middels" if abs(d) < 0.8 else "stor"
+    m4.metric("Effektstørrelse", label)
+
+    sig = p < 0.05
+    big = abs(d) >= 0.5
+    cells = {
+        (True, True): ("✅ Signifikant + stor effekt", "Det rene tilfellet. Handle, og oppgi størrelsen.", S_GOOD),
+        (True, False): ("⚠️ Signifikant + liten effekt", "Ekte, men marginal. Avgjør på kost/nytte. Svært vanlig ved store utvalg.", S_WARNING),
+        (False, False): ("➖ Ikke signifikant + liten effekt", "Genuint uinformativt. Kan være ingen effekt, kan være for lite utvalg.", INK_MUTED),
+        (False, True): ("🚨 Ikke signifikant + STOR effekt", "Den farlige cella. Nesten alltid for lite utvalg — ikke rapporter dette som «ingen effekt».", S_CRITICAL),
+    }
+    title, body, colour = cells[(sig, big)]
+    _callout(f"**{title}**\n\n{body}", colour, "rgba(0,0,0,0.03)")
+
+    n_needed = None
+    if 0 < abs(d) < 3:
+        n_needed = int(np.ceil(2 * ((1.96 + 0.842) / d) ** 2))
+    _point(
+        "**Sett n til 4 000 og la forskjellen stå.** p stuper mot null; d rører seg ikke. "
+        "Det er hele poenget: p svarer *er den målbar*, d svarer *hvor stor er den*. "
+        + (f"\n\nFor å oppdage denne effekten med 80 % styrke trenger du omtrent "
+           f"**{n_needed:,} per gruppe**." if n_needed else "")
+    )
+
+
+def _power():
+    st.markdown("#### 5 · Type I, Type II og styrke")
+    st.caption("Den blå kurven er verden der ingenting skjer. Den oransje er verden der effekten finnes. Terskelen deler begge.")
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        true_d = st.slider("Sann effektstørrelse (d)", 0.0, 1.2, 0.35, 0.05, key="vl_b2_d")
+    with c2:
+        n = st.select_slider("n per gruppe", [10, 25, 50, 100, 200, 400, 1000], value=100, key="vl_b2_n")
+    with c3:
+        alpha = st.select_slider("α", [0.01, 0.05, 0.10], value=0.05, format_func=lambda v: f"{v:.2f}", key="vl_b2_a")
+
+    ncp = true_d * np.sqrt(n / 2)
+    crit = stats.norm.ppf(1 - alpha / 2)
+    power = float(stats.norm.sf(crit - ncp) + stats.norm.cdf(-crit - ncp))
+    x = np.linspace(-4.2, max(4.2, ncp + 4.2), 500)
+    curves = pd.concat([
+        pd.DataFrame({"x": x, "tetthet": stats.norm.pdf(x), "verden": "H₀ er sann"}),
+        pd.DataFrame({"x": x, "tetthet": stats.norm.pdf(x, ncp), "verden": "Effekten finnes"}),
+    ])
+    base = alt.Chart(curves).mark_area(opacity=0.4, line={"size": 2}).encode(
+        x=alt.X("x:Q", title="Teststatistikk"),
+        y=alt.Y("tetthet:Q", title="Tetthet", axis=alt.Axis(labels=False, grid=False)),
+        color=alt.Color("verden:N", scale=alt.Scale(domain=["H₀ er sann", "Effekten finnes"],
+                                                    range=[C_BLUE, C_ORANGE]),
+                        legend=alt.Legend(title=None, orient="top")),
+    )
+    thr = alt.Chart(pd.DataFrame({"x": [crit, -crit]})).mark_rule(
+        color=S_CRITICAL, size=2, strokeDash=[4, 3]).encode(x="x:Q")
+    thr_lab = alt.Chart(pd.DataFrame({"x": [crit], "t": [f"Terskel ±{crit:.2f}"]})).mark_text(
+        align="left", dx=6, dy=-100, color=S_CRITICAL, fontSize=11).encode(x="x:Q", text="t:N")
+    st.altair_chart((base + thr + thr_lab).properties(height=260), use_container_width=True)
+
+    m1, m2, m3 = st.columns(3)
+    m1.metric("Styrke (1 − β)", f"{power:.0%}")
+    m2.metric("Type II-risiko (β)", f"{1-power:.0%}")
+    m3.metric("Type I-risiko (α)", f"{alpha:.0%}")
+    verdict = ("god" if power >= 0.8 else "for lav — studien vil sannsynligvis bomme på en ekte effekt")
+    _point(
+        f"**Styrken er {power:.0%}, altså {verdict}.** Med denne effekten og dette utvalget vil "
+        f"{1-power:.0%} av studiene ikke oppdage en effekt som faktisk finnes.\n\n"
+        f"**Skru α ned til 0,01:** falske alarmer blir sjeldnere og styrken faller. De to feiltypene "
+        f"byttes mot hverandre, og hvilken som koster mest er et forretningsspørsmål, ikke et statistisk."
+    )
+
+
+@st.cache_data(show_spinner=False)
+def _multi_tests(k, n, seed):
+    rng = np.random.default_rng(seed)
+    a = rng.normal(0, 1, size=(k, n))
+    b = rng.normal(0, 1, size=(k, n))
+    t, p = stats.ttest_ind(a, b, axis=1)
+    return p
+
+
+def _multiple_comparisons():
+    st.markdown("#### 6 · Multippel testing — funnet ingen gjorde")
+    st.caption(
+        "Her er det **ingen** forskjell mellom gruppene i noen av testene. Alle data er ren støy. "
+        "Se hvor mange som likevel blir «signifikante»."
+    )
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        k = st.select_slider("Antall KPI-er du sammenligner", [5, 10, 20, 40, 100], value=20, key="vl_b3_k")
+    with c2:
+        alpha = st.select_slider("α", [0.01, 0.05, 0.10], value=0.05, format_func=lambda v: f"{v:.2f}", key="vl_b3_a")
+    with c3:
+        st.write("")
+        seed = _seed_control("b3", "Kjør kvartalsgjennomgangen på nytt")
+
+    p = _multi_tests(k, 60, seed)
+    bonf = alpha / k
+    df = pd.DataFrame({
+        "kpi": [f"KPI {i+1}" for i in range(k)], "p": p,
+        "utfall": np.where(p < bonf, "Overlever korreksjon",
+                           np.where(p < alpha, "«Signifikant» — men ren støy", "Ikke signifikant")),
+    })
+    dom = ["Ikke signifikant", "«Signifikant» — men ren støy", "Overlever korreksjon"]
+    chart = (
+        alt.Chart(df).mark_circle(size=140, opacity=0.9)
+        .encode(
+            x=alt.X("p:Q", title="p-verdi", scale=alt.Scale(domain=[0, 1])),
+            y=alt.Y("kpi:N", sort=alt.EncodingSortField("p"), title=None),
+            color=alt.Color("utfall:N", scale=alt.Scale(domain=dom, range=[C_BLUE, S_CRITICAL, S_WARNING]),
+                            legend=alt.Legend(title=None, orient="top", columns=1)),
+            tooltip=[alt.Tooltip("kpi:N", title="KPI"), alt.Tooltip("p:Q", format=".4f", title="p"),
+                     alt.Tooltip("utfall:N", title="Utfall")],
+        ).properties(height=max(200, 18 * k))
+    )
+    lines = alt.Chart(pd.DataFrame({"x": [alpha, bonf], "hva": [f"α = {alpha}", f"Bonferroni = {bonf:.4f}"]})).mark_rule(
+        size=2, strokeDash=[4, 3], color=INK_MUTED).encode(
+        x="x:Q", tooltip=[alt.Tooltip("hva:N", title="Terskel")])
+    st.altair_chart(chart + lines, use_container_width=True)
+
+    n_sig = int((p < alpha).sum())
+    n_bonf = int((p < bonf).sum())
+    m1, m2, m3 = st.columns(3)
+    m1.metric("«Signifikante» funn", n_sig)
+    m2.metric("Forventet fra støy", f"{k*alpha:.1f}")
+    m3.metric("Overlever Bonferroni", n_bonf)
+    _point(
+        f"**Ingenting skjedde, og gjennomgangen fant {n_sig} funn.** Ved α = {alpha} slår omtrent "
+        f"{k*alpha:.0f} av {k} tester ut på ren støy. Dette er mekanismen bak en kvartalsgjennomgang "
+        f"som alltid finner noe.\n\n"
+        f"**Bonferroni** deler α på antall tester: {alpha} / {k} = {bonf:.4f}. "
+        f"{'Ingen av funnene overlever den terskelen.' if n_bonf == 0 else f'{n_bonf} overlever.'} "
+        f"Alternativet er å bestemme på forhånd hvilken ene sammenligning du faktisk tester."
+    )
+
+
+# --------------------------------------------------------------------------
+# C. Regression and residuals
+# --------------------------------------------------------------------------
+
+@st.cache_data(show_spinner=False)
+def _reg_base(seed=3, n=40):
+    rng = np.random.default_rng(seed)
+    x = rng.uniform(20, 120, n)
+    y = 180 + 5.1 * x + rng.normal(0, 60, n)
+    return x, y
+
+
+def _leverage():
+    st.markdown("#### 7 · Én uteligger, hele linja")
+    st.caption("Flytt det røde punktet. Den blå linja er tilpasset alle punktene; den stiplede er uten uteliggeren.")
+    c1, c2 = st.columns(2)
+    with c1:
+        ox = st.slider("Uteliggerens x (annonsebudsjett, kNOK)", 20, 240, 200, 5, key="vl_c1_x")
+    with c2:
+        oy = st.slider("Uteliggerens y (omsetning, kNOK)", 0, 1800, 260, 20, key="vl_c1_y")
+
+    x, y = _reg_base()
+    ax, ay = np.append(x, ox), np.append(y, oy)
+    b_all = np.polyfit(ax, ay, 1)
+    b_wo = np.polyfit(x, y, 1)
+
+    pts = pd.DataFrame({"x": x, "y": y, "rolle": "Vanlige observasjoner"})
+    out = pd.DataFrame({"x": [ox], "y": [oy], "rolle": ["Uteliggeren du flytter"]})
+    xs = np.array([15, 245])
+    lines = pd.concat([
+        pd.DataFrame({"x": xs, "y": np.polyval(b_all, xs), "linje": "Med uteliggeren"}),
+        pd.DataFrame({"x": xs, "y": np.polyval(b_wo, xs), "linje": "Uten uteliggeren"}),
+    ])
+    sc = alt.Chart(pts).mark_circle(size=80, opacity=0.7, color=C_BLUE).encode(
+        x=alt.X("x:Q", title="Annonsebudsjett (kNOK)", scale=alt.Scale(domain=[15, 245])),
+        y=alt.Y("y:Q", title="Omsetning (kNOK)", scale=alt.Scale(domain=[0, 1800])),
+        tooltip=[alt.Tooltip("x:Q", format=".0f"), alt.Tooltip("y:Q", format=".0f")])
+    oc = alt.Chart(out).mark_point(size=280, filled=True, color=S_CRITICAL, shape="diamond").encode(
+        x="x:Q", y="y:Q", tooltip=[alt.Tooltip("x:Q", format=".0f"), alt.Tooltip("y:Q", format=".0f")])
+    ln = alt.Chart(lines).mark_line(size=2.5).encode(
+        x="x:Q", y="y:Q",
+        strokeDash=alt.StrokeDash("linje:N", legend=alt.Legend(title=None, orient="top")),
+        color=alt.Color("linje:N", scale=alt.Scale(domain=["Med uteliggeren", "Uten uteliggeren"],
+                                                   range=[C_BLUE, INK_MUTED]),
+                        legend=alt.Legend(title=None, orient="top")))
+    st.altair_chart((sc + ln + oc).properties(height=340), use_container_width=True)
+
+    change = (b_all[0] - b_wo[0]) / b_wo[0] * 100
+    m1, m2, m3 = st.columns(3)
+    m1.metric("Stigningstall med", f"{b_all[0]:.2f}")
+    m2.metric("Stigningstall uten", f"{b_wo[0]:.2f}")
+    m3.metric("Endring", f"{change:+.1f} %")
+    _point(
+        f"**Ett punkt av 41 flytter stigningstallet {abs(change):.0f} %.** Det skjer fordi minste kvadraters "
+        f"metode minimerer *kvadrerte* residualer: et avvik på 10 teller hundre ganger et avvik på 1, "
+        f"så linja bøyer seg mot ekstreme punkter.\n\n"
+        f"**Dra uteliggeren langt ut på x-aksen.** Innflytelsen vokser med avstanden fra snittet i x — "
+        f"det er derfor et punkt kan være uskyldig i midten og dominerende i kanten. "
+        f"Og merk: du ser dette bare hvis du ser på residualene."
+    )
+
+
+@st.cache_data(show_spinner=False)
+def _resid_data(pattern, seed=5, n=90):
+    rng = np.random.default_rng(seed)
+    x = np.sort(rng.uniform(10, 100, n))
+    if pattern == "I orden — formløs sky":
+        y = 50 + 3 * x + rng.normal(0, 28, n)
+    elif pattern == "Kurve — sammenhengen er ikke lineær":
+        y = 40 + 7.5 * x - 0.045 * x**2 + rng.normal(0, 18, n)
+    elif pattern == "Vifte — heteroskedastisitet":
+        y = 50 + 3 * x + rng.normal(0, 1, n) * (4 + 0.75 * x)
+    else:
+        y = 50 + 3 * x + 45 * np.sin(x / 6.0) + rng.normal(0, 14, n)
+    return x, y
+
+
+def _residuals():
+    st.markdown("#### 8 · Å lese residualplottet")
+    st.caption("Venstre: dataene med linja lagt gjennom. Høyre: residualene. Struktur til høyre betyr at modellformen er feil.")
+    pattern = st.selectbox(
+        "Mønster",
+        ["I orden — formløs sky", "Kurve — sammenhengen er ikke lineær",
+         "Vifte — heteroskedastisitet", "Bølge — sesong modellen ikke kjenner"],
+        key="vl_c2_pat")
+    x, y = _resid_data(pattern)
+    b = np.polyfit(x, y, 1)
+    fit = np.polyval(b, x)
+    res = y - fit
+    std_res = res / res.std(ddof=2)
+    df = pd.DataFrame({"x": x, "y": y, "tilpasset": fit, "residual": res, "std": std_res})
+    df["flagg"] = np.where(np.abs(df["std"]) > 2, "Utenfor ±2", "Innenfor")
+
+    left = alt.Chart(df).mark_circle(size=70, opacity=0.65, color=C_BLUE).encode(
+        x=alt.X("x:Q", title="Prediktor"), y=alt.Y("y:Q", title="Utfall"),
+        tooltip=[alt.Tooltip("x:Q", format=".1f"), alt.Tooltip("y:Q", format=".1f")])
+    line = alt.Chart(df).mark_line(size=2.5, color=C_ORANGE).encode(x="x:Q", y="tilpasset:Q")
+    right = alt.Chart(df).mark_circle(size=70, opacity=0.75).encode(
+        x=alt.X("tilpasset:Q", title="Tilpasset verdi"),
+        y=alt.Y("residual:Q", title="Residual"),
+        color=alt.Color("flagg:N", scale=alt.Scale(domain=["Innenfor", "Utenfor ±2"],
+                                                   range=[C_BLUE, S_CRITICAL]),
+                        legend=alt.Legend(title=None, orient="top")),
+        tooltip=[alt.Tooltip("residual:Q", format=".1f", title="Residual"),
+                 alt.Tooltip("std:Q", format=".2f", title="Standardisert")])
+    zero = alt.Chart(pd.DataFrame({"y": [0]})).mark_rule(color=INK_MUTED, strokeDash=[4, 3], size=2).encode(y="y:Q")
+    st.altair_chart(
+        ((left + line).properties(title="Data og tilpasset linje", height=280)
+         | (right + zero).properties(title="Residualer mot tilpasset verdi", height=280)),
+        use_container_width=True)
+
+    reading = {
+        "I orden — formløs sky": (
+            "**Dette er målet.** Ingen struktur til høyre: residualene ligger som en formløs sky rundt null, "
+            "med noenlunde jevn bredde. Modellformen er dekkende. At noen få punkter er flagget utenfor ±2 "
+            "er helt normalt — omtrent 5 % skal ligge der selv i en perfekt modell. Det er *mønsteret* du "
+            "ser etter, ikke enkeltpunkter.", S_GOOD),
+        "Kurve — sammenhengen er ikke lineær": (
+            "**En bue i residualene betyr at en rett linje ble lagt gjennom en krum sammenheng.** "
+            "Modellen underestimerer i midten og overestimerer i endene, systematisk. "
+            "Løsning: legg til et kvadratledd, transformer variabelen, eller bytt modell.", S_CRITICAL),
+        "Vifte — heteroskedastisitet": (
+            "**Vifta betyr at feilen vokser med prediksjonens størrelse.** Det viktige er hva som brytes: "
+            "koeffisientene er fortsatt brukbare, men standardfeilene er feil — og dermed **hver eneste "
+            "p-verdi og hvert intervall i tabellen**. Løsning: robuste standardfeil, eller log-transformer utfallet.", S_WARNING),
+        "Bølge — sesong modellen ikke kjenner": (
+            "**Bølgen er et tidsmønster modellen ikke inneholder.** Dette er Black Friday-residualen i "
+            "generell form: avviket forteller ikke at dataene er skitne, men at modellen mangler en variabel. "
+            "Løsning: legg til et sesong- eller trendledd — ikke slett punktene.", S_WARNING),
+    }
+    msg, colour = reading[pattern]
+    _callout(msg, colour, "rgba(0,0,0,0.03)")
+    st.caption(
+        f"Merk at R² er {np.corrcoef(x, y)[0,1]**2:.2f} her. "
+        "Et høyt R² utelukker ikke noe av dette — derfor er residualplottet ikke valgfritt."
+    )
+
+
+def _omitted_variable():
+    st.markdown("#### 9 · Koeffisienten som endrer seg når du legger til en variabel")
+    st.caption(
+        "Annonsebudsjett og rabattdybde henger sammen: tunge kampanjer kjørte også dypere rabatter. "
+        "Dra i sliderne og se hva det gjør med annonseringens koeffisient."
+    )
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        corr = st.slider("Samvariasjon mellom prediktorene", 0.0, 0.95, 0.70, 0.05, key="vl_c3_corr",
+                         help="Kjørte tunge kampanjer også dypere rabatter?")
+    with c2:
+        true_b2 = st.slider("Rabattdybdens sanne effekt (b₂)", 0.0, 40.0, 21.4, 0.5, key="vl_c3_b2")
+    with c3:
+        sd_disc = st.slider("Hvor mye varierer rabattdybden?", 1.0, 12.0, 6.0, 0.5, key="vl_c3_sd")
+
+    rng = np.random.default_rng(4)
+    n, sd_ad, b1_true = 200, 42.0, 5.1
+    z = rng.normal(size=n)
+    ad = 100 + sd_ad * z
+    disc = 8 + sd_disc * (corr * z + np.sqrt(max(1 - corr**2, 1e-9)) * rng.normal(size=n))
+    rev = 3000 + b1_true * ad + true_b2 * disc + rng.normal(0, 150, n)
+
+    b_simple = np.polyfit(ad, rev, 1)[0]
+    X = np.column_stack([np.ones(n), ad, disc])
+    coef, *_ = np.linalg.lstsq(X, rev, rcond=None)
+    b_multi = coef[1]
+
+    def r2(pred):
+        return 1 - ((rev - pred) ** 2).sum() / ((rev - rev.mean()) ** 2).sum()
+    r2_s = r2(np.polyval(np.polyfit(ad, rev, 1), ad))
+    r2_m = r2(X @ coef)
+    adj = lambda r, k: 1 - (1 - r) * (n - 1) / (n - k - 1)
+
+    df = pd.DataFrame({
+        "modell": ["Enkel: bare annonsering", "Multippel: + rabattdybde"],
+        "koeffisient": [b_simple, b_multi],
+    })
+    bars = (
+        alt.Chart(df).mark_bar(cornerRadiusEnd=4, size=48)
+        .encode(
+            x=alt.X("koeffisient:Q", title="Annonseringens koeffisient"),
+            y=alt.Y("modell:N", title=None, sort=None),
+            color=alt.Color("modell:N", scale=alt.Scale(
+                domain=["Enkel: bare annonsering", "Multippel: + rabattdybde"], range=[C_ORANGE, C_BLUE]),
+                legend=None),
+            tooltip=[alt.Tooltip("modell:N", title="Modell"), alt.Tooltip("koeffisient:Q", format=".2f")],
+        ).properties(height=150)
+    )
+    labels = alt.Chart(df).mark_text(align="left", dx=8, fontSize=13, color=INK_MUTED).encode(
+        x="koeffisient:Q", y=alt.Y("modell:N", sort=None), text=alt.Text("koeffisient:Q", format=".2f"))
+    st.altair_chart(bars + labels, use_container_width=True)
+
+    drop = (b_simple - b_multi) / b_simple * 100 if b_simple else 0
+    bias_theory = true_b2 * corr * sd_disc / sd_ad
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("Enkel modell", f"{b_simple:.2f}")
+    m2.metric("Multippel modell", f"{b_multi:.2f}", help=f"Den sanne verdien er {b1_true}")
+    m3.metric("Endring", f"{-drop:+.0f} %")
+    m4.metric("Justert R²", f"{adj(r2_s,1):.2f} → {adj(r2_m,2):.2f}")
+    st.caption(
+        f"Skjevheten er ikke tilfeldig — den har en formel: "
+        f"**b₂ × samvariasjon × (σ_rabatt / σ_annonse)** = "
+        f"{true_b2:.1f} × {corr:.2f} × ({sd_disc:.1f} / {sd_ad:.0f}) = **{bias_theory:.2f}**. "
+        f"Legg den til den sanne verdien {b1_true} og du får omtrent det den enkle modellen rapporterer."
+    )
+    _point(
+        f"**Ingenting med annonsering endret seg — spørsmålet endret seg.** "
+        f"Den enkle koeffisienten på {b_simple:.1f} svarer «hvor mye mer omsetning følger en ekstra kNOK "
+        f"annonsering», og inkluderer stilltiende at tunge kampanjer også kjørte dypere rabatter. "
+        f"Den multiple på {b_multi:.1f} svarer «hvor mye mer, blant måneder med *samme* rabattdybde». "
+        f"Bare den siste er i nærheten av den sanne verdien {b1_true}.\n\n"
+        f"**Sett samvariasjonen til 0:** de to koeffisientene faller sammen. Utelatt-variabel-effekten "
+        f"finnes bare når prediktorene henger sammen — og det gjør de nesten alltid i virkelige data.\n\n"
+        f"**En ærlig merknad om tallene:** leksjonens egen tabell viser 8,2 → 5,1. Med rabattdybdens "
+        f"spredning der (3,1 mot annonseringens 42) er det største mulige avviket 1,6, så det spranget "
+        f"krever en større rabattvariasjon enn tabellen oppgir. Mekanismen er den samme; skalaen i "
+        f"leksjonen henger ikke helt sammen. Dra i «hvor mye varierer rabattdybden» og se hvorfor."
+    )
+
+
+# --------------------------------------------------------------------------
+# D. Exam drill
+# --------------------------------------------------------------------------
+
+def _fmt(v, dec=3):
+    return f"{v:,.{dec}f}"
+
+
+def _check(label, user, truth, tol, unit="", formula="", why=""):
+    """Render one drill step with per-step feedback."""
+    ok = user is not None and abs(user - truth) <= tol
+    if user is None or user == 0.0:
+        st.caption(f"↳ {formula}")
+        return False
+    if ok:
+        st.success(f"✅ Riktig — {label} = {_fmt(truth)}{unit}. {why}")
+    else:
+        st.error(f"❌ Ikke helt. {label} = **{_fmt(truth)}{unit}**.  \nFormel: `{formula}`  \n{why}")
+    return ok
+
+
+@st.cache_data(show_spinner=False)
+def _drill_case(kind, seed):
+    rng = np.random.default_rng(seed)
+    if kind == "Test en påstand (ett utvalg)":
+        return {
+            "claim": round(float(rng.uniform(4.2, 4.7)), 1),
+            "n": int(rng.choice([80, 100, 120, 150, 200])),
+            "mean": round(float(rng.uniform(4.05, 4.55)), 2),
+            "sd": round(float(rng.uniform(0.6, 1.0)), 2),
+        }
+    if kind == "Sammenlign to grupper":
+        return {
+            "n1": int(rng.choice([120, 150, 176, 200])), "m1": round(float(rng.uniform(760, 820)), 0),
+            "s1": round(float(rng.uniform(180, 240)), 0),
+            "n2": int(rng.choice([120, 150, 180, 210])), "m2": round(float(rng.uniform(700, 760)), 0),
+            "s2": round(float(rng.uniform(180, 240)), 0),
+        }
+    return {
+        "p": round(float(rng.uniform(0.42, 0.66)), 2),
+        "n": int(rng.choice([400, 600, 900, 1200, 2400])),
+    }
+
+
+def _drill():
+    st.markdown("#### 10 · Eksamensdrill med tilbakemelding per steg")
+    st.caption(
+        "Oppgavetypene fra aktivitet 1.2.1 og 1.2.2, med nye tall hver gang. "
+        "Skriv inn svaret på hvert steg — du får formelen og forklaringen med én gang, ikke bare fasit til slutt."
+    )
+    c1, c2 = st.columns([2, 1])
+    with c1:
+        kind = st.selectbox("Oppgavetype",
+                            ["Test en påstand (ett utvalg)", "Sammenlign to grupper",
+                             "Konfidensintervall for en andel"], key="vl_d_kind")
+    with c2:
+        st.write("")
+        seed = _seed_control("drill", "Nye tall")
+
+    case = _drill_case(kind, seed)
+    st.divider()
+
+    if kind == "Test en påstand (ett utvalg)":
+        claim, n, mean, sd = case["claim"], case["n"], case["mean"], case["sd"]
+        st.markdown(
+            f"> En kjede hevder at kundene gir den **minst {claim} av 5**. "
+            f"Et tilfeldig utvalg på **n = {n}** gir gjennomsnitt **{mean}** med standardavvik **{sd}**. "
+            f"Holder påstanden ved α = 0,05?")
+        st.markdown("**Steg 1 — hypotesene.** Hvor hører påstanden hjemme?")
+        h = st.radio("Velg oppsett", [
+            "H₀: μ ≥ {c} · Hₐ: μ < {c} — ensidig".format(c=claim),
+            "H₀: μ < {c} · Hₐ: μ ≥ {c} — ensidig".format(c=claim),
+            "H₀: μ = {c} · Hₐ: μ ≠ {c} — tosidig".format(c=claim),
+        ], index=None, key="vl_d1_h")
+        if h:
+            if h.startswith(f"H₀: μ ≥ {claim}"):
+                st.success("✅ Riktig. Påstanden er standardantakelsen som må motbevises, så den ligger i H₀, "
+                           "og du tester om snittet er *lavere*. Ensidig, fordi bare den ene retningen truer påstanden.")
+            elif h.startswith(f"H₀: μ < {claim}"):
+                st.error("❌ Dette snur bevisbyrden. Du aksepterer aldri en nullhypotese, så med dette oppsettet "
+                         "kan du aldri *bekrefte* påstanden — du kan bare unnlate å forkaste at den er feil.")
+            else:
+                st.warning("⚠️ Ikke feil, men svakere. Tosidig tester om snittet avviker i *begge* retninger. "
+                           "Her truer bare den ene retningen påstanden, så ensidig er riktig — og må erklæres før dataene ses.")
+        se = sd / np.sqrt(n)
+        dfree = n - 1
+        t = (mean - claim) / se
+        p = float(stats.t.cdf(t, dfree))
+        tc = float(stats.t.ppf(0.975, dfree))
+        lo, hi = mean - tc * se, mean + tc * se
+        d = (claim - mean) / sd
+
+        st.markdown("**Steg 2 — standardfeilen.**")
+        u = st.number_input("SE =", value=0.0, format="%.4f", step=0.001, key="vl_d1_se")
+        _check("SE", u or None, se, 0.002, formula="SE = s / √n", why="Standardfeilen er hvor mye gjennomsnittet ville flyttet seg fra utvalg til utvalg.")
+        st.markdown("**Steg 3 — teststatistikken.**")
+        u = st.number_input("t =", value=0.0, format="%.3f", step=0.01, key="vl_d1_t")
+        _check("t", u or None, t, 0.05, formula="t = (x̄ − μ₀) / SE", why=f"Med {dfree} frihetsgrader.")
+        st.markdown("**Steg 4 — p-verdien (ensidig).**")
+        u = st.number_input("p =", value=0.0, format="%.4f", step=0.001, key="vl_d1_p")
+        _check("p", u or None, p, 0.006, formula="=T.DIST(t; df; SANN)", why="Sannsynligheten for data minst så ekstreme *gitt at* H₀ er sann.")
+        st.markdown("**Steg 5 — effektstørrelsen.**")
+        u = st.number_input("Cohen's d =", value=0.0, format="%.3f", step=0.01, key="vl_d1_d")
+        _check("d", u or None, d, 0.02, formula="d = (μ₀ − x̄) / s", why="Avviket målt i standardavvik — uavhengig av n.")
+
+        with st.expander("📋 Fasit og modellsvaret", expanded=False):
+            lab = "under liten" if abs(d) < 0.2 else "liten" if abs(d) < 0.5 else "middels" if abs(d) < 0.8 else "stor"
+            st.markdown(
+                f"| Steg | Verdi |\n|---|---|\n"
+                f"| SE | {se:.4f} |\n| t | {t:.3f} på {dfree} fg |\n| p (ensidig) | {p:.4f} |\n"
+                f"| 95 % KI | [{lo:.3f}, {hi:.3f}] |\n| Cohen's d | {d:.3f} ({lab}) |\n\n"
+                f"**{'Forkast H₀' if p < 0.05 else 'Ikke grunnlag for å forkaste H₀'}** ved α = 0,05.\n\n"
+                f"**Slik ville jeg skrevet det:** «Gjennomsnittsvurderingen er {mean} "
+                f"(95 % KI [{lo:.2f}, {hi:.2f}], n = {n}). "
+                + (f"Ensidig t-test mot påstanden på {claim} gir t = {t:.2f}, p = {p:.3f}, så påstanden er "
+                   f"ikke holdbar som formulert. Avviket er {claim-mean:.2f} poeng, d = {d:.2f} ({lab}), "
+                   f"altså statistisk etablert og praktisk beskjedent — en etterlevelsessak snarere enn en kundekrise.»"
+                   if p < 0.05 else
+                   f"Ensidig t-test mot {claim} gir t = {t:.2f}, p = {p:.3f}. Beviset er ikke sterkt nok til å "
+                   f"forkaste påstanden, hvilket ikke er det samme som å ha bekreftet den.»")
+            )
+
+    elif kind == "Sammenlign to grupper":
+        n1, m1_, s1 = case["n1"], case["m1"], case["s1"]
+        n2, m2_, s2 = case["n2"], case["m2"], case["s2"]
+        st.markdown(
+            f"> Ny variant: **n = {n1}**, snitt **{m1_:,.0f} kr**, standardavvik **{s1:,.0f}**. "
+            f"Gammel: **n = {n2}**, snitt **{m2_:,.0f} kr**, standardavvik **{s2:,.0f}**. "
+            f"Er forskjellen reell, og er den stor nok til å bry seg om?")
+        sp = np.sqrt(((n1-1)*s1**2 + (n2-1)*s2**2) / (n1+n2-2))
+        se = sp * np.sqrt(1/n1 + 1/n2)
+        diff = m1_ - m2_
+        t = diff / se
+        dfree = n1 + n2 - 2
+        p = float(2 * stats.t.sf(abs(t), dfree))
+        d = diff / sp
+        tc = float(stats.t.ppf(0.975, dfree))
+
+        st.markdown("**Steg 1 — samlet standardavvik.**")
+        u = st.number_input("s_pooled =", value=0.0, format="%.2f", step=0.1, key="vl_d2_sp")
+        _check("s_pooled", u or None, sp, 0.6, formula="√( ((n₁−1)s₁² + (n₂−1)s₂²) / (n₁+n₂−2) )",
+               why="Vektet sammenslåing av begge gruppenes spredning.")
+        st.markdown("**Steg 2 — standardfeilen for forskjellen.**")
+        u = st.number_input("SE =", value=0.0, format="%.2f", step=0.1, key="vl_d2_se")
+        _check("SE", u or None, se, 0.4, formula="SE = s_pooled × √(1/n₁ + 1/n₂)")
+        st.markdown("**Steg 3 — t.**")
+        u = st.number_input("t =", value=0.0, format="%.3f", step=0.01, key="vl_d2_t")
+        _check("t", u or None, t, 0.05, formula="t = (x̄₁ − x̄₂) / SE", why=f"{dfree} frihetsgrader.")
+        st.markdown("**Steg 4 — Cohen's d.**")
+        u = st.number_input("d =", value=0.0, format="%.3f", step=0.01, key="vl_d2_d")
+        _check("d", u or None, d, 0.02, formula="d = (x̄₁ − x̄₂) / s_pooled",
+               why="Legg merke til at n ikke står i denne formelen.")
+
+        with st.expander("📋 Fasit og modellsvaret", expanded=False):
+            lo, hi = diff - tc*se, diff + tc*se
+            lab = "under liten" if abs(d) < 0.2 else "liten" if abs(d) < 0.5 else "middels" if abs(d) < 0.8 else "stor"
+            st.markdown(
+                f"| Steg | Verdi |\n|---|---|\n| Forskjell | {diff:,.0f} kr |\n| s_pooled | {sp:,.2f} |\n"
+                f"| SE | {se:,.2f} |\n| t | {t:.3f} på {dfree} fg |\n| p (tosidig) | {p:.4f} |\n"
+                f"| 95 % KI | [{lo:,.2f}, {hi:,.2f}] |\n| Cohen's d | {d:.3f} ({lab}) |\n\n"
+                f"**Les p og d sammen.** {'Signifikant' if p < 0.05 else 'Ikke signifikant'} "
+                f"med en {lab} effekt. "
+                + ("Det er den farlige kombinasjonen: en stor observert effekt som ikke nådde terskelen "
+                   "betyr nesten alltid for lite utvalg — ikke «ingen effekt»."
+                   if p >= 0.05 and abs(d) >= 0.5 else
+                   "Intervallet er det som avgjør beslutningen: regn det om til kroner i året og "
+                   "hold det mot kostnaden, i begge ender.")
+            )
+
+    else:
+        p_hat, n = case["p"], case["n"]
+        st.markdown(
+            f"> En måling gir **{p_hat:.0%}** oppslutning i et tilfeldig utvalg på **n = {n:,}**. "
+            f"Hva er 95 %-intervallet, og hva kan du og kan du ikke si?")
+        me = 1.96 * np.sqrt(p_hat * (1 - p_hat) / n)
+        lo, hi = p_hat - me, p_hat + me
+        n_for_2 = int(np.ceil(1.96**2 * p_hat * (1 - p_hat) / 0.02**2))
+
+        st.markdown("**Steg 1 — feilmarginen, i prosentpoeng.**")
+        u = st.number_input("Margin (pp) =", value=0.0, format="%.2f", step=0.1, key="vl_d3_me")
+        _check("Marginen", u or None, me*100, 0.15, unit=" pp",
+               formula="z × √( p(1−p) / n )   med z = 1,96",
+               why="Merk at den er størst når p er nær 50 % — det er det konservative verste tilfellet.")
+        st.markdown("**Steg 2 — nedre grense, i prosent.**")
+        u = st.number_input("Nedre grense (%) =", value=0.0, format="%.2f", step=0.1, key="vl_d3_lo")
+        _check("Nedre grense", u or None, lo*100, 0.2, unit=" %", formula="p − margin",
+               why="Det er denne grensen en beslutningstaker som bærer nedsiden trenger.")
+        st.markdown("**Steg 3 — hvor stort utvalg for ±2 prosentpoeng?**")
+        u = st.number_input("n =", value=0.0, format="%.0f", step=10.0, key="vl_d3_n")
+        _check("Nødvendig n", u or None, n_for_2, max(25, n_for_2*0.02), formula="n = z² × p(1−p) / margin²",
+               why="Legg merke til at marginen står i **andre** — å halvere den koster fire ganger utvalget.")
+
+        with st.expander("📋 Fasit og modellsvaret", expanded=False):
+            majority = "hele intervallet ligger over 50 %" if lo > 0.505 else (
+                "hele intervallet ligger under 50 %" if hi < 0.495 else
+                "intervallet berører 50 % — flertall er **ikke** etablert")
+            st.markdown(
+                f"| Steg | Verdi |\n|---|---|\n| Margin | ±{me*100:.2f} pp |\n"
+                f"| 95 % KI | [{lo:.1%}, {hi:.1%}] |\n| n for ±2 pp | {n_for_2:,} |\n\n"
+                f"**Tolkning:** {majority}.\n\n"
+                f"**Og det marginen ikke dekker:** frafall, dekning, spørsmålsformulering, "
+                f"feilrapportert intensjon og oppmøte. Marginen kvantifiserer **bare** tilfeldig utvalgsfeil. "
+                f"Et stramt intervall på et skjevt utvalg er et presist galt svar."
+            )
+
+
+# --------------------------------------------------------------------------
+# Page
+# --------------------------------------------------------------------------
+
+SECTIONS = {
+    "A · Utvalg og usikkerhet": [_sampling_distribution, _coverage, _bias_vs_noise],
+    "B · Test og effektstørrelse": [_p_vs_d, _power, _multiple_comparisons],
+    "C · Regresjon og residualer": [_leverage, _residuals, _omitted_variable],
+    "D · Eksamensdrill": [_drill],
+}
+
+_INTRO = {
+    "A · Utvalg og usikkerhet": "Hvorfor et utvalg kan si noe om en populasjon, hva de 95 prosentene faktisk lover, og hvorfor mer data ikke redder et skjevt utvalg.",
+    "B · Test og effektstørrelse": "Hvorfor en p-verdi og en effektstørrelse svarer på to forskjellige spørsmål, hva styrke er, og hvordan tjue sammenligninger produserer et funn av ingenting.",
+    "C · Regresjon og residualer": "Hvordan én observasjon kan vri hele linja, hva strukturen i et residualplott betyr, og hvorfor en koeffisient endrer seg når en variabel til kommer inn.",
+    "D · Eksamensdrill": "Oppgavetypene fra aktivitetene, med nye tall hver gang og tilbakemelding på hvert steg underveis.",
+}
+
+
+def render_visual_lab():
+    st.title("🔬 Visual Lab — Statistisk inferens")
+    st.markdown(
+        "Simulatorer for **EVO leksjon 1.2**. Leksjonen forklarer dette i tekst og tabeller; her kan du "
+        "dra i det. Hver graf står med poenget sitt under, så et skjermbilde er verdt noe alene."
+    )
+    tabs = st.tabs(list(SECTIONS.keys()))
+    for tab, (name, fns) in zip(tabs, SECTIONS.items()):
+        with tab:
+            st.caption(_INTRO[name])
+            for i, fn in enumerate(fns):
+                if i:
+                    st.divider()
+                fn()

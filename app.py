@@ -17,6 +17,8 @@ import streamlit.components.v1 as components
 import mistune
 from openai import OpenAI
 
+from visual_lab import render_visual_lab
+
 # Use the full browser width so the prompt + dataset upload + syllabus preview
 # all have room to breathe. Must be the first Streamlit call in the module.
 try:
@@ -64753,6 +64755,8 @@ Four activities accompany this lesson, and each exercises a different part of it
             "content": """
 ### 1.2. Statistical Inference, Result Table Analysis, and Critical Tools
 
+> 🔬 **Denne leksjonen har en interaktiv følgesvenn.** Alt under — utvalgsfordelingen, hva de 95 prosentene lover, p mot effektstørrelse, styrke, multippel testing, uteliggere, residualmønstre og utelatt-variabel-effekten — kan dras i på **Visual Lab**-siden (Learning → Visual Lab). Den har også en eksamensdrill med nye tall og tilbakemelding på hvert steg.
+
 #### Introduction
 
 In the intricate realm of data analysis and evaluation of outcomes, understanding the underlying structures and nuances is pivotal for extracting meaningful insights. **Statistical inference** is the backbone, providing a structured method to draw reliable conclusions from a subset of data and generalise them to broader populations.
@@ -80203,7 +80207,7 @@ all_pages = [
 
 navigation_groups = {
     "Dashboard": ["Overview", "Progress", "Progression Plan", "Learning Outcomes"],
-    "Learning": ["Course Plan", "Training Center", "Learn & Practice", "Playground"],
+    "Learning": ["Course Plan", "Training Center", "Learn & Practice", "Visual Lab", "Playground"],
     "Study Tools": ["Study Notes", "My Glossary", "Flashcards", "Code Library", "Formula Reference", "Study Timer"],
     "Assessment": ["Exam Simulator"],
     "Info": ["About"]
@@ -89257,6 +89261,9 @@ Total Time: {total_time} minutes
                     file_name="presentation_outline.md",
                     mime="text/markdown"
                 )
+
+elif page == "Visual Lab":
+    render_visual_lab()
 
 elif page == "About":
     st.title("ℹ️ About the Data Analyst Program")
