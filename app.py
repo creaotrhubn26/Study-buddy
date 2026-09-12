@@ -65666,6 +65666,76 @@ The third is the one an assignment tests. A model fitted on advertising budgets 
 
 **And the caution that outranks all of them.** The line quantifies how y moves with x. It does not establish that x *causes* y, no matter how tightly the points hug it. The correlation-is-not-causation section below states the tests that separate the two.
 
+#### Linear regression: evaluation outcomes and results
+
+Linear regression is a bedrock of data analysis, providing insight into relationships between variables. However, **several assumptions must be met** to ensure accurate and reliable results, and two of them are particularly pivotal.
+
+##### Assumption 1 — linearity
+
+**Definition.** This assumption proposes that there is a **straight-line relationship** between the independent (explanatory) and dependent (response) variables. It indicates that the alteration in the dependent variable is **proportional** to the alteration in the independent variable.
+
+**Implications.** If the assumption is not met, predictions and insights from the regression model might be inaccurate or misleading.
+
+##### What "proportional" is really claiming
+
+The word doing the work is *proportional*. It means the effect of one extra unit of x is **the same everywhere** — the same at the bottom of the range as at the top.
+
+Written out, the model says: one more kNOK of advertising adds b₁ to revenue, and it adds that same b₁ whether you are spending 20 kNOK or 200. **A single number is being asked to describe the whole range.**
+
+That is a strong claim, and business relationships routinely violate it:
+
+| Pattern | Where it shows up | What the straight line does |
+|---|---|---|
+| **Diminishing returns** | Advertising, discounting, headcount | Averages a steep early effect with a flat later one. Overstates the top, understates the bottom |
+| **Saturation** | Market penetration, conversion optimisation | Predicts growth past the ceiling |
+| **Threshold effects** | Price points, delivery-time tolerance | Misses that nothing happens until a line is crossed |
+| **Accelerating returns** | Network effects, referrals | Understates the top of the range badly |
+
+##### Why the failure is worse than random error
+
+A violated linearity assumption does not scatter the errors — it **bends them into a pattern**, so the model is wrong in a *systematic, predictable direction* at every point.
+
+Fit a straight line to a curve of diminishing returns and the result is always the same shape: **under-predict at both ends, over-predict in the middle** (or the reverse, depending on the curvature). Every prediction in a given region is wrong the same way.
+
+That has two consequences an evaluation should name:
+
+1. **The average error can look fine.** The over- and under-predictions offset in aggregate, so a summary error statistic hides the problem. Only the residual *plot* shows it.
+2. **The decision usually sits at the end of the range**, which is where the error is largest. Nobody asks "what does the 60th kNOK of advertising buy?" — they ask what the *next* one buys, at the top of current spend, which is exactly where a line fitted to a saturating curve overstates most.
+
+##### How to detect it
+
+| Check | What you are looking for |
+|---|---|
+| **Residuals against fitted values** | A curve or arc instead of a formless cloud. This is the primary test |
+| **Scatter plot with the fitted line** | Points systematically above the line in the middle and below at the ends |
+| **Fit a squared term and test it** | If b₂ on x² is significant, the relationship is not linear |
+
+> 🔬 Simulator **8 · Å lese residualplottet** in the Visual Lab has this as its second setting: pick "Kurve — sammenhengen er ikke lineær" and the arc in the residuals is unmistakable, while the scatter plot on the left still looks broadly reasonable. That contrast is the point — **the violation is much easier to see in the residuals than in the data.**
+
+##### How to fix it — and the distinction that trips people up
+
+| Remedy | When |
+|---|---|
+| **Add a squared or cubic term** | A single bend in the relationship |
+| **Log-transform the predictor** | Diminishing returns, which log models naturally |
+| **Log-transform the outcome** | Multiplicative rather than additive effects, and it often fixes heteroscedasticity at the same time |
+| **Split the range** | A genuine threshold, where two regimes are better than one compromise |
+| **Use a non-linear model** | When the shape is known from the domain — a saturation curve, for instance |
+
+**The distinction worth knowing.** "Linear regression" means **linear in the parameters**, not linear in the variables. This is still a linear regression:
+
+> y = b₀ + b₁x + b₂x² + ε
+
+because it is a straight-line combination of the *coefficients*. So fitting a curve does not mean abandoning linear regression — it usually means adding a term to it. That is why the remedy for a curved residual plot is nearly always cheaper than it sounds.
+
+##### The evaluator's version
+
+Linearity is not a box to tick before reporting. It is a **claim about the business** that the model is making on your behalf: *this driver works the same way at every level.* Stated in those words, it is obviously wrong for advertising, for discounting and for most spending decisions.
+
+So the assignment-grade move is to say which shape you expected from the domain, show the residual plot, and either confirm the straight line was adequate or name the term you added. **A regression reported without a word about linearity is a regression whose central assumption was never examined.**
+
+*A note on the source: the course text prints "Among these two are particularly pivotal", where "Among these, two are particularly pivotal" is meant. The second is developed in the next section.*
+
 #### Result table analysis with linear regression
 
 A simple linear regression models one outcome variable from one predictor. Reading its result table is a named outcome of this course. The multivariate case — several predictors at once, and what that does to a coefficient — was covered under diving deeper above; this section takes the components of the table one at a time.
@@ -67502,6 +67572,21 @@ CURATED_FLASHCARD_SETS = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "front": "State the linearity assumption of regression and explain what 'proportional' is really claiming.",
+            "back": "The assumption proposes a straight-line relationship between the independent, explanatory variable and the dependent, response variable, meaning the alteration in the dependent variable is proportional to the alteration in the independent one. If it is not met, predictions and insights from the model may be inaccurate or misleading. The word doing the work is proportional: it claims the effect of one extra unit of x is the same everywhere, at the bottom of the range and at the top. One more kNOK of advertising adds b1 to revenue whether you are spending 20 kNOK or 200, so a single number is being asked to describe the whole range. Business relationships routinely violate this through diminishing returns in advertising and discounting, saturation in market penetration, threshold effects at price points, and accelerating returns from network effects.",
+            "tags": ["linearity", "assumptions", "regression", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "Why is a violated linearity assumption worse than random error?",
+            "back": "Because it does not scatter the errors, it bends them into a pattern, so the model is wrong in a systematic and predictable direction at every point. Fitting a straight line to a curve of diminishing returns always produces the same shape of failure: under-prediction at both ends and over-prediction in the middle, or the reverse depending on the curvature. Two consequences follow. First, the average error can look perfectly acceptable, because the over- and under-predictions offset in aggregate, so a summary error statistic hides the problem and only the residual plot reveals it. Second, the decision usually sits at the end of the range, which is where the error is largest: nobody asks what the 60th kNOK of advertising bought, they ask what the next one will buy at the top of current spend, which is exactly where a line fitted to a saturating curve overstates most.",
+            "tags": ["linearity", "bias", "residuals", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "How do you detect and fix a violation of linearity, and why does fixing it not mean abandoning linear regression?",
+            "back": "Detect it primarily on a plot of residuals against fitted values, looking for a curve or arc rather than a formless cloud; secondarily on the scatter plot, where points sit systematically above the line in the middle and below at the ends; or by fitting a squared term and testing whether its coefficient is significant. Fix it by adding a squared or cubic term for a single bend, log-transforming the predictor for diminishing returns, log-transforming the outcome for multiplicative effects, which often fixes heteroscedasticity at the same time, splitting the range where there is a genuine threshold, or using a non-linear model when the domain says the shape. The distinction that trips people up is that linear regression means linear in the parameters, not linear in the variables: y = b0 + b1x + b2x squared + e is still a linear regression, because it is a straight-line combination of the coefficients. So fitting a curve usually means adding a term rather than abandoning the method, which is why the remedy is cheaper than it sounds.",
+            "tags": ["linearity", "diagnostics", "transformation", "lesson 1.2", "evo"]
+        },
         {
             "front": "Accuracy and precision are different properties. Set out the four combinations and say which is dangerous.",
             "back": "Accuracy is how close an estimate sits to the truth, meaning its freedom from bias. Precision is how tightly it is pinned down, meaning how little it would move on a repeat. High accuracy with high precision is the target. High accuracy with low precision is right on average but too vague to act on, and more data fixes it. Low accuracy with low precision is vague and wrong, which at least looks unreliable. The dangerous cell is low accuracy with high precision: tight, confident and wrong, which is where a large convenience sample lives. This matters because a confidence interval measures precision, not accuracy: it narrows as n grows and is silent about bias, so a large biased sample produces exactly the reassuring output an excellent study produces. Stratification helps accuracy by guaranteeing every group is present; sample size helps precision. Different problems, different fixes, and only one of them is visible in the result table.",
@@ -69787,6 +69872,11 @@ CURATED_PRACTICE_QUESTION_BANK = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "type": "skills",
+            "question": "A regression of revenue on advertising spend is used to justify increasing the budget from 120 to 200 kNOK. What would you check about linearity, and why does it matter more here than elsewhere?",
+            "answer": "I would check the residual plot for a curve, because advertising is the textbook case of diminishing returns and a straight line forces a single effect across the whole range. It matters more here than usual for two reasons. First, the proposed spend sits at the top of the observed range, and that is exactly where a line fitted to a saturating curve overstates the effect most, so the error and the decision coincide. Second, 200 kNOK may be outside the range the model was fitted on at all, in which case the claim is extrapolation on top of a possibly wrong shape. The average error statistic will not reveal any of this, because over- and under-predictions offset in aggregate; only the residual plot does. If a curve is present, the fix is usually to add a squared term or log-transform the spend, which is still linear regression since the model is linear in the parameters rather than in the variables. What I would report is the expected shape from the domain, the residual plot, and either a confirmation that the straight line was adequate over the relevant range or the term I added."
+        },
         {
             "type": "knowledge",
             "question": "What is the difference between efficacy and effectiveness, and why does the distinction belong in a discussion of generalisability?",
