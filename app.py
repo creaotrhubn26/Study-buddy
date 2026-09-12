@@ -65780,6 +65780,77 @@ That is a sentence an estate agent can use, it holds across the whole range, and
 > 🔬 Simulator **14 · Boligprisene** in the Visual Lab runs this case. Switch between the three models and watch two things: R² barely moves, while the arc in the residuals appears and disappears. Then push the size slider past 450 m² — beyond where the data ends — and watch the straight line's error grow.
 
 
+##### Assumption 2 — no internal causation of the regressors
+
+**Definition.** The independent variables and the **error term** should not be correlated. Internal causation can arise from **omitted variable bias**, **measurement errors**, or **simultaneous causality** between independent and dependent variables.
+
+**Implications.** Violating this assumption leads to **biased and inconsistent** parameter estimates. That makes it challenging to establish causality or derive meaningful insights from the model.
+
+##### What the error term actually contains
+
+The assumption is easier to hold onto once you know what ε is. It is **everything that affects y and is not in the model** — every driver you left out, every mismeasurement, every piece of randomness.
+
+So the requirement "x must not be correlated with ε" means: **whatever else moves the outcome must not also move with your predictor.** If it does, the model cannot tell which of the two produced the change in y, and it hands the whole thing to x, because x is the only one it can see.
+
+The standard names are worth knowing, because a marker will use them: the assumption satisfied is **exogeneity**; violated, it is **endogeneity**.
+
+##### The three routes in, and what each does to the estimate
+
+| Route | The mechanism | Direction of the damage |
+|---|---|---|
+| **Omitted variable** | A driver left out of the model correlates with a predictor that is in it | Inflates or deflates the coefficient by b₂ × cov(x₁,x₂)/var(x₁). Sign depends on the correlations |
+| **Measurement error in x** | The predictor is recorded imprecisely | **Always toward zero.** Called *attenuation* — a poorly measured driver looks unimportant |
+| **Simultaneous causality** | y also causes x | Usually inflates. Successful firms advertise more, so advertising's coefficient absorbs the reverse effect |
+
+The middle row is the one people miss, and its predictability is useful: **measurement error never exaggerates an effect, it hides one.** A variable you measured sloppily can be dropped as insignificant when it was real all along.
+
+The third row is worth a concrete case. Regress sales on advertising and the coefficient answers "how much do sales rise per kroner of advertising" *only if* advertising was set independently of sales. In most firms it is set **as a share of sales**, so the two cause each other and the coefficient measures both directions at once.
+
+##### "Biased and inconsistent" — two words, two different problems
+
+The course text pairs these deliberately, and the distinction is the whole reason the assumption matters.
+
+| | Meaning | Does more data help? |
+|---|---|---|
+| **Biased** | Wrong on average. Repeat the study many times and the estimates centre on the wrong value | No |
+| **Inconsistent** | Does not converge on the truth as the sample grows | **No — and this is the sharp part** |
+
+Most problems in this lesson shrink with n. Sampling error shrinks. Wide intervals narrow. **Endogeneity does neither.** A million rows produce a very precise estimate of the wrong number, with a confidence interval so tight it looks authoritative.
+
+This is the same lesson as the bias-versus-noise simulator, arriving through the regression door: **precision is not accuracy, and sample size only buys the first.**
+
+##### Why this is the assumption the diagnostics cannot check
+
+Here is the property that makes this different from linearity and heteroscedasticity, and it is rarely stated plainly:
+
+> **Least squares constructs the residuals to be uncorrelated with the predictors.** That is what minimising the squared errors does. So the correlation between the residuals and x is zero *by arithmetic*, in every regression, however endogenous.
+
+Run a badly endogenous model — true slope 5.1, estimated 22.5, wrong by more than four times — and the correlation between its residuals and x still comes out at about 10⁻¹⁵. Zero. The residual plot looks perfect.
+
+**So a curve tells you linearity failed and a fan tells you homoscedasticity failed, but nothing in the output tells you exogeneity failed.** It has to be argued from the design instead:
+
+| Ask | |
+|---|---|
+| **How was x determined?** | Chosen by someone with knowledge of the outcome, or set independently? |
+| **What else drives y?** | And does any of it move with x? |
+| **Could y affect x?** | Feedback in either direction breaks it |
+| **How well is x measured?** | Self-reported, proxied or estimated variables carry attenuation |
+
+##### What to do about it
+
+| Remedy | When it applies |
+|---|---|
+| **Include the omitted variable** | The simplest fix, when the variable exists in your data |
+| **Randomise the assignment** | The gold standard. Randomisation makes x independent of everything else *by construction* — the assumption holds because you enforced it |
+| **Fixed effects / panel data** | Removes anything that is constant within a unit over time |
+| **Instrumental variables** | An instrument moves x but affects y only through x. Powerful and hard to find honestly |
+| **Say so** | When none of the above is available, state the likely direction of the bias. "This is probably overstated because successful firms advertise more" is a real contribution |
+
+The last row is the one an assignment usually wants. You are rarely able to fix endogeneity in a course exercise; you are always able to **name it and say which way it pushes.**
+
+> 🔬 Simulator **15 · Forutsetningen residualplottet ikke kan sjekke** runs both mechanisms against a known true slope of 5.1. Watch the estimate move while the residual plot stays flawless and the residual-to-x correlation stays pinned at zero.
+
+
 #### Result table analysis with linear regression
 
 A simple linear regression models one outcome variable from one predictor. Reading its result table is a named outcome of this course. The multivariate case — several predictors at once, and what that does to a coefficient — was covered under diving deeper above; this section takes the components of the table one at a time.
@@ -67616,6 +67687,31 @@ CURATED_FLASHCARD_SETS = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "front": "State the second pivotal regression assumption, and say what the error term contains.",
+            "back": "The independent variables and the error term should not be correlated. Internal causation can arise from omitted variable bias, measurement errors, or simultaneous causality between independent and dependent variables. Violating it leads to biased and inconsistent parameter estimates, which makes it hard to establish causality or derive meaningful insights. The assumption is easier to hold onto once you know what the error term is: everything that affects y and is not in the model, meaning every driver left out, every mismeasurement and every piece of randomness. So the requirement that x must not correlate with the error means that whatever else moves the outcome must not also move with your predictor, because if it does the model cannot tell which of the two produced the change and hands the whole thing to x, since x is the only one it can see. The standard names are exogeneity when satisfied and endogeneity when violated.",
+            "tags": ["exogeneity", "endogeneity", "assumptions", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "Name the three routes to endogeneity and the direction each pushes the estimate.",
+            "back": "An omitted variable, where a driver left out correlates with a predictor that is in the model, shifts the coefficient by b2 times the covariance of the two predictors divided by the variance of the included one, so the sign depends on the correlations. Measurement error in x pushes the estimate always toward zero, which is called attenuation, so a poorly measured driver looks unimportant and can be dropped as insignificant when it was real all along. Simultaneous causality, where y also causes x, usually inflates: regress sales on advertising and the coefficient answers how much sales rise per kroner only if advertising was set independently of sales, whereas most firms set it as a share of sales, so the two cause each other and the coefficient measures both directions at once.",
+            "tags": ["endogeneity", "attenuation", "simultaneity", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "Why does the course say endogeneity makes estimates 'biased and inconsistent', and why is the second word the sharper one?",
+            "back": "Biased means wrong on average: repeat the study many times and the estimates centre on the wrong value. Inconsistent means the estimate does not converge on the truth as the sample grows. The second is the sharp part because most problems in this lesson shrink with n, since sampling error shrinks and wide intervals narrow, while endogeneity does neither. A million rows produce a very precise estimate of the wrong number, with a confidence interval so tight it looks authoritative. It is the same lesson as bias against noise, arriving through the regression door: precision is not accuracy, and sample size only buys the first.",
+            "tags": ["bias", "consistency", "endogeneity", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "Why can a residual plot never detect a violation of exogeneity?",
+            "back": "Because least squares constructs the residuals to be uncorrelated with the predictors: that is precisely what minimising the squared errors does. The correlation between the residuals and x is therefore zero by arithmetic in every regression, however endogenous. Run a badly endogenous model with a true slope of 5.1 that estimates 22.5, wrong by more than four times, and the correlation between its residuals and x still comes out around ten to the minus fifteen. The residual plot looks perfect. So a curve tells you linearity failed and a fan tells you homoscedasticity failed, but nothing in the output tells you exogeneity failed: it has to be argued from the design instead, by asking how x was determined, what else drives y and whether any of it moves with x, whether y could affect x, and how well x is measured.",
+            "tags": ["exogeneity", "residuals", "diagnostics", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "What can be done about endogeneity, and what does an assignment usually want?",
+            "back": "Include the omitted variable, which is the simplest fix when it exists in your data. Randomise the assignment, which is the gold standard because randomisation makes x independent of everything else by construction, so the assumption holds because you enforced it rather than hoped for it. Use fixed effects or panel data to remove anything constant within a unit over time. Use an instrumental variable, meaning something that moves x but affects y only through x, which is powerful and hard to find honestly. And when none of those is available, say so: state the likely direction of the bias. An assignment usually wants that last one, because you are rarely able to fix endogeneity in a course exercise and always able to name it and say which way it pushes, as in this is probably overstated because successful firms advertise more.",
+            "tags": ["endogeneity", "remedies", "instrumental variables", "lesson 1.2", "evo"]
+        },
         {
             "front": "The real estate case: what did the agency observe, why does the relationship curve, and what should they do?",
             "back": "An agency plotting house size against price found a curved pattern: as houses get larger, the price per square foot decreases. The explanation is a business fact rather than a statistical one, since large homes are disproportionately outside city centres and luxury properties are paying for amenities other than floor area, which means the curve is real and stable rather than an artefact of the sample. The remedy is a transformation, either polynomial regression, which adds a squared term, or logarithmic scaling, which transforms the variables. Note that the diagnostic came from a derived quantity: what they noticed was price per square metre falling, not that the scatter looked bent. A price-against-size plot of real housing data looks fairly straight, and dividing price by size makes the curvature obvious, so when you suspect non-linearity, plotting the ratio is often sharper than plotting the level. Both remedies keep it a linear regression, because both remain linear in the parameters.",
@@ -69931,6 +70027,11 @@ CURATED_PRACTICE_QUESTION_BANK = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "type": "skills",
+            "question": "A regression of monthly sales on advertising spend gives a coefficient of 8.4 with a very tight confidence interval from 15 000 observations. The analyst says the large sample makes the estimate reliable. What is wrong?",
+            "answer": "The sample size addresses the wrong problem. Fifteen thousand observations make the estimate precise, meaning the interval is narrow, and precision is not accuracy. If advertising is endogenous, the estimate is biased and inconsistent, so it does not converge on the truth as n grows: a large sample simply produces a very precise estimate of the wrong number, with an interval so tight it looks authoritative. There are two specific reasons to suspect endogeneity here. Simultaneous causality, since most firms set the advertising budget as a share of expected or recent sales, so sales cause advertising as well as the reverse and the coefficient absorbs both directions. And omitted variables, since anything that drives sales and moves with advertising, such as seasonality, product launches or general market conditions, gets attributed to advertising because it is the only driver the model can see. Note also that no diagnostic in the output will reveal this: least squares constructs the residuals to be uncorrelated with the predictors, so the residual plot looks perfect no matter how endogenous the model is. What I would do is add the obvious confounders, particularly seasonality and launch timing; use a design where spend was set independently of sales if one exists, such as a geographic holdout or a randomised regional test; and if neither is available, report the coefficient with an explicit statement that it is probably overstated because successful periods attract more spend, which is a real contribution rather than a hedge."
+        },
         {
             "type": "skills",
             "question": "An agency's model values a 700 square metre property using a straight-line regression fitted on homes between 45 and 450 square metres. What is wrong and what would you do?",

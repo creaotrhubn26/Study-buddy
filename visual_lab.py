@@ -1285,10 +1285,114 @@ def _real_estate():
     )
 
 
+
+@st.cache_data(show_spinner=False)
+def _endo_data(kind, strength, seed=5, n=600):
+    """Two ways to break exogeneity, both with a known true slope of 5.1."""
+    rng = np.random.default_rng(seed)
+    b1, sx = 5.1, 42.0
+    if kind == "Målefeil i x":
+        x_true = 100 + sx * rng.normal(size=n)
+        y = 3000 + b1 * x_true + rng.normal(0, 150, n)
+        x_obs = x_true + rng.normal(0, strength * sx, n)
+        return x_obs, y, b1 * (sx ** 2 / (sx ** 2 + (strength * sx) ** 2))
+    z = rng.normal(size=n)
+    x_obs = 100 + sx * z + rng.normal(0, 20, n)
+    y = 3000 + b1 * x_obs + strength * 900 * z + rng.normal(0, 150, n)
+    var_x = np.var(x_obs)
+    return x_obs, y, b1 + strength * 900 * np.cov(x_obs, z)[0, 1] / var_x
+
+
+def _endogeneity():
+    st.markdown("#### 15 · Forutsetningen residualplottet ikke kan sjekke")
+    st.caption(
+        "Den sanne sammenhengen er alltid 5,1 her. Se hva estimatet gjør — og se så på residualene, "
+        "som ser upåklagelige ut hele veien."
+    )
+    c1, c2 = st.columns([1.3, 1])
+    with c1:
+        kind = st.radio("Hvordan brytes forutsetningen?",
+                        ["Målefeil i x", "Utelatt konfunder"], key="vl_en_kind", horizontal=True)
+    with c2:
+        strength = st.slider("Hvor kraftig?", 0.0, 2.0, 1.0, 0.1, key="vl_en_str")
+
+    x, y, expected = _endo_data(kind, strength)
+    coef = np.polyfit(x, y, 1)
+    fit = np.polyval(coef, x)
+    res = y - fit
+    corr_res_x = float(np.corrcoef(res, x)[0, 1])
+
+    df = pd.DataFrame({"x": x, "y": y, "tilpasset": fit, "residual": res})
+    sc = alt.Chart(df).mark_circle(size=40, opacity=0.4, color=C_BLUE).encode(
+        x=alt.X("x:Q", title="Målt x", scale=alt.Scale(zero=False)),
+        y=alt.Y("y:Q", title="y", scale=alt.Scale(zero=False)))
+    grid = np.linspace(x.min(), x.max(), 100)
+    lines = pd.concat([
+        pd.DataFrame({"x": grid, "y": np.polyval(coef, grid), "hva": "Modellens linje"}),
+        pd.DataFrame({"x": grid, "y": np.mean(y) + 5.1 * (grid - np.mean(x)), "hva": "Sann sammenheng (5,1)"}),
+    ])
+    ln = alt.Chart(lines).mark_line(size=2.5).encode(
+        x="x:Q", y="y:Q",
+        color=alt.Color("hva:N", scale=alt.Scale(domain=["Modellens linje", "Sann sammenheng (5,1)"],
+                                                 range=[S_CRITICAL, C_BLUE]),
+                        legend=alt.Legend(title=None, orient="top")),
+        strokeDash=alt.StrokeDash("hva:N", legend=None))
+    rp = alt.Chart(df).mark_circle(size=40, opacity=0.4, color=C_AQUA).encode(
+        x=alt.X("tilpasset:Q", title="Tilpasset verdi"), y=alt.Y("residual:Q", title="Residual"))
+    zero = alt.Chart(pd.DataFrame({"y": [0]})).mark_rule(
+        color=INK_MUTED, strokeDash=[4, 3], size=2).encode(y="y:Q")
+    st.altair_chart(((sc + ln).properties(title="Data, modellens linje og sannheten", height=290)
+                     | (rp + zero).properties(title="Residualene — feilfrie uansett", height=290)),
+                    use_container_width=True)
+
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("Sant stigningstall", "5.10")
+    m2.metric("Estimert", f"{coef[0]:.2f}", delta=f"{coef[0]-5.1:+.2f}", delta_color="inverse")
+    m3.metric("Forventet ut fra teorien", f"{expected:.2f}")
+    m4.metric("Korrelasjon residual mot x", f"{corr_res_x:.1e}")
+
+    if strength == 0:
+        _callout("**Forutsetningen holder.** Estimatet treffer 5,1, og residualene er formløse. "
+                 "Dra i «Hvor kraftig?» og følg med på de to første tallene.", S_GOOD, "rgba(12,163,12,0.08)")
+    elif kind == "Målefeil i x":
+        _callout(
+            f"**Estimatet er trukket mot null: {coef[0]:.2f} mot sanne 5,10.** Det kalles "
+            f"**attenuering**, og retningen er forutsigbar — målefeil i en forklaringsvariabel "
+            f"underdriver alltid effekten, aldri motsatt.\n\n"
+            f"Formelen er kjent: estimatet blir sant stigningstall × σ²ₓ / (σ²ₓ + σ²ᵤ), altså "
+            f"{expected:.2f} her, og du ser {coef[0]:.2f}.\n\n"
+            f"**Konsekvensen i praksis:** en variabel som er slurvete målt ser uviktig ut. Du kan "
+            f"forkaste en ekte driver fordi måleinstrumentet var dårlig, ikke fordi effekten ikke fantes.",
+            S_WARNING, "rgba(250,178,25,0.10)")
+    else:
+        _callout(
+            f"**Estimatet er blåst opp: {coef[0]:.2f} mot sanne 5,10.** Den utelatte variabelen "
+            f"påvirker både x og y, så modellen tilskriver x alt sammen — den har ingen måte å vite "
+            f"at noe annet drev bevegelsen.\n\n"
+            f"Her er avviket **{coef[0]/5.1:.1f} ganger** den sanne effekten. Å basere en "
+            f"budsjettbeslutning på dette tallet ville bomme like mye.",
+            S_CRITICAL, "rgba(208,59,59,0.08)")
+
+    _point(
+        f"**Og nå det som gjør denne forutsetningen spesiell — se på det fjerde tallet.** "
+        f"Korrelasjonen mellom residualene og x er {corr_res_x:.1e}, altså null. Den er null "
+        f"uansett hvor kraftig du drar slideren, fordi minste kvadraters metode **konstruerer** "
+        f"residualene til å være ortogonale på forklaringsvariablene. Det er en egenskap ved "
+        f"regnestykket, ikke et bevis på at modellen er riktig.\n\n"
+        f"**Derfor kan ikke residualplottet avsløre dette bruddet.** Linearitet ser du som en bue, "
+        f"heteroskedastisitet som en vifte — men eksogenitet er usynlig i diagnostikken, uansett hvor "
+        f"galt estimatet er. Du må argumentere for den fra **designet**: hvordan ble x bestemt, hva "
+        f"mer påvirker y, og kan y påvirke x tilbake?\n\n"
+        f"Det er også grunnen til at et randomisert forsøk er gullstandarden. Når du *trekker lodd* om "
+        f"hvem som får behandlingen, er x uavhengig av alt annet ved konstruksjon — og da holder "
+        f"forutsetningen fordi du sørget for det, ikke fordi du håpet på det."
+    )
+
+
 SECTIONS = {
     "A · Utvalg og usikkerhet": [_sampling_distribution, _coverage, _bias_vs_noise],
     "B · Test og effektstørrelse": [_p_vs_d, _power, _multiple_comparisons],
-    "C · Regresjon og residualer": [_leverage, _residuals, _real_estate, _omitted_variable, _confounding],
+    "C · Regresjon og residualer": [_leverage, _residuals, _real_estate, _omitted_variable, _confounding, _endogeneity],
     "D · Z-score og overtilpasning": [_zscore, _overfitting],
     "E · Eksamensdrill": [_drill],
 }
