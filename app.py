@@ -12428,6 +12428,55 @@ CI: 86% ± 1.4% (based on std error)
                 "question": "Your A/B test shows: Control group 1000 users, 12% conversion. Test group 1000 users, 15% conversion. Is the difference statistically significant at 95% confidence?",
                 "answer": "Calculation: Pooled proportion p = (120 + 150) / 2000 = 0.135. Standard Error SE = √[0.135 × 0.865 × (1/1000 + 1/1000)] = √[0.1167 × 0.002] = √0.000234 = 0.0153. Z = (0.15 - 0.12) / 0.0153 = 0.03 / 0.0153 = 1.96. Interpretation: Z = 1.96 is exactly at the 95% confidence threshold. This is borderline significant. Technically, |Z| ≥ 1.96 means p ≤ 0.05, so this JUST reaches significance. However, I would recommend: 1) Running the test longer for more certainty, 2) Calculating exact p-value (it's about 0.05), 3) Considering practical significance: 3% lift = 30 extra conversions per 1000 users.",
                 "hint": "Use the two-proportion z-test formula with pooled proportion"
+            },
+            {
+                "title": "Activity 1.2.1 · What the p-value says about H0",
+                "type": "scenario",
+                "question": "XYZ Corporation compared average sales before and after a new sales strategy. H0: the strategy has not led to a statistically significant increase. Ha: it has. The analysis returns p = 0.03. What does that p-value indicate about the null hypothesis?",
+                "answer": "It says that IF the null hypothesis were true - if the strategy had made no difference at all - the probability of observing an increase at least as large as the one recorded is 3 percent. Against the conventional threshold of alpha = 0.05, 0.03 falls below it, so the result is treated as sufficiently unlikely under the null that the null is rejected and the increase is called statistically significant. Three precisions separate a correct answer from a good one. First, the probability is conditional on H0: it is not the probability that H0 is true, and only the conditional version is computable from the test. Second, 'as large as, or larger than' matters, because the p-value is a tail probability that includes every outcome more extreme than the one observed, not just the one observed. Third, rejecting is not disproving: 3 percent is small, not zero, so if this exact study were repeated a hundred times in a world where the strategy did nothing, roughly three would produce a result this striking, and this may be one of those three. The symmetric point is worth adding: had p come out at 0.06, the conclusion would not be 'the strategy had no effect' but 'the evidence was not strong enough to reject the null at this threshold'. You never accept H0, you fail to reject it.",
+                "hint": "Start the sentence with 'if the null hypothesis were true' and everything after it becomes correct by construction"
+            },
+            {
+                "title": "Activity 1.2.1 · What XYZ can and cannot conclude",
+                "type": "scenario",
+                "question": "Same scenario: p = 0.03 from a before-and-after comparison of average sales. The strategy combined a revamped marketing campaign, product bundling for discounts, and an aggressive social media push. What conclusion can XYZ Corporation actually draw?",
+                "answer": "XYZ can conclude that sales increased by more than would plausibly be explained by ordinary variation, and that this is consistent with the new strategy having worked. It is adequate grounds for keeping the strategy running while gathering better evidence, but not for a large expansion. Three things the test does not support. It does not establish causation: the design is a before-and-after comparison with no control group, so seasonality and market movement, concurrent changes such as a product launch or new sales staff, and the attention effect from measuring the team all remain live alternatives, and a p-value cannot distinguish any of them from the strategy. It cannot say which part worked, because the strategy is a bundle of three interventions and one component may be carrying the result while another loses money. And it says nothing about magnitude, which can be demonstrated rather than asserted: with baseline sales of 1000 units and a standard deviation of 120, a one-tailed p of exactly 0.03 is produced by a 97.1 unit increase on 12 months per group, a 9.7 percent lift with d = 0.81, and equally by a 22.6 unit increase on 200 stores per group, a 2.3 percent lift with d = 0.19. Identical p-values, opposite investment conclusions. Before deciding, XYZ should ask for the mean difference in units and kroner, a confidence interval on it, Cohen's d, the periods compared, a list of what else changed in the window, and the cost of the strategy.",
+                "hint": "Ask what the design can support, then what magnitude the p-value carries. The answer to the second is: none"
+            },
+            {
+                "title": "Activity 1.2.1 · Reading the political poll interval",
+                "type": "scenario",
+                "question": "A poll puts a candidate's support at 52 percent with a 95 percent confidence interval of 50 to 54 percent. What does the interval tell you about the candidate's support level?",
+                "answer": "On the evidence of this sample, the candidate's true support in the population plausibly lies between 50 and 54 percent, with 52 percent the single best estimate. The 95 percent belongs to the method rather than to this one interval: if the poll were repeated many times and an interval computed the same way from each sample, about 95 percent of those intervals would contain the true value. This particular interval either contains it or it does not. Three things the interval tells you that 52 percent alone does not. The precision, and therefore the sample size: the margin is plus or minus 2 percentage points, and n = z squared times p(1-p) divided by margin squared gives roughly 2 400 respondents, where a poll of 600 would carry a margin of plus or minus 4.0 points. The finding at the lower bound: in a two-candidate race 50 percent is the line between leading and tied, and this interval reaches exactly that line, so the poll is consistent with a genuine majority and equally consistent with a level race, and it does not support a headline saying the candidate leads. And what it excludes: the margin quantifies sampling error only, so non-response bias, coverage bias, question wording and order, misreported intentions and turnout are all outside it. A tight interval on a badly drawn sample is a precise wrong answer, and it looks exactly as reassuring as a tight interval on a good one.",
+                "hint": "Read the bound, not just the point estimate, and then ask what the margin does not cover"
+            },
+            {
+                "title": "Activity 1.2.1 · Z-scores, both directions",
+                "type": "practical",
+                "question": "Define a z-score, give its formula, and use it in both directions on a distribution with a mean of NOK 742 and a standard deviation of NOK 210.",
+                "answer": "A z-score measures how many standard deviations a data point lies from the mean of its distribution: Z = (x minus mu) divided by sigma, where x is the individual value, mu the mean and sigma the standard deviation. Mu and sigma are the population values; with sample estimates the identical formula is written z = (x minus x-bar) divided by s. What the arithmetic does: subtracting the mean re-centres the distribution on zero so the result is a distance from average, and dividing by the standard deviation re-scales it into units of ordinary variation, so the result is how far relative to how far things usually are. Together they strip out both origin and units, which is what makes variables on different scales comparable. Forwards: an order of NOK 1 240 gives Z = (1240 - 742) / 210 = 498 / 210 = +2.37, so it sits 2.37 standard deviations above average, with roughly 0.9 percent of a normal distribution further out in that tail. Backwards: at Z = 1.96, the 95 percent cut, x = mu + Z times sigma = 742 + 1.96 times 210 = NOK 1 154. The backwards direction is the more useful one, because it converts a chosen confidence level into a number in business units, which is how a z-score becomes an alert threshold on a dashboard rather than a figure in a report.",
+                "hint": "x = mu + z*sigma is the same formula rearranged, and it is the one that sets thresholds"
+            },
+            {
+                "title": "Activity 1.2.1 · What a z-score does not tell you",
+                "type": "scenario",
+                "question": "A colleague flags every observation with a z-score beyond 3 as a data error and deletes it. What is wrong with that, and what does a z-score actually tell you?",
+                "answer": "A z-score tells you where a point sits relative to the rest of the distribution on a unit-free scale: zero is exactly the mean, the sign gives the direction, and a larger absolute value means further from average and therefore more unusual. Under a roughly bell-shaped distribution, about 32 percent of values lie beyond plus or minus 1, 5 percent beyond 1.96, 1 percent beyond 2.58 and 0.3 percent beyond 3. Three things it does not tell you, and each defeats the colleague's rule. It does not say the value is wrong, only that it is far from the mean: the Black Friday residual from this lesson was extreme and entirely correct, and the right response there was to add a seasonality term rather than delete the month. It assumes a roughly symmetric distribution, and on skewed data such as income, response times or order values it labels ordinary values as extreme while missing genuine outliers on the compressed side, where the IQR fences from Lesson 1.3 fit better. And it is computed from a mean and standard deviation that the outlier itself inflates, so one enormous value pulls both up, drags its own z-score back below the threshold, and masks other real outliers at the same time. The reference distribution must also be stated, since the same point standardised against this month, the year or the industry gets three different z-scores.",
+                "hint": "An extreme value can be extreme, correct, and informative about the model all at once"
+            },
+            {
+                "title": "Activity 1.2.1 · Critical tools and what they are for",
+                "type": "scenario",
+                "question": "Name two statistical software programs used to generate comprehensive result tables, and say how visualisation tools such as Tableau or Power BI aid analysis. What qualification belongs on the second answer?",
+                "answer": "R and Python, the latter with pandas for data preparation and statsmodels for R-style summary tables; SPSS, the Statistical Package for the Social Sciences, is the third the lesson names and is menu-driven rather than scripted. The part of the question that carries the marks is what they are for: they generate comprehensive result tables and provide the functionality to delve deeper, test assumptions and run post-hoc tests. Producing the table is the least of it, and what distinguishes these tools from a spreadsheet is that they can check whether the table is trustworthy through residual diagnostics, tests for heteroscedasticity and multicollinearity, and corrections for multiple comparisons. Visualisation tools serve four purposes: comprehension, since patterns and anomalies a table hides become visible at a glance and this matters most with complex multivariate results; exploration, through filtering, segmenting and drilling down; monitoring, through live connections that turn a one-off analysis into a standing dashboard; and communication across the organisation, which is where most analysis otherwise fails to have any effect. Two qualifications belong on that. They are presentation tools rather than analysis tools, offering none of the assumption tests, diagnostics or post-hoc corrections, so using them to find a finding is the multiple-comparison trap at speed: clicking through twenty segmentations until one looks interesting is twenty untracked tests, and at alpha 0.05 roughly one will look interesting for no reason. And visualisation makes a result easier to grasp including a wrong one, since a truncated axis exaggerates, the wrong chart type answers a different question, and colour-only status fails a colour-blind reader. They enhance the communication of findings, not their validity.",
+                "hint": "The lesson's sentence about the software continues past 'result tables' - the continuation is the answer"
+            },
+            {
+                "title": "Activity 1.2.1 · Appraise the model answer",
+                "type": "scenario",
+                "question": "A model answer to this activity states: 'XYZ Corporation can conclude that the new sales strategy led to a statistically significant increase in sales. The results suggest the strategy is effective.' Appraise it.",
+                "answer": "The arithmetic behind it is right and the claim built on it is wider than the arithmetic supports, which is the shape of nearly every error this course teaches you to catch. Two problems. First, 'led to' is a causal statement and the design does not support it: a before-and-after comparison with no control group cannot separate the strategy from seasonality, from concurrent changes, or from the attention effect, and the strategy is itself a bundle of three interventions so even a genuine effect cannot be attributed to any one of them. The defensible version changes two words: sales increased significantly following the strategy's introduction, which is consistent with the strategy having worked. This is the same error the lesson's own case study makes when it says the data proves the strategy's effectiveness one sentence after conceding that other contributing factors are not ruled out. Second, 'effective' is a claim about magnitude and the p-value carries none: the same p = 0.03 is produced by a 9.7 percent lift with d = 0.81 and by a 2.3 percent lift with d = 0.19, and only one of those is likely to justify a marketing campaign, a discount programme and a social media operation. A conclusion about effectiveness needs the effect size, the confidence interval and the cost. What is worth noting is that the same model answer set is better than the lesson text in one place: it says 95 percent of the resulting intervals would contain the true support level, which is the precise formulation, where the lesson's poll section says 95 percent of polls would fall within the 50 to 54 range, which is loose.",
+                "hint": "Check the verb. 'Led to' and 'proves' are causal claims that a before-and-after design cannot carry"
             }
         ],
         "quiz": [
@@ -65445,6 +65494,91 @@ A colleague submits this summary and recommends rolling a new checkout page out 
 **Step 4 - Recommend an action.** Do not roll out to all users. Extend the test across at least two full weeks to cover the weekly cycle, re-run with a hold-out evaluation, and audit the supporting model for leakage before the R squared is quoted anywhere. If a decision is needed sooner, a limited rollout to a defined percentage with continued measurement is a defensible middle path.
 
 Notice what makes this a Pass-level answer: every criticism is tied to a specific number in the table, and it ends with an alternative the colleague can actually act on.
+
+#### Activity 1.2.1 — Statistical interpretation: sales strategy and political poll
+
+This activity has no dataset and no arithmetic to grind through. It asks you to **say what the numbers mean**, which is the harder half of this course, and every mark sits in the precision of the wording.
+
+##### Scenario 1 — Q1: what does p = 0.03 indicate about the null hypothesis?
+
+If the null hypothesis were true — if the strategy had made no difference at all — the probability of observing an increase **at least as large as** the one recorded is 3%. Against α = 0.05, that falls below the threshold, so the null is **rejected** and the increase is called statistically significant.
+
+Three precisions separate a correct answer from a good one:
+
+| The precision | Why |
+|---|---|
+| The probability is **conditional on H₀** | It is not the probability that H₀ is true. Only the conditional version is computable from the test |
+| "As large as, **or larger than**" | A p-value is a tail probability, not the probability of the exact result observed |
+| Rejecting is not **disproving** | 3% is small, not zero. Repeat this study a hundred times in a world where the strategy did nothing and roughly three produce a result this striking |
+
+And the symmetric point the question invites: at p = 0.06 the conclusion would **not** be "no effect". It would be "the evidence was not strong enough to reject the null at this threshold". You never accept H₀.
+
+##### Scenario 1 — Q2: what can XYZ conclude?
+
+> Sales increased by more than ordinary variation would plausibly explain, which is **consistent with** the strategy having worked. The study does not establish that the strategy **caused** the increase, and does not say whether the increase is large enough to justify the investment.
+
+**Why not "caused".** The design is a before-and-after comparison with no control group, so three alternatives stay open: seasonality and market movement, concurrent changes such as a product launch or new staff, and the attention effect of measuring the team. A p-value cannot distinguish any of them from the strategy. On top of that, the strategy is a **bundle** — campaign, discounts, social media — so even a genuine effect cannot be attributed to any one component.
+
+**Why "not large enough to know".** This can be demonstrated rather than asserted. Take monthly sales averaging 1 000 units with σ = 120, and ask what increase produces a one-tailed p of exactly 0.03:
+
+| | 12 months per group | 200 stores per group |
+|---|---|---|
+| Standard error | 120 × √(2/12) = 49.0 | 120 × √(2/200) = 12.0 |
+| Critical t at p = 0.03 | 1.983 | 1.886 |
+| Increase required | **97.1 units** | **22.6 units** |
+| As a lift | **9.7%** | **2.3%** |
+| Cohen's d | **0.81** — large | **0.19** — below "small" |
+
+Both report p = 0.03. One business gained a tenth of its sales; the other gained 2.3%, detectable only because 400 stores were measured. **The p-value cannot tell them apart, so it cannot be the basis of the investment decision.**
+
+##### Scenario 2 — Q1: what does the 50–54% interval tell us?
+
+The candidate's true support plausibly lies between 50% and 54%, with 52% the best single estimate. The 95% belongs to the **procedure**: repeat the poll many times, compute an interval the same way each time, and about 95% of *those intervals* contain the true value.
+
+Three things it tells you that "52%" alone does not:
+
+1. **The sample size.** Margin ±2pp, and n = z²·p(1−p) ÷ ME² = 1.96² × 0.52 × 0.48 ÷ 0.02² ≈ **2 400 respondents**. A poll of 600 would carry ±4.0 points, so any poll claiming ±2 on a few hundred people is claiming precision its sample cannot deliver.
+2. **The lower bound is the finding.** In a two-candidate race, 50% is the line between leading and tied, and the interval reaches exactly that line. The poll is consistent with a majority *and* with a level race, so it does not support a "leads" headline.
+3. **What it excludes.** Sampling error only. Non-response, coverage, question wording, misreported intentions and turnout are all outside the ±2. **A tight interval on a badly drawn sample is a precise wrong answer.**
+
+##### Scenario 2 — Q2 and Q3: the z-score
+
+> **Z = (x − μ) ÷ σ** — how many standard deviations a point lies from the mean. With sample estimates: z = (x − x̄) ÷ s.
+
+Subtracting the mean re-centres on zero; dividing by σ re-scales into units of ordinary variation. Together they strip origin and units, which is what makes different scales comparable.
+
+**Forwards** — μ = 742, σ = 210, x = 1 240 → Z = 498 ÷ 210 = **+2.37**, about 0.9% of a normal distribution further out.
+**Backwards** — at Z = 1.96, x = 742 + 1.96 × 210 = **NOK 1 154**. This direction turns a confidence level into a threshold in business units, which is how a z-score reaches a dashboard.
+
+**What it tells you:** 0 is the mean, sign gives direction, magnitude gives unusualness. **What it does not:** it does not say the value is *wrong*; it assumes rough symmetry, so on skewed data it mislabels; and it is computed from a mean and σ that the outlier itself inflates, which can hide that outlier and mask others.
+
+##### Scenario 2 — Q4 and Q5: the tools
+
+**R and Python** (pandas, statsmodels); **SPSS** is the third the lesson names. The marks are in what they are *for*: they generate result tables **and** test assumptions and run post-hoc tests. Producing the table is the least of it — what separates them from a spreadsheet is that they can check whether the table is trustworthy.
+
+**Tableau and Power BI** aid comprehension, exploration, monitoring and communication. Two qualifications: they are **presentation tools, not analysis tools**, so using them to *find* a finding is the multiple-comparison trap at speed — clicking through twenty segmentations is twenty untracked tests. And visualisation makes a result easier to grasp, **including a wrong one**. They enhance the communication of findings, not their validity.
+
+##### The pattern in the supplied model answers
+
+The activity ships with model answers. Most are correct, and one is **better than the lesson text** — it says "95% of the resulting intervals would contain the true support level", where the lesson's poll section says "95% of those polls would capture the true support level within that 50% to 54% range", which is loose. It also prints the z-score denominator as σ, where the lesson text renders it as δ.
+
+Two need qualification, and they share a shape:
+
+| The model answer | The problem |
+|---|---|
+| "The strategy **led to** a statistically significant increase" | "Led to" is causal, and a before-and-after design with no control cannot carry it. Change two words: *sales increased significantly following the strategy's introduction* |
+| "The results suggest the strategy is **effective**" | Effective at what scale, at what cost? The same p = 0.03 comes from a 9.7% lift and a 2.3% lift |
+
+**The arithmetic is right and the claim built on it is wider than the arithmetic supports.** That is the shape of nearly every error this course teaches you to catch — and it is the same slip the lesson's own case study makes when it says the data "proves" the strategy's effectiveness one sentence after conceding that other factors are not ruled out.
+
+The statistics in this activity are not difficult. The discipline of saying exactly as much as the evidence supports, and no more, is the thing being assessed.
+
+##### Deliverables
+
+| File | What it contains |
+|---|---|
+| `EVO_1.2.1_Activity_Solution.md` | All seven questions answered in full, with the reasoning behind each wording, a formula reference, and an appraisal of the supplied model answers |
+| `EVO_1.2.1_Statistical_Toolkit.xlsx` | A reusable calculator: two-sample t-test with effect size and interval, confidence intervals for a mean and a proportion, a sample-size solver, z-scores in both directions, and the "same p, different business" demonstration as live formulas |
 
 #### Common assignment traps
 
