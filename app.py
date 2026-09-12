@@ -65326,9 +65326,85 @@ The practical evaluation questions to attach to it:
 - **How many tests were run?** Testing many variables and reporting only the significant one inflates false positives.
 - **Is significance being confused with importance?** With a large sample, a 0.2 percent difference can be significant and commercially meaningless.
 
-#### Critical tools, and choosing between them
+#### Critical tools for enhanced result table analysis
 
-"Mastering relevant tools and techniques used to critically assess and analyse data models" means knowing which tool answers which question. This table is the lesson in one place.
+##### Statistical software
+
+Tools like **R**, **Python** (with libraries such as **pandas** and **statsmodels**) and the **Statistical Package for the Social Sciences (SPSS)** play an essential role. They generate comprehensive result tables and provide functionality to delve deeper, **test assumptions**, or run **post-hoc tests**.
+
+**What "test assumptions" means in practice.** Every test in this lesson rests on conditions that the test itself does not check. Software provides the checks, and naming them is a straightforward way to show method in an assignment.
+
+| Assumption | Applies to | The check | If it fails |
+|---|---|---|---|
+| **Linearity** | Regression | Residual plot: a curve means the shape is wrong | Transform a variable, or add a squared term |
+| **Independence** of observations | Nearly everything | Durbin–Watson for time order; think about the design | Repeated measures on the same customers need a model that knows it |
+| **Homoscedasticity** — constant error variance | Regression, t-tests | Residual plot for a fan; Breusch–Pagan | Robust standard errors, or transform the outcome |
+| **Normality of residuals** | Small-sample tests | Q–Q plot; Shapiro–Wilk | Matters little in large samples; use a non-parametric test in small ones |
+| **No severe multicollinearity** | Multiple regression | Variance inflation factor (VIF) | Drop or combine predictors; do not read individual coefficients |
+
+Note the pattern in the right-hand column: a failed assumption almost never means the analysis is worthless. It means a **specific** part of the output is unreliable — usually the standard errors, and therefore the p-values and intervals, rather than the coefficients.
+
+**What a post-hoc test is for.** When a test compares three or more groups, an omnibus test such as ANOVA answers only *is there a difference somewhere?* It does not say **which** groups differ. Post-hoc tests — Tukey's HSD, Bonferroni-corrected pairwise comparisons, Scheffé — answer that second question.
+
+They exist because of the multiple-comparison trap from earlier in this lesson: comparing four groups pairwise means six tests, and at α = 0.05 the chance of at least one false alarm is around 26%, not 5%. A post-hoc procedure builds the correction in. **Running six separate t-tests instead is the same trap without the correction**, and it is a common assignment error.
+
+##### Visualisation tools
+
+Software like **Tableau** or **Power BI**, or libraries in Python (**Seaborn**, **Matplotlib**) and R (**ggplot2**), can translate table results into visual formats. This aids interpretation, especially when dealing with complex multivariate results.
+
+The phrase "especially with complex multivariate results" is precise. A single coefficient is easy to read in a table; six coefficients with interactions are not, and a coefficient plot showing each estimate with its confidence interval communicates in one glance what a table communicates in five minutes.
+
+> *The caution carries over unchanged from the dashboard section in Lesson 1.1: a chart can mislead faster than a table can, because a reader checks a number and absorbs a picture. A truncated axis exaggerates, the wrong chart type answers a different question, and colour-only encoding fails a colour-blind reader. Visualisation makes a result easier to grasp — including a wrong one.*
+
+**Which plot for which regression question**
+
+| Question | Plot |
+|---|---|
+| Is the relationship linear? | Scatter with a fitted line |
+| Which predictors matter, and how certain are we? | Coefficient plot with confidence intervals |
+| Is the model shape right? | Residuals against fitted values |
+| Are the residuals normal? | Q–Q plot |
+| Which observations are driving the fit? | Influence or leverage plot |
+
+##### Model diagnostics
+
+Specialised tools, or functions within broader platforms, can assess **model fit**, **multicollinearity**, or other issues that impact interpretations drawn from result tables.
+
+| Diagnostic | What it detects | Rough flag |
+|---|---|---|
+| **Variance inflation factor (VIF)** | Multicollinearity between predictors | Above ~5 is a concern, above ~10 serious |
+| **Cook's distance** | Observations that individually move the fitted line | Above ~4/n is worth inspecting |
+| **Standardised residuals** | Poorly predicted observations | Beyond ±2, and certainly ±3 |
+| **Adjusted R² / AIC / BIC** | Whether added predictors earn their place | Compare across candidate models |
+| **Hold-out or cross-validation error** | Overfitting | A large gap between training and unseen performance |
+
+The last row is the one that matters most, and it is the one a result table never shows. Every other diagnostic asks whether the model describes *this* dataset well. Only a hold-out evaluation asks whether it will work on data it has not seen, which is the question a business decision actually depends on.
+
+##### Choosing a tool, and the property that matters most
+
+| Tool | Strongest for | Watch out for |
+|---|---|---|
+| **R** | Statistical depth, diagnostics, publication-grade output | Steeper learning curve |
+| **Python** (pandas, statsmodels, scikit-learn) | Analysis inside a wider data pipeline, machine learning | Statistical output is less complete by default than R's |
+| **SPSS** | Menu-driven analysis without programming; standard in social science | Licence cost, and the reproducibility problem below |
+| **Tableau / Power BI** | Dashboards and exploration for non-technical audiences | Presentation tools, not analysis tools. Weak on inference |
+| **Excel** | The arithmetic in this course, small datasets, transparency of a single cell | No real diagnostics; and one wrong reference is invisible |
+
+**And the property that outranks all of them: reproducibility.** A point-and-click analysis leaves no record of what was done. A script does. Six months later, the question "how exactly was this figure produced?" has an answer in one case and not in the other.
+
+This is the direct continuation of the **version control** section from Lesson 1.1. The argument there was that you replace a judgement with a record; a script *is* that record, applied to the analysis rather than to the data. It is also the defence against the failure named in this lesson's introduction — the ROI cell in the Activity 1.1.1 workbook divided the wrong two references, and nobody could see it, because a spreadsheet shows results where a script shows steps.
+
+The practical rule for an assignment: **whatever tool you use, the method must be repeatable from what you wrote down.** A named test, a stated sample, a stated α and a stated exclusion rule get you most of the way there even in Excel.
+
+##### The section in one paragraph
+
+Advanced result table analysis, reinforced by statistical inference and powered by critical analytical tools, unravels deeper data layers. This intricate dance of numbers, interpretations and tools propels data analysis from mere observation to **actionable insights**.
+
+> *That closing phrase returns to where the lesson began.* The introduction set out the triad — inference, result table analysis, critical tools — and ranked the tool last, as something that *facilitates* the process rather than producing the conclusion. The tools in this section are what make the depth practical: without them, testing assumptions, running diagnostics and visualising a multivariate result are not realistic at any useful scale. But the order still holds. R will run a regression on a hopelessly biased sample and print a beautifully formatted table, and every number in it will be correct and worthless. **The software supplies the accuracy, efficiency and depth; the analyst supplies the judgement about whether the question was answerable in the first place.**
+
+#### The other kind of tool: which technique answers which question
+
+"Mastering relevant tools and **techniques** used to critically assess and analyse data models" covers both halves. The section above took the software; this one takes the techniques, and the point is knowing which one answers which question. This table is the lesson in one place.
 
 | Question about the result | Tool | What it will not tell you |
 |---|---|---|
@@ -66834,6 +66910,31 @@ CURATED_FLASHCARD_SETS = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "front": "Name the three categories of critical tool from lesson 1.2 and what each contributes.",
+            "back": "Statistical software such as R, Python with pandas and statsmodels, and SPSS generate comprehensive result tables and provide the functionality to delve deeper, test assumptions and run post-hoc tests. Visualisation tools such as Tableau, Power BI, Seaborn and Matplotlib in Python and ggplot2 in R translate table results into visual formats, which aids interpretation especially with complex multivariate results. Model diagnostics, whether specialised tools or functions inside broader platforms, assess model fit, multicollinearity and other issues that affect what can be read from a result table. Together they make depth practical, but the ordering from the lesson introduction still holds: tools facilitate the process rather than producing the conclusion, and software will run a regression on a hopelessly biased sample and print a beautifully formatted table in which every number is correct and worthless.",
+            "tags": ["critical tools", "software", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "Which assumptions does statistical software let you test, and what fails when each one fails?",
+            "back": "Linearity, checked on a residual plot where a curve means the shape is wrong, fixed by transforming a variable or adding a squared term. Independence of observations, checked with Durbin-Watson for time order and by thinking about the design, where repeated measures on the same customers need a model that knows it. Homoscedasticity or constant error variance, checked for a fan in the residual plot or with Breusch-Pagan, addressed with robust standard errors or a transformation. Normality of residuals, checked with a Q-Q plot or Shapiro-Wilk, which matters little in large samples and calls for a non-parametric test in small ones. And no severe multicollinearity, checked with the variance inflation factor. The pattern in the responses is the important part: a failed assumption almost never makes the analysis worthless, it makes a specific part of the output unreliable, usually the standard errors and therefore the p-values and intervals rather than the coefficients themselves.",
+            "tags": ["assumptions", "diagnostics", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "What is a post-hoc test for, and why can't you just run separate t-tests?",
+            "back": "When a test compares three or more groups, an omnibus test such as ANOVA answers only whether there is a difference somewhere; it does not say which groups differ. Post-hoc tests such as Tukey's HSD, Bonferroni-corrected pairwise comparisons and Scheffe answer that second question. They exist because of the multiple-comparison trap: comparing four groups pairwise means six tests, and at alpha 0.05 the chance of at least one false alarm is around 26 percent rather than 5 percent. A post-hoc procedure builds the correction in, so running six separate t-tests instead is the same trap without the correction, and it is a common assignment error.",
+            "tags": ["post-hoc", "anova", "multiple comparisons", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "Name five model diagnostics and what each detects, and say which one a result table never shows.",
+            "back": "The variance inflation factor detects multicollinearity between predictors, with above roughly 5 a concern and above 10 serious. Cook's distance detects observations that individually move the fitted line, flagged above roughly 4 divided by n. Standardised residuals detect poorly predicted observations, flagged beyond plus or minus 2 and certainly 3. Adjusted R squared, AIC and BIC compare whether added predictors earn their place across candidate models. And hold-out or cross-validation error detects overfitting through a large gap between training and unseen performance. The last is the one that matters most and the one a result table never shows: every other diagnostic asks whether the model describes this dataset well, while only a hold-out evaluation asks whether it will work on data it has not seen, which is the question a business decision actually depends on.",
+            "tags": ["diagnostics", "vif", "overfitting", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "Which property of an analysis tool outranks its statistical power, and why?",
+            "back": "Reproducibility. A point-and-click analysis in SPSS or a spreadsheet leaves no record of what was done, while a script does, so six months later the question of how exactly a figure was produced has an answer in one case and not the other. This is the direct continuation of the version control argument from Lesson 1.1: you replace a judgement with a record, and a script is that record applied to the analysis rather than to the data. It is also the defence against the failure named in this lesson's introduction, since the ROI cell in the Activity 1.1.1 workbook divided the wrong two references and nobody could see it, because a spreadsheet shows results where a script shows steps. The practical rule for an assignment is that whatever tool you use, the method must be repeatable from what you wrote down: a named test, a stated sample, a stated alpha and a stated exclusion rule get you most of the way there even in Excel.",
+            "tags": ["reproducibility", "version control", "critical tools", "lesson 1.2", "evo"]
+        },
         {
             "front": "Define linear regression and name every term in its equation.",
             "back": "Linear regression is a method to model the correlation between a dependent variable and one or more independent variables by fitting a linear equation to observed data. Put plainly, it draws the straight line that best follows a cloud of points and reports that line's equation so the relationship can be described, quantified and used to predict. The equation is y = b0 + b1x + epsilon. y is the dependent variable, the outcome being explained, also called the response or target. x is the independent variable, the predictor, also called the explanatory variable or feature. b0 is the intercept, the predicted value of y when x is zero. b1 is the slope or coefficient, the change in y per one-unit increase in x, and it is the number a result table reports. Epsilon is the error term, everything about y the line does not capture, whose realised values are the residuals. One independent variable makes it simple linear regression; more than one makes it multiple linear regression, where each coefficient is read holding the others constant.",
@@ -68695,6 +68796,12 @@ CURATED_EXAM_QUESTION_BANK = {
         {
             "type": "skills",
             "source": "core_curated",
+            "question": "An analyst compares average satisfaction across four store regions, runs six pairwise t-tests, finds one significant at p = 0.04, and reports that region C differs from region A. Their model output was produced by clicking through a menu-driven package and the steps were not recorded. Identify the problems and say how the analysis should have been done.",
+            "answer": "Two separate failures, one statistical and one procedural. The statistical failure is the multiple-comparison trap. Comparing four groups pairwise means six tests, and at alpha 0.05 the probability of at least one false alarm when nothing is happening is roughly 26 percent rather than 5 percent, so a single result at p = 0.04 out of six tests is close to what pure noise produces. The correct route is an omnibus test first, such as ANOVA, which answers only whether there is a difference somewhere, followed if it is significant by a post-hoc procedure such as Tukey's HSD, Bonferroni-corrected pairwise comparisons or Scheffe, which answers which groups differ and builds the correction for multiplicity in. Running six unadjusted t-tests is the same comparison without the correction. I would also want the assumptions checked before either: independence of observations, homoscedasticity across the four groups, and, given the sample sizes, whether normality matters, since satisfaction is usually measured on an ordinal Likert scale, which raises the question of whether a mean is the right summary at all. And I would want the effect size and confidence interval for the A to C difference, because significance alone does not say whether the gap is large enough for a regional intervention. The procedural failure is reproducibility. A point-and-click analysis leaves no record of what was done, so nobody can establish six months later which cases were included, which options were ticked, or whether the six tests were the only six run. That is the version control argument from Lesson 1.1 applied to the analysis rather than to the data: you replace a judgement with a record. The remedy is a script, or failing that a written method stating the test used, the sample, the alpha, the exclusion rules and every comparison performed, including the ones that were not significant. Exam use: whenever a question involves three or more groups, check first whether multiplicity was handled, because that single point is usually worth more marks than recomputing the test."
+        },
+        {
+            "type": "skills",
+            "source": "core_curated",
             "question": "A regression of monthly revenue on advertising spend gives a coefficient of 8.2 with R squared 0.41. Adding average discount depth gives advertising 5.1 (SE 1.6, p = 0.003) and discount 21.4 (SE 6.8, p = 0.004), with R squared 0.63 and adjusted R squared 0.60. Interpret the table and say what you would and would not conclude.",
             "answer": "The first thing to explain is why advertising's coefficient fell by 38 percent, from 8.2 to 5.1, when nothing about advertising changed. A coefficient in a multiple regression is the change in the outcome per one-unit change in that predictor holding the other predictors constant, so the two numbers answer different questions. The 8.2 says how much more revenue comes with an extra kNOK of advertising and silently includes the fact that heavier campaigns also ran deeper discounts; the 5.1 says how much more comes with an extra kNOK of advertising among months at the same discount depth. That is the omitted-variable effect, and it is why a coefficient quoted without the model's variable list cannot be interpreted. Second, the model improved genuinely rather than mechanically. R squared always rises when any predictor is added, even random noise, so it cannot compare models of different sizes; adjusted R squared penalises extra predictors and rose from 0.39 to 0.60, so discount depth earned its place. Third, on relative importance, the raw coefficients suggest discount is four times as powerful, and that is an artefact of the units. Standardising with beta equal to b times the predictor's standard deviation divided by the outcome's, and taking advertising s = 42, discount s = 3.1 and revenue s = 380, gives 0.56 for advertising and 0.17 for discount. Advertising has more than three times the practical influence because discount depth barely varies month to month. Raw coefficients are per unit; standardised ones are per unit of realistic variation, and only the second answers which lever to pull. What I would not conclude is anything causal. Holding discount constant is a statement about the arithmetic and not about the world, and this is observational data, so it does not follow that the company could raise advertising with discounts fixed and collect 5.1 per kNOK. I would also want the residual plot before trusting any of it, check for multicollinearity between the two predictors given that they move together, and ask whether an interaction term is needed, since advertising may work differently at different discount depths. Exam use: whenever a coefficient changes between two models, name the omitted-variable effect explicitly, compare adjusted R squared rather than R squared, and standardise before ranking predictors."
         },
@@ -68991,6 +69098,16 @@ CURATED_PRACTICE_QUESTION_BANK = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "type": "knowledge",
+            "question": "A residual plot shows a clear fan and a Breusch-Pagan test confirms heteroscedasticity. Is the whole regression unusable?",
+            "answer": "No, and knowing exactly what is damaged is the point. Heteroscedasticity means the error variance grows with the size of the prediction. The coefficient estimates remain usable, because they are still unbiased; what breaks is the estimate of their variability, so the standard errors are wrong, and every quantity computed from them is unreliable, which means the p-values, the t-statistics and the confidence intervals. The practical consequence is that you can still say roughly how much y moves per unit of x, but you cannot say how certain that is or whether it is significant until the problem is addressed. The remedies are robust standard errors or a transformation of the outcome, often a log, and either choice should be reported rather than applied quietly, since a reader comparing this table with an earlier one needs to know which standard errors were used. This pattern generalises: a failed assumption usually invalidates a specific part of the output, not the analysis as a whole."
+        },
+        {
+            "type": "skills",
+            "question": "You have a choice between Excel, SPSS, R and Power BI for an assignment analysis. How would you choose, and what matters more than the choice?",
+            "answer": "By what the task needs. Excel is fine for the arithmetic in this course and has the virtue that a single cell is transparent, but it offers no real diagnostics and one wrong cell reference is invisible. SPSS is menu-driven and needs no programming, which is convenient, and it is standard in social science. R has the greatest statistical depth, the best diagnostics and publication-grade output, at the cost of a steeper learning curve. Python with pandas and statsmodels suits analysis embedded in a wider pipeline. Power BI and Tableau are presentation tools rather than analysis tools and are weak on inference, so they belong at the end of the process, not in the middle of it. What matters more than any of this is reproducibility. A script records what was done and a point-and-click session does not, so the method should be repeatable from what was written down whichever tool is used: the test named, the sample stated, the alpha stated, the exclusion rules stated, and every comparison performed listed, including the ones that were not significant."
+        },
         {
             "type": "knowledge",
             "question": "Why is squaring the residuals, rather than just adding them, both necessary and a source of fragility?",
