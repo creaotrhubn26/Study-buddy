@@ -65002,11 +65002,32 @@ This is the **omitted-variable effect**, and it is the single most useful thing 
 
 Some tables present **normalised or standardised values**, such as **z-scores**. Recognising these and their implications provides insight into how individual data points compare to overall distributions.
 
-A **z-score** expresses a value as its distance from the mean in standard deviations:
+A **z-score** measures how many standard deviations a data point is from the mean, using the formula:
 
-> **z = (x − mean) ÷ standard deviation**
+> **Z = (x − μ) ÷ σ**
 
-A z of 0 is exactly average, +1 is one standard deviation above, −2 is two below. The point of the transformation is **comparability**: it strips the units away, so a customer's order value and their order frequency — measured in kroner and in counts — can be placed on the same scale and compared.
+| Symbol | What it is |
+|---|---|
+| **x** | The individual data point being standardised |
+| **μ** (mu) | The **mean** of the distribution |
+| **σ** (sigma) | The **standard deviation** of the distribution |
+| **Z** | The result: the distance from the mean, counted in standard deviations |
+
+*A notation note: the course text prints the denominator as δ (delta). The standard symbol for a standard deviation is σ (sigma) — δ conventionally means a small change or difference. The formula is the usual one; only the character is off, and it is worth knowing the correct symbol since an exam paper will use σ.*
+
+**A second convention worth knowing.** μ and σ are the **population** mean and standard deviation. When those are unknown and you are working from a sample — which is almost always — the same formula is written with the sample estimates:
+
+> **z = (x − x̄) ÷ s**
+
+The arithmetic is identical. The distinction matters because a z built on sample estimates carries its own uncertainty, which is exactly the point the sampling sections of this lesson make about every other statistic.
+
+A Z of 0 is exactly average, +1 is one standard deviation above, −2 is two below. The point of the transformation is **comparability**: it strips the units away, so a customer's order value and their order frequency — measured in kroner and in counts — can be placed on the same scale and compared.
+
+**A quick calculation.** Nordtre's order values have a mean of NOK 742 and a standard deviation of NOK 210. An order of NOK 1 240 gives:
+
+> Z = (1 240 − 742) ÷ 210 = 498 ÷ 210 = **+2.37**
+
+That order sits 2.37 standard deviations above average — unusual, worth a look, not yet extraordinary. Run in reverse, the formula answers the more useful question: **what value sits at a given threshold?** At Z = 1.96, the 95% cut, x = 742 + 1.96 × 210 = **NOK 1 154**. That is how a z-score becomes a threshold on a dashboard rather than a number in a report.
 
 | z | Roughly where it sits in a normal distribution |
 |---|---|
@@ -66752,6 +66773,11 @@ CURATED_FLASHCARD_SETS = {
     ],
     "FI1BBEO10": [
         {
+            "front": "Write the z-score formula with its standard symbols, and use it in both directions.",
+            "back": "Z = (x minus mu) divided by sigma, where x is the individual data point, mu is the mean of the distribution and sigma its standard deviation; the result is the distance from the mean counted in standard deviations. Mu and sigma are the population values, and when working from a sample the same formula is written with the sample estimates, z = (x minus x-bar) divided by s. Forwards: with Nordtre order values averaging NOK 742 with a standard deviation of NOK 210, an order of NOK 1 240 gives Z = 498 divided by 210 = 2.37, so it sits 2.37 standard deviations above average, unusual but not extraordinary. Backwards, which is the more useful direction: at Z = 1.96, the 95 percent cut, x = 742 plus 1.96 times 210 = NOK 1 154. That is how a z-score becomes a threshold on a dashboard rather than a number in a report. Note that the course text prints the denominator as delta; the standard symbol is sigma, since delta conventionally means a small change.",
+            "tags": ["z-score", "formula", "lesson 1.2", "evo"]
+        },
+        {
             "front": "In a multivariate result table, why can the same predictor have different coefficients in two models fitted to the same data?",
             "back": "Because a coefficient in a multiple regression is the change in the outcome for a one-unit change in that predictor holding the other predictors constant, so its value depends on which other variables are in the model. Both values are correct answers to different questions. In the Nordtre example, advertising spend has a coefficient of 8.2 alone and 5.1 once average discount depth enters, a drop of 38 percent. The first answers how much more revenue comes with an extra kNOK of advertising, silently including the fact that heavier campaigns also ran deeper discounts; the second answers how much more comes with an extra kNOK of advertising among months with the same discount depth. This is the omitted-variable effect, and the practical consequence is that a coefficient reported without the model's full variable list is uninterpretable.",
             "tags": ["multivariate", "regression", "coefficients", "lesson 1.2", "evo"]
@@ -66763,7 +66789,7 @@ CURATED_FLASHCARD_SETS = {
         },
         {
             "front": "What is a z-score, what is it for, and what is a standardised coefficient?",
-            "back": "A z-score expresses a value as its distance from the mean in standard deviations: z = (x minus mean) divided by the standard deviation. Zero is exactly average, plus 1 is one standard deviation above, minus 2 is two below. Its purpose is comparability, since stripping the units lets a customer's order value in kroner and their order frequency as a count sit on the same scale. Roughly, plus or minus 1 is the outer 32 percent, plus or minus 1.96 the outer 5 percent, plus or minus 2.58 the outer 1 percent and plus or minus 3 the outer 0.3 percent. A standardised coefficient, or beta, applies the same idea to a regression: beta equals b times the standard deviation of the predictor divided by the standard deviation of the outcome, and it answers which predictor matters more, which the raw coefficient cannot.",
+            "back": "A z-score measures how many standard deviations a data point is from the mean, using Z = (x minus mu) divided by sigma, where x is the data point, mu is the mean of the distribution and sigma its standard deviation. With sample estimates in place of the population values it is written z = (x minus x-bar) divided by s, and the arithmetic is identical. Zero is exactly average, plus 1 is one standard deviation above, minus 2 is two below. Its purpose is comparability, since stripping the units lets a customer's order value in kroner and their order frequency as a count sit on the same scale. Roughly, plus or minus 1 is the outer 32 percent, plus or minus 1.96 the outer 5 percent, plus or minus 2.58 the outer 1 percent and plus or minus 3 the outer 0.3 percent. A standardised coefficient, or beta, applies the same idea to a regression: beta equals b times the standard deviation of the predictor divided by the standard deviation of the outcome, and it answers which predictor matters more, which the raw coefficient cannot.",
             "tags": ["z-score", "normalised metrics", "standardised coefficient", "lesson 1.2", "evo"]
         },
         {
@@ -68883,6 +68909,11 @@ CURATED_PRACTICE_QUESTION_BANK = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "type": "skills",
+            "question": "Order values average NOK 742 with a standard deviation of NOK 210. What order value would you set as an alert threshold at the 95 percent level, and why is that the more useful way to use a z-score?",
+            "answer": "Rearranging Z = (x minus mu) divided by sigma gives x = mu plus Z times sigma, so at Z = 1.96, the two-tailed 95 percent cut, the threshold is 742 plus 1.96 times 210 = NOK 1 154. Used forwards the formula tells you how unusual one observation was, which is a description after the fact. Used backwards it converts a chosen confidence level into a value in business units, which is a rule that can sit on a dashboard and fire on its own. That difference matters for the dashboard design point from Lesson 1.1: a tile carrying a decision rather than a number needs a threshold, and the z-score is how a threshold gets set from the data instead of by intuition. Two caveats before deploying it: the rule assumes a roughly bell-shaped distribution, and order values are usually right-skewed, so the IQR fences from Lesson 1.3 may fit better; and the mean and standard deviation are themselves sample estimates that will move as more orders arrive, so the threshold needs a review date."
+        },
         {
             "type": "skills",
             "question": "Someone quotes you a regression coefficient without saying what else was in the model. Why is that not enough?",
