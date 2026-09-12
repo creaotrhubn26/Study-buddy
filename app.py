@@ -65919,6 +65919,55 @@ And a **weak** instrument fails differently but just as badly: as the first-stag
 > 📄 The full worked case, with the sign analysis, all three conditions, the alternatives ranked, and a written answer, is in `EVO_1.2_ClassSize_Case_Solution.md`.
 
 
+##### Recognising, testing, rectifying — the assumptions in one place
+
+> In essence, these assumptions, foundational to linear regression, help ensure that the derived model is **accurate and interpretable**. **Recognising, testing, and, if necessary, rectifying** violations of these assumptions is crucial to uphold the integrity of regression analyses.
+
+The closing sentence names three verbs, and they are three different activities. Most reports do the first, skip the second and never reach the third.
+
+The course singles out **two** assumptions as pivotal. The full set behind ordinary least squares is longer, and it is worth having the whole list once, because an assignment can ask about any of them.
+
+| Assumption | The claim | How to test it | If it fails |
+|---|---|---|---|
+| **Linearity** | The effect of x is the same at every level of x | Residuals against fitted values: look for a curve | Squared term, log transform, split the range |
+| **Exogeneity** | Predictors are uncorrelated with the error term | **Cannot be tested from the output.** Argue it from the design | Add the confounder, randomise, instrument, fixed effects |
+| **Homoscedasticity** | Error variance is constant across the range | Residual plot for a fan; Breusch–Pagan | Robust standard errors, or log the outcome |
+| **Independence** | Observations do not carry information about each other | Durbin–Watson for time order; think about clustering | Time or seasonal terms, clustered standard errors |
+| **Normality of residuals** | Errors are approximately normal | Q–Q plot; Shapiro–Wilk | Matters little at large n; non-parametric methods at small n |
+| **No severe multicollinearity** | Predictors are not near-duplicates of each other | Variance inflation factor | Drop or combine predictors; stop reading individual coefficients |
+
+##### The sorting that actually matters: what breaks, and what survives
+
+This is the most useful thing to carry out of the whole section, because it tells you **whether the model is still usable** rather than merely whether something is wrong.
+
+| Violation | The coefficients | The standard errors, p-values and intervals |
+|---|---|---|
+| **Non-linearity** | **Broken** — systematically wrong across the range | Broken |
+| **Endogeneity** | **Broken** — biased *and* inconsistent | Meaningless, and misleadingly tight |
+| **Heteroscedasticity** | **Fine** — still unbiased | **Broken** |
+| **Autocorrelation** | **Fine** | **Broken** — usually too narrow |
+| **Non-normal residuals** | Fine | Fine in large samples |
+| **Multicollinearity** | Fine, but unstable between samples | Inflated, so real effects look insignificant |
+
+**The top two rows are a different category from the rest.** Where the coefficients break, the model answers the wrong question and no amount of correcting the standard errors helps. Where only the standard errors break, the estimate is still the estimate — you just cannot say how certain it is until you fix the inference.
+
+So the first question on any diagnostic finding is: **did this damage the number, or only the confidence around it?**
+
+##### The three verbs as a routine
+
+| Verb | What it means in practice | What it looks like in a write-up |
+|---|---|---|
+| **Recognise** | Know which assumptions the method makes *before* running it, and which are plausible for this domain | "Advertising shows diminishing returns, so linearity is doubtful here" |
+| **Test** | Run the diagnostic that would reveal each violation — and know which one has no test | "The residual plot shows a clear arc; Breusch–Pagan p = 0.02" |
+| **Rectify** | Apply the specific fix, then show the diagnostic again | "A log transform removed the curvature; residuals are now formless" |
+
+**And the fourth verb the sentence leaves out: report.** A violation you found, fixed and never mentioned is invisible to the reader, who then cannot tell your model from one where nobody looked. State what you tested, what you found and what you changed — including the tests that came back clean.
+
+That is also the honest answer when nothing can be fixed. "This estimate is probably overstated because well-resourced schools run smaller classes, and I could not obtain a credible instrument" is a complete, professional sentence. It is worth more than a confident number.
+
+> 🔬 Five simulators cover these: **8** for residual patterns, **14** for linearity in the housing case, **15** for why exogeneity cannot be diagnosed, **16** for instruments, and **12** for why a rising R² is not reassurance. All in **Visual Lab → 1.2 → C og D**.
+
+
 #### Result table analysis with linear regression
 
 A simple linear regression models one outcome variable from one predictor. Reading its result table is a named outcome of this course. The multivariate case — several predictors at once, and what that does to a coefficient — was covered under diving deeper above; this section takes the components of the table one at a time.
@@ -67755,6 +67804,21 @@ CURATED_FLASHCARD_SETS = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "front": "Sort the regression assumption violations by what they break: the coefficients, or only the inference?",
+            "back": "Non-linearity breaks the coefficients, which are systematically wrong across the range, and the standard errors with them. Endogeneity breaks the coefficients too, biased and inconsistent, and makes the standard errors meaningless and misleadingly tight. Heteroscedasticity leaves the coefficients fine and unbiased but breaks the standard errors. Autocorrelation likewise leaves coefficients fine and breaks the standard errors, usually making them too narrow. Non-normal residuals leave both fine in large samples. Multicollinearity leaves coefficients unbiased but unstable between samples and inflates the standard errors, so real effects can look insignificant. The top two are a different category from the rest: where the coefficients break, the model answers the wrong question and correcting the standard errors does not help, whereas where only the inference breaks the estimate is still the estimate and you simply cannot say how certain it is until it is fixed. So the first question on any diagnostic finding is whether it damaged the number or only the confidence around it.",
+            "tags": ["assumptions", "diagnostics", "summary", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "List the six OLS assumptions with the test for each, and say which one has no test.",
+            "back": "Linearity, that the effect of x is the same at every level, tested by looking for a curve in residuals against fitted values, fixed with a squared term, a log transform or splitting the range. Exogeneity, that predictors are uncorrelated with the error term, which cannot be tested from the output at all and must be argued from the design, fixed by adding the confounder, randomising, instrumenting or fixed effects. Homoscedasticity, that error variance is constant, tested by looking for a fan or with Breusch-Pagan, fixed with robust standard errors or by logging the outcome. Independence, that observations carry no information about each other, tested with Durbin-Watson for time order and by thinking about clustering, fixed with time or seasonal terms or clustered standard errors. Normality of residuals, tested with a Q-Q plot or Shapiro-Wilk, which matters little at large n. And no severe multicollinearity, tested with the variance inflation factor, fixed by dropping or combining predictors. Exogeneity is the one with no test, because least squares constructs the residuals to be orthogonal to the predictors.",
+            "tags": ["assumptions", "ols", "testing", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "The course names three verbs for handling assumptions. What are they, and what fourth one is missing?",
+            "back": "Recognising, testing and, if necessary, rectifying violations. Recognising means knowing which assumptions the method makes before running it and which are plausible for this domain, as in advertising shows diminishing returns so linearity is doubtful. Testing means running the diagnostic that would reveal each violation, and knowing which one has no test. Rectifying means applying the specific fix and then showing the diagnostic again, as in a log transform removed the curvature and the residuals are now formless. The missing fourth verb is report: a violation you found, fixed and never mentioned is invisible to the reader, who then cannot tell your model from one where nobody looked. State what you tested, what you found and what you changed, including the tests that came back clean. That is also the honest route when nothing can be fixed, since saying an estimate is probably overstated for a named reason and that no credible instrument was available is a complete professional sentence, worth more than a confident number.",
+            "tags": ["assumptions", "method", "reporting", "lesson 1.2", "evo"]
+        },
         {
             "front": "The class-size case: sign the omitted variable bias and say what it does in plain words.",
             "back": "The bias equals the resource effect on performance times the covariance between class size and resources, divided by the variance of class size. The resource effect is positive, since resources improve performance. The covariance is negative, since better-resourced schools run smaller classes. The product is therefore negative, and a negative bias added to an already-negative true coefficient makes the estimate larger in magnitude. In plain words: the benefit of shrinking classes is exaggerated. Simulated against a known true effect of minus 0.80 points per pupil, the naive regression returns minus 1.575, nearly double the real benefit, and the bias formula predicts that to within 0.004. Say it in words as well as signs, because overestimated applied to a negative coefficient is ambiguous and a marker wants to see you know which direction it runs.",
