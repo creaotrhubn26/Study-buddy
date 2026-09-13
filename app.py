@@ -66077,6 +66077,84 @@ Everything hangs off the standard error. Which leads to the consequence that tie
 > 🔬 Simulator **17 · Justert R², F og standardfeil** has both demonstrations: add noise predictors and watch R² rise while adjusted R² and F fall, then switch to the collinearity case where F says yes and every t says no.
 
 
+##### The t-statistic
+
+**The official definition.** The t-statistic — **the coefficient divided by its standard error** — is used to assess the significance of individual predictors. A higher absolute value indicates the predictor is **more significant**.
+
+> **t = b ÷ SE(b)**
+
+Read literally, t answers one question: **how many standard errors does this coefficient sit away from zero?** A t of 3 means the estimate is three times its own uncertainty, which is hard to explain as a fluke. A t of 0.5 means the coefficient is smaller than the noise in measuring it.
+
+**The rule of thumb worth carrying:** for any reasonable sample size, **|t| above about 2 corresponds to p below 0.05.** That is why an experienced reader scans the t column before the p column — it is the same information, and t also tells you *how far past* the threshold you are.
+
+##### "More significant" is not "more important"
+
+This is the qualification the sentence needs, and it is the same distinction the whole lesson has been making about p-values, arriving one more time.
+
+**A large t means the coefficient is precisely estimated relative to its own size. It says nothing about whether the effect is large.**
+
+| t is high because… | Which means |
+|---|---|
+| The effect is genuinely large | Important *and* significant |
+| The predictor varies widely in the data | Precisely estimated — but the effect per unit may be small |
+| The sample is large | Even a trivial effect gets a high t eventually |
+| Residual noise is low | Precise, regardless of magnitude |
+
+**The sample-size point, demonstrated.** The same negligible effect, measured on three sample sizes:
+
+| n | Coefficient | SE | t | p |
+|---|---|---|---|---|
+| 60 | +0.093 | 0.145 | 0.64 | 0.52 |
+| 500 | +0.076 | 0.046 | 1.65 | 0.10 |
+| **5 000** | +0.029 | 0.014 | **2.08** | **0.038** |
+
+By n = 5 000 the effect is *smaller* than in the small samples and the t-statistic has crossed the significance threshold. **Nothing about the relationship improved; only the precision did.**
+
+##### Can you rank predictors by their t-statistics?
+
+A tempting shortcut, and it is wrong — though for a reason worth understanding, because it is *nearly* right.
+
+**In a clean model with uncorrelated predictors, t and the standardised coefficient rank predictors identically.** Both are proportional to b × σₓ, so the shortcut works. That is probably why it is so widespread.
+
+**It breaks the moment predictors overlap**, because collinearity inflates one standard error and not another. A model with three predictors, where x₁ has the largest true effect but shares most of its variation with a control:
+
+| Predictor | Coefficient | SE | \|t\| | Standardised β | VIF | True effect |
+|---|---|---|---|---|---|---|
+| **x₁** | 3.91 | 0.772 | **5.07** | **0.648** | 32.3 | **5.0** |
+| **x₂** | 2.21 | 0.140 | **15.81** | 0.357 | 1.0 | 2.0 |
+| x₃ | 1.09 | 0.773 | 1.41 | 0.180 | 32.3 | 0.0 |
+
+> **Ranked by |t|:** x₂, then x₁
+> **Ranked by standardised β:** x₁, then x₂
+> **The truth:** x₁ has more than twice x₂'s effect
+
+Ranking by t puts the wrong predictor first, because x₁'s standard error is inflated 32-fold by its overlap with x₃. **Rank by standardised coefficients; use t only for "is this distinguishable from zero".**
+
+##### The three questions, and the metric for each
+
+| Question | Metric | Never use |
+|---|---|---|
+| Is this predictor distinguishable from zero? | **t and its p-value** | — |
+| How much does it move the outcome? | **The raw coefficient**, in business units | t |
+| Which predictor matters most? | **Standardised coefficient (β)** | t, unless predictors are uncorrelated |
+
+##### Closing the section
+
+> By understanding these advanced metrics, we can **build, evaluate, and interpret** robust linear regression models that provide reliable insights into the relationships between variables.
+
+Three verbs again, and they map onto the metrics cleanly:
+
+| Verb | The metric that serves it |
+|---|---|
+| **Build** | Adjusted R² — for choosing between models with different numbers of predictors |
+| **Evaluate** | F for whether the model has anything at all; the residual plot and the assumptions for whether it is honest |
+| **Interpret** | Coefficients in business units for size, standard errors and intervals for precision, t and p for detectability, standardised β for ranking |
+
+**And the word carrying the most weight in that sentence is "robust".** None of these metrics makes a model robust — they *reveal* whether it is. A model can post an excellent adjusted R², a towering F and t-statistics in the double digits, and still be worthless because a confounder was omitted. The metrics measure the fit; the assumptions decide whether the fit means anything.
+
+That is the order to read a result table in: **assumptions first, then the metrics.**
+
+
 #### Result table analysis with linear regression
 
 A simple linear regression models one outcome variable from one predictor. Reading its result table is a named outcome of this course. The multivariate case — several predictors at once, and what that does to a coefficient — was covered under diving deeper above; this section takes the components of the table one at a time.
@@ -67913,6 +67991,26 @@ CURATED_FLASHCARD_SETS = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "front": "What is the t-statistic, what does it actually answer, and what is the rule of thumb?",
+            "back": "The t-statistic is the coefficient divided by its standard error, used to assess the significance of individual predictors, where a higher absolute value indicates the predictor is more significant. Read literally it answers one question: how many standard errors does this coefficient sit away from zero. A t of 3 means the estimate is three times its own uncertainty, which is hard to explain as a fluke, while a t of 0.5 means the coefficient is smaller than the noise in measuring it. The rule of thumb is that for any reasonable sample size an absolute t above about 2 corresponds to p below 0.05, which is why experienced readers scan the t column before the p column: it is the same information, and t also shows how far past the threshold you are.",
+            "tags": ["t-statistic", "significance", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "Why is a high t-statistic not evidence that a predictor is important?",
+            "back": "Because a large t means the coefficient is precisely estimated relative to its own size, and says nothing about whether the effect is large. t is high when the effect is genuinely large, but equally when the predictor varies widely in the data, when the sample is large, or when residual noise is low. The sample-size case is the clearest: the same negligible effect measured at n = 60 gives a coefficient of 0.093 with t = 0.64 and p = 0.52; at n = 5 000 the coefficient is smaller at 0.029 and yet t = 2.08 with p = 0.038. Nothing about the relationship improved, only the precision did. This is the same distinction the lesson makes between a p-value and an effect size, arriving once more.",
+            "tags": ["t-statistic", "significance versus importance", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "Can you rank predictors by their t-statistics?",
+            "back": "No, though the shortcut is nearly right, which is why it is widespread. In a clean model with uncorrelated predictors, t and the standardised coefficient rank predictors identically, because both are proportional to the coefficient times the predictor's standard deviation. It breaks the moment predictors overlap, because collinearity inflates one standard error and not another. In a worked case with three predictors, ranking by absolute t puts x2 first with 15.81 against x1's 5.07, while the standardised coefficients put x1 first at 0.648 against 0.357 — and x1's true effect is 5.0 against x2's 2.0, so the t ranking is simply wrong. The cause is that x1's standard error is inflated 32-fold by its overlap with a control. Rank by standardised coefficients, and use t only for whether something is distinguishable from zero.",
+            "tags": ["t-statistic", "standardised coefficient", "multicollinearity", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "Which metric answers which question about a regression, and what does 'robust' actually depend on?",
+            "back": "Is this predictor distinguishable from zero: t and its p-value. How much does it move the outcome: the raw coefficient in business units, never t. Which predictor matters most: the standardised coefficient, and t only when the predictors are uncorrelated. Across the model as a whole, adjusted R squared serves building, since it compares models with different numbers of predictors; F serves evaluating whether the model has anything at all; and the coefficients, intervals and standardised betas serve interpreting. But no metric makes a model robust, they only reveal whether it is: a model can post an excellent adjusted R squared, a towering F and double-digit t-statistics and still be worthless because a confounder was omitted. The metrics measure the fit; the assumptions decide whether the fit means anything. So read a result table assumptions first, then metrics.",
+            "tags": ["regression metrics", "interpretation", "summary", "lesson 1.2", "evo"]
+        },
         {
             "front": "What does adjusted R-squared do that R-squared cannot, and give its formula.",
             "back": "R squared tends to increase as predictors are added even when they are irrelevant, so it cannot compare models with different numbers of predictors. Adjusted R squared penalises the model for predictors that do not meaningfully improve fit: adjusted R squared equals 1 minus (1 minus R squared) times (n minus 1) divided by (n minus k minus 1), where n is the sample size and k the number of predictors. The penalty is visible in the formula, since each extra predictor raises k, shrinks the denominator and pulls the value down, so a new predictor must raise R squared by more than that mechanical loss before adjusted R squared moves up at all. Two properties follow: it can fall when a useless predictor is added, which R squared never does and which is precisely the signal, and it can go negative when the model is worse than predicting the mean every time. Demonstrated on 60 rows with one real predictor and fourteen noise ones, R squared climbs from 0.556 to 0.630 on noise alone while adjusted R squared falls from 0.548 to 0.504.",
