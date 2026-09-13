@@ -66951,6 +66951,153 @@ That last row is the one most worth having. If the drug arm's Q3 sits below the 
 > **The evaluation-grade formulation to carry into the rest of this case:** the five-point summary is a *description*, and a well-chosen one for this variable. It sets up the comparison, shows the shape and exposes overlap. It does not test anything, and the efficacy claim will need the test, the effect size, and a statement of what reduction would be clinically meaningful — decided before the data were seen.
 
 
+##### The five-point summary, defined
+
+A five-point summary consists of the following:
+
+- **Minimum** — the smallest value in the dataset
+- **Q1 (first quartile)** — the median of the lower half of the dataset
+- **Median (Q2)** — the middle value in the dataset, when the dataset is sorted in ascending order
+- **Q3 (third quartile)** — the median of the upper half of the dataset
+- **Maximum** — the largest value in the dataset
+
+**Key findings.**
+
+- The **median recovery time** for patients on the drug was **five days shorter** than the placebo group.
+- The drug group's **interquartile range (IQR) was tighter**, suggesting **more consistent** results.
+
+**Outcomes and future strategies.**
+
+- PharmaCorp received **approval to proceed to the next trial phase**. The data insights were also used in **marketing campaigns**, emphasising the drug's **consistency and effectiveness** in reducing recovery time.
+- These case studies demonstrate the application of analytical techniques across industries, from retail and tech to pharmaceuticals.
+
+##### The definitions are right, and the Q1 wording is ambiguous
+
+"The median of the lower half" is the standard teaching definition and it is not wrong. But it leaves one question unanswered, and the answer changes the number: **when n is odd, does "the lower half" include the median itself?**
+
+Take seven recovery times: **4, 6, 7, 9, 12, 15, 22**. The median is 9.
+
+| Convention | Lower half | Q1 |
+|---|---|---|
+| Including the median (Tukey's hinges) | 4, 6, 7, 9 | **6.5** |
+| Excluding the median (Moore's method) | 4, 6, 7 | **6.0** |
+| `QUARTILE.INC` in Excel, R type 7, numpy default | *interpolated* | **6.5** |
+| `QUARTILE.EXC` in Excel, R type 6 | *interpolated* | **6.0** |
+
+Two defensible answers from four methods in common use, and the course's wording selects neither. There are nine recognised quantile definitions in the statistical literature.
+
+> **What this means in practice.** The differences are small and shrink as n grows, so this almost never changes a conclusion. It changes marks. If you compute Q1 by hand and the marker used software — or the reverse — the numbers will not match, and the fix is one sentence: **state the convention.** "Q1 = 6.0 (quartiles excluding the median, equivalent to Excel's `QUARTILE.EXC`)" is unarguable. A bare "Q1 = 6.0" is not.
+
+##### Finding 1: "five days shorter" — the number the case does not give
+
+A median difference of five days may be a substantial clinical result or a coincidence, and **nothing in the case distinguishes them, because the sample size is not reported.**
+
+Simulating trials where the drug genuinely works — placebo median 20 days, drug median 15, a real 5-day effect present in the population every time:
+
+| n per arm | Observed median difference | Its sd across trials | Detected at p < 0.05 |
+|---|---|---|---|
+| 10 | 5.13 days | ± 4.07 | **28.5%** |
+| 20 | 5.15 | ± 2.85 | 55.1% |
+| 40 | 5.00 | ± 2.09 | 82.4% |
+| 80 | 4.98 | ± 1.49 | 98.4% |
+| 200 | 5.01 | ± 0.95 | **100%** |
+
+At ten patients per arm, a **real** five-day effect is missed **seven times out of ten**, and the observed difference bounces around by four days from trial to trial — so a reported "5 days" from a small trial could as easily have come out as 1 or 9. At eighty per arm the same effect is nearly certain to be found and the estimate is stable.
+
+**The case reports the five days and nothing else, so the reader cannot tell which row they are in.** That is the omission to name in an exam answer, and the remedy is standard:
+
+| Report | Why |
+|---|---|
+| **n per arm** | Without it no other number can be interpreted |
+| **Hodges–Lehmann shift estimate** | The median-difference counterpart to a difference in means, and the natural estimator to pair with a rank test |
+| **Its 95% confidence interval** | At n = 40 per arm the interval is about 6.6 days wide; at n = 200, about 2.9. The width *is* the precision |
+| **Mann–Whitney U test** | The rank test that matches a median comparison on skewed data, with no normality assumption |
+| **A pre-specified clinical threshold** | How many days' reduction would actually change practice, decided before the data were seen |
+
+That last row is the one most often missing. A statistically certain half-day reduction is not a reason to prescribe anything.
+
+##### Finding 2: "tighter IQR, so more consistent" — this is very likely an artefact
+
+This is the most interesting error in any of the five cases, because the reasoning looks impeccable and the arithmetic guarantees the observation regardless of whether the drug improves consistency at all.
+
+**Recovery times are bounded below by zero and right-skewed.** For a variable like that, a treatment effect is naturally *multiplicative* — patients recover some percentage faster, not some fixed number of days faster. And **any multiplicative shift compresses an absolute measure of spread automatically.**
+
+Simulating a drug that makes every single patient recover exactly **25% faster** — so consistency is, by construction, *completely unchanged*:
+
+| | Min | Q1 | Median | Q3 | Max | **IQR** |
+|---|---|---|---|---|---|---|
+| Placebo | 3.1 | 15.1 | 20.0 | 26.6 | 131.6 | **11.51** |
+| Drug | 2.3 | 11.3 | 15.0 | 20.0 | 98.7 | **8.63** |
+
+The IQR is **25.0% tighter**. And yet:
+
+| Measure of consistency | Placebo | Drug |
+|---|---|---|
+| Standard deviation on the log scale | 0.4198 | **0.4198** |
+| Coefficient of quartile variation, (Q3−Q1)/(Q3+Q1) | 0.2761 | **0.2761** |
+
+**Identical.** Every patient's recovery time was multiplied by the same number. There is no consistency gain anywhere in this data, and the IQR still fell by a quarter — because the IQR scales by exactly the same factor as the median under a multiplicative shift.
+
+> **So "the IQR was tighter" and "the median was five days shorter" are not two findings. Under the most natural model of how the drug works, they are one finding reported twice.**
+
+##### The diagnostic that separates the two, and it takes one division
+
+Compare **IQR ÷ median** between arms. If a drug merely shifts the distribution, that ratio is unchanged. If it genuinely makes outcomes more uniform, the ratio falls.
+
+| Scenario | Median | IQR | **IQR / median** | Verdict |
+|---|---|---|---|---|
+| Placebo baseline | 20.0 | 11.49 | 0.5744 | — |
+| Pure shift, 25% faster, consistency unchanged | 15.0 | 8.61 | **0.5744** | **No consistency gain** |
+| Genuine consistency gain, same median | 15.0 | 5.69 | 0.3799 | Better |
+| Shift **and** consistency gain | 15.0 | 6.12 | 0.4086 | Better |
+| Shift but **worse** consistency | 15.0 | 11.37 | 0.7576 | Worse |
+
+Notice rows two and five: both have the same median, and their IQRs differ by a factor of 1.3. **A reader who only sees "the IQR is tighter than placebo" cannot tell them apart** — and row five is a drug that made outcomes *less* predictable while still shortening them.
+
+**To be fair to PharmaCorp:** the drug *may* genuinely improve consistency. Row four is a real possibility and would be a valuable property. The criticism is not that the claim is false — it is that **the evidence offered cannot support it**, and the most parsimonious explanation of a tighter IQR alongside a shorter median is a plain shift. Establishing a consistency claim requires the ratio above, or a test on the log scale, or Levene's test on absolute deviations from the median. None appears in the case.
+
+##### The marketing campaign is where the artefact becomes a problem
+
+Two of the three uses PharmaCorp made of these findings are appropriate. One is not, and the distinction is worth being precise about, because it is a question about **evidentiary standards varying with the claim being made.**
+
+| Use | Standard required | Verdict |
+|---|---|---|
+| **Proceeding to the next trial phase** | A promising signal and acceptable safety. Phase progression exists precisely to gather better evidence | **Justified.** This is what descriptive results from an early phase are *for* |
+| **Claiming effectiveness in marketing** | A pre-specified primary endpoint, a test, an effect size and regulatory review | **Not shown here.** No n, no test, no interval reported |
+| **Claiming consistency in marketing** | All of the above, for a claim that was not a stated endpoint | **The serious one.** A post-hoc observation, untested, and most plausibly an artefact of the shift |
+
+The consistency claim has every feature that regulators restrict. It is **secondary** — the trial was designed to test recovery time, not variability. It is **post-hoc** — nobody set out to measure consistency; it was noticed in the summary afterwards. It is **untested** — no comparison of spread was performed. And it is **most likely mechanical**, following from the effect the drug already claims.
+
+> **The general principle, which generalises well beyond pharmaceuticals.** Exploratory analysis is allowed to notice anything. Promotion is allowed to claim only what was tested. A five-point summary is an exploratory instrument — it is exactly the right tool for *forming* the hypothesis that the drug improves consistency, and it is not evidence *for* it.
+
+> 🔬 Simulator **20 · Fempunktsoppsummering og IQR-fellen** in the Visual Lab has the two effects on separate sliders. Raise "how much faster" with the consistency slider untouched, and watch the IQR tighten while IQR ÷ median does not move at all — the artefact, reproduced on demand. Then move the consistency slider and watch the ratio finally respond.
+
+##### What this case does well, and it is more than the others
+
+Ending on the credit side, because the design here is the strongest of the five:
+
+- **There is a control group, and it is a placebo arm.** Every confounder that undermines the TechHub case and the XYZ sales case is handled
+- **The summary chosen matches the variable.** Recovery times are skewed and outlier-prone, so the median and quartiles describe them honestly where a mean and standard deviation would not
+- **The findings are reported as descriptive**, at least in the trial context. The overreach happens in the marketing, not in the analysis
+- **Progressing to the next phase is the correct response to this evidence.** They did not claim the drug was proven; they claimed it was worth investigating further, which is what the data support
+
+##### The five cases side by side
+
+The course closes by noting that these cases demonstrate analytical techniques across industries. It is worth extracting what each one actually teaches, because they form a progression:
+
+| Case | Technique | The lesson in it |
+|---|---|---|
+| **1 · E-commerce** | Residual analysis | A funnel means proportional noise. Coefficients survive; every standard error does not |
+| **2 · Alpha Estates** | VIF, adjusted R², F | A correctly measured diagnostic can still produce the wrong decision. Removing a collinear variable trades imprecision for bias |
+| **3 · BigMart** | Forecast error metrics | The metric must fit the data. MAPE ranks slow movers worst by construction, and the remedy contradicted the finding |
+| **4 · TechHub** | Z-testing | A p-value without an effect size and a control group is a screening signal, not a conclusion. The qualitative evidence did the real work |
+| **5 · PharmaCorp** | Five-point summary | A description is not a test, and a spread that shrinks with the median is arithmetic rather than a finding |
+
+**Read together, four of the five make the same underlying mistake in different clothing: a statistic was computed correctly and then asked to support a claim it cannot reach.** The e-commerce case treats a variance problem as if the coefficients were at risk. Alpha Estates treats a variance diagnostic as grounds for changing what a coefficient means. BigMart treats a forecast-error ratio as a measure of forecasting skill. TechHub treats a threshold crossing as proof of causation. PharmaCorp treats a descriptive summary as evidence of a property nobody tested.
+
+> **Which is the examinable skill in this whole lesson, stated once.** The calculations are the easy part and software does them. What is being assessed is whether you can say **what a number is entitled to claim** — and, when it is not entitled to the claim being made, what evidence would be.
+
+
 #### Result table analysis with linear regression
 
 A simple linear regression models one outcome variable from one predictor. Reading its result table is a named outcome of this course. The multivariate case — several predictors at once, and what that does to a coefficient — was covered under diving deeper above; this section takes the components of the table one at a time.

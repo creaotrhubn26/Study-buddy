@@ -2051,11 +2051,161 @@ def _multicollinearity():
     )
 
 
+
+# --------------------------------------------------------------------------
+# F. Distributions and five-point summaries
+# --------------------------------------------------------------------------
+
+@st.cache_data(show_spinner=False)
+def _trial_draw(speedup, consistency, n, seed):
+    """Placebo and drug recovery times.
+
+    speedup is multiplicative, consistency scales the log-scale spread. Keeping
+    those two on separate sliders is the whole point: the case's 'tighter IQR'
+    appears from the first alone, with the second untouched.
+    """
+    rng = np.random.default_rng(seed)
+    placebo = np.exp(rng.normal(np.log(20), 0.42, n))
+    drug = np.exp(rng.normal(np.log(20 * (1 - speedup)), 0.42 * consistency, n))
+    return placebo, drug
+
+
+# Sampling sd of the change in (IQR / median) under a pure shift, measured over
+# 4000 simulated trials per arm size. The ratio diagnostic is itself noisy, so the
+# verdict below is judged against this band rather than an arbitrary cutoff.
+_RATIO_SD = {10: 0.752, 20: 0.458, 40: 0.293, 80: 0.204, 200: 0.127, 600: 0.072}
+
+
+def _five(x):
+    return dict(zip(["min", "Q1", "median", "Q3", "maks"],
+                    [np.min(x), np.quantile(x, .25), np.median(x),
+                     np.quantile(x, .75), np.max(x)]))
+
+
+def _five_point():
+    st.markdown("#### 20 · Fempunktsoppsummering og IQR-fellen")
+    st.caption(
+        "PharmaCorp-caset. Legemiddelet gjør pasientene raskere friske — og IQR-en blir "
+        "strammere. Spørsmålet er om det betyr «jevnere resultater», eller bare er regning."
+    )
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        speed = st.slider("Hvor mye raskere (multiplikativt)", 0, 50, 25, 5,
+                          format="%d %%", key="vl_fp_speed") / 100
+    with c2:
+        cons = st.slider("Endring i spredning (log-skala)", 0.50, 1.50, 1.00, 0.05,
+                         key="vl_fp_cons",
+                         help="1,00 = uendret konsistens. Under 1 = genuint jevnere. "
+                              "Over 1 = mer uforutsigbart.")
+    with c3:
+        n = st.select_slider("Pasienter per arm", [10, 20, 40, 80, 200, 600], value=600,
+                             key="vl_fp_n")
+
+    placebo, drug = _trial_draw(speed, cons, n, 31)
+    long = pd.concat([pd.DataFrame({"dager": placebo, "gruppe": "Placebo"}),
+                      pd.DataFrame({"dager": drug, "gruppe": "Legemiddel"})])
+    box = alt.Chart(long).mark_boxplot(size=48, extent=1.5).encode(
+        y=alt.Y("gruppe:N", title=None, sort=["Placebo", "Legemiddel"]),
+        x=alt.X("dager:Q", title="Restitusjonstid (dager)"),
+        color=alt.Color("gruppe:N", scale=alt.Scale(domain=["Placebo", "Legemiddel"],
+                                                    range=[INK_MUTED, C_AQUA]),
+                        legend=None))
+    st.altair_chart(box.properties(height=170, title="Fempunktsoppsummeringen som boksplott"),
+                    use_container_width=True)
+
+    fp, fd = _five(placebo), _five(drug)
+    iqr_p, iqr_d = fp["Q3"] - fp["Q1"], fd["Q3"] - fd["Q1"]
+    rp, rd = iqr_p / fp["median"], iqr_d / fd["median"]
+
+    st.dataframe(pd.DataFrame({
+        "Gruppe": ["Placebo", "Legemiddel"],
+        "Min": [f"{fp['min']:.1f}", f"{fd['min']:.1f}"],
+        "Q1": [f"{fp['Q1']:.1f}", f"{fd['Q1']:.1f}"],
+        "Median": [f"{fp['median']:.1f}", f"{fd['median']:.1f}"],
+        "Q3": [f"{fp['Q3']:.1f}", f"{fd['Q3']:.1f}"],
+        "Maks": [f"{fp['maks']:.1f}", f"{fd['maks']:.1f}"],
+        "IQR": [f"{iqr_p:.2f}", f"{iqr_d:.2f}"],
+        "IQR / median": [f"{rp:.4f}", f"{rd:.4f}"],
+    }), hide_index=True, use_container_width=True)
+
+    m = st.columns(4)
+    m[0].metric("Median kortere med", f"{fp['median'] - fd['median']:.1f} dager")
+    m[1].metric("IQR strammere med", f"{(1 - iqr_d / iqr_p) * 100:.1f} %")
+    m[2].metric("IQR / median endret", f"{(rd / rp - 1) * 100:+.1f} %")
+    u = stats.mannwhitneyu(placebo, drug, alternative="two-sided")
+    m[3].metric("Mann–Whitney p", f"{u.pvalue:.4g}")
+
+    change = rd / rp - 1
+    band = 1.96 * _RATIO_SD[n]
+    tighter = iqr_d < iqr_p * 0.98
+    if abs(change) <= band:
+        _callout(
+            f"**Dette er nøyaktig fellen i caset.** IQR-en er **{(1-iqr_d/iqr_p)*100:.1f} % "
+            f"strammere** — det ser ut som jevnere resultater. Men IQR delt på medianen "
+            f"endret seg {change*100:+.1f} %, og med {n} pasienter per arm svinger det tallet "
+            f"±{band*100:.0f} % av rene tilfeldigheter. **Endringen er ikke til å skille fra "
+            f"null.**\n\n"
+            f"Spredningen krympet i takt med medianen, fordi restitusjonstid har et gulv på "
+            f"null og effekten er multiplikativ. «Strammere IQR» og «kortere median» er ikke "
+            f"to funn her — det er ett funn rapportert to ganger.",
+            S_WARNING, "rgba(250,178,25,0.10)")
+    elif change < -band:
+        _callout(
+            f"**Her er det et ekte konsistensfunn.** IQR er {(1-iqr_d/iqr_p)*100:.1f} % "
+            f"strammere, og — det avgjørende — IQR delt på medianen falt **{-change*100:.1f} %**, "
+            f"godt utenfor støybåndet på ±{band*100:.0f} % ved {n} pasienter per arm. "
+            f"Spredningen krympet *mer* enn forskyvningen alene forklarer.\n\n"
+            f"Dette er påstanden PharmaCorp gjør. Den kan være sann — men den krever denne "
+            f"utregningen, ikke bare en IQR-sammenligning.", S_GOOD, "rgba(12,163,12,0.08)")
+    else:
+        _callout(
+            f"**Legg merke til hva som skjer nå.** Medianen er fortsatt kortere, men IQR delt "
+            f"på medianen **steg {change*100:.1f} %**, utenfor støybåndet på ±{band*100:.0f} %. "
+            f"Legemiddelet gjør forløpet **mindre forutsigbart**, selv om det gjør det "
+            f"kortere.\n\n"
+            f"En leser som bare får «IQR-en er strammere enn placebo» kan ikke skille dette "
+            f"fra tilfellet over — begge har strammere IQR. Det er derfor forholdstallet må "
+            f"rapporteres.", S_CRITICAL, "rgba(208,59,59,0.08)")
+
+    if not tighter and speed < 0.05:
+        _callout(
+            f"**Ingen forskyvning å snakke om.** Median {fp['median']:.1f} mot "
+            f"{fd['median']:.1f} dager. Skru opp «hvor mye raskere» og se hva som skjer med "
+            f"IQR-en helt uten at du rører konsistens-slideren.", C_BLUE)
+
+    if n <= 20:
+        _callout(
+            f"**Og med bare {n} pasienter per arm:** Mann–Whitney gir p = {u.pvalue:.3f}. "
+            f"Dra n-slideren opp og ned med alt annet fast, og se hvor mye boksene og "
+            f"p-verdien hopper. Caset oppgir «fem dager kortere» uten å si hvor mange "
+            f"pasienter det gjelder — og med n = 10 bommer en ekte femdagerseffekt sju "
+            f"ganger av ti.", S_CRITICAL, "rgba(208,59,59,0.08)")
+
+    _point(
+        "**Diagnosen som skiller de to, og den er én divisjon.** Under en ren multiplikativ "
+        "effekt skalerer IQR med nøyaktig samme faktor som medianen. Så sammenlign "
+        "**IQR ÷ median** mellom gruppene: uendret betyr forskyvning, lavere betyr ekte "
+        "jevnere forløp.\n\n"
+        "**Hvorfor det skjer.** Restitusjonstid kan ikke bli negativ og har en lang høyrehale. "
+        "En behandling som virker, virker prosentvis — og da krymper ethvert *absolutt* "
+        "spredningsmål av seg selv. Samme sak gjelder lønn, priser, omsetning og ventetid.\n\n"
+        "**Men diagnosen trenger data.** Forholdstallet er selv et estimat, og det er "
+        "støyende: ved 40 pasienter per arm svinger det ±57 % av seg selv, ved 200 ±25 %, "
+        "og først ved 600 er båndet nede i ±14 %. Med et lite forsøk kan du altså ikke "
+        "avgjøre spørsmålet i det hele tatt — noe caset heller ikke forsøker.\n\n"
+        "**Og det boksplottet ikke viser.** Antall pasienter, om fordelingen har to topper, "
+        "og om noen fortsatt ikke var friske da studien ble avsluttet. Fempunktsoppsummeringen "
+        "er en *beskrivelse*. Den er riktig verktøy for å få øye på en hypotese, og aldri "
+        "bevis for den."
+    )
+
+
 SECTIONS = {
     "A · Utvalg og usikkerhet": [_sampling_distribution, _coverage, _bias_vs_noise],
     "B · Test og effektstørrelse": [_p_vs_d, _power, _multiple_comparisons],
     "C · Regresjon og residualer": [_leverage, _residuals, _real_estate, _omitted_variable, _confounding, _endogeneity, _instrumental_variables, _influence, _multicollinearity],
     "D · Z-score og overtilpasning": [_zscore, _overfitting, _advanced_metrics],
+    "F · Fordelinger og oppsummering": [_five_point],
     "E · Eksamensdrill": [_drill],
 }
 
@@ -2064,6 +2214,7 @@ _INTRO = {
     "B · Test og effektstørrelse": "Hvorfor en p-verdi og en effektstørrelse svarer på to forskjellige spørsmål, hva styrke er, og hvordan tjue sammenligninger produserer et funn av ingenting.",
     "C · Regresjon og residualer": "Hvordan én observasjon kan vri hele linja, hva strukturen i et residualplott betyr, eiendomscaset der en rett linje er nesten riktig, hvorfor en koeffisient endrer seg når en variabel til kommer inn, sammenhengen som snur fortegn når du deler opp dataene, hva endogenitet gjør med estimatet og hva en instrumentvariabel redder — forskjellen på en uteligger og et punkt som faktisk flytter linja, og til slutt hva VIF egentlig måler.",
     "D · Z-score og overtilpasning": "Z-scoren brukt begge veier, hvorfor et høyt R² kan bety at modellen er blitt verre, og hva justert R², F og standardfeilen faktisk forteller.",
+    "F · Fordelinger og oppsummering": "Fempunktsoppsummeringen fra PharmaCorp-caset, og hvorfor en strammere IQR som regel er regning framfor et funn.",
     "E · Eksamensdrill": "Oppgavetypene fra aktivitetene, med nye tall hver gang og tilbakemelding på hvert steg underveis.",
 }
 
