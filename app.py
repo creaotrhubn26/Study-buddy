@@ -66229,6 +66229,30 @@ And the consequence, measured where the null hypothesis is actually true:
 
 **The tests reject too often.** Understated standard errors make t too large, p too small and intervals too narrow, so a model with heteroscedasticity finds effects that are not there — at a rate you did not choose and cannot see. In this example the inflation is modest; with stronger heteroscedasticity it grows.
 
+##### A note on the spelling, and on the roots
+
+**"Heteroscedasticity" and "heteroskedasticity" are the same word.** Both refer to a situation in regression where the variability of the error terms is not **constant** across all levels of the independent variables — the spread of the residuals changes as you move along the values of the predictor. Either spelling violates the same OLS assumption.
+
+*A wording note on the source: the course text says the variability is "not continuous across all levels". **Constant** is the property meant. Continuity is a different idea altogether, and the variance here can change smoothly — continuously — and still break the assumption. The definition given earlier in the same section, "constant variance across all levels", is the correct one.*
+
+**Which spelling to use.** Both are standard and neither is wrong:
+
+| Spelling | Where you will meet it |
+|---|---|
+| **heteros***c***edasticity** | General statistics, most textbooks, this course |
+| **heteros***k***edasticity** | Econometrics by preference, and closer to the Greek root |
+
+The practical consequence is small but real: **search both spellings.** A literature search or a software-documentation lookup on one form will miss results filed under the other.
+
+**The roots make the pair easy to keep straight**, which is worth thirty seconds because the two words are otherwise easy to swap under exam pressure:
+
+| | From the Greek | Meaning |
+|---|---|---|
+| **homo**scedasticity | *homos* — same, + *skedasis* — dispersion | **Same spread**. The assumption |
+| **hetero**scedasticity | *heteros* — different, + *skedasis* | **Different spread**. The violation |
+
+So the word is literally "different-dispersion-ness", and *skedasis* is also why the k-spelling has a claim: the Greek letter is a kappa.
+
 ##### Detecting and fixing it
 
 | Step | |
@@ -68088,6 +68112,11 @@ CURATED_FLASHCARD_SETS = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "front": "Heteroscedasticity or heteroskedasticity — which is right, and what do the roots tell you?",
+            "back": "Both are the same word and both are standard. The c-spelling dominates general statistics and most textbooks including this course; the k-spelling is preferred in econometrics and is closer to the Greek, where the relevant letter is a kappa. The practical consequence is that you should search both spellings, since a literature or documentation lookup on one form misses results filed under the other. The roots keep the pair straight: homos means same and heteros means different, while skedasis means dispersion, so homoscedasticity is same spread, which is the assumption, and heteroscedasticity is different spread, which is the violation. The word is literally different-dispersion-ness. Both refer to the variability of the error terms not being constant across all levels of the independent variables, meaning the spread of residuals changes as you move along the predictor's values.",
+            "tags": ["heteroscedasticity", "terminology", "lesson 1.2", "evo"]
+        },
         {
             "front": "Residuals should show no pattern against what, exactly? Name the four plots worth making.",
             "back": "Against predicted values or any independent variable. The clause about independent variables is the one most often skipped. Four plots: residuals against fitted values catches the general shape problem, meaning curvature or fanning; residuals against each predictor separately catches a curve or fan in one variable that gets averaged away in the fitted plot; residuals against time or row order catches autocorrelation, drift, or a process that changed mid-dataset; and residuals against a variable not in the model is the strongest practical omitted-variable signal available. That last one matters because residuals are orthogonal to everything in the model by construction but not to anything left out, so plotting them against an excluded variable is one of the few real checks on the exogeneity assumption, and it costs one line of code.",
