@@ -66276,6 +66276,120 @@ That is why revenue, spend, house prices, order values and counts nearly always 
 > 🔬 Simulator **8 · Å lese residualplottet** has "Vifte — heteroskedastisitet" as one of its four settings, and the callout there states precisely which part of the output it invalidates.
 
 
+##### Case study 1: e-commerce sales
+
+**Scenario.** An online retailer is studying the influence of **website visitors on sales**.
+
+**Analysis.** A residual plot against predicted sales reveals a **funnel shape**, with greater variability in residuals on **high-traffic days**. That could be due to increased sales unpredictability during promotional events or holidays.
+
+**Action.** The retailer might consider using a **weighted regression** or **transforming the data** to stabilise the variance.
+
+##### Solving it: why the funnel is there, and which fix to choose
+
+**Step 1 — read the shape before reaching for a remedy.** The funnel opens toward *high* predicted sales, which is the ordinary direction for commercial data and tells you something specific: the noise is **proportional, not additive**. A quiet Tuesday at 500 visitors varies by tens of sales; Black Friday at 6 000 varies by hundreds. The percentage variation may be identical.
+
+Simulated on 300 days with visitor counts from 400 to 6 000 and multiplicative noise:
+
+| | Residual standard deviation |
+|---|---|
+| Low-traffic days (under 2 000 visitors) | **163** |
+| High-traffic days (over 4 500) | **777** — **4.8× wider** |
+
+**Step 2 — establish what is actually damaged.** The coefficients are still unbiased; what breaks is every standard error, and therefore every t, p and interval. Measured across 3 000 simulated datasets, the classical formula **understates** the true variability of the estimate in every heteroscedastic pattern tested:
+
+| Variance pattern | Classical SE error |
+|---|---|
+| Constant (assumption holds) | +2% — correct within noise |
+| Grows with x | **−6%** |
+| Grows with x² | **−18%** |
+| Shrinks with x | **−26%** |
+
+Robust standard errors were accurate in all four. **The direction is consistent: understated, so the tests reject too often.** The retailer's model will find effects that are not there.
+
+**Step 3 — choose between the two proposed fixes, and consider a third.**
+
+| Option | What it does here | Verdict for this case |
+|---|---|---|
+| **Log the outcome** (or log-log) | Converts proportional variation into constant variation, which is exactly the mismatch | **The first thing to try.** On the simulation it cuts the spread ratio from 4.8× to **1.25×**, and the coefficient becomes an elasticity: 0.78 means 10% more visitors gives about 7.8% more sales — a sentence the retailer can use |
+| **Weighted regression** | Weights each day by 1/variance, recovering the efficiency lost | Correct and more work. Needs the variance modelled, and here that means modelling how sales volatility scales with traffic |
+| **Robust standard errors** | Keeps the coefficients, fixes the inference | Not in the course's list, and it is the cheapest correct answer when you only need valid p-values and intervals |
+
+**Step 4 — the part the case leaves implicit.** The text offers a plausible *cause*: promotional events and holidays. If that is right, the funnel is not merely a variance problem — it is a **missing variable**. A promotion indicator, or a day-of-year effect, belongs in the model. Adding it may remove much of the heteroscedasticity as a side effect, and it is a better model regardless.
+
+**So the ordered answer:** try the log transform first; add the promotion and seasonality indicators the diagnosis itself suggests; report robust standard errors either way; and reach for weighted least squares only if precision genuinely matters after that.
+
+##### Model misspecification
+
+**Systematic patterns might suggest the model is missing important predictors, or that a non-linear transformation of the predictors is needed.** For example, a **U-shaped pattern** in the residuals indicates the need for a **quadratic term**.
+
+The residual plot does not merely say "something is wrong" — the *shape* names the fault:
+
+| Shape in the residuals | Diagnosis | Remedy |
+|---|---|---|
+| **U or ∩** | The relationship curves; a straight line was fitted | Add a quadratic term |
+| **S-shape** | Two bends | Cubic term, or a different functional form |
+| **Funnel** | Heteroscedasticity | Transform, weight, or robust errors |
+| **Steps or clusters** | A categorical driver is missing | Add the group as a variable |
+| **Drift over row order** | A time effect is missing | Add trend or seasonal terms |
+
+**And the distinction that decides the fix:** a *missing predictor* and a *missing transformation* both produce structure in the residuals, and they are not the same problem. The test is to plot residuals against candidate variables **not yet in the model** — if the structure lines up with one of them, you have found a missing predictor rather than a missing curve.
+
+##### Outliers and influential points — not the same thing
+
+**Outliers** are individual data points that deviate significantly from other observations. **Influential points** are the specific outliers that **disproportionately impact the regression line and the coefficient estimates.**
+
+| Tool | What it does |
+|---|---|
+| **Visualisation** | Scatter plots identify outliers visually — the first and cheapest step |
+| **Cook's distance** | Quantifies each point's influence on *all* predicted scores. Higher values mean more influential. As a rule of thumb, **greater than 1**, or considerably larger than its neighbours, counts as influential |
+
+**Why it matters.** An outlier might not necessarily influence the regression outcome, but an influential point will. Such points pull the regression line and can give a misleading interpretation of the relationship. Investigating them, and potentially removing them or adjusting the model, makes the analysis more accurate and robust.
+
+##### The two ingredients, and why Cook's distance combines them
+
+Influence needs **two** things at once, which is why neither a residual nor a leverage value alone identifies it.
+
+| Ingredient | Measures | Symbol |
+|---|---|---|
+| **A large residual** | The point is unusual in **y** — the model predicts it badly | standardised residual |
+| **High leverage** | The point is unusual in **x** — far from the mean of the predictors | h |
+
+> **Cook's D combines them:** roughly (standardised residual)² × h ÷ (1 − h)², so it is large only when *both* are.
+
+**Demonstrated on 40 points with a baseline slope of 2.599:**
+
+| Point added | Std residual | Leverage | Cook's D | New slope | Shift |
+|---|---|---|---|---|---|
+| **Pure outlier**, middle of the x range | **3.75** | 0.027 | 0.20 | 2.633 | **+0.034** |
+| **High leverage**, but on the trend line | −0.39 | **0.418** | 0.10 | 2.550 | **−0.049** |
+| **Influential**: high on both | −3.54 | **0.418** | **7.75** | 1.942 | **−0.657** |
+
+Read the last column. A standardised residual of **3.75** — a glaring outlier by any flag — moves the slope by 0.034, which is nothing. High leverage on its own moves it by 0.049, also nothing. **The two together move it by 0.657, a 25% change in the reported effect.**
+
+That is exactly the course's point, made in numbers: *an outlier might not influence the outcome; an influential point will.*
+
+##### Thresholds, and what to do when a point is flagged
+
+| Threshold | Use |
+|---|---|
+| **Cook's D > 1** | The course's rule. Conservative — catches only severe cases |
+| **Cook's D > 4/n** | More sensitive. With n = 41 that is 0.098, which flags all three points above |
+| **Considerably larger than its neighbours** | The most useful test in practice. Plot the Cook's D values and look for a point standing apart from the pack |
+
+**And the caution this course has made before, which applies here unchanged.** The text says "investigating and potentially removing them" — note that *investigating* comes first, and the order matters. A flagged point is a question, not a verdict:
+
+| What the investigation finds | What to do |
+|---|---|
+| The value was recorded wrong | Fix it, and say so |
+| It belongs to a different population — a bulk B2B order in a D2C dataset | Exclude it under a rule stated **before** you look at the effect on the result |
+| The model is missing a driver that explains it — the Black Friday case | **Add the driver.** Do not delete the day |
+| No reason can be found | Keep it, and report the result **with and without it**, so the reader can see how much rests on one point |
+
+Only the first two justify deletion, and both need the reason written down. Reporting the result both ways is the honest move for everything else — and it costs one extra line in a results table.
+
+> 🔬 Simulator **18 · Uteligger eller innflytelsesrik?** lets you drag a single point around and watch the standardised residual, the leverage and Cook's distance move independently — and watch the fitted line respond only when both are high.
+
+
 #### Result table analysis with linear regression
 
 A simple linear regression models one outcome variable from one predictor. Reading its result table is a named outcome of this course. The multivariate case — several predictors at once, and what that does to a coefficient — was covered under diving deeper above; this section takes the components of the table one at a time.
@@ -68112,6 +68226,31 @@ CURATED_FLASHCARD_SETS = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "front": "The e-commerce case: a funnel in the residuals against predicted sales. Diagnose it and rank the fixes.",
+            "back": "The funnel opens toward high predicted sales, which is the ordinary direction for commercial data and says the noise is proportional rather than additive: a quiet day at 500 visitors varies by tens of sales while Black Friday at 6 000 varies by hundreds, and the percentage variation may be identical. Simulated, the residual standard deviation is 163 on low-traffic days against 777 on high-traffic days, 4.8 times wider. What breaks is not the coefficients, which stay unbiased, but every standard error and therefore every t, p and interval, and the classical formula understates them, so the tests reject too often. Ranking the fixes: log the outcome first, since it converts proportional variation into constant variation, cutting the spread ratio from 4.8 to 1.25 and yielding an elasticity of 0.78, meaning 10 percent more visitors gives about 7.8 percent more sales. Robust standard errors are the cheapest correct answer when only the inference needs fixing. Weighted regression is correct and more work, requiring the variance to be modelled. And the case leaves one thing implicit: if promotions and holidays cause the extra volatility, they are a missing variable, so adding a promotion indicator is a better model regardless and may remove the heteroscedasticity as a side effect.",
+            "tags": ["case study", "heteroscedasticity", "e-commerce", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "What is the difference between an outlier and an influential point, and what does Cook's distance measure?",
+            "back": "Outliers are individual data points that deviate significantly from the other observations. Influential points are the specific outliers that disproportionately impact the regression line and the coefficient estimates. Influence needs two ingredients at once: a large residual, meaning the point is unusual in y and the model predicts it badly, and high leverage, meaning it is unusual in x and sits far from the mean of the predictors. Cook's distance combines them, being roughly the squared standardised residual times h divided by (1 minus h) squared, so it is large only when both are. The rule of thumb is a Cook's distance greater than 1, or considerably larger than its neighbours. Scatter plots are the first and cheapest step for spotting outliers visually.",
+            "tags": ["outliers", "influential points", "cooks distance", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "Demonstrate that an outlier need not be influential.",
+            "back": "On 40 points with a baseline slope of 2.599, adding a single point in three configurations. A pure outlier in the middle of the x range with a standardised residual of 3.75, glaring by any flag, but leverage of only 0.027 and Cook's D of 0.20, moves the slope by just plus 0.034. A high-leverage point far out in x, leverage 0.418, but sitting on the trend line with a residual of minus 0.39 and Cook's D of 0.10, moves the slope by minus 0.049. A point high on both, residual minus 3.54 and leverage 0.418, has a Cook's D of 7.75 and moves the slope by minus 0.657, a 25 percent change in the reported effect from one point out of 41. That is the course's claim in numbers: an outlier might not influence the outcome, but an influential point will. Leverage is an opportunity for influence rather than influence itself.",
+            "tags": ["outliers", "leverage", "influence", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "A point is flagged by Cook's distance. What do you do, and which thresholds apply?",
+            "back": "Investigate first: the flag is a question, not a verdict, and the course's own wording puts investigating before potentially removing. If the value was recorded wrong, fix it and say so. If it belongs to a different population, such as a bulk B2B order in a D2C dataset, exclude it under a rule stated before you look at the effect on the result. If the model is missing a driver that explains it, as with a Black Friday day in a model without seasonality, add the driver rather than deleting the observation. If no reason can be found, keep it and report the result both with and without it so the reader can see how much rests on one point. Only the first two justify deletion and both need the reason written down. On thresholds, Cook's D above 1 is the course's conservative rule, D above 4/n is more sensitive, and the most useful test in practice is considerably larger than its neighbours: plot the Cook's D values and look for a point standing apart from the pack, since that can matter even below both formal cutoffs.",
+            "tags": ["cooks distance", "outliers", "data integrity", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "What does the shape of a residual pattern tell you about model misspecification?",
+            "back": "Systematic patterns suggest the model is missing important predictors or needs a non-linear transformation, and the shape names the fault. A U or inverted-U means the relationship curves and a straight line was fitted, so add a quadratic term. An S-shape means two bends, calling for a cubic term or a different functional form. A funnel is heteroscedasticity, fixed by transforming, weighting or robust errors. Steps or clusters mean a categorical driver is missing, so add the group as a variable. Drift over row order means a time effect is missing, so add trend or seasonal terms. The distinction that decides the fix is between a missing predictor and a missing transformation, since both produce structure: the test is to plot the residuals against candidate variables not yet in the model, and if the structure lines up with one of them you have found a missing predictor rather than a missing curve.",
+            "tags": ["misspecification", "residuals", "lesson 1.2", "evo"]
+        },
         {
             "front": "Heteroscedasticity or heteroskedasticity — which is right, and what do the roots tell you?",
             "back": "Both are the same word and both are standard. The c-spelling dominates general statistics and most textbooks including this course; the k-spelling is preferred in econometrics and is closer to the Greek, where the relevant letter is a kappa. The practical consequence is that you should search both spellings, since a literature or documentation lookup on one form misses results filed under the other. The roots keep the pair straight: homos means same and heteros means different, while skedasis means dispersion, so homoscedasticity is same spread, which is the assumption, and heteroscedasticity is different spread, which is the violation. The word is literally different-dispersion-ness. Both refer to the variability of the error terms not being constant across all levels of the independent variables, meaning the spread of residuals changes as you move along the predictor's values.",
@@ -70557,6 +70696,11 @@ CURATED_PRACTICE_QUESTION_BANK = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "type": "skills",
+            "question": "A colleague finds a data point with a standardised residual of 3.8 and proposes deleting it before rerunning the regression. What would you say?",
+            "answer": "That a large residual on its own is not a reason to delete anything, and may not even matter to the result. Influence requires two things at once: an unusual y, which the residual measures, and an unusual x, which leverage measures. A point sitting in the middle of the x range has low leverage, so the surrounding points hold the line in place and it barely moves however badly the model predicts it. In a worked case, a standardised residual of 3.75 with leverage 0.027 shifted the slope by 0.034, which is nothing, while a point with the same leverage problem and a comparable residual shifted it by 0.657. So the first thing to compute is Cook's distance, which combines both, and to see whether this point stands apart from its neighbours. The second point is that even a genuinely influential point is a question rather than a verdict. Only two findings justify deletion, and both require the reason to be written down: the value was recorded wrong, or the observation belongs to a different population under a rule stated before looking at its effect on the result. If the model is missing a driver that explains the point, the answer is to add the driver. If nothing can be found, keep it and report the result with and without it. Deleting a point because it is inconvenient, after seeing what deleting it does, is the data-integrity failure this course warns about."
+        },
         {
             "type": "skills",
             "question": "A result table shows F = 24.1 with p < 0.001, R squared of 0.71, and four predictors of which none has p below 0.05. How do you read it?",

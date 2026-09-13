@@ -1704,10 +1704,146 @@ def _advanced_metrics():
         )
 
 
+
+@st.cache_data(show_spinner=False)
+def _influence_base(seed=8, n=40):
+    rng = np.random.default_rng(seed)
+    x = np.sort(rng.uniform(10, 90, n))
+    y = 100 + 2.5 * x + rng.normal(0, 18, n)
+    return x, y
+
+
+def _influence():
+    st.markdown("#### 18 · Uteligger eller innflytelsesrik?")
+    st.caption(
+        "Et punkt kan være en grell uteligger og likevel ikke flytte linja i det hele tatt. "
+        "Dra punktet rundt og se de tre målene bevege seg uavhengig av hverandre."
+    )
+    preset = st.radio(
+        "Prøv en av disse, eller dra selv:",
+        ["Ren uteligger (midt i x)", "Høy leverage (men på trenden)", "Innflytelsesrik (begge deler)", "Egen plassering"],
+        key="vl_inf_preset", horizontal=False)
+    defaults = {"Ren uteligger (midt i x)": (50, 320),
+                "Høy leverage (men på trenden)": (150, 475),
+                "Innflytelsesrik (begge deler)": (150, 315),
+                "Egen plassering": (120, 380)}
+    dx, dy = defaults[preset]
+    c1, c2 = st.columns(2)
+    with c1:
+        px = st.slider("Punktets x", 10, 200, dx, 5, key=f"vl_inf_x_{preset}")
+    with c2:
+        py = st.slider("Punktets y", 50, 700, dy, 5, key=f"vl_inf_y_{preset}")
+
+    x, y = _influence_base()
+    # Both fits are kept in the same [intercept, slope] order as the design matrix,
+    # so the two lines and the shift below can never be compared across orderings.
+    X0 = np.column_stack([np.ones(len(x)), x])
+    b_base = np.linalg.lstsq(X0, y, rcond=None)[0]
+    xa, ya = np.append(x, px), np.append(y, py)
+    X = np.column_stack([np.ones(len(xa)), xa])
+    b = np.linalg.lstsq(X, ya, rcond=None)[0]
+    r = ya - X @ b
+    XtXinv = np.linalg.inv(X.T @ X)
+    h = np.einsum("ij,jk,ik->i", X, XtXinv, X)
+    s2 = (r ** 2).sum() / (len(xa) - 2)
+    cook = (r ** 2 / (2 * s2)) * (h / (1 - h) ** 2)
+    std_res = r / np.sqrt(s2)
+
+    grid = np.array([5, 205])
+    lines = pd.concat([
+        pd.DataFrame({"x": grid, "y": b[0] + b[1] * grid, "linje": "Med punktet"}),
+        pd.DataFrame({"x": grid, "y": b_base[0] + b_base[1] * grid, "linje": "Uten punktet"}),
+    ])
+    pts = pd.DataFrame({"x": x, "y": y})
+    one = pd.DataFrame({"x": [px], "y": [py]})
+    sc = alt.Chart(pts).mark_circle(size=70, opacity=0.55, color=C_BLUE).encode(
+        x=alt.X("x:Q", title="x", scale=alt.Scale(domain=[5, 205])),
+        y=alt.Y("y:Q", title="y", scale=alt.Scale(domain=[50, 700])))
+    oc = alt.Chart(one).mark_point(size=300, filled=True, color=S_CRITICAL, shape="diamond").encode(
+        x="x:Q", y="y:Q",
+        tooltip=[alt.Tooltip("x:Q", format=".0f"), alt.Tooltip("y:Q", format=".0f")])
+    ln = alt.Chart(lines).mark_line(size=2.5).encode(
+        x="x:Q", y="y:Q",
+        color=alt.Color("linje:N", scale=alt.Scale(domain=["Med punktet", "Uten punktet"],
+                                                   range=[S_CRITICAL, INK_MUTED]),
+                        legend=alt.Legend(title=None, orient="top")),
+        strokeDash=alt.StrokeDash("linje:N", legend=None))
+
+    cd = pd.DataFrame({"obs": np.arange(1, len(xa) + 1), "cook": cook})
+    cd["hvem"] = np.where(cd["obs"] == len(xa), "Punktet du flytter", "De andre")
+    cook_chart = alt.Chart(cd).mark_bar(size=6).encode(
+        x=alt.X("obs:Q", title="Observasjon"),
+        y=alt.Y("cook:Q", title="Cook's distance"),
+        color=alt.Color("hvem:N", scale=alt.Scale(domain=["De andre", "Punktet du flytter"],
+                                                  range=[C_BLUE, S_CRITICAL]),
+                        legend=alt.Legend(title=None, orient="top")),
+        tooltip=[alt.Tooltip("obs:Q"), alt.Tooltip("cook:Q", format=".3f")])
+    thr = alt.Chart(pd.DataFrame({"y": [1.0, 4 / len(xa)],
+                                  "hva": ["D = 1 (kursets regel)", "D = 4/n"]})).mark_rule(
+        strokeDash=[4, 3], size=2, color=S_WARNING).encode(y="y:Q", tooltip="hva:N")
+    # Altair shares colour scales across a concatenation by default, which would let the
+    # line chart's two colours claim the bar chart's legend and repaint the bars.
+    st.altair_chart(((sc + ln + oc).properties(title="Dataene og de to linjene", height=300)
+                     | (cook_chart + thr).properties(title="Cook's distance per observasjon", height=300)
+                     ).resolve_scale(color="independent"),
+                    use_container_width=True)
+
+    shift = b[1] - b_base[1]
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("Standardisert residual", f"{std_res[-1]:+.2f}")
+    m2.metric("Leverage (h)", f"{h[-1]:.3f}")
+    m3.metric("Cook's D", f"{cook[-1]:.2f}")
+    m4.metric("Endring i stigningstall", f"{shift:+.3f}",
+              delta=f"{shift/b_base[1]*100:+.1f} %", delta_color="inverse")
+
+    big_res, big_lev = abs(std_res[-1]) > 2, h[-1] > 4 / len(xa)
+    if big_res and big_lev:
+        _callout(
+            f"**Innflytelsesrik.** Punktet er uvanlig i *begge* retninger — standardisert residual "
+            f"{std_res[-1]:+.2f} og leverage {h[-1]:.3f} — og Cook's D på {cook[-1]:.2f} sier hvor mye "
+            f"det betyr. Stigningstallet flyttet seg {shift:+.3f}, altså "
+            f"**{abs(shift/b_base[1])*100:.0f} %**, av ett punkt av {len(xa)}.\n\n"
+            f"Dette er punktet som fortjener en undersøkelse — og undersøkelsen kommer *før* enhver "
+            f"beslutning om å fjerne det.", S_CRITICAL, "rgba(208,59,59,0.08)")
+    elif big_res:
+        _callout(
+            f"**Uteligger, men ikke innflytelsesrik.** Standardisert residual er {std_res[-1]:+.2f}, "
+            f"altså grelt — og leverage er bare {h[-1]:.3f}, fordi punktet ligger midt i x-området "
+            f"der det er masse andre punkter som holder linja på plass.\n\n"
+            f"**Stigningstallet flyttet seg {shift:+.3f}.** Praktisk talt ingenting. Det er kursets "
+            f"poeng i tall: en uteligger påvirker ikke nødvendigvis resultatet.", S_WARNING,
+            "rgba(250,178,25,0.10)")
+    elif big_lev:
+        _callout(
+            f"**Høy leverage, men ufarlig.** Punktet ligger langt ute i x (leverage {h[-1]:.3f}), så det "
+            f"*kunne* dominert linja — men det ligger på trenden, med en residual på bare "
+            f"{std_res[-1]:+.2f}. Cook's D er {cook[-1]:.2f}.\n\n"
+            f"**Stigningstallet flyttet seg {shift:+.3f}.** Leverage er en *mulighet* for innflytelse, "
+            f"ikke innflytelse i seg selv. Dra punktet opp eller ned og se hva som skjer.",
+            S_GOOD, "rgba(12,163,12,0.08)")
+    else:
+        _callout(
+            f"**Helt ordinært punkt.** Residual {std_res[-1]:+.2f}, leverage {h[-1]:.3f}, "
+            f"Cook's D {cook[-1]:.2f}. Ingenting å se her.", S_GOOD, "rgba(12,163,12,0.08)")
+
+    _point(
+        "**De tre målene svarer på tre forskjellige spørsmål.** Den standardiserte residualen spør "
+        "om punktet er uvanlig i **y** — bommer modellen på det? Leverage spør om det er uvanlig i "
+        "**x** — ligger det langt fra tyngdepunktet? Og Cook's D ganger dem sammen, så den blir stor "
+        "bare når *begge* er det.\n\n"
+        "**Prøv de tre forhåndsvalgene etter hverandre.** En standardisert residual på 3,75 flytter "
+        "linja med 0,03. Høy leverage alene flytter den med 0,05. Begge sammen flytter den med 0,66 — "
+        "en firedel av hele effekten, fra ett punkt.\n\n"
+        "**Og terskelen som er mest nyttig i praksis** er ikke D > 1 eller D > 4/n, men *«vesentlig "
+        "større enn naboene»*. Se på søylediagrammet til høyre: et punkt som stikker opp fra flokken "
+        "er verdt å undersøke selv om det ligger under begge de formelle grensene."
+    )
+
+
 SECTIONS = {
     "A · Utvalg og usikkerhet": [_sampling_distribution, _coverage, _bias_vs_noise],
     "B · Test og effektstørrelse": [_p_vs_d, _power, _multiple_comparisons],
-    "C · Regresjon og residualer": [_leverage, _residuals, _real_estate, _omitted_variable, _confounding, _endogeneity, _instrumental_variables],
+    "C · Regresjon og residualer": [_leverage, _residuals, _real_estate, _omitted_variable, _confounding, _endogeneity, _instrumental_variables, _influence],
     "D · Z-score og overtilpasning": [_zscore, _overfitting, _advanced_metrics],
     "E · Eksamensdrill": [_drill],
 }
@@ -1715,7 +1851,7 @@ SECTIONS = {
 _INTRO = {
     "A · Utvalg og usikkerhet": "Hvorfor et utvalg kan si noe om en populasjon, hva de 95 prosentene faktisk lover, og hvorfor mer data ikke redder et skjevt utvalg.",
     "B · Test og effektstørrelse": "Hvorfor en p-verdi og en effektstørrelse svarer på to forskjellige spørsmål, hva styrke er, og hvordan tjue sammenligninger produserer et funn av ingenting.",
-    "C · Regresjon og residualer": "Hvordan én observasjon kan vri hele linja, hva strukturen i et residualplott betyr, eiendomscaset der en rett linje er nesten riktig, hvorfor en koeffisient endrer seg når en variabel til kommer inn, og sammenhengen som snur fortegn når du deler opp dataene.",
+    "C · Regresjon og residualer": "Hvordan én observasjon kan vri hele linja, hva strukturen i et residualplott betyr, eiendomscaset der en rett linje er nesten riktig, hvorfor en koeffisient endrer seg når en variabel til kommer inn, sammenhengen som snur fortegn når du deler opp dataene, hva endogenitet gjør med estimatet og hva en instrumentvariabel redder — og til slutt forskjellen på en uteligger og et punkt som faktisk flytter linja.",
     "D · Z-score og overtilpasning": "Z-scoren brukt begge veier, hvorfor et høyt R² kan bety at modellen er blitt verre, og hva justert R², F og standardfeilen faktisk forteller.",
     "E · Eksamensdrill": "Oppgavetypene fra aktivitetene, med nye tall hver gang og tilbakemelding på hvert steg underveis.",
 }
