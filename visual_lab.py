@@ -2200,12 +2200,188 @@ def _five_point():
     )
 
 
+
+@st.cache_data(show_spinner=False)
+def _skewed_pair(skew_strength, n=200_000, mu=0.08, sd=0.15):
+    """Two return series with the SAME mean and the SAME sd, differing only in shape."""
+    rng = np.random.default_rng(17)
+    sym = rng.normal(mu, sd, n)
+    g = rng.gamma(2.0, 1.0, n)
+    g = (g - g.mean()) / g.std()
+    skewed = mu + sd * (-g * skew_strength + rng.normal(0, 1, n) * np.sqrt(max(1 - skew_strength ** 2, 0)))
+    skewed = mu + (skewed - skewed.mean()) / skewed.std() * sd
+    return sym, skewed
+
+
+@st.cache_data(show_spinner=False)
+def _hotel_draw(between_sd, within_sd, k=12, n=250):
+    rng = np.random.default_rng(3)
+    site = rng.normal(8.2, between_sd, k)
+    scores = np.array([rng.normal(h, within_sd, n) for h in site])
+    msb = n * ((scores.mean(1) - scores.mean()) ** 2).sum() / (k - 1)
+    msw = ((scores - scores.mean(1, keepdims=True)) ** 2).sum() / (k * (n - 1))
+    var_b = max((msb - msw) / n, 0.0)
+    return scores, np.sqrt(var_b), np.sqrt(msw), var_b / (var_b + msw)
+
+
+def _variance_lab():
+    st.markdown("#### 21 · Varians: samme tall, ulik virkelighet")
+    st.caption(
+        "Tre situasjoner der variansen er riktig regnet ut og likevel ikke avgjør noe. "
+        "Velg hvilken du vil se."
+    )
+    mode = st.radio(
+        "Demonstrasjon", [
+            "A · Samme varians, helt ulik nedside",
+            "B · Hvor sitter variansen? (mellom vs. innad)",
+            "C · Å «styre» en stabil prosess gjør den verre",
+        ], key="vl_var_mode")
+
+    # ---------------------------------------------------------------- A
+    if mode.startswith("A"):
+        sk = st.slider("Hvor skjev den andre porteføljen er", 0.0, 0.95, 0.80, 0.05,
+                       key="vl_var_skew",
+                       help="Begge har alltid nøyaktig samme forventning og samme standardavvik.")
+        sym, skw = _skewed_pair(sk)
+        edges = np.linspace(-0.65, 0.65, 70); ctr = (edges[:-1] + edges[1:]) / 2
+        hist = pd.concat([
+            pd.DataFrame({"r": ctr, "n": np.histogram(sym, edges)[0], "p": "Symmetrisk"}),
+            pd.DataFrame({"r": ctr, "n": np.histogram(skw, edges)[0], "p": "Venstreskjev"}),
+        ])
+        ch = alt.Chart(hist).mark_area(opacity=0.5, interpolate="step").encode(
+            x=alt.X("r:Q", title="Årsavkastning", axis=alt.Axis(format="+.0%")),
+            y=alt.Y("n:Q", title="Antall år", stack=None),
+            color=alt.Color("p:N", scale=alt.Scale(domain=["Symmetrisk", "Venstreskjev"],
+                                                   range=[C_BLUE, C_ORANGE]),
+                            legend=alt.Legend(title=None, orient="top")))
+        st.altair_chart(ch.properties(height=CHART_H, title="To porteføljer med identisk varians"),
+                        use_container_width=True)
+        rows = []
+        for nm, x in (("Symmetrisk", sym), ("Venstreskjev", skw)):
+            v5 = np.quantile(x, 0.05)
+            rows.append({"Portefølje": nm, "Forventning": f"{x.mean():.2%}",
+                         "Standardavvik": f"{x.std():.2%}", "Skjevhet": f"{stats.skew(x):+.2f}",
+                         "Verste 5 % år": f"{v5:.1%}",
+                         "Forventet tap i halen": f"{x[x <= v5].mean():.1%}",
+                         "Andel år med tap": f"{(x < 0).mean():.1%}"})
+        st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
+        a5, b5 = np.quantile(sym, .05), np.quantile(skw, .05)
+        ac, bc = sym[sym <= a5].mean(), skw[skw <= b5].mean()
+        if sk < 0.15:
+            _callout("**Nesten identiske.** Skru opp skjevheten og se hva variansen ikke "
+                     "fanger opp.", C_BLUE)
+        else:
+            _callout(
+                f"**Samme forventning, samme standardavvik — og {abs(bc-ac)*100:.1f} "
+                f"prosentpoeng forskjell i halen.** Forventet tap i de verste 5 % av årene er "
+                f"{ac:.1%} mot {bc:.1%}.\n\n"
+                f"Legg merke til at den skjeve porteføljen taper penger **sjeldnere** "
+                f"({(skw<0).mean():.1%} mot {(sym<0).mean():.1%} av årene) og taper "
+                f"**mye mer** når det først skjer. Det er formen på de fleste "
+                f"opsjonssalg- og kredittstrategier — og en investor som bare får vite "
+                f"«volatiliteten er 15 %» kan ikke skille dem.\n\n"
+                f"Målene som skiller: **semivarians, Sortino, VaR og forventet tap i halen "
+                f"(CVaR)**.", S_WARNING, "rgba(250,178,25,0.10)")
+
+    # ---------------------------------------------------------------- B
+    elif mode.startswith("B"):
+        c1, c2 = st.columns(2)
+        with c1:
+            bw = st.slider("Forskjell mellom hotellene", 0.05, 1.00, 0.58, 0.01, key="vl_var_b")
+        with c2:
+            ww = st.slider("Spredning innad på hvert hotell", 0.30, 1.60, 0.83, 0.01, key="vl_var_w")
+        scores, sb, sw, icc = _hotel_draw(bw, ww)
+        k = scores.shape[0]
+        long = pd.concat([pd.DataFrame({"score": scores[i], "hotell": f"H{i+1:02d}"})
+                          for i in range(k)])
+        ch = alt.Chart(long).mark_boxplot(size=18, extent=1.5).encode(
+            x=alt.X("hotell:N", title=None),
+            y=alt.Y("score:Q", title="Tilfredshet (1–10)", scale=alt.Scale(zero=False)),
+            color=alt.value(C_AQUA))
+        st.altair_chart(ch.properties(height=CHART_H, title="Ett boksplott per hotell"),
+                        use_container_width=True)
+        m = st.columns(4)
+        m[0].metric("Total spredning", f"{scores.std():.3f}")
+        m[1].metric("Mellom hoteller", f"{sb:.3f}")
+        m[2].metric("Innad på hvert", f"{sw:.3f}")
+        m[3].metric("ICC", f"{icc:.3f}")
+        if icc > 0.15:
+            _callout(
+                f"**Noen få hoteller er problemet.** ICC på {icc:.3f} betyr at "
+                f"{icc*100:.0f} % av variasjonen ligger *mellom* hoteller — boksene står på "
+                f"ulike høyder. Send opplæringsteamet til de som ligger lavest, så flytter "
+                f"kjedetallet seg.", S_GOOD, "rgba(12,163,12,0.08)")
+        else:
+            _callout(
+                f"**Hotellene er like — og alle er like ustabile.** ICC på {icc:.3f} betyr at "
+                f"nesten all variasjon ligger *innad* på hvert hotell. Boksene står på samme "
+                f"høyde og er høye.\n\n"
+                f"Å besøke enkelthoteller vil ikke hjelpe: feilen ligger i en standard, et "
+                f"system eller en bemanningsmodell som gjelder overalt. Skru «forskjell "
+                f"mellom hotellene» opp og ned, og legg merke til at **total spredning kan "
+                f"være den samme mens tiltaket er det stikk motsatte**.",
+                S_WARNING, "rgba(250,178,25,0.10)")
+
+    # ---------------------------------------------------------------- C
+    else:
+        strength = st.slider("Hvor hardt man korrigerer etter hvert avvik", 0.0, 1.5, 1.0, 0.1,
+                             key="vl_var_tamper",
+                             help="0 = la prosessen være. 1 = nullstill hele forrige avvik.")
+        rng = np.random.default_rng(5)
+        T = 400
+        true = rng.normal(0, 1.0, T)
+        adj = np.empty(T); off = 0.0
+        for t in range(T):
+            obs = true[t] + off
+            adj[t] = obs
+            off -= strength * (obs - 0.0)
+        df = pd.concat([pd.DataFrame({"t": np.arange(T), "v": true, "s": "La prosessen være"}),
+                        pd.DataFrame({"t": np.arange(T), "v": adj, "s": "Korriger hver gang"})])
+        ch = alt.Chart(df).mark_line(size=1.2, opacity=0.85).encode(
+            x=alt.X("t:Q", title="Observasjon"), y=alt.Y("v:Q", title="Avvik fra mål"),
+            color=alt.Color("s:N", scale=alt.Scale(domain=["La prosessen være", "Korriger hver gang"],
+                                                   range=[INK_MUTED, S_CRITICAL]),
+                            legend=alt.Legend(title=None, orient="top")))
+        st.altair_chart(ch.properties(height=CHART_H, title="Samme prosess, to styringsregler"),
+                        use_container_width=True)
+        m = st.columns(3)
+        m[0].metric("Uten inngrep", f"{true.std():.3f}")
+        m[1].metric("Med korrigering", f"{adj.std():.3f}")
+        m[2].metric("Endring", f"{(adj.std()/true.std()-1)*100:+.0f} %",
+                    delta_color="inverse")
+        if strength < 0.15:
+            _callout("**Ingen korrigering ennå.** Dra slideren mot 1 og se hva som skjer.", C_BLUE)
+        else:
+            _callout(
+                f"**Prosessen ble {(adj.std()/true.std()-1)*100:.0f} % verre av å bli styrt.** "
+                f"Den underliggende prosessen er *stabil* — variasjonen er ren felles årsak, "
+                f"uten noe å finne. Hver korrigering legger til en ny kilde til variasjon oppå "
+                f"den som allerede var der.\n\n"
+                f"Ved full korrigering dobles variansen nøyaktig, så standardavviket stiger "
+                f"med √2 ≈ 1,41. Dette er Demings **tampering**, og det er den vanligste "
+                f"feilen i resultatoppfølging: en leder som reagerer på hvert dropp under mål, "
+                f"er selv blitt en støykilde.\n\n"
+                f"**Derfor er første spørsmål aldri «hvordan reduserer vi variansen», men «er "
+                f"prosessen stabil?»** Et kontrolldiagram svarer på det. Bare spesiell årsak "
+                f"skal jages punkt for punkt.", S_CRITICAL, "rgba(208,59,59,0.08)")
+
+    _point(
+        "**Det som binder de tre sammen.** I alle tre er variansen riktig regnet ut, og i alle "
+        "tre avgjør den ingenting alene. A trenger et nedsidemål, B trenger en oppdeling, "
+        "C trenger å vite om variasjonen er felles eller spesiell årsak.\n\n"
+        "**Det er samme mønster som går gjennom hele leksjonen:** F ble bedt om å fastslå "
+        "tilpasning, justert R² å fastslå generalisering, MAPE å sammenligne på tvers av "
+        "volum, og en strammere IQR å fastslå konsistens. Hver gang var tallet riktig og "
+        "slutningen for stor."
+    )
+
+
 SECTIONS = {
     "A · Utvalg og usikkerhet": [_sampling_distribution, _coverage, _bias_vs_noise],
     "B · Test og effektstørrelse": [_p_vs_d, _power, _multiple_comparisons],
     "C · Regresjon og residualer": [_leverage, _residuals, _real_estate, _omitted_variable, _confounding, _endogeneity, _instrumental_variables, _influence, _multicollinearity],
     "D · Z-score og overtilpasning": [_zscore, _overfitting, _advanced_metrics],
-    "F · Fordelinger og oppsummering": [_five_point],
+    "F · Fordelinger og oppsummering": [_five_point, _variance_lab],
     "E · Eksamensdrill": [_drill],
 }
 
@@ -2214,7 +2390,7 @@ _INTRO = {
     "B · Test og effektstørrelse": "Hvorfor en p-verdi og en effektstørrelse svarer på to forskjellige spørsmål, hva styrke er, og hvordan tjue sammenligninger produserer et funn av ingenting.",
     "C · Regresjon og residualer": "Hvordan én observasjon kan vri hele linja, hva strukturen i et residualplott betyr, eiendomscaset der en rett linje er nesten riktig, hvorfor en koeffisient endrer seg når en variabel til kommer inn, sammenhengen som snur fortegn når du deler opp dataene, hva endogenitet gjør med estimatet og hva en instrumentvariabel redder — forskjellen på en uteligger og et punkt som faktisk flytter linja, og til slutt hva VIF egentlig måler.",
     "D · Z-score og overtilpasning": "Z-scoren brukt begge veier, hvorfor et høyt R² kan bety at modellen er blitt verre, og hva justert R², F og standardfeilen faktisk forteller.",
-    "F · Fordelinger og oppsummering": "Fempunktsoppsummeringen fra PharmaCorp-caset, og hvorfor en strammere IQR som regel er regning framfor et funn.",
+    "F · Fordelinger og oppsummering": "Fempunktsoppsummeringen fra PharmaCorp-caset, hvorfor en strammere IQR som regel er regning framfor et funn, og tre situasjoner der variansen er riktig regnet ut og likevel ikke avgjør noe.",
     "E · Eksamensdrill": "Oppgavetypene fra aktivitetene, med nye tall hver gang og tilbakemelding på hvert steg underveis.",
 }
 
