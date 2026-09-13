@@ -66608,6 +66608,347 @@ Running both remedies gets Alpha Estates to `log(price) ~ log(size)`, with an el
 > 🔬 Simulator **19 · Multikollinearitet og VIF** in the Visual Lab runs this case. Turn the correlation between the two predictors up and watch the standard errors inflate by exactly √VIF while the coefficients stay unbiased — then drop the second predictor and watch the retained coefficient jump to direct + indirect, with the identity displayed live.
 
 
+##### Alpha Estates: advanced insights from the result table
+
+**Advanced insights from result table.**
+
+- The **F-statistic** was significant, suggesting that the model as a whole was a **good fit**.
+- **Adjusted R-squared of 0.85** indicated that the model, while having fewer predictors than before, sufficiently explained **85% of the variability**. This is good because the model is **not overfitting** and can **generalise well to new data**. Adjusted R-squared measures how well a regression model explains the variability of the response variable after accounting for the number of predictors in the model. Higher values indicate a better fit.
+
+**Outcome and future strategies.**
+
+- Alpha Estates introduced a **premium valuation service** with a refined model, offering sellers a price estimate and insights on property market trends. The rigorous model evaluation **built trust**, setting Alpha Estates apart in a competitive market.
+- A nuanced approach to linear regression, especially focusing on **model diagnostics and advanced metrics**, enables practitioners to extract richer insights and craft more effective strategies.
+
+##### The F-statistic here carries no information at all
+
+Start with what F tests. The null hypothesis is that **every slope coefficient is zero at once** — that the predictors, taken together, do no better than the mean of y. Rejecting it says: *at least one coefficient is not zero.*
+
+That is a very low bar, and it gets lower as the sample grows:
+
+| True R² | n = 100 | n = 420 | n = 5 000 |
+|---|---|---|---|
+| 0.02 | p = 0.16 | **p = 0.0037** | **p < 0.0001** |
+| 0.05 | **p = 0.025** | **p < 0.0001** | **p < 0.0001** |
+| 0.10 | **p = 0.0014** | **p < 0.0001** | **p < 0.0001** |
+
+A model explaining **2% of the variance** is comfortably "significant" at n = 420. So a significant F does not suggest a good fit. It suggests *a fit better than nothing*, which is not the same claim and is not worth reporting on its own.
+
+**But there is a sharper problem in this particular case.** Alpha Estates dropped number of rooms, so the model they audited has **one predictor**. And in a simple regression the F-statistic is algebraically the square of the t-statistic on that predictor:
+
+| | |
+|---|---|
+| t on house size | 48.3782 |
+| t² | **2340.4478** |
+| F | **2340.4478** |
+| Difference | 0.000000000 |
+
+Not approximately equal. **The same number.** And so the same p-value, to every digit: 2.26 × 10⁻¹⁷³ for both.
+
+> **So "the F-statistic was significant" restates the size coefficient's t-test in different words.** It is presented in the case as a second, corroborating finding. It is not evidence of anything the previous line did not already say.
+
+F earns its place in **multivariate** models, where it answers a question no individual t can: *do these predictors jointly matter?* That question has real teeth when predictors are collinear, because collinearity can leave every individual t insignificant while F is overwhelming — the model explains a lot, but the credit cannot be assigned to any single variable. **That situation is precisely the one Alpha Estates was in before they dropped rooms**, and it is where reporting F would have been informative. Having removed the second predictor, they report F where it has nothing left to say.
+
+##### "Adjusted R² of 0.85 means it is not overfitting" — this is the claim to challenge
+
+The definition the course gives is accurate: adjusted R² measures how well the model explains the variability of the response **after accounting for the number of predictors**. The formula applies a penalty that R² does not:
+
+> **Adjusted R² = 1 − (1 − R²) × (n − 1)/(n − k − 1)**
+
+Where the passage goes wrong is the inference drawn from it. **Adjusted R² is computed entirely on the training data. It cannot see generalisation, because it never looks at data the model has not already fitted.** Three demonstrations, in ascending order of severity.
+
+**1. The penalty is far weaker than most people assume.** Adding a predictor raises adjusted R² whenever that predictor's **|t| > 1** — a threshold corresponding to p ≈ 0.32, nowhere near significance. Adding a column of **pure random noise** to the Alpha Estates model, over 4 000 trials:
+
+| | |
+|---|---|
+| Adjusted R² **rose** | **33.1%** of the time |
+| Theoretical rate, P(&#124;t&#124; > 1) | 31.8% |
+| Smallest &#124;t&#124; among trials where it rose | 1.0000 |
+| Noise variable "significant" at p < 0.05 | 5.7% of the time |
+
+A metric that a meaningless variable improves in **one trial out of three** is not a guard against anything.
+
+**2. It barely moves while out-of-sample error explodes.** Fitting polynomials of rising degree to 40 training points and testing on 20 held-out ones:
+
+| Degree | Adjusted R² | In-sample RMSE | **Out-of-sample RMSE** |
+|---|---|---|---|
+| 1 | 0.716 | 2.64 | **2.79** |
+| 2 | 0.710 | 2.64 | 2.85 |
+| 5 | 0.695 | 2.59 | 3.08 |
+| 9 | 0.690 | 2.46 | 32.11 |
+| 12 | **0.705** | 2.27 | **277.16** |
+
+Adjusted R² at degree 12 is **0.705 against 0.716** at degree 1 — a change of one and a half percent, which no reader would notice. Out-of-sample error over the same range goes from 2.79 to 277.16, a factor of **99**. The metric the case relies on is flat across a catastrophe.
+
+**3. It is blind to selection, which is how overfitting usually happens in practice.** Generate 80 candidate predictors of pure noise and an outcome of pure noise — nothing real anywhere — keep the 8 with the largest |t|, and fit:
+
+| Trial | Adjusted R² | Out-of-sample RMSE | RMSE from just predicting the mean |
+|---|---|---|---|
+| 1 | 0.210 | 1.26 | 0.98 |
+| 2 | 0.376 | 1.07 | 0.87 |
+| 3 | **0.418** | 1.20 | 1.03 |
+
+Adjusted R² of **0.42 on data containing no signal whatsoever**, and every model predicts new data worse than the sample mean does. The reason is structural: adjusted R² charges for the **8 predictors in the final model**, and cannot charge for the **80 that were examined**. Every selection decision is invisible to it.
+
+> **The only thing that establishes generalisation is data the model has not seen.** A held-out set, cross-validation, or a genuine out-of-time test. Adjusted R² answers a different and much narrower question: *given these predictors, was adding them worth the degrees of freedom?*
+
+##### The number the case cites argues against the decision the case made
+
+There is one more difficulty, and it is internal to the case. The 0.85 is offered as reassurance that dropping a predictor was fine — "while having fewer predictors than before". But adjusted R² is the metric that already prices in the number of predictors, so it is exactly the right one to check that claim with. On the data:
+
+| Model | Adjusted R² | Out-of-sample RMSE |
+|---|---|---|
+| Size **and** rooms | **0.8540** | **2.596 MNOK** |
+| Size only | 0.8481 | 2.639 MNOK |
+
+Both round to 0.85, which is presumably why the figure passed without comment. **But the full model's is higher.** Adjusted R² went *down* when rooms was removed, and since adjusted R² already charges for the extra parameter, a fall means the parameter was earning its keep. Out-of-sample error moved the same way.
+
+So the case quotes a metric as vindication when that metric, read properly, records a small loss. Both readings are available from the same number — which is a good illustration of why a figure needs a comparison before it means anything. **0.85 on its own says nothing. 0.85 against 0.854 says the variable should have stayed.**
+
+##### Reading the outcome section as an evaluator
+
+The business outcome is plausible and the closing generalisation is sound. Two observations belong in a critical appraisal.
+
+**"The rigorous model evaluation built trust."** The evaluation *was* rigorous in form — they ran residual analysis, checked VIF, examined F and adjusted R², which is more than most commercial models get. Rigour in form is not the same as rigour in conclusion, and one of the four conclusions did not follow from its diagnostic. That matters for trust specifically, because trust built on a misread diagnostic fails at the moment someone checks.
+
+**The premium valuation service is the worst possible application of the reduced model.** A valuation service sells exactly the counterfactual the deleted variable was carrying. Sellers do not only ask "what is my home worth" — they ask *"what would converting the loft add?"*, *"is it worth knocking through?"* The model that dropped number of rooms answers the first question adequately and **cannot answer the second at all**, because it can no longer distinguish 20 m² that adds a bedroom from 20 m² that enlarges the living room. On the figures, that distinction is worth just over 1 MNOK.
+
+> **The exam-grade formulation.** Alpha Estates ran the right diagnostics, misread one of them, and then built a product whose central use case depends on the variable that misreading removed. The lesson is not that diagnostics are useless — it is that a diagnostic tells you a property of the model, and deciding what to do about it requires knowing what the model is *for*.
+
+
+##### Case study 3: retail chain's inventory management with variance analysis
+
+**Background.** BigMart, a leading retail chain, noticed inconsistencies in **inventory turnover** across its outlets. They sought to use **variance analysis** to identify outliers and adjust inventory policies.
+
+**Methodology.**
+
+- The firm's analysts computed the **Mean Absolute Percentage Error (MAPE)** between forecasted and actual sales for each product category, across different outlets.
+- Product categories were divided into **fast-moving, medium-moving, and slow-moving** based on turnover rates.
+
+**Key findings.**
+
+- Outlets in **metropolitan** areas showed the highest variance in **electronics and fashion**, implying forecasting challenges.
+- In contrast, outlets in **suburban** areas had variances in **grocery** items, likely due to local competition.
+
+**Outcome and future strategies.** BigMart refined inventory stocking strategies per outlet type. The metropolitan outlets shifted towards a **just-in-time** inventory system for electronics, whereas suburban stores focused on **promotions** for grocery items to compete locally.
+
+##### First, two different things are both called "variance analysis"
+
+The phrase is doing double duty in this case, and an exam answer that does not separate them will drift:
+
+| Sense | What it means | Where it is used |
+|---|---|---|
+| **Statistical** | The dispersion of a variable, σ², and by extension ANOVA | The rest of this lesson |
+| **Management accounting** | Comparing what happened against what was planned — budget versus actual, forecast versus realised | This case |
+
+BigMart is doing the **second**, and MAPE is a reasonable family of metric for it. So the choice is not a mistake. But notice that the case then reports "the highest variance in electronics and fashion", which reads as the first sense while being computed as the second. **Forecast error and demand variability are not the same quantity**, and the difference decides what to do:
+
+- **High demand variance, accurate forecasts** — the world is genuinely volatile. The answer is buffer stock, not a better model
+- **Low demand variance, poor forecasts** — the model is bad. The answer is a better model, and it is cheap to get
+- **Both high** — usual in fashion. Both remedies apply
+
+The case says the metropolitan finding is "implying forecasting challenges". That is one of three possible readings and the text picks it without testing it.
+
+##### MAPE is the wrong metric for the categories this case created
+
+MAPE is the mean of |actual − forecast| / |actual|. It is popular because it is unit-free and easy to explain. It has three failure modes, and the case walks into all three.
+
+**1. It is asymmetric, and biased toward under-forecasting.** With an actual of 100:
+
+| Forecast | Error | MAPE |
+|---|---|---|
+| 50 | −50 | 50% |
+| 80 | −20 | 20% |
+| 120 | +20 | 20% |
+| 200 | +100 | 100% |
+| 400 | +300 | 300% |
+
+Under-forecasting **can never exceed 100%**, because the error is capped by the actual itself. Over-forecasting is unbounded. So a forecaster optimising MAPE is rewarded for forecasting low — which in a retail setting means **systematically planning for stock-outs**. For a chain worried about inventory, that is the wrong incentive to install.
+
+**2. It breaks down as demand approaches zero — which is the definition of the slow-moving category.** Simulating 4 000 periods per segment with the *same relative forecast quality throughout*:
+
+| Segment | Mean demand | Zero-sales periods | **MAPE** | MAE | MASE |
+|---|---|---|---|---|---|
+| Fast-moving | 219.9 | 0 / 4 000 | **6.6%** | 14.47 | 0.86 |
+| Medium-moving | 25.0 | 0 / 4 000 | **19.9%** | 4.76 | 0.83 |
+| Slow-moving | 1.5 | **919 / 4 000** | **67.1%** | 0.94 | 0.70 |
+
+Read the MASE column: **0.86, 0.83, 0.70** — essentially flat, correctly reporting that all three forecasts are equally good relative to a naive baseline. Now read MAPE: **6.6%, 19.9%, 67.1%**, a tenfold spread produced entirely by dividing by a smaller number. And on slow movers, nearly a quarter of periods have zero sales, where MAPE is **undefined** and has to be silently dropped — which biases the remaining average further.
+
+> **So ranking outlets or categories by MAPE mostly ranks them by how small their denominators are.** BigMart divided its products into fast, medium and slow-moving and then compared them on a metric that is guaranteed to make slow movers look worst regardless of forecast quality.
+
+**3. It cannot be compared across series with different volumes** — which is what "across different outlets" asks it to do. A metropolitan outlet selling 200 televisions a week and a rural one selling 3 will produce incomparable MAPEs from identical forecasting processes.
+
+**What to use instead:**
+
+| Metric | What it fixes | Cost |
+|---|---|---|
+| **MASE** | Scales the error by the naive forecast's error, so it is comparable across series and volumes and survives zeros | Needs a baseline defined |
+| **MAE or RMSE in units** | No denominator problem at all | Not comparable across series |
+| **Weighted MAPE** (sum of errors ÷ sum of actuals) | Removes the small-denominator explosion | Still asymmetric |
+| **Service level / fill rate** | Measures the thing the business actually cares about | Not a forecast metric as such |
+
+For this case: **MASE for comparing across outlets and categories, plus fill rate as the business KPI.** MAPE can stay as a familiar summary within a single fast-moving series.
+
+##### The two findings, and what they do not establish
+
+**"Metropolitan outlets showed the highest variance in electronics and fashion, implying forecasting challenges."** Three alternatives are equally consistent with the data and none was ruled out. Electronics and fashion have genuinely volatile demand everywhere — driven by launches, seasons and promotions — so the segment effect may have nothing to do with location. Metropolitan outlets are typically larger and carry wider assortments, and finer-grained SKUs are harder to forecast for purely arithmetic reasons. And promotions are usually run more aggressively in metropolitan stores, which is a **known and recordable** driver being left in the error term.
+
+That last one is the omitted-variable point from earlier in this lesson, arriving in a different costume. **A promotional calendar is data BigMart already owns.** Forecast error that is explained by a variable you have is not a forecasting challenge; it is a missing feature.
+
+**"Suburban outlets had variances in grocery, likely due to local competition."** *Likely* is doing all the work here. No competitor data is mentioned, no test is performed, and the explanation is not distinguished from the obvious alternative: grocery demand is weather-dependent, weekday-dependent and highly promotion-sensitive. Note also that this is a different *kind* of claim from the metropolitan one — the first blames the model, the second blames the environment — and the case gives no reason for treating the two segments differently.
+
+##### The recommendation runs against the finding
+
+This is the part worth arguing in an exam answer, because the case's own logic points the other way.
+
+The finding was that **metropolitan electronics has the highest variance**. The recommendation was **just-in-time inventory** for exactly that segment. But safety stock is calculated as:
+
+> **Safety stock = z × σ_demand × √(lead time)**
+
+Demand variability sits in that formula as a multiplier. **High variance is the classic reason to hold more buffer, not less**, and JIT is a strategy for reducing buffer. Working an illustrative metropolitan electronics line at a 95% service level:
+
+| Setup | Lead time | Safety stock | As % of lead-time demand |
+|---|---|---|---|
+| Conventional | 14 days | 160 units | 29% |
+| Just-in-time | 3 days | **74 units** | **62%** |
+
+The absolute stock does fall, from 160 to 74, and that is a real saving — shortening lead time is the one lever that genuinely reduces the buffer a volatile line needs. But as a proportion of the demand it has to cover, the buffer more than doubles, and the strategy now depends entirely on the supplier hitting a three-day window:
+
+| Supplier hits the window | Effective service level | Stock-outs per cycle |
+|---|---|---|
+| 99% | 94.0% | 5.9% |
+| 90% | 85.5% | 14.5% |
+| 80% | 76.0% | **24.0%** |
+
+**So the verdict is conditional, and the case states no condition.** JIT for high-variance electronics is defensible if supplier reliability is high and lead times are genuinely short and dependable — and indefensible otherwise, because it concentrates the risk in the segment that already has the most of it. A complete answer says: *reduce the lead time, yes; but pair it with a service-level target and a supplier-reliability clause, and keep the buffer proportionate to σ rather than eliminating it.*
+
+The suburban recommendation has the same gap in miniature. **Promotions raise demand variance** — that is what a promotion does. Prescribing more promotions for the segment identified by high variance will increase the variance that was flagged as the problem. It may still be the right commercial call; it is not a response to the finding.
+
+##### Case study 4: tech startup and churn prediction using z-testing
+
+TechHub, a SaaS start-up, noticed a **slight uptick in churn rate** after introducing a new feature. They wanted to determine if this change was statistically significant.
+
+**Methodology.**
+
+- The company collected churn rates from a **month before and after** the feature release.
+- A **z-test** was used to assess whether the churn rate difference was beyond typical month-to-month variation.
+
+**Key findings.**
+
+- The **p-value from the z-test was 0.04**, below the 0.05 threshold, suggesting that the increase in churn rate was **significant**.
+- Further **user feedback** collection revealed that the new feature, although intended to enhance user experience, made the interface **more complex**.
+
+**Outcome and future strategies.** TechHub decided to **roll back** the feature and initiated a **beta-testing phase** involving loyal customers. Feedback from this group would be crucial in future feature rollouts.
+
+##### What p = 0.04 does and does not buy
+
+The z-test is the right family of test — churn is a proportion, and with SaaS-scale user counts the normal approximation is sound. The problem is what the case concludes from the output.
+
+**The p-value is the same for effects that are commercially unrelated.** Fixing the before-rate at 5.00% and solving for the after-rate that lands exactly on p = 0.04:
+
+| Users per month | Churn before | Churn after | Change | Relative | p |
+|---|---|---|---|---|---|
+| 3 000 | 5.00% | 6.22% | +1.22 pp | **+24.4%** | 0.04 |
+| 6 000 | 5.00% | 5.85% | +0.85 pp | +17.0% | 0.04 |
+| 12 000 | 5.00% | 5.59% | +0.59 pp | +11.9% | 0.04 |
+| 25 000 | 5.00% | 5.41% | +0.41 pp | +8.2% | 0.04 |
+| 60 000 | 5.00% | 5.26% | +0.26 pp | **+5.2%** | 0.04 |
+
+Every row is "significant at 0.05". The commercial meaning ranges from a churn rise that would threaten the company to one that would not survive a rounding convention. **The case reports p = 0.04 and never reports the size of the effect** — which, since the text itself calls the uptick *slight*, is the number that decides whether to act.
+
+Taking the middle row: **Cohen's h = 0.027**, against 0.2 as the conventional boundary for "small". And the 95% confidence interval on the difference runs from **+0.03 pp to +1.16 pp**, so a change small enough to be commercially irrelevant is entirely compatible with this result. That interval is what the case should have printed instead of the p-value.
+
+**And 0.04 is weak evidence even on its own terms.** The standard upper bound on the Bayes factor at p = 0.04 is about **2.9** — meaning the data are at most about three times more likely under "the feature raised churn" than under "it did not":
+
+| Prior belief the feature raised churn | Posterior, at most |
+|---|---|
+| 50% | **74%** |
+| 30% | 55% |
+| 10% | 24% |
+
+A p just under the threshold moves a coin-flip belief to roughly three-in-four. That is a reason to investigate, which is what TechHub did next. It is not a finding.
+
+##### The three design problems, in order of severity
+
+**1. There is no control group.** This is the same flaw as the XYZ sales-strategy case earlier in this lesson, and it is the most serious one here. A before-and-after comparison attributes to the feature *everything that changed between the two months*: seasonality, a competitor's launch, a pricing change, the end of an annual contract cohort, a marketing campaign that brought in lower-quality signups the month before. SaaS churn has strong cohort and seasonal structure, so month-to-month movement of this size is ordinary.
+
+**What they should have done is available and cheap:** release the feature to a random half of users and compare. A staged rollout gives a genuine control group at no extra cost, and it is standard practice at every company that ships software continuously. With that design, p = 0.04 would mean something close to what the case thinks it means.
+
+**2. The hypothesis was generated by the same data that tested it.** The sequence in the text is explicit: they *noticed* an uptick, then tested whether it was significant. A z-test assumes the comparison was specified before the data were seen. Testing an effect you noticed because it looked large is the **garden of forking paths** — and a SaaS company monitors dozens of metrics weekly, so *something* crossing p < 0.05 in any given month is close to guaranteed. With 20 monitored metrics, the chance of at least one false positive at α = 0.05 is 64%.
+
+**3. Month-to-month churn is not independent across periods.** The z-test's standard error assumes independent observations. Churn is autocorrelated — cohorts age together, contracts renew annually, a bad month begets a bad month — so the true variability of a month-to-month difference is wider than the formula assumes, and the real p-value is larger than 0.04.
+
+##### Why the decision was still right, and what actually drove it
+
+Here the case deserves credit, and an appraisal that only lists the statistical flaws misses the most important thing in it.
+
+**The rollback was not really justified by the p-value. It was justified by the user feedback**, and that is the stronger evidence. The feedback supplied a **mechanism**: the feature made the interface more complex. That converts a correlation with three plausible confounders into a causal story with a testable pathway, and it is the kind of evidence a statistical test cannot produce.
+
+This is the qualitative-and-quantitative pairing from earlier in this lesson doing real work:
+
+| Evidence | What it contributed |
+|---|---|
+| z-test, p = 0.04 | Churn moved more than usual. Weak on its own, and confounded |
+| User feedback | *Why* it moved, and a mechanism connecting the feature to the outcome |
+| **Together** | A defensible decision that neither would support alone |
+
+**And the follow-up is the best judgement in the case.** Moving to a beta phase with loyal customers fixes the design problem going forward: it creates a control group and it collects the mechanism evidence *before* the release rather than after. One caution worth stating, because it is the standard failure of beta programmes — **loyal customers are the least likely to churn and the most tolerant of complexity.** They are the right group for finding usability problems and the wrong group for estimating a churn effect. The beta should be paired with a randomised rollout to a representative sample.
+
+> **Summarised as an evaluator would:** the statistical work was the weakest part of this case and the decision was still correct, because the qualitative evidence carried it. The lesson is not that the z-test was useless — it flagged something worth investigating. It is that TechHub treated a screening signal as a conclusion, and got the right answer for reasons the report does not credit.
+
+##### Case study 5: PharmaCorp's drug trials and five-point summary analysis
+
+**Background.** PharmaCorp introduced a new drug intended to reduce **recovery time post-surgery**. They needed to evaluate its efficacy compared to a **placebo**.
+
+**Methodology.**
+
+- They conducted **controlled clinical trials**. Recovery times were recorded for both groups: those on the drug and those on a placebo.
+- To understand the distribution, a **five-point summary** (min, Q1, median, Q3, max) was created for recovery times in both groups.
+
+*The course notes that this will be detailed further, so the treatment below covers the design and the choice of summary; the analysis of the summary itself follows with the rest of the case.*
+
+##### What is already right about this design
+
+Two things, and both are worth naming because the previous two cases lacked them.
+
+**There is a control group.** After the XYZ sales case, the e-commerce case and the TechHub case — none of which had one — a placebo arm is the thing that turns a before-and-after story into an estimate of an effect. Every confounder that worries the TechHub case is handled here by randomisation, provided the allocation was random.
+
+**The five-point summary is the right choice for this variable, and not a default one.** Recovery times have three properties that make the mean and standard deviation a poor description:
+
+| Property of recovery times | Why mean ± sd struggles | What the five-point summary does |
+|---|---|---|
+| **Right-skewed** — a floor at zero, a long tail of slow recoveries | The mean is pulled above the typical patient; "mean ± sd" implies a symmetry that is not there | The median is unmoved by the tail; Q1 and Q3 describe the bulk honestly |
+| **Outlier-prone** — complications produce extreme values | One 90-day recovery can move the mean of a small arm by days | The median and quartiles are unaffected by how extreme the extremes are |
+| **Bounded below, unbounded above** | Symmetric intervals can imply negative recovery times | Quartiles are actual observed values and cannot fall outside the range |
+
+> **The general rule this case illustrates:** report the mean when the distribution is roughly symmetric and you need to do arithmetic with it. Report the five-point summary when the distribution is skewed and the reader needs to know the *shape*. For a clinical outcome, shape is the point — "half of patients recovered within X days" is a sentence a surgeon can use, and "the mean was X" is not.
+
+##### What a five-point summary can and cannot do
+
+**What it gives you, and reading it in order:**
+
+| Statistic | What to read from it |
+|---|---|
+| **Median** | The typical patient. The headline comparison between arms |
+| **Q1 and Q3** | Where the middle half sits. The **IQR = Q3 − Q1** is the spread measure that matches the median |
+| **Min and max** | The range, and a first look at outliers. Both are single observations, so both are unstable |
+| **Median position within the box** | Skew. A median close to Q1 means a right tail |
+| **The two boxes side by side** | Whether the distributions *overlap*, which is the thing a difference in means hides |
+
+That last row is the one most worth having. If the drug arm's Q3 sits below the placebo arm's Q1, the separation is nearly complete and no test is needed to see it matters. If the boxes overlap heavily while the medians differ, the drug helps *some* patients and the average conceals wide individual variation — a clinically different finding from a uniform shift.
+
+**And the limitations, all of which matter for a marking scheme:**
+
+- **It does not establish significance.** Two five-point summaries can differ from sampling noise alone. A test — Mann–Whitney for a rank comparison, or a t-test on logged times — is still required
+- **It reports no sample size**, and so gives no sense of precision. A median from 12 patients and one from 1 200 look identical on a boxplot
+- **It hides multimodality.** If the drug works well for two-thirds of patients and not at all for the rest, the five-point summary of that bimodal distribution looks unremarkable. A histogram or a strip plot would show it, and this is a real pattern in drug response, where a genetic subgroup often responds differently
+- **It ignores censoring**, which is the specific trap in recovery-time data. Patients still unrecovered when the study closes have no recovery time. Dropping them biases the result optimistically, and recording them at the closing date biases it the other way. The correct handling is survival analysis — Kaplan–Meier curves and a log-rank test — which uses the partial information a censored patient carries
+- **Nothing here addresses clinical significance.** A median reduction of half a day may be real, statistically certain, and not worth prescribing
+
+> **The evaluation-grade formulation to carry into the rest of this case:** the five-point summary is a *description*, and a well-chosen one for this variable. It sets up the comparison, shows the shape and exposes overlap. It does not test anything, and the efficacy claim will need the test, the effect size, and a statement of what reduction would be clinically meaningful — decided before the data were seen.
+
+
 #### Result table analysis with linear regression
 
 A simple linear regression models one outcome variable from one predictor. Reading its result table is a named outcome of this course. The multivariate case — several predictors at once, and what that does to a coefficient — was covered under diving deeper above; this section takes the components of the table one at a time.
@@ -68444,6 +68785,46 @@ CURATED_FLASHCARD_SETS = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "front": "What does a significant F-statistic actually establish, and why did it establish nothing in the Alpha Estates case?",
+            "back": "The null hypothesis for F is that every slope coefficient is zero at once, so rejecting it says only that at least one coefficient is non-zero, that is the model beats the mean. That is a very low bar and it falls as n grows: a model explaining just 2 percent of the variance reaches p of 0.0037 at n of 420. So a significant F suggests a fit better than nothing, not a good fit. In the Alpha Estates case it was worse than uninformative, because after dropping rooms the model had one predictor, and in simple regression F equals t squared exactly. The size coefficient had t of 48.3782, t squared of 2340.4478, and F of 2340.4478, identical to nine decimal places, with the same p of 2.26 times 10 to the minus 173. So reporting F restated the t-test in different words. F earns its place in multivariate models, and especially under collinearity, where every individual t can be insignificant while F is overwhelming, which is precisely the situation Alpha Estates was in before they dropped the variable.",
+            "tags": ["f-statistic", "case study", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "Why is a high adjusted R-squared not evidence that a model is not overfitting?",
+            "back": "Because adjusted R squared is computed entirely on the training data and never looks at data the model has not already fitted, so it cannot see generalisation at all. Three demonstrations. First, the penalty is far weaker than assumed: adding a predictor raises adjusted R squared whenever its absolute t exceeds 1, which is about p of 0.32, so adding pure noise raised it in 33.1 percent of 4000 trials, matching the theoretical 31.8 percent. Second, it barely moves while out-of-sample error explodes: fitting polynomials of rising degree, adjusted R squared went from 0.716 at degree 1 to 0.705 at degree 12, a change of one and a half percent, while out-of-sample RMSE went from 2.79 to 277.16, a factor of 99. Third, it is blind to selection: with 80 candidate predictors of pure noise and an outcome of pure noise, keeping the 8 with the largest absolute t gave adjusted R squared up to 0.42 on data with no signal, and every such model predicted new data worse than the sample mean, because adjusted R squared charges for the 8 predictors kept and cannot charge for the 80 examined. Only held-out data, cross-validation or an out-of-time test establishes generalisation.",
+            "tags": ["adjusted r squared", "overfitting", "generalisation", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "Alpha Estates cited an adjusted R-squared of 0.85 as evidence that dropping a predictor was fine. What does that number actually say?",
+            "back": "The opposite, once it is compared with anything. Adjusted R squared is the metric that already prices in the number of predictors, so it is exactly the right one for checking whether dropping a variable was justified. On the data the full model with size and rooms gave 0.8540 and the reduced model gave 0.8481, and out-of-sample RMSE moved the same way, 2.596 against 2.639 MNOK. Both figures round to 0.85, which is presumably why it passed without comment, but the full model's is higher. Adjusted R squared went down when the variable was removed, and since it already charges for the extra parameter, a fall means the parameter was earning its keep. This is a general point about reporting: 0.85 on its own says nothing, while 0.85 against 0.854 says the variable should have stayed. A figure needs a comparison before it means anything.",
+            "tags": ["adjusted r squared", "case study", "reporting", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "BigMart used MAPE to compare forecast error across outlets and across fast, medium and slow-moving categories. What is wrong with that?",
+            "back": "Three failure modes, and the case walks into all of them. MAPE is asymmetric: under-forecasting can never exceed 100 percent because the error is capped by the actual, while over-forecasting is unbounded, so optimising MAPE rewards forecasting low, which for a retailer means systematically planning for stock-outs. MAPE breaks as demand approaches zero, which defines the slow-moving category: simulating the same relative forecast quality across three segments gave MAPE of 6.6, 19.9 and 67.1 percent for fast, medium and slow movers, a tenfold spread produced purely by dividing by a smaller number, while MASE stayed essentially flat at 0.86, 0.83 and 0.70, correctly reporting equal quality. On slow movers 919 of 4000 periods had zero sales, where MAPE is undefined and must be dropped, biasing the remainder. And MAPE is not comparable across series with different volumes, which is exactly what comparing across outlets asks of it. So ranking by MAPE mostly ranks by how small the denominators are. Use MASE for cross-series comparison, MAE or RMSE in units within a series, and fill rate as the business KPI.",
+            "tags": ["mape", "mase", "forecast error", "case study", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "BigMart found the highest variance in metropolitan electronics and prescribed just-in-time inventory for it. Argue the case.",
+            "back": "The recommendation runs against the finding, though it is defensible under a condition the case never states. Safety stock equals z times sigma of demand times the square root of lead time, so demand variability enters as a multiplier and high variance is the classic reason to hold more buffer, not less, while just-in-time is a strategy for holding less. On an illustrative metropolitan electronics line at a 95 percent service level, moving from a 14-day to a 3-day lead time cuts safety stock from 160 to 74 units, a real saving, since shortening lead time is the one lever that genuinely reduces the buffer a volatile line needs. But as a proportion of lead-time demand the buffer rises from 29 to 62 percent, and the strategy now depends on the supplier hitting a three-day window: at 99 percent reliability the effective service level is 94 percent, at 90 percent it is 85.5, and at 80 percent it is 76, meaning stock-outs on nearly a quarter of cycles. So the verdict is conditional: reduce the lead time, but pair it with a service-level target and a supplier-reliability clause, and keep the buffer proportionate to sigma rather than eliminating it. The suburban recommendation has the same gap, since promotions raise demand variance, so prescribing more promotions for the segment flagged for high variance will increase the thing identified as the problem.",
+            "tags": ["inventory", "just-in-time", "safety stock", "case study", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "TechHub got p equal to 0.04 on a churn z-test. Why is that not enough to conclude the feature raised churn?",
+            "back": "Because the same p-value is consistent with commercially unrelated effects, and the design cannot attribute the change to the feature. Fixing churn before at 5 percent and solving for the after-rate that lands exactly on p of 0.04 gives, at 3000 users a rise to 6.22 percent or plus 24.4 percent relative, and at 60000 users a rise to 5.26 percent or plus 5.2 percent relative. Every row is significant at 0.05 and the business meanings are entirely different. At 12000 users Cohen's h is 0.027 against 0.2 for a small effect, and the 95 percent confidence interval runs from plus 0.03 to plus 1.16 percentage points, so a commercially irrelevant change is fully compatible with the result. As evidence, the standard upper bound on the Bayes factor at p of 0.04 is about 2.9, which moves a 50 percent prior to at most 74 percent. Three design problems compound this: there is no control group, so a before-and-after comparison attributes to the feature everything that changed between the two months; the hypothesis was generated by the same data that tested it, since they noticed an uptick and then tested it, and with 20 monitored metrics the chance of at least one false positive at 0.05 is 64 percent; and month-to-month churn is autocorrelated, so the true variability is wider than the formula assumes and the real p-value exceeds 0.04.",
+            "tags": ["z-test", "p-value", "effect size", "case study", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "TechHub's rollback decision was right despite weak statistics. Why, and what does that teach?",
+            "back": "Because the decision was not really carried by the p-value; it was carried by the user feedback, which is the stronger evidence. The feedback supplied a mechanism, that the feature made the interface more complex, and a mechanism converts a correlation with three plausible confounders into a causal story with a testable pathway, which is something a statistical test cannot produce. The z-test contributed that churn moved more than usual, weak on its own and confounded; the feedback contributed why it moved; together they support a decision neither would support alone. That is the quantitative and qualitative pairing from earlier in the lesson doing real work. The follow-up is the best judgement in the case, since a beta phase creates a control group and collects mechanism evidence before release rather than after, but it carries one standard flaw: loyal customers are the least likely to churn and the most tolerant of complexity, so they are the right group for finding usability problems and the wrong group for estimating a churn effect, and the beta should be paired with a randomised rollout to a representative sample.",
+            "tags": ["mixed methods", "decision making", "case study", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "Why is a five-point summary the right description for post-surgery recovery times, and what can it not do?",
+            "back": "Recovery times are right-skewed with a floor at zero and a long tail, outlier-prone because complications produce extreme values, and bounded below but unbounded above. Against those three properties the mean is pulled above the typical patient, one extreme recovery can move the mean of a small arm by days, and symmetric intervals can imply negative recovery times. The median is unmoved by the tail, the quartiles are unaffected by how extreme the extremes are, and quartiles are observed values that cannot fall outside the range. The most valuable reading is the two boxes side by side, because overlap is what a difference in means hides: if the drug arm's Q3 sits below the placebo arm's Q1 the separation is nearly complete, while heavy overlap with different medians means the drug helps some patients and the average conceals wide individual variation. Its limits: it does not establish significance, so a Mann-Whitney or a t-test on logged times is still needed; it reports no sample size and so no precision; it hides multimodality, which matters because genetic subgroups often respond differently; it ignores censoring, so patients unrecovered at study close need survival analysis with Kaplan-Meier and a log-rank test; and it says nothing about clinical significance, since a median reduction of half a day can be real, certain, and not worth prescribing.",
+            "tags": ["five-point summary", "clinical trials", "distribution", "lesson 1.2", "evo"]
+        },
         {
             "front": "What does VIF measure, what is the formula, and what is the only thing collinearity damages?",
             "back": "VIF is the variance inflation factor, and for predictor j it is 1 divided by (1 minus R squared j), where R squared j comes from an auxiliary regression of predictor j on all the other predictors. It answers one question: how much of this predictor is already contained in the others. It converts directly into the only quantity it damages, because the standard error is inflated by the square root of VIF. A VIF of 1 means orthogonal predictors and no inflation, 5 means R squared of 0.80 and 2.24 times inflation, 10 is the conventional alarm threshold at R squared 0.90 and 3.16 times inflation, and 100 means the variables are near-duplicates with 10 times inflation. Crucially collinearity does not bias anything. Gauss-Markov requires only that no predictor be a perfect linear combination of the others, not that they be uncorrelated, so OLS stays unbiased and stays the best linear unbiased estimator. What grows is the variance, which is exactly what the name says.",
@@ -70640,6 +71021,20 @@ CURATED_EXAM_QUESTION_BANK = {
         {
             "type": "skills",
             "source": "core_curated",
+            "question": "A report states: the F-statistic was significant, so the model as a whole is a good fit, and the adjusted R-squared of 0.85 shows the model is not overfitting and will generalise well. Evaluate both claims.",
+            "answer": "Both claims overstate what their statistics support. On F: the null is that every slope is zero simultaneously, so rejecting it establishes only that at least one predictor beats the mean, which is a low bar that falls as n rises, a model explaining 2 percent of variance reaching p of 0.0037 at n of 420. Good fit is a separate question answered by R squared, residual diagnostics and out-of-sample error. There is a sharper problem if the model has a single predictor, because F then equals t squared exactly, so reporting F restates the t-test rather than corroborating it. F earns its place in multivariate models, especially under collinearity, where individual t-statistics can all be insignificant while F is overwhelming. On adjusted R squared: it is computed entirely in-sample and therefore cannot see generalisation. Its penalty is weak, since adding a predictor raises it whenever absolute t exceeds 1, about p of 0.32, so pure noise raises it about a third of the time. It moves little while out-of-sample error explodes, staying near 0.71 across polynomial degrees where out-of-sample RMSE rose from 2.79 to 277. And it is blind to selection, giving adjusted R squared of 0.42 on pure noise once the best 8 of 80 candidates are kept, because it charges for the predictors retained and not for those examined. What the report should say instead is the effect sizes with confidence intervals, the residual diagnostics, and an out-of-sample or cross-validated error, since only data the model has not seen speaks to generalisation.",
+            "tags": ["f-statistic", "adjusted r squared", "overfitting", "lesson 1.2", "evo"]
+        },
+        {
+            "type": "skills",
+            "source": "core_curated",
+            "question": "A SaaS company observed a rise in churn after a feature release, ran a z-test giving p equal to 0.04, and rolled the feature back. Assess the evidence and the decision.",
+            "answer": "The evidence is weak and the decision is nevertheless defensible, for reasons the report does not credit. On the evidence, three problems compound. There is no control group, so a before-and-after comparison attributes to the feature everything else that changed between the periods, and SaaS churn has strong seasonal and cohort structure. The hypothesis was generated by the same data that tested it, since the uptick was noticed first and tested second, and monitoring 20 metrics gives a 64 percent chance of at least one result under 0.05 by chance. And month-to-month churn is autocorrelated, so the independence the z-test assumes fails and the true p exceeds 0.04. Even taken at face value, p of 0.04 fixes nothing about magnitude: solving for the after-rate that lands on p of 0.04 from a 5 percent base gives a 24 percent relative rise at 3000 users and a 5 percent relative rise at 60000, and the standard upper bound on the Bayes factor at that p is 2.9, moving a 50 percent prior to at most 74 percent. What should have been reported is the confidence interval on the difference, which at 12000 users runs from plus 0.03 to plus 1.16 percentage points, and an effect size, Cohen's h of 0.027, well under small. On the decision: the rollback was carried by the user feedback rather than the test, because that feedback supplied a mechanism, the interface became more complex, converting a confounded correlation into a causal story with a testable pathway. That is a legitimate basis for action and it is the pairing of quantitative and qualitative evidence working properly. The correct design was available and cheap, namely a randomised staged rollout giving a genuine control group, and the beta-testing follow-up moves toward it, subject to the caution that loyal customers are the least likely to churn and the most tolerant of complexity, so they are right for usability findings and wrong for estimating a churn effect.",
+            "tags": ["z-test", "experimental design", "mixed methods", "lesson 1.2", "evo"]
+        },
+        {
+            "type": "skills",
+            "source": "core_curated",
             "question": "An estate agency reports that house size and number of rooms are both significant predictors of price, but that the VIF is 10.9, and on that basis it drops number of rooms from the model. Evaluate the decision.",
             "answer": "The diagnostic is correctly measured and the conclusion does not follow from it. VIF is 1 divided by (1 minus R squared) from the auxiliary regression of one predictor on the others, and 10.9 corresponds to an R squared of about 0.91, so the two predictors do overlap heavily and the standard errors are inflated by the square root of 10.9, about 3.3 times. But inflated standard errors have exactly one consequence: they make effects hard to detect. Collinearity does not bias coefficients, because Gauss-Markov requires only that no predictor be a perfect linear combination of the others. So a high VIF is a warning that real effects may go undetected, and here both were detected anyway, at p below 0.0001, with the full 3.3 times penalty already in the standard errors. The symptom the diagnostic warns about did not occur. Three further signals confirm this. Adjusted R squared falls when rooms is dropped, from 0.8540 to 0.8481, and since adjusted R squared already charges for the extra parameter, a fall means the variable was paying its way. Out-of-sample RMSE rises from 2.596 to 2.639 MNOK, so prediction got worse by about 43 000 NOK per valuation. And the size coefficient itself moves 36.7 percent, from 139 145 to 190 252 NOK per square metre, which shows the model is no longer estimating the same quantity. That last move is exactly the omitted variable bias formula: the direct effect of 139 145 plus the indirect path of 0.0358 rooms per square metre times 1 426 323 NOK per room equals 190 252 to the krone. So the remedy for collinearity has created the endogeneity that the exogeneity assumption warns against, and the two diagnostics pull in opposite directions. The recommendation is to keep both predictors and report the VIF, accepting wider standard errors in exchange for coefficients that mean what they say, or better, to combine the variables by replacing rooms with rooms per 100 square metres, which drops VIF to 1.43, keeps both terms significant, and restores out-of-sample accuracy. Dropping is defensible only if the model exists purely to generate fitted values and nobody will read the size coefficient as a causal statement, and neither condition was stated.",
             "tags": ["multicollinearity", "vif", "omitted variable bias", "lesson 1.2", "evo"]
@@ -70968,6 +71363,24 @@ CURATED_PRACTICE_QUESTION_BANK = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "type": "skills",
+            "question": "Your colleague reports a significant F-statistic as evidence the regression is a good fit. The model has one predictor. What do you say?",
+            "answer": "That in a simple regression F is algebraically t squared, so it is the same test as the t on that single predictor, reported twice. On one worked model the t was 48.3782, t squared was 2340.4478, and F was 2340.4478, identical to nine decimal places with the same p-value. So it adds nothing. Separately, even in a multivariate model a significant F would not establish good fit, because its null is that every slope is zero at once, so rejecting it means only that the model beats the mean, and that threshold falls as the sample grows, with 2 percent of variance explained reaching significance at n of 420. F is genuinely informative in multivariate models, especially under collinearity, where the individual t-statistics can all fail while F is overwhelming, telling you the predictors matter jointly even though credit cannot be assigned to any one of them. For fit, look at R squared, the residual plots, and out-of-sample error.",
+            "tags": ["f-statistic", "lesson 1.2", "evo"]
+        },
+        {
+            "type": "skills",
+            "question": "How would you actually demonstrate that a model is not overfitting, if adjusted R-squared will not do it?",
+            "answer": "By evaluating it on data it has not seen, since that is the only thing that speaks to generalisation. In order of strength: an out-of-time test, holding back the most recent period, which also catches drift; k-fold cross-validation, reporting the mean and spread of the held-out error; or a single random hold-out, which is weakest because it depends on one split. Report the error in the units of the outcome, so RMSE or MAE, alongside the error of a trivial baseline such as the mean or last period's value, because a model that cannot beat that baseline out of sample is not a model. Two cautions. Any variable selection, tuning or transformation chosen by looking at the data must happen inside each fold, otherwise the held-out set has already leaked into the fitting and the estimate is optimistic. And if observations are grouped or ordered, by outlet, patient or time, split on the group rather than on rows, or neighbouring rows will appear on both sides of the split. Adjusted R squared still has a use, namely asking whether a given predictor was worth its degree of freedom, but that is a much narrower question than generalisation.",
+            "tags": ["overfitting", "cross-validation", "lesson 1.2", "evo"]
+        },
+        {
+            "type": "skills",
+            "question": "A retailer wants one forecast-accuracy number to compare across outlets that sell very different volumes. What do you recommend, and why not MAPE?",
+            "answer": "Recommend MASE, the mean absolute error scaled by the mean absolute error of a naive one-step forecast on the same series. Because the scaling is internal to each series, MASE is comparable across outlets and volumes, it survives periods of zero sales, and it has a natural reading, since below 1 beats the naive forecast and above 1 does not. Not MAPE, for three reasons. It divides by the actual, so it explodes on low-volume series: at the same relative forecast quality, simulated fast, medium and slow-moving categories gave MAPE of 6.6, 19.9 and 67.1 percent while MASE stayed flat at 0.86, 0.83 and 0.70. It is undefined when actual sales are zero, which happened in 919 of 4000 slow-moving periods, and dropping those observations biases the average. And it is asymmetric, since under-forecasting is capped at 100 percent while over-forecasting is unbounded, so optimising it pushes forecasts low and installs a bias toward stock-outs. Pair whichever error metric you choose with a business KPI such as fill rate or service level, because forecast accuracy is a means and availability is the end.",
+            "tags": ["mape", "mase", "forecasting", "lesson 1.2", "evo"]
+        },
         {
             "type": "skills",
             "question": "A colleague says collinearity causes inaccurate results and overfitting. Correct them.",
