@@ -65968,6 +65968,115 @@ That is also the honest answer when nothing can be fixed. "This estimate is prob
 > 🔬 Five simulators cover these: **8** for residual patterns, **14** for linearity in the housing case, **15** for why exogeneity cannot be diagnosed, **16** for instruments, and **12** for why a rising R² is not reassurance. All in **Visual Lab → 1.2 → C og D**.
 
 
+#### Advanced regression metrics
+
+Linear regression is a foundational framework for understanding relationships between variables. To go deeper, three metrics give more nuanced insight into **model performance** and the **significance of predictors**.
+
+##### Adjusted R-squared
+
+**The official definition.** Adjusted R-squared addresses the limitation of the regular R-squared, which **tends to increase as more predictors are added to the model, even if they are irrelevant**. The adjusted version **penalises the model for adding predictors that do not significantly improve the fit**, which makes it essential when comparing models with different numbers of predictors.
+
+> **Adjusted R² = 1 − (1 − R²) × (n − 1) ÷ (n − k − 1)**
+> where **n** is the sample size and **k** the number of predictors.
+
+**Read the penalty in the formula.** Every predictor you add increases k, which shrinks the denominator, which inflates (1 − R²) and pulls the whole thing down. A new predictor therefore has to raise R² by *more* than that mechanical loss before adjusted R² moves up at all.
+
+**Two properties worth knowing:**
+
+| | |
+|---|---|
+| **It can fall** | Add a useless predictor and it goes *down*. R² never does. That fall is the signal |
+| **It can go negative** | When the model is worse than simply predicting the mean every time. R² cannot |
+
+**Demonstrated.** A model with one real predictor and up to 14 pure-noise ones, on n = 60:
+
+| Predictors | R² | Adjusted R² | F |
+|---|---|---|---|
+| 1 (the real one) | 0.556 | **0.548** | 72.6 |
+| 5 | 0.586 | 0.548 | 15.3 |
+| 10 | 0.616 | 0.537 | 7.9 |
+| **15** | **0.630** | **0.504** | **5.0** |
+
+R² climbs from 0.556 to 0.630 on noise alone. Adjusted R² falls, and the F-statistic collapses from 72.6 to 5.0. **The naive metric rewards you for making the model worse; the other two do not.**
+
+##### The F-statistic
+
+**The official definition.** The F-statistic assesses the **overall significance** of the model by comparing the **explained variance to the unexplained variance**. A high F indicates the model fits the data and that the predictors significantly impact the outcome. It is used with a p-value to test the hypothesis that **all regression coefficients are equal to zero**; if p is below the significance level, typically 0.05, that hypothesis is rejected and the model is significant.
+
+> **F = (R² ÷ k) ÷ ((1 − R²) ÷ (n − k − 1))**
+
+**What the null actually says, and why it is a low bar.** H₀ for the F-test is that **every** slope is zero simultaneously — that the whole set of predictors, taken together, explains nothing at all. Rejecting it means *at least one* predictor carries something.
+
+That is a much weaker claim than it sounds. A significant F does **not** mean the model is good, that the right variables are in it, or that any particular coefficient is trustworthy. It means the model beats knowing nothing. On business data with a real relationship in it, F is nearly always significant, so it is a **floor**, not a finding.
+
+##### When F and the individual t-tests disagree
+
+This is the exam-relevant part, because the two can point in opposite directions and each pattern has a specific diagnosis.
+
+| Pattern | What it means |
+|---|---|
+| **F significant, no single predictor significant** | Almost always **multicollinearity**. The predictors are near-duplicates, so the model as a whole explains plenty while no individual coefficient can be pinned down |
+| **F not significant, one predictor significant** | Likely a **multiple-comparison artefact**. With k predictors you ran k tests; at α = 0.05 one in twenty comes up by chance |
+| **Both significant** | The straightforward case |
+| **Neither significant** | The model, as specified, has nothing |
+
+**The first row, demonstrated.** Two predictors correlated at 0.9997, n = 40:
+
+> **F = 26.3, p < 0.0001** — the model is clearly significant
+> **p for predictor a = 0.92, p for predictor b = 0.77** — neither is individually significant
+> **VIF = 1 338**
+
+Read either number alone and you reach the wrong conclusion. Read them together and the diagnosis is immediate: the model knows something, and it cannot tell you which variable it came from.
+
+##### Standard errors
+
+**The official definition.** Standard errors measure the **precision of the coefficient estimates**. A **smaller** standard error implies the coefficient estimate is more reliable; a **larger** one suggests the estimate is less precise. Standard errors are used to construct **confidence intervals** around the coefficients and to conduct **hypothesis tests** on them.
+
+*A note on the source: this paragraph in the course text is badly garbled — it reads "A more standard minor mistake implies that the coefficient estimate is more reliable, while a more significant standard error suggests that the assessment is less precise. Common errors are used to construct confidence intervals." That is an automated synonym substitution gone wrong: "smaller" became "minor", "larger" became "more significant", "estimate" became "assessment", and "Standard errors" became "Common errors". Read literally it teaches nothing, so the corrected version is given above.*
+
+> **SE(b₁) = s ÷ √( Σ(x − x̄)² )** for a simple regression, where **s** is the residual standard deviation
+
+**Three things make a standard error small**, and the third is the one people never think about:
+
+| Driver | Effect | |
+|---|---|---|
+| **Low residual noise (s)** | Smaller SE | The model explains the outcome well |
+| **Large sample (n)** | Smaller SE | More terms in the sum |
+| **Wide spread in x** | **Smaller SE** | This is the underappreciated one |
+
+**Spread in x buys precision, and it is often free.** Measured on the same relationship with the same n and the same noise, only the range of x changing:
+
+| Spread of x | SE of the slope |
+|---|---|
+| sd = 0.5 | 0.287 |
+| sd = 1.0 | 0.132 |
+| sd = 3.0 | **0.048** — six times more precise |
+
+Intuitively: two points close together barely determine a line's slope; two points far apart determine it well. **This is why a designed experiment varies the treatment widely rather than nudging it**, and why an observational dataset where a driver barely moves cannot tell you much about that driver however many rows it has.
+
+##### The four numbers are one number
+
+Standard error, t, p and the confidence interval are not four pieces of information. They are one, expressed four ways:
+
+> **t = b ÷ SE**  ·  **p** comes from t and the degrees of freedom  ·  **CI = b ± t_critical × SE**
+
+Everything hangs off the standard error. Which leads to the consequence that ties this back to the assumptions:
+
+**If heteroscedasticity or autocorrelation breaks the standard errors, it breaks the t-statistics, the p-values, the confidence intervals *and* the F-test simultaneously** — because all four are computed from it. That is why those two violations invalidate the whole inference column of a result table while leaving the coefficients themselves usable.
+
+##### Reading a result table with all three
+
+| Question | Metric | Trap |
+|---|---|---|
+| Does the model explain anything at all? | **F and its p-value** | A floor, not a finding. Nearly always significant on real data |
+| How much does it explain, honestly? | **Adjusted R²** | Compare models on this, never on R² |
+| Which predictors carry it? | **t and p per coefficient** | Check against F: agreement matters |
+| How precisely is each one known? | **Standard error, and the interval** | A wide interval on a significant coefficient still means "we do not know how much" |
+| Is any of it trustworthy? | **The assumptions** | None of the four means anything if exogeneity fails |
+
+> 🔬 Simulator **17 · Justert R², F og standardfeil** has both demonstrations: add noise predictors and watch R² rise while adjusted R² and F fall, then switch to the collinearity case where F says yes and every t says no.
+
+
 #### Result table analysis with linear regression
 
 A simple linear regression models one outcome variable from one predictor. Reading its result table is a named outcome of this course. The multivariate case — several predictors at once, and what that does to a coefficient — was covered under diving deeper above; this section takes the components of the table one at a time.
@@ -67804,6 +67913,31 @@ CURATED_FLASHCARD_SETS = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "front": "What does adjusted R-squared do that R-squared cannot, and give its formula.",
+            "back": "R squared tends to increase as predictors are added even when they are irrelevant, so it cannot compare models with different numbers of predictors. Adjusted R squared penalises the model for predictors that do not meaningfully improve fit: adjusted R squared equals 1 minus (1 minus R squared) times (n minus 1) divided by (n minus k minus 1), where n is the sample size and k the number of predictors. The penalty is visible in the formula, since each extra predictor raises k, shrinks the denominator and pulls the value down, so a new predictor must raise R squared by more than that mechanical loss before adjusted R squared moves up at all. Two properties follow: it can fall when a useless predictor is added, which R squared never does and which is precisely the signal, and it can go negative when the model is worse than predicting the mean every time. Demonstrated on 60 rows with one real predictor and fourteen noise ones, R squared climbs from 0.556 to 0.630 on noise alone while adjusted R squared falls from 0.548 to 0.504.",
+            "tags": ["adjusted r squared", "model selection", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "What does the F-statistic test, and why is a significant F a floor rather than a finding?",
+            "back": "It assesses the overall significance of the model by comparing explained to unexplained variance: F equals (R squared divided by k) divided by ((1 minus R squared) divided by (n minus k minus 1)). It is used with a p-value to test the hypothesis that all regression coefficients are equal to zero simultaneously, and if p falls below the significance level, typically 0.05, that hypothesis is rejected and the model is called significant. The null is a low bar, because it says the entire set of predictors taken together explains nothing at all. Rejecting it means at least one predictor carries something. It does not mean the model is good, that the right variables are in it, or that any particular coefficient is trustworthy, and on business data with a real relationship present F is nearly always significant.",
+            "tags": ["f-statistic", "overall significance", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "The F-test is significant but no individual predictor is. What does that mean, and what about the reverse?",
+            "back": "F significant with no single predictor significant is almost always multicollinearity: the predictors are near-duplicates, so the model as a whole explains plenty while no individual coefficient can be pinned down, because the standard errors are inflated by the overlap. Demonstrated with two predictors correlated at 0.9997 on 40 rows, F comes out at 26.3 with p below 0.0001 while the two predictors have p of 0.92 and 0.77, and the variance inflation factor is 1 338. Read either number alone and you reach the wrong conclusion. The reverse pattern, F not significant with one predictor significant, is likely a multiple-comparison artefact, since with k predictors you effectively ran k tests and at alpha 0.05 roughly one in twenty comes up by chance.",
+            "tags": ["f-statistic", "multicollinearity", "t-test", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "What three things make a standard error small, and which is the one people overlook?",
+            "back": "For a simple regression the standard error of the slope is s divided by the square root of the sum of squared deviations of x from its mean. So it shrinks with low residual noise, meaning the model explains the outcome well; with a large sample, since there are more terms in the sum; and with a wide spread in x, which is the overlooked one. Measured on the same relationship with the same n and the same noise, the standard error of the slope falls from 0.287 at a spread of 0.5 to 0.048 at a spread of 3.0, six times more precise. Intuitively, two points close together barely determine a line's slope while two far apart determine it well. This is why a designed experiment varies the treatment widely rather than nudging it, and why an observational dataset where a driver barely moves cannot say much about that driver however many rows it has.",
+            "tags": ["standard error", "precision", "experimental design", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "Why are the standard error, t, p and the confidence interval really one number?",
+            "back": "Because all four are computed from the standard error: t equals the coefficient divided by its standard error, p comes from t and the degrees of freedom, and the confidence interval is the coefficient plus or minus the critical t times the standard error. The consequence ties back to the assumptions: if heteroscedasticity or autocorrelation breaks the standard errors, it breaks the t-statistics, the p-values, the confidence intervals and the F-test all at once, since every one of them is derived from it. That is exactly why those two violations invalidate the whole inference column of a result table while leaving the coefficients themselves unbiased and usable.",
+            "tags": ["standard error", "inference", "assumptions", "lesson 1.2", "evo"]
+        },
         {
             "front": "Sort the regression assumption violations by what they break: the coefficients, or only the inference?",
             "back": "Non-linearity breaks the coefficients, which are systematically wrong across the range, and the standard errors with them. Endogeneity breaks the coefficients too, biased and inconsistent, and makes the standard errors meaningless and misleadingly tight. Heteroscedasticity leaves the coefficients fine and unbiased but breaks the standard errors. Autocorrelation likewise leaves coefficients fine and breaks the standard errors, usually making them too narrow. Non-normal residuals leave both fine in large samples. Multicollinearity leaves coefficients unbiased but unstable between samples and inflates the standard errors, so real effects can look insignificant. The top two are a different category from the rest: where the coefficients break, the model answers the wrong question and correcting the standard errors does not help, whereas where only the inference breaks the estimate is still the estimate and you simply cannot say how certain it is until it is fixed. So the first question on any diagnostic finding is whether it damaged the number or only the confidence around it.",
@@ -70174,6 +70308,11 @@ CURATED_PRACTICE_QUESTION_BANK = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "type": "skills",
+            "question": "A result table shows F = 24.1 with p < 0.001, R squared of 0.71, and four predictors of which none has p below 0.05. How do you read it?",
+            "answer": "The two halves are not contradicting each other; together they diagnose multicollinearity. A significant F rejects the hypothesis that all coefficients are simultaneously zero, so the predictors jointly explain the outcome. No individual coefficient reaching significance means no single one can be pinned down, which happens when the predictors overlap heavily: the shared variation inflates each standard error, the intervals widen to include zero, and the model cannot allocate credit between them. I would check the variance inflation factors, expecting values well above 5 and possibly in the hundreds, and look at the correlation matrix among the four. On the metrics themselves, I would also compare adjusted R squared rather than R squared before concluding that four predictors are better than fewer, since R squared rises with any addition. The practical remedies are to drop or combine the overlapping predictors, for instance into an index, or to accept that the model predicts well while declining to interpret individual coefficients, which is a legitimate use of it. What I would not do is report any single coefficient as an effect, or conclude from the non-significant t values that none of the variables matters."
+        },
         {
             "type": "skills",
             "question": "Researchers propose using state-wide educational policy as an instrument for class size. Evaluate the proposal and suggest something better.",

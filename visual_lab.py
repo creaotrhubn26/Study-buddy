@@ -1518,11 +1518,197 @@ def _instrumental_variables():
     )
 
 
+
+@st.cache_data(show_spinner=False)
+def _metrics_junk(k_junk, n=60, seed=9):
+    """One real predictor plus k pure-noise ones, so every rise in R2 past the first is fake."""
+    rng = np.random.default_rng(seed)
+    x1 = rng.normal(size=n)
+    y = 2 + 1.5 * x1 + rng.normal(0, 1.2, n)
+    junk = rng.normal(size=(n, 15))
+    rows = []
+    for k in range(1, k_junk + 2):
+        cols = [np.ones(n), x1] + ([junk[:, :k - 1]] if k > 1 else [])
+        X = np.column_stack(cols)
+        coef, *_ = np.linalg.lstsq(X, y, rcond=None)
+        res = y - X @ coef
+        r2 = 1 - (res ** 2).sum() / ((y - y.mean()) ** 2).sum()
+        adj = 1 - (1 - r2) * (n - 1) / (n - k - 1)
+        f = (r2 / k) / ((1 - r2) / (n - k - 1))
+        rows.append({"prediktorer": k, "R²": r2, "Justert R²": adj, "F": f,
+                     "p(F)": float(stats.f.sf(f, k, n - k - 1))})
+    return pd.DataFrame(rows)
+
+
+def _advanced_metrics():
+    st.markdown("#### 17 · Justert R², F og standardfeil")
+    demo = st.radio("Demonstrasjon", ["R² som belønner deg for å ødelegge modellen",
+                                      "Når F og t sier motsatt", "Hva som gjør standardfeilen liten"],
+                    key="vl_am_demo")
+
+    if demo.startswith("R²"):
+        st.caption("Modellen har **én** ekte prediktor. Alt du legger til etterpå er ren støy.")
+        k = st.slider("Hvor mange støyprediktorer legger vi til?", 0, 14, 8, 1, key="vl_am_k")
+        df = _metrics_junk(k)
+        long = df.melt("prediktorer", ["R²", "Justert R²"], var_name="mål", value_name="verdi")
+        chart = alt.Chart(long).mark_line(size=3, point=alt.OverlayMarkDef(size=60, filled=True)).encode(
+            x=alt.X("prediktorer:Q", title="Antall prediktorer i modellen"),
+            y=alt.Y("verdi:Q", title=None, scale=alt.Scale(zero=False)),
+            color=alt.Color("mål:N", scale=alt.Scale(domain=["R²", "Justert R²"],
+                                                     range=[S_CRITICAL, C_BLUE]),
+                            legend=alt.Legend(title=None, orient="top")),
+            tooltip=["prediktorer:Q", "mål:N", alt.Tooltip("verdi:Q", format=".4f")])
+        fchart = alt.Chart(df).mark_bar(color=C_ORANGE, cornerRadiusEnd=3, size=18).encode(
+            x=alt.X("prediktorer:Q", title="Antall prediktorer"),
+            y=alt.Y("F:Q", title="F-statistikk"),
+            tooltip=["prediktorer:Q", alt.Tooltip("F:Q", format=".2f"),
+                     alt.Tooltip("p(F):Q", format=".5f")])
+        st.altair_chart((chart.properties(title="R² mot justert R²", height=270)
+                         | fchart.properties(title="F-statistikken", height=270)),
+                        use_container_width=True)
+        first, last = df.iloc[0], df.iloc[-1]
+        m1, m2, m3, m4 = st.columns(4)
+        m1.metric("R²", f"{last['R²']:.4f}", delta=f"{last['R²']-first['R²']:+.4f}")
+        m2.metric("Justert R²", f"{last['Justert R²']:.4f}",
+                  delta=f"{last['Justert R²']-first['Justert R²']:+.4f}")
+        m3.metric("F", f"{last['F']:.2f}", delta=f"{last['F']-first['F']:+.1f}", delta_color="normal")
+        m4.metric("p(F)", f"{last['p(F)']:.5f}")
+        _point(
+            f"**R² gikk fra {first['R²']:.3f} til {last['R²']:.3f} på ren støy.** Den kan ikke annet: "
+            f"å legge til en variabel gir modellen mer å tilpasse seg med, og den tilpasser seg også "
+            f"tilfeldighetene i akkurat disse {60} radene.\n\n"
+            f"**Justert R² falt til {last['Justert R²']:.3f}**, fordi straffen (n−1)/(n−k−1) vokser med "
+            f"hver prediktor. Og **F kollapset fra {first['F']:.0f} til {last['F']:.1f}** — modellen "
+            f"forklarer marginalt mer per prediktor og mye mindre per frihetsgrad.\n\n"
+            f"**Derfor sammenlignes modeller med ulikt antall prediktorer på justert R², aldri på R².**"
+        )
+
+    elif demo.startswith("Når F"):
+        st.caption(
+            "To prediktorer som nesten er samme variabel. Modellen vet noe — den kan bare ikke si hvilken "
+            "av dem det kom fra."
+        )
+        corr_jitter = st.select_slider(
+            "Hvor like er de to prediktorene?",
+            options=[0.60, 0.30, 0.15, 0.08, 0.03], value=0.03,
+            format_func=lambda v: {0.60: "ganske ulike", 0.30: "en del overlapp", 0.15: "svært like",
+                                   0.08: "nesten identiske", 0.03: "praktisk talt samme variabel"}[v],
+            key="vl_am_j")
+        n = 40
+        rng = np.random.default_rng(4)
+        a = rng.normal(size=n)
+        bvar = a + rng.normal(0, corr_jitter, n)
+        y = 3 + 2 * a + rng.normal(0, 2.0, n)
+        X = np.column_stack([np.ones(n), a, bvar])
+        coef, *_ = np.linalg.lstsq(X, y, rcond=None)
+        res = y - X @ coef
+        s2 = (res ** 2).sum() / (n - 3)
+        se = np.sqrt(np.diag(np.linalg.inv(X.T @ X)) * s2)
+        pv = 2 * stats.t.sf(np.abs(coef / se), n - 3)
+        r2 = 1 - (res ** 2).sum() / ((y - y.mean()) ** 2).sum()
+        f = (r2 / 2) / ((1 - r2) / (n - 3))
+        pf = float(stats.f.sf(f, 2, n - 3))
+        r_ab = float(np.corrcoef(a, bvar)[0, 1])
+        vif = 1 / (1 - r_ab ** 2)
+
+        tbl = pd.DataFrame({
+            "prediktor": ["Prediktor a", "Prediktor b"],
+            "koeffisient": coef[1:], "standardfeil": se[1:], "p": pv[1:],
+        })
+        tbl["signifikant"] = np.where(tbl["p"] < 0.05, "Ja", "Nei")
+        bars = alt.Chart(tbl).mark_bar(cornerRadiusEnd=4, size=44).encode(
+            y=alt.Y("prediktor:N", title=None, sort=None),
+            x=alt.X("koeffisient:Q", title="Koeffisient"),
+            color=alt.Color("signifikant:N", scale=alt.Scale(domain=["Ja", "Nei"],
+                                                             range=[C_BLUE, S_CRITICAL]),
+                            legend=alt.Legend(title="Individuelt signifikant", orient="top")),
+            tooltip=[alt.Tooltip("prediktor:N"), alt.Tooltip("koeffisient:Q", format="+.2f"),
+                     alt.Tooltip("standardfeil:Q", format=".2f"), alt.Tooltip("p:Q", format=".3f")])
+        err = alt.Chart(tbl).mark_rule(size=3, color=INK_MUTED).encode(
+            y=alt.Y("prediktor:N", sort=None),
+            x=alt.X("lav:Q", title="Koeffisient"), x2="høy:Q"
+        ).transform_calculate(lav="datum.koeffisient - 1.96*datum.standardfeil",
+                              høy="datum.koeffisient + 1.96*datum.standardfeil")
+        zero = alt.Chart(pd.DataFrame({"x": [0]})).mark_rule(
+            color=INK_MUTED, strokeDash=[4, 3], size=2).encode(x="x:Q")
+        st.altair_chart((bars + err + zero).properties(height=170), use_container_width=True)
+        st.caption("De grå strekene er 95 %-intervallene. Den sanne effekten er a = 2,0 og b = 0.")
+
+        m1, m2, m3, m4 = st.columns(4)
+        m1.metric("F for modellen", f"{f:,.1f}")
+        m2.metric("p(F)", f"{pf:.4f}")
+        m3.metric("Laveste p blant prediktorene", f"{pv[1:].min():.3f}")
+        m4.metric("VIF", f"{vif:,.0f}")
+        if pf < 0.05 and (pv[1:] > 0.05).all():
+            _callout(
+                f"**Der har du motsetningen.** F sier at modellen er klart signifikant "
+                f"(F = {f:,.1f}, p = {pf:.4f}), og **ingen** av prediktorene er individuelt "
+                f"signifikante (laveste p = {pv[1:].min():.2f}).\n\n"
+                f"Det er ikke en selvmotsigelse — det er signaturen på **multikollinearitet**. "
+                f"De to variablene er korrelert {r_ab:.4f}, med VIF på {vif:,.0f}, så modellen kan "
+                f"forklare utfallet godt uten å kunne fordele æren mellom dem. Intervallene er så "
+                f"brede at begge inneholder null.\n\n"
+                f"**Leser du bare F, tror du modellen er god. Leser du bare t-ene, tror du ingenting "
+                f"virker. Begge lesningene er feil.**",
+                S_CRITICAL, "rgba(208,59,59,0.08)")
+        else:
+            _point(
+                f"Her er prediktorene korrelert {r_ab:.3f} (VIF {vif:,.1f}), og minst én er fortsatt "
+                f"individuelt signifikant. **Dra dem nærmere hverandre** og se hva som skjer med "
+                f"standardfeilene — koeffisientene blir ustabile lenge før F merker noe.")
+
+    else:
+        st.caption("Samme sammenheng, samme n, samme støy. Bare hvor mye x varierer endrer seg.")
+        spread = st.slider("Hvor mye varierer x?", 0.3, 4.0, 1.0, 0.1, key="vl_am_sp")
+        n = 80
+        rng = np.random.default_rng(7)
+        x = rng.normal(0, spread, n)
+        y = 2 + 1.5 * x + rng.normal(0, 1.2, n)
+        b = np.polyfit(x, y, 1)
+        res = y - np.polyval(b, x)
+        sxx = ((x - x.mean()) ** 2).sum()
+        se_b = np.sqrt((res ** 2).sum() / (n - 2) / sxx)
+        tc = float(stats.t.ppf(0.975, n - 2))
+        lo, hi = b[0] - tc * se_b, b[0] + tc * se_b
+
+        grid = np.linspace(-6, 6, 100)
+        band = pd.DataFrame({"x": grid, "lav": np.polyval([lo, b[1]], grid),
+                             "høy": np.polyval([hi, b[1]], grid)})
+        sc = alt.Chart(pd.DataFrame({"x": x, "y": y})).mark_circle(
+            size=70, opacity=0.6, color=C_BLUE).encode(
+            x=alt.X("x:Q", title="x", scale=alt.Scale(domain=[-6, 6])),
+            y=alt.Y("y:Q", title="y", scale=alt.Scale(domain=[-10, 14])))
+        ar = alt.Chart(band).mark_area(opacity=0.25, color=C_ORANGE).encode(
+            x="x:Q", y=alt.Y("lav:Q", title="y"), y2="høy:Q")
+        ln = alt.Chart(pd.DataFrame({"x": grid, "y": np.polyval(b, grid)})).mark_line(
+            size=2.5, color=C_ORANGE).encode(x="x:Q", y="y:Q")
+        st.altair_chart((ar + sc + ln).properties(height=320), use_container_width=True)
+        st.caption("Det oransje feltet viser hvor linja kan ligge, gitt usikkerheten i stigningstallet.")
+
+        m1, m2, m3, m4 = st.columns(4)
+        m1.metric("Spredning i x", f"{np.std(x):.2f}")
+        m2.metric("Standardfeil på stigningstallet", f"{se_b:.4f}")
+        m3.metric("95 % intervall", f"{lo:.2f} – {hi:.2f}")
+        m4.metric("t", f"{b[0]/se_b:,.1f}")
+        _point(
+            f"**Formelen er SE(b₁) = s ÷ √(Σ(x − x̄)²).** Nevneren er spredningen i x, så jo bredere "
+            f"x varierer, jo mindre blir standardfeilen — her {se_b:.4f} ved en spredning på "
+            f"{np.std(x):.2f}.\n\n"
+            f"**Dra spredningen ned mot 0,3.** Punktene klumper seg, vifta åpner seg, og "
+            f"stigningstallet blir dårlig bestemt selv om både n og støynivået er uendret. "
+            f"To punkter tett sammen bestemmer knapt en linje; to punkter langt fra hverandre "
+            f"bestemmer den godt.\n\n"
+            f"**Det praktiske:** et designet forsøk varierer behandlingen *bredt* i stedet for å dulte "
+            f"borti den. Og et observasjonsdatasett der en driver knapt beveger seg kan ikke fortelle "
+            f"deg mye om den driveren, uansett hvor mange rader det har."
+        )
+
+
 SECTIONS = {
     "A · Utvalg og usikkerhet": [_sampling_distribution, _coverage, _bias_vs_noise],
     "B · Test og effektstørrelse": [_p_vs_d, _power, _multiple_comparisons],
     "C · Regresjon og residualer": [_leverage, _residuals, _real_estate, _omitted_variable, _confounding, _endogeneity, _instrumental_variables],
-    "D · Z-score og overtilpasning": [_zscore, _overfitting],
+    "D · Z-score og overtilpasning": [_zscore, _overfitting, _advanced_metrics],
     "E · Eksamensdrill": [_drill],
 }
 
@@ -1530,7 +1716,7 @@ _INTRO = {
     "A · Utvalg og usikkerhet": "Hvorfor et utvalg kan si noe om en populasjon, hva de 95 prosentene faktisk lover, og hvorfor mer data ikke redder et skjevt utvalg.",
     "B · Test og effektstørrelse": "Hvorfor en p-verdi og en effektstørrelse svarer på to forskjellige spørsmål, hva styrke er, og hvordan tjue sammenligninger produserer et funn av ingenting.",
     "C · Regresjon og residualer": "Hvordan én observasjon kan vri hele linja, hva strukturen i et residualplott betyr, eiendomscaset der en rett linje er nesten riktig, hvorfor en koeffisient endrer seg når en variabel til kommer inn, og sammenhengen som snur fortegn når du deler opp dataene.",
-    "D · Z-score og overtilpasning": "Z-scoren brukt begge veier, og hvorfor et høyt R² kan bety at modellen er blitt verre.",
+    "D · Z-score og overtilpasning": "Z-scoren brukt begge veier, hvorfor et høyt R² kan bety at modellen er blitt verre, og hva justert R², F og standardfeilen faktisk forteller.",
     "E · Eksamensdrill": "Oppgavetypene fra aktivitetene, med nye tall hver gang og tilbakemelding på hvert steg underveis.",
 }
 
