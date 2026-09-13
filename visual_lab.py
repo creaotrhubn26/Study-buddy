@@ -41,7 +41,9 @@ def _chart_base(df):
     return alt.Chart(df).properties(height=CHART_H)
 
 
-_MD = mistune.create_markdown()
+# The table plugin is on because some callouts lay their arithmetic out as a small
+# table; without it mistune emits the pipe characters as literal text.
+_MD = mistune.create_markdown(plugins=["table"])
 
 
 def _callout(msg, colour=C_BLUE, tint="rgba(42,120,214,0.06)"):
@@ -51,6 +53,20 @@ def _callout(msg, colour=C_BLUE, tint="rgba(42,120,214,0.06)"):
     rendered to HTML here first - otherwise **bold** reaches the page as asterisks.
     """
     body = _MD(msg)
+    # A table produced by the markdown plugin arrives with no styling of its own,
+    # so it is given borders and padding inline - a stylesheet would not reach
+    # inside this block.
+    if "<table>" in body:
+        body = body.replace(
+            "<table>",
+            '<table style="border-collapse:collapse;margin:0.5rem 0;font-size:0.92em;">',
+        ).replace(
+            "<td>", '<td style="padding:0.22rem 0.75rem 0.22rem 0;'
+                    'border-bottom:1px solid rgba(0,0,0,0.08);">'
+        ).replace(
+            "<th>", '<th style="padding:0.22rem 0.75rem 0.22rem 0;text-align:left;'
+                    'border-bottom:1px solid rgba(0,0,0,0.22);">'
+        )
     st.markdown(
         f'<div style="border-left:3px solid {colour};padding:0.55rem 0.95rem;'
         f'margin:0.4rem 0 1.2rem 0;background:{tint};">{body}</div>',
@@ -1840,10 +1856,205 @@ def _influence():
     )
 
 
+
+B_SIZE, B_ROOMS = 140_000.0, 1_400_000.0   # true direct effects, NOK
+ROOMS_PER_M2 = 0.036                       # a 28 m2 room, roughly
+
+
+def _kr(v):
+    """Norwegian thousands separator, applied to one number rather than a whole
+    sentence - a blanket replace would also swallow the commas in the prose."""
+    return f"{v:,.0f}".replace(",", "\u00a0")
+
+
+@st.cache_data(show_spinner=False)
+def _collinear_draw(corr, n, seed):
+    """Alpha Estates listings where the correlation between size and rooms is dialled in.
+
+    rooms = ROOMS_PER_M2 * size + noise, and the noise sd is solved from the target
+    correlation so the *indirect path* stays fixed at ROOMS_PER_M2 while only the
+    overlap changes. That keeps the omitted-variable identity comparable across the
+    slider instead of moving two things at once.
+    """
+    rng = np.random.default_rng(seed)
+    size = rng.normal(95, 30, n).clip(35, 250)
+    sd_signal = ROOMS_PER_M2 * size.std(ddof=0)
+    corr = min(max(corr, 0.01), 0.995)
+    sd_noise = sd_signal * np.sqrt(1 / corr ** 2 - 1)
+    rooms = 1.0 + ROOMS_PER_M2 * size + rng.normal(0, sd_noise, n)
+    price = B_SIZE * size + B_ROOMS * rooms + rng.normal(0, 1_600_000, n)
+    return size, rooms, price
+
+
+def _fit(X, y):
+    b = np.linalg.lstsq(X, y, rcond=None)[0]
+    r = y - X @ b
+    n, k = X.shape
+    s2 = (r ** 2).sum() / (n - k)
+    se = np.sqrt(np.diag(s2 * np.linalg.inv(X.T @ X)))
+    return b, se
+
+
+@st.cache_data(show_spinner=False)
+def _mc_draws(corr, n, reps=300):
+    """Sampling distribution of the size coefficient, with and without rooms.
+
+    These are fresh datasets rather than bootstrap resamples of one. A bootstrap
+    would centre on the estimate this particular sample happened to produce, which
+    at high correlation can sit far from the truth - and the whole point of the
+    picture is that collinearity widens the distribution without moving it.
+    """
+    out = np.empty((reps, 2))
+    for i in range(reps):
+        size, rooms, price = _collinear_draw(corr, n, 5000 + i)
+        ones = np.ones(n)
+        out[i, 0] = _fit(np.column_stack([ones, size, rooms]), price)[0][1]
+        out[i, 1] = _fit(np.column_stack([ones, size]), price)[0][1]
+    return out
+
+
+def _multicollinearity():
+    st.markdown("#### 19 · Multikollinearitet og VIF")
+    st.caption(
+        "Alpha Estates-caset. To prediktorer som overlapper — boligstørrelse og antall rom — "
+        "og spørsmålet caset svarer feil på: skal du kaste den ene?"
+    )
+    c1, c2 = st.columns(2)
+    with c1:
+        corr = st.slider("Korrelasjon mellom størrelse og antall rom", 0.30, 0.98, 0.95, 0.01,
+                         key="vl_mc_corr")
+    with c2:
+        n = st.select_slider("Antall boliger i utvalget", [60, 120, 240, 420, 800], value=420,
+                             key="vl_mc_n")
+
+    size, rooms, price = _collinear_draw(corr, n, 11)
+    ones = np.ones(n)
+    XA = np.column_stack([ones, size, rooms])
+    XB = np.column_stack([ones, size])
+    bA, seA = _fit(XA, price)
+    bB, seB = _fit(XB, price)
+    r_obs = float(np.corrcoef(size, rooms)[0, 1])
+    v = 1 / (1 - r_obs ** 2)
+
+    m = st.columns(4)
+    m[0].metric("VIF", f"{v:.2f}", help="1 / (1 − R²) fra hjelperegresjonen av den ene prediktoren på den andre")
+    m[1].metric("Standardfeil blåses opp", f"{np.sqrt(v):.2f}×")
+    m[2].metric("t for størrelse (begge med)", f"{bA[1]/seA[1]:.2f}")
+    m[3].metric("t for antall rom", f"{bA[2]/seA[2]:.2f}")
+
+    draws = _mc_draws(corr, n)
+    aux = np.linalg.lstsq(np.column_stack([ones, size]), rooms, rcond=None)[0][1]
+    total = B_SIZE + aux * B_ROOMS
+
+    lo = min(draws.min(), B_SIZE, total) - 12_000
+    hi = max(draws.max(), B_SIZE, total) + 12_000
+    edges = np.linspace(lo, hi, 46)
+    ctr = (edges[:-1] + edges[1:]) / 2
+    hist = pd.concat([
+        pd.DataFrame({"b": ctr, "antall": np.histogram(draws[:, 0], edges)[0],
+                      "modell": "Begge prediktorer"}),
+        pd.DataFrame({"b": ctr, "antall": np.histogram(draws[:, 1], edges)[0],
+                      "modell": "Antall rom kastet"}),
+    ])
+    bars = alt.Chart(hist).mark_area(opacity=0.5, interpolate="step").encode(
+        x=alt.X("b:Q", title="Estimert kroner per m²", axis=alt.Axis(format=",.0f")),
+        y=alt.Y("antall:Q", title="Antall utvalg", stack=None),
+        color=alt.Color("modell:N",
+                        scale=alt.Scale(domain=["Begge prediktorer", "Antall rom kastet"],
+                                        range=[C_BLUE, C_ORANGE]),
+                        legend=alt.Legend(title=None, orient="top")))
+    # The two truth lines are labelled with text on the chart rather than through a
+    # second colour legend: Altair would otherwise merge the two colour scales and
+    # print one truncated four-entry legend for what are two different things.
+    truth = pd.DataFrame({
+        "v": [B_SIZE, total],
+        "hva": ["Sann direkte effekt\n(rom holdt fast)", "Sann total effekt\n(direkte + indirekte)"],
+        "farge": [INK_MUTED, S_CRITICAL],
+    })
+    rules = alt.Chart(truth).mark_rule(size=2, strokeDash=[5, 3]).encode(
+        x="v:Q", color=alt.Color("farge:N", scale=None),
+        tooltip=[alt.Tooltip("hva:N", title="Sannhet"), alt.Tooltip("v:Q", format=",.0f")])
+    labels = alt.Chart(truth).mark_text(
+        align="left", dx=5, dy=-4, baseline="top", fontSize=11, lineBreak="\n",
+    ).encode(x="v:Q", y=alt.value(2), text="hva:N", color=alt.Color("farge:N", scale=None))
+    st.altair_chart((bars + rules + labels).resolve_scale(color="independent").properties(
+        height=CHART_H, title="Hvor estimatet lander over 300 nye utvalg"),
+        use_container_width=True)
+
+    t1, t2 = st.columns(2)
+    with t1:
+        st.markdown("**Med begge prediktorer**")
+        st.dataframe(pd.DataFrame({
+            "Ledd": ["Størrelse (kr/m²)", "Antall rom (kr)"],
+            "Estimat": [_kr(bA[1]), _kr(bA[2])],
+            "Standardfeil": [_kr(seA[1]), _kr(seA[2])],
+            "t": [f"{bA[1]/seA[1]:.2f}", f"{bA[2]/seA[2]:.2f}"],
+        }), hide_index=True, use_container_width=True)
+    with t2:
+        st.markdown("**Antall rom kastet**")
+        st.dataframe(pd.DataFrame({
+            "Ledd": ["Størrelse (kr/m²)"],
+            "Estimat": [_kr(bB[1])],
+            "Standardfeil": [_kr(seB[1])],
+            "t": [f"{bB[1]/seB[1]:.2f}"],
+        }), hide_index=True, use_container_width=True)
+
+    _callout(
+        f"**Identiteten, regnet ut på dette utvalget.** Hjelperegresjonen sier at hver ekstra "
+        f"kvadratmeter kommer med **{aux:.4f}** rom. Da er\n\n"
+        f"| | |\n|---|---|\n"
+        f"| Direkte effekt av størrelse, rom holdt fast | {_kr(bA[1])} kr/m² |\n"
+        f"| Indirekte: {aux:.4f} × {_kr(bA[2])} kr | + {_kr(aux*bA[2])} kr/m² |\n"
+        f"| **Sum** | **{_kr(bA[1] + aux*bA[2])} kr/m²** |\n"
+        f"| Størrelseskoeffisienten når rom er kastet | **{_kr(bB[1])} kr/m²** |\n\n"
+        f"De to siste radene er samme tall. Det er ikke omtrentlig — det er en algebraisk "
+        f"identitet, og den er nøyaktig formelen for utelatt-variabel-skjevhet.",
+        C_ORANGE, "rgba(235,104,52,0.07)")
+
+    if np.sqrt(v) > 2.2:
+        _callout(
+            f"**Høy VIF ({v:.1f}) — og legg merke til hva den gjør og ikke gjør.** Den blå "
+            f"fordelingen er bred: standardfeilen er {np.sqrt(v):.2f} ganger større enn den "
+            f"hadde vært uten overlapp. Men den er **sentrert på riktig sted**. Den oransje er "
+            f"smalere og sentrert et helt annet sted.\n\n"
+            f"Multikollinearitet gir upresise estimater. Å kaste variabelen gir presise estimater "
+            f"av noe annet. Det første er en ulempe du kan rapportere; det andre er en feil "
+            f"leseren ikke kan se.\n\n"
+            f"Dra slideren helt ned til 0,30 og se at avstanden mellom fordelingene ikke "
+            f"endrer seg. VIF og skjevhet er uavhengige.", S_WARNING, "rgba(250,178,25,0.10)")
+    else:
+        _callout(
+            f"**Lav VIF ({v:.1f}) — og se hva som *ikke* forsvant.** Prediktorene overlapper lite "
+            f"og standardfeilen er bare {np.sqrt(v):.2f} ganger oppblåst, så den blå fordelingen "
+            f"er smal. Men avstanden mellom de to fordelingene er like stor som før.\n\n"
+            f"Det er poenget denne slideren er bygget for å vise: **VIF og utelatt-variabel-"
+            f"skjevhet er to uavhengige ting.** Slideren endrer bare hvor mye støy det er i "
+            f"antall rom, ikke hvor mange rom en kvadratmeter fører med seg — den indirekte "
+            f"veien er {aux:.4f} × {_kr(bA[2])} kr uansett hvor slideren står. Så selv uten "
+            f"antydning til kollinearitet koster det å kaste variabelen "
+            f"**{_kr(aux*bA[2])} kr/m²** i skjevhet. Kollinearitet gjør estimatet upresist; "
+            f"å kaste en variabel gjør det skjevt. De to problemene har ingenting med hverandre "
+            f"å gjøre.", S_GOOD, "rgba(12,163,12,0.08)")
+
+    _point(
+        "**Tre ting å ta med til eksamen.**\n\n"
+        "**1. VIF måler overlapp, ikke feil.** Den forteller deg hvor mye av denne prediktoren "
+        "som allerede ligger i de andre — og den eneste skaden er √VIF ganger bredere "
+        "standardfeil. Koeffisientene er fortsatt forventningsrette.\n\n"
+        "**2. Er begge signifikante, har kollineariteten allerede tapt.** Symptomet den advarer "
+        "mot er at du *ikke finner* effekter som er der. Fant du dem likevel — med den "
+        "oppblåste standardfeilen inkludert — er det ingenting å reparere.\n\n"
+        "**3. Kast bare når du ikke skal tolke koeffisienten.** Skru på n-slideren: flere "
+        "boliger gjør den blå fordelingen smalere uten å flytte den, mens den oransje "
+        "blir smalere rundt feil sted. Mer data løser multikollinearitet. Ingen "
+        "datamengde reparerer en utelatt variabel."
+    )
+
+
 SECTIONS = {
     "A · Utvalg og usikkerhet": [_sampling_distribution, _coverage, _bias_vs_noise],
     "B · Test og effektstørrelse": [_p_vs_d, _power, _multiple_comparisons],
-    "C · Regresjon og residualer": [_leverage, _residuals, _real_estate, _omitted_variable, _confounding, _endogeneity, _instrumental_variables, _influence],
+    "C · Regresjon og residualer": [_leverage, _residuals, _real_estate, _omitted_variable, _confounding, _endogeneity, _instrumental_variables, _influence, _multicollinearity],
     "D · Z-score og overtilpasning": [_zscore, _overfitting, _advanced_metrics],
     "E · Eksamensdrill": [_drill],
 }
@@ -1851,7 +2062,7 @@ SECTIONS = {
 _INTRO = {
     "A · Utvalg og usikkerhet": "Hvorfor et utvalg kan si noe om en populasjon, hva de 95 prosentene faktisk lover, og hvorfor mer data ikke redder et skjevt utvalg.",
     "B · Test og effektstørrelse": "Hvorfor en p-verdi og en effektstørrelse svarer på to forskjellige spørsmål, hva styrke er, og hvordan tjue sammenligninger produserer et funn av ingenting.",
-    "C · Regresjon og residualer": "Hvordan én observasjon kan vri hele linja, hva strukturen i et residualplott betyr, eiendomscaset der en rett linje er nesten riktig, hvorfor en koeffisient endrer seg når en variabel til kommer inn, sammenhengen som snur fortegn når du deler opp dataene, hva endogenitet gjør med estimatet og hva en instrumentvariabel redder — og til slutt forskjellen på en uteligger og et punkt som faktisk flytter linja.",
+    "C · Regresjon og residualer": "Hvordan én observasjon kan vri hele linja, hva strukturen i et residualplott betyr, eiendomscaset der en rett linje er nesten riktig, hvorfor en koeffisient endrer seg når en variabel til kommer inn, sammenhengen som snur fortegn når du deler opp dataene, hva endogenitet gjør med estimatet og hva en instrumentvariabel redder — forskjellen på en uteligger og et punkt som faktisk flytter linja, og til slutt hva VIF egentlig måler.",
     "D · Z-score og overtilpasning": "Z-scoren brukt begge veier, hvorfor et høyt R² kan bety at modellen er blitt verre, og hva justert R², F og standardfeilen faktisk forteller.",
     "E · Eksamensdrill": "Oppgavetypene fra aktivitetene, med nye tall hver gang og tilbakemelding på hvert steg underveis.",
 }

@@ -66390,6 +66390,224 @@ Only the first two justify deletion, and both need the reason written down. Repo
 > 🔬 Simulator **18 · Uteligger eller innflytelsesrik?** lets you drag a single point around and watch the standardised residual, the leverage and Cook's distance move independently — and watch the fitted line respond only when both are high.
 
 
+##### Case study 2: real estate pricing — Alpha Estates (advanced analysis)
+
+**Background.** Having understood basic linear regression, Alpha Estates is now keen on a deeper dive into their model's diagnostics to ensure robustness.
+
+**Advanced model evaluation.**
+
+- **Residual analysis.** Plots revealed some **heteroscedasticity**, which hinted that a transformation, like a **logarithmic scale**, might be more appropriate for house prices.
+- **Multi-collinearity check.** Though house size and number of rooms are **both significant**, a **high VIF** value indicated potential collinearity. The team decided to only use *house size* as a predictor, ensuring clearer interpretability.
+
+##### What is different about this case
+
+The two earlier real estate passages fitted a model. This one **audits a model that already exists** — and that is a distinct skill with its own marking criteria. Notice that nothing here is about whether the relationship is real. It is taken as read. The questions are narrower and harder: *are the standard errors trustworthy, and does each coefficient mean what the report claims it means?*
+
+Both diagnostics are run correctly. **One of the two conclusions does not follow from its diagnostic**, and it is worth working out which before reading on.
+
+To make the discussion concrete, the case is reproduced below on 420 simulated Alpha Estates listings — sizes 38–248 m², prices 7.1–54.6 MNOK, with a genuine per-room effect built in on top of a saturating size effect. The correlation between size and rooms is **0.953**, which is what a real housing dataset looks like.
+
+##### Diagnostic 1 — the heteroscedasticity, and why the log is the right call
+
+The case's first recommendation is correct, and the numbers say how correct:
+
+| | Level model `price ~ size` | Log model `log(price) ~ log(size)` |
+|---|---|---|
+| Residual sd, cheapest third | 1.76 MNOK | 0.133 |
+| Residual sd, dearest third | 3.42 MNOK | 0.138 |
+| **Ratio** | **1.95× wider** | **1.03× — flat** |
+| Breusch–Pagan | LM = 52.2, **p < 0.0001** | LM = 0.3, **p = 0.56** |
+
+The log does not merely reduce the problem. It **removes** it: a test that rejected constant variance overwhelmingly now cannot reject it at all.
+
+**And house prices are one of the cases where you could have predicted that before plotting anything.** Three properties of the variable point the same way. Prices are bounded below by zero and unbounded above, so the distribution is right-skewed. The drivers are multiplicative — a good postcode adds a *percentage*, not a fixed sum. And the uncertainty scales: nobody is surprised by a 400 000 NOK miss on a 40 MNOK penthouse, and everybody is surprised by the same miss on a 7 MNOK flat.
+
+> **Worth carrying into an exam.** When the outcome is a price, a revenue, a count, or anything else that cannot go negative and has a long right tail, the log transformation is the *first* thing to try, and you can justify it from the nature of the variable before you have seen a single residual.
+
+##### Diagnostic 2 — the VIF, and the conclusion that does not follow
+
+First, what VIF measures. For predictor *j*, run an auxiliary regression of *j* on all the other predictors and take its R²:
+
+> **VIF_j = 1 / (1 − R²_j)**
+
+It answers one question: **how much of this predictor is already contained in the others?** And it converts directly into the only thing it damages:
+
+> **Standard error inflation = √VIF**
+
+| VIF | R²_j | SE inflated by | Usual reading |
+|---|---|---|---|
+| 1 | 0 | 1.00× | Orthogonal — no overlap at all |
+| 2.5 | 0.60 | 1.58× | Unremarkable |
+| 5 | 0.80 | 2.24× | Worth a look |
+| **10** | **0.90** | **3.16×** | The conventional alarm threshold |
+| 25 | 0.96 | 5.00× | Severe |
+| 100 | 0.99 | 10.0× | The variables are near-duplicates |
+
+On the Alpha Estates data, **VIF = 10.89** for both predictors. The team is right that this is high — it clears the standard threshold. Their standard errors are **3.30× wider** than they would be under orthogonal predictors.
+
+##### The course's two definitions, and the word in them that is wrong
+
+The course states these separately, and they overlap almost entirely:
+
+> **Variance Inflation Factor (VIF)** is a measure of collinearity, which is a high correlation between independent variables in a regression model. A high VIF value indicates potential collinearity, which can make it difficult to interpret regression results. To reduce collinearity, you can **remove** highly correlated variables, **combine** variables, **transform** variables, or use a **regularisation** technique.
+
+> **Collinearity** is a high correlation between independent variables in a regression model. It can cause **inaccurate results and overfitting**. To reduce collinearity, you can remove correlated variables, combine variables, transform variables, or use a regularisation technique.
+
+Take the accurate parts first, because most of it is right. Collinearity *is* high correlation among the independent variables. VIF *is* how it is measured. And **"difficult to interpret regression results"** — the first definition's phrasing — is precisely the correct description of the damage.
+
+**Now the second definition, which contradicts the first.**
+
+> ⚠️ **"It can cause inaccurate results and overfitting" is wrong on both counts, and this is not a quibble** — it is the error that produces the wrong decision in the Alpha Estates case.
+
+**On "inaccurate results".** Collinearity does not bias anything. The Gauss–Markov theorem requires that no predictor be a *perfect* linear combination of the others; it does not require them to be uncorrelated. Under ordinary collinearity, OLS remains unbiased and remains the best linear unbiased estimator available. What grows is the **variance** of the estimate, by exactly the factor the name announces — the *variance inflation* factor.
+
+Accurate and precise are not synonyms, and the distinction is the whole subject here:
+
+| | Meaning | Does collinearity cause it? |
+|---|---|---|
+| **Inaccurate** (biased) | The estimate is centred on the wrong value | **No.** Still centred on the truth |
+| **Imprecise** (high variance) | The estimate is centred correctly but scattered widely | **Yes.** This is the entire effect |
+
+Simulator 19 shows the two as separate pictures: raise the correlation and the sampling distribution gets *wider* while staying centred on the true value. Drop the collinear variable and it gets *narrower* — and moves. **Only the second of those is inaccuracy, and it is caused by the remedy, not by the collinearity.**
+
+**On "overfitting".** Overfitting means a model has fitted the noise in the training data and will generalise badly, and it comes from having too much flexibility for the amount of data — too many parameters, too rich a functional form. Collinearity adds no parameters. Two highly correlated predictors have exactly the same number of degrees of freedom as two uncorrelated ones.
+
+There is a real phenomenon nearby, which is probably what the sentence is reaching for: with severe collinearity the individual coefficients are unstable across samples, so a model can produce wild-looking coefficients that do not reproduce. But note what stays put — the *fitted values*. On the Alpha Estates data the model with both predictors predicts **better** out of sample (2.596 MNOK RMSE) than the model with one (2.639 MNOK). If collinearity caused overfitting, the reduced model would have generalised better. It generalised worse.
+
+*A structural note on the source: the second definition restates the first's opening clause word for word, then adds a claim the first does not make. This is the same copy-paste pattern as the duplicated p-value paragraph earlier in this lesson — and here the duplication has introduced a contradiction rather than just repetition.*
+
+##### The four remedies the course lists — and which one the case should have used
+
+The remedy list is good, and it is worth noticing that **it already contains a better option than the one Alpha Estates chose**:
+
+| Remedy | What it means | On this case |
+|---|---|---|
+| **Remove** highly correlated variables | Drop one predictor | What the team did. Cheapest, most destructive: it is the only one of the four that changes what the surviving coefficient measures |
+| **Combine** variables | Replace two overlapping predictors with one derived quantity, or with an orthogonal reparametrisation | **The right answer here.** `rooms per 100 m²` drops VIF from 10.89 to **1.43** and keeps both effects — see the ranked table below |
+| **Transform** variables | Re-express predictors so they overlap less — logs, centring, differences | Partly helpful. Logging size cuts VIF from 10.89 to 7.36, because a log compresses the large sizes where the two variables track each other most tightly. Not enough alone |
+| **Regularisation** (ridge) | Shrink coefficients toward zero, accepting a little bias to buy a large reduction in variance | Sound, and the standard tool when there are many collinear predictors. Overkill for two, and it forfeits the clean interpretation the agency needs — a shrunk coefficient is no longer "kroner per m²" |
+
+**So the course supplies the answer and the case ignores it.** "Combine variables" is the second item on a list of four, and it delivers everything the team wanted from removal — a low VIF, a tight standard error, a clean sentence to tell a client — without the 51 108 NOK/m² of bias that removal introduced.
+
+
+##### Back to the case
+
+**Now the part the case gets wrong.** Here is the fitted model they audited:
+
+| Predictor | Coefficient | Std. error | t | p |
+|---|---|---|---|---|
+| Size (m²) | 139 145 | 12 728 | 10.93 | < 0.0001 |
+| Rooms | 1 426 323 | 338 509 | 4.21 | < 0.0001 |
+
+Read the table against the diagnostic. Multicollinearity has exactly one consequence: **it inflates standard errors, which makes coefficients hard to detect.** It does not bias them. It does not make them wrong. It makes them *imprecise*.
+
+So a high VIF is a warning that you **may fail to find effects that are really there**. But Alpha Estates found them both anyway — at p < 0.0001, with the standard errors already carrying the full 3.30× penalty.
+
+> **The collinearity was survived, not suffered.** Both effects cleared significance *despite* the inflated errors. Removing a variable to fix a variance problem that has demonstrably not cost you anything is a remedy applied to a symptom that never appeared.
+
+*Two notes on the source's wording here.* First, **"a high VIF value indicated potential collinearity"** understates it in one direction and overstates it in another: a high VIF is not a hint of *potential* collinearity, it is a **measurement of actual** collinearity — but a measurement of a condition, not of a problem. Second, and more substantively, the sentence is built as a concession — *"**Though** both are significant, VIF was high"* — which frames the significance as something to be overcome. The logic runs the other way. That both are significant is precisely the evidence that the high VIF did not matter here. The connective should be *"and", not "though"*.
+
+##### What dropping the variable actually did
+
+The case says the decision ensured "clearer interpretability". Compare the two models:
+
+| | With rooms | Rooms dropped |
+|---|---|---|
+| Size coefficient | 139 145 NOK/m² | **190 252 NOK/m²** |
+| Its standard error | 12 728 | 3 933 (**−69%**) |
+| Adjusted R² | 0.8540 | **0.8481** |
+| Out-of-sample RMSE (5-fold) | 2.596 MNOK | **2.639 MNOK** |
+
+The standard error did fall by 69%, exactly as the VIF predicted. But look at the coefficient: it moved by **+36.7%**. The model did not become a more precise estimate of the same quantity. It became a precise estimate of **a different quantity**.
+
+**And the arithmetic is exact.** Regress rooms on size and you find each extra square metre brings **0.0358** of a room with it. Then:
+
+| | |
+|---|---|
+| Direct effect of size, rooms held fixed | 139 145 NOK/m² |
+| Indirect effect: 0.0358 rooms/m² × 1 426 323 NOK/room | **+ 51 108** NOK/m² |
+| **Total** | **190 252 NOK/m²** |
+| Size coefficient with rooms dropped | **190 252 NOK/m²** |
+
+Not approximately. **To the krone.** The same identity holds in the log model: an elasticity of 0.6601 holding rooms fixed, plus 3.5136 rooms per log-unit of size × 0.0753, gives 0.9248 — which is the elasticity the log model reports when rooms is dropped.
+
+##### The collision the case does not mention
+
+That identity should look familiar. It is the **omitted variable bias formula** from Assumption 2, two sections above: *bias = (effect of the omitted variable on y) × (its association with the included variable)*.
+
+Which means the two diagnostics in this case point in **opposite directions**:
+
+| Diagnostic | What it says about rooms |
+|---|---|
+| **VIF = 10.89** | Rooms overlaps too much with size — **drop it** |
+| **Exogeneity (Assumption 2)** | Rooms affects price and correlates with size — **omitting it biases the size coefficient** |
+
+Both are correct. They cannot both be acted on. **The case's remedy for the first is precisely the violation the lesson warned about under the second**, and the text passes over this without a word — which is why "ensuring clearer interpretability" is the phrase to challenge. Interpretability did not improve. The interpretation *changed*, silently, from one sentence to another:
+
+- **With rooms:** "An extra square metre of floor area, in a flat with the same number of rooms, is worth about 139 000 NOK."
+- **Without rooms:** "An extra square metre, together with the 0.036 of a room it typically comes with, is worth about 190 000 NOK."
+
+Both sentences are true. Only one of them is what the report will be read as saying.
+
+##### The business consequence, in one number
+
+A client asks Alpha Estates what a **20 m² extension** would add to their home.
+
+| Model | Answer |
+|---|---|
+| Rooms dropped | **3.81 MNOK** |
+| Rooms kept, extension adds no new room (an open-plan enlargement) | **2.78 MNOK** |
+| Rooms kept, extension adds the 0.72 of a room that 20 m² usually brings | **3.81 MNOK** |
+
+The gap is **just over 1 MNOK on a single valuation** — and notice that the reduced model cannot produce the middle row at all. It has no way to distinguish "20 m² that adds a bedroom" from "20 m² that makes the living room bigger", because it deleted the variable that carried the difference.
+
+> **This is the deepest point in the case.** Neither coefficient is wrong. They answer different questions, and the modelling decision quietly chose which question the agency is able to ask.
+
+##### So what should Alpha Estates have done?
+
+Three independent signals all point the same way, and none of them is the VIF:
+
+| Signal | Value | What it says |
+|---|---|---|
+| Both t-statistics | 10.93 and 4.21 | The collinearity did not hide either effect |
+| Adjusted R² | 0.8540 → 0.8481 when rooms is dropped | It **fell**. Adjusted R² already charges for the extra parameter, so a fall means rooms was paying its way |
+| Out-of-sample RMSE | 2.596 → 2.639 MNOK | Prediction got **worse** by about 43 000 NOK per valuation |
+
+Ranked options, best first:
+
+| Option | What it does | Verdict |
+|---|---|---|
+| **Keep both and report the VIF** | Accepts wider standard errors in exchange for coefficients that mean what they say | **The right answer here.** Both effects are significant already; the honest move is to state that the two predictors overlap and that the individual coefficients are consequently less precise |
+| **Reparametrise** | Replace `rooms` with **rooms per 100 m²** — how *chopped up* the space is, which is the part of "rooms" that is not already floor area | **The elegant answer.** VIF collapses from 10.89 to **1.43**; both terms stay significant (t = 41.95 and 4.60); out-of-sample RMSE recovers to 2.592 MNOK. And it reads well: an extra room per 100 m² is worth about **+6.2%** |
+| **Collect more listings** | VIF inflates variance; sample size deflates it | Works, slowly. The two effects are separable in principle — there just is not much independent variation to work with |
+| **Drop rooms** | What the team did | Defensible **only** if the goal is pure prediction from listing data and nobody will read the size coefficient as a causal statement. Neither condition is stated in the case |
+
+##### When dropping the collinear variable *is* right
+
+To be fair to the team, the move is not always wrong, and an exam answer that condemns it outright is as incomplete as one that accepts it. Drop a collinear predictor when:
+
+- **The two variables are near-duplicates by construction** — size in m² and size in ft², or revenue and revenue-including-VAT. Here there is nothing to separate and VIF is enormous (often > 50)
+- **The retained coefficient is not going to be interpreted at all**, because the model exists only to produce fitted values
+- **The dropped variable is the badly measured one.** Collinearity plus measurement error is a genuinely bad combination, and the noisier variable contributes little but variance
+- **Theory says it does not belong.** A variable with no business reason to be in the model does not earn its place by being significant
+
+None of these describes number of rooms in a housing model. Rooms is well measured, distinct from floor area in a way buyers care about, and central to how anyone actually shops for a home.
+
+##### The two diagnostics together
+
+Running both remedies gets Alpha Estates to `log(price) ~ log(size)`, with an elasticity of **0.925**. Worth noticing what happened on the way: the elasticity holding rooms constant is **0.660**, and the reported 0.925 is that plus the room effect the transformation swept in. The earlier boligpriser case quoted an elasticity near 0.60 — that is the *holding-rooms-constant* kind, and the difference between the two numbers is the whole subject of this section.
+
+**The summary an evaluator should be able to give:**
+
+1. The heteroscedasticity finding is right, the log fixes it completely, and the choice was defensible before any plot was drawn
+2. The VIF finding is right as a measurement and wrong as a decision, because the symptom it warns about — undetectable effects — did not occur
+3. The remedy created an omitted variable bias of **+51 108 NOK/m²**, which is 27% of the coefficient now being reported
+4. Adjusted R² and out-of-sample error both got worse, and both were available to the team before they decided
+5. A reparametrisation would have delivered everything the team wanted from the drop, and kept what it cost them
+
+> 🔬 Simulator **19 · Multikollinearitet og VIF** in the Visual Lab runs this case. Turn the correlation between the two predictors up and watch the standard errors inflate by exactly √VIF while the coefficients stay unbiased — then drop the second predictor and watch the retained coefficient jump to direct + indirect, with the identity displayed live.
+
+
 #### Result table analysis with linear regression
 
 A simple linear regression models one outcome variable from one predictor. Reading its result table is a named outcome of this course. The multivariate case — several predictors at once, and what that does to a coefficient — was covered under diving deeper above; this section takes the components of the table one at a time.
@@ -68226,6 +68444,46 @@ CURATED_FLASHCARD_SETS = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "front": "What does VIF measure, what is the formula, and what is the only thing collinearity damages?",
+            "back": "VIF is the variance inflation factor, and for predictor j it is 1 divided by (1 minus R squared j), where R squared j comes from an auxiliary regression of predictor j on all the other predictors. It answers one question: how much of this predictor is already contained in the others. It converts directly into the only quantity it damages, because the standard error is inflated by the square root of VIF. A VIF of 1 means orthogonal predictors and no inflation, 5 means R squared of 0.80 and 2.24 times inflation, 10 is the conventional alarm threshold at R squared 0.90 and 3.16 times inflation, and 100 means the variables are near-duplicates with 10 times inflation. Crucially collinearity does not bias anything. Gauss-Markov requires only that no predictor be a perfect linear combination of the others, not that they be uncorrelated, so OLS stays unbiased and stays the best linear unbiased estimator. What grows is the variance, which is exactly what the name says.",
+            "tags": ["vif", "multicollinearity", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "The course says collinearity causes inaccurate results and overfitting. Why is that wrong on both counts?",
+            "back": "On inaccurate: accurate and precise are not synonyms. Inaccurate means biased, that is centred on the wrong value, and collinearity does not cause that at all; the estimate stays centred on the truth. Imprecise means centred correctly but scattered widely, and that is the entire effect of collinearity. Raise the correlation and the sampling distribution gets wider while staying in the right place. On overfitting: overfitting comes from too much flexibility for the amount of data, too many parameters or too rich a functional form, and collinearity adds no parameters, since two highly correlated predictors have the same degrees of freedom as two uncorrelated ones. The nearby real phenomenon is that severe collinearity makes individual coefficients unstable across samples, but the fitted values stay put. On the Alpha Estates data the model keeping both predictors predicts better out of sample, 2.596 against 2.639 MNOK, so if collinearity caused overfitting the reduced model would have generalised better, and it generalised worse. The first definition's phrase, difficult to interpret regression results, is the correct description.",
+            "tags": ["collinearity", "source critique", "bias vs variance", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "Alpha Estates found both size and rooms significant but a high VIF, so dropped rooms. What is wrong with that decision?",
+            "back": "Multicollinearity has exactly one consequence, inflating standard errors so that effects become hard to detect. It is a warning that you may fail to find effects that are really there. But Alpha Estates found both anyway, at p below 0.0001, with the standard errors already carrying the full 3.30 times penalty from a VIF of 10.89. The collinearity was survived, not suffered, so the remedy addresses a symptom that never appeared. Three independent signals confirm it, and none is the VIF: both t-statistics were large at 10.93 and 4.21; adjusted R squared fell from 0.8540 to 0.8481 when rooms was dropped, and adjusted R squared already charges for the extra parameter so a fall means rooms was paying its way; and out-of-sample RMSE got worse, from 2.596 to 2.639 MNOK, about 43 000 NOK per valuation. The course's own remedy list offers a better option than removal, namely combining variables.",
+            "tags": ["case study", "alpha estates", "vif", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "Show that dropping a collinear predictor changes what the surviving coefficient measures, exactly.",
+            "back": "On the Alpha Estates data the size coefficient is 139 145 NOK per square metre with rooms in the model and 190 252 with rooms dropped, a jump of 36.7 percent, while its standard error falls 69 percent. The model did not become a more precise estimate of the same thing; it became a precise estimate of a different thing. The arithmetic is exact. Regress rooms on size and each extra square metre brings 0.0358 of a room. Direct effect 139 145, plus indirect 0.0358 times 1 426 323 equals 51 108, gives 190 252, which is the dropped-rooms coefficient to the krone. The same identity holds in logs: elasticity 0.6601 holding rooms fixed, plus 3.5136 rooms per log-unit of size times 0.0753, gives 0.9248, the elasticity reported when rooms is dropped. That identity is the omitted variable bias formula, so the remedy for collinearity is precisely the violation of the exogeneity assumption.",
+            "tags": ["omitted variable bias", "multicollinearity", "identity", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "Why do the VIF diagnostic and the exogeneity assumption pull in opposite directions, and how do you resolve it?",
+            "back": "VIF says rooms overlaps too much with size, so drop it. Exogeneity says rooms affects price and correlates with size, so omitting it biases the size coefficient. Both are correct and they cannot both be acted on. The resolution is to notice that neither coefficient is wrong; they answer different questions. With rooms the sentence is that an extra square metre in a flat with the same number of rooms is worth about 139 000 NOK. Without rooms it is that an extra square metre, together with the 0.036 of a room it typically comes with, is worth about 190 000 NOK. Concretely, asked what a 20 square metre extension adds, the reduced model says 3.81 MNOK, while the full model says 2.78 MNOK for an open-plan enlargement adding no room and 3.81 MNOK if it adds the 0.72 of a room that 20 square metres usually brings. The gap is just over 1 MNOK on one valuation, and the reduced model cannot produce the middle answer at all, because it deleted the variable carrying the difference.",
+            "tags": ["multicollinearity", "exogeneity", "interpretation", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "What are the four remedies for collinearity, and which should Alpha Estates have used?",
+            "back": "Remove highly correlated variables, combine variables, transform variables, or use a regularisation technique. Removing is cheapest and most destructive, and is the only one of the four that changes what the surviving coefficient measures. Combining is the right answer for this case: replacing rooms with rooms per 100 square metres, which is how chopped up the space is, that is the part of rooms not already floor area, drops VIF from 10.89 to 1.43, keeps both terms significant at t of 41.95 and 4.60, recovers out-of-sample RMSE to 2.592 MNOK, and reads well, since an extra room per 100 square metres is worth about 6.2 percent. Transforming helps partly, since logging size cuts VIF from 10.89 to 7.36 because a log compresses the large sizes where the two variables track each other most tightly, but it is not enough alone. Regularisation such as ridge is sound and standard when there are many collinear predictors, but it is overkill for two and forfeits the interpretation, since a shrunk coefficient is no longer kroner per square metre.",
+            "tags": ["multicollinearity", "remedies", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "When is dropping a collinear predictor actually the right move?",
+            "back": "Four cases. When the two variables are near-duplicates by construction, such as size in square metres and size in square feet, or revenue and revenue including VAT, where there is nothing to separate and VIF is often above 50. When the retained coefficient will not be interpreted at all, because the model exists only to produce fitted values. When the dropped variable is the badly measured one, since collinearity plus measurement error is a genuinely bad combination and the noisier variable contributes little but variance. And when theory says it does not belong, because a variable with no business reason to be in the model does not earn its place by being significant. None of these describes number of rooms in a housing model, which is well measured, distinct from floor area in a way buyers care about, and central to how anyone shops for a home.",
+            "tags": ["multicollinearity", "judgement", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "Why is a log transformation the right first choice for house prices, and how well does it work on the Alpha Estates data?",
+            "back": "Three properties of the variable point the same way before any residual is plotted. Prices are bounded below by zero and unbounded above, so the distribution is right-skewed. The drivers are multiplicative, since a good postcode adds a percentage rather than a fixed sum. And the uncertainty scales, since nobody is surprised by a 400 000 NOK miss on a 40 MNOK penthouse and everybody is surprised by the same miss on a 7 MNOK flat. On the data it works completely rather than partially: residual standard deviation runs 1.76 MNOK on the cheapest third against 3.42 on the dearest, a ratio of 1.95, and Breusch-Pagan rejects constant variance with LM of 52.2 and p below 0.0001. After logging, the ratio is 1.03 and Breusch-Pagan gives LM of 0.3 with p of 0.56. Generalise it: when the outcome is a price, a revenue, a count, or anything that cannot go negative and has a long right tail, try the log first and justify it from the nature of the variable.",
+            "tags": ["heteroscedasticity", "log transformation", "lesson 1.2", "evo"]
+        },
         {
             "front": "The e-commerce case: a funnel in the residuals against predicted sales. Diagnose it and rank the fixes.",
             "back": "The funnel opens toward high predicted sales, which is the ordinary direction for commercial data and says the noise is proportional rather than additive: a quiet day at 500 visitors varies by tens of sales while Black Friday at 6 000 varies by hundreds, and the percentage variation may be identical. Simulated, the residual standard deviation is 163 on low-traffic days against 777 on high-traffic days, 4.8 times wider. What breaks is not the coefficients, which stay unbiased, but every standard error and therefore every t, p and interval, and the classical formula understates them, so the tests reject too often. Ranking the fixes: log the outcome first, since it converts proportional variation into constant variation, cutting the spread ratio from 4.8 to 1.25 and yielding an elasticity of 0.78, meaning 10 percent more visitors gives about 7.8 percent more sales. Robust standard errors are the cheapest correct answer when only the inference needs fixing. Weighted regression is correct and more work, requiring the variance to be modelled. And the case leaves one thing implicit: if promotions and holidays cause the extra volatility, they are a missing variable, so adding a promotion indicator is a better model regardless and may remove the heteroscedasticity as a side effect.",
@@ -70382,6 +70640,20 @@ CURATED_EXAM_QUESTION_BANK = {
         {
             "type": "skills",
             "source": "core_curated",
+            "question": "An estate agency reports that house size and number of rooms are both significant predictors of price, but that the VIF is 10.9, and on that basis it drops number of rooms from the model. Evaluate the decision.",
+            "answer": "The diagnostic is correctly measured and the conclusion does not follow from it. VIF is 1 divided by (1 minus R squared) from the auxiliary regression of one predictor on the others, and 10.9 corresponds to an R squared of about 0.91, so the two predictors do overlap heavily and the standard errors are inflated by the square root of 10.9, about 3.3 times. But inflated standard errors have exactly one consequence: they make effects hard to detect. Collinearity does not bias coefficients, because Gauss-Markov requires only that no predictor be a perfect linear combination of the others. So a high VIF is a warning that real effects may go undetected, and here both were detected anyway, at p below 0.0001, with the full 3.3 times penalty already in the standard errors. The symptom the diagnostic warns about did not occur. Three further signals confirm this. Adjusted R squared falls when rooms is dropped, from 0.8540 to 0.8481, and since adjusted R squared already charges for the extra parameter, a fall means the variable was paying its way. Out-of-sample RMSE rises from 2.596 to 2.639 MNOK, so prediction got worse by about 43 000 NOK per valuation. And the size coefficient itself moves 36.7 percent, from 139 145 to 190 252 NOK per square metre, which shows the model is no longer estimating the same quantity. That last move is exactly the omitted variable bias formula: the direct effect of 139 145 plus the indirect path of 0.0358 rooms per square metre times 1 426 323 NOK per room equals 190 252 to the krone. So the remedy for collinearity has created the endogeneity that the exogeneity assumption warns against, and the two diagnostics pull in opposite directions. The recommendation is to keep both predictors and report the VIF, accepting wider standard errors in exchange for coefficients that mean what they say, or better, to combine the variables by replacing rooms with rooms per 100 square metres, which drops VIF to 1.43, keeps both terms significant, and restores out-of-sample accuracy. Dropping is defensible only if the model exists purely to generate fitted values and nobody will read the size coefficient as a causal statement, and neither condition was stated.",
+            "tags": ["multicollinearity", "vif", "omitted variable bias", "lesson 1.2", "evo"]
+        },
+        {
+            "type": "skills",
+            "source": "core_curated",
+            "question": "A client asks an estate agency what a 20 square metre extension would add to their home. The agency's model, which uses floor area as its only predictor, says 3.81 MNOK. What is wrong with giving that figure as the answer, and what should the agency say instead?",
+            "answer": "The figure is not wrong, but it answers a question the client may not be asking, and the model cannot tell the difference. Because number of rooms was dropped from the model, the floor-area coefficient absorbed the room effect: it now measures the value of an extra square metre together with the 0.036 of a room that a square metre typically brings with it, rather than the value of floor area with the room count held constant. On the underlying data the two quantities are 190 252 and 139 145 NOK per square metre. So for an extension that adds a bedroom, 3.81 MNOK is about right, since that extension is typical of the ones in the data. For an open-plan enlargement that adds no room, the correct figure is 2.78 MNOK. The gap is just over 1 MNOK on a single valuation, and the reduced model cannot produce the second figure at all, because it deleted the variable that carried the distinction. What the agency should say is that the answer depends on whether the extension adds a room, give both figures, and state which model assumption each rests on. The general lesson is that a modelling decision made on statistical grounds, in this case a high VIF, quietly determined which business questions the agency is able to answer, and nobody reading the results table would see that.",
+            "tags": ["interpretation", "multicollinearity", "business consequence", "lesson 1.2", "evo"]
+        },
+        {
+            "type": "skills",
+            "source": "core_curated",
             "question": "A satisfaction survey reports 40 percent satisfied with a margin of error of plus or minus 6.9 points from 200 responses to 1000 invitations, and the team proposes raising the sample to 4000 invitations to tighten the result. Evaluate the proposal.",
             "answer": "The proposal treats a systematic problem as a random one, so it will buy precision the study does not need and leave the error that is actually driving the number untouched. The 20 percent response rate is the finding here. Non-response bias arises when responders differ systematically from non-responders, and dissatisfaction is far more motivating than contentment, so the responding fifth is likely to skew negative. The arithmetic shows the scale: if the 800 who did not answer were 70 percent satisfied, true satisfaction is 0.20 times 40 plus 0.80 times 70, which is 64 percent. The survey reports 40 plus or minus 6.9 while the truth is 64, so the bias is 24 points against a stated margin of 7, and nothing in the survey's output reveals it. Quadrupling the invitations at the same response rate yields 800 responses and a margin of about plus or minus 3.5 points, which means the same 24-point error reported with twice the confidence. That is the low-accuracy, high-precision cell: tight, confident and wrong. What I would do instead is attack the response rate, since every point of it removes bias where sample size only removes noise; compare responders against non-responders on whatever administrative data exists, such as ticket type, route or usage frequency, to measure how they differ; follow up a random subsample of non-responders intensively, because a hundred hard-won responses from that group tell you more about the bias than three thousand more of the easy kind; and weight the results by any characteristic where responders are shown to be unrepresentative. I would also insist the response rate is reported next to the sample size in every version of the write-up. Exam use: whenever a question offers a larger sample as the fix, first establish whether the error is random or systematic, because more data fixes only the first."
         },
@@ -70696,6 +70968,24 @@ CURATED_PRACTICE_QUESTION_BANK = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "type": "skills",
+            "question": "A colleague says collinearity causes inaccurate results and overfitting. Correct them.",
+            "answer": "Both halves are wrong, and the first is the one that leads to bad decisions. Inaccurate means biased, that is centred on the wrong value, and collinearity does not cause that; the estimate stays centred on the truth. What it causes is imprecision, meaning the estimate is centred correctly but scattered widely, and that is what the name variance inflation factor says. Gauss-Markov requires only that no predictor be a perfect linear combination of the others, not that predictors be uncorrelated, so OLS stays unbiased and stays the best linear unbiased estimator under ordinary collinearity. On overfitting: that comes from too much flexibility for the amount of data, and collinearity adds no parameters, since two correlated predictors have the same degrees of freedom as two uncorrelated ones. The nearby real phenomenon is that severe collinearity makes individual coefficients unstable across samples, but the fitted values are stable. A concrete check: on a housing dataset the model keeping both collinear predictors predicted better out of sample than the model dropping one, 2.596 against 2.639 MNOK. If collinearity caused overfitting, the reduced model would have generalised better. The accurate phrase is that collinearity makes regression results difficult to interpret.",
+            "tags": ["collinearity", "bias vs variance", "lesson 1.2", "evo"]
+        },
+        {
+            "type": "skills",
+            "question": "Your model has two predictors with a VIF of 12. List the options, and say what determines which one you pick.",
+            "answer": "Four remedies, plus one the textbooks often omit. Remove one predictor: cheapest and most destructive, because it is the only option that changes what the surviving coefficient measures, turning a held-constant effect into a total effect along the correlated path. Combine the variables into a derived quantity or an orthogonal reparametrisation, for instance replacing number of rooms with rooms per 100 square metres, which strips out the part already captured by floor area; on a housing dataset this took VIF from 10.89 to 1.43 while keeping both terms significant. Transform the variables, since logs and centring often reduce overlap, though logging cut that same VIF only to 7.36. Use regularisation such as ridge, which accepts a little bias to buy a large variance reduction, sound when there are many collinear predictors but overkill for two and destructive of interpretation, since a shrunk coefficient is no longer in the original units. And the fifth: collect more data, because VIF inflates variance and sample size deflates it. What determines the pick is whether anyone will interpret the individual coefficients. If the model exists only to produce fitted values, dropping is harmless. If a coefficient will be quoted as a per-unit effect, dropping is the one option that silently changes its meaning, and combining is usually the best trade.",
+            "tags": ["multicollinearity", "remedies", "lesson 1.2", "evo"]
+        },
+        {
+            "type": "skills",
+            "question": "How would you check whether logging the outcome actually fixed heteroscedasticity, rather than just assuming it did?",
+            "answer": "Two checks, one descriptive and one formal, and report both. Descriptively, split the observations by predicted value into thirds and compare the residual standard deviation in the lowest and highest third. On a housing dataset in levels these were 1.76 and 3.42 MNOK, a ratio of 1.95, and after logging they were 0.133 and 0.138, a ratio of 1.03. Formally, run a Breusch-Pagan test, which regresses the squared residuals on the predictors and tests whether they explain anything; the same data gave LM of 52.2 with p below 0.0001 in levels and LM of 0.3 with p of 0.56 in logs. The pairing matters, because the ratio says how big the problem is and the test says whether it is distinguishable from noise, and a large sample can make a trivial ratio significant while a small one can leave a serious ratio undetected. Also plot the residuals against fitted values both ways, since the test will not tell you if what you actually have is curvature rather than a funnel. And note that the log succeeding here was predictable in advance, because prices are bounded below by zero, right-skewed, and driven multiplicatively.",
+            "tags": ["heteroscedasticity", "diagnostics", "breusch-pagan", "lesson 1.2", "evo"]
+        },
         {
             "type": "skills",
             "question": "A colleague finds a data point with a standardised residual of 3.8 and proposes deleting it before rerunning the regression. What would you say?",
