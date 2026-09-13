@@ -64816,6 +64816,8 @@ The knowledge outcome for this lesson is precise: the candidate "has knowledge o
 
 The skills outcome that goes with it is the one about **mastering relevant tools and techniques used to critically assess and analyse data models**, which is what "critical tools" in the lesson title refers to.
 
+> 📋 **Coverage map.** `EVO_1.2_Coverage.md` lists every section of this lesson in order, together with what is not yet covered. It is worth a glance before adding new course material, to see what is already here.
+
 #### Advanced result table analysis in data analysis
 
 Diving deeper into data analysis, understanding the particulars of result tables becomes critical. These tables don't merely present data; they house significant insights, demand careful interpretation, and interact extensively with statistical inferences. Alongside, specific critical tools enhance the depth and precision of this analysis.
