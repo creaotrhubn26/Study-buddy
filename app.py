@@ -65240,6 +65240,8 @@ The raw coefficients suggest discount depth is four times as powerful. The stand
 
 Result tables might present **residuals** in models like linear regression. Analysing these residuals is crucial in determining **model fit** and pinpointing potential **anomalies or outliers**.
 
+*The course returns to residuals later with a dedicated section, which takes heteroscedasticity in depth. This one covers the patterns and what each means.*
+
 A **residual** is simply what the model got wrong for one observation:
 
 > **residual = actual value − predicted value**
@@ -66118,13 +66120,13 @@ A tempting shortcut, and it is wrong — though for a reason worth understanding
 
 **It breaks the moment predictors overlap**, because collinearity inflates one standard error and not another. A model with three predictors, where x₁ has the largest true effect but shares most of its variation with a control:
 
-| Predictor | Coefficient | SE | \|t\| | Standardised β | VIF | True effect |
+| Predictor | Coefficient | SE | abs(t) | Standardised β | VIF | True effect |
 |---|---|---|---|---|---|---|
 | **x₁** | 3.91 | 0.772 | **5.07** | **0.648** | 32.3 | **5.0** |
 | **x₂** | 2.21 | 0.140 | **15.81** | 0.357 | 1.0 | 2.0 |
 | x₃ | 1.09 | 0.773 | 1.41 | 0.180 | 32.3 | 0.0 |
 
-> **Ranked by |t|:** x₂, then x₁
+> **Ranked by abs(t):** x₂, then x₁
 > **Ranked by standardised β:** x₁, then x₂
 > **The truth:** x₁ has more than twice x₂'s effect
 
@@ -66153,6 +66155,101 @@ Three verbs again, and they map onto the metrics cleanly:
 **And the word carrying the most weight in that sentence is "robust".** None of these metrics makes a model robust — they *reveal* whether it is. A model can post an excellent adjusted R², a towering F and t-statistics in the double digits, and still be worthless because a confounder was omitted. The metrics measure the fit; the assumptions decide whether the fit means anything.
 
 That is the order to read a result table in: **assumptions first, then the metrics.**
+
+
+#### Residual analysis
+
+Beyond the model itself, it is crucial to understand **residuals** for a more holistic analysis.
+
+##### Patterns in residuals
+
+When analysing residuals — the differences between **observed and predicted values** — it is essential to look for **randomness**. In a well-specified model, residuals should appear random and **not exhibit clear patterns** when plotted against predicted values **or any independent variable**.
+
+**That last clause is the one most often skipped.** The standard diagnostic plots residuals against the *fitted values*, which catches non-linearity and unequal spread in the outcome. But a pattern can hide in one predictor and be invisible there:
+
+| Plot | What it catches |
+|---|---|
+| Residuals vs **fitted values** | The general shape problem — curvature, fanning |
+| Residuals vs **each predictor separately** | A curve or fan in *one* variable, averaged away in the fitted plot |
+| Residuals vs **time or row order** | Autocorrelation, drift, a process that changed mid-dataset |
+| Residuals vs a variable **not in the model** | The strongest omitted-variable signal you can actually get |
+
+That last row is worth its own note. Residuals are orthogonal to everything *in* the model by construction — but not to anything left out. **Plotting residuals against a variable you excluded is one of the few practical checks on the exogeneity assumption**, and it costs one line of code.
+
+*The catalogue of patterns — the arc, the fan, the wave, the outliers — with what each means and what to do, is in the diving-deeper section above and is exercised in Visual Lab simulator 8.*
+
+##### Heteroscedasticity
+
+**What to watch out for.** If the spread of residuals is **inconsistent across all levels of your independent variables**, there is heteroscedasticity. It violates the assumption of **homoscedasticity**, and its consequences include **inefficient, though unbiased, parameter estimates**.
+
+| | |
+|---|---|
+| **Definition** | The assumption asserts that residuals exhibit **constant variance** across all levels of the independent variables — the spread should be fairly uniform throughout the range |
+| **Implications** | Heteroscedasticity can lead to **inefficient coefficient estimates** and can **bias tests of significance** |
+
+##### "Inefficient, though unbiased" — the most precise phrase in the section
+
+Those three words are doing real technical work, and separating them is what an evaluation answer needs.
+
+| Term | Meaning |
+|---|---|
+| **Unbiased** | The estimate is still centred on the truth. Repeat the study many times and the average lands on the right value |
+| **Inefficient** | It is not the *tightest* estimator available. Another method would get closer, on average, from the same data |
+
+The theoretical hook is the **Gauss–Markov theorem**: ordinary least squares is the best linear unbiased estimator — the *minimum-variance* one — **only when the errors are homoscedastic.** Break that condition and OLS stays unbiased but loses its claim to being best. There is a better estimator, and you are leaving precision on the table by not using it.
+
+**Demonstrated.** 4 000 simulated datasets where the error grows with x, true slope 2.0:
+
+| | |
+|---|---|
+| Mean OLS estimate | **1.9999** — unbiased, exactly as the text says |
+| Actual variability of the OLS estimator | 0.1055 |
+| Actual variability of **weighted least squares** | **0.0699** — **34% tighter** from the same data |
+
+That is what "inefficient" costs: a third of the precision, thrown away.
+
+##### "Can bias tests of significance" — and in which direction
+
+The second implication is more dangerous, because it is invisible in the output. Note the careful wording: heteroscedasticity does **not** bias the coefficients, it biases the **tests**. The mechanism is that the classical standard-error formula assumes one constant error variance, and when that is false the formula computes the wrong number.
+
+**Demonstrated on the same simulation:**
+
+| | |
+|---|---|
+| True variability of the estimate | 0.1055 |
+| Mean standard error the software **reported** | **0.0982** — understated by 7% |
+| Mean **robust (Huber–White)** standard error | 0.1044 — about right |
+
+And the consequence, measured where the null hypothesis is actually true:
+
+| Standard errors used | False-positive rate at α = 0.05 |
+|---|---|
+| Classical | **6.8%** — should be 5% |
+| Robust | 5.4% |
+
+**The tests reject too often.** Understated standard errors make t too large, p too small and intervals too narrow, so a model with heteroscedasticity finds effects that are not there — at a rate you did not choose and cannot see. In this example the inflation is modest; with stronger heteroscedasticity it grows.
+
+##### Detecting and fixing it
+
+| Step | |
+|---|---|
+| **Look** | Residuals against fitted values, and against each predictor. A fan or cone is the signature |
+| **Test** | **Breusch–Pagan** or **White's test**. Both regress the squared residuals on the predictors — if the predictors explain the *size* of the errors, the variance is not constant |
+| **Fix — robust standard errors** | Huber–White. Keeps the OLS coefficients, replaces the standard errors with ones that survive unequal variance. The default choice, and often reported by preference regardless |
+| **Fix — transform the outcome** | A log often stabilises variance and fixes curvature at the same time, which is why it is the first thing to try on money and counts |
+| **Fix — weighted least squares** | Weights each observation by 1/variance. Recovers the lost efficiency, but requires knowing or modelling the variance |
+
+**Which to choose.** Robust standard errors if you mainly need correct inference — they are cheap and safe. Weighted least squares if precision genuinely matters and you can model the variance. And a transformation if the heteroscedasticity is a symptom of the outcome being multiplicative rather than additive, which for revenue, prices and counts it usually is.
+
+##### Why heteroscedasticity is so common in business data
+
+It is not an exotic failure. It is the normal state of most commercial measurements, for a structural reason:
+
+> **Larger things vary more.** A shop turning over NOK 50 000 a month varies by a few thousand; a shop turning over NOK 5 million varies by hundreds of thousands. The *proportional* variation may be identical — and in absolute terms, which is what the residual measures, the spread grows with the level.
+
+That is why revenue, spend, house prices, order values and counts nearly always fan out, and why **logging the outcome is the standard first move**: it converts proportional variation into constant variation, which is exactly what the assumption requires.
+
+> 🔬 Simulator **8 · Å lese residualplottet** has "Vifte — heteroskedastisitet" as one of its four settings, and the callout there states precisely which part of the output it invalidates.
 
 
 #### Result table analysis with linear regression
@@ -67991,6 +68088,31 @@ CURATED_FLASHCARD_SETS = {
         }
     ],
     "FI1BBEO10": [
+        {
+            "front": "Residuals should show no pattern against what, exactly? Name the four plots worth making.",
+            "back": "Against predicted values or any independent variable. The clause about independent variables is the one most often skipped. Four plots: residuals against fitted values catches the general shape problem, meaning curvature or fanning; residuals against each predictor separately catches a curve or fan in one variable that gets averaged away in the fitted plot; residuals against time or row order catches autocorrelation, drift, or a process that changed mid-dataset; and residuals against a variable not in the model is the strongest practical omitted-variable signal available. That last one matters because residuals are orthogonal to everything in the model by construction but not to anything left out, so plotting them against an excluded variable is one of the few real checks on the exogeneity assumption, and it costs one line of code.",
+            "tags": ["residuals", "diagnostics", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "Explain 'inefficient, though unbiased' precisely, and say what it costs.",
+            "back": "Unbiased means the estimate is still centred on the truth: repeat the study many times and the average lands on the right value. Inefficient means it is not the tightest estimator available, so another method would get closer on average from the same data. The theoretical hook is the Gauss-Markov theorem: ordinary least squares is the best linear unbiased estimator, meaning the minimum-variance one, only when the errors are homoscedastic. Break that and OLS stays unbiased but loses its claim to being best. Demonstrated across 4 000 simulated datasets with error growing in x and a true slope of 2.0, the mean OLS estimate is 1.9999, exactly unbiased, while the actual variability of the OLS estimator is 0.1055 against 0.0699 for weighted least squares. That is 34 percent more precision available from the same data and left on the table.",
+            "tags": ["heteroscedasticity", "gauss-markov", "efficiency", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "How does heteroscedasticity bias tests of significance, and in which direction?",
+            "back": "It does not bias the coefficients, it biases the tests, and it does so invisibly. The classical standard-error formula assumes one constant error variance, so when that is false it computes the wrong number. Demonstrated on 4 000 simulated datasets, the true variability of the estimate is 0.1055 while the software reports a mean standard error of 0.0982, understating it by 7 percent, where the robust Huber-White standard error comes out at 0.1044, about right. The consequence measured where the null hypothesis is actually true: the false-positive rate at alpha 0.05 is 6.8 percent using classical standard errors against a nominal 5 percent, and 5.4 percent using robust ones. Understated standard errors make t too large, p too small and intervals too narrow, so the model finds effects that are not there at a rate you did not choose and cannot see.",
+            "tags": ["heteroscedasticity", "standard errors", "false positives", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "How do you detect and fix heteroscedasticity, and which fix should you choose?",
+            "back": "Detect it by looking at residuals against fitted values and against each predictor, where a fan or cone is the signature, then confirm with Breusch-Pagan or White's test, both of which regress the squared residuals on the predictors: if the predictors explain the size of the errors, the variance is not constant. Three fixes. Robust Huber-White standard errors keep the OLS coefficients and replace the standard errors with ones that survive unequal variance, which is the default choice and cheap enough that many report them by preference regardless. Transforming the outcome, usually with a log, often stabilises variance and fixes curvature at the same time. Weighted least squares weights each observation by one over its variance and recovers the lost efficiency, but requires knowing or modelling that variance. Choose robust standard errors if you mainly need correct inference, weighted least squares if precision genuinely matters and the variance can be modelled, and a transformation if the outcome is multiplicative rather than additive.",
+            "tags": ["heteroscedasticity", "breusch-pagan", "robust standard errors", "lesson 1.2", "evo"]
+        },
+        {
+            "front": "Why is heteroscedasticity so common in business data specifically?",
+            "back": "Because larger things vary more, which is structural rather than exotic. A shop turning over NOK 50 000 a month varies by a few thousand while one turning over NOK 5 million varies by hundreds of thousands. The proportional variation may be identical, and in absolute terms, which is what a residual measures, the spread grows with the level. That is why revenue, spend, house prices, order values and counts nearly always fan out in a residual plot. It is also why logging the outcome is the standard first move: it converts proportional variation into constant variation, which is exactly what the homoscedasticity assumption requires, and it often fixes curvature at the same time.",
+            "tags": ["heteroscedasticity", "business data", "log transformation", "lesson 1.2", "evo"]
+        },
         {
             "front": "What is the t-statistic, what does it actually answer, and what is the rule of thumb?",
             "back": "The t-statistic is the coefficient divided by its standard error, used to assess the significance of individual predictors, where a higher absolute value indicates the predictor is more significant. Read literally it answers one question: how many standard errors does this coefficient sit away from zero. A t of 3 means the estimate is three times its own uncertainty, which is hard to explain as a fluke, while a t of 0.5 means the coefficient is smaller than the noise in measuring it. The rule of thumb is that for any reasonable sample size an absolute t above about 2 corresponds to p below 0.05, which is why experienced readers scan the t column before the p column: it is the same information, and t also shows how far past the threshold you are.",
