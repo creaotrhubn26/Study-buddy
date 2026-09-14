@@ -6,3 +6,6 @@ test-results/
 .pw_*.js
 .venv/
 .streamlit/secrets.toml
+
+# Personal correspondence - kept local, never published
+appeals/
