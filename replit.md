@@ -48,6 +48,12 @@ A comprehensive student study app for the Data Analyst 2 (PDAN) vocational progr
 - **Soft Skills for Data Analysts**: Communicating with non-technical stakeholders, active listening, working with different roles, handling feedback
 
 ### Evaluation of Outcomes (FI1BBEO10)
+- **Noroff-aligned course structure**: Seven modules, with lessons 1.1–7.4 (28 lessons), available in Learn & Practice and as seven numbered Training Center topics. Each lesson includes original revision explanations, key points, a practice activity and a link to the corresponding Noroff chapter. Each module includes four original practice questions with explanations and a downloadable imagegen illustration. The existing six supplemental EVO topics and their progress keys remain available.
+- **Modules 1–5**: KPIs/statistical tools; ensembles/ETL/tools; inference/error elimination/confidence/model evaluation; reliability/ethics; confidence/collaboration/communication, including the Power Query and Power BI teaching thread.
+- **Module 6**: Guided seven-step Superstore analysis, including data preparation, sales/profit EDA, regression/ANOVA, conclusions and communication.
+- **Module 7**: Independent Splendor Hotel Groups (SHG) booking analysis, including lead time, channels, cancellations, deposits, revenue and model interpretation.
+- **Activities and tasks**: 98 source-mapped Norwegian guides with tailored steps, method explanations, answer scaffolds and downloads in each lesson. Module 6 task templates use Online Shop Customer Sales; Module 7 task templates use marketing personality data, separately from the lesson examples and CoffeeChain/Airbnb activities. Three Excel workbooks provide method calculations and per-objective worksheets, quality logs and four conclusion sheets.
+- **Source check**: Authenticated Noroff lesson books reviewed on 13 October 2026. These are paraphrased study aids and original practice examples; the source links provide the complete course material, embedded activities and datasets. No personal assessment responses are included in this addition.
 - **KPIs & Decision Heuristics**: KPIs as heuristics, thresholds/alerts, decision trees, KPI-driven escalation
 - **Statistical Result Analysis**: Regression interpretation, variance/spread analysis, z-testing for significance, sampled sets and statistical inference
 - **Confidence Levels & Scenarios**: Understanding confidence intervals, probability scenario building, decision-making under uncertainty

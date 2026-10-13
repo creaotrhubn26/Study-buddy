@@ -7,7 +7,7 @@ import random
 import re
 import zipfile
 from collections import Counter
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 import numpy as np
@@ -16,6 +16,8 @@ import streamlit as st
 import streamlit.components.v1 as components
 import mistune
 from openai import OpenAI
+from evo_curriculum import ASSET_ROOT as EVO_ASSET_ROOT, get_evo_course_lessons, get_evo_training_modules
+from evo_tasks import TEMPLATE_ROOT as EVO_TEMPLATE_ROOT, get_evo_task_guides
 
 # Use the full browser width so the prompt + dataset upload + syllabus preview
 # all have room to breathe. Must be the first Streamlit call in the module.
@@ -42,6 +44,60 @@ def html(body, height=None, width=None, scrolling=None, key=None):
     if height is not None and height > 0:
         iframe_kwargs["height"] = height
     st.iframe(body, **iframe_kwargs)
+
+
+def render_evo_task_guides(lesson, context):
+    """Select the real activity and download its original working scaffold."""
+    if lesson.get("course_code") != "FI1BBEO10":
+        return
+    number = lesson["lesson_number"]
+    guides = get_evo_task_guides(number)
+    if not guides:
+        return
+    st.markdown(f"#### Oppgaver og løsningsmaler — {number}")
+    selected = st.selectbox(
+        f"Velg aktivitet eller task i {number}",
+        options=[guide["uid"] for guide in guides],
+        format_func=lambda uid: next(f"{g['id']} — {g['title']}" for g in guides if g["uid"] == uid),
+        key=f"evo_task_{context}_{number}",
+    )
+    guide = next(guide for guide in guides if guide["uid"] == selected)
+    st.markdown(guide["markdown"])
+    st.download_button(
+        "Last ned oppgaveguide og svarmal (Markdown)",
+        guide["markdown"].encode("utf-8"),
+        file_name=f"EVO-{guide['uid']}.md", mime="text/markdown",
+        key=f"evo_task_md_{context}_{number}",
+    )
+    template = EVO_TEMPLATE_ROOT / guide["template_file"]
+    if template.is_file():
+        st.download_button(
+            "Last ned tilhørende Excel-mal", template.read_bytes(),
+            file_name=template.name,
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            key=f"evo_task_xlsx_{context}_{number}",
+        )
+
+
+def render_evo_illustration(lesson, context):
+    """Show the module's revision image with an accessible text explanation."""
+    filename = lesson.get("illustration")
+    if not filename:
+        return
+    image_path = EVO_ASSET_ROOT / filename
+    if not image_path.is_file():
+        return
+    caption = lesson.get("illustration_caption", "")
+    with st.expander(f"Visual revision guide — Module {lesson['module_number']}", expanded=True):
+        st.image(str(image_path), caption=caption, width="stretch")
+        st.markdown(f"**Read the illustration:** {caption}")
+        st.download_button(
+            "Download illustration (PNG)",
+            data=image_path.read_bytes(),
+            file_name=filename,
+            mime="image/png",
+            key=f"evo_image_{context}_{lesson['lesson_number']}",
+        )
 
 from study_buddy_state import (
     COURSE_PROGRESSION_MAP,
@@ -62374,6 +62430,11 @@ A strong Statistical Tools answer usually:
 
 
 
+# The canonical EVO lessons follow Noroff's 7 × 4 structure. The older six
+# Training Center topics remain available with their existing progress keys.
+course_lessons["FI1BBEO10"] = get_evo_course_lessons()
+training_modules.update(get_evo_training_modules())
+
 courses_data = [
     {
         "code": "FI1BBDF05", 
@@ -75360,6 +75421,8 @@ elif page == "Training Center":
         
         for i, lesson in enumerate(module['lessons']):
             with st.expander(f"Lesson {i+1}: {lesson['title']}", expanded=(i == 0)):
+                render_evo_illustration(lesson, "training")
+                render_evo_task_guides(lesson, "training")
                 st.markdown(lesson['content'])
                 
                 st.markdown("---")
@@ -76014,18 +76077,22 @@ elif page == "Learn & Practice":
             
             for lesson in course_lessons[course_code]:
                 lesson_number = lesson.get("lesson_number")
+                if lesson.get("module_number") and str(lesson_number).endswith(".1"):
+                    st.markdown(f"### Module {lesson['module_number']}: {lesson['module_title']}")
                 custom_lesson_glossary_entries = get_custom_lesson_glossary_entries(course_code, lesson_number)
                 lesson_glossary_entries = merge_glossary_entry_sets(
                     get_lesson_glossary_entries(lesson),
                     custom_lesson_glossary_entries,
                 )
                 glossary_counts = {}
-                with st.expander(f"📚 Lesson {lesson['lesson_number']}: {lesson['title']}", expanded=True):
+                with st.expander(f"📚 Lesson {lesson['lesson_number']}: {lesson['title']}", expanded=(course_code != "FI1BBEO10" or lesson_number == "1.1")):
                     st.markdown(
                         f'<div class="study-buddy-lesson-root-marker" data-study-buddy-lesson-root="true" data-study-buddy-course="{html_escape(course_code)}" data-study-buddy-lesson="{html_escape(str(lesson_number))}" data-study-buddy-lesson-title="{html_escape(str(lesson.get("title", "")))}"></div>',
                         unsafe_allow_html=True,
                     )
                     # Parse and render lesson content with Mermaid diagrams
+                    render_evo_illustration(lesson, "learn")
+                    render_evo_task_guides(lesson, "learn")
                     content = lesson['content']
                     selected_explain_text = str(
                         st.session_state.get(f"lesson_selected_explain_text_{course_code}_{lesson_number}", "")
