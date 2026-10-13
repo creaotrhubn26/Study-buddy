@@ -69979,8 +69979,10 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
     default_units = ranked_units[: min(6, len(ranked_units))]
     explicit_tasks = [u for u in ranked_units if resolver_task_number_boost(u.get("task_guide"), exam_prompt)]
     if explicit_tasks:
-        parent_ids = {f"lesson::{u['task_guide']['lesson_number']}" for u in explicit_tasks}
-        default_units = explicit_tasks + [u for u in available_units if u["id"] in parent_ids]
+        # The working answer should follow the task's dataset and objective.
+        # Its teaching lesson is included separately in the AI context, since
+        # demonstration-specific cues could otherwise contaminate the draft.
+        default_units = explicit_tasks
     default_labels = [unit["label"] for unit in default_units]
 
     source_label_map = {unit["label"]: unit for unit in available_units}
@@ -70237,6 +70239,8 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
     matched_tasks = [unit["task_guide"] for unit in sorted(selected_units, key=lambda u: -unit_score(u)) if unit.get("task_guide")]
     if matched_tasks:
         st.markdown("### Matched EVO task guides and exam resources")
+        parent_numbers = ", ".join(dict.fromkeys(g["lesson_number"] for g in matched_tasks))
+        st.caption(f"Teaching lesson context: {parent_numbers}. Follow the task's own dataset and requirements; lesson demonstrations can use different data.")
         for index, guide in enumerate(matched_tasks):
             with st.expander(f"Resolver task {guide['id']}: {guide['title']}", expanded=index == 0):
                 st.markdown(guide["markdown"])

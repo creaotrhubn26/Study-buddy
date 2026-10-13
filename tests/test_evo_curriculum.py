@@ -183,6 +183,8 @@ class EvoWorkflowTest(unittest.TestCase):
         downloads = [d.label for d in app.get('download_button')]
         self.assertNotIn('Download matched workbook: EVO Module 6 Tasks.xlsx', downloads)
         self.assertNotIn('Download matched workbook: EVO Calculation Templates.xlsx', downloads)
+        draft = next(t for t in app.text_area if t.label == 'Use this as a starting answer, then adapt it to the exact wording of the question')
+        self.assertNotIn('SHG', draft.value)
 
     def test_ai_context_respects_selected_task_and_includes_parent_lesson(self):
         guide = next(g for g in TASK_GUIDES if g['id'] == '7.2-task')
