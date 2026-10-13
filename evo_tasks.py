@@ -5,6 +5,7 @@ stay on Noroff. The duplicated activity number 5.3.2 is disambiguated by chapter
 """
 from copy import deepcopy
 from pathlib import Path
+import re
 
 TEMPLATE_ROOT = Path(__file__).resolve().parent / "assets" / "evo" / "templates"
 TEMPLATE_FILES = {
@@ -145,8 +146,14 @@ def _build():
         source = f"https://learning.noroff.no/mod/book/view.php?id={22832 + int(module)}&chapterid={chapter}"
         uid = f"{task_id}-{chapter}"
         steps = procedure.split(";")
+        dataset = {
+            "6": "Task Dataset Online Shop Customer Sales Data Dirty.csv",
+            "7": "marketing_campaign_fixed.csv",
+        }.get(module, "") if task_id.endswith("-task") else ""
         markdown = (
             f"### {task_id}: {title}\n\n"
+            + (f"**Task-datasett:** {dataset}. Bruk taskens CSV; leksjonens demonstrasjon og separate aktiviteter kan bruke andre data.\n\n" if dataset else "")
+            +
             f"**Målet med leveransen:** {deliverable}.\n\n"
             "**Fremgangsmåte**\n\n" + "\n".join(f"{i}. {step}." for i, step in enumerate(steps, 1))
             + f"\n\n**Slik bruker du metoden:** {explanation}\n\n"
@@ -159,6 +166,7 @@ def _build():
         guides.append({"id": task_id, "uid": uid, "lesson_number": lesson, "title": title,
                        "source_url": source, "method": method, "steps": steps,
                        "deliverable": deliverable, "caution": caution, "markdown": markdown,
+                       "task_dataset": dataset,
                        "template_file": TEMPLATE_FILES[module if module in ("6", "7") and "task" in task_id else "methods"]})
     return guides
 
@@ -168,6 +176,43 @@ TASK_GUIDES = _build()
 
 def get_evo_task_guides(lesson_number):
     return deepcopy([guide for guide in TASK_GUIDES if guide["lesson_number"] == str(lesson_number)])
+
+
+def resolver_task_number_boost(guide, prompt):
+    """Recognise exact activity numbers without matching 7.2 inside 7.2.1."""
+    if not guide or not str(prompt).strip():
+        return 0
+    aliases = [guide["id"].lower()]
+    if guide["id"].endswith("-task"):
+        aliases.append("task " + guide["lesson_number"])
+    return 500 if any(
+        re.search(r"(?<![\w.])" + re.escape(alias) + r"(?![\w.])", str(prompt).lower())
+        for alias in aliases
+    ) else 0
+
+
+def get_evo_resolver_ai_units(units, pool, scope, specific="", manual=(), prompt=""):
+    """Keep the AI context consistent with the source controls in the UI."""
+    allowed = {
+        "Lessons only": {"Lesson"}, "Task guides only": {"Task"},
+        "Lessons + task guides": {"Lesson", "Task"},
+    }.get(pool)
+    eligible = [u for u in units if allowed is None or u["kind"] in allowed]
+    if pool == "Learning outcomes only":
+        eligible = [u for u in eligible if u["kind"] not in {"Lesson", "Task"}]
+    if scope == "Specific lesson or outcome" and specific:
+        selected = [u for u in eligible if u["label"] == specific]
+    elif scope == "Manual selection":
+        selected = [u for u in eligible if u["label"] in manual]
+    else:
+        selected = [u for u in eligible if resolver_task_number_boost(u.get("task_guide"), prompt)]
+        if not selected:
+            return eligible
+    # A task's teaching lesson supplies its conceptual context, including when
+    # the task picker is restricted to Task guides only.
+    parent_ids = {f"lesson::{u['task_guide']['lesson_number']}" for u in selected if u.get("task_guide")}
+    selected_ids = {u["id"] for u in selected}
+    return selected + [u for u in units if u["id"] in parent_ids - selected_ids]
 
 
 def task_index_markdown(lesson_number):

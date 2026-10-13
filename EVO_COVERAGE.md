@@ -8,6 +8,7 @@ Course: **FI1BBEO10**. Source books checked through the signed-in Noroff browser
 - Training Center: seven official module topics, four lessons/exercises/quiz questions each.
 - Existing six supplemental EVO topics and all existing progress keys are retained.
 - The exam resolver can select all 28 lessons individually and use their explanations/key points.
+- The resolver also indexes all 98 activity/task guides as distinct sources, matches exact task numbers, and offers Lessons + task guides / Task guides only source pools. Matched tasks expose their complete scaffold, source link, workbook and module illustration directly in the resolver. Manual/specific AI source selection includes the task's teaching lesson; bounded AI contexts carry the working guide and its limitations.
 - One imagegen illustration per module, with a text explanation and PNG download.
 - 98 separately selectable activity/task guides in Norwegian, each with a tailored procedure, method explanation, fill-in answer scaffold and source link. Multi-part tasks cover both Task 1 and Task 2 where present.
 - Three downloadable Excel workbooks: reusable calculations (11 sheets), Module 6 tasks (17 sheets), and Module 7 tasks (21 sheets). The module workbooks contain native Raw/Prepared Tables, quality logs, one sheet per analysis objective and four conclusion sheets.
@@ -34,7 +35,7 @@ The task guides explicitly address these source issues:
 
 ## Validation and limits
 
-Eight offline Streamlit workflow tests cover startup, all 28 lessons, resolver selection, seven Training Center modules, illustration downloads, all 98 guides, task selection and native workbook structure. Tests run in temporary directories to preserve saved progress.
+Eleven offline tests cover startup, all 28 lessons, resolver selection, seven Training Center modules, illustration downloads, all 98 guides, task selection and native workbook structure. Resolver checks include exact-task matching, task-only selection with the correct workbook, identifier boundaries and AI context selection with the parent lesson. Tests run in temporary directories to preserve saved progress. The AI context construction is tested offline; no live model answer is asserted by these tests.
 
 Spreadsheet formulas were recalculated with artifact-tool and checked against numerical fixtures (variance, t critical value, KPI ratios, regression, alpha, classification, scenarios, FV and NPV). Blank inputs and genuine zeros were tested. All 49 workbook sheets were rendered for inspection; no formula errors remained in exported sheets. Native Excel was not used for the final verification. The workbooks are starting templates: students import the original data and create the actual PivotTables, regressions and PBIX outputs.
 
