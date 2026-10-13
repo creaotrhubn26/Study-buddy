@@ -7,7 +7,7 @@ import random
 import re
 import zipfile
 from collections import Counter
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 import numpy as np
@@ -16,6 +16,8 @@ import streamlit as st
 import streamlit.components.v1 as components
 import mistune
 from openai import OpenAI
+from evo_curriculum import ASSET_ROOT as EVO_ASSET_ROOT, get_evo_course_lessons, get_evo_training_modules
+from evo_tasks import TEMPLATE_ROOT as EVO_TEMPLATE_ROOT, get_evo_task_guides, resolver_task_number_boost, get_evo_resolver_ai_units
 
 # Use the full browser width so the prompt + dataset upload + syllabus preview
 # all have room to breathe. Must be the first Streamlit call in the module.
@@ -42,6 +44,60 @@ def html(body, height=None, width=None, scrolling=None, key=None):
     if height is not None and height > 0:
         iframe_kwargs["height"] = height
     st.iframe(body, **iframe_kwargs)
+
+
+def render_evo_task_guides(lesson, context):
+    """Select the real activity and download its original working scaffold."""
+    if lesson.get("course_code") != "FI1BBEO10":
+        return
+    number = lesson["lesson_number"]
+    guides = get_evo_task_guides(number)
+    if not guides:
+        return
+    st.markdown(f"#### Oppgaver og løsningsmaler — {number}")
+    selected = st.selectbox(
+        f"Velg aktivitet eller task i {number}",
+        options=[guide["uid"] for guide in guides],
+        format_func=lambda uid: next(f"{g['id']} — {g['title']}" for g in guides if g["uid"] == uid),
+        key=f"evo_task_{context}_{number}",
+    )
+    guide = next(guide for guide in guides if guide["uid"] == selected)
+    st.markdown(guide["markdown"])
+    st.download_button(
+        "Last ned oppgaveguide og svarmal (Markdown)",
+        guide["markdown"].encode("utf-8"),
+        file_name=f"EVO-{guide['uid']}.md", mime="text/markdown",
+        key=f"evo_task_md_{context}_{number}",
+    )
+    template = EVO_TEMPLATE_ROOT / guide["template_file"]
+    if template.is_file():
+        st.download_button(
+            "Last ned tilhørende Excel-mal", template.read_bytes(),
+            file_name=template.name,
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            key=f"evo_task_xlsx_{context}_{number}",
+        )
+
+
+def render_evo_illustration(lesson, context):
+    """Show the module's revision image with an accessible text explanation."""
+    filename = lesson.get("illustration")
+    if not filename:
+        return
+    image_path = EVO_ASSET_ROOT / filename
+    if not image_path.is_file():
+        return
+    caption = lesson.get("illustration_caption", "")
+    with st.expander(f"Visual revision guide — Module {lesson['module_number']}", expanded=True):
+        st.image(str(image_path), caption=caption, width="stretch")
+        st.markdown(f"**Read the illustration:** {caption}")
+        st.download_button(
+            "Download illustration (PNG)",
+            data=image_path.read_bytes(),
+            file_name=filename,
+            mime="image/png",
+            key=f"evo_image_{context}_{lesson['lesson_number']}",
+        )
 
 from study_buddy_state import (
     COURSE_PROGRESSION_MAP,
@@ -62374,6 +62430,11 @@ A strong Statistical Tools answer usually:
 
 
 
+# The canonical EVO lessons follow Noroff's 7 × 4 structure. The older six
+# Training Center topics remain available with their existing progress keys.
+course_lessons["FI1BBEO10"] = get_evo_course_lessons()
+training_modules.update(get_evo_training_modules())
+
 courses_data = [
     {
         "code": "FI1BBDF05", 
@@ -66883,6 +66944,8 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         return "; ".join(cleaned[:limit])
 
     def short_bridge(unit):
+        if unit["kind"] == "Task":
+            return f"Use {unit['label']} for the concrete procedure, answer scaffold and data limitations."
         if unit["kind"] == "Lesson":
             return f"Use {unit['label']} to explain the idea clearly and connect it directly to the case."
         if unit["kind"] == "Knowledge":
@@ -66892,6 +66955,8 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         return f"Use {unit['label']} to justify the recommendation, judgment, or professional action."
 
     def unit_application_sentence(unit):
+        if unit["kind"] == "Task":
+            return f"{unit['label']} provides the working method for {unit['what_it_covers']}."
         if unit["kind"] == "Lesson":
             return f"{unit['label']} is relevant because it covers {unit['what_it_covers']}."
         if unit["kind"] == "Knowledge":
@@ -66988,7 +67053,43 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 "weight": 3.0,
                 "cue_phrases": cue_phrases,
                 "content_segments": content_segments,
+                "content": lesson.get("content", "") if course_code == "FI1BBEO10" else "",
             })
+
+        # EVO activities are first-class sources. Appending their index to a
+        # lesson is not sufficient: the lesson preview is capped at 1,800 chars.
+        if course_code == "FI1BBEO10":
+            for lesson in detailed_lessons:
+                for guide in get_evo_task_guides(lesson["lesson_number"]):
+                    order_index += 1
+                    search_text = " ".join([
+                        guide["id"], guide["title"], guide["method"],
+                        guide["deliverable"], " ".join(guide["steps"]),
+                        guide["caution"], guide["markdown"],
+                    ])
+                    # Put scope/limitations first so even bounded AI contexts
+                    # retain the distinction between task and demo datasets.
+                    full_context = (
+                        f"Task {guide['id']} (lesson {guide['lesson_number']}): {guide['title']}\n"
+                        f"Source: {guide['source_url']}\n"
+                        + (f"Required task dataset: {guide['task_dataset']}; the teaching lesson may demonstrate a DIFFERENT dataset.\n" if guide['task_dataset'] else "")
+                        +
+                        f"Required output: {guide['deliverable']}\n"
+                        f"Limitations: {guide['caution']}\n"
+                        f"Workbook scaffold (not solved data): {guide['template_file']}\n\n"
+                        + guide["markdown"]
+                    )
+                    units.append({
+                        "id": f"evo_task::{guide['uid']}",
+                        "label": f"Task guide {guide['id']}: {guide['title']}",
+                        "kind": "Task", "title": guide["title"],
+                        "order_index": order_index, "weight": 3.0,
+                        "what_it_covers": guide["deliverable"],
+                        "search_text": search_text, "tokens": tokenise(search_text),
+                        "cue_phrases": [guide["title"], guide["caution"]] + guide["steps"],
+                        "content_segments": [guide["caution"]] + guide["steps"],
+                        "content": full_context, "task_guide": guide,
+                    })
 
         for section_name, kind_label, weight in [
             ("knowledge", "Knowledge", 1.8),
@@ -67755,7 +67856,17 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 # but never silently drop units that have zero overlap; they
                 # still appear in the preview so the student can see the full
                 # scope of the syllabus.
-                for unit in source_units:
+                ai_source_units = source_units
+                if course_code == "FI1BBEO10":
+                    ai_source_units = get_evo_resolver_ai_units(
+                        source_units,
+                        st.session_state.get(f"{base_key}_source_pool", "Lessons + learning outcomes"),
+                        st.session_state.get(f"{base_key}_scope", "Whole course (auto-select best matches)"),
+                        st.session_state.get(f"{base_key}_specific_source", ""),
+                        st.session_state.get(f"{base_key}_selected_sources", []),
+                        exam_prompt,
+                    )
+                for unit in ai_source_units:
                     try:
                         fragments = select_best_unit_fragments(
                             unit, _ai_prompt_tokens, _ai_prompt_lower, limit=2,
@@ -67788,6 +67899,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                     if not full_text:
                         full_text = snippet
                     overlap = len(_ai_prompt_tokens & set(unit.get("tokens", [])))
+                    overlap += resolver_task_number_boost(unit.get("task_guide"), exam_prompt)
                     ranked.append((overlap, kind, label, full_text, snippet))
                 # Rank the lesson_lines too so the most relevant ones lead.
                 if ranked:
@@ -67809,13 +67921,27 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                         + "\n".join(top_lines)
                         + "\n]"
                     )
+                if not strict_curriculum_mode and ranked:
+                    task_blocks = [
+                        f"### {label}\n{full_text[:4000]}"
+                        for _overlap, kind, label, full_text, _snippet in ranked[:12]
+                        if kind == "Task"
+                    ][:3]
+                    if task_blocks:
+                        lesson_context_block += (
+                            "\n\n[Matched EVO task working guides — use their procedure, "
+                            "answer scaffold and limitations. The linked workbook is an "
+                            "unfilled template, not evidence of computed results:\n\n"
+                            + "\n\n".join(task_blocks) + "\n]"
+                        )
                 # Strict mode: include fuller content for the top 12 ranked units
                 # (was 8). Each capped at 1500 chars to keep prompt size bounded.
                 if strict_curriculum_mode and ranked:
                     for overlap, kind, label, full_text, _snippet in ranked[:12]:
                         truncated = full_text.strip()
-                        if len(truncated) > 1500:
-                            truncated = truncated[:1500] + " […truncated]"
+                        context_limit = 4000 if kind == "Task" else 1500
+                        if len(truncated) > context_limit:
+                            truncated = truncated[:context_limit] + " […truncated]"
                         full_lesson_blocks.append(
                             f"### [{kind}] {label}\n{truncated}"
                         )
@@ -69605,11 +69731,15 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         source_pool_options = ["Lessons + learning outcomes"] if has_lessons else ["Learning outcomes only"]
         if has_lessons:
             source_pool_options.extend(["Lessons only", "Learning outcomes only"])
+        if course_code == "FI1BBEO10":
+            source_pool_options.extend(["Lessons + task guides", "Task guides only"])
         source_pool = st.selectbox(
             "Source pool",
             options=source_pool_options,
             key=f"{base_key}_source_pool",
         )
+        if course_code == "FI1BBEO10":
+            st.caption("EVO includes 98 searchable activity/task guides. Use Task guides only to select an exact activity, or enter its number in the question.")
 
     draft_col_1, draft_col_2 = st.columns(2)
     with draft_col_1:
@@ -69723,7 +69853,11 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         if source_pool == "Lessons only":
             return [unit for unit in source_units if unit["kind"] == "Lesson"]
         if source_pool == "Learning outcomes only":
-            return [unit for unit in source_units if unit["kind"] != "Lesson"]
+            return [unit for unit in source_units if unit["kind"] not in {"Lesson", "Task"}]
+        if source_pool == "Task guides only":
+            return [unit for unit in source_units if unit["kind"] == "Task"]
+        if source_pool == "Lessons + task guides":
+            return [unit for unit in source_units if unit["kind"] in {"Lesson", "Task"}]
         return source_units[:]
 
     available_units = eligible_units()
@@ -69818,6 +69952,11 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
 
     def unit_score(unit):
         score = unit["weight"]
+        guide = unit.get("task_guide")
+        if guide and exam_prompt.strip():
+            score += resolver_task_number_boost(guide, exam_prompt)
+        elif guide:
+            score -= 10
         overlap = len(prompt_tokens & unit["tokens"])
         title_overlap = len(prompt_tokens & tokenise(unit["title"]))
         profile_hits = sum(1 for keyword in profile["keywords"] if keyword in unit["search_text"].lower())
@@ -69838,14 +69977,25 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
 
     ranked_units = sorted(available_units, key=lambda unit: (-unit_score(unit), unit["order_index"]))
     default_units = ranked_units[: min(6, len(ranked_units))]
+    explicit_tasks = [u for u in ranked_units if resolver_task_number_boost(u.get("task_guide"), exam_prompt)]
+    if explicit_tasks:
+        # The working answer should follow the task's dataset and objective.
+        # Its teaching lesson is included separately in the AI context, since
+        # demonstration-specific cues could otherwise contaminate the draft.
+        default_units = explicit_tasks
     default_labels = [unit["label"] for unit in default_units]
 
     source_label_map = {unit["label"]: unit for unit in available_units}
 
     selected_labels = []
     if scope_mode == "Specific lesson or outcome":
+        specific_source_label = "Choose the lesson or outcome to focus on"
+        if source_pool == "Task guides only":
+            specific_source_label = "Choose the task guide to focus on"
+        elif any(unit["kind"] == "Task" for unit in available_units):
+            specific_source_label = "Choose the lesson, task or outcome to focus on"
         selected_label = st.selectbox(
-            "Choose the lesson or outcome to focus on",
+            specific_source_label,
             options=list(source_label_map.keys()),
             key=f"{base_key}_specific_source",
         )
@@ -69859,7 +70009,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         )
     else:
         selected_labels = default_labels[:]
-        st.caption("The resolver is auto-selecting the best-matching lessons and outcomes from the current prompt.")
+        st.caption("The resolver is auto-selecting the best-matching sources from the current prompt.")
         if selected_labels:
             st.markdown("**Auto-selected sources**")
             for label in selected_labels:
@@ -69869,7 +70019,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
     selected_units = sorted(selected_units, key=lambda unit: unit["order_index"])
 
     if not selected_units:
-        st.warning("Select at least one lesson or learning outcome so the resolver can build a connection guide.")
+        st.warning("Select at least one source so the resolver can build a connection guide.")
         return
 
     selected_unit_text = " ".join(
@@ -70069,7 +70219,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
     }
     lesson_evidence_rows = []
     for unit in selected_units:
-        if unit["kind"] != "Lesson":
+        if unit["kind"] not in {"Lesson", "Task"}:
             continue
         evidence_fragments = lesson_evidence_map.get(unit["id"], [])
         if not evidence_fragments:
@@ -70085,6 +70235,43 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
     if lesson_evidence_rows:
         st.markdown("**Lesson evidence the resolver is pulling from**")
         st.dataframe(pd.DataFrame(lesson_evidence_rows), use_container_width=True, hide_index=True)
+
+    matched_tasks = [unit["task_guide"] for unit in sorted(selected_units, key=lambda u: -unit_score(u)) if unit.get("task_guide")]
+    if matched_tasks:
+        st.markdown("### Matched EVO task guides and exam resources")
+        parent_numbers = ", ".join(dict.fromkeys(g["lesson_number"] for g in matched_tasks))
+        st.caption(f"Teaching lesson context: {parent_numbers}. Follow the task's own dataset and requirements; lesson demonstrations can use different data.")
+        for index, guide in enumerate(matched_tasks):
+            with st.expander(f"Resolver task {guide['id']}: {guide['title']}", expanded=index == 0):
+                st.markdown(guide["markdown"])
+                st.download_button(
+                    "Download matched task guide (Markdown)",
+                    guide["markdown"].encode("utf-8"),
+                    file_name=f"EVO-{guide['uid']}.md", mime="text/markdown",
+                    key=f"{base_key}_evo_task_md_{guide['uid']}",
+                )
+        for filename in dict.fromkeys(guide["template_file"] for guide in matched_tasks):
+            template_path = EVO_TEMPLATE_ROOT / filename
+            if template_path.is_file():
+                st.download_button(
+                    f"Download matched workbook: {filename}", template_path.read_bytes(),
+                    file_name=filename,
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    key=f"{base_key}_evo_workbook_{filename}",
+                )
+        illustrated_modules = {int(guide["lesson_number"].split(".")[0]) for guide in matched_tasks}
+        with st.expander("Module illustrations for the matched tasks", expanded=False):
+            st.caption("These images explain the module's lesson examples. Use the matched task's own dataset for calculations; the demonstration and task datasets can differ.")
+            for lesson in get_evo_course_lessons():
+                if lesson.get("illustration") and lesson["module_number"] in illustrated_modules:
+                    image_path = EVO_ASSET_ROOT / lesson["illustration"]
+                    if image_path.is_file():
+                        st.image(str(image_path), caption=lesson["illustration_caption"], width="stretch")
+                        st.download_button(
+                            "Download matched module illustration", image_path.read_bytes(),
+                            file_name=image_path.name, mime="image/png",
+                            key=f"{base_key}_evo_illustration_{lesson['module_number']}",
+                        )
 
     answer_order_lines = []
     lesson_count = sum(1 for unit in selected_units if unit["kind"] == "Lesson")
@@ -75360,6 +75547,8 @@ elif page == "Training Center":
         
         for i, lesson in enumerate(module['lessons']):
             with st.expander(f"Lesson {i+1}: {lesson['title']}", expanded=(i == 0)):
+                render_evo_illustration(lesson, "training")
+                render_evo_task_guides(lesson, "training")
                 st.markdown(lesson['content'])
                 
                 st.markdown("---")
@@ -76014,18 +76203,22 @@ elif page == "Learn & Practice":
             
             for lesson in course_lessons[course_code]:
                 lesson_number = lesson.get("lesson_number")
+                if lesson.get("module_number") and str(lesson_number).endswith(".1"):
+                    st.markdown(f"### Module {lesson['module_number']}: {lesson['module_title']}")
                 custom_lesson_glossary_entries = get_custom_lesson_glossary_entries(course_code, lesson_number)
                 lesson_glossary_entries = merge_glossary_entry_sets(
                     get_lesson_glossary_entries(lesson),
                     custom_lesson_glossary_entries,
                 )
                 glossary_counts = {}
-                with st.expander(f"📚 Lesson {lesson['lesson_number']}: {lesson['title']}", expanded=True):
+                with st.expander(f"📚 Lesson {lesson['lesson_number']}: {lesson['title']}", expanded=(course_code != "FI1BBEO10" or lesson_number == "1.1")):
                     st.markdown(
                         f'<div class="study-buddy-lesson-root-marker" data-study-buddy-lesson-root="true" data-study-buddy-course="{html_escape(course_code)}" data-study-buddy-lesson="{html_escape(str(lesson_number))}" data-study-buddy-lesson-title="{html_escape(str(lesson.get("title", "")))}"></div>',
                         unsafe_allow_html=True,
                     )
                     # Parse and render lesson content with Mermaid diagrams
+                    render_evo_illustration(lesson, "learn")
+                    render_evo_task_guides(lesson, "learn")
                     content = lesson['content']
                     selected_explain_text = str(
                         st.session_state.get(f"lesson_selected_explain_text_{course_code}_{lesson_number}", "")
