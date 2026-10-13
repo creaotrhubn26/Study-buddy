@@ -128,6 +128,9 @@ class EvoWorkflowTest(unittest.TestCase):
         select(app, 'Velg aktivitet eller task i 7.2', '7.2-task-81485')
         markdown = '\n'.join(item.value for item in app.markdown)
         self.assertIn('Z_Revenue er konstant', markdown)
+        self.assertIn('Korrelasjonen er udefinert', markdown)
+        self.assertIn('Excel CORREL gir #DIV/0!', markdown)
+        self.assertIn('valutaenheter dersom metadata', markdown)
         self.assertIn('Task-datasettet er online kundesalg', markdown)
         self.assertEqual(len([d for d in app.get('download_button') if d.label == 'Last ned tilhørende Excel-mal']), 28)
         for filename in TEMPLATE_FILES.values():

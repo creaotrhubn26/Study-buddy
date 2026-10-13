@@ -68112,6 +68112,21 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 )
             # Append the strict-curriculum clause to whichever base prompt won.
             system_prompt = system_prompt + strict_clause
+            if course_code == "FI1BBEO10":
+                system_prompt += (
+                    "\n\nEVO measurement accuracy checks:\n"
+                    "- State currencies and measurement units only when supplied by the "
+                    "task, metadata or attached data. Otherwise use 'currency units' or "
+                    "'unspecified units'; do not infer NOK/kroner from the user's language.\n"
+                    "- Pearson correlation divides covariance by the PRODUCT of the two "
+                    "standard deviations. If either standard deviation is zero, the "
+                    "correlation is UNDEFINED. Excel CORREL returns #DIV/0!, not zero. "
+                    "Never describe a constant-variable correlation as zero or as evidence "
+                    "of no relationship.\n"
+                    "- Distinguish facts stated in the task guide (such as a constant "
+                    "field) from calculations performed on an attached file. If no file "
+                    "is attached, do not claim you inspected or calculated its rows.\n"
+                )
             # Stash the messages so the "Continue" button can resume the same
             # conversation thread without rebuilding prompts.
             st.session_state[f"{base_key}_ai_system_prompt"] = system_prompt
