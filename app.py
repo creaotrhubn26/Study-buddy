@@ -55,8 +55,11 @@ if getattr(dvs_lesson22, "CONTENT_REVISION", None) != "2026-10-14-dvs22":
 import dvs_lesson23
 if getattr(dvs_lesson23, "CONTENT_REVISION", None) != "2026-10-14-dvs23":
     dvs_lesson23 = importlib.reload(dvs_lesson23)
+import dvs_lesson24
+if getattr(dvs_lesson24, "CONTENT_REVISION", None) != "2026-10-14-dvs24":
+    dvs_lesson24 = importlib.reload(dvs_lesson24)
 import dvs_curriculum
-DVS_CONTENT_REVISION = "2026-10-14-dvs23"
+DVS_CONTENT_REVISION = "2026-10-14-dvs24-flow"
 if getattr(dvs_curriculum, "CONTENT_REVISION", None) != DVS_CONTENT_REVISION:
     dvs_curriculum = importlib.reload(dvs_curriculum)
 import dvs_ui
@@ -67610,6 +67613,17 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
     }
 
     if course_code == dvs_curriculum.COURSE_CODE:
+        style_profiles["GIMP image editing plan and evidence"] = {
+            "summary": "plan GIMP compositions and review written editing evidence",
+            "keywords": ["gimp", "mask", "opacity", "stone", "strawberries", "crop", "flip"],
+            "structure": [
+                "Follow the exact task or activity brief and selected step.",
+                "Keep the three task image designs distinct from the four self-study activities.",
+                "For the main Task 2.4, check leaves opacity 80%, tree background removal and pineapple above Stone; activities follow their own brief.",
+                "For Question 3, explain strawberry chart meaning without inventing units, values, year or causes.",
+                "Distinguish planned actions from actual observations; do not claim image inspection or live GIMP control.",
+            ],
+        }
         style_profiles["Graphics concepts and software comparison"] = {
             "summary": "explain graphics representations and compare three software candidates with dated evidence",
             "keywords": ["raster", "vector", "gimp", "coreldraw", "procreate", "photopea"],
@@ -68022,7 +68036,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             if course_code == "FI1BBEO10":
                 st.caption("EVO includes 98 searchable activity/task guides. Use Task guides only to select an exact activity, or enter its number in the question.")
             elif course_code == dvs_curriculum.COURSE_CODE:
-                st.caption("DVS includes Module 1 Lessons 1.1–1.4 and Module 2 Lessons 2.1–2.3, with fourteen searchable guides. Enter an exact task or activity number, such as Task 2.3.")
+                st.caption("DVS includes Module 1 Lessons 1.1–1.4 and Module 2 Lessons 2.1–2.4, with nineteen searchable guides. Enter an exact task or activity number, such as Task 2.4.")
 
         draft_col_1, draft_col_2 = st.columns(2)
         with draft_col_1:
@@ -68153,6 +68167,10 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                             break
                     if not full_text:
                         full_text = snippet
+                    task_guide = unit.get("task_guide")
+                    if (course_code == dvs_curriculum.COURSE_CODE and task_guide
+                            and task_guide.get("lesson_number") == "2.4"):
+                        full_text = dvs_ui.get_image_editing_step_context(task_guide, base_key) + full_text
                     overlap = len(_ai_prompt_tokens & set(unit.get("tokens", [])))
                     overlap += resolver_task_number_boost(unit.get("task_guide"), exam_prompt)
                     ranked.append((overlap, kind, label, full_text, snippet))
@@ -70070,7 +70088,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         if any(term in prompt_lower for term in ["scenario", "case", "organisation", "organization", "company", "business", "recommend"]):
             scores["Broad case question"] += 4
         if course_code == dvs_curriculum.COURSE_CODE:
-            for lesson_number, style in [("1.1", "Persona design task"), ("1.2", "Wireframe design task"), ("1.3", "Universal design reflection"), ("1.4", "Inclusion usability accessibility reflection"), ("2.1", "UX website review and application"), ("2.2", "Ethical graph analysis and rule application"), ("2.3", "Graphics concepts and software comparison")]:
+            for lesson_number, style in [("1.1", "Persona design task"), ("1.2", "Wireframe design task"), ("1.3", "Universal design reflection"), ("1.4", "Inclusion usability accessibility reflection"), ("2.1", "UX website review and application"), ("2.2", "Ethical graph analysis and rule application"), ("2.3", "Graphics concepts and software comparison"), ("2.4", "GIMP image editing plan and evidence")]:
                 if any(resolver_task_number_boost(g, exam_prompt) for g in dvs_curriculum.get_dvs_task_guides(lesson_number)):
                     scores[style] += 100
 
@@ -70259,7 +70277,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         with resources_panel:
             if course_code in GUIDED_TASK_COURSES:
                 st.markdown("### 2. Task guide and templates" if course_code == dvs_curriculum.COURSE_CODE else "### 2. Task guide and workbook")
-                st.caption("Enter a task number such as Task 2.3 to find its guide and templates." if course_code == dvs_curriculum.COURSE_CODE else "Enter a task number, for example Task 7.2, to find its guide and workbook.")
+                st.caption("Enter a task number such as Task 2.4 to find its guide and templates." if course_code == dvs_curriculum.COURSE_CODE else "Enter a task number, for example Task 7.2, to find its guide and workbook.")
             else:
                 st.markdown("### 2. Sources for this question")
                 st.caption("Enter a question above to find relevant course sources.")
@@ -70492,7 +70510,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             render_course_task_resources(matched_tasks, base_key)
         elif course_code in GUIDED_TASK_COURSES:
             st.markdown("### 2. Task guide and templates" if course_code == dvs_curriculum.COURSE_CODE else "### 2. Task guide and workbook")
-            st.caption("Enter an exact task number such as Task 2.3, or choose Task guides only in Advanced settings." if course_code == dvs_curriculum.COURSE_CODE else "Enter a task number, for example Task 7.2, or choose Task guides only in Advanced settings.")
+            st.caption("Enter an exact task number such as Task 2.4, or choose Task guides only in Advanced settings." if course_code == dvs_curriculum.COURSE_CODE else "Enter a task number, for example Task 7.2, or choose Task guides only in Advanced settings.")
         else:
             st.markdown("### 2. Sources for this question")
             st.caption("The resolver connects your question to these course sources. Change them in Advanced settings if needed.")

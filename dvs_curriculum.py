@@ -3,7 +3,7 @@
 from copy import deepcopy
 from pathlib import Path
 
-CONTENT_REVISION = "2026-10-14-dvs23"
+CONTENT_REVISION = "2026-10-14-dvs24-flow"
 COURSE_CODE = "FI1BBDV75"
 COURSE_NAME = "Data Visualisation"
 ASSET_ROOT = Path(__file__).resolve().parent / "assets" / "dvs"
@@ -135,6 +135,9 @@ def get_dvs_persona_template():
 
 
 def get_dvs_task_guide_markdown(guide):
+    if guide["lesson_number"] == "2.4":
+        from dvs_lesson24 import get_task_guide_markdown
+        return get_task_guide_markdown(guide)
     if guide["lesson_number"] == "2.3":
         from dvs_lesson23 import get_task_guide_markdown
         return get_task_guide_markdown(guide)
@@ -183,6 +186,8 @@ from dvs_lesson22 import GUIDE as GUIDE22
 DVS_TASK_GUIDES.append(GUIDE22)
 from dvs_lesson23 import GUIDE as GUIDE23
 DVS_TASK_GUIDES.append(GUIDE23)
+from dvs_lesson24 import GUIDES as GUIDES24
+DVS_TASK_GUIDES.extend(GUIDES24)
 for _guide in DVS_TASK_GUIDES:
     _guide["markdown"] = get_dvs_task_guide_markdown(_guide)
 
@@ -202,7 +207,8 @@ def get_dvs_course_lessons():
     from dvs_lesson21 import get_lesson as get_lesson21
     from dvs_lesson22 import get_lesson as get_lesson22
     from dvs_lesson23 import get_lesson as get_lesson23
-    return _get_lesson11() + [deepcopy(get_lesson()), deepcopy(get_lesson13()), deepcopy(get_lesson14()), deepcopy(get_lesson21()), deepcopy(get_lesson22()), deepcopy(get_lesson23())]
+    from dvs_lesson24 import get_lesson as get_lesson24
+    return _get_lesson11() + [deepcopy(get_lesson()), deepcopy(get_lesson13()), deepcopy(get_lesson14()), deepcopy(get_lesson21()), deepcopy(get_lesson22()), deepcopy(get_lesson23()), deepcopy(get_lesson24())]
 
 
 def _get_dvs_training_modules():
@@ -221,7 +227,7 @@ def get_dvs_training_modules():
     module["quiz"].append({"question": "What are Task 1.4's required headings?", "options": ["All seven universal design principles", "Only the four POUR principles", "Inclusive Design Usability and Accessibility", "A market analysis and medical diagnosis"], "correct": 2, "explanation": "Three brief concept reflections are required. POUR supports the accessibility reasoning."})
     modules["DVS Module 2: User Experience and User Experience Design"] = {
         "course": COURSE_NAME, "course_code": COURSE_CODE,
-        "description": "Reviewed Lessons 2.1–2.3: UX design, ethical chart analysis, raster/vector graphics, GIMP orientation and a dated software comparison. Later Module 2 lessons are added when reviewed.",
+        "description": "Reviewed Lessons 2.1–2.4: UX design, chart ethics, raster/vector graphics, software comparison and practical GIMP image manipulation.",
         "lessons": [lesson for lesson in get_dvs_course_lessons() if lesson["module_number"] == 2],
         "exercises": [{"title": "Task 2.1: Website review and UX application", "type": "case_study", "question": "Plan both task answers and distinguish observed website behaviour from interpretation and proposals.", "hint": "Record final URLs and access limitations; justify each design judgement with evidence and a relevant UX facet.", "answer": "Question 1 is one page covering both named sites with justified strengths and weaknesses. Question 2 is at least half a page defining UX design in own words and applying it to visualisations, in Word Arial 11 pt. Redirected pages must be identified and historical findings must not be invented."}],
         "quiz": [{"question": "What can a redirect to OECD About establish?", "options": ["The old Forum had poor keyboard access", "The original Forum interface was evaluated", "The supplied link currently reaches a different page", "All OECD pages conform to WCAG"], "correct": 2, "explanation": "Record the current destination and limitation. An approved archive or replacement is needed to evaluate the historical Forum interface."}]
@@ -231,4 +237,6 @@ def get_dvs_training_modules():
     module2["quiz"].append({"question": "Which scale judgement is defensible?", "options": ["Every line chart must start at zero", "Bars need a zero baseline; a line-chart zoom requires context and accurate positions", "A correct value label excuses an incorrectly plotted point", "A planned future value is an observed historical result"], "correct": 1, "explanation": "Bars encode magnitude as length. Line charts can use a justified non-zero range, but the scale and geometry must support honest interpretation."})
     module2["exercises"].append({"title": "Task 2.3: Graphics and software comparison", "type": "case_study", "question": "Explain the graphics concepts and compare all three software candidates using dated primary evidence.", "hint": "Include platforms, price, raster/vector support and complex functions; specify editions and company assumptions.", "answer": "A useful comparison includes CorelDRAW, Procreate and Photopea with all four required dimensions, sources and dates. It distinguishes annual, app-purchase and prepaid price models and avoids invented company needs."})
     module2["quiz"].append({"question": "What does Save do in GIMP?", "options": ["Always exports a JPEG", "Saves an editable XCF project", "Converts every raster image to vector", "Preserves all undo history forever"], "correct": 1, "explanation": "Save stores XCF project structure. Export creates a sharing format; XCF does not retain undo history."})
+    module2["exercises"].append({"title": "Task 2.4: Three image designs with GIMP", "type": "case_study", "question": "Plan the leaves/tree blend, pineapple on Stone and strawberry-sales illustration, then perform and record actual checks.", "hint": "Set leaves opacity to 80%, keep Stone below pineapple and do not invent chart units or values.", "answer": "The task requires three original image outputs. Notes support the images; layer settings and export checks must be performed in GIMP rather than inferred by Exam Resolver."})
+    module2["quiz"].append({"question": "Which layer has 80% opacity in Task 2.4 Question 1?", "options": ["The tree", "The leaves", "Every layer", "The pineapple"], "correct": 1, "explanation": "The instruction sets leaves opacity to 80%. The butterfly example used a different setting."})
     return modules

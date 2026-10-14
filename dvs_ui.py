@@ -4,11 +4,14 @@ import streamlit as st
 from dvs_curriculum import (ASSET_ROOT, TEMPLATE_ROOT, COURSE_CODE, ILLUSTRATIONS,
     TASK_STEPS, get_dvs_persona_template, get_dvs_task_guide_markdown)
 
-CONTENT_REVISION = "2026-10-14-dvs23"
+CONTENT_REVISION = "2026-10-14-dvs24-flow"
 
 
 def get_dvs_draft(uid):
-    if uid == "dvs-2.3-task-81573":
+    if uid.startswith("dvs-2.4"):
+        from dvs_lesson24 import TASK_TEMPLATE, ACTIVITY_TEMPLATES
+        default = TASK_TEMPLATE if uid == "dvs-2.4-task-81584" else ACTIVITY_TEMPLATES[uid]
+    elif uid == "dvs-2.3-task-81573":
         from dvs_lesson23 import STUDY_TEMPLATE, COMPARISON_TEMPLATE
         default = STUDY_TEMPLATE + "\n\n" + COMPARISON_TEMPLATE
     elif uid == "dvs-2.2-task-81562":
@@ -41,7 +44,11 @@ def prepare_task_in_resolver(guide, lesson_base):
     resolver_base = "course_exam_connector_fi1bbdv75_learn_practice"
     step = st.session_state.get(f"{lesson_base}_dvs_step_{guide['uid']}", 0)
     st.session_state[f"{resolver_base}_dvs_step_{guide['uid']}"] = step
-    if guide["id"] == "2.3-task":
+    if guide["lesson_number"] == "2.4":
+        kind = "Task 2.4" if guide["id"] == "2.4-task" else f"Activity {guide['id']}"
+        prompt = (f"DVS {kind}: Review my written GIMP editing plan and actual check notes in English. Required output: {guide['deliverable']} {guide['caution']} "
+            "Flag placeholders, distinguish planned and completed actions, and give specific next actions. The selected step is available in the task guide. Do not claim to inspect image pixels, open XCF files, operate GIMP, verify actual layer settings or submit work.\n\nMy editing plan and check notes:\n" + get_dvs_draft(guide["uid"]))
+    elif guide["id"] == "2.3-task":
         prompt = ("DVS Task 2.3: Review my seven-question study notes in English. Questions 1–6 cover graphics types, five raster formats, three vector formats, pixel storage, three raster-oriented tools and two vector-oriented tools. Question 7 compares CorelDRAW, Procreate and Photopea for a hypothetical ordinary paper company with year-end funds left: include platforms, price, raster/vector support and complex functions. Specify product editions, dated official sources, currencies, tax and licence periods. Flag placeholders and company assumptions. Do not invent current prices, device fleets, benchmarks or completed tests. A recommendation is optional; no page count or font is specified. Review written notes without submitting or grading the H5P activity, installing software or inspecting project pixels.\n\nMy study answers and comparison:\n" + get_dvs_draft(guide["uid"]))
     elif guide["id"] == "2.2-task":
         prompt = ("DVS Task 2.2: Review both parts of my draft in English. Question 1: analyse what might mislead in the supplied unemployment and public health expenditure TV graphs. Question 2: state and apply all four course rules, each with my own view and a concrete visualisation workflow action. Check evidence, misleading effects, corrections and limitations. Flag placeholders. Distinguish label-position inconsistency, truncated bars, justified zoomed lines, time gaps and future status. Do not invent verified datasets, measured pixel geometry, broadcaster intent or completed peer feedback. There is no specified page count or font requirement. Review written evidence; you are not inspecting chart pixels.\n\nMy graph analysis, rules and review notes:\n" + get_dvs_draft(guide["uid"]))
@@ -125,6 +132,8 @@ def render_dvs_task_resources(guides, base_key, heading=None, draft_editor=False
                         st.caption("Your draft is kept during this session. Prepare the task below to copy it into Exam Resolver for review.")
                 else:
                     st.caption("Paste your completed persona into the question above to request a review, or prepare it from Lesson 1.1.")
+            elif guide["lesson_number"] == "2.4":
+                render_image_editing_resources(guide, base_key, draft_editor)
             elif guide["id"] == "2.3-task":
                 render_graphics_resources(guide, base_key, draft_editor)
             elif guide["id"] == "2.2-task":
@@ -169,6 +178,9 @@ def render_dvs_task_resources(guides, base_key, heading=None, draft_editor=False
             if any(g["lesson_number"] == "2.3" for g in guides):
                 from dvs_lesson23 import ILLUSTRATIONS as images23
                 visuals.extend(images23)
+            if any(g["lesson_number"] == "2.4" for g in guides):
+                from dvs_lesson24 import ILLUSTRATIONS as images24
+                visuals.extend(images24)
             render_dvs_images(f"{base_key}_resolver", visuals)
 
 
@@ -368,3 +380,71 @@ def render_graphics_resources(guide, base_key, draft_editor):
             st.caption("Your notes are kept during this session. Prepare the task to copy them and the selected question step into Exam Resolver.")
     else:
         st.caption("Paste your notes above or prepare them from Lesson 2.3. The resolver reviews your text and supplied evidence; recheck live prices and actual software behaviour yourself.")
+
+
+
+def render_image_editing_resources(guide, base_key, draft_editor):
+    from dvs_lesson24 import (TASK_STEPS as steps24, ACTIVITY_STEPS, TASK_TEMPLATE,
+        ACTIVITY_TEMPLATES, EVIDENCE_TEMPLATE, ASSETS, FILE_NOTE, CHART_NOTE, VERSION_NOTES)
+    is_task = guide["id"] == "2.4-task"
+    kind = "Task 2.4" if is_task else f"Activity {guide['id']}"
+    steps = steps24 if is_task else ACTIVITY_STEPS[guide["id"]]
+    step = st.selectbox(f"Choose a {kind} step" if is_task else f"Choose an {kind} step", list(range(len(steps))),
+        format_func=lambda i: steps[i][0], key=f"{base_key}_dvs_step_{guide['uid']}")
+    st.markdown(f"**{steps[step][0]}**")
+    st.markdown(steps[step][1])
+    st.caption(f"Check: {steps[step][2]}")
+    with st.expander("Original images and file names", expanded=False):
+        if is_task:
+            st.markdown(FILE_NOTE)
+        else:
+            st.caption("Open the activity’s original image link while signed in to Noroff; keep a fresh source copy for each operation.")
+        if is_task:
+            source_files = ASSETS[:4]
+        elif guide["id"] == "2.4.2":
+            source_files = [ASSETS[5]]
+        elif guide["id"] == "2.4.4":
+            source_files = []
+            st.markdown("Create a new project and the text Data Analyst. No supplied photograph is required for this activity.")
+        else:
+            source_files = [ASSETS[4]]
+        for name,url in source_files:
+            st.markdown(f"[{name}]({url})")
+    if is_task:
+        with st.expander("Strawberry chart meaning and design options", expanded=False):
+            st.markdown(CHART_NOTE)
+            st.markdown("One optional composition uses a strawberry photograph beside readable quarter labels and a short ordering summary. Your own design is allowed. Keep image decoration separate from quantitative encodings.")
+    with st.expander("GIMP commands and version notes", expanded=False):
+        st.markdown(VERSION_NOTES)
+    template = TASK_TEMPLATE if is_task else ACTIVITY_TEMPLATES[guide["uid"]]
+    label = "Download three image design worksheet (Markdown)" if is_task else f"Download Activity {guide['id']} worksheet (Markdown)"
+    filename = "DVS Task 2.4 Three Image Designs.md" if is_task else f"DVS Activity {guide['id']} Worksheet.md"
+    st.download_button(label, template.encode(), file_name=filename, mime="text/markdown", key=f"{base_key}_editing_md_{guide['uid']}")
+    st.download_button("Download editing and export log (Markdown)", EVIDENCE_TEMPLATE.encode(),
+        file_name="DVS Lesson 2.4 Editing and Export Log.md", mime="text/markdown", key=f"{base_key}_editing_log_{guide['uid']}")
+    if is_task:
+        path = TEMPLATE_ROOT / guide["template_file"]
+        if path.is_file():
+            st.download_button("Download GIMP image design worksheet (Word)", path.read_bytes(), file_name=path.name,
+                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document", key=f"{base_key}_editing_docx_{guide['uid']}")
+    st.caption("The images are the task output. Templates and file/log suggestions are optional study scaffolds; the brief specifies no font/page count or export format.")
+    if draft_editor:
+        with st.expander(f"Write your {kind} editing plan and checks", expanded=False):
+            widget_key = f"{base_key}_editing_editor_{guide['uid']}"
+            st.text_area(f"Your {kind} editing plan and check notes", value=get_dvs_draft(guide["uid"]), height=420,
+                key=widget_key, on_change=remember_draft, args=(guide["uid"], widget_key))
+            st.caption("Prepare copies your notes and selected step into Exam Resolver. Record only checks you actually performed.")
+    else:
+        st.caption("The resolver reviews written notes and descriptions. Check actual pixels, masks, layer settings and reopened exports in GIMP yourself.")
+
+
+
+def get_image_editing_step_context(guide, base_key):
+    """Use the current resolver selection, including changes after handoff."""
+    from dvs_lesson24 import TASK_STEPS as steps24, ACTIVITY_STEPS
+    steps = steps24 if guide["id"] == "2.4-task" else ACTIVITY_STEPS[guide["id"]]
+    index = st.session_state.get(f"{base_key}_dvs_step_{guide['uid']}", 0)
+    if not isinstance(index, int) or not 0 <= index < len(steps):
+        index = 0
+    title, instruction, caution = steps[index]
+    return f"Current selected step: {title}\nFocus: {instruction}\nCheck: {caution}\nThis current selector state takes precedence over an earlier step mentioned in the written notes.\n\n"
