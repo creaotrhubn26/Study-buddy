@@ -27,7 +27,7 @@ if getattr(evo_curriculum, "CONTENT_REVISION", None) != EVO_CONTENT_REVISION:
 EVO_ASSET_ROOT = evo_curriculum.ASSET_ROOT
 get_evo_course_lessons = evo_curriculum.get_evo_course_lessons
 get_evo_training_modules = evo_curriculum.get_evo_training_modules
-from evo_tasks import TEMPLATE_ROOT as EVO_TEMPLATE_ROOT, get_evo_task_guides, resolver_task_number_boost, get_evo_resolver_ai_units
+from evo_tasks import TEMPLATE_ROOT as EVO_TEMPLATE_ROOT, get_evo_task_guides, resolver_task_number_boost as _resolver_task_number_boost, get_evo_resolver_ai_units
 import exam_resolver_ui
 
 # Streamlit can rerun app.py while retaining the helper from before a Cloud
@@ -63,7 +63,11 @@ import dvs_module3
 if getattr(dvs_module3, "CONTENT_REVISION", None) != "2026-10-14-dvs3-ready":
     dvs_module3 = importlib.reload(dvs_module3)
 import dvs_curriculum
-DVS_CONTENT_REVISION = "2026-10-14-dvs3-ready"
+import dvs_module4
+if getattr(dvs_module4, "CONTENT_REVISION", None) != "2026-10-15-dvs4-media":
+    dvs_module4 = importlib.reload(dvs_module4)
+
+DVS_CONTENT_REVISION = "2026-10-15-dvs4-media"
 if getattr(dvs_curriculum, "CONTENT_REVISION", None) != DVS_CONTENT_REVISION:
     dvs_curriculum = importlib.reload(dvs_curriculum)
 import dvs_ui
@@ -76,6 +80,12 @@ if getattr(dvs_quiz_bank, "CONTENT_REVISION", None) != "2026-10-14-dvs-quizzes":
 GUIDED_TASK_COURSES = {"FI1BBEO10", "FI1BBDV75"}
 # Reserve room for the complete English DVS guide and its source metadata.
 DVS_TASK_CONTEXT_CHAR_LIMIT = 10000
+
+
+def resolver_task_number_boost(guide, prompt):
+    if guide and guide.get("course_code") == dvs_curriculum.COURSE_CODE:
+        prompt = dvs_curriculum.get_dvs_primary_task_prompt(prompt)
+    return _resolver_task_number_boost(guide, prompt)
 
 
 def get_course_task_guides(course_code, lesson_number):
@@ -66147,6 +66157,8 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             "manual": st.session_state.get(f"{base_key}_selected_sources", []),
             "module3_steps": {g["uid"]: st.session_state[f"{base_key}_dvs_step_{g['uid']}"]
                 for g in dvs_module3.GUIDES if f"{base_key}_dvs_step_{g['uid']}" in st.session_state},
+            "module4_steps": {g["uid"]: st.session_state[f"{base_key}_dvs_step_{g['uid']}"]
+                for g in dvs_module4.GUIDES if f"{base_key}_dvs_step_{g['uid']}" in st.session_state},
         }, sort_keys=True)
 
     stopwords = {
@@ -68187,6 +68199,9 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                     if not full_text:
                         full_text = snippet
                     task_guide = unit.get("task_guide")
+                    if (course_code == dvs_curriculum.COURSE_CODE and task_guide
+                            and task_guide.get("lesson_number", "").startswith("4.")):
+                        full_text = dvs_module4.step_context(task_guide, base_key, st.session_state) + full_text
                     if (course_code == dvs_curriculum.COURSE_CODE and task_guide
                             and task_guide.get("lesson_number", "").startswith("3.")):
                         full_text = dvs_module3.step_context(task_guide, base_key, st.session_state) + full_text
@@ -76499,7 +76514,7 @@ elif page == "Learn & Practice":
             
             visible_lessons = course_lessons[course_code]
             if course_code == dvs_curriculum.COURSE_CODE:
-                lesson_module = st.selectbox("Show lessons from", [None, 1, 2, 3],
+                lesson_module = st.selectbox("Show lessons from", [None, 1, 2, 3, 4],
                     format_func=lambda n: "All reviewed modules" if n is None else f"Module {n}", key="dvs_lesson_module")
                 visible_lessons = [lesson for lesson in visible_lessons if lesson_module is None or lesson.get("module_number") == lesson_module]
             for lesson in visible_lessons:
