@@ -4,13 +4,16 @@ import streamlit as st
 from dvs_curriculum import (ASSET_ROOT, TEMPLATE_ROOT, COURSE_CODE, ILLUSTRATIONS,
     TASK_STEPS, get_dvs_persona_template, get_dvs_task_guide_markdown)
 
-CONTENT_REVISION = "2026-10-14-dvs13"
+CONTENT_REVISION = "2026-10-14-dvs14"
 
 
 def get_dvs_draft(uid):
     if uid == "dvs-1.2-task-81516":
         from dvs_lesson12 import WIREFRAME_TEMPLATE, TEST_TEMPLATE
         default = WIREFRAME_TEMPLATE + "\n\n" + TEST_TEMPLATE
+    elif uid == "dvs-1.4-task-81544":
+        from dvs_lesson14 import REFLECTION_TEMPLATE, RESEARCH_TEMPLATE
+        default = REFLECTION_TEMPLATE + "\n\n" + RESEARCH_TEMPLATE
     elif uid == "dvs-1.3-task-81528":
         from dvs_lesson13 import REFLECTION_TEMPLATE, RESEARCH_TEMPLATE
         default = REFLECTION_TEMPLATE + "\n\n" + RESEARCH_TEMPLATE
@@ -45,7 +48,12 @@ def prepare_task_in_resolver(guide, lesson_base):
             "Required: your own Word document with one brief applied paragraph per principle, considering future visualisations and their web/mobile/print platforms. "
             "Check concrete changes, reasons, evaluation plans and source links. Flag placeholders and missing principles. "
             "Keep Noroff order and distinguish the NC State numbering. Do not invent source claims, completed tests or compliance certification.\n\nMy reflections and research notes:\n" + get_dvs_draft(guide["uid"]))
-    elif guide["lesson_number"] == "1.3":
+    elif guide["id"] == "1.4-task":
+        prompt = ("DVS Task 1.4: Review my three applied reflections. Write in English. "
+            "Required: your own Word document with Inclusive Design, Usability and Accessibility headings and one brief paragraph under each, considering future visualisations and their web/mobile/printed platforms. "
+            "Check concrete adaptations, reasons, evaluation plans and source links. Flag placeholders and missing concepts. "
+            "POUR supports accessibility reasoning; it does not replace the three task headings. Do not invent source claims, completed tests or WCAG conformance.\n\nMy reflections and research notes:\n" + get_dvs_draft(guide["uid"]))
+    elif guide["lesson_number"] in {"1.3", "1.4"}:
         prompt = f"DVS Activity {guide['id']}: {guide['title']}. Write in English. Required output: {guide['deliverable']}. Steps: {'; '.join(guide['steps'])}. {guide['caution']} Follow this activity's stated requirements."
     else:
         prompt = "DVS Activity 1.1.1: Help me draft a clearly labelled hypothetical athlete persona for Funky Monkey, a statement-sock brand seeking recognition among men and women aged 25–35 who participate in mountain biking, triathlons or marathons. Write in English. Keep this brief separate from the CEO task."
@@ -104,11 +112,13 @@ def render_dvs_task_resources(guides, base_key, heading=None, draft_editor=False
                     st.caption("Paste your completed persona into the question above to request a review, or prepare it from Lesson 1.1.")
             elif guide["id"] == "1.2-task":
                 render_wireframe_resources(guide, base_key, draft_editor)
-            elif guide["id"] == "1.3-task":
+            elif guide["id"] in {"1.3-task", "1.4-task"}:
                 render_reflection_resources(guide, base_key, draft_editor)
             else:
                 st.markdown("\n".join(f"{i}. {step}." for i, step in enumerate(guide["steps"], 1)))
                 st.info(guide["caution"])
+                if guide["lesson_number"] == "1.4":
+                    render_activity14_template(guide, base_key)
             label = "Full task guide" if draft_editor else "Resolver task"
             with st.expander(f"{label} {guide['id']}: {guide['title']}", expanded=False):
                 markdown = get_dvs_task_guide_markdown(guide)
@@ -126,6 +136,9 @@ def render_dvs_task_resources(guides, base_key, heading=None, draft_editor=False
             if any(g["lesson_number"] == "1.3" for g in guides):
                 from dvs_lesson13 import ILLUSTRATIONS as images13
                 visuals.extend(images13)
+            if any(g["lesson_number"] == "1.4" for g in guides):
+                from dvs_lesson14 import ILLUSTRATIONS as images14
+                visuals.extend(images14)
             render_dvs_images(f"{base_key}_resolver", visuals)
 
 
@@ -158,34 +171,57 @@ def render_wireframe_resources(guide, base_key, draft_editor):
         st.caption("Paste your plan above or prepare it from Lesson 1.2. The resolver reviews your written plan; describe the sketch layout and controls in words.")
 
 
+def render_activity14_template(guide, base_key):
+    from dvs_lesson14 import CONTRAST_TEMPLATE, LANGUAGE_TEMPLATE
+    if guide["id"] == "1.4.1":
+        label, content, filename = "Download contrast check log (Markdown)", CONTRAST_TEMPLATE, "DVS Activity 1.4.1 Contrast Check Log.md"
+    else:
+        label, content, filename = "Download language selector plan (Markdown)", LANGUAGE_TEMPLATE, "DVS Activity 1.4.2 Language Selector Plan.md"
+    st.download_button(label, content.encode(), file_name=filename, mime="text/markdown", key=f"{base_key}_{filename}")
+
+
 def render_reflection_resources(guide, base_key, draft_editor):
-    from dvs_lesson13 import TASK_STEPS as steps, REFLECTION_TEMPLATE, RESEARCH_TEMPLATE, SOURCES
-    st.info("Required: research universal design and write one brief applied paragraph for each of the seven principles in your own Word document. Include the visual and its host platform.")
-    step = st.selectbox("Choose a Task 1.3 principle", list(range(len(steps))),
+    number = guide["lesson_number"]
+    if number == "1.4":
+        from dvs_lesson14 import TASK_STEPS as steps, REFLECTION_TEMPLATE, RESEARCH_TEMPLATE, SOURCES
+        focus = "concept"
+        brief = "Required: research Inclusive Design, Usability and Accessibility and write one brief applied paragraph under each heading in your own Word document. Include the visual and its host platform."
+        pattern = "context → proposed change → reason → evaluation → source"
+        word_label = "Download three-concept template (Word)"
+        source_note = "The course refers to WCAG 2.1; WCAG 2.2 is a supplementary reference. POUR supports the accessibility reflection rather than replacing the three required concepts."
+    else:
+        from dvs_lesson13 import TASK_STEPS as steps, REFLECTION_TEMPLATE, RESEARCH_TEMPLATE, SOURCES
+        focus = "principle"
+        brief = "Required: research universal design and write one brief applied paragraph for each of the seven principles in your own Word document. Include the visual and its host platform."
+        pattern = "principle → user need → change → reason → check"
+        word_label = "Download seven-principle template (Word)"
+        source_note = "Steps follow Noroff order. NC State places Tolerance for Error fifth and Low Physical Effort sixth. Complete all seven paragraphs, regardless of order."
+    st.info(brief)
+    step = st.selectbox(f"Choose a Task {number} {focus}", list(range(len(steps))),
         format_func=lambda i: steps[i][0], key=f"{base_key}_dvs_step_{guide['uid']}")
     st.markdown(f"**{steps[step][0]}**")
     st.markdown(steps[step][1])
     st.caption(f"Check: {steps[step][2]}")
     with st.expander("Reflection pattern and research sources", expanded=False):
-        st.markdown("**Pattern:** principle → user need → change → reason → check.\n\n**Sentence scaffold:** For [audience/context], I would [change] because [reason]. I would check this by [method]. Source for a researched claim: [...].")
+        st.markdown(f"**Pattern:** {pattern}.\n\n**Sentence scaffold:** For [audience/context], I would [change] because [reason]. I would check this by [method]. Source for a researched claim: [...].")
         st.markdown("\n\n".join(f"[{name}]({url})" for name, url in SOURCES))
-        st.caption("Steps follow Noroff order. NC State places Tolerance for Error fifth and Low Physical Effort sixth. Complete all seven paragraphs, regardless of order.")
+        st.caption(source_note)
     for label, content, filename in [
-        ("Download reflection template (Markdown)", REFLECTION_TEMPLATE, "DVS Task 1.3 Reflection Template.md"),
-        ("Download research notes (Markdown)", RESEARCH_TEMPLATE, "DVS Task 1.3 Research Notes.md")]:
+        ("Download reflection template (Markdown)", REFLECTION_TEMPLATE, f"DVS Task {number} Reflection Template.md"),
+        ("Download research notes (Markdown)", RESEARCH_TEMPLATE, f"DVS Task {number} Research Notes.md")]:
         st.download_button(label, content.encode(), file_name=filename, mime="text/markdown", key=f"{base_key}_{filename}")
     template = TEMPLATE_ROOT / guide["template_file"]
     if template.is_file():
-        st.download_button("Download seven-principle template (Word)", template.read_bytes(), file_name=template.name,
-            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document", key=f"{base_key}_reflection_docx")
+        st.download_button(word_label, template.read_bytes(), file_name=template.name,
+            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document", key=f"{base_key}_reflection_docx_{guide['uid']}")
     if draft_editor:
-        with st.expander("Write your Task 1.3 reflections", expanded=False):
+        with st.expander(f"Write your Task {number} reflections", expanded=False):
             widget_key = f"{base_key}_reflection_editor_{guide['uid']}"
-            st.text_area("Your Task 1.3 reflections and research notes", value=get_dvs_draft(guide['uid']), height=380,
+            st.text_area(f"Your Task {number} reflections and research notes", value=get_dvs_draft(guide['uid']), height=380,
                 key=widget_key, on_change=remember_draft, args=(guide['uid'], widget_key))
-            st.caption("Your draft is kept during this session. Prepare the task to copy the reflections and selected principle into Exam Resolver. Save your final paragraphs in your own Word document.")
+            st.caption(f"Your draft is kept during this session. Prepare the task to copy the reflections and selected {focus} into Exam Resolver. Save your final paragraphs in your own Word document.")
     else:
-        st.caption("Paste your reflections above or prepare them from Lesson 1.3. The resolver reviews the written paragraphs and source notes; proposed checks are not completed tests.")
+        st.caption(f"Paste your reflections above or prepare them from Lesson {number}. The resolver reviews the written paragraphs and source notes; proposed checks are not completed tests.")
 
 
 def render_dvs_lesson_resources(lesson, context):
