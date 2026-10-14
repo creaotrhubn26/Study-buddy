@@ -1,4 +1,5 @@
 import csv
+import importlib
 from html import escape as html_escape
 import io
 import json
@@ -18,7 +19,14 @@ import mistune
 from openai import OpenAI
 from evo_curriculum import ASSET_ROOT as EVO_ASSET_ROOT, get_evo_course_lessons, get_evo_training_modules
 from evo_tasks import TEMPLATE_ROOT as EVO_TEMPLATE_ROOT, get_evo_task_guides, resolver_task_number_boost, get_evo_resolver_ai_units
-from exam_resolver_ui import render_resolver_task_resources, get_resolver_task_guide_markdown
+import exam_resolver_ui
+
+# Streamlit can rerun app.py while retaining the helper from before a Cloud
+# update. Refresh that module once when its newly added guide API is missing.
+if not hasattr(exam_resolver_ui, "get_resolver_task_guide_markdown"):
+    exam_resolver_ui = importlib.reload(exam_resolver_ui)
+render_resolver_task_resources = exam_resolver_ui.render_resolver_task_resources
+get_resolver_task_guide_markdown = exam_resolver_ui.get_resolver_task_guide_markdown
 
 # Use the full browser width so the prompt + dataset upload + syllabus preview
 # all have room to breathe. Must be the first Streamlit call in the module.
