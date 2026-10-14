@@ -2,8 +2,9 @@
 
 from copy import deepcopy
 from pathlib import Path
+import re
 
-CONTENT_REVISION = "2026-10-14-dvs3-ready"
+CONTENT_REVISION = "2026-10-15-dvs4-media"
 COURSE_CODE = "FI1BBDV75"
 COURSE_NAME = "Data Visualisation"
 ASSET_ROOT = Path(__file__).resolve().parent / "assets" / "dvs"
@@ -135,6 +136,9 @@ def get_dvs_persona_template():
 
 
 def get_dvs_task_guide_markdown(guide):
+    if guide["lesson_number"].startswith("4."):
+        from dvs_module4 import get_task_guide_markdown
+        return get_task_guide_markdown(guide)
     if guide["lesson_number"].startswith("3."):
         from dvs_module3 import get_task_guide_markdown
         return get_task_guide_markdown(guide)
@@ -193,12 +197,20 @@ from dvs_lesson24 import GUIDES as GUIDES24
 DVS_TASK_GUIDES.extend(GUIDES24)
 from dvs_module3 import GUIDES as GUIDES3
 DVS_TASK_GUIDES.extend(GUIDES3)
+from dvs_module4 import GUIDES as GUIDES4
+DVS_TASK_GUIDES.extend(GUIDES4)
 for _guide in DVS_TASK_GUIDES:
     _guide["markdown"] = get_dvs_task_guide_markdown(_guide)
 
 
 def get_dvs_task_guides(number):
     return deepcopy([g for g in DVS_TASK_GUIDES if g["lesson_number"] == str(number)])
+
+
+def get_dvs_primary_task_prompt(prompt):
+    """A prepared guide's heading identifies its task; draft references are context."""
+    match = re.match(r"^\s*DVS\s+(?:Task|Activity)\s+\d+\.\d+(?:\.\d+)?\s*:", str(prompt), re.I)
+    return match.group(0) if match else prompt
 
 
 def _get_lesson11():
@@ -214,7 +226,8 @@ def get_dvs_course_lessons():
     from dvs_lesson23 import get_lesson as get_lesson23
     from dvs_lesson24 import get_lesson as get_lesson24
     from dvs_module3 import get_lessons
-    return _get_lesson11() + [deepcopy(get_lesson()), deepcopy(get_lesson13()), deepcopy(get_lesson14()), deepcopy(get_lesson21()), deepcopy(get_lesson22()), deepcopy(get_lesson23()), deepcopy(get_lesson24())] + deepcopy(get_lessons())
+    from dvs_module4 import get_lessons as get_lessons4
+    return _get_lesson11() + [deepcopy(get_lesson()), deepcopy(get_lesson13()), deepcopy(get_lesson14()), deepcopy(get_lesson21()), deepcopy(get_lesson22()), deepcopy(get_lesson23()), deepcopy(get_lesson24())] + deepcopy(get_lessons()) + deepcopy(get_lessons4())
 
 
 def _get_dvs_training_modules():
@@ -253,5 +266,13 @@ def get_dvs_training_modules():
         "lessons": [lesson for lesson in get_dvs_course_lessons() if lesson["module_number"] == 3],
         "exercises": [{"title": g["id"]+": "+g["title"], "type": "case_study", "question": g["deliverable"], "hint": g["step_details"][0][1], "answer": g["caution"]} for g in module3_guides],
         "quiz": get_questions(3),
+    }
+    from dvs_module4 import GUIDES as module4_guides
+    modules["DVS Module 4: Presentation Tools"] = {
+        "course": COURSE_NAME, "course_code": COURSE_CODE,
+        "description": "Reviewed Lessons 4.1–4.4: tool research, fruit slides and motion, data analysis, audience-specific custom shows, four tasks and rental self-study.",
+        "lessons": [lesson for lesson in get_dvs_course_lessons() if lesson["module_number"] == 4],
+        "exercises": [{"title": g["id"]+": "+g["title"], "type": "case_study", "question": g["deliverable"], "hint": g["step_details"][0][1], "answer": g["caution"]} for g in module4_guides],
+        "quiz": get_questions(4),
     }
     return modules

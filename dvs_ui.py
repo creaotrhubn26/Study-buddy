@@ -5,11 +5,14 @@ import dvs_curriculum
 from dvs_curriculum import (ASSET_ROOT, TEMPLATE_ROOT, COURSE_CODE, ILLUSTRATIONS,
     TASK_STEPS, get_dvs_persona_template)
 
-CONTENT_REVISION = "2026-10-14-dvs3-ready"
+CONTENT_REVISION = "2026-10-15-dvs4-media"
 
 
 def get_dvs_draft(uid):
-    if uid.startswith("dvs-3."):
+    if uid.startswith("dvs-4."):
+        from dvs_module4 import GUIDES, get_template
+        default = get_template(next(g for g in GUIDES if g["uid"] == uid))
+    elif uid.startswith("dvs-3."):
         from dvs_module3 import GUIDES, get_template
         default = get_template(next(g for g in GUIDES if g["uid"] == uid))
     elif uid.startswith("dvs-2.4"):
@@ -48,7 +51,13 @@ def prepare_task_in_resolver(guide, lesson_base):
     resolver_base = "course_exam_connector_fi1bbdv75_learn_practice"
     step = st.session_state.get(f"{lesson_base}_dvs_step_{guide['uid']}", 0)
     st.session_state[f"{resolver_base}_dvs_step_{guide['uid']}"] = step
-    if guide["lesson_number"].startswith("3."):
+    if guide["lesson_number"].startswith("4."):
+        kind = "Task " + guide["lesson_number"] if guide["id"].endswith("-task") else "Activity " + guide["id"]
+        prompt = (f"DVS {kind}: Review my presentation plan, written findings and check notes in English. Required output: {guide['deliverable']}. "
+            f"Source: {guide['source_url']}. {guide['caution']} "
+            "Flag placeholders and missing requirements. Distinguish plans from completed operations. Do not claim to operate PowerPoint or Excel, inspect slide pixels, verify native animations/themes/custom shows or submit work.\n\n"
+            + "The currently selected step is supplied in the matching task guide.\n\nMy draft and evidence:\n" + get_dvs_draft(guide["uid"]))
+    elif guide["lesson_number"].startswith("3."):
         kind = "Task " + guide["lesson_number"] if guide["id"].endswith("-task") else "Activity " + guide["id"]
         prompt = (f"DVS {kind}: Review my written work and check notes in English. Required output: {guide['deliverable']}. "
             f"Source: {guide['source_url']}. {guide['caution']} "
@@ -142,6 +151,8 @@ def render_dvs_task_resources(guides, base_key, heading=None, draft_editor=False
                         st.caption("Your draft is kept during this session. Prepare the task below to copy it into Exam Resolver for review.")
                 else:
                     st.caption("Paste your completed persona into the question above to request a review, or prepare it from Lesson 1.1.")
+            elif guide["lesson_number"].startswith("4."):
+                render_module4_resources(guide, base_key, draft_editor)
             elif guide["lesson_number"].startswith("3."):
                 render_module3_resources(guide, base_key, draft_editor)
             elif guide["lesson_number"] == "2.4":
@@ -196,7 +207,47 @@ def render_dvs_task_resources(guides, base_key, heading=None, draft_editor=False
             from dvs_module3 import ILLUSTRATIONS as images3
             for number in sorted({g["lesson_number"] for g in guides if g["lesson_number"].startswith("3.")}):
                 visuals.extend(images3[number])
+            from dvs_module4 import ILLUSTRATIONS as images4
+            for number in sorted({g["lesson_number"] for g in guides if g["lesson_number"].startswith("4.")}):
+                visuals.extend(images4[number])
             render_dvs_images(f"{base_key}_resolver", visuals)
+
+
+def render_module4_resources(guide, base_key, draft_editor):
+    from dvs_module4 import get_template, DATA_ROOT, MS_DESIGN, MS_TRANSITIONS, MS_MORPH, MS_MODEL, KAGGLE
+    steps = guide["step_details"]
+    kind = "Task " + guide["lesson_number"] if guide["id"].endswith("-task") else "Activity " + guide["id"]
+    selected = st.selectbox(f"Choose a {kind} step", list(range(len(steps))),
+        format_func=lambda i: steps[i][0], key=f"{base_key}_dvs_step_{guide['uid']}")
+    st.markdown(f"**{steps[selected][0]}**")
+    st.markdown(steps[selected][1])
+    st.caption("Check: " + steps[selected][2])
+    if guide["task_dataset"]:
+        path = DATA_ROOT / guide["task_dataset"]
+        st.download_button(f"Download {guide['task_dataset']} (original source data)", path.read_bytes(), file_name=path.name,
+            mime="text/csv", key=f"{base_key}_data_{guide['uid']}")
+        st.caption("Original CSV bytes are unchanged. Import into a working copy and check types before analysis.")
+    with st.expander("Official software references and lesson dataset", expanded=False):
+        st.markdown(f"[PowerPoint design]({MS_DESIGN}) · [Transitions]({MS_TRANSITIONS}) · [Morph]({MS_MORPH}) · [Excel Data Model]({MS_MODEL})")
+        if guide["lesson_number"] == "4.4":
+            st.markdown(f"[E-commerce lesson dataset on Kaggle]({KAGGLE}) — separate from the included chocolate and rental task data.")
+    st.download_button(f"Download {kind} working template (Markdown)", get_template(guide).encode(),
+        file_name=f"DVS-{guide['id']}-working-template.md", mime="text/markdown", key=f"{base_key}_template_{guide['uid']}")
+    if guide["template_file"]:
+        path = TEMPLATE_ROOT / guide["template_file"]
+        if path.is_file():
+            st.download_button(f"Download {kind} presentation scaffold (PowerPoint)", path.read_bytes(), file_name=path.name,
+                mime="application/vnd.openxmlformats-officedocument.presentationml.presentation", key=f"{base_key}_pptx_{guide['uid']}")
+            if guide["lesson_number"] == "4.4":
+                st.caption("Nine-slide media template with calculated editable charts and review counts in speaker notes. Add your finding comments, apply Wisp and the required effects, and configure the three custom shows in PowerPoint.")
+            else:
+                st.caption("Fruit media template with images and an editable chart. Replace the static lemon with a real 3D model. Apply native background transparency and the required theme/effects in PowerPoint.")
+    if draft_editor:
+        with st.expander(f"Write your {kind} draft and checks", expanded=False):
+            key=f"{base_key}_module4_editor_{guide['uid']}"
+            st.text_area(f"Your {kind} draft and evidence", value=get_dvs_draft(guide["uid"]), height=380,
+                key=key,on_change=remember_draft,args=(guide["uid"],key))
+            st.caption("Prepare transfers your draft and selected step to Exam Resolver. Record checks actually performed.")
 
 
 def render_module3_resources(guide, base_key, draft_editor):
