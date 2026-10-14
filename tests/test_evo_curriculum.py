@@ -161,7 +161,7 @@ class EvoWorkflowTest(unittest.TestCase):
         target = next(o for o in chooser.options if o.startswith('Task guide 7.2-task:'))
         select(app, chooser.label, target)
         markdown = '\n'.join(item.value for item in app.markdown)
-        self.assertIn('Matched EVO task guides and exam resources', markdown)
+        self.assertIn('2. Task guide and workbook', markdown)
         self.assertIn('Z_Revenue er konstant', markdown)
         downloads = [d.label for d in app.get('download_button')]
         self.assertIn('Download matched workbook: EVO Module 7 Tasks.xlsx', downloads)
@@ -199,6 +199,7 @@ class EvoWorkflowTest(unittest.TestCase):
         ]
         context = get_evo_resolver_ai_units(units, 'Task guides only', 'Specific lesson or outcome', 'Marketing task')
         self.assertEqual([u['id'] for u in context], ['task::7.2', 'lesson::7.2'])
+
         context = get_evo_resolver_ai_units(units, 'Lessons + task guides', 'Whole course (auto-select best matches)', prompt='Task 7.2')
         self.assertEqual([u['id'] for u in context], ['task::7.2', 'lesson::7.2'])
         self.assertEqual(guide['task_dataset'], 'marketing_campaign_fixed.csv')
@@ -206,6 +207,72 @@ class EvoWorkflowTest(unittest.TestCase):
         self.assertEqual([u['id'] for u in context], ['lesson::7.2', 'lesson::6.2'])
         context = get_evo_resolver_ai_units(units, 'Lessons + task guides', 'Manual selection', manual=['Marketing task'])
         self.assertEqual([u['id'] for u in context], ['task::7.2', 'lesson::7.2'])
+
+    def test_task_72_objectives_show_the_actual_workbook_and_preserve_the_prompt(self):
+        app = self.app('Learn & Practice')
+        prompt = next(t for t in app.text_area if t.label == 'Paste the exam question, case, or task prompt')
+        prompt.set_value('Task 7.2: help me analyse the marketing dataset.')
+        app.run(timeout=90)
+        chooser = next(s for s in app.selectbox if s.label == 'Choose a Task 7.2 objective')
+        from exam_resolver_ui import TASK_72_OBJECTIVES
+        self.assertEqual(chooser.options, [v[0] for v in TASK_72_OBJECTIVES.values()])
+        for sheet, objective in TASK_72_OBJECTIVES.items():
+            select(app, chooser.label, sheet)
+            markdown = '\n'.join(item.value for item in app.markdown)
+            self.assertIn(f'Excel worksheet `{sheet}`', markdown)
+            self.assertIn(objective[2], markdown)
+            self.assertIn(objective[4], '\n'.join(item.value for item in app.info))
+            self.assertEqual(next(t for t in app.text_area if t.label == prompt.label).value, prompt.value)
+
+    def test_empty_question_does_not_show_irrelevant_drafts_and_changed_question_refreshes_scaffold(self):
+        app = self.app('Learn & Practice')
+        self.assertFalse(any(t.label == 'Adapt this guide into your own exam wording' for t in app.text_area))
+        prompt = next(t for t in app.text_area if t.label == 'Paste the exam question, case, or task prompt')
+        prompt.set_value('Task 6.2: online shop customer sales.')
+        app.run(timeout=90)
+        prompt = next(t for t in app.text_area if t.label == prompt.label)
+        prompt.set_value('Task 7.2: marketing product spend and Z_Revenue.')
+        app.run(timeout=90)
+        draft = next(t for t in app.text_area if t.label == 'Adapt this guide into your own exam wording')
+        self.assertIn('Task guide 7.2-task:', draft.value)
+        self.assertNotIn('Task guide 6.2-task:', draft.value)
+        draft.set_value('My edited answer for this question')
+        app.run(timeout=90)
+        select(app, 'Choose a Task 7.2 objective', 'Retention')
+        self.assertEqual(next(t for t in app.text_area if t.label == draft.label).value, 'My edited answer for this question')
+
+    def test_stale_ai_answer_is_separated_from_current_question(self):
+        from unittest.mock import patch
+        import json
+        env = {'OPENAI_API_KEY': 'offline-ui-test-key', 'AI_PROVIDER': 'openai'}
+        env['_STUDY_BUDDY_INITIAL_ENV_KEYS'] = json.dumps(list(os.environ) + list(env))
+        with patch.dict(os.environ, env):
+            app = self.app('Learn & Practice')
+            base = 'course_exam_connector_fi1bbeo10_learn_practice'
+            app.session_state[f'{base}_prompt'] = 'Task 7.2: explain Z_Revenue.'
+            app.session_state[f'{base}_ai_answer'] = 'A cached answer to Task 6.2.'
+            app.session_state[f'{base}_ai_answer_signature'] = 'older-question'
+            app.run(timeout=90)
+            self.assertFalse(app.exception)
+            self.assertTrue(any('earlier question or dataset' in item.value for item in app.info))
+            previous = next(e for e in app.expander if e.label == 'Previous AI answer')
+            self.assertFalse(previous.proto.expanded)
+            headings = [m.value for m in app.markdown if m.value in {'### 1. Question and data', '### 2. Task guide and workbook', '### 3. Answer and reasoning'}]
+            self.assertEqual(headings[:3], ['### 1. Question and data', '### 2. Task guide and workbook', '### 3. Answer and reasoning'])
+
+    def test_general_statistics_resolver_keeps_verified_calculations_available(self):
+        app = self.app('Learn & Practice')
+        select(app, 'Select a course to study:', 'FI1BBST05 - Statistical Tools')
+        prompt = next(t for t in app.text_area if t.label == 'Paste the exam question, case, or task prompt')
+        prompt.set_value('An independent t-test compares two groups. Group A has mean 72, standard deviation 10, and sample size 35. Group B has mean 78, standard deviation 11, and sample size 37. Use alpha 0.05.')
+        app.run(timeout=90)
+        self.assertFalse(app.exception)
+        summary = next(t for t in app.text_area if t.label == 'Verified stats / hypothesis summary to use in your answer')
+        self.assertIn('mean A = 72.000', summary.value)
+        self.assertIn('mean B = 78.000', summary.value)
+        markdown = '\n'.join(item.value for item in app.markdown)
+        self.assertIn('2. Sources for this question', markdown)
+
 
 
 if __name__ == "__main__":
