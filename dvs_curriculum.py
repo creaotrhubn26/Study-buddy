@@ -3,7 +3,7 @@
 from copy import deepcopy
 from pathlib import Path
 
-CONTENT_REVISION = "2026-10-14-dvs24-guide"
+CONTENT_REVISION = "2026-10-14-dvs3-ready"
 COURSE_CODE = "FI1BBDV75"
 COURSE_NAME = "Data Visualisation"
 ASSET_ROOT = Path(__file__).resolve().parent / "assets" / "dvs"
@@ -135,6 +135,9 @@ def get_dvs_persona_template():
 
 
 def get_dvs_task_guide_markdown(guide):
+    if guide["lesson_number"].startswith("3."):
+        from dvs_module3 import get_task_guide_markdown
+        return get_task_guide_markdown(guide)
     if guide["lesson_number"] == "2.4":
         from dvs_lesson24 import get_task_guide_markdown
         return get_task_guide_markdown(guide)
@@ -188,6 +191,8 @@ from dvs_lesson23 import GUIDE as GUIDE23
 DVS_TASK_GUIDES.append(GUIDE23)
 from dvs_lesson24 import GUIDES as GUIDES24
 DVS_TASK_GUIDES.extend(GUIDES24)
+from dvs_module3 import GUIDES as GUIDES3
+DVS_TASK_GUIDES.extend(GUIDES3)
 for _guide in DVS_TASK_GUIDES:
     _guide["markdown"] = get_dvs_task_guide_markdown(_guide)
 
@@ -208,7 +213,8 @@ def get_dvs_course_lessons():
     from dvs_lesson22 import get_lesson as get_lesson22
     from dvs_lesson23 import get_lesson as get_lesson23
     from dvs_lesson24 import get_lesson as get_lesson24
-    return _get_lesson11() + [deepcopy(get_lesson()), deepcopy(get_lesson13()), deepcopy(get_lesson14()), deepcopy(get_lesson21()), deepcopy(get_lesson22()), deepcopy(get_lesson23()), deepcopy(get_lesson24())]
+    from dvs_module3 import get_lessons
+    return _get_lesson11() + [deepcopy(get_lesson()), deepcopy(get_lesson13()), deepcopy(get_lesson14()), deepcopy(get_lesson21()), deepcopy(get_lesson22()), deepcopy(get_lesson23()), deepcopy(get_lesson24())] + deepcopy(get_lessons())
 
 
 def _get_dvs_training_modules():
@@ -239,4 +245,13 @@ def get_dvs_training_modules():
     module2["quiz"].append({"question": "What does Save do in GIMP?", "options": ["Always exports a JPEG", "Saves an editable XCF project", "Converts every raster image to vector", "Preserves all undo history forever"], "correct": 1, "explanation": "Save stores XCF project structure. Export creates a sharing format; XCF does not retain undo history."})
     module2["exercises"].append({"title": "Task 2.4: Three image designs with GIMP", "type": "case_study", "question": "Plan the leaves/tree blend, pineapple on Stone and strawberry-sales illustration, then perform and record actual checks.", "hint": "Set leaves opacity to 80%, keep Stone below pineapple and do not invent chart units or values.", "answer": "The task requires three original image outputs. Notes support the images; layer settings and export checks must be performed in GIMP rather than inferred by Exam Resolver."})
     module2["quiz"].append({"question": "Which layer has 80% opacity in Task 2.4 Question 1?", "options": ["The tree", "The leaves", "Every layer", "The pineapple"], "correct": 1, "explanation": "The instruction sets leaves opacity to 80%. The butterfly example used a different setting."})
+    from dvs_module3 import GUIDES as module3_guides
+    from dvs_quiz_bank import get_questions
+    modules["DVS Module 3: Visualisation Techniques"] = {
+        "course": COURSE_NAME, "course_code": COURSE_CODE,
+        "description": "Reviewed Lessons 3.1–3.4: plot selection, line and XY charts, bins, combo charts, PivotCharts, four tasks and fourteen independent activities.",
+        "lessons": [lesson for lesson in get_dvs_course_lessons() if lesson["module_number"] == 3],
+        "exercises": [{"title": g["id"]+": "+g["title"], "type": "case_study", "question": g["deliverable"], "hint": g["step_details"][0][1], "answer": g["caution"]} for g in module3_guides],
+        "quiz": get_questions(3),
+    }
     return modules
