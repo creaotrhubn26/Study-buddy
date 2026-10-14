@@ -4,11 +4,14 @@ import streamlit as st
 from dvs_curriculum import (ASSET_ROOT, TEMPLATE_ROOT, COURSE_CODE, ILLUSTRATIONS,
     TASK_STEPS, get_dvs_persona_template, get_dvs_task_guide_markdown)
 
-CONTENT_REVISION = "2026-10-14-dvs14"
+CONTENT_REVISION = "2026-10-14-dvs21"
 
 
 def get_dvs_draft(uid):
-    if uid == "dvs-1.2-task-81516":
+    if uid == "dvs-2.1-task-81556":
+        from dvs_lesson21 import REPORT_TEMPLATE, APPLICATION_TEMPLATE, EVIDENCE_TEMPLATE
+        default = REPORT_TEMPLATE + "\n\n" + APPLICATION_TEMPLATE + "\n\n" + EVIDENCE_TEMPLATE
+    elif uid == "dvs-1.2-task-81516":
         from dvs_lesson12 import WIREFRAME_TEMPLATE, TEST_TEMPLATE
         default = WIREFRAME_TEMPLATE + "\n\n" + TEST_TEMPLATE
     elif uid == "dvs-1.4-task-81544":
@@ -32,7 +35,9 @@ def prepare_task_in_resolver(guide, lesson_base):
     resolver_base = "course_exam_connector_fi1bbdv75_learn_practice"
     step = st.session_state.get(f"{lesson_base}_dvs_step_{guide['uid']}", 0)
     st.session_state[f"{resolver_base}_dvs_step_{guide['uid']}"] = step
-    if guide["id"] == "1.1-task":
+    if guide["id"] == "2.1-task":
+        prompt = ("DVS Task 2.1: Review both parts of my draft in English. Question 1: one-page report identifying good and bad design elements of OECD Data and the OECD Forum Network, with justified evidence. Question 2: at least half a page defining UX design in my own words and applying it to data analysis visualisations, in Word using Arial 11 pt. Flag placeholders and missing reasons. Record redirects and scope limitations; do not invent old Forum observations, completed tests or conformance. Review only the evidence supplied; final formatting and page lengths need checking in Word.\n\nMy report, UX application and evidence:\n" + get_dvs_draft(guide["uid"]))
+    elif guide["id"] == "1.1-task":
         prompt = ("DVS Task 1.1: Review my hypothetical CEO persona for the snow-free bobsled market-analysis presentation. "
             "Write in English. Supplied facts: CEO of an extreme-sports start-up, early twenties, enjoys BASE jumping. "
             "Treat additional characteristics as hypothetical assumptions. Flag unfilled placeholders. "
@@ -110,6 +115,8 @@ def render_dvs_task_resources(guides, base_key, heading=None, draft_editor=False
                         st.caption("Your draft is kept during this session. Prepare the task below to copy it into Exam Resolver for review.")
                 else:
                     st.caption("Paste your completed persona into the question above to request a review, or prepare it from Lesson 1.1.")
+            elif guide["id"] == "2.1-task":
+                render_ux_review_resources(guide, base_key, draft_editor)
             elif guide["id"] == "1.2-task":
                 render_wireframe_resources(guide, base_key, draft_editor)
             elif guide["id"] in {"1.3-task", "1.4-task"}:
@@ -139,6 +146,9 @@ def render_dvs_task_resources(guides, base_key, heading=None, draft_editor=False
             if any(g["lesson_number"] == "1.4" for g in guides):
                 from dvs_lesson14 import ILLUSTRATIONS as images14
                 visuals.extend(images14)
+            if any(g["lesson_number"] == "2.1" for g in guides):
+                from dvs_lesson21 import ILLUSTRATIONS as images21
+                visuals.extend(images21)
             render_dvs_images(f"{base_key}_resolver", visuals)
 
 
@@ -239,3 +249,34 @@ def render_dvs_lesson_resources(lesson, context):
     label = f"Prepare Task {guide['lesson_number']} in Exam Resolver" if guide["id"].endswith('-task') else f"Prepare Activity {guide['id']} in Exam Resolver"
     st.button(label, key=f"{base_key}_prepare", on_click=prepare_task_in_resolver, args=(guide, base_key))
     st.markdown("[Go to Exam Resolver](#semester-exam-connector)")
+
+
+def render_ux_review_resources(guide, base_key, draft_editor):
+    from dvs_lesson21 import TASK_STEPS as steps, REPORT_TEMPLATE, APPLICATION_TEMPLATE, EVIDENCE_TEMPLATE, REDIRECT_NOTE
+    st.info(guide["deliverable"])
+    step = st.selectbox("Choose a Task 2.1 step", list(range(len(steps))),
+        format_func=lambda i: steps[i][0], key=f"{base_key}_dvs_step_{guide['uid']}")
+    st.markdown(f"**{steps[step][0]}**")
+    st.markdown(steps[step][1])
+    st.caption(f"Check: {steps[step][2]}")
+    with st.expander("Website evidence and current redirects", expanded=False):
+        st.markdown(REDIRECT_NOTE)
+        st.markdown("**Report pattern:** observation → UX reason → user impact → improvement or check.\n\n**Application pattern:** concept → design choice → user benefit → evaluation.")
+        st.caption("The resolver reviews your supplied evidence and written reasoning. Inspect the sites yourself and verify final formatting and page lengths in Word.")
+    for label, content, filename in [
+        ("Download website review template (Markdown)", REPORT_TEMPLATE, "DVS Task 2.1 Website Review.md"),
+        ("Download UX application template (Markdown)", APPLICATION_TEMPLATE, "DVS Task 2.1 UX Application.md"),
+        ("Download website evidence log (Markdown)", EVIDENCE_TEMPLATE, "DVS Task 2.1 Evidence Log.md")]:
+        st.download_button(label, content.encode(), file_name=filename, mime="text/markdown", key=f"{base_key}_{filename}")
+    path = TEMPLATE_ROOT / guide["template_file"]
+    if path.is_file():
+        st.download_button("Download website review and UX template (Word)", path.read_bytes(), file_name=path.name,
+            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document", key=f"{base_key}_ux_docx_{guide['uid']}")
+    if draft_editor:
+        with st.expander("Write your Task 2.1 answers and evidence", expanded=False):
+            widget_key = f"{base_key}_ux_editor_{guide['uid']}"
+            st.text_area("Your Task 2.1 report UX application and evidence", value=get_dvs_draft(guide["uid"]), height=420,
+                key=widget_key, on_change=remember_draft, args=(guide["uid"], widget_key))
+            st.caption("Your draft is kept during this session. Prepare the task to copy it and the selected step into Exam Resolver. Save the final answers in your own Word document.")
+    else:
+        st.caption("Paste both answers and evidence above, or prepare them from Lesson 2.1. The resolver cannot establish unobserved website behaviour or final Word pagination.")
