@@ -53,7 +53,7 @@ class DvsLesson22Test(unittest.TestCase):
     def test_module2_training_preserves_lesson21_and_module1_order(self):
         modules=get_dvs_training_modules()
         self.assertEqual([l['lesson_number'] for l in modules['DVS Module 1: Design Thinking']['lessons']],['1.1','1.2','1.3','1.4'])
-        self.assertEqual([l['lesson_number'] for l in modules['DVS Module 2: User Experience and User Experience Design']['lessons']],['2.1','2.2'])
+        self.assertEqual([l['lesson_number'] for l in modules['DVS Module 2: User Experience and User Experience Design']['lessons']],['2.1','2.2','2.3'])
         app=self.app('Training Center')
         next(s for s in app.selectbox if s.label=='🎯 Select Topic:').set_value('DVS Module 2: User Experience and User Experience Design');self.run_app(app)
         labels=[b.label for b in app.button]

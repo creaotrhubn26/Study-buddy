@@ -171,3 +171,6 @@ English UX lesson and two-question task workflow are available in Lessons and Un
 
 ### DVS Lesson 2.2
 The ethics lesson and two-question Task 2.2 are available in Lessons and Exam Resolver, with seven English steps, two imagegen illustrations, graph-analysis/four-rule templates, optional peer-review notes and Word download. Screenshot evidence, scale distinctions, future-value status and dataset/intent limitations are explicit. Draft and selected step transfer; Module 2 retains 2.1 and adds 2.2. The brief imposes no page count or font requirement.
+
+### DVS Lesson 2.3
+English raster/vector and GIMP explanations, seven Task 2.3 question views, three imagegen illustrations, study/comparison/orientation Markdown templates and an editable Word worksheet. Question 7 includes dated official research for CorelDRAW, Procreate and Photopea with platform, licence/price, raster/vector and complex-function comparisons. Draft and selected question transfer to Exam Resolver without generation. Optional GIMP practice and conditional recommendations are distinguished from the task requirements; earlier lessons remain available.

@@ -4,11 +4,14 @@ import streamlit as st
 from dvs_curriculum import (ASSET_ROOT, TEMPLATE_ROOT, COURSE_CODE, ILLUSTRATIONS,
     TASK_STEPS, get_dvs_persona_template, get_dvs_task_guide_markdown)
 
-CONTENT_REVISION = "2026-10-14-dvs22"
+CONTENT_REVISION = "2026-10-14-dvs23"
 
 
 def get_dvs_draft(uid):
-    if uid == "dvs-2.2-task-81562":
+    if uid == "dvs-2.3-task-81573":
+        from dvs_lesson23 import STUDY_TEMPLATE, COMPARISON_TEMPLATE
+        default = STUDY_TEMPLATE + "\n\n" + COMPARISON_TEMPLATE
+    elif uid == "dvs-2.2-task-81562":
         from dvs_lesson22 import ANALYSIS_TEMPLATE, RULES_TEMPLATE, REVIEW_TEMPLATE
         default = ANALYSIS_TEMPLATE + "\n\n" + RULES_TEMPLATE + "\n\n" + REVIEW_TEMPLATE
     elif uid == "dvs-2.1-task-81556":
@@ -38,7 +41,9 @@ def prepare_task_in_resolver(guide, lesson_base):
     resolver_base = "course_exam_connector_fi1bbdv75_learn_practice"
     step = st.session_state.get(f"{lesson_base}_dvs_step_{guide['uid']}", 0)
     st.session_state[f"{resolver_base}_dvs_step_{guide['uid']}"] = step
-    if guide["id"] == "2.2-task":
+    if guide["id"] == "2.3-task":
+        prompt = ("DVS Task 2.3: Review my seven-question study notes in English. Questions 1–6 cover graphics types, five raster formats, three vector formats, pixel storage, three raster-oriented tools and two vector-oriented tools. Question 7 compares CorelDRAW, Procreate and Photopea for a hypothetical ordinary paper company with year-end funds left: include platforms, price, raster/vector support and complex functions. Specify product editions, dated official sources, currencies, tax and licence periods. Flag placeholders and company assumptions. Do not invent current prices, device fleets, benchmarks or completed tests. A recommendation is optional; no page count or font is specified. Review written notes without submitting or grading the H5P activity, installing software or inspecting project pixels.\n\nMy study answers and comparison:\n" + get_dvs_draft(guide["uid"]))
+    elif guide["id"] == "2.2-task":
         prompt = ("DVS Task 2.2: Review both parts of my draft in English. Question 1: analyse what might mislead in the supplied unemployment and public health expenditure TV graphs. Question 2: state and apply all four course rules, each with my own view and a concrete visualisation workflow action. Check evidence, misleading effects, corrections and limitations. Flag placeholders. Distinguish label-position inconsistency, truncated bars, justified zoomed lines, time gaps and future status. Do not invent verified datasets, measured pixel geometry, broadcaster intent or completed peer feedback. There is no specified page count or font requirement. Review written evidence; you are not inspecting chart pixels.\n\nMy graph analysis, rules and review notes:\n" + get_dvs_draft(guide["uid"]))
     elif guide["id"] == "2.1-task":
         prompt = ("DVS Task 2.1: Review both parts of my draft in English. Question 1: one-page report identifying good and bad design elements of OECD Data and the OECD Forum Network, with justified evidence. Question 2: at least half a page defining UX design in my own words and applying it to data analysis visualisations, in Word using Arial 11 pt. Flag placeholders and missing reasons. Record redirects and scope limitations; do not invent old Forum observations, completed tests or conformance. Review only the evidence supplied; final formatting and page lengths need checking in Word.\n\nMy report, UX application and evidence:\n" + get_dvs_draft(guide["uid"]))
@@ -120,6 +125,8 @@ def render_dvs_task_resources(guides, base_key, heading=None, draft_editor=False
                         st.caption("Your draft is kept during this session. Prepare the task below to copy it into Exam Resolver for review.")
                 else:
                     st.caption("Paste your completed persona into the question above to request a review, or prepare it from Lesson 1.1.")
+            elif guide["id"] == "2.3-task":
+                render_graphics_resources(guide, base_key, draft_editor)
             elif guide["id"] == "2.2-task":
                 render_ethics_resources(guide, base_key, draft_editor)
             elif guide["id"] == "2.1-task":
@@ -159,6 +166,9 @@ def render_dvs_task_resources(guides, base_key, heading=None, draft_editor=False
             if any(g["lesson_number"] == "2.2" for g in guides):
                 from dvs_lesson22 import ILLUSTRATIONS as images22
                 visuals.extend(images22)
+            if any(g["lesson_number"] == "2.3" for g in guides):
+                from dvs_lesson23 import ILLUSTRATIONS as images23
+                visuals.extend(images23)
             render_dvs_images(f"{base_key}_resolver", visuals)
 
 
@@ -325,3 +335,36 @@ def render_ethics_resources(guide, base_key, draft_editor):
             st.caption("Your draft is kept during this session. Prepare the task to copy it and the selected step into Exam Resolver.")
     else:
         st.caption("Paste both answers and evidence above, or prepare them from Lesson 2.2. State all four rules with your own view and application.")
+
+
+def render_graphics_resources(guide, base_key, draft_editor):
+    from dvs_lesson23 import TASK_STEPS as steps, STUDY_TEMPLATE, COMPARISON_TEMPLATE, SETUP_TEMPLATE, RESEARCH_NOTES, COMPARISON_EXAMPLE
+    step = st.selectbox("Choose a Task 2.3 question", list(range(len(steps))),
+        format_func=lambda i: steps[i][0], key=f"{base_key}_dvs_step_{guide['uid']}")
+    st.markdown(f"**{steps[step][0]}**")
+    st.markdown(steps[step][1])
+    st.caption(f"Check: {steps[step][2]}")
+    with st.expander("Question 7 software research and dated prices", expanded=False):
+        st.markdown(RESEARCH_NOTES)
+        st.markdown(COMPARISON_EXAMPLE)
+    with st.expander("GIMP orientation and format checks", expanded=False):
+        st.markdown("Find the image window/menu, toolbox, tool options, brushes/patterns/gradients and layers. Save an editable XCF project and export a sharing image. Layout varies by version.\n\nRaster/vector describe representation; a vector document can embed a bitmap, and rasterising it creates pixels.")
+        st.caption("The setup log is optional lesson practice. The seven-question task does not require a GIMP project submission or a particular font/page count.")
+    for label, content, filename in [
+        ("Download graphics study worksheet (Markdown)", STUDY_TEMPLATE, "DVS Task 2.3 Graphics Study Worksheet.md"),
+        ("Download software comparison template (Markdown)", COMPARISON_TEMPLATE, "DVS Task 2.3 Software Comparison.md"),
+        ("Download GIMP orientation log (Markdown)", SETUP_TEMPLATE, "DVS Lesson 2.3 GIMP Orientation Log.md")]:
+        st.download_button(label, content.encode(), file_name=filename, mime="text/markdown", key=f"{base_key}_{filename}")
+    path = TEMPLATE_ROOT / guide["template_file"]
+    if path.is_file():
+        st.download_button("Download graphics and software comparison template (Word)", path.read_bytes(), file_name=path.name,
+            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document", key=f"{base_key}_graphics_docx_{guide['uid']}")
+    st.caption("Templates help you study and draft Question 7; they do not submit or grade the Noroff H5P activity.")
+    if draft_editor:
+        with st.expander("Write your Task 2.3 study answers and comparison", expanded=False):
+            widget_key = f"{base_key}_graphics_editor_{guide['uid']}"
+            st.text_area("Your Task 2.3 study answers and software comparison", value=get_dvs_draft(guide["uid"]), height=420,
+                key=widget_key, on_change=remember_draft, args=(guide["uid"], widget_key))
+            st.caption("Your notes are kept during this session. Prepare the task to copy them and the selected question step into Exam Resolver.")
+    else:
+        st.caption("Paste your notes above or prepare them from Lesson 2.3. The resolver reviews your text and supplied evidence; recheck live prices and actual software behaviour yourself.")
