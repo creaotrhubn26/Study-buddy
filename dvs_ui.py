@@ -1,10 +1,11 @@
 """Shared English DVS task flow for Lessons and Universal Exam Resolver."""
 
 import streamlit as st
+import dvs_curriculum
 from dvs_curriculum import (ASSET_ROOT, TEMPLATE_ROOT, COURSE_CODE, ILLUSTRATIONS,
-    TASK_STEPS, get_dvs_persona_template, get_dvs_task_guide_markdown)
+    TASK_STEPS, get_dvs_persona_template)
 
-CONTENT_REVISION = "2026-10-14-dvs24-flow"
+CONTENT_REVISION = "2026-10-14-dvs24-guide"
 
 
 def get_dvs_draft(uid):
@@ -151,7 +152,7 @@ def render_dvs_task_resources(guides, base_key, heading=None, draft_editor=False
                     render_activity14_template(guide, base_key)
             label = "Full task guide" if draft_editor else "Resolver task"
             with st.expander(f"{label} {guide['id']}: {guide['title']}", expanded=False):
-                markdown = get_dvs_task_guide_markdown(guide)
+                markdown = dvs_curriculum.get_dvs_task_guide_markdown(guide)
                 st.markdown(markdown)
                 st.download_button("Download DVS task guide (Markdown)", markdown.encode(),
                     file_name=f"DVS-{guide['id']}-guide.md", mime="text/markdown", key=f"{base_key}_guide_{guide['uid']}")

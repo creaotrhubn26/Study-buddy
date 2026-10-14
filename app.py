@@ -59,7 +59,7 @@ import dvs_lesson24
 if getattr(dvs_lesson24, "CONTENT_REVISION", None) != "2026-10-14-dvs24":
     dvs_lesson24 = importlib.reload(dvs_lesson24)
 import dvs_curriculum
-DVS_CONTENT_REVISION = "2026-10-14-dvs24-flow"
+DVS_CONTENT_REVISION = "2026-10-14-dvs24-guide"
 if getattr(dvs_curriculum, "CONTENT_REVISION", None) != DVS_CONTENT_REVISION:
     dvs_curriculum = importlib.reload(dvs_curriculum)
 import dvs_ui

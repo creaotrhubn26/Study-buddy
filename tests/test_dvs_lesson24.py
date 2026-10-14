@@ -26,6 +26,13 @@ class DvsLesson24Test(unittest.TestCase):
             self.assertIn(expected,xml)
         self.assertNotIn('<w:pBdr',xml+styles)
         app=self.app()
+        # A long-lived Streamlit process can retain an imported function from
+        # an earlier curriculum revision. Render through the current module.
+        with patch("dvs_ui.get_dvs_task_guide_markdown", create=True, return_value="Stale persona guide"):
+            self.run_app(app)
+            panel=next(e for e in app.expander if e.label=="Full task guide 2.4-task: Three image designs with GIMP")
+            self.assertIn("### DVS Task 2.4:", "\n".join(m.value for m in panel.markdown))
+            self.assertNotIn("Stale persona guide", "\n".join(m.value for m in panel.markdown))
         for label in ['Download three image design worksheet (Markdown)','Download editing and export log (Markdown)','Download GIMP image design worksheet (Word)']:
             self.assertIn(label,[d.label for d in app.get('download_button')])
         next(t for t in app.text_area if t.label=='Paste the exam question, case, or task prompt').set_value('Task 2.4: review my three GIMP image designs.');self.run_app(app)
