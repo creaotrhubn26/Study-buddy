@@ -37,6 +37,35 @@ if (getattr(exam_resolver_ui, "CONTENT_REVISION", None) != EVO_CONTENT_REVISION
 render_resolver_task_resources = exam_resolver_ui.render_resolver_task_resources
 get_resolver_task_guide_markdown = exam_resolver_ui.get_resolver_task_guide_markdown
 
+import dvs_curriculum
+DVS_CONTENT_REVISION = "2026-10-14-dvs11"
+if getattr(dvs_curriculum, "CONTENT_REVISION", None) != DVS_CONTENT_REVISION:
+    dvs_curriculum = importlib.reload(dvs_curriculum)
+import dvs_ui
+if getattr(dvs_ui, "CONTENT_REVISION", None) != DVS_CONTENT_REVISION:
+    dvs_ui = importlib.reload(dvs_ui)
+
+GUIDED_TASK_COURSES = {"FI1BBEO10", "FI1BBDV75"}
+
+
+def get_course_task_guides(course_code, lesson_number):
+    if course_code == dvs_curriculum.COURSE_CODE:
+        return dvs_curriculum.get_dvs_task_guides(lesson_number)
+    return get_evo_task_guides(lesson_number) if course_code == "FI1BBEO10" else []
+
+
+def get_course_task_markdown(guide, selected_objectives=None):
+    if guide.get("course_code") == dvs_curriculum.COURSE_CODE:
+        return dvs_curriculum.get_dvs_task_guide_markdown(guide)
+    return get_resolver_task_guide_markdown(guide, selected_objectives)
+
+
+def render_course_task_resources(guides, base_key):
+    if guides and guides[0].get("course_code") == dvs_curriculum.COURSE_CODE:
+        dvs_ui.render_dvs_task_resources(guides, base_key)
+    else:
+        render_resolver_task_resources(guides, base_key)
+
 # Use the full browser width so the prompt + dataset upload + syllabus preview
 # all have room to breathe. Must be the first Streamlit call in the module.
 try:
@@ -62493,6 +62522,8 @@ A strong Statistical Tools answer usually:
 # Training Center topics remain available with their existing progress keys.
 course_lessons["FI1BBEO10"] = get_evo_course_lessons()
 training_modules.update(get_evo_training_modules())
+course_lessons[dvs_curriculum.COURSE_CODE] = dvs_curriculum.get_dvs_course_lessons()
+training_modules.update(dvs_curriculum.get_dvs_training_modules())
 
 courses_data = [
     {
@@ -66071,6 +66102,13 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
     safe_context_key = re.sub(r"[^a-z0-9_]+", "_", str(context_key).lower())
     base_key = f"course_exam_connector_{course_code.lower()}_{safe_context_key}"
     workflow_signature = json.dumps(exam_resolver_ui.get_selected_conclusion_objectives(base_key)) if course_code == "FI1BBEO10" else ""
+    if course_code == dvs_curriculum.COURSE_CODE:
+        workflow_signature = json.dumps({
+            "pool": st.session_state.get(f"{base_key}_source_pool", "Lessons + learning outcomes"),
+            "scope": st.session_state.get(f"{base_key}_scope", "Whole course (auto-select best matches)"),
+            "specific": st.session_state.get(f"{base_key}_specific_source", ""),
+            "manual": st.session_state.get(f"{base_key}_selected_sources", []),
+        }, sort_keys=True)
 
     stopwords = {
         "the", "and", "for", "with", "that", "this", "from", "into", "using", "used", "use",
@@ -67113,14 +67151,14 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 "weight": 3.0,
                 "cue_phrases": cue_phrases,
                 "content_segments": content_segments,
-                "content": lesson.get("content", "") if course_code == "FI1BBEO10" else "",
+                "content": lesson.get("content", "") if course_code in GUIDED_TASK_COURSES else "",
             })
 
         # EVO activities are first-class sources. Appending their index to a
         # lesson is not sufficient: the lesson preview is capped at 1,800 chars.
-        if course_code == "FI1BBEO10":
+        if course_code in GUIDED_TASK_COURSES:
             for lesson in detailed_lessons:
-                for guide in get_evo_task_guides(lesson["lesson_number"]):
+                for guide in get_course_task_guides(course_code, lesson["lesson_number"]):
                     order_index += 1
                     search_text = " ".join([
                         guide["id"], guide["title"], guide["method"],
@@ -67136,11 +67174,11 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                         +
                         f"Required output: {guide['deliverable']}\n"
                         f"Limitations: {guide['caution']}\n"
-                        f"Workbook scaffold (not solved data): {guide['template_file']}\n\n"
-                        + get_resolver_task_guide_markdown(guide, exam_resolver_ui.get_selected_conclusion_objectives(base_key) if guide["id"] == "7.4-task" else None)
+                        f"Working template (not a completed answer): {guide['template_file']}\n\n"
+                        + get_course_task_markdown(guide, exam_resolver_ui.get_selected_conclusion_objectives(base_key) if course_code == "FI1BBEO10" and guide["id"] == "7.4-task" else None)
                     )
                     units.append({
-                        "id": f"evo_task::{guide['uid']}",
+                        "id": f"{'dvs_task' if course_code == dvs_curriculum.COURSE_CODE else 'evo_task'}::{guide['uid']}",
                         "label": f"Task guide {guide['id']}: {guide['title']}",
                         "kind": "Task", "title": guide["title"],
                         "order_index": order_index, "weight": 3.0,
@@ -67551,6 +67589,18 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         },
     }
 
+    if course_code == dvs_curriculum.COURSE_CODE:
+        style_profiles["Persona design task"] = {
+            "summary": "describe the audience, label persona assumptions and justify presentation needs",
+            "keywords": ["persona", "audience", "empathise", "hypothetical"],
+            "structure": [
+                "State the audience and retain the facts supplied by the selected brief.",
+                "Describe hypothetical goals, information needs and pain points with clear assumption labels.",
+                "Connect those needs to presentation choices without inventing research or market findings.",
+                "Check the persona's consistency and state questions that could validate the assumptions.",
+            ],
+        }
+
     tone_profiles = {
         "Exam-safe academic": {
             "summary": "Clear, structured, and slightly formal wording suited to assessments.",
@@ -67688,7 +67738,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             return data.decode("utf-8", errors="replace")
         return str(data)
 
-    st.caption("Question and data → task guide and workbook → answer and reasoning")
+    st.caption("Question and brief → task guide and persona template → answer and reasoning" if course_code == dvs_curriculum.COURSE_CODE else "Question and data → task guide and workbook → answer and reasoning")
     st.markdown("### 1. Question and data")
     with st.container():
         exam_prompt = st.text_area(
@@ -67879,7 +67929,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             source_pool_options = ["Lessons + learning outcomes"] if has_lessons else ["Learning outcomes only"]
             if has_lessons:
                 source_pool_options.extend(["Lessons only", "Learning outcomes only"])
-            if course_code == "FI1BBEO10":
+            if course_code in GUIDED_TASK_COURSES:
                 source_pool_options.extend(["Lessons + task guides", "Task guides only"])
             source_pool = st.selectbox(
                 "Source pool",
@@ -67888,6 +67938,8 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             )
             if course_code == "FI1BBEO10":
                 st.caption("EVO includes 98 searchable activity/task guides. Use Task guides only to select an exact activity, or enter its number in the question.")
+            elif course_code == dvs_curriculum.COURSE_CODE:
+                st.caption("DVS includes Lesson 1.1 and two searchable activity/task guides. Enter Task 1.1 for the CEO persona or Activity 1.1.1 for Funky Monkey.")
 
         draft_col_1, draft_col_2 = st.columns(2)
         with draft_col_1:
@@ -67977,7 +68029,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 # still appear in the preview so the student can see the full
                 # scope of the syllabus.
                 ai_source_units = source_units
-                if course_code == "FI1BBEO10":
+                if course_code in GUIDED_TASK_COURSES:
                     ai_source_units = get_evo_resolver_ai_units(
                         source_units,
                         st.session_state.get(f"{base_key}_source_pool", "Lessons + learning outcomes"),
@@ -68049,9 +68101,9 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                     ][:3]
                     if task_blocks:
                         lesson_context_block += (
-                            "\n\n[Matched EVO task working guides — use their procedure, "
-                            "answer scaffold and limitations. The linked workbook is an "
-                            "unfilled template, not evidence of computed results:\n\n"
+                            "\n\n[Matched course task working guides — use their procedure, "
+                            "answer scaffold and limitations. Linked templates are working "
+                            "scaffolds, not completed answers or evidence of computed results:\n\n"
                             + "\n\n".join(task_blocks) + "\n]"
                         )
                 # Strict mode: include fuller content for the top 12 ranked units
@@ -69934,6 +69986,9 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             scores["Definition or explanation"] += 5
         if any(term in prompt_lower for term in ["scenario", "case", "organisation", "organization", "company", "business", "recommend"]):
             scores["Broad case question"] += 4
+        if course_code == dvs_curriculum.COURSE_CODE and any(
+                resolver_task_number_boost(g, exam_prompt) for g in dvs_curriculum.get_dvs_task_guides("1.1")):
+            scores["Persona design task"] += 100
 
         best_mode = max(scores.items(), key=lambda item: item[1])[0] if scores else "Broad case question"
         if scores.get(best_mode, 0) <= 0:
@@ -70118,9 +70173,9 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
     selected_units = sorted(selected_units, key=lambda unit: unit["order_index"])
     if not exam_prompt.strip() and scope_mode == "Whole course (auto-select best matches)":
         with resources_panel:
-            if course_code == "FI1BBEO10":
-                st.markdown("### 2. Task guide and workbook")
-                st.caption("Enter a task number, for example Task 7.2, to find its guide and workbook.")
+            if course_code in GUIDED_TASK_COURSES:
+                st.markdown("### 2. Task guide and persona template" if course_code == dvs_curriculum.COURSE_CODE else "### 2. Task guide and workbook")
+                st.caption("Enter Task 1.1 to find the CEO persona guide and template." if course_code == dvs_curriculum.COURSE_CODE else "Enter a task number, for example Task 7.2, to find its guide and workbook.")
             else:
                 st.markdown("### 2. Sources for this question")
                 st.caption("Enter a question above to find relevant course sources.")
@@ -70350,10 +70405,10 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
     matched_tasks = [unit["task_guide"] for unit in sorted(selected_units, key=lambda u: -unit_score(u)) if unit.get("task_guide")]
     with resources_panel:
         if matched_tasks:
-            render_resolver_task_resources(matched_tasks, base_key)
-        elif course_code == "FI1BBEO10":
-            st.markdown("### 2. Task guide and workbook")
-            st.caption("Enter a task number, for example Task 7.2, or choose Task guides only in Advanced settings.")
+            render_course_task_resources(matched_tasks, base_key)
+        elif course_code in GUIDED_TASK_COURSES:
+            st.markdown("### 2. Task guide and persona template" if course_code == dvs_curriculum.COURSE_CODE else "### 2. Task guide and workbook")
+            st.caption("Enter Task 1.1 or choose Task guides only in Advanced settings." if course_code == dvs_curriculum.COURSE_CODE else "Enter a task number, for example Task 7.2, or choose Task guides only in Advanced settings.")
         else:
             st.markdown("### 2. Sources for this question")
             st.caption("The resolver connects your question to these course sources. Change them in Advanced settings if needed.")
@@ -75216,7 +75271,7 @@ elif page == "Training Center":
         "Statistical Tools": ("Semester 1", "FI1BBST05"),
         "Programming Fundamentals": ("Semester 1", "FI1BBPF20"),
         "Databases and Cloud Services": ("Semester 2", "FI1BBDC20"),
-        "Data Visualisation": ("Semester 2", "FI1BBDV15"),
+        "Data Visualisation": ("Semester 2", "FI1BBDV75"),
         "Data Driven Decision-Making": ("Semester 2", "FI1BBDD75"),
         "Semester Project 1": ("Semester 2", "FI1BBP175"),
         "Evaluation of Outcomes": ("Semester 3", "FI1BBEO10")
@@ -75649,6 +75704,7 @@ elif page == "Training Center":
             with st.expander(f"Lesson {i+1}: {lesson['title']}", expanded=(i == 0)):
                 render_evo_illustration(lesson, "training")
                 render_evo_task_guides(lesson, "training")
+                dvs_ui.render_dvs_lesson_resources(lesson, "training")
                 st.markdown(lesson['content'])
                 
                 st.markdown("---")
@@ -76319,6 +76375,7 @@ elif page == "Learn & Practice":
                     # Parse and render lesson content with Mermaid diagrams
                     render_evo_illustration(lesson, "learn")
                     render_evo_task_guides(lesson, "learn")
+                    dvs_ui.render_dvs_lesson_resources(lesson, "learn")
                     content = lesson['content']
                     selected_explain_text = str(
                         st.session_state.get(f"lesson_selected_explain_text_{course_code}_{lesson_number}", "")
@@ -79931,7 +79988,7 @@ elif page == "Playground":
             "FI1BBDC20 - Databases and Cloud Services": [
                 "SQL Query Tester"
             ],
-            "FI1BBDV15 - Data Visualisation": [
+            "FI1BBDV75 - Data Visualisation": [
                 "Chart Builder",
                 "Data Visualization Studio"
             ],
