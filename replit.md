@@ -63,7 +63,7 @@ A comprehensive student study app for the Data Analyst 2 (PDAN) vocational progr
 - **Data Ensembling & Reliability**: Bagging, boosting, stacking ensemble methods, improving model reliability, data quality ensembling
 - **ETL & Version Control**: ETL pipeline design, Git fundamentals, branching strategies, collaborative workflows
 
-### Data Visualisation (FI1BBDV15)
+### Data Visualisation (FI1BBDV75)
 - **Introduction to Data Visualization**: Why visualization matters, the visualization process, types of visualizations
 - **Choosing the Right Chart Type**: Decision framework, common mistakes to avoid, chart selection examples
 - **Design Principles**: Data-ink ratio, color usage, typography, layout, accessibility checklist
@@ -157,3 +157,5 @@ python excel_profile.py "/path/to/your-file.xlsx" --json-out profile.json
 ```
 
 - **EVO lessons 7.3–7.4**: Seven English walkthrough steps and dedicated imagegen illustrations in Lessons and Training Center. English activity/task controls reuse the resolver guides. Task 7.4 selects four objectives from 7.2/7.3, maps them to Conclusion 1–4, flags incomplete choices, and keeps the download and AI context consistent. Prepare Task in Exam Resolver transfers lesson choices without automatic generation. Changing objectives marks an older AI answer as stale.
+
+- **DVS Lesson 1.1 and Task 1.1**: Original English Empathise/Define walkthrough under FI1BBDV75, two imagegen illustrations, a hypothetical CEO persona draft editor and editable Word/Markdown templates. The same four-step task guide is available in Lessons and Exam Resolver; Prepare Task transfers the draft and selected step without automatic generation. Activity 1.1.1 retains the separate Funky Monkey athlete brief. Later DVS lessons are added as reviewed; existing supplemental topics remain available.
