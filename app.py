@@ -59,8 +59,11 @@ if getattr(dvs_lesson23, "CONTENT_REVISION", None) != "2026-10-14-dvs23":
 import dvs_lesson24
 if getattr(dvs_lesson24, "CONTENT_REVISION", None) != "2026-10-14-dvs24":
     dvs_lesson24 = importlib.reload(dvs_lesson24)
+import dvs_module3
+if getattr(dvs_module3, "CONTENT_REVISION", None) != "2026-10-14-dvs3-ready":
+    dvs_module3 = importlib.reload(dvs_module3)
 import dvs_curriculum
-DVS_CONTENT_REVISION = "2026-10-14-dvs24-guide"
+DVS_CONTENT_REVISION = "2026-10-14-dvs3-ready"
 if getattr(dvs_curriculum, "CONTENT_REVISION", None) != DVS_CONTENT_REVISION:
     dvs_curriculum = importlib.reload(dvs_curriculum)
 import dvs_ui
@@ -66142,6 +66145,8 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             "scope": st.session_state.get(f"{base_key}_scope", "Whole course (auto-select best matches)"),
             "specific": st.session_state.get(f"{base_key}_specific_source", ""),
             "manual": st.session_state.get(f"{base_key}_selected_sources", []),
+            "module3_steps": {g["uid"]: st.session_state[f"{base_key}_dvs_step_{g['uid']}"]
+                for g in dvs_module3.GUIDES if f"{base_key}_dvs_step_{g['uid']}" in st.session_state},
         }, sort_keys=True)
 
     stopwords = {
@@ -68048,7 +68053,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             if course_code == "FI1BBEO10":
                 st.caption("EVO includes 98 searchable activity/task guides. Use Task guides only to select an exact activity, or enter its number in the question.")
             elif course_code == dvs_curriculum.COURSE_CODE:
-                st.caption("DVS includes Module 1 Lessons 1.1–1.4 and Module 2 Lessons 2.1–2.4, with nineteen searchable guides. Enter an exact task or activity number, such as Task 2.4.")
+                st.caption("DVS includes Modules 1–3, twelve reviewed lessons and thirty-seven searchable guides. Enter an exact task or activity number, such as Task 3.3 or Activity 3.1.8.")
 
         draft_col_1, draft_col_2 = st.columns(2)
         with draft_col_1:
@@ -68182,6 +68187,9 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                     if not full_text:
                         full_text = snippet
                     task_guide = unit.get("task_guide")
+                    if (course_code == dvs_curriculum.COURSE_CODE and task_guide
+                            and task_guide.get("lesson_number", "").startswith("3.")):
+                        full_text = dvs_module3.step_context(task_guide, base_key, st.session_state) + full_text
                     if (course_code == dvs_curriculum.COURSE_CODE and task_guide
                             and task_guide.get("lesson_number") == "2.4"):
                         full_text = dvs_ui.get_image_editing_step_context(task_guide, base_key) + full_text
@@ -76489,7 +76497,12 @@ elif page == "Learn & Practice":
                 with st.expander(f"🧠 Word Bank for {course['name']} ({len(course_glossary_entries)} terms)", expanded=False):
                     render_glossary_bank(course_glossary_entries, context_label=f"the {course['name']} lessons")
             
-            for lesson in course_lessons[course_code]:
+            visible_lessons = course_lessons[course_code]
+            if course_code == dvs_curriculum.COURSE_CODE:
+                lesson_module = st.selectbox("Show lessons from", [None, 1, 2, 3],
+                    format_func=lambda n: "All reviewed modules" if n is None else f"Module {n}", key="dvs_lesson_module")
+                visible_lessons = [lesson for lesson in visible_lessons if lesson_module is None or lesson.get("module_number") == lesson_module]
+            for lesson in visible_lessons:
                 lesson_number = lesson.get("lesson_number")
                 if lesson.get("module_number") and str(lesson_number).endswith(".1"):
                     st.markdown(f"### Module {lesson['module_number']}: {lesson['module_title']}")
