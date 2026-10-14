@@ -165,3 +165,6 @@ python excel_profile.py "/path/to/your-file.xlsx" --json-out profile.json
 - **DVS Lesson 1.3 and Task 1.3**: English universal/inclusive design explanations, seven principle steps, four separate activity guides, two imagegen illustrations, Word/Markdown reflection templates and research notes. The resolver receives the draft and selected principle and recognises a universal design reflection. Noroff order and original NC State numbering are distinguished; proposals are not treated as tested outcomes.
 
 - **DVS Lesson 1.4 and Task 1.4**: English inclusion/usability/accessibility explanations and POUR, three concept steps, Word/Markdown reflection and research templates, separate contrast/language-selector activities with templates, and two imagegen illustrations. Draft and selected concept transfer to Exam Resolver without generation. All four DVS Module 1 lessons are reviewed and available.
+
+### DVS Lesson 2.1
+English UX lesson and two-question task workflow are available in Lessons and Universal Exam Resolver. Seven steps, two imagegen illustrations, report/application/evidence Markdown templates and an Arial 11 pt Word scaffold support a one-page website review and at-least-half-page UX application. Dated OECD redirects and evidence limitations are explicit. Module 2 has its own Training Center topic and draft/step handoff.

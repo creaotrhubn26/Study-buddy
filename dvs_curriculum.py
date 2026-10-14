@@ -3,7 +3,7 @@
 from copy import deepcopy
 from pathlib import Path
 
-CONTENT_REVISION = "2026-10-14-dvs14"
+CONTENT_REVISION = "2026-10-14-dvs21"
 COURSE_CODE = "FI1BBDV75"
 COURSE_NAME = "Data Visualisation"
 ASSET_ROOT = Path(__file__).resolve().parent / "assets" / "dvs"
@@ -135,6 +135,9 @@ def get_dvs_persona_template():
 
 
 def get_dvs_task_guide_markdown(guide):
+    if guide["lesson_number"] == "2.1":
+        from dvs_lesson21 import get_task_guide_markdown
+        return get_task_guide_markdown(guide)
     if guide["lesson_number"] == "1.4":
         from dvs_lesson14 import get_task_guide_markdown
         return get_task_guide_markdown(guide)
@@ -168,6 +171,8 @@ from dvs_lesson13 import GUIDES as GUIDES13
 DVS_TASK_GUIDES.extend(GUIDES13)
 from dvs_lesson14 import GUIDES as GUIDES14
 DVS_TASK_GUIDES.extend(GUIDES14)
+from dvs_lesson21 import GUIDE as GUIDE21
+DVS_TASK_GUIDES.append(GUIDE21)
 for _guide in DVS_TASK_GUIDES:
     _guide["markdown"] = get_dvs_task_guide_markdown(_guide)
 
@@ -184,11 +189,12 @@ def get_dvs_course_lessons():
     from dvs_lesson12 import get_lesson
     from dvs_lesson13 import get_lesson as get_lesson13
     from dvs_lesson14 import get_lesson as get_lesson14
-    return _get_lesson11() + [deepcopy(get_lesson()), deepcopy(get_lesson13()), deepcopy(get_lesson14())]
+    from dvs_lesson21 import get_lesson as get_lesson21
+    return _get_lesson11() + [deepcopy(get_lesson()), deepcopy(get_lesson13()), deepcopy(get_lesson14()), deepcopy(get_lesson21())]
 
 
 def _get_dvs_training_modules():
-    return {"DVS Module 1: Design Thinking": {"course": COURSE_NAME, "course_code": COURSE_CODE, "description": "Noroff Lesson 1.1: Empathise, Define and a hypothetical CEO persona. Later lessons are added as they are reviewed.", "lessons": get_dvs_course_lessons(), "exercises": [{"title": "Task 1.1: Hypothetical CEO persona", "type": "case_study", "question": "Create a hypothetical persona for the CEO in the brief. Distinguish supplied facts from assumptions and explain one presentation implication.", "hint": "Start with CEO, early twenties and enjoys BASE jumping. Label additional characteristics.", "answer": "A defensible persona retains the supplied facts, labels its proposed goals and needs as hypothetical, links them to a clear presentation decision and identifies questions to validate the assumptions."}], "quiz": [{"question": "Which claim is supported by the Task 1.1 brief?", "options": ["The CEO prefers complicated charts", "The CEO enjoys BASE jumping", "The CEO has advanced statistical expertise", "The CEO wants reckless business decisions"], "correct": 1, "explanation": "Only the BASE-jumping hobby is supplied among these choices. The other claims would be assumptions to label and validate."}]}}
+    return {"DVS Module 1: Design Thinking": {"course": COURSE_NAME, "course_code": COURSE_CODE, "description": "Noroff Lesson 1.1: Empathise, Define and a hypothetical CEO persona. Later lessons are added as they are reviewed.", "lessons": [lesson for lesson in get_dvs_course_lessons() if lesson["module_number"] == 1], "exercises": [{"title": "Task 1.1: Hypothetical CEO persona", "type": "case_study", "question": "Create a hypothetical persona for the CEO in the brief. Distinguish supplied facts from assumptions and explain one presentation implication.", "hint": "Start with CEO, early twenties and enjoys BASE jumping. Label additional characteristics.", "answer": "A defensible persona retains the supplied facts, labels its proposed goals and needs as hypothetical, links them to a clear presentation decision and identifies questions to validate the assumptions."}], "quiz": [{"question": "Which claim is supported by the Task 1.1 brief?", "options": ["The CEO prefers complicated charts", "The CEO enjoys BASE jumping", "The CEO has advanced statistical expertise", "The CEO wants reckless business decisions"], "correct": 1, "explanation": "Only the BASE-jumping hobby is supplied among these choices. The other claims would be assumptions to label and validate."}]}}
 
 
 def get_dvs_training_modules():
@@ -201,4 +207,11 @@ def get_dvs_training_modules():
     module["quiz"].append({"question": "Which is a defensible universal design reflection?", "options": ["Changing colours proves full accessibility", "A proposed design is a completed user test", "Explain a barrier, propose an adaptation and identify a check", "Only the chart matters; its platform is irrelevant"], "correct": 2, "explanation": "The task needs applied reasoning about the visual and its host platform, supported by sources and relevant evaluation."})
     module["exercises"].append({"title": "Task 1.4: Three applied reflections", "type": "case_study", "question": "Write one applied paragraph under Inclusive Design, Usability and Accessibility headings.", "hint": "Consider the visual and platform, with a change, reason, proposed check and source.", "answer": "The three paragraphs apply distinct concepts and explain relevant adaptations and checks without presenting planned tests as findings."})
     module["quiz"].append({"question": "What are Task 1.4's required headings?", "options": ["All seven universal design principles", "Only the four POUR principles", "Inclusive Design Usability and Accessibility", "A market analysis and medical diagnosis"], "correct": 2, "explanation": "Three brief concept reflections are required. POUR supports the accessibility reasoning."})
+    modules["DVS Module 2: User Experience and User Experience Design"] = {
+        "course": COURSE_NAME, "course_code": COURSE_CODE,
+        "description": "Reviewed Lesson 2.1: UX facets, design disciplines, evidence-based website evaluation and application to data visualisations. Later Module 2 lessons are added when reviewed.",
+        "lessons": [lesson for lesson in get_dvs_course_lessons() if lesson["module_number"] == 2],
+        "exercises": [{"title": "Task 2.1: Website review and UX application", "type": "case_study", "question": "Plan both task answers and distinguish observed website behaviour from interpretation and proposals.", "hint": "Record final URLs and access limitations; justify each design judgement with evidence and a relevant UX facet.", "answer": "Question 1 is one page covering both named sites with justified strengths and weaknesses. Question 2 is at least half a page defining UX design in own words and applying it to visualisations, in Word Arial 11 pt. Redirected pages must be identified and historical findings must not be invented."}],
+        "quiz": [{"question": "What can a redirect to OECD About establish?", "options": ["The old Forum had poor keyboard access", "The original Forum interface was evaluated", "The supplied link currently reaches a different page", "All OECD pages conform to WCAG"], "correct": 2, "explanation": "Record the current destination and limitation. An approved archive or replacement is needed to evaluate the historical Forum interface."}]
+    }
     return modules

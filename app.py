@@ -46,8 +46,11 @@ if getattr(dvs_lesson13, "CONTENT_REVISION", None) != "2026-10-14-dvs13":
 import dvs_lesson14
 if getattr(dvs_lesson14, "CONTENT_REVISION", None) != "2026-10-14-dvs14-layout":
     dvs_lesson14 = importlib.reload(dvs_lesson14)
+import dvs_lesson21
+if getattr(dvs_lesson21, "CONTENT_REVISION", None) != "2026-10-14-dvs21":
+    dvs_lesson21 = importlib.reload(dvs_lesson21)
 import dvs_curriculum
-DVS_CONTENT_REVISION = "2026-10-14-dvs14"
+DVS_CONTENT_REVISION = "2026-10-14-dvs21"
 if getattr(dvs_curriculum, "CONTENT_REVISION", None) != DVS_CONTENT_REVISION:
     dvs_curriculum = importlib.reload(dvs_curriculum)
 import dvs_ui
@@ -67599,6 +67602,17 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
     }
 
     if course_code == dvs_curriculum.COURSE_CODE:
+        style_profiles["UX website review and application"] = {
+            "summary": "justify website design judgements with evidence and apply UX design to data visualisations",
+            "keywords": ["ux", "website", "oecd", "evidence", "report"],
+            "structure": [
+                "Separate the one-page report on both named sites from the at-least-half-page applied UX definition.",
+                "Record final URLs, inspection context and explicit redirect or access limitations.",
+                "Justify observed strengths and weaknesses using relevant UX facets and user goals.",
+                "Define UX design in own words, distinguish UI, and explain visualisation choices and proposed checks.",
+                "Avoid invented historical findings; verify Arial 11 pt and final pagination in Word.",
+            ],
+        }
         style_profiles["Inclusion usability accessibility reflection"] = {
             "summary": "distinguish three concepts and apply them to a visualisation and its platform",
             "keywords": ["inclusive", "usability", "accessibility", "pour"],
@@ -67978,7 +67992,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             if course_code == "FI1BBEO10":
                 st.caption("EVO includes 98 searchable activity/task guides. Use Task guides only to select an exact activity, or enter its number in the question.")
             elif course_code == dvs_curriculum.COURSE_CODE:
-                st.caption("DVS includes all four Module 1 lessons and eleven searchable guides. Enter Task 1.1, Task 1.2, Task 1.3 or Task 1.4, or an exact activity number.")
+                st.caption("DVS includes Module 1 Lessons 1.1–1.4 and Module 2 Lesson 2.1, with twelve searchable guides. Enter an exact task or activity number, such as Task 2.1.")
 
         draft_col_1, draft_col_2 = st.columns(2)
         with draft_col_1:
@@ -70026,7 +70040,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         if any(term in prompt_lower for term in ["scenario", "case", "organisation", "organization", "company", "business", "recommend"]):
             scores["Broad case question"] += 4
         if course_code == dvs_curriculum.COURSE_CODE:
-            for lesson_number, style in [("1.1", "Persona design task"), ("1.2", "Wireframe design task"), ("1.3", "Universal design reflection"), ("1.4", "Inclusion usability accessibility reflection")]:
+            for lesson_number, style in [("1.1", "Persona design task"), ("1.2", "Wireframe design task"), ("1.3", "Universal design reflection"), ("1.4", "Inclusion usability accessibility reflection"), ("2.1", "UX website review and application")]:
                 if any(resolver_task_number_boost(g, exam_prompt) for g in dvs_curriculum.get_dvs_task_guides(lesson_number)):
                     scores[style] += 100
 
@@ -70215,7 +70229,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         with resources_panel:
             if course_code in GUIDED_TASK_COURSES:
                 st.markdown("### 2. Task guide and templates" if course_code == dvs_curriculum.COURSE_CODE else "### 2. Task guide and workbook")
-                st.caption("Enter Task 1.1, Task 1.2, Task 1.3 or Task 1.4 to find its guide and templates." if course_code == dvs_curriculum.COURSE_CODE else "Enter a task number, for example Task 7.2, to find its guide and workbook.")
+                st.caption("Enter a task number such as Task 2.1 to find its guide and templates." if course_code == dvs_curriculum.COURSE_CODE else "Enter a task number, for example Task 7.2, to find its guide and workbook.")
             else:
                 st.markdown("### 2. Sources for this question")
                 st.caption("Enter a question above to find relevant course sources.")
@@ -70448,7 +70462,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             render_course_task_resources(matched_tasks, base_key)
         elif course_code in GUIDED_TASK_COURSES:
             st.markdown("### 2. Task guide and templates" if course_code == dvs_curriculum.COURSE_CODE else "### 2. Task guide and workbook")
-            st.caption("Enter Task 1.1, Task 1.2, Task 1.3 or Task 1.4, or choose Task guides only in Advanced settings." if course_code == dvs_curriculum.COURSE_CODE else "Enter a task number, for example Task 7.2, or choose Task guides only in Advanced settings.")
+            st.caption("Enter an exact task number such as Task 2.1, or choose Task guides only in Advanced settings." if course_code == dvs_curriculum.COURSE_CODE else "Enter a task number, for example Task 7.2, or choose Task guides only in Advanced settings.")
         else:
             st.markdown("### 2. Sources for this question")
             st.caption("The resolver connects your question to these course sources. Change them in Advanced settings if needed.")
