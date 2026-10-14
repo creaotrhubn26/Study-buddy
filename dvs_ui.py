@@ -4,11 +4,14 @@ import streamlit as st
 from dvs_curriculum import (ASSET_ROOT, TEMPLATE_ROOT, COURSE_CODE, ILLUSTRATIONS,
     TASK_STEPS, get_dvs_persona_template, get_dvs_task_guide_markdown)
 
-CONTENT_REVISION = "2026-10-14-dvs21"
+CONTENT_REVISION = "2026-10-14-dvs22"
 
 
 def get_dvs_draft(uid):
-    if uid == "dvs-2.1-task-81556":
+    if uid == "dvs-2.2-task-81562":
+        from dvs_lesson22 import ANALYSIS_TEMPLATE, RULES_TEMPLATE, REVIEW_TEMPLATE
+        default = ANALYSIS_TEMPLATE + "\n\n" + RULES_TEMPLATE + "\n\n" + REVIEW_TEMPLATE
+    elif uid == "dvs-2.1-task-81556":
         from dvs_lesson21 import REPORT_TEMPLATE, APPLICATION_TEMPLATE, EVIDENCE_TEMPLATE
         default = REPORT_TEMPLATE + "\n\n" + APPLICATION_TEMPLATE + "\n\n" + EVIDENCE_TEMPLATE
     elif uid == "dvs-1.2-task-81516":
@@ -35,7 +38,9 @@ def prepare_task_in_resolver(guide, lesson_base):
     resolver_base = "course_exam_connector_fi1bbdv75_learn_practice"
     step = st.session_state.get(f"{lesson_base}_dvs_step_{guide['uid']}", 0)
     st.session_state[f"{resolver_base}_dvs_step_{guide['uid']}"] = step
-    if guide["id"] == "2.1-task":
+    if guide["id"] == "2.2-task":
+        prompt = ("DVS Task 2.2: Review both parts of my draft in English. Question 1: analyse what might mislead in the supplied unemployment and public health expenditure TV graphs. Question 2: state and apply all four course rules, each with my own view and a concrete visualisation workflow action. Check evidence, misleading effects, corrections and limitations. Flag placeholders. Distinguish label-position inconsistency, truncated bars, justified zoomed lines, time gaps and future status. Do not invent verified datasets, measured pixel geometry, broadcaster intent or completed peer feedback. There is no specified page count or font requirement. Review written evidence; you are not inspecting chart pixels.\n\nMy graph analysis, rules and review notes:\n" + get_dvs_draft(guide["uid"]))
+    elif guide["id"] == "2.1-task":
         prompt = ("DVS Task 2.1: Review both parts of my draft in English. Question 1: one-page report identifying good and bad design elements of OECD Data and the OECD Forum Network, with justified evidence. Question 2: at least half a page defining UX design in my own words and applying it to data analysis visualisations, in Word using Arial 11 pt. Flag placeholders and missing reasons. Record redirects and scope limitations; do not invent old Forum observations, completed tests or conformance. Review only the evidence supplied; final formatting and page lengths need checking in Word.\n\nMy report, UX application and evidence:\n" + get_dvs_draft(guide["uid"]))
     elif guide["id"] == "1.1-task":
         prompt = ("DVS Task 1.1: Review my hypothetical CEO persona for the snow-free bobsled market-analysis presentation. "
@@ -115,6 +120,8 @@ def render_dvs_task_resources(guides, base_key, heading=None, draft_editor=False
                         st.caption("Your draft is kept during this session. Prepare the task below to copy it into Exam Resolver for review.")
                 else:
                     st.caption("Paste your completed persona into the question above to request a review, or prepare it from Lesson 1.1.")
+            elif guide["id"] == "2.2-task":
+                render_ethics_resources(guide, base_key, draft_editor)
             elif guide["id"] == "2.1-task":
                 render_ux_review_resources(guide, base_key, draft_editor)
             elif guide["id"] == "1.2-task":
@@ -149,6 +156,9 @@ def render_dvs_task_resources(guides, base_key, heading=None, draft_editor=False
             if any(g["lesson_number"] == "2.1" for g in guides):
                 from dvs_lesson21 import ILLUSTRATIONS as images21
                 visuals.extend(images21)
+            if any(g["lesson_number"] == "2.2" for g in guides):
+                from dvs_lesson22 import ILLUSTRATIONS as images22
+                visuals.extend(images22)
             render_dvs_images(f"{base_key}_resolver", visuals)
 
 
@@ -280,3 +290,38 @@ def render_ux_review_resources(guide, base_key, draft_editor):
             st.caption("Your draft is kept during this session. Prepare the task to copy it and the selected step into Exam Resolver. Save the final answers in your own Word document.")
     else:
         st.caption("Paste both answers and evidence above, or prepare them from Lesson 2.1. The resolver cannot establish unobserved website behaviour or final Word pagination.")
+
+
+def render_ethics_resources(guide, base_key, draft_editor):
+    from dvs_lesson22 import TASK_STEPS as steps, ANALYSIS_TEMPLATE, RULES_TEMPLATE, REVIEW_TEMPLATE, FIGURE_NOTES, RULES
+    step = st.selectbox("Choose a Task 2.2 step", list(range(len(steps))),
+        format_func=lambda i: steps[i][0], key=f"{base_key}_dvs_step_{guide['uid']}")
+    st.markdown(f"**{steps[step][0]}**")
+    st.markdown(steps[step][1])
+    st.caption(f"Check: {steps[step][2]}")
+    with st.expander("Screenshot evidence and limits", expanded=False):
+        st.markdown(FIGURE_NOTES)
+        st.caption("Inspect the original graphs on Noroff. The resolver reviews your written evidence; it does not inspect uploaded pixels or independently verify the original data.")
+    with st.expander("Four course rules and writing pattern", expanded=False):
+        for name, meaning, action, caution in RULES:
+            st.markdown(f"**{name}:** {meaning} {action}")
+            st.caption(caution)
+        st.markdown("**Graph analysis:** observation → misleading effect → correction → limitation.\n\n**Rule application:** meaning → my view → workflow action → evidence/check.")
+    for label, content, filename in [
+        ("Download graph analysis template (Markdown)", ANALYSIS_TEMPLATE, "DVS Task 2.2 Graph Analysis.md"),
+        ("Download four rules template (Markdown)", RULES_TEMPLATE, "DVS Task 2.2 Four Rules.md"),
+        ("Download chart and peer review log (Markdown)", REVIEW_TEMPLATE, "DVS Task 2.2 Chart and Peer Review Log.md")]:
+        st.download_button(label, content.encode(), file_name=filename, mime="text/markdown", key=f"{base_key}_{filename}")
+    path = TEMPLATE_ROOT / guide["template_file"]
+    if path.is_file():
+        st.download_button("Download graph analysis and four rules template (Word)", path.read_bytes(), file_name=path.name,
+            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document", key=f"{base_key}_ethics_docx_{guide['uid']}")
+    st.caption("Word is an optional study scaffold. The task brief specifies no page count or font requirement.")
+    if draft_editor:
+        with st.expander("Write your Task 2.2 analysis and rule applications", expanded=False):
+            widget_key = f"{base_key}_ethics_editor_{guide['uid']}"
+            st.text_area("Your Task 2.2 graph analysis rules and review notes", value=get_dvs_draft(guide["uid"]), height=420,
+                key=widget_key, on_change=remember_draft, args=(guide["uid"], widget_key))
+            st.caption("Your draft is kept during this session. Prepare the task to copy it and the selected step into Exam Resolver.")
+    else:
+        st.caption("Paste both answers and evidence above, or prepare them from Lesson 2.2. State all four rules with your own view and application.")

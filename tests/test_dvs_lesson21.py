@@ -21,7 +21,7 @@ class DvsLesson21Test(unittest.TestCase):
     def test_task_resources_and_module_isolation(self):
         modules=get_dvs_training_modules()
         self.assertEqual([l['lesson_number'] for l in modules['DVS Module 1: Design Thinking']['lessons']],['1.1','1.2','1.3','1.4'])
-        self.assertEqual([l['lesson_number'] for l in modules['DVS Module 2: User Experience and User Experience Design']['lessons']],['2.1'])
+        self.assertEqual([l['lesson_number'] for l in modules['DVS Module 2: User Experience and User Experience Design']['lessons']],['2.1','2.2'])
         for item in ILLUSTRATIONS:self.assertTrue((ASSET_ROOT/item['file']).is_file())
         with zipfile.ZipFile(TEMPLATE_ROOT/GUIDE['template_file']) as z:
             xml=z.read('word/document.xml').decode();styles=z.read('word/styles.xml').decode()

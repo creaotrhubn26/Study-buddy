@@ -168,3 +168,6 @@ python excel_profile.py "/path/to/your-file.xlsx" --json-out profile.json
 
 ### DVS Lesson 2.1
 English UX lesson and two-question task workflow are available in Lessons and Universal Exam Resolver. Seven steps, two imagegen illustrations, report/application/evidence Markdown templates and an Arial 11 pt Word scaffold support a one-page website review and at-least-half-page UX application. Dated OECD redirects and evidence limitations are explicit. Module 2 has its own Training Center topic and draft/step handoff.
+
+### DVS Lesson 2.2
+The ethics lesson and two-question Task 2.2 are available in Lessons and Exam Resolver, with seven English steps, two imagegen illustrations, graph-analysis/four-rule templates, optional peer-review notes and Word download. Screenshot evidence, scale distinctions, future-value status and dataset/intent limitations are explicit. Draft and selected step transfer; Module 2 retains 2.1 and adds 2.2. The brief imposes no page count or font requirement.

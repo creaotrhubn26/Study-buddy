@@ -51,13 +51,13 @@ class DvsWorkflowTest(unittest.TestCase):
             self.assertTrue((ASSET_ROOT / visual['file']).is_file())
         app = self.app()
         lessons = [e.label for e in app.expander if e.label.startswith('📚 Lesson')]
-        self.assertEqual(lessons, ['📚 Lesson 1.1: Design Thinking — Part 1', '📚 Lesson 1.2: Design Thinking — Part 2', '📚 Lesson 1.3: Design Principles — Part 1', '📚 Lesson 1.4: Design Principles — Part 2', '📚 Lesson 2.1: User Experience and User Experience Design'])
+        self.assertEqual(lessons, ['📚 Lesson 1.1: Design Thinking — Part 1', '📚 Lesson 1.2: Design Thinking — Part 2', '📚 Lesson 1.3: Design Principles — Part 1', '📚 Lesson 1.4: Design Principles — Part 2', '📚 Lesson 2.1: User Experience and User Experience Design', '📚 Lesson 2.2: The Ethics of Data Visualisation'])
         self.assertIn('Visual study guide — Empathise and Define', [e.label for e in app.expander])
         self.assertIn('Visual study guide — Hypothetical CEO persona', [e.label for e in app.expander])
         downloads = [d.label for d in app.get('download_button')]
         self.assertIn('Download persona template (Word)', downloads)
         self.assertIn('Download persona template (Markdown)', downloads)
-        self.assertEqual(downloads.count('Download DVS illustration (PNG)'), 10)
+        self.assertEqual(downloads.count('Download DVS illustration (PNG)'), 12)
         guide = next(g for g in get_dvs_task_guides('1.1') if g['id'] == '1.1-task')
         with zipfile.ZipFile(TEMPLATE_ROOT / guide['template_file']) as archive:
             doc = archive.read('word/document.xml').decode()
@@ -147,7 +147,7 @@ class DvsWorkflowTest(unittest.TestCase):
             self.select(app, 'Source pool', 'Task guides only')
             self.select(app, 'Resolver scope', 'Specific lesson or outcome')
             choices = next(s for s in app.selectbox if s.label == 'Choose the task guide to focus on')
-            self.assertEqual(len(choices.options), 12)
+            self.assertEqual(len(choices.options), 13)
             self.select(app, choices.label, next(o for o in choices.options if o.startswith('Task guide 1.1.1:')))
             self.assertTrue(any('earlier question or dataset' in i.value for i in app.info))
             next(b for b in app.button if b.label == '🔁 Re-generate answer').click()

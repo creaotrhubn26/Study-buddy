@@ -3,7 +3,7 @@
 from copy import deepcopy
 from pathlib import Path
 
-CONTENT_REVISION = "2026-10-14-dvs21"
+CONTENT_REVISION = "2026-10-14-dvs22"
 COURSE_CODE = "FI1BBDV75"
 COURSE_NAME = "Data Visualisation"
 ASSET_ROOT = Path(__file__).resolve().parent / "assets" / "dvs"
@@ -135,6 +135,9 @@ def get_dvs_persona_template():
 
 
 def get_dvs_task_guide_markdown(guide):
+    if guide["lesson_number"] == "2.2":
+        from dvs_lesson22 import get_task_guide_markdown
+        return get_task_guide_markdown(guide)
     if guide["lesson_number"] == "2.1":
         from dvs_lesson21 import get_task_guide_markdown
         return get_task_guide_markdown(guide)
@@ -173,6 +176,8 @@ from dvs_lesson14 import GUIDES as GUIDES14
 DVS_TASK_GUIDES.extend(GUIDES14)
 from dvs_lesson21 import GUIDE as GUIDE21
 DVS_TASK_GUIDES.append(GUIDE21)
+from dvs_lesson22 import GUIDE as GUIDE22
+DVS_TASK_GUIDES.append(GUIDE22)
 for _guide in DVS_TASK_GUIDES:
     _guide["markdown"] = get_dvs_task_guide_markdown(_guide)
 
@@ -190,7 +195,8 @@ def get_dvs_course_lessons():
     from dvs_lesson13 import get_lesson as get_lesson13
     from dvs_lesson14 import get_lesson as get_lesson14
     from dvs_lesson21 import get_lesson as get_lesson21
-    return _get_lesson11() + [deepcopy(get_lesson()), deepcopy(get_lesson13()), deepcopy(get_lesson14()), deepcopy(get_lesson21())]
+    from dvs_lesson22 import get_lesson as get_lesson22
+    return _get_lesson11() + [deepcopy(get_lesson()), deepcopy(get_lesson13()), deepcopy(get_lesson14()), deepcopy(get_lesson21()), deepcopy(get_lesson22())]
 
 
 def _get_dvs_training_modules():
@@ -209,9 +215,12 @@ def get_dvs_training_modules():
     module["quiz"].append({"question": "What are Task 1.4's required headings?", "options": ["All seven universal design principles", "Only the four POUR principles", "Inclusive Design Usability and Accessibility", "A market analysis and medical diagnosis"], "correct": 2, "explanation": "Three brief concept reflections are required. POUR supports the accessibility reasoning."})
     modules["DVS Module 2: User Experience and User Experience Design"] = {
         "course": COURSE_NAME, "course_code": COURSE_CODE,
-        "description": "Reviewed Lesson 2.1: UX facets, design disciplines, evidence-based website evaluation and application to data visualisations. Later Module 2 lessons are added when reviewed.",
+        "description": "Reviewed Lessons 2.1–2.2: UX design, evidence-based website evaluation, ethical chart analysis and four rules for faithful visualisation. Later Module 2 lessons are added when reviewed.",
         "lessons": [lesson for lesson in get_dvs_course_lessons() if lesson["module_number"] == 2],
         "exercises": [{"title": "Task 2.1: Website review and UX application", "type": "case_study", "question": "Plan both task answers and distinguish observed website behaviour from interpretation and proposals.", "hint": "Record final URLs and access limitations; justify each design judgement with evidence and a relevant UX facet.", "answer": "Question 1 is one page covering both named sites with justified strengths and weaknesses. Question 2 is at least half a page defining UX design in own words and applying it to visualisations, in Word Arial 11 pt. Redirected pages must be identified and historical findings must not be invented."}],
         "quiz": [{"question": "What can a redirect to OECD About establish?", "options": ["The old Forum had poor keyboard access", "The original Forum interface was evaluated", "The supplied link currently reaches a different page", "All OECD pages conform to WCAG"], "correct": 2, "explanation": "Record the current destination and limitation. An approved archive or replacement is needed to evaluate the historical Forum interface."}]
     }
+    module2 = modules["DVS Module 2: User Experience and User Experience Design"]
+    module2["exercises"].append({"title": "Task 2.2: Graph analysis and four rules", "type": "case_study", "question": "Explain a specific misleading feature in each supplied TV graph, then apply all four course rules to your workflow.", "hint": "Compare labels and geometry, baseline, time gaps and future data status. Distinguish observations from inferred effects.", "answer": "A defensible answer uses visible evidence, explains the misleading effect, proposes a correction and identifies limits. It states each course rule with a personal view and concrete action, without claiming verified data or deliberate intent."})
+    module2["quiz"].append({"question": "Which scale judgement is defensible?", "options": ["Every line chart must start at zero", "Bars need a zero baseline; a line-chart zoom requires context and accurate positions", "A correct value label excuses an incorrectly plotted point", "A planned future value is an observed historical result"], "correct": 1, "explanation": "Bars encode magnitude as length. Line charts can use a justified non-zero range, but the scale and geometry must support honest interpretation."})
     return modules
