@@ -1,0 +1,15 @@
+# DVS Lesson 1.2 imagegen prompts
+
+Generated with the built-in image_gen tool. Final assets are lesson-1-2-ideate-prototype-test.png and task-1-2-bmi-wireframe.png.
+
+## Process illustration
+
+Use case: scientific-educational. Asset type: English revision infographic for Study Buddy DVS Lesson 1.2. Primary request: explain Ideate, Prototype and Test with an illustrated three-column teaching layout. Clean readable flat educational illustration, warm white background, teal/navy headings, simple pencil and sticky-note motifs. Large title verbatim "Design Thinking — From ideas to feedback". Top small five-stage path "Empathise → Define → Ideate → Prototype → Test", last three emphasized. Column 1 label "1. Ideate", show diverse sticky-note concepts and text "Generate alternatives before choosing". Column 2 "2. Prototype", show simple grayscale mobile paper wireframes and text "Make a small model to test an idea". Column 3 "3. Test", show a participant attempting a task with observer taking notes and text "Observe actions, record feedback, revise". Curved arrow from Test back to Prototype and Ideate labelled "Iterate". Footer "A polished screen is not proof that it works." English text only, accurate spelling, generous spacing, no logos, no fabricated statistics. Landscape format, suitable for exam revision.
+
+## Wireframe illustration
+
+Use case: scientific-educational. Asset type: English low-fidelity mobile-wireframe teaching illustration for DVS Task 1.2. Primary request: explain a BMI mobile web flow with two hand-sketched grayscale phone panels, clear English annotations, wide educational layout on plain off-white paper. Large title "Task 1.2 — Sketch the BMI user flow". Subtitle "Illustrative concept — adapt your own wireframe". Left phone headed "1. Enter details": three unfilled fields labelled "Height (cm)", "Weight (kg)", "Age (years)", a rectangular button "Calculate BMI", short validation note "Show an error beside invalid input". Arrow labelled "Submit" points to right phone headed "2. Explore results": placeholder text "Your BMI: [value]", dropdown "Chart type: Dot plot", dropdown "Age range: All ages", graph labeled horizontal "Age (years)" vertical "BMI (kg/m²)" showing unlabeled fictional scattered points, one outlined diamond labelled "You", caption "Illustrative points — no real user data", button "Edit details". Outside callouts "Keep the user marker visible and labelled", "Offer chart choice and an age filter", "If the filter excludes you, explain it". Footer "BMI = weight (kg) / height (m)². Age supports filtering, not the arithmetic." No category colours, health diagnosis, real data, medical recommendation, aesthetic high-fidelity styling, or completed assessed answer. Big readable text, accurate units, sufficient margins.
+
+## Targeted wireframe correction
+
+Edit only the grayscale Task 1.2 BMI mobile wireframe image. Keep the layout, text and formula unchanged. Replace the dashed-box text with: Alternate state: If an age filter excludes you, explain why your marker is hidden. This labels the excluded-user message as an alternate state, rather than the currently displayed All ages state.

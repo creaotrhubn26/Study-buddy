@@ -3,7 +3,7 @@
 from copy import deepcopy
 from pathlib import Path
 
-CONTENT_REVISION = "2026-10-14-dvs11"
+CONTENT_REVISION = "2026-10-14-dvs12"
 COURSE_CODE = "FI1BBDV75"
 COURSE_NAME = "Data Visualisation"
 ASSET_ROOT = Path(__file__).resolve().parent / "assets" / "dvs"
@@ -135,6 +135,9 @@ def get_dvs_persona_template():
 
 
 def get_dvs_task_guide_markdown(guide):
+    if guide["id"] == "1.2-task":
+        from dvs_lesson12 import get_task_guide_markdown
+        return get_task_guide_markdown()
     if guide["id"] == "1.1.1":
         return "### Activity 1.1.1: Funky Monkey athlete persona\n\nCreate a rough hypothetical persona for a statement-sock brand seeking recognition among athletes. Supplied audience: men and women aged 25–35 who participate in mountain biking, triathlons or marathons.\n\n1. Record the supplied brand goal and audience.\n2. Propose labelled hypothetical goals, needs and pain points.\n3. Explain a design implication and a question to validate it.\n\nKeep this activity separate from the CEO in Task 1.1.\n\n[Original activity](" + guide["source_url"] + ")."
     text = "### DVS Task 1.1: Hypothetical CEO persona\n\n"
@@ -148,10 +151,13 @@ def get_dvs_task_guide_markdown(guide):
     return text
 
 
+from dvs_lesson12 import GUIDE as TASK12_GUIDE
+
 DVS_TASK_GUIDES = [
     {"course_code": COURSE_CODE, "id": "1.1-task", "uid": "dvs-1.1-task-81509", "lesson_number": "1.1", "title": "Hypothetical CEO persona", "source_url": TASK_URL, "method": "persona", "deliverable": "Hypothetical persona supporting a presentation to the CEO", "steps": [s[1] for s in TASK_STEPS[:3]], "caution": "Only the CEO role, early twenties and BASE-jumping hobby are supplied facts; mark added characteristics as hypothetical. Do not invent interview evidence or market results.", "task_dataset": "", "template_file": "DVS Task 1.1 Persona Template.docx"},
     {"course_code": COURSE_CODE, "id": "1.1.1", "uid": "dvs-1.1.1-81506", "lesson_number": "1.1", "title": "Funky Monkey athlete persona", "source_url": "https://learning.noroff.no/mod/book/view.php?id=22904&chapterid=81506", "method": "persona", "deliverable": "Rough hypothetical athlete persona for a statement-sock brand", "steps": ["Record the brand goal and target audience", "Propose labelled hypothetical goals, needs and pain points", "Explain a design implication and a question to validate it"], "caution": "Funky Monkey targets athletes aged 25–35; this is a separate brief from the CEO task.", "task_dataset": "", "template_file": ""},
 ]
+DVS_TASK_GUIDES.append(TASK12_GUIDE)
 for _guide in DVS_TASK_GUIDES:
     _guide["markdown"] = get_dvs_task_guide_markdown(_guide)
 
@@ -160,9 +166,23 @@ def get_dvs_task_guides(number):
     return deepcopy([g for g in DVS_TASK_GUIDES if g["lesson_number"] == str(number)])
 
 
-def get_dvs_course_lessons():
+def _get_lesson11():
     return [{"course_code": COURSE_CODE, "lesson_number": "1.1", "title": "Design Thinking — Part 1", "module_number": 1, "module_title": "Design Thinking", "source_url": LESSON_URL, "source_checked_on": "2026-10-14", "content": LESSON_CONTENT.strip(), "illustration": None, "dvs_illustrations": deepcopy(ILLUSTRATIONS), "key_points": ["Empathise through interviews and observation", "Organise Says, Thinks, Does and Feels with traceable evidence", "Synthesise research into a user-centred problem statement", "Label hypothetical persona characteristics and link them to presentation needs"], "visual_elements": {"diagrams": False, "tables": True, "highlighted_sections": True}}]
 
 
-def get_dvs_training_modules():
+def get_dvs_course_lessons():
+    from dvs_lesson12 import get_lesson
+    return _get_lesson11() + [deepcopy(get_lesson())]
+
+
+def _get_dvs_training_modules():
     return {"DVS Module 1: Design Thinking": {"course": COURSE_NAME, "course_code": COURSE_CODE, "description": "Noroff Lesson 1.1: Empathise, Define and a hypothetical CEO persona. Later lessons are added as they are reviewed.", "lessons": get_dvs_course_lessons(), "exercises": [{"title": "Task 1.1: Hypothetical CEO persona", "type": "case_study", "question": "Create a hypothetical persona for the CEO in the brief. Distinguish supplied facts from assumptions and explain one presentation implication.", "hint": "Start with CEO, early twenties and enjoys BASE jumping. Label additional characteristics.", "answer": "A defensible persona retains the supplied facts, labels its proposed goals and needs as hypothetical, links them to a clear presentation decision and identifies questions to validate the assumptions."}], "quiz": [{"question": "Which claim is supported by the Task 1.1 brief?", "options": ["The CEO prefers complicated charts", "The CEO enjoys BASE jumping", "The CEO has advanced statistical expertise", "The CEO wants reckless business decisions"], "correct": 1, "explanation": "Only the BASE-jumping hobby is supplied among these choices. The other claims would be assumptions to label and validate."}]}}
+
+
+def get_dvs_training_modules():
+    modules = _get_dvs_training_modules()
+    module = modules["DVS Module 1: Design Thinking"]
+    module["description"] = "Reviewed Noroff Lessons 1.1–1.2: Empathise, Define, Ideate, Prototype and Test, with persona and mobile wireframe tasks."
+    module["exercises"].append({"title": "Task 1.2: Mobile BMI wireframe", "type": "case_study", "question": "Sketch mobile input and results areas, chart choice, age filtering and a labelled current-user BMI marker.", "hint": "Use simple boxes and labels. Include height, weight, age and a submission button.", "answer": "The sketch includes all required controls and a visible labelled user marker, explains units and transitions, and uses placeholders or labelled illustrative points."})
+    module["quiz"].append({"question": "What is the required deliverable for Task 1.2?", "options": ["A production BMI application", "A low-fidelity mobile wireframe", "A medical diagnosis", "A real user health dataset"], "correct": 1, "explanation": "The task asks for a simple sketch, with input and customisable results areas."})
+    return modules
