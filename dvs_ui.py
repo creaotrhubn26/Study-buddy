@@ -4,11 +4,16 @@ import streamlit as st
 from dvs_curriculum import (ASSET_ROOT, TEMPLATE_ROOT, COURSE_CODE, ILLUSTRATIONS,
     TASK_STEPS, get_dvs_persona_template, get_dvs_task_guide_markdown)
 
-CONTENT_REVISION = "2026-10-14-dvs11"
+CONTENT_REVISION = "2026-10-14-dvs12"
 
 
 def get_dvs_draft(uid):
-    return st.session_state.get("dvs_persona_drafts", {}).get(uid, get_dvs_persona_template())
+    if uid == "dvs-1.2-task-81516":
+        from dvs_lesson12 import WIREFRAME_TEMPLATE, TEST_TEMPLATE
+        default = WIREFRAME_TEMPLATE + "\n\n" + TEST_TEMPLATE
+    else:
+        default = get_dvs_persona_template()
+    return st.session_state.get("dvs_persona_drafts", {}).get(uid, default)
 
 
 def remember_draft(uid, widget_key):
@@ -26,6 +31,12 @@ def prepare_task_in_resolver(guide, lesson_base):
             "Write in English. Supplied facts: CEO of an extreme-sports start-up, early twenties, enjoys BASE jumping. "
             "Treat additional characteristics as hypothetical assumptions. Flag unfilled placeholders. "
             "Do not invent real interviews, market findings or known personal preferences.\n\nMy persona draft:\n" + get_dvs_draft(guide["uid"]))
+    elif guide["id"] == "1.2-task":
+        prompt = ("DVS Task 1.2: Review my low-fidelity mobile BMI wireframe plan. Write in English. "
+            "Required: height, weight and age inputs, submission, other users' BMI visualisation, "
+            "a highlighted current-user marker, chart selection and an age filter. "
+            "Check units, transitions, invalid inputs and empty/filter states. Flag unfilled placeholders. "
+            "Do not invent actual user data, completed tests or health diagnoses. The deliverable is a sketch, not a production app.\n\nMy wireframe and test plan:\n" + get_dvs_draft(guide["uid"]))
     else:
         prompt = "DVS Activity 1.1.1: Help me draft a clearly labelled hypothetical athlete persona for Funky Monkey, a statement-sock brand seeking recognition among men and women aged 25–35 who participate in mountain biking, triathlons or marathons. Write in English. Keep this brief separate from the CEO task."
     st.session_state[f"{resolver_base}_prompt"] = prompt
@@ -37,8 +48,8 @@ def prepare_task_in_resolver(guide, lesson_base):
     st.session_state["lp_selected_course"] = f"{COURSE_CODE} - Data Visualisation"
 
 
-def render_dvs_images(base_key):
-    for index, visual in enumerate(ILLUSTRATIONS):
+def render_dvs_images(base_key, illustrations=None):
+    for index, visual in enumerate(ILLUSTRATIONS if illustrations is None else illustrations):
         path = ASSET_ROOT / visual["file"]
         if path.is_file():
             with st.expander(f"Visual study guide — {visual['title']}", expanded=index == 0):
@@ -48,7 +59,9 @@ def render_dvs_images(base_key):
                     mime="image/png", key=f"{base_key}_image_{index}")
 
 
-def render_dvs_task_resources(guides, base_key, heading="### 2. Task guide and persona template", draft_editor=False, show_images=True):
+def render_dvs_task_resources(guides, base_key, heading=None, draft_editor=False, show_images=True):
+    if heading is None:
+        heading = "### 2. Task guide and templates" if any(g["id"] == "1.2-task" for g in guides) else "### 2. Task guide and persona template"
     st.markdown(heading)
     for guide in guides:
         with st.container(border=True):
@@ -79,6 +92,8 @@ def render_dvs_task_resources(guides, base_key, heading="### 2. Task guide and p
                         st.caption("Your draft is kept during this session. Prepare the task below to copy it into Exam Resolver for review.")
                 else:
                     st.caption("Paste your completed persona into the question above to request a review, or prepare it from Lesson 1.1.")
+            elif guide["id"] == "1.2-task":
+                render_wireframe_resources(guide, base_key, draft_editor)
             else:
                 st.markdown("\n".join(f"{i}. {step}." for i, step in enumerate(guide["steps"], 1)))
                 st.info(guide["caution"])
@@ -90,7 +105,42 @@ def render_dvs_task_resources(guides, base_key, heading="### 2. Task guide and p
                     file_name=f"DVS-{guide['id']}-guide.md", mime="text/markdown", key=f"{base_key}_guide_{guide['uid']}")
     if show_images:
         with st.expander("Illustrations for this task", expanded=False):
-            render_dvs_images(f"{base_key}_resolver")
+            visuals = []
+            if any(g["lesson_number"] == "1.1" for g in guides):
+                visuals.extend(ILLUSTRATIONS)
+            if any(g["lesson_number"] == "1.2" for g in guides):
+                from dvs_lesson12 import ILLUSTRATIONS as images12
+                visuals.extend(images12)
+            render_dvs_images(f"{base_key}_resolver", visuals)
+
+
+def render_wireframe_resources(guide, base_key, draft_editor):
+    from dvs_lesson12 import TASK_STEPS as steps, WIREFRAME_TEMPLATE, TEST_TEMPLATE
+    st.info("Required sketch: height, weight, age, submission, other users' chart, your highlighted BMI, chart selection and an age filter.")
+    step = st.selectbox("Choose a Task 1.2 step", list(range(len(steps))),
+        format_func=lambda i: steps[i][0], key=f"{base_key}_dvs_step_{guide['uid']}")
+    st.markdown(f"**{steps[step][0]}**")
+    st.markdown(steps[step][1])
+    st.caption(f"Check: {steps[step][2]}")
+    with st.expander("Wireframe requirements and writing patterns", expanded=False):
+        st.markdown("**Input area:** labelled units, height, weight, age, submission and validation.\n\n**Results area:** your BMI, labelled marker, other users, chart choice, age filtering and an edit route.\n\n**Explanation:** audience need → layout/control → reason → question to test.")
+        st.caption("The sketch communicates layout and behaviour. It does not need working calculations or real health data.")
+    for label, content, filename in [
+        ("Download wireframe plan (Markdown)", WIREFRAME_TEMPLATE, "DVS Task 1.2 Wireframe Plan.md"),
+        ("Download usability test plan (Markdown)", TEST_TEMPLATE, "DVS Task 1.2 Usability Test Plan.md")]:
+        st.download_button(label, content.encode(), file_name=filename, mime="text/markdown", key=f"{base_key}_{filename}")
+    template = TEMPLATE_ROOT / guide["template_file"]
+    if template.is_file():
+        st.download_button("Download wireframe and test plan (Word)", template.read_bytes(), file_name=template.name,
+            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document", key=f"{base_key}_wireframe_docx")
+    if draft_editor:
+        with st.expander("Write your Task 1.2 wireframe plan", expanded=False):
+            widget_key = f"{base_key}_wireframe_editor_{guide['uid']}"
+            st.text_area("Your Task 1.2 wireframe and test plan", value=get_dvs_draft(guide["uid"]), height=380,
+                key=widget_key, on_change=remember_draft, args=(guide["uid"], widget_key))
+            st.caption("Your plan is kept during this session. Describe the layout and controls in words, then prepare the task to copy the plan into Exam Resolver.")
+    else:
+        st.caption("Paste your plan above or prepare it from Lesson 1.2. The resolver reviews your written plan; describe the sketch layout and controls in words.")
 
 
 def render_dvs_lesson_resources(lesson, context):
@@ -98,13 +148,13 @@ def render_dvs_lesson_resources(lesson, context):
         return
     from dvs_curriculum import get_dvs_task_guides
     base_key = f"dvs_lesson_{context}_{lesson['lesson_number']}"
-    render_dvs_images(base_key)
+    render_dvs_images(base_key, lesson.get("dvs_illustrations"))
     guides = get_dvs_task_guides(lesson["lesson_number"])
-    selected = st.selectbox("Choose a DVS Lesson 1.1 activity or task", [g["uid"] for g in guides],
+    selected = st.selectbox(f"Choose a DVS Lesson {lesson['lesson_number']} activity or task", [g["uid"] for g in guides],
         format_func=lambda uid: next(f"{g['id']} — {g['title']}" for g in guides if g["uid"] == uid),
         key=f"{base_key}_task")
     guide = next(g for g in guides if g["uid"] == selected)
-    render_dvs_task_resources([guide], base_key, heading="#### Task walkthrough — DVS Lesson 1.1", draft_editor=True, show_images=False)
-    label = "Prepare Task 1.1 in Exam Resolver" if guide["id"] == "1.1-task" else "Prepare Activity 1.1.1 in Exam Resolver"
+    render_dvs_task_resources([guide], base_key, heading=f"#### Task walkthrough — DVS Lesson {lesson['lesson_number']}", draft_editor=True, show_images=False)
+    label = f"Prepare Task {guide['lesson_number']} in Exam Resolver" if guide["id"].endswith('-task') else "Prepare Activity 1.1.1 in Exam Resolver"
     st.button(label, key=f"{base_key}_prepare", on_click=prepare_task_in_resolver, args=(guide, base_key))
     st.markdown("[Go to Exam Resolver](#semester-exam-connector)")

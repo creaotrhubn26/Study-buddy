@@ -37,8 +37,11 @@ if (getattr(exam_resolver_ui, "CONTENT_REVISION", None) != EVO_CONTENT_REVISION
 render_resolver_task_resources = exam_resolver_ui.render_resolver_task_resources
 get_resolver_task_guide_markdown = exam_resolver_ui.get_resolver_task_guide_markdown
 
+import dvs_lesson12
+if getattr(dvs_lesson12, "CONTENT_REVISION", None) != "2026-10-14-dvs12":
+    dvs_lesson12 = importlib.reload(dvs_lesson12)
 import dvs_curriculum
-DVS_CONTENT_REVISION = "2026-10-14-dvs11"
+DVS_CONTENT_REVISION = "2026-10-14-dvs12"
 if getattr(dvs_curriculum, "CONTENT_REVISION", None) != DVS_CONTENT_REVISION:
     dvs_curriculum = importlib.reload(dvs_curriculum)
 import dvs_ui
@@ -67590,6 +67593,16 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
     }
 
     if course_code == dvs_curriculum.COURSE_CODE:
+        style_profiles["Wireframe design task"] = {
+            "summary": "plan a low-fidelity mobile flow and justify controls, visualisation and tests",
+            "keywords": ["wireframe", "prototype", "bmi", "usability"],
+            "structure": [
+                "Identify the brief requirements and the mobile audience need.",
+                "Describe the input and results wireframe areas, units, submission and transitions.",
+                "Explain chart selection, age filtering and the highlighted user marker, including edge states.",
+                "Propose a usability task and revision questions without inventing observations.",
+            ],
+        }
         style_profiles["Persona design task"] = {
             "summary": "describe the audience, label persona assumptions and justify presentation needs",
             "keywords": ["persona", "audience", "empathise", "hypothetical"],
@@ -67738,7 +67751,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             return data.decode("utf-8", errors="replace")
         return str(data)
 
-    st.caption("Question and brief → task guide and persona template → answer and reasoning" if course_code == dvs_curriculum.COURSE_CODE else "Question and data → task guide and workbook → answer and reasoning")
+    st.caption("Question and brief → task guide and templates → answer and reasoning" if course_code == dvs_curriculum.COURSE_CODE else "Question and data → task guide and workbook → answer and reasoning")
     st.markdown("### 1. Question and data")
     with st.container():
         exam_prompt = st.text_area(
@@ -67939,7 +67952,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             if course_code == "FI1BBEO10":
                 st.caption("EVO includes 98 searchable activity/task guides. Use Task guides only to select an exact activity, or enter its number in the question.")
             elif course_code == dvs_curriculum.COURSE_CODE:
-                st.caption("DVS includes Lesson 1.1 and two searchable activity/task guides. Enter Task 1.1 for the CEO persona or Activity 1.1.1 for Funky Monkey.")
+                st.caption("DVS includes Lessons 1.1–1.2 and three searchable guides. Enter Task 1.1 for the CEO persona, Activity 1.1.1 for Funky Monkey or Task 1.2 for the mobile BMI wireframe.")
 
         draft_col_1, draft_col_2 = st.columns(2)
         with draft_col_1:
@@ -69986,9 +69999,10 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             scores["Definition or explanation"] += 5
         if any(term in prompt_lower for term in ["scenario", "case", "organisation", "organization", "company", "business", "recommend"]):
             scores["Broad case question"] += 4
-        if course_code == dvs_curriculum.COURSE_CODE and any(
-                resolver_task_number_boost(g, exam_prompt) for g in dvs_curriculum.get_dvs_task_guides("1.1")):
-            scores["Persona design task"] += 100
+        if course_code == dvs_curriculum.COURSE_CODE:
+            for lesson_number, style in [("1.1", "Persona design task"), ("1.2", "Wireframe design task")]:
+                if any(resolver_task_number_boost(g, exam_prompt) for g in dvs_curriculum.get_dvs_task_guides(lesson_number)):
+                    scores[style] += 100
 
         best_mode = max(scores.items(), key=lambda item: item[1])[0] if scores else "Broad case question"
         if scores.get(best_mode, 0) <= 0:
@@ -70174,8 +70188,8 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
     if not exam_prompt.strip() and scope_mode == "Whole course (auto-select best matches)":
         with resources_panel:
             if course_code in GUIDED_TASK_COURSES:
-                st.markdown("### 2. Task guide and persona template" if course_code == dvs_curriculum.COURSE_CODE else "### 2. Task guide and workbook")
-                st.caption("Enter Task 1.1 to find the CEO persona guide and template." if course_code == dvs_curriculum.COURSE_CODE else "Enter a task number, for example Task 7.2, to find its guide and workbook.")
+                st.markdown("### 2. Task guide and templates" if course_code == dvs_curriculum.COURSE_CODE else "### 2. Task guide and workbook")
+                st.caption("Enter Task 1.1 or Task 1.2 to find its guide and templates." if course_code == dvs_curriculum.COURSE_CODE else "Enter a task number, for example Task 7.2, to find its guide and workbook.")
             else:
                 st.markdown("### 2. Sources for this question")
                 st.caption("Enter a question above to find relevant course sources.")
@@ -70407,8 +70421,8 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         if matched_tasks:
             render_course_task_resources(matched_tasks, base_key)
         elif course_code in GUIDED_TASK_COURSES:
-            st.markdown("### 2. Task guide and persona template" if course_code == dvs_curriculum.COURSE_CODE else "### 2. Task guide and workbook")
-            st.caption("Enter Task 1.1 or choose Task guides only in Advanced settings." if course_code == dvs_curriculum.COURSE_CODE else "Enter a task number, for example Task 7.2, or choose Task guides only in Advanced settings.")
+            st.markdown("### 2. Task guide and templates" if course_code == dvs_curriculum.COURSE_CODE else "### 2. Task guide and workbook")
+            st.caption("Enter Task 1.1 or Task 1.2, or choose Task guides only in Advanced settings." if course_code == dvs_curriculum.COURSE_CODE else "Enter a task number, for example Task 7.2, or choose Task guides only in Advanced settings.")
         else:
             st.markdown("### 2. Sources for this question")
             st.caption("The resolver connects your question to these course sources. Change them in Advanced settings if needed.")
