@@ -1,0 +1,827 @@
+[
+  {
+    "id": "dvs-m1-q01",
+    "module": 1,
+    "source_positions": [
+      1
+    ],
+    "type": "knowledge",
+    "source": "dvs_module_1",
+    "question": "Should designers communicate a message with colour alone?",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correct": 1,
+    "explanation": "False. Colour should not be the only way to convey meaning. Add labels, icons or patterns so people can understand the message without distinguishing the colours.",
+    "example": "An error uses a warning symbol and the words “Upload failed”, as well as a red accent.",
+    "source_url": "https://learning.noroff.no/mod/quiz/view.php?id=22920",
+    "verified": "Official feedback checked on 14 October 2026",
+    "illustration": "quiz-module-1-design-thinking.png"
+  },
+  {
+    "id": "dvs-m1-q02",
+    "module": 1,
+    "source_positions": [
+      2
+    ],
+    "type": "knowledge",
+    "source": "dvs_module_1",
+    "question": "Which question belongs to visual styling rather than the primary purpose of a wireframe?",
+    "options": [
+      "What information will be displayed on the page?",
+      "Which colours work best?",
+      "How will the structure and layout of the page look?",
+      "How will the interface function?"
+    ],
+    "correct": 1,
+    "explanation": "A wireframe focuses on content, structure and interaction rather than final colour styling.",
+    "example": "Sketch the locations of the heading, inputs and submit button before selecting a colour palette.",
+    "source_url": "https://learning.noroff.no/mod/quiz/view.php?id=22920",
+    "verified": "Official feedback checked on 14 October 2026",
+    "illustration": "quiz-module-1-design-thinking.png"
+  },
+  {
+    "id": "dvs-m1-q03",
+    "module": 1,
+    "source_positions": [
+      3
+    ],
+    "type": "knowledge",
+    "source": "dvs_module_1",
+    "question": "Are empathy interviews primarily a quantitative research method?",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correct": 1,
+    "explanation": "Empathy interviews are primarily qualitative: they explore experiences, needs and reasons rather than estimate numerical prevalence.",
+    "example": "Ask “Tell me about the last time you used this chart.” Analyse the experience and motivations, not just a numerical score.",
+    "source_url": "https://learning.noroff.no/mod/quiz/view.php?id=22920",
+    "verified": "Official feedback checked on 14 October 2026",
+    "illustration": "quiz-module-1-design-thinking.png"
+  },
+  {
+    "id": "dvs-m1-q04",
+    "module": 1,
+    "source_positions": [
+      4
+    ],
+    "type": "knowledge",
+    "source": "dvs_module_1",
+    "question": "Is “weak fidelity” the correct term for a simple paper wireframe?",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correct": 1,
+    "explanation": "False. The correct technical term is LOW fidelity, not weak fidelity. The official quiz feedback explicitly makes this distinction. Low-fidelity wireframes communicate basic structure; they may be paper sketches or simple digital layouts.",
+    "example": "A rough pen-and-paper screen is a low-fidelity wireframe. A simple digital sketch can also be low fidelity.",
+    "source_url": "https://learning.noroff.no/mod/quiz/view.php?id=22920",
+    "verified": "Official feedback checked on 14 October 2026",
+    "illustration": "quiz-module-1-design-thinking.png"
+  },
+  {
+    "id": "dvs-m1-q05",
+    "module": 1,
+    "source_positions": [
+      5
+    ],
+    "type": "knowledge",
+    "source": "dvs_module_1",
+    "question": "Does affinity mapping organise qualitative findings into related groups?",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correct": 0,
+    "explanation": "Affinity mapping groups related qualitative observations into themes while retaining their underlying evidence.",
+    "example": "Group comments about navigation together, and comments about unreadable labels in a different theme.",
+    "source_url": "https://learning.noroff.no/mod/quiz/view.php?id=22920",
+    "verified": "Official feedback checked on 14 October 2026",
+    "illustration": "quiz-module-1-design-thinking.png"
+  },
+  {
+    "id": "dvs-m1-q06",
+    "module": 1,
+    "source_positions": [
+      6
+    ],
+    "type": "knowledge",
+    "source": "dvs_module_1",
+    "question": "Is “null testing” the method used to assess a prototype’s usability?",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correct": 1,
+    "explanation": "Usability testing evaluates people attempting tasks with a prototype. Null testing is not the named design method in this lesson.",
+    "example": "Give someone a prototype and a realistic task; observe where they hesitate or cannot complete it.",
+    "source_url": "https://learning.noroff.no/mod/quiz/view.php?id=22920",
+    "verified": "Official feedback checked on 14 October 2026",
+    "illustration": "quiz-module-1-design-thinking.png"
+  },
+  {
+    "id": "dvs-m1-q07",
+    "module": 1,
+    "source_positions": [
+      7
+    ],
+    "type": "knowledge",
+    "source": "dvs_module_1",
+    "question": "Which option is absent from the five named stages of design thinking?",
+    "options": [
+      "Define",
+      "Build",
+      "Ideation",
+      "Empathise",
+      "Prototype"
+    ],
+    "correct": 1,
+    "explanation": "The familiar five stages are Empathise, Define, Ideate, Prototype and Test. Build is not a named stage in that model.",
+    "example": "Understand users, define their problem, generate ideas, make a prototype, then test it and iterate.",
+    "source_url": "https://learning.noroff.no/mod/quiz/view.php?id=22920",
+    "verified": "Official feedback checked on 14 October 2026",
+    "illustration": "quiz-module-1-design-thinking.png"
+  },
+  {
+    "id": "dvs-m1-q08",
+    "module": 1,
+    "source_positions": [
+      8
+    ],
+    "type": "knowledge",
+    "source": "dvs_module_1",
+    "question": "Which option describes a recognised kind of interface status message?",
+    "options": [
+      "Start",
+      "Failure",
+      "Section",
+      "Function"
+    ],
+    "correct": 1,
+    "explanation": "A failure message reports that an operation did not complete and should explain a useful recovery action.",
+    "example": "“Upload failed. Check your connection and retry.” identifies a problem and a recovery action.",
+    "source_url": "https://learning.noroff.no/mod/quiz/view.php?id=22920",
+    "verified": "Official feedback checked on 14 October 2026",
+    "illustration": "quiz-module-1-design-thinking.png"
+  },
+  {
+    "id": "dvs-m1-q09",
+    "module": 1,
+    "source_positions": [
+      9
+    ],
+    "type": "knowledge",
+    "source": "dvs_module_1",
+    "question": "Are “collapsed” and “boundless” the standard states of an accordion?",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correct": 1,
+    "explanation": "Accordions and menus typically have collapsed and expanded states, not a boundless state.",
+    "example": "An accordion hides its content when collapsed and reveals it when expanded.",
+    "source_url": "https://learning.noroff.no/mod/quiz/view.php?id=22920",
+    "verified": "Official feedback checked on 14 October 2026",
+    "illustration": "quiz-module-1-design-thinking.png"
+  },
+  {
+    "id": "dvs-m1-q10",
+    "module": 1,
+    "source_positions": [
+      10
+    ],
+    "type": "knowledge",
+    "source": "dvs_module_1",
+    "question": "Which option is absent from the standard four-quadrant empathy map?",
+    "options": [
+      "feels",
+      "does",
+      "touches",
+      "thinks"
+    ],
+    "correct": 2,
+    "explanation": "The standard empathy-map quadrants are says, thinks, does and feels.",
+    "example": "Record a user’s spoken words under Says, beliefs under Thinks, actions under Does, and emotions under Feels.",
+    "source_url": "https://learning.noroff.no/mod/quiz/view.php?id=22920",
+    "verified": "Official feedback checked on 14 October 2026",
+    "illustration": "quiz-module-1-design-thinking.png"
+  },
+  {
+    "id": "dvs-m2-q01",
+    "module": 2,
+    "source_positions": [
+      1
+    ],
+    "type": "knowledge",
+    "source": "dvs_module_2",
+    "question": "Is PNG a vector-graphics format?",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correct": 1,
+    "explanation": "PNG stores raster pixels. SVG is a common vector format.",
+    "example": "Enlarge a small PNG logo: individual pixels become visible. An SVG path can be redrawn at another size.",
+    "source_url": "https://learning.noroff.no/mod/quiz/view.php?id=22921",
+    "verified": "Official feedback checked on 14 October 2026",
+    "illustration": "quiz-module-2-graphics-integrity.png"
+  },
+  {
+    "id": "dvs-m2-q02",
+    "module": 2,
+    "source_positions": [
+      2
+    ],
+    "type": "knowledge",
+    "source": "dvs_module_2",
+    "question": "Which option is not a core GIMP image-editing feature?",
+    "options": [
+      "Retouching",
+      "Filters",
+      "Flowcharts",
+      "Layers"
+    ],
+    "correct": 2,
+    "explanation": "GIMP provides layers, retouching and image filters; dedicated flowchart authoring is not its core feature.",
+    "example": "Use Crop to remove unwanted edges and Layers to combine images. A flowchart tool is better suited to process diagrams.",
+    "source_url": "https://learning.noroff.no/mod/quiz/view.php?id=22921",
+    "verified": "Official feedback checked on 14 October 2026",
+    "illustration": "quiz-module-2-graphics-integrity.png"
+  },
+  {
+    "id": "dvs-m2-q03",
+    "module": 2,
+    "source_positions": [
+      3
+    ],
+    "type": "knowledge",
+    "source": "dvs_module_2",
+    "question": "Which option conflicts with the course rules for presenting analytical findings?",
+    "options": [
+      "Do not be picky with the numbers.",
+      "Include superfluous information.",
+      "Keep the graphs clear and non-confusing to draw correct conclusions about the information.",
+      "Encourage third-party review.",
+      "Be aware of biases."
+    ],
+    "correct": 1,
+    "explanation": "Irrelevant detail obscures the message. The course instead recommends honest selection, bias awareness, clarity and review.",
+    "example": "Keep information needed for the decision, explain limitations and ask a colleague to review the chart.",
+    "source_url": "https://learning.noroff.no/mod/quiz/view.php?id=22921",
+    "verified": "Official feedback checked on 14 October 2026",
+    "illustration": "quiz-module-2-graphics-integrity.png"
+  },
+  {
+    "id": "dvs-m2-q04",
+    "module": 2,
+    "source_positions": [
+      4,
+      9
+    ],
+    "type": "knowledge",
+    "source": "dvs_module_2",
+    "question": "Can an analyst ignore bias when communicating results through a visualisation?",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correct": 1,
+    "explanation": "Bias can affect data selection, encoding and interpretation, so it must be considered when communicating results.",
+    "example": "Check whether a selected time window hides unfavourable results before presenting a trend.",
+    "source_url": "https://learning.noroff.no/mod/quiz/view.php?id=22921",
+    "verified": "Official feedback checked on 14 October 2026",
+    "illustration": "quiz-module-2-graphics-integrity.png"
+  },
+  {
+    "id": "dvs-m2-q05",
+    "module": 2,
+    "source_positions": [
+      5
+    ],
+    "type": "knowledge",
+    "source": "dvs_module_2",
+    "question": "Which option is absent from the seven facets of the UX honeycomb?",
+    "options": [
+      "Credibility",
+      "Usefulness",
+      "Value",
+      "Creativity",
+      "Findability"
+    ],
+    "correct": 3,
+    "explanation": "Morville’s seven UX facets are useful, usable, desirable, findable, accessible, credible and valuable. Creativity is not one of those named facets.",
+    "example": "A chart can be useful and credible yet difficult to find. Assess the full set of UX facets.",
+    "source_url": "https://learning.noroff.no/mod/quiz/view.php?id=22921",
+    "verified": "Official feedback checked on 14 October 2026",
+    "illustration": "quiz-module-2-graphics-integrity.png"
+  },
+  {
+    "id": "dvs-m2-q06",
+    "module": 2,
+    "source_positions": [
+      6
+    ],
+    "type": "knowledge",
+    "source": "dvs_module_2",
+    "question": "Which option is not a recognised chart type in this list?",
+    "options": [
+      "Pareto chart",
+      "Hippogram",
+      "Histogram",
+      "Scatter plot",
+      "Column chart"
+    ],
+    "correct": 1,
+    "explanation": "The recognised choices are Pareto, histogram, scatter and column charts. Hippogram is the distractor.",
+    "example": "A Pareto chart combines descending categories with a cumulative percentage; “hippogram” is a distractor.",
+    "source_url": "https://learning.noroff.no/mod/quiz/view.php?id=22921",
+    "verified": "Official feedback checked on 14 October 2026",
+    "illustration": "quiz-module-2-graphics-integrity.png"
+  },
+  {
+    "id": "dvs-m2-q07",
+    "module": 2,
+    "source_positions": [
+      7
+    ],
+    "type": "knowledge",
+    "source": "dvs_module_2",
+    "question": "Which claimed advantage does not apply to raster graphics?",
+    "options": [
+      "Precise editing",
+      "Infinite resizability",
+      "Attention to detail",
+      "Compatibility"
+    ],
+    "correct": 1,
+    "explanation": "Raster images have finite pixel resolution; enlargement cannot recover missing original detail. Vector geometry can scale, while embedded raster content still has limits.",
+    "example": "Doubling a raster image’s dimensions does not create new captured detail.",
+    "source_url": "https://learning.noroff.no/mod/quiz/view.php?id=22921",
+    "verified": "Official feedback checked on 14 October 2026",
+    "illustration": "quiz-module-2-graphics-integrity.png"
+  },
+  {
+    "id": "dvs-m2-q08",
+    "module": 2,
+    "source_positions": [
+      8
+    ],
+    "type": "knowledge",
+    "source": "dvs_module_2",
+    "question": "Must you switch from GIMP to Photoshop to crop an image?",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correct": 1,
+    "explanation": "GIMP supports cropping, including Crop to Selection; Photoshop is not required.",
+    "example": "Choose the Crop tool in GIMP, drag the desired area and apply the crop.",
+    "source_url": "https://learning.noroff.no/mod/quiz/view.php?id=22921",
+    "verified": "Official feedback checked on 14 October 2026",
+    "illustration": "quiz-module-2-graphics-integrity.png"
+  },
+  {
+    "id": "dvs-m2-q10",
+    "module": 2,
+    "source_positions": [
+      10
+    ],
+    "type": "knowledge",
+    "source": "dvs_module_2",
+    "question": "Which option is unnecessary for making a chart clear and trustworthy?",
+    "options": [
+      "Percentages are not used out of context.",
+      "Ensure that a fancy font is used.",
+      "There are no optical illusions.",
+      "Relevant units are used.",
+      "Scales on axes are not misleading."
+    ],
+    "correct": 1,
+    "explanation": "Legibility and honest scales matter; decorative typography is not a requirement and can reduce clarity.",
+    "example": "Label an axis “Revenue (NOK)”, state the time period and denominator, and use a readable font.",
+    "source_url": "https://learning.noroff.no/mod/quiz/view.php?id=22921",
+    "verified": "Official feedback checked on 14 October 2026",
+    "illustration": "quiz-module-2-graphics-integrity.png"
+  },
+  {
+    "id": "dvs-m3-q01",
+    "module": 3,
+    "source_positions": [
+      1
+    ],
+    "type": "knowledge",
+    "source": "dvs_module_3",
+    "question": "Are plots used only to represent qualitative data?",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correct": 1,
+    "explanation": "Plots can display quantitative data, such as scatter plots and histograms.",
+    "example": "Use a scatter plot for two numerical variables and a histogram for the distribution of one numerical variable.",
+    "source_url": "https://learning.noroff.no/mod/quiz/view.php?id=22922",
+    "verified": "Official feedback checked on 14 October 2026",
+    "illustration": "quiz-module-3-chart-choices.png"
+  },
+  {
+    "id": "dvs-m3-q02",
+    "module": 3,
+    "source_positions": [
+      2
+    ],
+    "type": "knowledge",
+    "source": "dvs_module_3",
+    "question": "Which option best defines data visualisation?",
+    "options": [
+      "The scientific process of analysing raw data to draw conclusions",
+      "The process of storing analysed data",
+      "The representation of data in visual formats to facilitate understanding and insights",
+      "The process of collecting raw data"
+    ],
+    "correct": 2,
+    "explanation": "Data visualisation uses graphical representations to communicate evidence and reveal patterns.",
+    "example": "Turn monthly sales into a line chart so a reader can see change over time.",
+    "source_url": "https://learning.noroff.no/mod/quiz/view.php?id=22922",
+    "verified": "Official feedback checked on 14 October 2026",
+    "illustration": "quiz-module-3-chart-choices.png"
+  },
+  {
+    "id": "dvs-m3-q03",
+    "module": 3,
+    "source_positions": [
+      3
+    ],
+    "type": "knowledge",
+    "source": "dvs_module_3",
+    "question": "Which option is not a named line-chart subtype in the course’s Excel list?",
+    "options": [
+      "Line with markers",
+      "Line with bars",
+      "3D line",
+      "Stacked line with markers",
+      "Stacked line"
+    ],
+    "correct": 1,
+    "explanation": "The listed Office line subtypes include markers, stacked lines and 3-D lines; bars plus lines normally describe a combination chart rather than that line subtype.",
+    "example": "“Line with markers” is a named subtype. A column-and-line combination is a combo chart.",
+    "source_url": "https://learning.noroff.no/mod/quiz/view.php?id=22922",
+    "verified": "Official feedback checked on 14 October 2026",
+    "illustration": "quiz-module-3-chart-choices.png"
+  },
+  {
+    "id": "dvs-m3-q04",
+    "module": 3,
+    "source_positions": [
+      4
+    ],
+    "type": "knowledge",
+    "source": "dvs_module_3",
+    "question": "Is a plain column chart primarily intended to show parts of a whole?",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correct": 1,
+    "explanation": "A basic column chart compares category magnitudes. Stacked columns can additionally show contributions to a whole.",
+    "example": "Compare sales for products A, B and C with plain columns; choose a stacked or percentage chart for composition.",
+    "source_url": "https://learning.noroff.no/mod/quiz/view.php?id=22922",
+    "verified": "Official feedback checked on 14 October 2026",
+    "illustration": "quiz-module-3-chart-choices.png"
+  },
+  {
+    "id": "dvs-m3-q05",
+    "module": 3,
+    "source_positions": [
+      5
+    ],
+    "type": "knowledge",
+    "source": "dvs_module_3",
+    "question": "Do column charts represent categories with rectangular bars?",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correct": 0,
+    "explanation": "Column charts use vertical rectangular bars whose lengths encode category values.",
+    "example": "Categories A, B and C each have one vertical rectangle whose height shows the measured amount.",
+    "source_url": "https://learning.noroff.no/mod/quiz/view.php?id=22922",
+    "verified": "Official feedback checked on 14 October 2026",
+    "illustration": "quiz-module-3-chart-choices.png"
+  },
+  {
+    "id": "dvs-m3-q06",
+    "module": 3,
+    "source_positions": [
+      6
+    ],
+    "type": "knowledge",
+    "source": "dvs_module_3",
+    "question": "Which option is not a primary analytical purpose of plotting data?",
+    "options": [
+      "Testing assumptions",
+      "Generating lists of values",
+      "Identifying outliers",
+      "Model validation"
+    ],
+    "correct": 1,
+    "explanation": "Plots help inspect assumptions, outliers and model behaviour. A list or table is the direct representation for enumerating values.",
+    "example": "Plot residuals to check modelling assumptions or identify unusually large errors. A table provides a list of values.",
+    "source_url": "https://learning.noroff.no/mod/quiz/view.php?id=22922",
+    "verified": "Official feedback checked on 14 October 2026",
+    "illustration": "quiz-module-3-chart-choices.png"
+  },
+  {
+    "id": "dvs-m3-q07",
+    "module": 3,
+    "source_positions": [
+      7
+    ],
+    "type": "knowledge",
+    "source": "dvs_module_3",
+    "question": "Do histograms compare categories while bar charts group numerical values into intervals?",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correct": 1,
+    "explanation": "The descriptions are reversed: histograms group a numerical variable into intervals; bar charts compare categories.",
+    "example": "A histogram groups ages into ranges such as 20–29; a bar chart compares named categories such as regions.",
+    "source_url": "https://learning.noroff.no/mod/quiz/view.php?id=22922",
+    "verified": "Official feedback checked on 14 October 2026",
+    "illustration": "quiz-module-3-chart-choices.png"
+  },
+  {
+    "id": "dvs-m3-q08",
+    "module": 3,
+    "source_positions": [
+      8
+    ],
+    "type": "knowledge",
+    "source": "dvs_module_3",
+    "question": "Which option is not a named column-chart subtype in the course’s Excel list?",
+    "options": [
+      "3D column",
+      "Line column",
+      "Clustered column",
+      "Stacked column",
+      "3D stacked column"
+    ],
+    "correct": 1,
+    "explanation": "The recognised column variants include clustered, stacked and 3-D columns. Combining lines and columns describes a combo chart.",
+    "example": "Clustered columns compare series side by side. A line-and-column combination is a combo chart.",
+    "source_url": "https://learning.noroff.no/mod/quiz/view.php?id=22922",
+    "verified": "Official feedback checked on 14 October 2026",
+    "illustration": "quiz-module-3-chart-choices.png"
+  },
+  {
+    "id": "dvs-m3-q09",
+    "module": 3,
+    "source_positions": [
+      9
+    ],
+    "type": "knowledge",
+    "source": "dvs_module_3",
+    "question": "Can a trendline emphasise an observed pattern in a line chart?",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correct": 0,
+    "explanation": "The lesson explains that trendlines can emphasise observed patterns across time. They summarise direction; markers identify individual data points.",
+    "example": "Markers identify monthly user counts; a dashed fitted trendline makes the overall upward direction easier to see.",
+    "source_url": "https://learning.noroff.no/mod/quiz/view.php?id=22922",
+    "verified": "Official feedback checked on 14 October 2026",
+    "illustration": "quiz-module-3-chart-choices.png"
+  },
+  {
+    "id": "dvs-m3-q10",
+    "module": 3,
+    "source_positions": [
+      10
+    ],
+    "type": "knowledge",
+    "source": "dvs_module_3",
+    "question": "For an equal-width histogram, does bar height show frequency while horizontal bins represent numerical value ranges?",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correct": 0,
+    "explanation": "In the introductory equal-width histogram, bar height shows frequency and horizontal bins show ranges of numerical values. The width is a bin interval, not an individual observation; unequal-width histograms require frequency density.",
+    "example": "With bins [0,10), [10,20) and [20,30), bar heights 3, 5 and 2 show the counts in those intervals.",
+    "source_url": "https://learning.noroff.no/mod/quiz/view.php?id=22922",
+    "verified": "Official feedback checked on 14 October 2026",
+    "illustration": "quiz-module-3-chart-choices.png"
+  },
+  {
+    "id": "dvs-m4-q01",
+    "module": 4,
+    "source_positions": [
+      1
+    ],
+    "type": "knowledge",
+    "source": "dvs_module_4",
+    "question": "Can you use the Comments feature to add review comments to a presentation?",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correct": 0,
+    "explanation": "Presentation comments support review and collaboration; they are distinct from speaker notes.",
+    "example": "Add a comment asking a colleague to check the axis label; use speaker notes for your own presentation reminders.",
+    "source_url": "https://learning.noroff.no/mod/quiz/view.php?id=22923",
+    "verified": "Official feedback checked on 14 October 2026",
+    "illustration": "quiz-module-4-presentations.png"
+  },
+  {
+    "id": "dvs-m4-q02",
+    "module": 4,
+    "source_positions": [
+      2
+    ],
+    "type": "knowledge",
+    "source": "dvs_module_4",
+    "question": "Are text-only slides always preferable when presenting evidence?",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correct": 1,
+    "explanation": "Appropriate visuals can help explain a message; a text-only slide is not always preferable.",
+    "example": "Present the trend as a labelled chart and use a short sentence to state the finding.",
+    "source_url": "https://learning.noroff.no/mod/quiz/view.php?id=22923",
+    "verified": "Official feedback checked on 14 October 2026",
+    "illustration": "quiz-module-4-presentations.png"
+  },
+  {
+    "id": "dvs-m4-q03",
+    "module": 4,
+    "source_positions": [
+      3
+    ],
+    "type": "knowledge",
+    "source": "dvs_module_4",
+    "question": "Does the course describe canvas-based visual storytelling as an alternative to a linear slide sequence?",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correct": 0,
+    "explanation": "This matches the course contrast between traditional slide sequences and canvas-based visual storytelling. Storytelling in general can still follow a linear narrative; the course describes a particular approach.",
+    "example": "On a spatial canvas, zoom from the overall story into a related chart. A slide deck can also tell a good linear story.",
+    "source_url": "https://learning.noroff.no/mod/quiz/view.php?id=22923",
+    "verified": "Official feedback checked on 14 October 2026",
+    "illustration": "quiz-module-4-presentations.png"
+  },
+  {
+    "id": "dvs-m4-q04",
+    "module": 4,
+    "source_positions": [
+      4
+    ],
+    "type": "knowledge",
+    "source": "dvs_module_4",
+    "question": "Can the Animation Pane change the order of effects on a slide?",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correct": 0,
+    "explanation": "The Animation Pane lists effects and allows their playback order to be changed.",
+    "example": "Move an explanation’s entrance effect before the chart highlight in the Animation Pane.",
+    "source_url": "https://learning.noroff.no/mod/quiz/view.php?id=22923",
+    "verified": "Official feedback checked on 14 October 2026",
+    "illustration": "quiz-module-4-presentations.png"
+  },
+  {
+    "id": "dvs-m4-q05",
+    "module": 4,
+    "source_positions": [
+      5
+    ],
+    "type": "knowledge",
+    "source": "dvs_module_4",
+    "question": "Which label is absent from the course’s standard PowerPoint ribbon-tab list?",
+    "options": [
+      "Design",
+      "Transition",
+      "Present",
+      "Record",
+      "Review"
+    ],
+    "correct": 2,
+    "explanation": "The course refers to standard desktop ribbon tabs. Slide Show is the presentation tab; Present can be a web-app command rather than that ribbon tab. Exact UI labels vary by platform and version.",
+    "example": "In the course’s desktop terminology, Slide Show is a ribbon tab; Present may be a button on another platform.",
+    "source_url": "https://learning.noroff.no/mod/quiz/view.php?id=22923",
+    "verified": "Official feedback checked on 14 October 2026",
+    "illustration": "quiz-module-4-presentations.png"
+  },
+  {
+    "id": "dvs-m4-q06",
+    "module": 4,
+    "source_positions": [
+      6
+    ],
+    "type": "knowledge",
+    "source": "dvs_module_4",
+    "question": "Was data visualisation invented in the early 2000s?",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correct": 1,
+    "explanation": "Data visualisation predates the twenty-first century by centuries; modern software did not invent the underlying concept.",
+    "example": "Historical maps and statistical graphics existed centuries before modern presentation software.",
+    "source_url": "https://learning.noroff.no/mod/quiz/view.php?id=22923",
+    "verified": "Official feedback checked on 14 October 2026",
+    "illustration": "quiz-module-4-presentations.png"
+  },
+  {
+    "id": "dvs-m4-q07",
+    "module": 4,
+    "source_positions": [
+      7
+    ],
+    "type": "knowledge",
+    "source": "dvs_module_4",
+    "question": "Does a standard new blank PowerPoint presentation begin with a title-and-subtitle slide?",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correct": 0,
+    "explanation": "A standard blank PowerPoint presentation starts with a Title Slide layout containing title and subtitle placeholders. Templates or customised defaults can differ.",
+    "example": "Add the report title and date to the default Title Slide layout; custom templates can start differently.",
+    "source_url": "https://learning.noroff.no/mod/quiz/view.php?id=22923",
+    "verified": "Official feedback checked on 14 October 2026",
+    "illustration": "quiz-module-4-presentations.png"
+  },
+  {
+    "id": "dvs-m4-q08",
+    "module": 4,
+    "source_positions": [
+      8
+    ],
+    "type": "knowledge",
+    "source": "dvs_module_4",
+    "question": "Is File the tab for quickly choosing slide themes and variants?",
+    "options": [
+      "True",
+      "False"
+    ],
+    "correct": 1,
+    "explanation": "Themes and variants belong to Design. File handles document actions such as opening, saving and exporting.",
+    "example": "Choose a theme on Design. Use File for operations such as opening, saving and exporting.",
+    "source_url": "https://learning.noroff.no/mod/quiz/view.php?id=22923",
+    "verified": "Official feedback checked on 14 October 2026",
+    "illustration": "quiz-module-4-presentations.png"
+  },
+  {
+    "id": "dvs-m4-q09",
+    "module": 4,
+    "source_positions": [
+      9
+    ],
+    "type": "knowledge",
+    "source": "dvs_module_4",
+    "question": "Which option is absent from the course’s prescribed traditional presentation storyline?",
+    "options": [
+      "History",
+      "Agenda",
+      "Conclusion",
+      "End slide",
+      "Title"
+    ],
+    "correct": 0,
+    "explanation": "The prescribed traditional storyline includes title, agenda, introduction, findings, conclusion, Q&A and an end slide. History is not a required slide in that sequence.",
+    "example": "Use Title → Agenda → Introduction → Findings → Conclusion → Q&A → End. Add a history slide only if the topic needs it.",
+    "source_url": "https://learning.noroff.no/mod/quiz/view.php?id=22923",
+    "verified": "Official feedback checked on 14 October 2026",
+    "illustration": "quiz-module-4-presentations.png"
+  },
+  {
+    "id": "dvs-m4-q10",
+    "module": 4,
+    "source_positions": [
+      10
+    ],
+    "type": "knowledge",
+    "source": "dvs_module_4",
+    "question": "Which operation belongs to image editing rather than the PowerPoint Slides group?",
+    "options": [
+      "Add new slides",
+      "Reset",
+      "Modify sections",
+      "Reuse slides",
+      "Cut image"
+    ],
+    "correct": 4,
+    "explanation": "The Slides group handles slide creation, layouts, reset, sections and slide reuse; cropping or cutting an image belongs to picture editing.",
+    "example": "Use New Slide, Reset or Section for slide management; use picture tools for cropping an image.",
+    "source_url": "https://learning.noroff.no/mod/quiz/view.php?id=22923",
+    "verified": "Official feedback checked on 14 October 2026",
+    "illustration": "quiz-module-4-presentations.png"
+  }
+]
