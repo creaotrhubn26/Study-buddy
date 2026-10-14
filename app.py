@@ -18,6 +18,7 @@ import mistune
 from openai import OpenAI
 from evo_curriculum import ASSET_ROOT as EVO_ASSET_ROOT, get_evo_course_lessons, get_evo_training_modules
 from evo_tasks import TEMPLATE_ROOT as EVO_TEMPLATE_ROOT, get_evo_task_guides, resolver_task_number_boost, get_evo_resolver_ai_units
+from exam_resolver_ui import render_resolver_task_resources
 
 # Use the full browser width so the prompt + dataset upload + syllabus preview
 # all have room to breathe. Must be the first Streamlit call in the module.
@@ -67628,15 +67629,16 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             return data.decode("utf-8", errors="replace")
         return str(data)
 
-    prompt_col, data_col = st.columns([2, 1])
-    with prompt_col:
+    st.caption("Question and data → task guide and workbook → answer and reasoning")
+    st.markdown("### 1. Question and data")
+    with st.container():
         exam_prompt = st.text_area(
             "Paste the exam question, case, or task prompt",
             key=f"{base_key}_prompt",
             placeholder=f"Example: Explain how {course['name']} knowledge can be used to solve a realistic case scenario.",
             height=180,
         )
-    with data_col:
+    with st.expander("Attach data or supporting documents (optional)", expanded=False):
         st.markdown("**Optional: attach files**")
         uploaded_project_files = st.file_uploader(
             "CSV / Excel / PDF / Word / text — drop one or several",
@@ -67645,17 +67647,18 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             label_visibility="visible",
             accept_multiple_files=True,
         )
-        gsheet_url = st.text_input(
-            "...or paste a Google Sheets URL",
-            key=f"{base_key}_semester_project_gsheet_url",
-            placeholder="https://docs.google.com/spreadsheets/d/.../edit#gid=0",
-            help="The sheet must be shared as 'Anyone with the link can view'.",
-        ).strip()
-        use_capstone_sample = st.checkbox(
-            "Use capstone sample CSV",
-            value=False,
-            key=f"{base_key}_use_capstone_sample_csv",
-        )
+        with st.expander("Google Sheets or sample data", expanded=False):
+            gsheet_url = st.text_input(
+                "...or paste a Google Sheets URL",
+                key=f"{base_key}_semester_project_gsheet_url",
+                placeholder="https://docs.google.com/spreadsheets/d/.../edit#gid=0",
+                help="The sheet must be shared as 'Anyone with the link can view'.",
+            ).strip()
+            use_capstone_sample = st.checkbox(
+                "Use capstone sample CSV",
+                value=False,
+                key=f"{base_key}_use_capstone_sample_csv",
+            )
 
     # Load every attached file. Tabular formats become (label, DataFrame)
     # pairs in attached_datasets; PDF / Word / text become (label, text)
@@ -67796,20 +67799,78 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             f"✅ Prompt applied — {word_count} words / {char_count} characters."
         )
 
+    resources_panel = st.container()
+    settings_panel = st.expander("Advanced settings: sources and answer style", expanded=False)
+    with settings_panel:
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            resolver_mode = st.selectbox(
+                "Question style",
+                options=list(style_profiles.keys()),
+                index=list(style_profiles).index("Unsure - auto detect"),
+                key=f"{base_key}_mode",
+            )
+        with col2:
+            answer_depth = st.selectbox(
+                "Output depth",
+                options=["Fast exam plan", "Structured lesson connection", "Full exam answer scaffold"],
+                key=f"{base_key}_depth",
+            )
+        with col3:
+            source_pool_options = ["Lessons + learning outcomes"] if has_lessons else ["Learning outcomes only"]
+            if has_lessons:
+                source_pool_options.extend(["Lessons only", "Learning outcomes only"])
+            if course_code == "FI1BBEO10":
+                source_pool_options.extend(["Lessons + task guides", "Task guides only"])
+            source_pool = st.selectbox(
+                "Source pool",
+                options=source_pool_options,
+                key=f"{base_key}_source_pool",
+            )
+            if course_code == "FI1BBEO10":
+                st.caption("EVO includes 98 searchable activity/task guides. Use Task guides only to select an exact activity, or enter its number in the question.")
+
+        draft_col_1, draft_col_2 = st.columns(2)
+        with draft_col_1:
+            draft_style = st.selectbox(
+                "Direct answer style",
+                options=["Short paragraph", "Structured answer", "Detailed exam answer"],
+                key=f"{base_key}_draft_style",
+            )
+        with draft_col_2:
+            answer_tone = st.selectbox(
+                "Answer tone",
+                options=list(tone_profiles.keys()),
+                key=f"{base_key}_answer_tone",
+            )
+        st.caption(
+            f"Tone changes wording, not the academic content or answer structure. Current tone: {tone_profiles[answer_tone]['summary']}"
+        )
+
+        scope_options = ["Whole course (auto-select best matches)", "Specific lesson or outcome", "Manual selection"]
+        scope_mode = st.selectbox(
+            "Resolver scope",
+            options=scope_options,
+            key=f"{base_key}_scope",
+        )
+
+    st.markdown("### 3. Answer and reasoning")
+    if not exam_prompt.strip():
+        st.caption("Enter a question above to generate an explanation. No AI request runs automatically.")
+
     # AI-powered answer with reasoning. Button-driven so we never call Claude
     # without the student asking — saves both time and tokens.
     ai_answer_key = f"{base_key}_ai_answer"
     ai_signature_key = f"{base_key}_ai_answer_signature"
     if exam_prompt.strip() and client is not None:
-        ai_settings_col1, ai_settings_col2 = st.columns([3, 2])
-        with ai_settings_col1:
+        with st.container():
             button_label = (
                 "🔁 Re-generate answer"
                 if st.session_state.get(ai_answer_key)
                 else "💡 Generate answer with reasoning"
             )
-            generate_clicked = st.button(button_label, key=f"{base_key}_generate_ai_answer")
-        with ai_settings_col2:
+            generate_clicked = st.button(button_label, key=f"{base_key}_generate_ai_answer", type="primary")
+        with settings_panel:
             exam_submission_mode = st.checkbox(
                 "📝 Exam submission mode",
                 value=False,
@@ -68071,8 +68132,8 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                     "table, group comparison) as a proper Markdown table with header rows. "
                     "Number tables (Table 1, Table 2, ...) and figures (Figure 1, ...) in "
                     "captions immediately above or below.\n"
-                    "- Use ENGLISH unless the prompt is clearly Norwegian, in which case "
-                    "answer in Norwegian.\n"
+                    "- Write the answer in English, including headings and explanations, "
+                    "even if the question is written in Norwegian.\n"
                     "- Do not invent numbers; if data is missing, say so explicitly.\n"
                     "- If a dataset is attached, USE it: compute summary statistics and "
                     "cite specific column values when relevant.\n"
@@ -68112,6 +68173,12 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 )
             # Append the strict-curriculum clause to whichever base prompt won.
             system_prompt = system_prompt + strict_clause
+            system_prompt += (
+                "\nANSWER LANGUAGE: Write in English, including headings, explanations, "
+                "tables and follow-up answers. Keep dataset columns, Excel sheet names "
+                "and formulas unchanged. Translate Norwegian study-guide wording into "
+                "English when explaining it, even if the question is in Norwegian.\n"
+            )
             if course_code == "FI1BBEO10":
                 system_prompt += (
                     "\n\nEVO measurement accuracy checks:\n"
@@ -68213,21 +68280,28 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                     f"Error: `{type(exc).__name__}: {exc}`"
                 )
 
+        if generate_clicked:
+            stream_placeholder.empty()
+
         ai_answer = st.session_state.get(ai_answer_key, "")
         if ai_answer:
-            # Layout: answer on the left, syllabus preview on the right.
             history_now = st.session_state.get("resolver_answer_history", [])
             recent_excerpts = []
-            if history_now:
-                recent_excerpts = history_now[-1].get("syllabus_excerpts") or []
-            if recent_excerpts:
-                # Give the preview real estate to breathe — roughly 40% of the
-                # row — so the matched lesson excerpts are readable side by
-                # side with the answer instead of squeezed into a sliver.
-                answer_col, preview_col = st.columns([3, 2])
+            for entry in reversed(history_now):
+                if entry.get("course_code") == course_code:
+                    recent_excerpts = entry.get("syllabus_excerpts") or []
+                    break
+            current_signature = (
+                f"{exam_prompt}\n\nDATA::{project_file_label if project_df is not None else ''}::"
+                f"{project_df.shape if project_df is not None else None}"
+            )
+            previous_signature = st.session_state.get(ai_signature_key)
+            answer_is_stale = previous_signature != current_signature
+            if answer_is_stale:
+                st.info("This answer belongs to an earlier question or dataset. Re-generate to answer the current question.")
+                answer_col = st.expander("Previous AI answer", expanded=False)
             else:
-                answer_col = st
-                preview_col = None
+                answer_col = st.container()
             with answer_col:
                 st.markdown("### 💡 Generated answer with reasoning")
                 st.markdown(ai_answer)
@@ -68236,8 +68310,8 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                     f"({AI_CHAT_MODEL or 'default model'}). "
                     "Click the button again after changing the prompt or dataset to refresh."
                 )
-            if preview_col is not None:
-                with preview_col:
+            if recent_excerpts:
+                with st.expander("Syllabus excerpts used in this answer", expanded=False):
                     st.markdown("### 📚 Syllabus preview")
                     st.caption(
                         "Words that appear in both the answer and a lesson excerpt are "
@@ -68277,173 +68351,63 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                         st.markdown(header_md)
                         st.markdown(highlighted)
                         st.divider()
-            # If the answer might have been truncated (no clear final section
-            # like Conclusion / Reflection / Konklusjon), show a Continue button
-            # so the user can ask Claude to pick up where it stopped.
-            # Treat the answer as finished if the last 600 chars (footers,
-            # word-count notes, etc. can push the marker out of the last 300)
-            # contain any of these end-of-report markers.
-            answer_tail = (ai_answer or "")[-600:].lower()
-            looks_truncated = not any(
-                marker in answer_tail
-                for marker in [
-                    "conclusion and reflection",
-                    "## 6.",
-                    "## 7.",
-                    "references",
-                    "konklusjon",
-                    "## konklusjon",
-                    "end of report",
-                    "end of semester project",
-                    "skills demonstrated",
-                ]
-            )
-            stashed_system = st.session_state.get(f"{base_key}_ai_system_prompt")
-            stashed_user = st.session_state.get(f"{base_key}_ai_user_message")
-            if looks_truncated and stashed_system and stashed_user and st.button(
-                "➕ Continue the answer (the previous response looks unfinished)",
-                key=f"{base_key}_continue_ai_answer",
-            ):
-                continue_messages = [
-                    {"role": "system", "content": stashed_system},
-                    {"role": "user", "content": stashed_user},
-                    {"role": "assistant", "content": ai_answer},
-                    {
-                        "role": "user",
-                        "content": (
-                            "Your previous answer was cut off. Continue exactly where "
-                            "you stopped — do not repeat any earlier text. Pick up the "
-                            "next sentence or section and finish through the final "
-                            "## 6. Conclusion and Reflection section."
-                        ),
-                    },
-                ]
-                with st.spinner("Continuing the answer…"):
-                    try:
-                        response = client.chat.completions.create(
-                            model=AI_CHAT_MODEL,
-                            messages=continue_messages,
-                            max_tokens=8000,
-                        )
-                        continuation = response.choices[0].message.content
-                        st.session_state[ai_answer_key] = (
-                            ai_answer.rstrip() + "\n\n" + continuation.lstrip()
-                        )
-                        # Refresh the latest history entry too
-                        history = st.session_state.get("resolver_answer_history", [])
-                        if history:
-                            history[-1]["answer"] = st.session_state[ai_answer_key]
-                            st.session_state["resolver_answer_history"] = history
-                            try:
-                                save_persisted_state(st.session_state)
-                            except Exception:
-                                pass
-                        st.rerun()
-                    except Exception as exc:
-                        st.error(f"Could not continue: {type(exc).__name__}: {exc}")
-
-            # 🔍 Self-review pass — Claude re-reads its own answer as if it
-            # were an exam grader and patches every weakness it finds.
-            if stashed_system and stashed_user and st.button(
-                "🔍 Run quality review (re-read and improve the answer)",
-                key=f"{base_key}_quality_review_ai_answer",
-            ):
-                review_system = (
-                    "You are a strict Noroff exam grader for a vocational data "
-                    "analyst (PDAN) student. Read the submission below and produce "
-                    "an IMPROVED version. Your job is to:\n"
-                    "1. Verify every required Noroff section is present and "
-                    "complete: Task Brief and Deliverables, 1. Introduction, "
-                    "2. Initial Assumptions and Hypotheses (with Cortez & Silva "
-                    "2008 references where relevant), 3. EDA (with sub-sections), "
-                    "4. Trends/Patterns/Anomalies, 5. Discussion, 6. Conclusion "
-                    "and Reflection (including the Skills Demonstrated list), "
-                    "and 7. References (APA 7).\n"
-                    "2. Check every claim: is it backed by a number, a formula, "
-                    "or a citation? Patch unsupported claims by adding evidence "
-                    "or removing them.\n"
-                    "3. Check every formula: is it written with legacy Excel "
-                    "function names (STDEV, STDEVP, MODE, QUARTILE) that work "
-                    "on Norwegian Excel? Replace STDEV.S / STDEV.P / MODE.SNGL "
-                    "/ QUARTILE.INC if you see them.\n"
-                    "4. Make sure each major EDA step has a '📸 Screenshot needed:' "
-                    "callout telling the student exactly what to capture from Excel.\n"
-                    "5. Tighten weak arguments. Strengthen the link between the "
-                    "data and the conclusion in every section.\n"
-                    "6. Keep the same overall length unless something is missing. "
-                    "Do not pad with filler.\n"
-                    "OUTPUT the improved full report only — do not narrate your "
-                    "edits, do not add a summary of changes. Use the same EXACT "
-                    "structure and markdown style as the original."
+            with st.expander("Review or follow up on this answer", expanded=False):
+                # If the answer might have been truncated (no clear final section
+                # like Conclusion / Reflection / Konklusjon), show a Continue button
+                # so the user can ask Claude to pick up where it stopped.
+                # Treat the answer as finished if the last 600 chars (footers,
+                # word-count notes, etc. can push the marker out of the last 300)
+                # contain any of these end-of-report markers.
+                answer_tail = (ai_answer or "")[-600:].lower()
+                looks_truncated = not any(
+                    marker in answer_tail
+                    for marker in [
+                        "conclusion and reflection",
+                        "## 6.",
+                        "## 7.",
+                        "references",
+                        "konklusjon",
+                        "## konklusjon",
+                        "end of report",
+                        "end of semester project",
+                        "skills demonstrated",
+                    ]
                 )
-                review_user = (
-                    f"ORIGINAL ASSIGNMENT:\n{stashed_user}\n\n"
-                    f"DRAFT SUBMISSION TO IMPROVE:\n{ai_answer}"
-                )
-                with st.spinner("Claude is reviewing and improving the submission…"):
-                    try:
-                        review_response = client.chat.completions.create(
-                            model=AI_CHAT_MODEL,
-                            messages=[
-                                {"role": "system", "content": review_system},
-                                {"role": "user", "content": review_user},
-                            ],
-                            max_tokens=16000,
-                        )
-                        improved = review_response.choices[0].message.content
-                        st.session_state[ai_answer_key] = improved
-                        # Update the latest history entry too.
-                        history = st.session_state.get("resolver_answer_history", [])
-                        if history:
-                            history[-1]["answer"] = improved
-                            history[-1]["quality_reviewed"] = True
-                            st.session_state["resolver_answer_history"] = history
-                            try:
-                                save_persisted_state(st.session_state)
-                            except Exception:
-                                pass
-                        st.rerun()
-                    except Exception as exc:
-                        st.error(f"Could not run quality review: {type(exc).__name__}: {exc}")
-
-            # 💬 Multi-turn follow-up — let the student ask further questions
-            # that build on the report.
-            if stashed_system and stashed_user:
-                followup_key = f"{base_key}_ai_followup_input"
-                followup_msg = st.text_input(
-                    "💬 Follow-up question (builds on the current answer)",
-                    key=followup_key,
-                    placeholder="e.g. 'Also analyse studytime vs G3 and add it to section 4.'",
-                )
-                if st.button(
-                    "Send follow-up", key=f"{base_key}_ai_followup_send"
-                ) and followup_msg.strip():
-                    followup_messages = [
+                stashed_system = st.session_state.get(f"{base_key}_ai_system_prompt")
+                stashed_user = st.session_state.get(f"{base_key}_ai_user_message")
+                if looks_truncated and stashed_system and stashed_user and st.button(
+                    "➕ Continue the answer (the previous response looks unfinished)",
+                    key=f"{base_key}_continue_ai_answer",
+                ):
+                    continue_messages = [
                         {"role": "system", "content": stashed_system},
                         {"role": "user", "content": stashed_user},
                         {"role": "assistant", "content": ai_answer},
-                        {"role": "user", "content": followup_msg.strip()},
+                        {
+                            "role": "user",
+                            "content": (
+                                "Your previous answer was cut off. Continue exactly where "
+                                "you stopped — do not repeat any earlier text. Pick up the "
+                                "next sentence or section and finish through the final "
+                                "## 6. Conclusion and Reflection section."
+                            ),
+                        },
                     ]
-                    with st.spinner("Claude is extending the answer…"):
+                    with st.spinner("Continuing the answer…"):
                         try:
                             response = client.chat.completions.create(
                                 model=AI_CHAT_MODEL,
-                                messages=followup_messages,
+                                messages=continue_messages,
                                 max_tokens=8000,
                             )
-                            addition = response.choices[0].message.content
+                            continuation = response.choices[0].message.content
                             st.session_state[ai_answer_key] = (
-                                ai_answer.rstrip()
-                                + f"\n\n---\n\n## Follow-up: {followup_msg.strip()}\n\n"
-                                + addition.lstrip()
+                                ai_answer.rstrip() + "\n\n" + continuation.lstrip()
                             )
+                            # Refresh the latest history entry too
                             history = st.session_state.get("resolver_answer_history", [])
                             if history:
                                 history[-1]["answer"] = st.session_state[ai_answer_key]
-                                followups = history[-1].get("followups", [])
-                                followups.append({"question": followup_msg.strip(),
-                                                  "answer": addition})
-                                history[-1]["followups"] = followups
                                 st.session_state["resolver_answer_history"] = history
                                 try:
                                     save_persisted_state(st.session_state)
@@ -68451,7 +68415,118 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                                     pass
                             st.rerun()
                         except Exception as exc:
-                            st.error(f"Could not send follow-up: {type(exc).__name__}: {exc}")
+                            st.error(f"Could not continue: {type(exc).__name__}: {exc}")
+
+                # 🔍 Self-review pass — Claude re-reads its own answer as if it
+                # were an exam grader and patches every weakness it finds.
+                if stashed_system and stashed_user and st.button(
+                    "🔍 Run quality review (re-read and improve the answer)",
+                    key=f"{base_key}_quality_review_ai_answer",
+                ):
+                    review_system = (
+                        "You are a strict Noroff exam grader for a vocational data "
+                        "analyst (PDAN) student. Read the submission below and produce "
+                        "an IMPROVED version. Your job is to:\n"
+                        "1. Verify every required Noroff section is present and "
+                        "complete: Task Brief and Deliverables, 1. Introduction, "
+                        "2. Initial Assumptions and Hypotheses (with Cortez & Silva "
+                        "2008 references where relevant), 3. EDA (with sub-sections), "
+                        "4. Trends/Patterns/Anomalies, 5. Discussion, 6. Conclusion "
+                        "and Reflection (including the Skills Demonstrated list), "
+                        "and 7. References (APA 7).\n"
+                        "2. Check every claim: is it backed by a number, a formula, "
+                        "or a citation? Patch unsupported claims by adding evidence "
+                        "or removing them.\n"
+                        "3. Check every formula: is it written with legacy Excel "
+                        "function names (STDEV, STDEVP, MODE, QUARTILE) that work "
+                        "on Norwegian Excel? Replace STDEV.S / STDEV.P / MODE.SNGL "
+                        "/ QUARTILE.INC if you see them.\n"
+                        "4. Make sure each major EDA step has a '📸 Screenshot needed:' "
+                        "callout telling the student exactly what to capture from Excel.\n"
+                        "5. Tighten weak arguments. Strengthen the link between the "
+                        "data and the conclusion in every section.\n"
+                        "6. Keep the same overall length unless something is missing. "
+                        "Do not pad with filler.\n"
+                        "OUTPUT the improved full report only — do not narrate your "
+                        "edits, do not add a summary of changes. Use the same EXACT "
+                        "structure and markdown style as the original."
+                    )
+                    review_user = (
+                        f"ORIGINAL ASSIGNMENT:\n{stashed_user}\n\n"
+                        f"DRAFT SUBMISSION TO IMPROVE:\n{ai_answer}"
+                    )
+                    with st.spinner("Claude is reviewing and improving the submission…"):
+                        try:
+                            review_response = client.chat.completions.create(
+                                model=AI_CHAT_MODEL,
+                                messages=[
+                                    {"role": "system", "content": review_system},
+                                    {"role": "user", "content": review_user},
+                                ],
+                                max_tokens=16000,
+                            )
+                            improved = review_response.choices[0].message.content
+                            st.session_state[ai_answer_key] = improved
+                            # Update the latest history entry too.
+                            history = st.session_state.get("resolver_answer_history", [])
+                            if history:
+                                history[-1]["answer"] = improved
+                                history[-1]["quality_reviewed"] = True
+                                st.session_state["resolver_answer_history"] = history
+                                try:
+                                    save_persisted_state(st.session_state)
+                                except Exception:
+                                    pass
+                            st.rerun()
+                        except Exception as exc:
+                            st.error(f"Could not run quality review: {type(exc).__name__}: {exc}")
+
+                # 💬 Multi-turn follow-up — let the student ask further questions
+                # that build on the report.
+                if stashed_system and stashed_user:
+                    followup_key = f"{base_key}_ai_followup_input"
+                    followup_msg = st.text_input(
+                        "💬 Follow-up question (builds on the current answer)",
+                        key=followup_key,
+                        placeholder="e.g. 'Also analyse studytime vs G3 and add it to section 4.'",
+                    )
+                    if st.button(
+                        "Send follow-up", key=f"{base_key}_ai_followup_send"
+                    ) and followup_msg.strip():
+                        followup_messages = [
+                            {"role": "system", "content": stashed_system},
+                            {"role": "user", "content": stashed_user},
+                            {"role": "assistant", "content": ai_answer},
+                            {"role": "user", "content": followup_msg.strip()},
+                        ]
+                        with st.spinner("Claude is extending the answer…"):
+                            try:
+                                response = client.chat.completions.create(
+                                    model=AI_CHAT_MODEL,
+                                    messages=followup_messages,
+                                    max_tokens=8000,
+                                )
+                                addition = response.choices[0].message.content
+                                st.session_state[ai_answer_key] = (
+                                    ai_answer.rstrip()
+                                    + f"\n\n---\n\n## Follow-up: {followup_msg.strip()}\n\n"
+                                    + addition.lstrip()
+                                )
+                                history = st.session_state.get("resolver_answer_history", [])
+                                if history:
+                                    history[-1]["answer"] = st.session_state[ai_answer_key]
+                                    followups = history[-1].get("followups", [])
+                                    followups.append({"question": followup_msg.strip(),
+                                                      "answer": addition})
+                                    history[-1]["followups"] = followups
+                                    st.session_state["resolver_answer_history"] = history
+                                    try:
+                                        save_persisted_state(st.session_state)
+                                    except Exception:
+                                        pass
+                                st.rerun()
+                            except Exception as exc:
+                                st.error(f"Could not send follow-up: {type(exc).__name__}: {exc}")
 
         # 📊 Generate an analysis-ready Excel workbook so the student can screenshot
         # FROM EXCEL (which is what Noroff wants — proof of Excel skill).
@@ -69729,57 +69804,6 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             "in Streamlit Cloud → Settings → Secrets to unlock the generated answer."
         )
 
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        resolver_mode = st.selectbox(
-            "Question style",
-            options=list(style_profiles.keys()),
-            key=f"{base_key}_mode",
-        )
-    with col2:
-        answer_depth = st.selectbox(
-            "Output depth",
-            options=["Fast exam plan", "Structured lesson connection", "Full exam answer scaffold"],
-            key=f"{base_key}_depth",
-        )
-    with col3:
-        source_pool_options = ["Lessons + learning outcomes"] if has_lessons else ["Learning outcomes only"]
-        if has_lessons:
-            source_pool_options.extend(["Lessons only", "Learning outcomes only"])
-        if course_code == "FI1BBEO10":
-            source_pool_options.extend(["Lessons + task guides", "Task guides only"])
-        source_pool = st.selectbox(
-            "Source pool",
-            options=source_pool_options,
-            key=f"{base_key}_source_pool",
-        )
-        if course_code == "FI1BBEO10":
-            st.caption("EVO includes 98 searchable activity/task guides. Use Task guides only to select an exact activity, or enter its number in the question.")
-
-    draft_col_1, draft_col_2 = st.columns(2)
-    with draft_col_1:
-        draft_style = st.selectbox(
-            "Direct answer style",
-            options=["Short paragraph", "Structured answer", "Detailed exam answer"],
-            key=f"{base_key}_draft_style",
-        )
-    with draft_col_2:
-        answer_tone = st.selectbox(
-            "Answer tone",
-            options=list(tone_profiles.keys()),
-            key=f"{base_key}_answer_tone",
-        )
-    st.caption(
-        f"Tone changes wording, not the academic content or answer structure. Current tone: {tone_profiles[answer_tone]['summary']}"
-    )
-
-    scope_options = ["Whole course (auto-select best matches)", "Specific lesson or outcome", "Manual selection"]
-    scope_mode = st.selectbox(
-        "Resolver scope",
-        options=scope_options,
-        key=f"{base_key}_scope",
-    )
-
     prompt_tokens = tokenise(exam_prompt)
     prompt_lower = exam_prompt.lower()
     detected_focus = []
@@ -70002,36 +70026,46 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
 
     source_label_map = {unit["label"]: unit for unit in available_units}
 
-    selected_labels = []
-    if scope_mode == "Specific lesson or outcome":
-        specific_source_label = "Choose the lesson or outcome to focus on"
-        if source_pool == "Task guides only":
-            specific_source_label = "Choose the task guide to focus on"
-        elif any(unit["kind"] == "Task" for unit in available_units):
-            specific_source_label = "Choose the lesson, task or outcome to focus on"
-        selected_label = st.selectbox(
-            specific_source_label,
-            options=list(source_label_map.keys()),
-            key=f"{base_key}_specific_source",
-        )
-        selected_labels = [selected_label]
-    elif scope_mode == "Manual selection":
-        selected_labels = st.multiselect(
-            "Sources to connect in your answer",
-            options=list(source_label_map.keys()),
-            default=default_labels,
-            key=f"{base_key}_selected_sources",
-        )
-    else:
-        selected_labels = default_labels[:]
-        st.caption("The resolver is auto-selecting the best-matching sources from the current prompt.")
-        if selected_labels:
-            st.markdown("**Auto-selected sources**")
-            for label in selected_labels:
-                st.markdown(f"- {label}")
+    with settings_panel:
+        selected_labels = []
+        if scope_mode == "Specific lesson or outcome":
+            specific_source_label = "Choose the lesson or outcome to focus on"
+            if source_pool == "Task guides only":
+                specific_source_label = "Choose the task guide to focus on"
+            elif any(unit["kind"] == "Task" for unit in available_units):
+                specific_source_label = "Choose the lesson, task or outcome to focus on"
+            selected_label = st.selectbox(
+                specific_source_label,
+                options=list(source_label_map.keys()),
+                key=f"{base_key}_specific_source",
+            )
+            selected_labels = [selected_label]
+        elif scope_mode == "Manual selection":
+            selected_labels = st.multiselect(
+                "Sources to connect in your answer",
+                options=list(source_label_map.keys()),
+                default=default_labels,
+                key=f"{base_key}_selected_sources",
+            )
+        else:
+            selected_labels = default_labels[:]
+            st.caption("The resolver is auto-selecting the best-matching sources from the current prompt.")
+            if selected_labels:
+                st.markdown("**Auto-selected sources**")
+                for label in selected_labels:
+                    st.markdown(f"- {label}")
 
     selected_units = [source_label_map[label] for label in selected_labels if label in source_label_map]
     selected_units = sorted(selected_units, key=lambda unit: unit["order_index"])
+    if not exam_prompt.strip() and scope_mode == "Whole course (auto-select best matches)":
+        with resources_panel:
+            if course_code == "FI1BBEO10":
+                st.markdown("### 2. Task guide and workbook")
+                st.caption("Enter a task number, for example Task 7.2, to find its guide and workbook.")
+            else:
+                st.markdown("### 2. Sources for this question")
+                st.caption("Enter a question above to find relevant course sources.")
+        return
 
     if not selected_units:
         st.warning("Select at least one source so the resolver can build a connection guide.")
@@ -70225,8 +70259,10 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             }
         )
 
-    st.markdown("**How this exam prompt connects to the selected course**")
-    st.dataframe(pd.DataFrame(connection_rows), use_container_width=True, hide_index=True)
+    evidence_panel = st.expander("Why these sources match the question", expanded=False)
+    with evidence_panel:
+        st.markdown("**How this exam prompt connects to the selected course**")
+        st.dataframe(pd.DataFrame(connection_rows), use_container_width=True, hide_index=True)
 
     lesson_evidence_map = {
         unit["id"]: select_best_unit_fragments(unit, prompt_tokens, prompt_lower, limit=2)
@@ -70248,45 +70284,23 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         )
 
     if lesson_evidence_rows:
-        st.markdown("**Lesson evidence the resolver is pulling from**")
-        st.dataframe(pd.DataFrame(lesson_evidence_rows), use_container_width=True, hide_index=True)
+        with evidence_panel:
+            st.markdown("**Lesson evidence the resolver is pulling from**")
+            st.dataframe(pd.DataFrame(lesson_evidence_rows), use_container_width=True, hide_index=True)
 
     matched_tasks = [unit["task_guide"] for unit in sorted(selected_units, key=lambda u: -unit_score(u)) if unit.get("task_guide")]
-    if matched_tasks:
-        st.markdown("### Matched EVO task guides and exam resources")
-        parent_numbers = ", ".join(dict.fromkeys(g["lesson_number"] for g in matched_tasks))
-        st.caption(f"Teaching lesson context: {parent_numbers}. Follow the task's own dataset and requirements; lesson demonstrations can use different data.")
-        for index, guide in enumerate(matched_tasks):
-            with st.expander(f"Resolver task {guide['id']}: {guide['title']}", expanded=index == 0):
-                st.markdown(guide["markdown"])
-                st.download_button(
-                    "Download matched task guide (Markdown)",
-                    guide["markdown"].encode("utf-8"),
-                    file_name=f"EVO-{guide['uid']}.md", mime="text/markdown",
-                    key=f"{base_key}_evo_task_md_{guide['uid']}",
-                )
-        for filename in dict.fromkeys(guide["template_file"] for guide in matched_tasks):
-            template_path = EVO_TEMPLATE_ROOT / filename
-            if template_path.is_file():
-                st.download_button(
-                    f"Download matched workbook: {filename}", template_path.read_bytes(),
-                    file_name=filename,
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    key=f"{base_key}_evo_workbook_{filename}",
-                )
-        illustrated_modules = {int(guide["lesson_number"].split(".")[0]) for guide in matched_tasks}
-        with st.expander("Module illustrations for the matched tasks", expanded=False):
-            st.caption("These images explain the module's lesson examples. Use the matched task's own dataset for calculations; the demonstration and task datasets can differ.")
-            for lesson in get_evo_course_lessons():
-                if lesson.get("illustration") and lesson["module_number"] in illustrated_modules:
-                    image_path = EVO_ASSET_ROOT / lesson["illustration"]
-                    if image_path.is_file():
-                        st.image(str(image_path), caption=lesson["illustration_caption"], width="stretch")
-                        st.download_button(
-                            "Download matched module illustration", image_path.read_bytes(),
-                            file_name=image_path.name, mime="image/png",
-                            key=f"{base_key}_evo_illustration_{lesson['module_number']}",
-                        )
+    with resources_panel:
+        if matched_tasks:
+            render_resolver_task_resources(matched_tasks, base_key)
+        elif course_code == "FI1BBEO10":
+            st.markdown("### 2. Task guide and workbook")
+            st.caption("Enter a task number, for example Task 7.2, or choose Task guides only in Advanced settings.")
+        else:
+            st.markdown("### 2. Sources for this question")
+            st.caption("The resolver connects your question to these course sources. Change them in Advanced settings if needed.")
+            with st.expander(f"Matched sources ({len(selected_units)})", expanded=False):
+                for unit in selected_units:
+                    st.markdown(f"- {unit['label']}")
 
     answer_order_lines = []
     lesson_count = sum(1 for unit in selected_units if unit["kind"] == "Lesson")
@@ -70381,9 +70395,10 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             "From the KPI pitfalls section, I would explain why a simple incident-count KPI becomes unfair when different engineers handle work with different complexity, severity, and business impact."
         )
 
-    st.markdown("**Recommended answer order**")
-    for index, line in enumerate(answer_order_lines, start=1):
-        st.markdown(f"{index}. {line}")
+    with st.expander("Suggested answer structure", expanded=False):
+        st.markdown("**Recommended answer order**")
+        for index, line in enumerate(answer_order_lines, start=1):
+            st.markdown(f"{index}. {line}")
 
     examiner_testing_text = (
         f"The examiner is mainly testing whether you can {profile['summary']} using the relevant parts of **{course['name']}**."
@@ -70393,24 +70408,25 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
     else:
         course_bridge = f"This course does not yet have detailed lesson blocks in the app, so the resolver is using the course knowledge, skills, and competence outcomes as the connection framework."
 
-    st.markdown("**What the examiner is really testing**")
-    st.markdown(f"- {examiner_testing_text}")
-    st.markdown(f"- {course_bridge}")
-    if structure_selection_case:
-        st.markdown("- In this prompt, you should explicitly compare candidate data structures and explain why one is the best fit for the case.")
-    if kpi_design_case:
-        st.markdown("- In this prompt, you should move from goals to KPQs, then to data, KPI choice, communication, and monitoring rather than listing metrics without context.")
-    if kpi_pitfall_case:
-        st.markdown("- In this prompt, you should explicitly explain why the copied KPI is strategically weak, what resources were wasted, and which replacement KPIs would fit the business better.")
-    if kpi_incentive_case:
-        st.markdown("- In this prompt, you should explicitly explain why a raw count-based KPI is unfair across different roles, how incentives could distort behaviour, and what a fairer KPI design would look like.")
+    with st.expander("What to include in this course", expanded=False):
+        st.markdown("**What the examiner is really testing**")
+        st.markdown(f"- {examiner_testing_text}")
+        st.markdown(f"- {course_bridge}")
+        if structure_selection_case:
+            st.markdown("- In this prompt, you should explicitly compare candidate data structures and explain why one is the best fit for the case.")
+        if kpi_design_case:
+            st.markdown("- In this prompt, you should move from goals to KPQs, then to data, KPI choice, communication, and monitoring rather than listing metrics without context.")
+        if kpi_pitfall_case:
+            st.markdown("- In this prompt, you should explicitly explain why the copied KPI is strategically weak, what resources were wasted, and which replacement KPIs would fit the business better.")
+        if kpi_incentive_case:
+            st.markdown("- In this prompt, you should explicitly explain why a raw count-based KPI is unfair across different roles, how incentives could distort behaviour, and what a fairer KPI design would look like.")
 
-    st.markdown("**Course-specific answer template in use**")
-    st.markdown(f"- Template: **{course_template['label']}**")
-    st.markdown(f"- Subject focus: {combined_focus_sentence}")
-    st.markdown("- Strong answers in this subject usually include:")
-    for item in subject_must_include:
-        st.markdown(f"  - {item}")
+        st.markdown("**Course-specific answer template in use**")
+        st.markdown(f"- Template: **{course_template['label']}**")
+        st.markdown(f"- Subject focus: {combined_focus_sentence}")
+        st.markdown("- Strong answers in this subject usually include:")
+        for item in subject_must_include:
+            st.markdown(f"  - {item}")
 
     fast_plan = "\n".join(
         [
@@ -71619,106 +71635,115 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         "t-test", "t test", "z-test", "z test", "chi-square", "chi square", "anova",
     ])
 
-    st.markdown("**Exam draft**")
-    st.text_area(
-        "Adapt this guide into your own exam wording",
-        value=output_text,
-        height=280,
-        key=f"{base_key}_draft",
-    )
-    with st.expander("Rendered formula preview (MathJax)", expanded=False):
-        st.caption("Use this when the draft contains formulas you want to read more clearly.")
-        render_markdown_with_mathjax(output_text, key_suffix=f"{base_key}_draft_mathjax", height=420)
+    draft_signature = (exam_prompt, tuple(selected_labels), answer_depth, draft_style, answer_tone)
+    if st.session_state.get(f"{base_key}_draft_input_signature") != draft_signature:
+        # Keep edits for the current task, but do not display a previous task's
+        # scaffold after the prompt, sources or answer settings change.
+        st.session_state[f"{base_key}_draft"] = output_text
+        st.session_state[f"{base_key}_model_answer"] = model_answer_text
+        st.session_state[f"{base_key}_draft_input_signature"] = draft_signature
+    with st.expander("Answer scaffolds — edit your own draft", expanded=False):
+        st.markdown("**Exam draft**")
+        st.text_area(
+            "Adapt this guide into your own exam wording",
+            value=output_text,
+            height=280,
+            key=f"{base_key}_draft",
+        )
+        with st.expander("Rendered formula preview (MathJax)", expanded=False):
+            st.caption("Use this when the draft contains formulas you want to read more clearly.")
+            render_markdown_with_mathjax(output_text, key_suffix=f"{base_key}_draft_mathjax", height=420)
 
-    st.markdown("**Direct model answer draft**")
-    st.caption(f"Current answer tone: {answer_tone}")
-    st.text_area(
-        "Use this as a starting answer, then adapt it to the exact wording of the question",
-        value=model_answer_text,
-        height=280,
-        key=f"{base_key}_model_answer",
-    )
-    with st.expander("Rendered formula preview for model answer (MathJax)", expanded=False):
-        st.caption("This preview keeps the answer editable above, but renders formulas more cleanly below.")
-        render_markdown_with_mathjax(model_answer_text, key_suffix=f"{base_key}_model_answer_mathjax", height=420)
+        st.markdown("**Direct model answer draft**")
+        st.caption(f"Current answer tone: {answer_tone}")
+        st.text_area(
+            "Use this as a starting answer, then adapt it to the exact wording of the question",
+            value=model_answer_text,
+            height=280,
+            key=f"{base_key}_model_answer",
+        )
+        with st.expander("Rendered formula preview for model answer (MathJax)", expanded=False):
+            st.caption("This preview keeps the answer editable above, but renders formulas more cleanly below.")
+            render_markdown_with_mathjax(model_answer_text, key_suffix=f"{base_key}_model_answer_mathjax", height=420)
 
     render_semester_project_csv_resolver()
 
-    if diagram_specs:
-        st.markdown("**Suggested visual diagrams**")
-        st.caption("The resolver can now draft Mermaid diagrams for common data-modelling exam cases. You can use them as-is or adapt the labels to match the exact wording of the question.")
-        for index, spec in enumerate(diagram_specs, start=1):
-            with st.expander(spec["title"], expanded=(len(diagram_specs) == 1)):
-                st.markdown(spec["caption"])
-                render_mermaid_diagram(spec["code"], key_suffix=f"{base_key}_diagram_{index}", height=430)
-                st.markdown("**Mermaid code**")
-                st.code(spec["code"], language="text")
+    with st.expander("Extra diagrams and Google Sheets templates", expanded=False):
+        if diagram_specs:
+            st.markdown("**Suggested visual diagrams**")
+            st.caption("The resolver can now draft Mermaid diagrams for common data-modelling exam cases. You can use them as-is or adapt the labels to match the exact wording of the question.")
+            for index, spec in enumerate(diagram_specs, start=1):
+                with st.expander(spec["title"], expanded=(len(diagram_specs) == 1)):
+                    st.markdown(spec["caption"])
+                    render_mermaid_diagram(spec["code"], key_suffix=f"{base_key}_diagram_{index}", height=430)
+                    st.markdown("**Mermaid code**")
+                    st.code(spec["code"], language="text")
 
-    if chart_specs:
-        st.markdown("**Suggested data visuals**")
-        st.caption("The resolver can now suggest and render common descriptive-analysis charts. If the prompt contains usable values, it will try to prefill them automatically. If not, paste simple CSV or one-column values directly below.")
-        for index, spec in enumerate(chart_specs, start=1):
-            input_seed = spec.get("default_input", "")
-            input_key = f"{base_key}_chart_input_{spec['chart_type']}_{abs(hash((spec['chart_type'], exam_prompt))) % 100000}"
-            with st.expander(spec["title"], expanded=(len(chart_specs) == 1 and not diagram_specs)):
-                st.markdown(spec["caption"])
-                if input_seed:
-                    st.caption("The resolver auto-filled this data from the prompt. Check the values before using the chart in your exam answer.")
-                chart_input = st.text_area(
-                    spec["input_label"],
-                    value=input_seed,
-                    placeholder=spec["placeholder"],
-                    height=140,
-                    key=input_key,
+        if chart_specs:
+            st.markdown("**Suggested data visuals**")
+            st.caption("The resolver can now suggest and render common descriptive-analysis charts. If the prompt contains usable values, it will try to prefill them automatically. If not, paste simple CSV or one-column values directly below.")
+            for index, spec in enumerate(chart_specs, start=1):
+                input_seed = spec.get("default_input", "")
+                input_key = f"{base_key}_chart_input_{spec['chart_type']}_{abs(hash((spec['chart_type'], exam_prompt))) % 100000}"
+                with st.expander(spec["title"], expanded=(len(chart_specs) == 1 and not diagram_specs)):
+                    st.markdown(spec["caption"])
+                    if input_seed:
+                        st.caption("The resolver auto-filled this data from the prompt. Check the values before using the chart in your exam answer.")
+                    chart_input = st.text_area(
+                        spec["input_label"],
+                        value=input_seed,
+                        placeholder=spec["placeholder"],
+                        height=140,
+                        key=input_key,
+                    )
+                    chart_df = parse_chart_input(chart_input, spec["chart_type"])
+                    if chart_df is not None:
+                        render_chart_preview(spec["chart_type"], chart_df, chart_key=f"{base_key}_chart_{index}")
+                        st.markdown("**How to describe this chart in an exam answer**")
+                        for note in spec.get("notes", []):
+                            st.markdown(f"- {note}")
+                    else:
+                        st.info("Paste data in the suggested format to render this chart inside the resolver.")
+
+        if google_sheets_specs:
+            st.markdown("**How to build the same case in Google Sheets**")
+            st.caption("Use the entities, tables, or hierarchy from the exam question as separate sheet tabs or structured columns. Then connect them with IDs, lookups, and validation checks.")
+            for index, spec in enumerate(google_sheets_specs, start=1):
+                with st.expander(spec["title"], expanded=(len(google_sheets_specs) == 1 and not diagram_specs)):
+                    st.markdown(spec["caption"])
+                    if spec.get("tabs"):
+                        st.markdown("**Suggested sheet tabs / layout**")
+                        for item in spec["tabs"]:
+                            st.markdown(f"- {item}")
+                    if spec.get("formulas"):
+                        st.markdown("**Useful Google Sheets formulas**")
+                        for formula in spec["formulas"]:
+                            st.code(formula, language="text")
+                    if spec.get("notes"):
+                        st.markdown("**Notes**")
+                        for item in spec["notes"]:
+                            st.markdown(f"- {item}")
+
+            template_zip_bytes, template_payload = build_google_sheets_template_pack(google_sheets_specs)
+            st.markdown("**Downloadable Google Sheets templates**")
+            st.caption("The resolver builds these template files automatically from the detected case type, so you can import the CSV tabs straight into Google Sheets.")
+            template_download_cols = st.columns(2)
+            with template_download_cols[0]:
+                st.download_button(
+                    "Download Google Sheets template pack (ZIP)",
+                    data=template_zip_bytes,
+                    file_name=f"{course_code.lower()}_google_sheets_templates.zip",
+                    mime="application/zip",
+                    key=f"{base_key}_download_sheets_zip",
                 )
-                chart_df = parse_chart_input(chart_input, spec["chart_type"])
-                if chart_df is not None:
-                    render_chart_preview(spec["chart_type"], chart_df, chart_key=f"{base_key}_chart_{index}")
-                    st.markdown("**How to describe this chart in an exam answer**")
-                    for note in spec.get("notes", []):
-                        st.markdown(f"- {note}")
-                else:
-                    st.info("Paste data in the suggested format to render this chart inside the resolver.")
-
-    if google_sheets_specs:
-        st.markdown("**How to build the same case in Google Sheets**")
-        st.caption("Use the entities, tables, or hierarchy from the exam question as separate sheet tabs or structured columns. Then connect them with IDs, lookups, and validation checks.")
-        for index, spec in enumerate(google_sheets_specs, start=1):
-            with st.expander(spec["title"], expanded=(len(google_sheets_specs) == 1 and not diagram_specs)):
-                st.markdown(spec["caption"])
-                if spec.get("tabs"):
-                    st.markdown("**Suggested sheet tabs / layout**")
-                    for item in spec["tabs"]:
-                        st.markdown(f"- {item}")
-                if spec.get("formulas"):
-                    st.markdown("**Useful Google Sheets formulas**")
-                    for formula in spec["formulas"]:
-                        st.code(formula, language="text")
-                if spec.get("notes"):
-                    st.markdown("**Notes**")
-                    for item in spec["notes"]:
-                        st.markdown(f"- {item}")
-
-        template_zip_bytes, template_payload = build_google_sheets_template_pack(google_sheets_specs)
-        st.markdown("**Downloadable Google Sheets templates**")
-        st.caption("The resolver builds these template files automatically from the detected case type, so you can import the CSV tabs straight into Google Sheets.")
-        template_download_cols = st.columns(2)
-        with template_download_cols[0]:
-            st.download_button(
-                "Download Google Sheets template pack (ZIP)",
-                data=template_zip_bytes,
-                file_name=f"{course_code.lower()}_google_sheets_templates.zip",
-                mime="application/zip",
-                key=f"{base_key}_download_sheets_zip",
-            )
-        with template_download_cols[1]:
-            st.download_button(
-                "Download Google Sheets template plan as JSON",
-                data=json.dumps(template_payload, indent=2, ensure_ascii=False),
-                file_name=f"{course_code.lower()}_google_sheets_template_plan.json",
-                mime="application/json",
-                key=f"{base_key}_download_sheets_json",
-            )
+            with template_download_cols[1]:
+                st.download_button(
+                    "Download Google Sheets template plan as JSON",
+                    data=json.dumps(template_payload, indent=2, ensure_ascii=False),
+                    file_name=f"{course_code.lower()}_google_sheets_template_plan.json",
+                    mime="application/json",
+                    key=f"{base_key}_download_sheets_json",
+                )
 
     if stats_guardrail_needed:
         import math
@@ -74287,232 +74312,233 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
     if answer_target_key and "exam_answers" in st.session_state and st.session_state.exam_answers.get(answer_target_key):
         quality_default = st.session_state.exam_answers.get(answer_target_key)
 
-    st.markdown("**Answer quality checklist**")
-    quality_button_cols = st.columns([1, 1, 1, 1] if stats_guardrail_needed else [1, 1, 1])
-    with quality_button_cols[0]:
-        if st.button("Load model draft into checker", key=f"{base_key}_load_model_checker"):
-            st.session_state[f"{base_key}_quality_answer"] = model_answer_text
-            st.rerun()
-    with quality_button_cols[1]:
-        if answer_target_key and st.button("Load current answer into checker", key=f"{base_key}_load_current_checker"):
-            current_answer = ""
-            if "exam_answers" in st.session_state:
-                current_answer = st.session_state.exam_answers.get(answer_target_key, "")
-            st.session_state[f"{base_key}_quality_answer"] = current_answer or model_answer_text
-            st.rerun()
-    with quality_button_cols[2]:
-        st.caption("Heuristic self-check")
-    if stats_guardrail_needed:
-        with quality_button_cols[3]:
-            if st.button("Load verified stats into checker", key=f"{base_key}_load_stats_checker"):
-                verified_summary = st.session_state.get(f"{base_key}_stats_summary", "").strip()
-                merged_text = "\n\n".join(part for part in [verified_summary, model_answer_text] if part.strip())
-                st.session_state[f"{base_key}_quality_answer"] = merged_text or model_answer_text
+    with st.expander("Self-check and draft downloads", expanded=False):
+        st.markdown("**Answer quality checklist**")
+        quality_button_cols = st.columns([1, 1, 1, 1] if stats_guardrail_needed else [1, 1, 1])
+        with quality_button_cols[0]:
+            if st.button("Load model draft into checker", key=f"{base_key}_load_model_checker"):
+                st.session_state[f"{base_key}_quality_answer"] = model_answer_text
                 st.rerun()
-
-    quality_answer = st.text_area(
-        "Paste or edit your answer here to self-check it",
-        value=quality_default,
-        height=220,
-        key=f"{base_key}_quality_answer",
-    )
-
-    if quality_answer.strip():
-        answer_lower = quality_answer.lower()
-        answer_tokens = tokenise(quality_answer)
-        sentence_count = len([part for part in re.split(r"[.!?]+", quality_answer) if part.strip()])
-        prompt_overlap = prompt_tokens & answer_tokens
-        source_overlap = source_reference_tokens & answer_tokens
-        prompt_minimum = 1 if len(prompt_tokens) < 6 else 2 if len(prompt_tokens) < 12 else 3
-        justification_phrases = ["because", "therefore", "which means", "this means", "so that", "this is why", "in order to"]
-        conclusion_phrases = ["recommend", "recommendation", "conclude", "conclusion", "therefore", "finally", "in summary", "should"]
-        structure_minimum = 2 if draft_style == "Short paragraph" else 4 if draft_style == "Structured answer" else 5
-
-        checklist_items = [
-            {
-                "label": "Addresses the prompt directly",
-                "passed": (not prompt_tokens) or len(prompt_overlap) >= prompt_minimum,
-                "tip": "Mention more of the key words or ideas from the prompt so the answer is visibly tied to the exact question.",
-            },
-            {
-                "label": "Uses relevant course concepts",
-                "passed": len(source_overlap) >= max(1, min(3, len(selected_units))),
-                "tip": "Bring in more lesson or learning-outcome terminology from the selected course sources.",
-            },
-            {
-                "label": "Shows explanation or justification",
-                "passed": any(phrase in answer_lower for phrase in justification_phrases),
-                "tip": "Use reasoning words like 'because', 'therefore', or 'which means' so the answer explains why, not just what.",
-            },
-            {
-                "label": "Ends with a clear conclusion or recommendation",
-                "passed": any(phrase in answer_lower for phrase in conclusion_phrases),
-                "tip": "End with a recommendation, conclusion, implication, or next action.",
-            },
-            {
-                "label": "Has enough structure for an exam answer",
-                "passed": sentence_count >= structure_minimum,
-                "tip": "Add a clearer step-by-step structure or a few more complete sentences.",
-            },
-            {
-                "label": "Matches the subject-specific course template",
-                "passed": signal_match_count(answer_lower, answer_tokens, course_template_signals.get(course_template_key, [])) >= 2,
-                "tip": f"Include more subject-specific signals such as: {', '.join(course_template_signals.get(course_template_key, [])[:6])}.",
-            },
-            {
-                "label": "Matches the selected question style",
-                "passed": signal_match_count(answer_lower, answer_tokens, style_signal_map.get(effective_resolver_mode, [])) >= 2,
-                "tip": f"For this question style, include signals such as: {', '.join(style_signal_map.get(effective_resolver_mode, [])[:6])}.",
-            },
-        ]
-
-        if structure_selection_case:
-            structure_selection_signals = [
-                "data structure", "array", "linked list", "list", "tree", "b-tree", "bst",
-                "operations", "search", "insert", "delete", "traversal", "time complexity",
-                "space complexity", "memory", "flexibility", "suitable", "efficient",
-            ]
-            weaker_alternative_signals = [
-                "better than", "more suitable", "less suitable", "alternative", "compared with",
-                "whereas", "however", "trade-off", "trade-offs",
-            ]
-            checklist_items.extend([
-                {
-                    "label": "Explains the data-structure selection criteria",
-                    "passed": signal_match_count(answer_lower, answer_tokens, structure_selection_signals) >= 3,
-                    "tip": "Show how you chose the structure by mentioning operations, efficiency, memory, flexibility, or data size and type.",
-                },
-                {
-                    "label": "Compares the chosen structure with at least one weaker alternative",
-                    "passed": signal_match_count(answer_lower, answer_tokens, weaker_alternative_signals) >= 1,
-                    "tip": "Compare the chosen structure with at least one weaker option so the examiner can see why your choice is justified.",
-                },
-            ])
-
+        with quality_button_cols[1]:
+            if answer_target_key and st.button("Load current answer into checker", key=f"{base_key}_load_current_checker"):
+                current_answer = ""
+                if "exam_answers" in st.session_state:
+                    current_answer = st.session_state.exam_answers.get(answer_target_key, "")
+                st.session_state[f"{base_key}_quality_answer"] = current_answer or model_answer_text
+                st.rerun()
+        with quality_button_cols[2]:
+            st.caption("Heuristic self-check")
         if stats_guardrail_needed:
-            stats_method_terms = [
-                "t-test", "t test", "independent t-test", "independent t test",
-                "paired t-test", "paired t test", "z-test", "z test",
-                "z-score", "z score", "chi-square", "chi square", "anova",
-                "likert", "test statistic", "standard error", "sample mean",
-                "proportion", "null hypothesis",
-            ]
-            stats_decision_terms = [
-                "p-value", "p value", "alpha", "significance", "significant",
-                "reject h0", "fail to reject h0", "reject the null", "fail to reject the null",
-            ]
-            stats_interpretation_terms = [
-                "this means", "which means", "therefore", "in practice", "so we conclude", "plain language",
-            ]
-            unrealistic_hypothesis_terms = [
-                "always", "never", "prove", "guarantee", "everyone", "all customers", "100%",
-            ]
-            checklist_items.extend([
-                {
-                    "label": "Names the correct statistical test or statistic",
-                    "passed": signal_match_count(answer_lower, answer_tokens, stats_method_terms) >= 1,
-                    "tip": "Name the exact method, such as independent t-test, paired t-test, chi-square, ANOVA, z-test, z-score, or a Likert-based comparison.",
-                },
-                {
-                    "label": "Includes a statistical decision or significance statement",
-                    "passed": signal_match_count(answer_lower, answer_tokens, stats_decision_terms) >= 1,
-                    "tip": "State the decision clearly, for example with p-value, alpha, and whether you reject or fail to reject H0.",
-                },
-                {
-                    "label": "Separates the calculation from the real-world interpretation",
-                    "passed": (
-                        signal_match_count(answer_lower, answer_tokens, stats_decision_terms + ["t =", "z =", "test statistic"]) >= 1
-                        and signal_match_count(answer_lower, answer_tokens, stats_interpretation_terms) >= 1
-                    ),
-                    "tip": "After the calculation, add a plain-language sentence explaining what the result means in the scenario.",
-                },
-            ])
-            if formal_hypothesis_question:
-                checklist_items.append(
-                    {
-                        "label": "Uses realistic hypotheses",
-                        "passed": (
-                            signal_match_count(answer_lower, answer_tokens, ["h0", "h1", "null hypothesis", "alternative hypothesis"]) >= 1
-                            and not any(term in answer_lower for term in unrealistic_hypothesis_terms)
-                        ),
-                        "tip": "Write H0 and H1 in a testable way. Avoid absolute claims like 'prove', 'always', or 'everyone'.",
-                    }
-                )
+            with quality_button_cols[3]:
+                if st.button("Load verified stats into checker", key=f"{base_key}_load_stats_checker"):
+                    verified_summary = st.session_state.get(f"{base_key}_stats_summary", "").strip()
+                    merged_text = "\n\n".join(part for part in [verified_summary, model_answer_text] if part.strip())
+                    st.session_state[f"{base_key}_quality_answer"] = merged_text or model_answer_text
+                    st.rerun()
 
-        passed_count = sum(1 for item in checklist_items if item["passed"])
-        total_count = len(checklist_items)
-        checklist_score = int(round((passed_count / total_count) * 100)) if total_count else 0
-
-        score_cols = st.columns([1, 2])
-        score_cols[0].metric("Checklist score", f"{checklist_score}%")
-        if checklist_score >= 85:
-            score_cols[1].success("Strong draft. It covers most of the expected answer features.")
-        elif checklist_score >= 60:
-            score_cols[1].warning("Decent draft, but it still needs a few stronger exam signals.")
-        else:
-            score_cols[1].error("This answer is still missing several high-value exam features.")
-
-        st.markdown("**Checklist results**")
-        for item in checklist_items:
-            icon = "✅" if item["passed"] else "⚠️"
-            st.markdown(f"- {icon} **{item['label']}**")
-
-        failed_items = [item for item in checklist_items if not item["passed"]]
-        if failed_items:
-            st.markdown("**What to improve next**")
-            for item in failed_items:
-                st.markdown(f"- {item['tip']}")
-
-        missing_prompt_terms = sorted(prompt_tokens - answer_tokens)[:6]
-        missing_source_terms = sorted(source_reference_tokens - answer_tokens)[:6]
-        if missing_prompt_terms or missing_source_terms:
-            st.markdown("**Useful terms you may still want to include**")
-            if missing_prompt_terms:
-                st.markdown(f"- From the prompt: {', '.join(missing_prompt_terms)}")
-            if missing_source_terms:
-                st.markdown(f"- From the selected course sources: {', '.join(missing_source_terms)}")
-
-        if answer_target_key:
-            if st.button("Send checked answer to answer box", key=f"{base_key}_send_checked_answer"):
-                if "exam_answers" not in st.session_state:
-                    st.session_state.exam_answers = {}
-                st.session_state.exam_answers[answer_target_key] = quality_answer
-                if answer_widget_key:
-                    st.session_state[answer_widget_key] = quality_answer
-                st.success("Your checked answer has been inserted into the answer box.")
-
-    action_cols = st.columns([1, 1])
-    with action_cols[0]:
-        st.download_button(
-            "Download model answer draft as TXT",
-            data=model_answer_text,
-            file_name=f"{course_code.lower()}_exam_model_answer.txt",
-            mime="text/plain",
-            key=f"{base_key}_model_download",
+        quality_answer = st.text_area(
+            "Paste or edit your answer here to self-check it",
+            value=quality_default,
+            height=220,
+            key=f"{base_key}_quality_answer",
         )
-    with action_cols[1]:
-        if answer_target_key:
-            if st.button("Send model answer to answer box", key=f"{base_key}_send_to_answer"):
-                if "exam_answers" not in st.session_state:
-                    st.session_state.exam_answers = {}
-                st.session_state.exam_answers[answer_target_key] = model_answer_text
-                if answer_widget_key:
-                    st.session_state[answer_widget_key] = model_answer_text
-                st.success("The model answer draft has been inserted into the current answer box.")
 
-    if course_code == "FI1BBDD75" and any(unit["id"] == "lesson::2.3" for unit in selected_units) and exam_prompt.strip():
-        st.info("This case also touches Lesson 2.3. You can reuse the same prompt in the Lesson 2.3 data-types solver below if the question is specifically about qualitative, quantitative, or mixed methods.")
-        if st.button("Send this prompt to the Lesson 2.3 exam solver", key=f"{base_key}_send_to_l23"):
-            st.session_state["m2_l23_exam_solver_question"] = exam_prompt
-            st.success("The prompt has been copied into the Lesson 2.3 exam solver.")
+        if quality_answer.strip():
+            answer_lower = quality_answer.lower()
+            answer_tokens = tokenise(quality_answer)
+            sentence_count = len([part for part in re.split(r"[.!?]+", quality_answer) if part.strip()])
+            prompt_overlap = prompt_tokens & answer_tokens
+            source_overlap = source_reference_tokens & answer_tokens
+            prompt_minimum = 1 if len(prompt_tokens) < 6 else 2 if len(prompt_tokens) < 12 else 3
+            justification_phrases = ["because", "therefore", "which means", "this means", "so that", "this is why", "in order to"]
+            conclusion_phrases = ["recommend", "recommendation", "conclude", "conclusion", "therefore", "finally", "in summary", "should"]
+            structure_minimum = 2 if draft_style == "Short paragraph" else 4 if draft_style == "Structured answer" else 5
 
-    st.download_button(
-        "Download exam connection guide as TXT",
-        data=output_text,
-        file_name=f"{course_code.lower()}_exam_connection_guide.txt",
-        mime="text/plain",
-        key=f"{base_key}_download",
-    )
+            checklist_items = [
+                {
+                    "label": "Addresses the prompt directly",
+                    "passed": (not prompt_tokens) or len(prompt_overlap) >= prompt_minimum,
+                    "tip": "Mention more of the key words or ideas from the prompt so the answer is visibly tied to the exact question.",
+                },
+                {
+                    "label": "Uses relevant course concepts",
+                    "passed": len(source_overlap) >= max(1, min(3, len(selected_units))),
+                    "tip": "Bring in more lesson or learning-outcome terminology from the selected course sources.",
+                },
+                {
+                    "label": "Shows explanation or justification",
+                    "passed": any(phrase in answer_lower for phrase in justification_phrases),
+                    "tip": "Use reasoning words like 'because', 'therefore', or 'which means' so the answer explains why, not just what.",
+                },
+                {
+                    "label": "Ends with a clear conclusion or recommendation",
+                    "passed": any(phrase in answer_lower for phrase in conclusion_phrases),
+                    "tip": "End with a recommendation, conclusion, implication, or next action.",
+                },
+                {
+                    "label": "Has enough structure for an exam answer",
+                    "passed": sentence_count >= structure_minimum,
+                    "tip": "Add a clearer step-by-step structure or a few more complete sentences.",
+                },
+                {
+                    "label": "Matches the subject-specific course template",
+                    "passed": signal_match_count(answer_lower, answer_tokens, course_template_signals.get(course_template_key, [])) >= 2,
+                    "tip": f"Include more subject-specific signals such as: {', '.join(course_template_signals.get(course_template_key, [])[:6])}.",
+                },
+                {
+                    "label": "Matches the selected question style",
+                    "passed": signal_match_count(answer_lower, answer_tokens, style_signal_map.get(effective_resolver_mode, [])) >= 2,
+                    "tip": f"For this question style, include signals such as: {', '.join(style_signal_map.get(effective_resolver_mode, [])[:6])}.",
+                },
+            ]
+
+            if structure_selection_case:
+                structure_selection_signals = [
+                    "data structure", "array", "linked list", "list", "tree", "b-tree", "bst",
+                    "operations", "search", "insert", "delete", "traversal", "time complexity",
+                    "space complexity", "memory", "flexibility", "suitable", "efficient",
+                ]
+                weaker_alternative_signals = [
+                    "better than", "more suitable", "less suitable", "alternative", "compared with",
+                    "whereas", "however", "trade-off", "trade-offs",
+                ]
+                checklist_items.extend([
+                    {
+                        "label": "Explains the data-structure selection criteria",
+                        "passed": signal_match_count(answer_lower, answer_tokens, structure_selection_signals) >= 3,
+                        "tip": "Show how you chose the structure by mentioning operations, efficiency, memory, flexibility, or data size and type.",
+                    },
+                    {
+                        "label": "Compares the chosen structure with at least one weaker alternative",
+                        "passed": signal_match_count(answer_lower, answer_tokens, weaker_alternative_signals) >= 1,
+                        "tip": "Compare the chosen structure with at least one weaker option so the examiner can see why your choice is justified.",
+                    },
+                ])
+
+            if stats_guardrail_needed:
+                stats_method_terms = [
+                    "t-test", "t test", "independent t-test", "independent t test",
+                    "paired t-test", "paired t test", "z-test", "z test",
+                    "z-score", "z score", "chi-square", "chi square", "anova",
+                    "likert", "test statistic", "standard error", "sample mean",
+                    "proportion", "null hypothesis",
+                ]
+                stats_decision_terms = [
+                    "p-value", "p value", "alpha", "significance", "significant",
+                    "reject h0", "fail to reject h0", "reject the null", "fail to reject the null",
+                ]
+                stats_interpretation_terms = [
+                    "this means", "which means", "therefore", "in practice", "so we conclude", "plain language",
+                ]
+                unrealistic_hypothesis_terms = [
+                    "always", "never", "prove", "guarantee", "everyone", "all customers", "100%",
+                ]
+                checklist_items.extend([
+                    {
+                        "label": "Names the correct statistical test or statistic",
+                        "passed": signal_match_count(answer_lower, answer_tokens, stats_method_terms) >= 1,
+                        "tip": "Name the exact method, such as independent t-test, paired t-test, chi-square, ANOVA, z-test, z-score, or a Likert-based comparison.",
+                    },
+                    {
+                        "label": "Includes a statistical decision or significance statement",
+                        "passed": signal_match_count(answer_lower, answer_tokens, stats_decision_terms) >= 1,
+                        "tip": "State the decision clearly, for example with p-value, alpha, and whether you reject or fail to reject H0.",
+                    },
+                    {
+                        "label": "Separates the calculation from the real-world interpretation",
+                        "passed": (
+                            signal_match_count(answer_lower, answer_tokens, stats_decision_terms + ["t =", "z =", "test statistic"]) >= 1
+                            and signal_match_count(answer_lower, answer_tokens, stats_interpretation_terms) >= 1
+                        ),
+                        "tip": "After the calculation, add a plain-language sentence explaining what the result means in the scenario.",
+                    },
+                ])
+                if formal_hypothesis_question:
+                    checklist_items.append(
+                        {
+                            "label": "Uses realistic hypotheses",
+                            "passed": (
+                                signal_match_count(answer_lower, answer_tokens, ["h0", "h1", "null hypothesis", "alternative hypothesis"]) >= 1
+                                and not any(term in answer_lower for term in unrealistic_hypothesis_terms)
+                            ),
+                            "tip": "Write H0 and H1 in a testable way. Avoid absolute claims like 'prove', 'always', or 'everyone'.",
+                        }
+                    )
+
+            passed_count = sum(1 for item in checklist_items if item["passed"])
+            total_count = len(checklist_items)
+            checklist_score = int(round((passed_count / total_count) * 100)) if total_count else 0
+
+            score_cols = st.columns([1, 2])
+            score_cols[0].metric("Checklist score", f"{checklist_score}%")
+            if checklist_score >= 85:
+                score_cols[1].success("Strong draft. It covers most of the expected answer features.")
+            elif checklist_score >= 60:
+                score_cols[1].warning("Decent draft, but it still needs a few stronger exam signals.")
+            else:
+                score_cols[1].error("This answer is still missing several high-value exam features.")
+
+            st.markdown("**Checklist results**")
+            for item in checklist_items:
+                icon = "✅" if item["passed"] else "⚠️"
+                st.markdown(f"- {icon} **{item['label']}**")
+
+            failed_items = [item for item in checklist_items if not item["passed"]]
+            if failed_items:
+                st.markdown("**What to improve next**")
+                for item in failed_items:
+                    st.markdown(f"- {item['tip']}")
+
+            missing_prompt_terms = sorted(prompt_tokens - answer_tokens)[:6]
+            missing_source_terms = sorted(source_reference_tokens - answer_tokens)[:6]
+            if missing_prompt_terms or missing_source_terms:
+                st.markdown("**Useful terms you may still want to include**")
+                if missing_prompt_terms:
+                    st.markdown(f"- From the prompt: {', '.join(missing_prompt_terms)}")
+                if missing_source_terms:
+                    st.markdown(f"- From the selected course sources: {', '.join(missing_source_terms)}")
+
+            if answer_target_key:
+                if st.button("Send checked answer to answer box", key=f"{base_key}_send_checked_answer"):
+                    if "exam_answers" not in st.session_state:
+                        st.session_state.exam_answers = {}
+                    st.session_state.exam_answers[answer_target_key] = quality_answer
+                    if answer_widget_key:
+                        st.session_state[answer_widget_key] = quality_answer
+                    st.success("Your checked answer has been inserted into the answer box.")
+
+        action_cols = st.columns([1, 1])
+        with action_cols[0]:
+            st.download_button(
+                "Download model answer draft as TXT",
+                data=model_answer_text,
+                file_name=f"{course_code.lower()}_exam_model_answer.txt",
+                mime="text/plain",
+                key=f"{base_key}_model_download",
+            )
+        with action_cols[1]:
+            if answer_target_key:
+                if st.button("Send model answer to answer box", key=f"{base_key}_send_to_answer"):
+                    if "exam_answers" not in st.session_state:
+                        st.session_state.exam_answers = {}
+                    st.session_state.exam_answers[answer_target_key] = model_answer_text
+                    if answer_widget_key:
+                        st.session_state[answer_widget_key] = model_answer_text
+                    st.success("The model answer draft has been inserted into the current answer box.")
+
+        if course_code == "FI1BBDD75" and any(unit["id"] == "lesson::2.3" for unit in selected_units) and exam_prompt.strip():
+            st.info("This case also touches Lesson 2.3. You can reuse the same prompt in the Lesson 2.3 data-types solver below if the question is specifically about qualitative, quantitative, or mixed methods.")
+            if st.button("Send this prompt to the Lesson 2.3 exam solver", key=f"{base_key}_send_to_l23"):
+                st.session_state["m2_l23_exam_solver_question"] = exam_prompt
+                st.success("The prompt has been copied into the Lesson 2.3 exam solver.")
+
+        st.download_button(
+            "Download exam connection guide as TXT",
+            data=output_text,
+            file_name=f"{course_code.lower()}_exam_connection_guide.txt",
+            mime="text/plain",
+            key=f"{base_key}_download",
+        )
 
 all_pages = [
     "Overview", "Course Plan", "Training Center", "Playground", "Learn & Practice",
