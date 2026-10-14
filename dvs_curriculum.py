@@ -3,7 +3,7 @@
 from copy import deepcopy
 from pathlib import Path
 
-CONTENT_REVISION = "2026-10-14-dvs12"
+CONTENT_REVISION = "2026-10-14-dvs13"
 COURSE_CODE = "FI1BBDV75"
 COURSE_NAME = "Data Visualisation"
 ASSET_ROOT = Path(__file__).resolve().parent / "assets" / "dvs"
@@ -135,6 +135,9 @@ def get_dvs_persona_template():
 
 
 def get_dvs_task_guide_markdown(guide):
+    if guide["lesson_number"] == "1.3":
+        from dvs_lesson13 import get_task_guide_markdown
+        return get_task_guide_markdown(guide)
     if guide["id"] == "1.2-task":
         from dvs_lesson12 import get_task_guide_markdown
         return get_task_guide_markdown()
@@ -158,6 +161,8 @@ DVS_TASK_GUIDES = [
     {"course_code": COURSE_CODE, "id": "1.1.1", "uid": "dvs-1.1.1-81506", "lesson_number": "1.1", "title": "Funky Monkey athlete persona", "source_url": "https://learning.noroff.no/mod/book/view.php?id=22904&chapterid=81506", "method": "persona", "deliverable": "Rough hypothetical athlete persona for a statement-sock brand", "steps": ["Record the brand goal and target audience", "Propose labelled hypothetical goals, needs and pain points", "Explain a design implication and a question to validate it"], "caution": "Funky Monkey targets athletes aged 25–35; this is a separate brief from the CEO task.", "task_dataset": "", "template_file": ""},
 ]
 DVS_TASK_GUIDES.append(TASK12_GUIDE)
+from dvs_lesson13 import GUIDES as GUIDES13
+DVS_TASK_GUIDES.extend(GUIDES13)
 for _guide in DVS_TASK_GUIDES:
     _guide["markdown"] = get_dvs_task_guide_markdown(_guide)
 
@@ -172,7 +177,8 @@ def _get_lesson11():
 
 def get_dvs_course_lessons():
     from dvs_lesson12 import get_lesson
-    return _get_lesson11() + [deepcopy(get_lesson())]
+    from dvs_lesson13 import get_lesson as get_lesson13
+    return _get_lesson11() + [deepcopy(get_lesson()), deepcopy(get_lesson13())]
 
 
 def _get_dvs_training_modules():
@@ -182,7 +188,9 @@ def _get_dvs_training_modules():
 def get_dvs_training_modules():
     modules = _get_dvs_training_modules()
     module = modules["DVS Module 1: Design Thinking"]
-    module["description"] = "Reviewed Noroff Lessons 1.1–1.2: Empathise, Define, Ideate, Prototype and Test, with persona and mobile wireframe tasks."
+    module["description"] = "Reviewed Noroff Lessons 1.1–1.3: design thinking, persona and wireframe tasks, universal and inclusive design reflections."
     module["exercises"].append({"title": "Task 1.2: Mobile BMI wireframe", "type": "case_study", "question": "Sketch mobile input and results areas, chart choice, age filtering and a labelled current-user BMI marker.", "hint": "Use simple boxes and labels. Include height, weight, age and a submission button.", "answer": "The sketch includes all required controls and a visible labelled user marker, explains units and transitions, and uses placeholders or labelled illustrative points."})
     module["quiz"].append({"question": "What is the required deliverable for Task 1.2?", "options": ["A production BMI application", "A low-fidelity mobile wireframe", "A medical diagnosis", "A real user health dataset"], "correct": 1, "explanation": "The task asks for a simple sketch, with input and customisable results areas."})
+    module["exercises"].append({"title": "Task 1.3: Universal design reflections", "type": "case_study", "question": "Write seven applied paragraphs for your future visualisations and their platforms.", "hint": "Use principle, user need, proposed change, reason and check.", "answer": "Each paragraph applies a named principle to a concrete visual or platform decision and distinguishes a proposed check from real findings."})
+    module["quiz"].append({"question": "Which is a defensible universal design reflection?", "options": ["Changing colours proves full accessibility", "A proposed design is a completed user test", "Explain a barrier, propose an adaptation and identify a check", "Only the chart matters; its platform is irrelevant"], "correct": 2, "explanation": "The task needs applied reasoning about the visual and its host platform, supported by sources and relevant evaluation."})
     return modules

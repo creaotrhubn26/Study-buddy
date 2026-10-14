@@ -4,13 +4,16 @@ import streamlit as st
 from dvs_curriculum import (ASSET_ROOT, TEMPLATE_ROOT, COURSE_CODE, ILLUSTRATIONS,
     TASK_STEPS, get_dvs_persona_template, get_dvs_task_guide_markdown)
 
-CONTENT_REVISION = "2026-10-14-dvs12"
+CONTENT_REVISION = "2026-10-14-dvs13"
 
 
 def get_dvs_draft(uid):
     if uid == "dvs-1.2-task-81516":
         from dvs_lesson12 import WIREFRAME_TEMPLATE, TEST_TEMPLATE
         default = WIREFRAME_TEMPLATE + "\n\n" + TEST_TEMPLATE
+    elif uid == "dvs-1.3-task-81528":
+        from dvs_lesson13 import REFLECTION_TEMPLATE, RESEARCH_TEMPLATE
+        default = REFLECTION_TEMPLATE + "\n\n" + RESEARCH_TEMPLATE
     else:
         default = get_dvs_persona_template()
     return st.session_state.get("dvs_persona_drafts", {}).get(uid, default)
@@ -37,6 +40,13 @@ def prepare_task_in_resolver(guide, lesson_base):
             "a highlighted current-user marker, chart selection and an age filter. "
             "Check units, transitions, invalid inputs and empty/filter states. Flag unfilled placeholders. "
             "Do not invent actual user data, completed tests or health diagnoses. The deliverable is a sketch, not a production app.\n\nMy wireframe and test plan:\n" + get_dvs_draft(guide["uid"]))
+    elif guide["id"] == "1.3-task":
+        prompt = ("DVS Task 1.3: Review my seven universal design reflection paragraphs. Write in English. "
+            "Required: your own Word document with one brief applied paragraph per principle, considering future visualisations and their web/mobile/print platforms. "
+            "Check concrete changes, reasons, evaluation plans and source links. Flag placeholders and missing principles. "
+            "Keep Noroff order and distinguish the NC State numbering. Do not invent source claims, completed tests or compliance certification.\n\nMy reflections and research notes:\n" + get_dvs_draft(guide["uid"]))
+    elif guide["lesson_number"] == "1.3":
+        prompt = f"DVS Activity {guide['id']}: {guide['title']}. Write in English. Required output: {guide['deliverable']}. Steps: {'; '.join(guide['steps'])}. {guide['caution']} Follow this activity's stated requirements."
     else:
         prompt = "DVS Activity 1.1.1: Help me draft a clearly labelled hypothetical athlete persona for Funky Monkey, a statement-sock brand seeking recognition among men and women aged 25–35 who participate in mountain biking, triathlons or marathons. Write in English. Keep this brief separate from the CEO task."
     st.session_state[f"{resolver_base}_prompt"] = prompt
@@ -61,7 +71,7 @@ def render_dvs_images(base_key, illustrations=None):
 
 def render_dvs_task_resources(guides, base_key, heading=None, draft_editor=False, show_images=True):
     if heading is None:
-        heading = "### 2. Task guide and templates" if any(g["id"] == "1.2-task" for g in guides) else "### 2. Task guide and persona template"
+        heading = "### 2. Task guide and templates" if any(g["lesson_number"] != "1.1" for g in guides) else "### 2. Task guide and persona template"
     st.markdown(heading)
     for guide in guides:
         with st.container(border=True):
@@ -94,6 +104,8 @@ def render_dvs_task_resources(guides, base_key, heading=None, draft_editor=False
                     st.caption("Paste your completed persona into the question above to request a review, or prepare it from Lesson 1.1.")
             elif guide["id"] == "1.2-task":
                 render_wireframe_resources(guide, base_key, draft_editor)
+            elif guide["id"] == "1.3-task":
+                render_reflection_resources(guide, base_key, draft_editor)
             else:
                 st.markdown("\n".join(f"{i}. {step}." for i, step in enumerate(guide["steps"], 1)))
                 st.info(guide["caution"])
@@ -111,6 +123,9 @@ def render_dvs_task_resources(guides, base_key, heading=None, draft_editor=False
             if any(g["lesson_number"] == "1.2" for g in guides):
                 from dvs_lesson12 import ILLUSTRATIONS as images12
                 visuals.extend(images12)
+            if any(g["lesson_number"] == "1.3" for g in guides):
+                from dvs_lesson13 import ILLUSTRATIONS as images13
+                visuals.extend(images13)
             render_dvs_images(f"{base_key}_resolver", visuals)
 
 
@@ -143,6 +158,36 @@ def render_wireframe_resources(guide, base_key, draft_editor):
         st.caption("Paste your plan above or prepare it from Lesson 1.2. The resolver reviews your written plan; describe the sketch layout and controls in words.")
 
 
+def render_reflection_resources(guide, base_key, draft_editor):
+    from dvs_lesson13 import TASK_STEPS as steps, REFLECTION_TEMPLATE, RESEARCH_TEMPLATE, SOURCES
+    st.info("Required: research universal design and write one brief applied paragraph for each of the seven principles in your own Word document. Include the visual and its host platform.")
+    step = st.selectbox("Choose a Task 1.3 principle", list(range(len(steps))),
+        format_func=lambda i: steps[i][0], key=f"{base_key}_dvs_step_{guide['uid']}")
+    st.markdown(f"**{steps[step][0]}**")
+    st.markdown(steps[step][1])
+    st.caption(f"Check: {steps[step][2]}")
+    with st.expander("Reflection pattern and research sources", expanded=False):
+        st.markdown("**Pattern:** principle → user need → change → reason → check.\n\n**Sentence scaffold:** For [audience/context], I would [change] because [reason]. I would check this by [method]. Source for a researched claim: [...].")
+        st.markdown("\n\n".join(f"[{name}]({url})" for name, url in SOURCES))
+        st.caption("Steps follow Noroff order. NC State places Tolerance for Error fifth and Low Physical Effort sixth. Complete all seven paragraphs, regardless of order.")
+    for label, content, filename in [
+        ("Download reflection template (Markdown)", REFLECTION_TEMPLATE, "DVS Task 1.3 Reflection Template.md"),
+        ("Download research notes (Markdown)", RESEARCH_TEMPLATE, "DVS Task 1.3 Research Notes.md")]:
+        st.download_button(label, content.encode(), file_name=filename, mime="text/markdown", key=f"{base_key}_{filename}")
+    template = TEMPLATE_ROOT / guide["template_file"]
+    if template.is_file():
+        st.download_button("Download seven-principle template (Word)", template.read_bytes(), file_name=template.name,
+            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document", key=f"{base_key}_reflection_docx")
+    if draft_editor:
+        with st.expander("Write your Task 1.3 reflections", expanded=False):
+            widget_key = f"{base_key}_reflection_editor_{guide['uid']}"
+            st.text_area("Your Task 1.3 reflections and research notes", value=get_dvs_draft(guide['uid']), height=380,
+                key=widget_key, on_change=remember_draft, args=(guide['uid'], widget_key))
+            st.caption("Your draft is kept during this session. Prepare the task to copy the reflections and selected principle into Exam Resolver. Save your final paragraphs in your own Word document.")
+    else:
+        st.caption("Paste your reflections above or prepare them from Lesson 1.3. The resolver reviews the written paragraphs and source notes; proposed checks are not completed tests.")
+
+
 def render_dvs_lesson_resources(lesson, context):
     if lesson.get("course_code") != COURSE_CODE:
         return
@@ -155,6 +200,6 @@ def render_dvs_lesson_resources(lesson, context):
         key=f"{base_key}_task")
     guide = next(g for g in guides if g["uid"] == selected)
     render_dvs_task_resources([guide], base_key, heading=f"#### Task walkthrough — DVS Lesson {lesson['lesson_number']}", draft_editor=True, show_images=False)
-    label = f"Prepare Task {guide['lesson_number']} in Exam Resolver" if guide["id"].endswith('-task') else "Prepare Activity 1.1.1 in Exam Resolver"
+    label = f"Prepare Task {guide['lesson_number']} in Exam Resolver" if guide["id"].endswith('-task') else f"Prepare Activity {guide['id']} in Exam Resolver"
     st.button(label, key=f"{base_key}_prepare", on_click=prepare_task_in_resolver, args=(guide, base_key))
     st.markdown("[Go to Exam Resolver](#semester-exam-connector)")
