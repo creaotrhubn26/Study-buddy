@@ -43,8 +43,11 @@ if getattr(dvs_lesson12, "CONTENT_REVISION", None) != "2026-10-14-dvs12":
 import dvs_lesson13
 if getattr(dvs_lesson13, "CONTENT_REVISION", None) != "2026-10-14-dvs13":
     dvs_lesson13 = importlib.reload(dvs_lesson13)
+import dvs_lesson14
+if getattr(dvs_lesson14, "CONTENT_REVISION", None) != "2026-10-14-dvs14-layout":
+    dvs_lesson14 = importlib.reload(dvs_lesson14)
 import dvs_curriculum
-DVS_CONTENT_REVISION = "2026-10-14-dvs13"
+DVS_CONTENT_REVISION = "2026-10-14-dvs14"
 if getattr(dvs_curriculum, "CONTENT_REVISION", None) != DVS_CONTENT_REVISION:
     dvs_curriculum = importlib.reload(dvs_curriculum)
 import dvs_ui
@@ -67596,6 +67599,16 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
     }
 
     if course_code == dvs_curriculum.COURSE_CODE:
+        style_profiles["Inclusion usability accessibility reflection"] = {
+            "summary": "distinguish three concepts and apply them to a visualisation and its platform",
+            "keywords": ["inclusive", "usability", "accessibility", "pour"],
+            "structure": [
+                "Follow the selected brief: three concept paragraphs for Task 1.4, or the selected activity requirements.",
+                "Identify the audience goal, context and a concrete adaptation for each required concept.",
+                "Explain reasons, proposed evaluation and source notes, using POUR where relevant.",
+                "Distinguish proposals from observed findings and avoid conformance claims from a single check.",
+            ],
+        }
         style_profiles["Universal design reflection"] = {
             "summary": "apply universal design principles to a visualisation and its platform",
             "keywords": ["universal", "inclusive", "accessibility", "reflection"],
@@ -67965,7 +67978,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             if course_code == "FI1BBEO10":
                 st.caption("EVO includes 98 searchable activity/task guides. Use Task guides only to select an exact activity, or enter its number in the question.")
             elif course_code == dvs_curriculum.COURSE_CODE:
-                st.caption("DVS includes Lessons 1.1–1.3 and eight searchable guides. Enter Task 1.1, Task 1.2 or Task 1.3, or an exact activity number such as Activity 1.3.1.")
+                st.caption("DVS includes all four Module 1 lessons and eleven searchable guides. Enter Task 1.1, Task 1.2, Task 1.3 or Task 1.4, or an exact activity number.")
 
         draft_col_1, draft_col_2 = st.columns(2)
         with draft_col_1:
@@ -70013,7 +70026,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         if any(term in prompt_lower for term in ["scenario", "case", "organisation", "organization", "company", "business", "recommend"]):
             scores["Broad case question"] += 4
         if course_code == dvs_curriculum.COURSE_CODE:
-            for lesson_number, style in [("1.1", "Persona design task"), ("1.2", "Wireframe design task"), ("1.3", "Universal design reflection")]:
+            for lesson_number, style in [("1.1", "Persona design task"), ("1.2", "Wireframe design task"), ("1.3", "Universal design reflection"), ("1.4", "Inclusion usability accessibility reflection")]:
                 if any(resolver_task_number_boost(g, exam_prompt) for g in dvs_curriculum.get_dvs_task_guides(lesson_number)):
                     scores[style] += 100
 
@@ -70202,7 +70215,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         with resources_panel:
             if course_code in GUIDED_TASK_COURSES:
                 st.markdown("### 2. Task guide and templates" if course_code == dvs_curriculum.COURSE_CODE else "### 2. Task guide and workbook")
-                st.caption("Enter Task 1.1, Task 1.2 or Task 1.3 to find its guide and templates." if course_code == dvs_curriculum.COURSE_CODE else "Enter a task number, for example Task 7.2, to find its guide and workbook.")
+                st.caption("Enter Task 1.1, Task 1.2, Task 1.3 or Task 1.4 to find its guide and templates." if course_code == dvs_curriculum.COURSE_CODE else "Enter a task number, for example Task 7.2, to find its guide and workbook.")
             else:
                 st.markdown("### 2. Sources for this question")
                 st.caption("Enter a question above to find relevant course sources.")
@@ -70435,7 +70448,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             render_course_task_resources(matched_tasks, base_key)
         elif course_code in GUIDED_TASK_COURSES:
             st.markdown("### 2. Task guide and templates" if course_code == dvs_curriculum.COURSE_CODE else "### 2. Task guide and workbook")
-            st.caption("Enter Task 1.1, Task 1.2 or Task 1.3, or choose Task guides only in Advanced settings." if course_code == dvs_curriculum.COURSE_CODE else "Enter a task number, for example Task 7.2, or choose Task guides only in Advanced settings.")
+            st.caption("Enter Task 1.1, Task 1.2, Task 1.3 or Task 1.4, or choose Task guides only in Advanced settings." if course_code == dvs_curriculum.COURSE_CODE else "Enter a task number, for example Task 7.2, or choose Task guides only in Advanced settings.")
         else:
             st.markdown("### 2. Sources for this question")
             st.caption("The resolver connects your question to these course sources. Change them in Advanced settings if needed.")

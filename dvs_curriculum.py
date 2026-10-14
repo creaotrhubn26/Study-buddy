@@ -3,7 +3,7 @@
 from copy import deepcopy
 from pathlib import Path
 
-CONTENT_REVISION = "2026-10-14-dvs13"
+CONTENT_REVISION = "2026-10-14-dvs14"
 COURSE_CODE = "FI1BBDV75"
 COURSE_NAME = "Data Visualisation"
 ASSET_ROOT = Path(__file__).resolve().parent / "assets" / "dvs"
@@ -135,6 +135,9 @@ def get_dvs_persona_template():
 
 
 def get_dvs_task_guide_markdown(guide):
+    if guide["lesson_number"] == "1.4":
+        from dvs_lesson14 import get_task_guide_markdown
+        return get_task_guide_markdown(guide)
     if guide["lesson_number"] == "1.3":
         from dvs_lesson13 import get_task_guide_markdown
         return get_task_guide_markdown(guide)
@@ -163,6 +166,8 @@ DVS_TASK_GUIDES = [
 DVS_TASK_GUIDES.append(TASK12_GUIDE)
 from dvs_lesson13 import GUIDES as GUIDES13
 DVS_TASK_GUIDES.extend(GUIDES13)
+from dvs_lesson14 import GUIDES as GUIDES14
+DVS_TASK_GUIDES.extend(GUIDES14)
 for _guide in DVS_TASK_GUIDES:
     _guide["markdown"] = get_dvs_task_guide_markdown(_guide)
 
@@ -178,7 +183,8 @@ def _get_lesson11():
 def get_dvs_course_lessons():
     from dvs_lesson12 import get_lesson
     from dvs_lesson13 import get_lesson as get_lesson13
-    return _get_lesson11() + [deepcopy(get_lesson()), deepcopy(get_lesson13())]
+    from dvs_lesson14 import get_lesson as get_lesson14
+    return _get_lesson11() + [deepcopy(get_lesson()), deepcopy(get_lesson13()), deepcopy(get_lesson14())]
 
 
 def _get_dvs_training_modules():
@@ -188,9 +194,11 @@ def _get_dvs_training_modules():
 def get_dvs_training_modules():
     modules = _get_dvs_training_modules()
     module = modules["DVS Module 1: Design Thinking"]
-    module["description"] = "Reviewed Noroff Lessons 1.1–1.3: design thinking, persona and wireframe tasks, universal and inclusive design reflections."
+    module["description"] = "Reviewed Noroff Module 1 Lessons 1.1–1.4: design thinking, persona and wireframe tasks, universal design, inclusion, usability and accessibility."
     module["exercises"].append({"title": "Task 1.2: Mobile BMI wireframe", "type": "case_study", "question": "Sketch mobile input and results areas, chart choice, age filtering and a labelled current-user BMI marker.", "hint": "Use simple boxes and labels. Include height, weight, age and a submission button.", "answer": "The sketch includes all required controls and a visible labelled user marker, explains units and transitions, and uses placeholders or labelled illustrative points."})
     module["quiz"].append({"question": "What is the required deliverable for Task 1.2?", "options": ["A production BMI application", "A low-fidelity mobile wireframe", "A medical diagnosis", "A real user health dataset"], "correct": 1, "explanation": "The task asks for a simple sketch, with input and customisable results areas."})
     module["exercises"].append({"title": "Task 1.3: Universal design reflections", "type": "case_study", "question": "Write seven applied paragraphs for your future visualisations and their platforms.", "hint": "Use principle, user need, proposed change, reason and check.", "answer": "Each paragraph applies a named principle to a concrete visual or platform decision and distinguishes a proposed check from real findings."})
     module["quiz"].append({"question": "Which is a defensible universal design reflection?", "options": ["Changing colours proves full accessibility", "A proposed design is a completed user test", "Explain a barrier, propose an adaptation and identify a check", "Only the chart matters; its platform is irrelevant"], "correct": 2, "explanation": "The task needs applied reasoning about the visual and its host platform, supported by sources and relevant evaluation."})
+    module["exercises"].append({"title": "Task 1.4: Three applied reflections", "type": "case_study", "question": "Write one applied paragraph under Inclusive Design, Usability and Accessibility headings.", "hint": "Consider the visual and platform, with a change, reason, proposed check and source.", "answer": "The three paragraphs apply distinct concepts and explain relevant adaptations and checks without presenting planned tests as findings."})
+    module["quiz"].append({"question": "What are Task 1.4's required headings?", "options": ["All seven universal design principles", "Only the four POUR principles", "Inclusive Design Usability and Accessibility", "A market analysis and medical diagnosis"], "correct": 2, "explanation": "Three brief concept reflections are required. POUR supports the accessibility reasoning."})
     return modules
