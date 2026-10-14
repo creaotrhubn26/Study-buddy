@@ -52,11 +52,11 @@ class DvsLesson23Test(unittest.TestCase):
     def test_training_modules_keep_previous_lessons(self):
         modules=get_dvs_training_modules()
         self.assertEqual([l['lesson_number'] for l in modules['DVS Module 1: Design Thinking']['lessons']],['1.1','1.2','1.3','1.4'])
-        self.assertEqual([l['lesson_number'] for l in modules['DVS Module 2: User Experience and User Experience Design']['lessons']],['2.1','2.2','2.3'])
+        self.assertEqual([l['lesson_number'] for l in modules['DVS Module 2: User Experience and User Experience Design']['lessons']],['2.1','2.2','2.3','2.4'])
         app=self.app('Training Center')
         next(s for s in app.selectbox if s.label=='🎯 Select Topic:').set_value('DVS Module 2: User Experience and User Experience Design');self.run_app(app)
         labels=[b.label for b in app.button]
-        for number in ['2.1','2.2','2.3']:self.assertIn(f'Prepare Task {number} in Exam Resolver',labels)
+        for number in ['2.1','2.2','2.3','2.4']:self.assertIn(f'Prepare Task {number} in Exam Resolver',labels)
         self.assertNotIn('Prepare Task 1.1 in Exam Resolver',labels)
     def test_complete_normal_and_strict_english_context(self):
         requests=[]

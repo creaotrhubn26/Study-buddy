@@ -174,3 +174,6 @@ The ethics lesson and two-question Task 2.2 are available in Lessons and Exam Re
 
 ### DVS Lesson 2.3
 English raster/vector and GIMP explanations, seven Task 2.3 question views, three imagegen illustrations, study/comparison/orientation Markdown templates and an editable Word worksheet. Question 7 includes dated official research for CorelDRAW, Procreate and Photopea with platform, licence/price, raster/vector and complex-function comparisons. Draft and selected question transfer to Exam Resolver without generation. Optional GIMP practice and conditional recommendations are distinguished from the task requirements; earlier lessons remain available.
+
+### DVS Lesson 2.4
+English GIMP image manipulation teaching, seven Task 2.4 steps, three imagegen illustrations, a Word worksheet and Markdown design/check logs. Four independent self-study activities have their own guides, templates and draft/step handoffs. Required leaves opacity 80%, Stone background and strawberry chart meaning are explicit; authenticated original image links, filename inconsistencies and updated manual guidance are included. Resolver reviews written plans/evidence and does not perform GIMP operations or inspect image pixels.
