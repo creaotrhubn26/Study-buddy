@@ -241,6 +241,90 @@ class EvoWorkflowTest(unittest.TestCase):
         select(app, 'Choose a Task 7.2 objective', 'Retention')
         self.assertEqual(next(t for t in app.text_area if t.label == draft.label).value, 'My edited answer for this question')
 
+    def test_task_73_objectives_keep_the_right_workbook_and_independent_selections(self):
+        from exam_resolver_ui import TASK_72_OBJECTIVES, TASK_73_OBJECTIVES
+        app = self.app('Learn & Practice')
+        prompt_label = 'Paste the exam question, case, or task prompt'
+        next(t for t in app.text_area if t.label == prompt_label).set_value('Task 7.2: analyse the marketing dataset.')
+        app.run(timeout=90)
+        select(app, 'Choose a Task 7.2 objective', 'Retention')
+        next(t for t in app.text_area if t.label == prompt_label).set_value('Task 7.3: guide me through the seven marketing objectives.')
+        app.run(timeout=90)
+        self.assertFalse(app.exception)
+        chooser = next(s for s in app.selectbox if s.label == 'Choose a Task 7.3 objective')
+        self.assertEqual(chooser.options, [v[0] for v in TASK_73_OBJECTIVES.values()])
+        self.assertEqual(len(chooser.options), 7)
+        for sheet, objective in TASK_73_OBJECTIVES.items():
+            with self.subTest(sheet=sheet):
+                select(app, chooser.label, sheet)
+                markdown = '\n'.join(item.value for item in app.markdown)
+                self.assertIn(f'Excel worksheet `{sheet}`', markdown)
+                self.assertIn(objective[2], markdown)
+                self.assertIn(objective[4], '\n'.join(item.value for item in app.info))
+                self.assertIn('Dataset: marketing_campaign_fixed.csv', '\n'.join(c.value for c in app.caption))
+                downloads = [d.label for d in app.get('download_button')]
+                self.assertIn('Download matched workbook: EVO Module 7 Tasks.xlsx', downloads)
+                self.assertNotIn('Download matched workbook: EVO Module 6 Tasks.xlsx', downloads)
+                self.assertEqual(next(t for t in app.text_area if t.label == prompt_label).value, 'Task 7.3: guide me through the seven marketing objectives.')
+        next(t for t in app.text_area if t.label == prompt_label).set_value('Task 7.2: analyse the marketing dataset.')
+        app.run(timeout=90)
+        chooser72 = next(s for s in app.selectbox if s.label == 'Choose a Task 7.2 objective')
+        self.assertIn(chooser72.value, TASK_72_OBJECTIVES)
+        self.assertEqual(chooser72.options, [v[0] for v in TASK_72_OBJECTIVES.values()])
+        select(app, chooser72.label, 'Retention')
+        self.assertIn('Excel worksheet `Retention`', '\n'.join(m.value for m in app.markdown))
+
+    def test_task_73_english_download_covers_all_real_workbook_sheets(self):
+        import zipfile
+        import xml.etree.ElementTree as ET
+        from exam_resolver_ui import TASK_73_OBJECTIVES, get_resolver_task_guide_markdown
+        guide = next(g for g in TASK_GUIDES if g['id'] == '7.3-task')
+        text = get_resolver_task_guide_markdown(guide)
+        self.assertIn('### Task 7.3: Customer insight, segmentation and campaign response', text)
+        self.assertIn('chapterid=81490', text)
+        self.assertIn('marketing_campaign_fixed.csv', text)
+        self.assertIn('not solved data', text)
+        self.assertEqual(text.count('\n#### '), 7)
+        with zipfile.ZipFile(TEMPLATE_ROOT / guide['template_file']) as archive:
+            root = ET.fromstring(archive.read('xl/workbook.xml'))
+            ns = {'x': 'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}
+            names = {e.attrib['name'] for e in root.findall('x:sheets/x:sheet', ns)}
+        for sheet, objective in TASK_73_OBJECTIVES.items():
+            self.assertIn(sheet, names)
+            self.assertIn(objective[1], text)
+            self.assertIn(objective[4], text)
+        other = next(g for g in TASK_GUIDES if g['id'] == '6.2-task')
+        self.assertEqual(get_resolver_task_guide_markdown(other), other['markdown'])
+
+    def test_task_73_ai_request_uses_the_same_english_worksheet_guide(self):
+        import json
+        from types import SimpleNamespace
+        from unittest.mock import patch
+        requests = []
+
+        def complete(**kwargs):
+            requests.append(kwargs)
+            chunk = SimpleNamespace(choices=[SimpleNamespace(delta=SimpleNamespace(content='English answer from an offline test.'))])
+            return iter([chunk])
+
+        fake_client = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=complete)))
+        env = {'OPENAI_API_KEY': 'offline-ui-test-key', 'AI_PROVIDER': 'openai'}
+        env['_STUDY_BUDDY_INITIAL_ENV_KEYS'] = json.dumps(list(os.environ) + list(env))
+        with patch.dict(os.environ, env), patch('openai.OpenAI', return_value=fake_client):
+            app = self.app('Learn & Practice')
+            next(t for t in app.text_area if t.label == 'Paste the exam question, case, or task prompt').set_value('Task 7.3: Explain the complaints objective.')
+            app.run(timeout=90)
+            next(b for b in app.button if b.label == '💡 Generate answer with reasoning').click()
+            app.run(timeout=90)
+            self.assertFalse(app.exception)
+            self.assertEqual(len(requests), 1)
+            messages = requests[0]['messages']
+            self.assertIn('ANSWER LANGUAGE: Write in English', messages[0]['content'])
+            self.assertIn('### Task 7.3: Customer insight, segmentation and campaign response', messages[1]['content'])
+            self.assertIn('**Worksheets:** Complaints, Personas, Response spending, Detailed segments, Household channels, Web engagement, Response prediction', messages[1]['content'])
+            self.assertIn('Customer satisfaction and complaints', messages[1]['content'])
+            self.assertNotIn('### Task 7.2:', messages[1]['content'])
+
     def test_stale_ai_answer_is_separated_from_current_question(self):
         from unittest.mock import patch
         import json
