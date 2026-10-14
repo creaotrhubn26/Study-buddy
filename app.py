@@ -18,7 +18,7 @@ import mistune
 from openai import OpenAI
 from evo_curriculum import ASSET_ROOT as EVO_ASSET_ROOT, get_evo_course_lessons, get_evo_training_modules
 from evo_tasks import TEMPLATE_ROOT as EVO_TEMPLATE_ROOT, get_evo_task_guides, resolver_task_number_boost, get_evo_resolver_ai_units
-from exam_resolver_ui import render_resolver_task_resources
+from exam_resolver_ui import render_resolver_task_resources, get_resolver_task_guide_markdown
 
 # Use the full browser width so the prompt + dataset upload + syllabus preview
 # all have room to breathe. Must be the first Streamlit call in the module.
@@ -67078,7 +67078,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                         f"Required output: {guide['deliverable']}\n"
                         f"Limitations: {guide['caution']}\n"
                         f"Workbook scaffold (not solved data): {guide['template_file']}\n\n"
-                        + guide["markdown"]
+                        + get_resolver_task_guide_markdown(guide)
                     )
                     units.append({
                         "id": f"evo_task::{guide['uid']}",
