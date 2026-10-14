@@ -1,6 +1,6 @@
 # Evaluation of Outcomes — curriculum coverage
 
-Course: **FI1BBEO10**. Source books checked through the signed-in Noroff browser on **2026-10-13**.
+Course: **FI1BBEO10**. Source books checked through the signed-in Noroff browser on **2026-10-13**; lessons 7.3–7.4 rechecked on **2026-10-14**.
 
 ## Integration
 
@@ -9,8 +9,8 @@ Course: **FI1BBEO10**. Source books checked through the signed-in Noroff browser
 - Existing six supplemental EVO topics and all existing progress keys are retained.
 - The exam resolver can select all 28 lessons individually and use their explanations/key points.
 - The resolver also indexes all 98 activity/task guides as distinct sources, matches exact task numbers, and offers Lessons + task guides / Task guides only source pools. Matched tasks expose their complete scaffold, source link, workbook and module illustration directly in the resolver. Manual/specific AI source selection includes the task's teaching lesson; bounded AI contexts carry the working guide and its limitations.
-- One imagegen illustration per module, with a text explanation and PNG download.
-- 98 separately selectable activity/task guides in Norwegian, each with a tailored procedure, method explanation, fill-in answer scaffold and source link. Multi-part tasks cover both Task 1 and Task 2 where present.
+- One imagegen illustration per module plus dedicated English illustrations for lessons 7.3 and 7.4, with text explanations and PNG downloads. See assets/evo/lesson-73-74-imagegen-prompts.md for the prompts and accuracy edit.
+- 98 separately selectable activity/task guides, with English task workflows for 7.2–7.4 and English activity controls in lessons 7.3–7.4. Other original guides retain their Norwegian wording. Multi-part tasks cover both Task 1 and Task 2 where present.
 - Three downloadable Excel workbooks: reusable calculations (11 sheets), Module 6 tasks (17 sheets), and Module 7 tasks (21 sheets). The module workbooks contain native Raw/Prepared Tables, quality logs, one sheet per analysis objective and four conclusion sheets.
 
 ## Content boundary
@@ -35,7 +35,7 @@ The task guides explicitly address these source issues:
 
 ## Validation and limits
 
-Nineteen offline tests cover startup, all 28 lessons, resolver selection, seven Training Center modules, illustration downloads, all 98 guides, task selection and native workbook structure. Resolver checks include exact-task matching, task-only selection with the correct workbook, identifier boundaries, AI context selection with the parent lesson, all five Task 7.2 and seven Task 7.3 objective views, scaffold refresh/preserved edits, stale AI answer disclosure, and the general statistical calculator. Task 7.3 checks verify every English worksheet guide against the actual workbook and capture a mocked AI request to confirm that the same guide reaches the model. A startup regression reproduces a cached pre-update helper without the new guide API and verifies that the app refreshes it. Tests run in temporary directories to preserve saved progress. AI context construction is tested offline; no live model answer is asserted by these tests.
+Twenty-three offline tests cover startup, all 28 lessons, resolver selection, seven Training Center modules, illustration downloads, all 98 guides, task selection and native workbook structure. Resolver checks include exact-task matching, task-only selection with the correct workbook, identifier boundaries, AI context selection with the parent lesson, all five Task 7.2 and seven Task 7.3 objective views, scaffold refresh/preserved edits, stale AI answer disclosure, and the general statistical calculator. Task 7.3 checks verify every English worksheet guide against the actual workbook and capture a mocked AI request to confirm that the same guide reaches the model. A startup regression reproduces a cached pre-update helper without the new guide API and verifies that the app refreshes it. Tests run in temporary directories to preserve saved progress. AI context construction is tested offline; no live model answer is asserted by these tests.
 
 The resolver has a numbered question → resources → answer flow. File attachments, settings, syllabus excerpts and alternative drafts are collapsed by default. Tasks 7.2 and 7.3 offer English steps for one objective at a time, with the exact worksheet name, relevant fields and data limitations. Their complete English resolver guides are shared between the Markdown download and AI context. Task 7.3 covers Complaints, Personas, Response spending, Detailed segments, Household channels, Web engagement and Response prediction. AI answers are instructed to use English regardless of the question language. Other existing lesson/activity guide content retains its source wording.
 
@@ -75,3 +75,9 @@ The calculation runtime could not correctly evaluate T.INV.2T/TINV. The confiden
 | 7 | 7.2 | Exploratory Data Analysis (EDA) - Part 1 | [Noroff](https://learning.noroff.no/mod/book/view.php?id=22839&chapterid=81480) |
 | 7 | 7.3 | Exploratory Data Analysis (EDA) - Part 2 | [Noroff](https://learning.noroff.no/mod/book/view.php?id=22839&chapterid=81486) |
 | 7 | 7.4 | Interpreting Results, Formulating Conclusions and Effective Communication | [Noroff](https://learning.noroff.no/mod/book/view.php?id=22839&chapterid=81491) |
+
+## Lessons 7.3–7.4 walkthroughs and conclusion workflow
+
+Both lessons contain seven English steps, their own imagegen illustration, and an English activity/task selector in Learn & Practice and Training Center. Task 7.3 reuses its seven objective guides in the lesson. Task 7.4 lets the student choose up to four objectives from Tasks 7.2 and 7.3 and work through Conclusion 1–4. Incomplete selections are flagged. Chosen objectives feed both the Markdown download and the AI context; changing them marks an earlier answer as stale. Prepare Task in Exam Resolver transfers the lesson choices and question without automatically requesting an AI answer.
+
+The Lesson 7.4 walkthrough identifies inconsistent source variable names (Distribution Channel versus Customer Type; unrelated Categories/Sales wording) and explains that ANOVA needs grouped numeric outcome observations, not dummy flags. The two new illustrations are conceptual, with no calculated findings. Offline tests verify lesson/training rendering, all four real conclusion sheets, incomplete selections, the lesson-to-resolver transfer and a mocked AI request carrying changed objectives.

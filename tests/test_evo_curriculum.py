@@ -98,12 +98,12 @@ class EvoWorkflowTest(unittest.TestCase):
 
     def test_illustrations_are_bundled_and_downloadable(self):
         illustrated = [lesson for lesson in EVO_LESSONS if lesson["illustration"]]
-        self.assertEqual(len(illustrated), 7)
+        self.assertEqual(len(illustrated), 9)
         for lesson in illustrated:
             self.assertTrue((ASSET_ROOT / lesson["illustration"]).is_file(), lesson["illustration"])
         app = self.app("Learn & Practice")
         downloads = [item for item in app.get("download_button") if item.label == "Download illustration (PNG)"]
-        self.assertEqual(len(downloads), 7)
+        self.assertEqual(len(downloads), 9)
         self.assertFalse(app.exception)
 
     def test_every_activity_has_a_lesson_guide_and_duplicate_ids_are_distinct(self):
@@ -124,7 +124,8 @@ class EvoWorkflowTest(unittest.TestCase):
     def test_task_picker_loads_correct_dataset_and_downloads(self):
         app = self.app('Learn & Practice')
         selects = [s for s in app.selectbox if s.label.startswith('Velg aktivitet eller task')]
-        self.assertEqual(len(selects), 28)
+        self.assertEqual(len(selects), 26)
+        self.assertEqual(len([s for s in app.selectbox if s.label.startswith('Choose an activity or task in Lesson')]), 2)
         select(app, 'Velg aktivitet eller task i 7.2', '7.2-task-81485')
         markdown = '\n'.join(item.value for item in app.markdown)
         self.assertIn('Z_Revenue er konstant', markdown)
@@ -132,7 +133,7 @@ class EvoWorkflowTest(unittest.TestCase):
         self.assertIn('Excel CORREL gir #DIV/0!', markdown)
         self.assertIn('valutaenheter dersom metadata', markdown)
         self.assertIn('Task-datasettet er online kundesalg', markdown)
-        self.assertEqual(len([d for d in app.get('download_button') if d.label == 'Last ned tilhørende Excel-mal']), 28)
+        self.assertEqual(len([d for d in app.get('download_button') if d.label == 'Last ned tilhørende Excel-mal']), 26)
         for filename in TEMPLATE_FILES.values():
             self.assertTrue((TEMPLATE_ROOT / filename).is_file())
 
@@ -295,6 +296,116 @@ class EvoWorkflowTest(unittest.TestCase):
             self.assertIn(objective[4], text)
         other = next(g for g in TASK_GUIDES if g['id'] == '6.2-task')
         self.assertEqual(get_resolver_task_guide_markdown(other), other['markdown'])
+
+    def test_lessons_73_and_74_have_english_walkthroughs_images_and_task_controls(self):
+        from evo_curriculum import get_evo_course_lessons
+        app = self.app('Learn & Practice')
+        for number in ('7.3', '7.4'):
+            lesson = next(l for l in get_evo_course_lessons() if l['lesson_number'] == number)
+            self.assertTrue(lesson['lesson_illustration'])
+            self.assertTrue((ASSET_ROOT / lesson['illustration']).is_file())
+            self.assertIn('Step 7', lesson['content'])
+            self.assertNotIn('Noroff activities and tasks — working guides', lesson['content'])
+            self.assertIn(f'Visual revision guide — Lesson {number}', [e.label for e in app.expander])
+            chooser = next(s for s in app.selectbox if s.label == f'Choose an activity or task in Lesson {number}')
+            self.assertTrue(chooser.value.startswith(f'{number}-task'))
+        self.assertTrue(any(s.label == 'Choose a Task 7.3 objective' for s in app.selectbox))
+        self.assertTrue(any(s.label == 'Choose a Task 7.4 conclusion' for s in app.selectbox))
+        content = next(l['content'] for l in get_evo_course_lessons() if l['lesson_number'] == '7.4')
+        self.assertIn('Revenue by Distribution Channel', content)
+        self.assertIn('One-hot indicators are not the revenue observations', content)
+        self.assertIn('Conclusion 4', content)
+        training = self.app('Training Center')
+        name = next(n for n in get_evo_training_modules() if n.startswith('EVO Module 7:'))
+        select(training, '🎯 Select Topic:', name)
+        self.assertIn('Visual revision guide — Lesson 7.4', [e.label for e in training.expander])
+
+    def test_task_74_selects_four_real_conclusion_sheets_and_flags_incomplete_choices(self):
+        from exam_resolver_ui import get_resolver_task_guide_markdown
+        import zipfile
+        import xml.etree.ElementTree as ET
+        app = self.app('Learn & Practice')
+        next(t for t in app.text_area if t.label == 'Paste the exam question, case, or task prompt').set_value('Task 7.4: write four evidence-based conclusions.')
+        app.run(timeout=90)
+        self.assertFalse(app.exception)
+        chooser = next(s for s in app.selectbox if s.label == 'Choose a Task 7.4 conclusion')
+        self.assertEqual(len(chooser.options), 4)
+        for slot in range(4):
+            select(app, chooser.label, slot)
+            self.assertIn(f'Excel worksheet `Conclusion {slot + 1}`', '\n'.join(m.value for m in app.markdown))
+        objectives = next(m for m in app.multiselect if m.label == 'Choose four objectives from Tasks 7.2 and 7.3')
+        choices = ['Complaints', 'Personas', 'Product spending', 'Retention']
+        objectives.set_value(choices)
+        app.run(timeout=90)
+        chooser = next(s for s in app.selectbox if s.label == 'Choose a Task 7.4 conclusion')
+        self.assertIn('Customer satisfaction and complaints', chooser.options[0])
+        guide = next(g for g in TASK_GUIDES if g['id'] == '7.4-task')
+        markdown = get_resolver_task_guide_markdown(guide, choices)
+        self.assertIn('Conclusion 1: Customer satisfaction and complaints', markdown)
+        self.assertIn('Conclusion 4: Retention and purchase activity', markdown)
+        self.assertIn('chapterid=81496', markdown)
+        self.assertIn('about half a page per objective', markdown)
+        with zipfile.ZipFile(TEMPLATE_ROOT / guide['template_file']) as archive:
+            ns = {'x': 'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}
+            names = {n.attrib['name'] for n in ET.fromstring(archive.read('xl/workbook.xml')).findall('x:sheets/x:sheet', ns)}
+        self.assertTrue(set(choices + [f'Conclusion {i}' for i in range(1, 5)]) <= names)
+        next(m for m in app.multiselect if m.label == objectives.label).set_value(['Complaints'])
+        app.run(timeout=90)
+        self.assertFalse(app.exception)
+        self.assertTrue(any('Choose four objectives before' in w.value for w in app.warning))
+        self.assertIn('Selection incomplete', '\n'.join(m.value for m in app.markdown))
+
+    def test_lesson_choices_transfer_to_resolver_without_automatic_ai_request(self):
+        app = self.app('Learn & Practice')
+        objectives = next(m for m in app.multiselect if m.label == 'Choose four objectives from Tasks 7.2 and 7.3')
+        chosen = ['Complaints', 'Personas', 'Product spending', 'Retention']
+        objectives.set_value(chosen)
+        app.run(timeout=90)
+        next(b for b in app.button if b.label == 'Prepare Task 7.4 in Exam Resolver').click()
+        app.run(timeout=90)
+        self.assertFalse(app.exception)
+        prompt = next(t for t in app.text_area if t.label == 'Paste the exam question, case, or task prompt').value
+        self.assertIn('Task 7.4:', prompt)
+        self.assertIn('currently selected objectives', prompt)
+        self.assertNotIn('Response prediction', prompt)
+        resolver_choices = next(m for m in app.multiselect if m.key == 'course_exam_connector_fi1bbeo10_learn_practice_evo_conclusion_objectives')
+        self.assertEqual(resolver_choices.value, chosen)
+        self.assertNotIn('resolver_answer_history', app.session_state)
+
+    def test_task_74_ai_context_tracks_selected_objectives_and_marks_changed_answer_stale(self):
+        import json
+        from types import SimpleNamespace
+        from unittest.mock import patch
+        requests = []
+        def complete(**kwargs):
+            requests.append(kwargs)
+            return iter([SimpleNamespace(choices=[SimpleNamespace(delta=SimpleNamespace(content='English review of the supplied evidence.'))])])
+        fake = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=complete)))
+        env = {'OPENAI_API_KEY': 'offline-ui-test-key', 'AI_PROVIDER': 'openai'}
+        env['_STUDY_BUDDY_INITIAL_ENV_KEYS'] = json.dumps(list(os.environ) + list(env))
+        with patch.dict(os.environ, env), patch('openai.OpenAI', return_value=fake):
+            app = self.app('Learn & Practice')
+            next(t for t in app.text_area if t.label == 'Paste the exam question, case, or task prompt').set_value('Task 7.4: review my four conclusions without inventing results.')
+            app.run(timeout=90)
+            objectives = next(m for m in app.multiselect if m.label == 'Choose four objectives from Tasks 7.2 and 7.3')
+            objectives.set_value(['Complaints', 'Personas', 'Product spending', 'Retention'])
+            app.run(timeout=90)
+            next(b for b in app.button if b.label == '💡 Generate answer with reasoning').click()
+            app.run(timeout=90)
+            self.assertFalse(app.exception)
+            self.assertEqual(len(requests), 1)
+            context = requests[0]['messages'][1]['content']
+            self.assertIn('### Task 7.4: Four evidence-based conclusions', context)
+            self.assertIn('Conclusion 1: Customer satisfaction and complaints', context)
+            self.assertIn('Conclusion 4: Retention and purchase activity', context)
+            self.assertIn('Do not invent CLV, profit, complaint causes', context)
+            self.assertIn('**Writing template:** We analysed', context)
+            self.assertIn('about half a page per objective', context)
+            self.assertIn('ANSWER LANGUAGE: Write in English', requests[0]['messages'][0]['content'])
+            next(m for m in app.multiselect if m.label == objectives.label).set_value(['Response spending', 'Detailed segments', 'Household channels', 'Web engagement'])
+            app.run(timeout=90)
+            self.assertTrue(any('earlier question or dataset' in i.value for i in app.info))
+            self.assertEqual(len(requests), 1)
 
     def test_task_73_ai_request_uses_the_same_english_worksheet_guide(self):
         import json
