@@ -17,13 +17,22 @@ import streamlit as st
 import streamlit.components.v1 as components
 import mistune
 from openai import OpenAI
-from evo_curriculum import ASSET_ROOT as EVO_ASSET_ROOT, get_evo_course_lessons, get_evo_training_modules
+import evo_curriculum
+
+# Streamlit workers may retain curriculum/helper modules after a Cloud update.
+EVO_CONTENT_REVISION = "2026-10-14-lessons-73-74"
+if getattr(evo_curriculum, "CONTENT_REVISION", None) != EVO_CONTENT_REVISION:
+    evo_curriculum = importlib.reload(evo_curriculum)
+EVO_ASSET_ROOT = evo_curriculum.ASSET_ROOT
+get_evo_course_lessons = evo_curriculum.get_evo_course_lessons
+get_evo_training_modules = evo_curriculum.get_evo_training_modules
 from evo_tasks import TEMPLATE_ROOT as EVO_TEMPLATE_ROOT, get_evo_task_guides, resolver_task_number_boost, get_evo_resolver_ai_units
 import exam_resolver_ui
 
 # Streamlit can rerun app.py while retaining the helper from before a Cloud
 # update. Refresh that module once when its newly added guide API is missing.
-if not hasattr(exam_resolver_ui, "get_resolver_task_guide_markdown"):
+if (getattr(exam_resolver_ui, "CONTENT_REVISION", None) != EVO_CONTENT_REVISION
+        or not hasattr(exam_resolver_ui, "get_resolver_task_guide_markdown")):
     exam_resolver_ui = importlib.reload(exam_resolver_ui)
 render_resolver_task_resources = exam_resolver_ui.render_resolver_task_resources
 get_resolver_task_guide_markdown = exam_resolver_ui.get_resolver_task_guide_markdown
@@ -55,6 +64,27 @@ def html(body, height=None, width=None, scrolling=None, key=None):
     st.iframe(body, **iframe_kwargs)
 
 
+def prepare_evo_task_in_resolver(guide, lesson_base_key):
+    """Transfer the lesson's task and choices; generation remains button-driven."""
+    resolver_base = "course_exam_connector_fi1bbeo10_learn_practice"
+    if guide["id"] == "7.4-task":
+        choices = exam_resolver_ui.get_selected_conclusion_objectives(lesson_base_key)
+        st.session_state[f"{resolver_base}_evo_conclusion_objectives"] = list(choices)
+        prompt = "Task 7.4: Help me prepare four evidence-based conclusions for the shareholders, about half a page each. Use the four currently selected objectives in the matched task guide. Use my actual results from the cleaned marketing_campaign_fixed.csv and EVO Module 7 Tasks.xlsx. Write in English and flag missing evidence; do not invent results."
+    else:
+        choices_key = f"{lesson_base_key}_evo_objective_{guide['uid']}"
+        if choices_key in st.session_state:
+            st.session_state[f"{resolver_base}_evo_objective_{guide['uid']}"] = st.session_state[choices_key]
+        prompt = "Task 7.3: Guide me through the seven marketing objectives using the cleaned marketing_campaign_fixed.csv and EVO Module 7 Tasks.xlsx. Write in English and do not invent results."
+    st.session_state[f"{resolver_base}_prompt"] = prompt
+    st.session_state[f"{resolver_base}_source_pool"] = "Lessons + learning outcomes"
+    st.session_state[f"{resolver_base}_scope"] = "Whole course (auto-select best matches)"
+    st.session_state["nav_section"] = "Learning"
+    st.session_state["nav_page"] = "Learn & Practice"
+    st.session_state["last_selected_course"] = "Evaluation of Outcomes"
+    st.session_state["lp_selected_course"] = "FI1BBEO10 - Evaluation of Outcomes"
+
+
 def render_evo_task_guides(lesson, context):
     """Select the real activity and download its original working scaffold."""
     if lesson.get("course_code") != "FI1BBEO10":
@@ -62,6 +92,24 @@ def render_evo_task_guides(lesson, context):
     number = lesson["lesson_number"]
     guides = get_evo_task_guides(number)
     if not guides:
+        return
+    if number in {"7.3", "7.4"}:
+        selected = st.selectbox(
+            f"Choose an activity or task in Lesson {number}",
+            [guide["uid"] for guide in guides],
+            index=next(i for i, guide in enumerate(guides) if guide["id"].endswith("-task")),
+            format_func=lambda uid: next(f"{g['id']} — {exam_resolver_ui.get_task_display_title(g)}" for g in guides if g["uid"] == uid),
+            key=f"evo_task_{context}_{number}",
+        )
+        guide = next(g for g in guides if g["uid"] == selected)
+        lesson_base_key = f"evo_lesson_{context}_{number}"
+        render_resolver_task_resources([guide], lesson_base_key,
+            heading=f"#### Task walkthrough — Lesson {number}", show_illustrations=False, guide_label="Full task guide")
+        if guide["id"].endswith("-task"):
+            st.button(f"Prepare Task {number} in Exam Resolver", key=f"{lesson_base_key}_open_resolver",
+                on_click=prepare_evo_task_in_resolver, args=(guide, lesson_base_key))
+            st.markdown("[Go to Exam Resolver](#semester-exam-connector)")
+            st.caption("Prepare the task to carry your objective choices into the resolver. Add your own numerical findings before requesting an AI review.")
         return
     st.markdown(f"#### Oppgaver og løsningsmaler — {number}")
     selected = st.selectbox(
@@ -97,7 +145,9 @@ def render_evo_illustration(lesson, context):
     if not image_path.is_file():
         return
     caption = lesson.get("illustration_caption", "")
-    with st.expander(f"Visual revision guide — Module {lesson['module_number']}", expanded=True):
+    label = (f"Visual revision guide — Lesson {lesson['lesson_number']}" if lesson.get("lesson_illustration")
+             else f"Visual revision guide — Module {lesson['module_number']}")
+    with st.expander(label, expanded=True):
         st.image(str(image_path), caption=caption, width="stretch")
         st.markdown(f"**Read the illustration:** {caption}")
         st.download_button(
@@ -66020,6 +66070,7 @@ def render_data_types_exam_solver():
 def render_course_exam_connector(course_code, course, context_key="default", answer_target_key=None, answer_widget_key=None):
     safe_context_key = re.sub(r"[^a-z0-9_]+", "_", str(context_key).lower())
     base_key = f"course_exam_connector_{course_code.lower()}_{safe_context_key}"
+    workflow_signature = json.dumps(exam_resolver_ui.get_selected_conclusion_objectives(base_key)) if course_code == "FI1BBEO10" else ""
 
     stopwords = {
         "the", "and", "for", "with", "that", "this", "from", "into", "using", "used", "use",
@@ -67086,7 +67137,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                         f"Required output: {guide['deliverable']}\n"
                         f"Limitations: {guide['caution']}\n"
                         f"Workbook scaffold (not solved data): {guide['template_file']}\n\n"
-                        + get_resolver_task_guide_markdown(guide)
+                        + get_resolver_task_guide_markdown(guide, exam_resolver_ui.get_selected_conclusion_objectives(base_key) if guide["id"] == "7.4-task" else None)
                     )
                     units.append({
                         "id": f"evo_task::{guide['uid']}",
@@ -68255,7 +68306,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 st.session_state[ai_answer_key] = answer_text
                 ai_signature = (
                     f"{exam_prompt}\n\nDATA::{project_file_label if project_df is not None else ''}::"
-                    f"{project_df.shape if project_df is not None else None}"
+                    f"{project_df.shape if project_df is not None else None}::WORKFLOW::{workflow_signature}"
                 )
                 st.session_state[ai_signature_key] = ai_signature
 
@@ -68301,7 +68352,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                     break
             current_signature = (
                 f"{exam_prompt}\n\nDATA::{project_file_label if project_df is not None else ''}::"
-                f"{project_df.shape if project_df is not None else None}"
+                f"{project_df.shape if project_df is not None else None}::WORKFLOW::{workflow_signature}"
             )
             previous_signature = st.session_state.get(ai_signature_key)
             answer_is_stale = previous_signature != current_signature
@@ -71643,7 +71694,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         "t-test", "t test", "z-test", "z test", "chi-square", "chi square", "anova",
     ])
 
-    draft_signature = (exam_prompt, tuple(selected_labels), answer_depth, draft_style, answer_tone)
+    draft_signature = (exam_prompt, tuple(selected_labels), answer_depth, draft_style, answer_tone, workflow_signature)
     if st.session_state.get(f"{base_key}_draft_input_signature") != draft_signature:
         # Keep edits for the current task, but do not display a previous task's
         # scaffold after the prompt, sources or answer settings change.

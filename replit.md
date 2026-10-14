@@ -155,3 +155,5 @@ python excel_profile.py "/path/to/your-file.xlsx" --sheet "SheetName"
 ```bash
 python excel_profile.py "/path/to/your-file.xlsx" --json-out profile.json
 ```
+
+- **EVO lessons 7.3–7.4**: Seven English walkthrough steps and dedicated imagegen illustrations in Lessons and Training Center. English activity/task controls reuse the resolver guides. Task 7.4 selects four objectives from 7.2/7.3, maps them to Conclusion 1–4, flags incomplete choices, and keeps the download and AI context consistent. Prepare Task in Exam Resolver transfers lesson choices without automatic generation. Changing objectives marks an older AI answer as stale.

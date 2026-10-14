@@ -7,6 +7,9 @@ on 2026-10-13. Keep the existing supplemental Training Center topics intact.
 
 from copy import deepcopy
 from pathlib import Path
+from evo_lesson_walkthroughs import LESSON_ILLUSTRATIONS, LESSON_WALKTHROUGHS
+
+CONTENT_REVISION = "2026-10-14-lessons-73-74"
 
 COURSE_CODE = "FI1BBEO10"
 COURSE_NAME = "Evaluation of Outcomes"
@@ -36,6 +39,7 @@ ILLUSTRATIONS = [
 
 def _lesson(number, title, chapter_id, content, key_points, question, hint, answer,
             quiz_question, options, correct, explanation):
+    content = LESSON_WALKTHROUGHS.get(number, content)
     module_number = int(number.split(".")[0])
     book_id = 22832 + module_number
     source_url = f"https://learning.noroff.no/mod/book/view.php?id={book_id}&chapterid={chapter_id}"
@@ -53,13 +57,14 @@ def _lesson(number, title, chapter_id, content, key_points, question, hint, answ
         "module_title": MODULE_TITLES[module_number - 1],
         "course_code": COURSE_CODE,
         "source_url": source_url,
-        "source_checked_on": SOURCE_CHECKED_ON,
+        "source_checked_on": "2026-10-14" if number in LESSON_WALKTHROUGHS else SOURCE_CHECKED_ON,
         "content": content.strip() + "\n\n#### Practice\n\n" + question
                    + f"\n\n[Open the original lesson and datasets on Noroff]({source_url}).\n",
         "key_points": key_points,
         "visual_elements": {"diagrams": False, "tables": "|" in content, "highlighted_sections": True},
-        "illustration": ILLUSTRATIONS[module_number - 1][0] if number.endswith(".1") else None,
-        "illustration_caption": ILLUSTRATIONS[module_number - 1][1],
+        "illustration": LESSON_ILLUSTRATIONS[number][0] if number in LESSON_ILLUSTRATIONS else (ILLUSTRATIONS[module_number - 1][0] if number.endswith(".1") else None),
+        "illustration_caption": LESSON_ILLUSTRATIONS[number][1] if number in LESSON_ILLUSTRATIONS else ILLUSTRATIONS[module_number - 1][1],
+        "lesson_illustration": number in LESSON_ILLUSTRATIONS,
         "exercise": practice,
         "quiz": {
             "question": quiz_question,
@@ -773,7 +778,14 @@ def get_evo_course_lessons():
     from evo_tasks import task_index_markdown
     lessons = deepcopy(EVO_LESSONS)
     for lesson in lessons:
-        lesson["content"] += task_index_markdown(lesson["lesson_number"])
+        if lesson["lesson_number"] in LESSON_WALKTHROUGHS:
+            from evo_tasks import get_evo_task_guides
+            from exam_resolver_ui import get_task_display_title
+            lesson["content"] += "\n\n#### Original activities and tasks\n\n" + "\n".join(
+                f"- [{g['id']}: {get_task_display_title(g)}]({g['source_url']})"
+                for g in get_evo_task_guides(lesson["lesson_number"]))
+        else:
+            lesson["content"] += task_index_markdown(lesson["lesson_number"])
     return lessons
 
 
