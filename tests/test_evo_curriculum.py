@@ -325,6 +325,23 @@ class EvoWorkflowTest(unittest.TestCase):
             self.assertIn('Customer satisfaction and complaints', messages[1]['content'])
             self.assertNotIn('### Task 7.2:', messages[1]['content'])
 
+    def test_cloud_update_refreshes_a_cached_helper_missing_the_new_guide_api(self):
+        import importlib
+        import exam_resolver_ui
+        # Reproduce a long-running Streamlit worker still holding the old
+        # helper while the updated app starts importing its new guide API.
+        del exam_resolver_ui.get_resolver_task_guide_markdown
+        try:
+            app = self.app('Learn & Practice')
+            self.assertTrue(callable(exam_resolver_ui.get_resolver_task_guide_markdown))
+            next(t for t in app.text_area if t.label == 'Paste the exam question, case, or task prompt').set_value('Task 7.3: explain complaints.')
+            app.run(timeout=90)
+            self.assertFalse(app.exception)
+            chooser = next(s for s in app.selectbox if s.label == 'Choose a Task 7.3 objective')
+            self.assertEqual(len(chooser.options), 7)
+        finally:
+            importlib.reload(exam_resolver_ui)
+
     def test_stale_ai_answer_is_separated_from_current_question(self):
         from unittest.mock import patch
         import json
