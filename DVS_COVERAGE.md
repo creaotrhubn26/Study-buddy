@@ -4,13 +4,13 @@ Course **FI1BBDV75**. The signed-in Noroff course and Lesson 1.1 chapters were r
 
 ## Current scope
 
-- Lessons 1.1–1.2 cover Empathise, Define, Ideate, Prototype and Test and are available in Learn & Practice and the new DVS Module 1 Training Center topic.
+- Lessons 1.1–1.3 cover Empathise, Define, Ideate, Prototype and Test and are available in Learn & Practice and the new DVS Module 1 Training Center topic.
 - Task 1.1 has four English step views, supplied-fact boundaries, a persona draft editor, Markdown and Word templates, and a complete English task-guide download.
 - Activity 1.1.1 is a separate searchable guide for Funky Monkey and its athlete audience.
-- Four imagegen PNGs explain design thinking, the hypothetical CEO persona and the low-fidelity BMI mobile flow. Accessible captions and image downloads accompany them. Exact prompts are saved in assets/dvs/prompts.md and assets/dvs/prompts-1-2.md.
+- Six imagegen PNGs explain design thinking, the hypothetical CEO persona, the low-fidelity BMI mobile flow and universal design/platform adaptations. Accessible captions and image downloads accompany them. Exact prompts are saved in assets/dvs/prompts.md and assets/dvs/prompts-1-2.md and assets/dvs/prompts-1-3.md.
 - Prepare Task 1.1 in Exam Resolver transfers the student's draft and selected step, and sets the correct course and source scope. No AI request runs automatically.
 - The resolver uses the same task guide as the download, honours manual/specific source selection and includes the teaching lesson. Changed DVS source settings mark an earlier answer as stale.
-- The existing DVS supplemental topics and EVO curriculum remain available. Training Center and Playground use the official DVS course code instead of the old FI1BBDV15 label. Coverage is limited to Lessons 1.1–1.2; later lessons are not represented as reviewed content.
+- The existing DVS supplemental topics and EVO curriculum remain available. Training Center and Playground use the official DVS course code instead of the old FI1BBDV15 label. Coverage is limited to Lessons 1.1–1.3; later lessons are not represented as reviewed content.
 
 ## Source boundaries
 
@@ -44,3 +44,15 @@ Lesson 1.2 explains five ideation techniques, prototype fidelity versus interact
 Reviewed source chapters: [introduction](https://learning.noroff.no/mod/book/view.php?id=22904&chapterid=81510), [ideation](https://learning.noroff.no/mod/book/view.php?id=22904&chapterid=81511), [prototype](https://learning.noroff.no/mod/book/view.php?id=22904&chapterid=81512), [continued prototype](https://learning.noroff.no/mod/book/view.php?id=22904&chapterid=81545), [test](https://learning.noroff.no/mod/book/view.php?id=22904&chapterid=81513), [continued test](https://learning.noroff.no/mod/book/view.php?id=22904&chapterid=81514), [recap](https://learning.noroff.no/mod/book/view.php?id=22904&chapterid=81515), [Task 1.2](https://learning.noroff.no/mod/book/view.php?id=22904&chapterid=81516). [CDC calculation reference](https://www.cdc.gov/growth-chart-training/hcp/using-bmi/calculating-bmi.html).
 
 Validation for this addition: eight DVS workflow tests cover both lessons, all six new task steps, exact task matching, draft and step handoff, draft retention across course changes and mocked English AI context. The 23 EVO tests run as regression checks. Both pages of the Word template and the two final imagegen illustrations were inspected.
+
+## Lesson 1.3 and Task 1.3
+
+All Lesson 1.3 chapters and the exact Task 1.3 brief were read in the signed-in Noroff book on 2026-10-14. The task asks for Internet research and an own Word document with one brief applied paragraph for each of the seven principles, considering the visual and the platform hosting it. Seven English principle steps, a two-page editable Word template, Markdown reflections/research notes and two imagegen illustrations are provided. Four distinct activity guides cover screen-reader exploration, readable text, website simplicity and three physical design improvements. The official completed solution was not opened.
+
+Sources: [introduction](https://learning.noroff.no/mod/book/view.php?id=22904&chapterid=81517), [universal design](https://learning.noroff.no/mod/book/view.php?id=22904&chapterid=81518), [Equitable Use](https://learning.noroff.no/mod/book/view.php?id=22904&chapterid=81519), [Flexibility in Use](https://learning.noroff.no/mod/book/view.php?id=22904&chapterid=81520), [Simple and Intuitive Use](https://learning.noroff.no/mod/book/view.php?id=22904&chapterid=81521), [Perceptible Information](https://learning.noroff.no/mod/book/view.php?id=22904&chapterid=81522), [Low Physical Effort](https://learning.noroff.no/mod/book/view.php?id=22904&chapterid=81523), [Tolerance of Errors](https://learning.noroff.no/mod/book/view.php?id=22904&chapterid=81524), [Size and Space](https://learning.noroff.no/mod/book/view.php?id=22904&chapterid=81525), [inclusive design](https://learning.noroff.no/mod/book/view.php?id=22904&chapterid=81526), [recap](https://learning.noroff.no/mod/book/view.php?id=22904&chapterid=81527), [Task 1.3](https://learning.noroff.no/mod/book/view.php?id=22904&chapterid=81528).
+
+External research references were checked directly: [NC State Center for Universal Design](https://design.ncsu.edu/research/center-for-universal-design/) and [W3C WAI complex images tutorial](https://www.w3.org/WAI/tutorials/images/complex/). Steps follow Noroff order; source notes clarify that the original NC State numbering puts Tolerance for Error fifth and Low Physical Effort sixth. No accessibility compliance is certified, and no user observations are fabricated. Chart layouts in the illustrations are illustrative. Research links are starting points; the resolver reviews the student's supplied text and source notes, without live web retrieval.
+
+The Task 1.3 handoff transfers the written draft and selected principle without generation. Each activity prepares its own brief and remains separate from the main seven-paragraph task. Four new workflow tests cover seven principle views, template contents, draft/principle transfer and retention, all four activity handoffs, and mocked English AI context including the entire guide and source links. Earlier DVS and EVO tests run as regression checks. Both Word pages were rendered with bundled LibreOffice and visually inspected.
+
+Task 1.3 AI-context checks cover both normal and strict curriculum modes; the bounded DVS task excerpts include all seven principles and reference links.
