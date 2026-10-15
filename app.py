@@ -67,7 +67,11 @@ import dvs_module4
 if getattr(dvs_module4, "CONTENT_REVISION", None) != "2026-10-15-dvs4-media":
     dvs_module4 = importlib.reload(dvs_module4)
 
-DVS_CONTENT_REVISION = "2026-10-15-dvs4-media"
+import dvs_module5
+if getattr(dvs_module5, "CONTENT_REVISION", None) != "2026-10-15-dvs5-preparation":
+    dvs_module5 = importlib.reload(dvs_module5)
+
+DVS_CONTENT_REVISION = "2026-10-15-dvs5-preparation"
 if getattr(dvs_curriculum, "CONTENT_REVISION", None) != DVS_CONTENT_REVISION:
     dvs_curriculum = importlib.reload(dvs_curriculum)
 import dvs_ui
@@ -66159,6 +66163,8 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 for g in dvs_module3.GUIDES if f"{base_key}_dvs_step_{g['uid']}" in st.session_state},
             "module4_steps": {g["uid"]: st.session_state[f"{base_key}_dvs_step_{g['uid']}"]
                 for g in dvs_module4.GUIDES if f"{base_key}_dvs_step_{g['uid']}" in st.session_state},
+            "module5_steps": {g["uid"]: st.session_state[f"{base_key}_dvs_step_{g['uid']}"]
+                for g in dvs_module5.GUIDES if f"{base_key}_dvs_step_{g['uid']}" in st.session_state},
         }, sort_keys=True)
 
     stopwords = {
@@ -68199,6 +68205,9 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                     if not full_text:
                         full_text = snippet
                     task_guide = unit.get("task_guide")
+                    if (course_code == dvs_curriculum.COURSE_CODE and task_guide
+                            and task_guide.get("lesson_number", "").startswith("5.")):
+                        full_text = dvs_module5.step_context(task_guide, base_key, st.session_state) + full_text
                     if (course_code == dvs_curriculum.COURSE_CODE and task_guide
                             and task_guide.get("lesson_number", "").startswith("4.")):
                         full_text = dvs_module4.step_context(task_guide, base_key, st.session_state) + full_text
@@ -76514,7 +76523,7 @@ elif page == "Learn & Practice":
             
             visible_lessons = course_lessons[course_code]
             if course_code == dvs_curriculum.COURSE_CODE:
-                lesson_module = st.selectbox("Show lessons from", [None, 1, 2, 3, 4],
+                lesson_module = st.selectbox("Show lessons from", [None, 1, 2, 3, 4, 5],
                     format_func=lambda n: "All reviewed modules" if n is None else f"Module {n}", key="dvs_lesson_module")
                 visible_lessons = [lesson for lesson in visible_lessons if lesson_module is None or lesson.get("module_number") == lesson_module]
             for lesson in visible_lessons:

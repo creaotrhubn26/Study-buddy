@@ -24,7 +24,7 @@ class Module4Test(unittest.TestCase):
         self.assertEqual(get_dvs_primary_task_prompt('DVS Task 4.3: continue Task 4.2'), 'DVS Task 4.3:')
         self.assertEqual(get_dvs_primary_task_prompt('DVS Activity 4.4.1: compare Task 4.4'), 'DVS Activity 4.4.1:')
         self.assertEqual(get_dvs_primary_task_prompt('Compare Task 4.2 and Task 4.3'), 'Compare Task 4.2 and Task 4.3')
-        self.assertEqual(len(get_dvs_course_lessons()),16);self.assertEqual(len(DVS_TASK_GUIDES),42)
+        self.assertEqual(len(get_dvs_course_lessons()),17);self.assertEqual(len(DVS_TASK_GUIDES),43)
         lessons=[l for l in get_dvs_course_lessons() if l['module_number']==4]
         self.assertEqual([l['lesson_number'] for l in lessons],['4.1','4.2','4.3','4.4'])
         self.assertEqual(len(module.GUIDES),5)
