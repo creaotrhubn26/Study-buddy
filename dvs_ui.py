@@ -5,11 +5,14 @@ import dvs_curriculum
 from dvs_curriculum import (ASSET_ROOT, TEMPLATE_ROOT, COURSE_CODE, ILLUSTRATIONS,
     TASK_STEPS, get_dvs_persona_template)
 
-CONTENT_REVISION = "2026-10-15-dvs4-media"
+CONTENT_REVISION = "2026-10-15-dvs5-preparation"
 
 
 def get_dvs_draft(uid):
-    if uid.startswith("dvs-4."):
+    if uid.startswith("dvs-5."):
+        from dvs_module5 import get_template
+        default = get_template()
+    elif uid.startswith("dvs-4."):
         from dvs_module4 import GUIDES, get_template
         default = get_template(next(g for g in GUIDES if g["uid"] == uid))
     elif uid.startswith("dvs-3."):
@@ -51,7 +54,12 @@ def prepare_task_in_resolver(guide, lesson_base):
     resolver_base = "course_exam_connector_fi1bbdv75_learn_practice"
     step = st.session_state.get(f"{lesson_base}_dvs_step_{guide['uid']}", 0)
     st.session_state[f"{resolver_base}_dvs_step_{guide['uid']}"] = step
-    if guide["lesson_number"].startswith("4."):
+    if guide["lesson_number"].startswith("5."):
+        prompt = ("DVS Activity 5.1: Review my Course Assessment preparation in English. This is an internal Study Buddy preparation activity, not an official Task 5.1. "
+            "Review the selected readiness step and my practice evidence. Flag placeholders, missing checks and schedule assumptions. "
+            "Do not invent live assessment questions, datasets, required filenames, slide counts or effects. Do not claim to inspect native files, start, pause, extend, submit or grade the assessment. "
+            "Keep live CA questions and answers out of the shared bank. Recheck current Noroff dates and assistance rules before the attempt.\n\nMy preparation notes:\n" + get_dvs_draft(guide["uid"]))
+    elif guide["lesson_number"].startswith("4."):
         kind = "Task " + guide["lesson_number"] if guide["id"].endswith("-task") else "Activity " + guide["id"]
         prompt = (f"DVS {kind}: Review my presentation plan, written findings and check notes in English. Required output: {guide['deliverable']}. "
             f"Source: {guide['source_url']}. {guide['caution']} "
@@ -126,7 +134,8 @@ def render_dvs_task_resources(guides, base_key, heading=None, draft_editor=False
         with st.container(border=True):
             st.markdown(f"**{guide['id']} · {guide['title']}**")
             st.markdown(f"**Deliverable:** {guide['deliverable']}")
-            st.markdown(f"[Open the original {'task' if guide['id'].endswith('-task') else 'activity'} on Noroff]({guide['source_url']})")
+            source_label = "assessment brief" if guide["lesson_number"].startswith("5.") else ("task" if guide['id'].endswith('-task') else "activity")
+            st.markdown(f"[Open the original {source_label} on Noroff]({guide['source_url']})")
             if guide["id"] == "1.1-task":
                 st.info("Supplied facts: CEO of an extreme-sports start-up; early twenties; enjoys BASE jumping. Additional characteristics must be labelled hypothetical.")
                 step = st.selectbox("Choose a Task 1.1 step", list(range(len(TASK_STEPS))),
@@ -151,6 +160,8 @@ def render_dvs_task_resources(guides, base_key, heading=None, draft_editor=False
                         st.caption("Your draft is kept during this session. Prepare the task below to copy it into Exam Resolver for review.")
                 else:
                     st.caption("Paste your completed persona into the question above to request a review, or prepare it from Lesson 1.1.")
+            elif guide["lesson_number"].startswith("5."):
+                render_assessment_resources(guide, base_key, draft_editor)
             elif guide["lesson_number"].startswith("4."):
                 render_module4_resources(guide, base_key, draft_editor)
             elif guide["lesson_number"].startswith("3."):
@@ -210,7 +221,35 @@ def render_dvs_task_resources(guides, base_key, heading=None, draft_editor=False
             from dvs_module4 import ILLUSTRATIONS as images4
             for number in sorted({g["lesson_number"] for g in guides if g["lesson_number"].startswith("4.")}):
                 visuals.extend(images4[number])
+            if any(g["lesson_number"].startswith("5.") for g in guides):
+                from dvs_module5 import ILLUSTRATIONS as images5
+                visuals.extend(images5)
             render_dvs_images(f"{base_key}_resolver", visuals)
+
+
+def render_assessment_resources(guide, base_key, draft_editor):
+    from dvs_module5 import RULES, BOUNDARY, ASSESSMENT, get_template
+    steps = guide["step_details"]
+    selected = st.selectbox("Choose a preparation step", list(range(len(steps))),
+        format_func=lambda i: steps[i][0], key=f"{base_key}_dvs_step_{guide['uid']}")
+    st.markdown(f"**{steps[selected][0]}**")
+    st.markdown(steps[selected][1])
+    st.caption("Check: " + steps[selected][2])
+    st.info(BOUNDARY)
+    with st.expander("Verified assessment rules — recheck on Noroff", expanded=False):
+        st.markdown(RULES)
+        st.markdown(f"[Open the Noroff assessment landing page]({ASSESSMENT})")
+        st.caption("Opening the landing page is separate from starting the timed attempt. Study Buddy does not start it.")
+    st.download_button("Download assessment preparation template (Markdown)", get_template().encode(),
+        file_name="DVS Course Assessment Preparation.md", mime="text/markdown", key=f"{base_key}_preparation_template")
+    if draft_editor:
+        with st.expander("Write your preparation plan and evidence", expanded=False):
+            key = f"{base_key}_preparation_editor_{guide['uid']}"
+            st.text_area("Your assessment preparation notes", value=get_dvs_draft(guide["uid"]), height=380,
+                key=key, on_change=remember_draft, args=(guide["uid"],key))
+            st.caption("Prepare transfers these notes and your selected step into Exam Resolver. Download or copy your notes before ending the session.")
+        st.download_button("Download my preparation notes (Markdown)", get_dvs_draft(guide["uid"]).encode(),
+            file_name="My DVS Preparation Notes.md", mime="text/markdown", key=f"{base_key}_preparation_notes")
 
 
 def render_module4_resources(guide, base_key, draft_editor):
@@ -380,8 +419,12 @@ def render_dvs_lesson_resources(lesson, context):
         format_func=lambda uid: next(f"{g['id']} — {g['title']}" for g in guides if g["uid"] == uid),
         key=f"{base_key}_task")
     guide = next(g for g in guides if g["uid"] == selected)
-    render_dvs_task_resources([guide], base_key, heading=f"#### Task walkthrough — DVS Lesson {lesson['lesson_number']}", draft_editor=True, show_images=False)
+    preparation = guide["lesson_number"].startswith("5.")
+    heading = "#### Assessment preparation — seven steps" if preparation else f"#### Task walkthrough — DVS Lesson {lesson['lesson_number']}"
+    render_dvs_task_resources([guide], base_key, heading=heading, draft_editor=True, show_images=False)
     label = f"Prepare Task {guide['lesson_number']} in Exam Resolver" if guide["id"].endswith('-task') else f"Prepare Activity {guide['id']} in Exam Resolver"
+    if preparation:
+        label = "Prepare assessment study plan in Exam Resolver"
     st.button(label, key=f"{base_key}_prepare", on_click=prepare_task_in_resolver, args=(guide, base_key))
     st.markdown("[Go to Exam Resolver](#semester-exam-connector)")
 

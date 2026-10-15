@@ -4,7 +4,7 @@ from copy import deepcopy
 from pathlib import Path
 import re
 
-CONTENT_REVISION = "2026-10-15-dvs4-media"
+CONTENT_REVISION = "2026-10-15-dvs5-preparation"
 COURSE_CODE = "FI1BBDV75"
 COURSE_NAME = "Data Visualisation"
 ASSET_ROOT = Path(__file__).resolve().parent / "assets" / "dvs"
@@ -136,6 +136,9 @@ def get_dvs_persona_template():
 
 
 def get_dvs_task_guide_markdown(guide):
+    if guide["lesson_number"].startswith("5."):
+        from dvs_module5 import get_task_guide_markdown
+        return get_task_guide_markdown(guide)
     if guide["lesson_number"].startswith("4."):
         from dvs_module4 import get_task_guide_markdown
         return get_task_guide_markdown(guide)
@@ -199,6 +202,8 @@ from dvs_module3 import GUIDES as GUIDES3
 DVS_TASK_GUIDES.extend(GUIDES3)
 from dvs_module4 import GUIDES as GUIDES4
 DVS_TASK_GUIDES.extend(GUIDES4)
+from dvs_module5 import GUIDES as GUIDES5
+DVS_TASK_GUIDES.extend(GUIDES5)
 for _guide in DVS_TASK_GUIDES:
     _guide["markdown"] = get_dvs_task_guide_markdown(_guide)
 
@@ -227,7 +232,8 @@ def get_dvs_course_lessons():
     from dvs_lesson24 import get_lesson as get_lesson24
     from dvs_module3 import get_lessons
     from dvs_module4 import get_lessons as get_lessons4
-    return _get_lesson11() + [deepcopy(get_lesson()), deepcopy(get_lesson13()), deepcopy(get_lesson14()), deepcopy(get_lesson21()), deepcopy(get_lesson22()), deepcopy(get_lesson23()), deepcopy(get_lesson24())] + deepcopy(get_lessons()) + deepcopy(get_lessons4())
+    from dvs_module5 import get_lessons as get_lessons5
+    return _get_lesson11() + [deepcopy(get_lesson()), deepcopy(get_lesson13()), deepcopy(get_lesson14()), deepcopy(get_lesson21()), deepcopy(get_lesson22()), deepcopy(get_lesson23()), deepcopy(get_lesson24())] + deepcopy(get_lessons()) + deepcopy(get_lessons4()) + deepcopy(get_lessons5())
 
 
 def _get_dvs_training_modules():
@@ -274,5 +280,24 @@ def get_dvs_training_modules():
         "lessons": [lesson for lesson in get_dvs_course_lessons() if lesson["module_number"] == 4],
         "exercises": [{"title": g["id"]+": "+g["title"], "type": "case_study", "question": g["deliverable"], "hint": g["step_details"][0][1], "answer": g["caution"]} for g in module4_guides],
         "quiz": get_questions(4),
+    }
+    from dvs_module5 import GUIDE as preparation
+    modules["DVS Module 5: Course Assessment Preparation"] = {
+        "course": COURSE_NAME, "course_code": COURSE_CODE,
+        "description": "Original preparation based on the reviewed brief and landing page; no live assessment questions were opened.",
+        "lessons": [lesson for lesson in get_dvs_course_lessons() if lesson["module_number"] == 5],
+        "exercises": [{"title": "Readiness plan", "type": "case_study", "question": preparation["deliverable"],
+            "hint": preparation["step_details"][0][1], "answer": preparation["caution"]}],
+        "quiz": [
+            {"question":"Preparation check (original Study Buddy question): What happens to the CA timer when the browser is closed?",
+             "options":["It pauses","It continues running","It resets to 48 hours"],"correct":1,
+             "explanation":"The published brief says the timer continues even when the window is closed. This is an original preparation question, not a collected CA question."},
+            {"question":"Preparation check (original Study Buddy question): Which dataset should you use for a live CA question?",
+             "options":["Always the chocolate lesson CSV","Any dataset with similar fields","The dataset specified by that question"],"correct":2,
+             "explanation":"The landing page asks you to use the correct dataset. Lesson rehearsal data are not confirmed assessment data."},
+            {"question":"Preparation check (original Study Buddy question): Which statement is supported by the landing page?",
+             "options":["All slides must use Wisp","Practical work includes Excel visualisations, image editing and a PowerPoint presentation","The assessment requires exactly five slides"],"correct":1,
+             "explanation":"The practical areas are stated on the landing page. Detailed slide counts and effects were not opened; earlier task settings must not be assumed."},
+        ],
     }
     return modules
