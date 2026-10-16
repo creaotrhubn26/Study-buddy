@@ -62576,7 +62576,7 @@ courses_data = [
         "name": "Data Analysis Fundamentals", 
         "type": "Core Course", 
         "credits": 5, 
-        "semester": "2025 Spring",
+        "semester": "Semester 1",
         "weeks": 3,
         "hours": 126,
         "description": "This course delivers an introductory overview of Data Analysis. It provides the foundational material required to build a strong theoretical understanding of why data analysis is required in industry and how using analytics tools can shape decision making in the real world.",
@@ -62607,7 +62607,7 @@ courses_data = [
         "name": "Spreadsheet Fundamentals", 
         "type": "Core Course", 
         "credits": 5, 
-        "semester": "2025 Spring",
+        "semester": "Semester 1",
         "weeks": 3,
         "hours": 126,
         "description": "This course teaches a foundation level introduction to the spreadsheet work environment, specifically Microsoft Excel. Learn to gather, clean, manage, and organize data. Also covers Google Sheets for collaborative work.",
@@ -62637,7 +62637,7 @@ courses_data = [
         "name": "Data Driven Decision-Making", 
         "type": "Core Course", 
         "credits": 7.5, 
-        "semester": "2025 Spring",
+        "semester": "Semester 1",
         "weeks": 4,
         "hours": 168,
         "description": "This course establishes the core concepts of decision-making techniques applied to relevant data models. It prepares candidates to use data for informed decisions, act proactively on predictions, explore real-world industry use cases, and apply decision-making techniques and criteria through the full data lifecycle.",
@@ -62700,7 +62700,7 @@ courses_data = [
         "name": "Statistical Tools", 
         "type": "Core Course", 
         "credits": 5, 
-        "semester": "2025 Spring",
+        "semester": "Semester 1",
         "weeks": 3,
         "hours": 126,
         "description": "This course provides candidates with the knowledge of using integrated spreadsheet tools and introductory statistical modelling software. Candidates apply organized datasets using the decision-making metrics learned, develop stronger technical skills, and use built-in spreadsheet tools and industry-standard practices as a starting point for creating bespoke solutions to contextualized real-world problems. The course builds directly on the competence gained from Spreadsheet Fundamentals and prepares candidates to use statistical tools to analyse data further, extract heuristics, improve data quality, and reduce the impact of erroneous data points on the rest of the model.",
@@ -62758,7 +62758,7 @@ courses_data = [
         "name": "Semester Project 1", 
         "type": "Core Course", 
         "credits": 7.5, 
-        "semester": "2025 Spring",
+        "semester": "Semester 1",
         "weeks": 4,
         "hours": 168,
         "description": "Apply first semester knowledge to a practical data analysis project. Demonstrate understanding of data fundamentals, spreadsheets, and decision-making.",
@@ -62786,7 +62786,7 @@ courses_data = [
         "name": "Evaluation of Outcomes", 
         "type": "Core Course", 
         "credits": 10, 
-        "semester": "2025 Fall",
+        "semester": "Semester 2",
         "weeks": 8,
         "hours": 336,
         "description": "Learn to review, assess, and appraise the results of analytical models. Covers statistical inferences, confidence levels, and iterative error elimination.",
@@ -62817,7 +62817,7 @@ courses_data = [
         "name": "Data Visualisation", 
         "type": "Core Course", 
         "credits": 7.5, 
-        "semester": "2025 Fall",
+        "semester": "Semester 2",
         "weeks": 5,
         "hours": 210,
         "description": "Learn visualization and graphing techniques to represent data using graphical illustrations. Create intuitive graphs for professional settings and presentations.",
@@ -62846,7 +62846,7 @@ courses_data = [
         "name": "Analysis Reporting", 
         "type": "Core Course", 
         "credits": 5, 
-        "semester": "2025 Fall",
+        "semester": "Semester 2",
         "weeks": 3,
         "hours": 126,
         "description": "Learn conclusive report writing methodologies to communicate results clearly and concisely. Cover technical vs non-technical reporting.",
@@ -62874,7 +62874,7 @@ courses_data = [
         "name": "Exam Project 1", 
         "type": "Core Course", 
         "credits": 7.5, 
-        "semester": "2025 Fall",
+        "semester": "Semester 2",
         "weeks": 6,
         "hours": 252,
         "description": "Complete a comprehensive exam project demonstrating first-year competencies in data analysis, visualization, and reporting.",
@@ -62901,7 +62901,7 @@ courses_data = [
         "name": "Databases and Cloud Services", 
         "type": "Core Course", 
         "credits": 7.5, 
-        "semester": "2026 Spring",
+        "semester": "Semester 3",
         "weeks": 4,
         "hours": 168,
         "description": "Learn core concepts of databases, SQL language, and cloud-based data services. Cover ETL practices, data warehouses, and on-premises vs cloud databases.",
@@ -62930,7 +62930,7 @@ courses_data = [
         "name": "Programming Fundamentals", 
         "type": "Core Course", 
         "credits": 10, 
-        "semester": "2026 Spring",
+        "semester": "Semester 3",
         "weeks": 6,
         "hours": 252,
         "description": "Introduction to programming using Python 3.x. Learn data types, operators, collections, objects, file I/O, libraries, and APIs. Use Jupyter Notebook for documentation.",
@@ -62960,7 +62960,7 @@ courses_data = [
         "name": "Programmatic Data Analysis", 
         "type": "Core Course", 
         "credits": 5, 
-        "semester": "2026 Spring",
+        "semester": "Semester 3",
         "weeks": 3,
         "hours": 126,
         "description": "Apply programming skills to automate and enhance data analysis workflows. Use pandas, numpy, and create reproducible analysis pipelines.",
@@ -62989,7 +62989,7 @@ courses_data = [
         "name": "Semester Project 2", 
         "type": "Core Course", 
         "credits": 7.5, 
-        "semester": "2026 Spring",
+        "semester": "Semester 3",
         "weeks": 4,
         "hours": 168,
         "description": "Apply second-year skills including databases, programming, and programmatic analysis to a comprehensive technical project.",
@@ -63016,7 +63016,7 @@ courses_data = [
         "name": "Industry Tools", 
         "type": "Core Course", 
         "credits": 7.5, 
-        "semester": "2026 Fall",
+        "semester": "Semester 4",
         "weeks": 5,
         "hours": 210,
         "description": "Learn industry-standard tools used by professional data analysts including Business Intelligence tools, ETL processes, and data warehousing.",
@@ -63045,7 +63045,7 @@ courses_data = [
         "name": "Critical Data Thinking", 
         "type": "Core Course", 
         "credits": 5, 
-        "semester": "2026 Fall",
+        "semester": "Semester 4",
         "weeks": 4,
         "hours": 168,
         "description": "Develop critical thinking skills for evaluating data and analysis quality. Cover data quality, bias, source credibility, and ethical data practices.",
@@ -63074,7 +63074,7 @@ courses_data = [
         "name": "Big Data and Advanced Topics", 
         "type": "Core Course", 
         "credits": 5, 
-        "semester": "2026 Fall",
+        "semester": "Semester 4",
         "weeks": 4,
         "hours": 168,
         "description": "Explore big data technologies and advanced analytical concepts including distributed computing, data lakes, and machine learning basics.",
@@ -63103,7 +63103,7 @@ courses_data = [
         "name": "Interactive Dashboards", 
         "type": "Core Course", 
         "credits": 5, 
-        "semester": "2026 Fall",
+        "semester": "Semester 4",
         "weeks": 3,
         "hours": 126,
         "description": "Create interactive dashboards for data exploration. Cover dashboard design, universal design principles, real-time data integration, and tools like Tableau/Power BI.",
@@ -63132,7 +63132,7 @@ courses_data = [
         "name": "Exam Project 2", 
         "type": "Core Course", 
         "credits": 7.5, 
-        "semester": "2026 Fall",
+        "semester": "Semester 4",
         "weeks": 6,
         "hours": 126,
         "description": "Complete a final capstone project demonstrating all program competencies. Full data analysis lifecycle from problem identification to stakeholder presentation.",
@@ -74940,7 +74940,7 @@ if page == "Overview":
 
     st.markdown("---")
     st.subheader("📅 Study Path")
-    st.caption("Aligned with JAN 2026 FT progression plan (Updated 16 Dec 2025)")
+    st.caption("Aligned with JAN 2026 FT progression plan · Updated 22 September 2026 · Checked 16 October 2026")
 
     _today = date.today()
     _deadline_by_code = {
@@ -75466,6 +75466,13 @@ elif page == "Training Center":
         available_semesters = sorted(organized_topics.keys())
         semester_options = ["All Semesters"] + available_semesters
         default_semester = st.session_state.get("tc_semester_filter", "All Semesters")
+        _legacy_semesters = {
+            "2025 Spring": "Semester 1", "2025 Fall": "Semester 2",
+            "2026 Spring": "Semester 3", "2026 Fall": "Semester 4",
+        }
+        if default_semester in _legacy_semesters:
+            default_semester = _legacy_semesters[default_semester]
+            st.session_state["tc_semester_filter"] = default_semester
         if default_semester not in semester_options:
             default_semester = "All Semesters"
         selected_semester = st.selectbox(
@@ -76034,7 +76041,7 @@ elif page == "Course Plan":
         "Assessment Deadline": (_assessment_by_name.get(c["name"], (None, None))[1] or "-"),
     } for c in courses_data])
 
-    st.caption("Date fields are aligned with JAN 2026 FT progression plan.")
+    st.caption("Date fields are aligned with the JAN 2026 FT progression plan (updated 22 September 2026; checked 16 October 2026). Semester numbers follow Noroff. Year 2 dates are not yet verified and remain blank.")
     
     col1, col2 = st.columns(2)
     with col1:
@@ -83945,7 +83952,7 @@ elif page == "About":
     | NQF Level | 5.2 |
     | Total Credits | 120 |
     | Duration | 2 years (4 semesters) |
-    | Study Start | Spring 2025 |
+    | Study Start | January 2026 (current progression plan) |
     | Total Hours | 3150 |
     | Study Mode | Full-time / Part-time |
     
@@ -84181,6 +84188,6 @@ elif page == "Progression Plan":
 """, unsafe_allow_html=True)
 
     st.markdown("---")
-    st.caption("📋 Source: PROGRESSION PLAN DA1 FT (JAN 2026 cohort) · Updated 16 December 2025")
+    st.caption("📋 Source: [PROGRESSION PLAN DA1 FT](https://learning.noroff.no/mod/folder/view.php?id=28956), JAN 2026 FT sheet · Updated 22 September 2026 · Checked 16 October 2026")
 
 save_persisted_state(st.session_state)
