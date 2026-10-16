@@ -39,9 +39,10 @@ def digest_inputs(brief, datasets, documents=()):
     h = sha256(brief.encode())
     for label, df in datasets:
         h.update(label.encode())
-        h.update(
-            df.to_json(orient="split", date_format="iso", default_handler=str).encode()
-        )
+        # Hash underlying values, not a rounded JSON preview: even changes far
+        # beyond the displayed decimal places must invalidate older downloads.
+        h.update(pd.util.hash_pandas_object(df, index=True).values.tobytes())
+        h.update(repr(list(df.columns)).encode())
         h.update(str(list(df.dtypes.astype(str))).encode())
     for label, text in documents:
         h.update(label.encode())

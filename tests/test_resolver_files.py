@@ -305,6 +305,10 @@ class FileWorkflowTests(unittest.TestCase):
         original = f.digest_inputs("brief", data)
         data[0][1].loc[99, "Value"] = 1000
         self.assertNotEqual(original, f.digest_inputs("brief", data))
+        precise = [("precise.csv", pd.DataFrame({"value": [0.1234567890123]}))]
+        original = f.digest_inputs("brief", precise)
+        precise[0][1].loc[0, "value"] = 0.1234567890124
+        self.assertNotEqual(original, f.digest_inputs("brief", precise))
 
     def test_rejects_code_zero_division_unknown_columns_and_hidden_points(self):
         data, plan = scenario()
