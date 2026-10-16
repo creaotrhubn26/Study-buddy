@@ -1,10 +1,12 @@
 import json
 from pathlib import Path
+import tempfile
 
 STATE_FILE = Path(".study_buddy_state.json")
 
 PERSIST_KEYS = [
     "completed_courses",
+    "assessment_submissions",
     "knowledge_progress",
     "skills_progress",
     "competence_progress",
@@ -93,8 +95,28 @@ def load_persisted_state(session_state):
 
 
 def save_persisted_state(session_state):
-    payload = {key: session_state.get(key) for key in PERSIST_KEYS if key in session_state}
+    payload = {
+        key: session_state.get(key) for key in PERSIST_KEYS if key in session_state
+    }
+    temporary = None
     try:
-        STATE_FILE.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+        serialized = json.dumps(payload, ensure_ascii=False, indent=2)
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            dir=STATE_FILE.parent,
+            prefix=f".{STATE_FILE.name}.",
+            delete=False,
+        ) as handle:
+            temporary = Path(handle.name)
+            handle.write(serialized)
+        temporary.replace(STATE_FILE)
+        return True
     except Exception:
-        pass
+        return False
+    finally:
+        if temporary is not None:
+            try:
+                temporary.unlink(missing_ok=True)
+            except OSError:
+                pass
