@@ -29,6 +29,7 @@ get_evo_course_lessons = evo_curriculum.get_evo_course_lessons
 get_evo_training_modules = evo_curriculum.get_evo_training_modules
 from evo_tasks import TEMPLATE_ROOT as EVO_TEMPLATE_ROOT, get_evo_task_guides, resolver_task_number_boost as _resolver_task_number_boost, get_evo_resolver_ai_units
 import exam_resolver_ui
+from resolver_files_ui import render_file_workflow
 
 # Streamlit can rerun app.py while retaining the helper from before a Cloud
 # update. Refresh that module once when its newly added guide API is missing.
@@ -68024,6 +68025,9 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         )
     if context_sections:
         data_context_block = "\n\n" + "\n\n".join(context_sections)
+
+    render_file_workflow(exam_prompt, attached_datasets, attached_documents,
+                         client, AI_CHAT_MODEL, base_key)
 
     # Status banner so the user can SEE the resolver responded to the paste.
     if not exam_prompt.strip():
