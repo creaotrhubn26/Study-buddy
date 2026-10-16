@@ -232,6 +232,8 @@ def render_evo_illustration(lesson, context):
             key=f"evo_image_{context}_{lesson['lesson_number']}",
         )
 
+from study_schedule_ui import (render_schedule, render_course_reminder, render_timeline)
+
 from study_buddy_state import (
     COURSE_PROGRESSION_MAP,
     PROGRAM_DEADLINES,
@@ -74856,6 +74858,9 @@ if page == "Overview":
     st.title("🎓 Data Analyst 2 - Study App")
     st.markdown("---")
     
+    render_schedule(courses_data, key="overview_schedule")
+    st.markdown("---")
+
     col1, col2, col3, col4 = st.columns(4)
     
     total_credits = sum(c["credits"] for c in courses_data)
@@ -74890,339 +74895,6 @@ if page == "Overview":
             st.rerun()
     
     st.markdown("---")
-    st.subheader("📌 Today")
-    today_col1, today_col2 = st.columns(2)
-
-    with today_col1:
-        _today = date.today()
-        _upcoming_deadlines = []
-        for _code, _name, _date_str in PROGRAM_DEADLINES:
-            _deadline_date = datetime.strptime(_date_str, "%Y-%m-%d").date()
-            _days_left = (_deadline_date - _today).days
-            if _days_left >= 0:
-                _upcoming_deadlines.append((_days_left, _code, _name, _deadline_date))
-
-        if _upcoming_deadlines:
-            _upcoming_deadlines.sort(key=lambda x: x[0])
-            _days_left, _code, _name, _deadline_date = _upcoming_deadlines[0]
-            if _days_left == 0:
-                _countdown = "Due today"
-            elif _days_left == 1:
-                _countdown = "1 day left"
-            else:
-                _countdown = f"{_days_left} days left"
-
-            st.info(
-                f"**Next deadline:** {_code} — {_name}  \n"
-                f"**Date:** {_deadline_date.strftime('%d %b %Y')} · **{_countdown}**"
-            )
-        else:
-            st.success("No upcoming deadlines in the current schedule.")
-
-    with today_col2:
-        _current_topic = st.session_state.get("last_selected_topic")
-        if _current_topic:
-            _topic_progress = st.session_state.training_progress.get(_current_topic, {})
-            _lessons_done = _topic_progress.get("lessons_completed", 0)
-            _lessons_total = len(training_modules.get(_current_topic, {}).get("lessons", []))
-            _quiz_score = _topic_progress.get("quiz_score")
-
-            _topic_lines = [
-                f"**Current topic:** {_current_topic}",
-                f"**Lessons:** {_lessons_done}/{_lessons_total if _lessons_total else 0}"
-            ]
-            if _quiz_score is not None:
-                _topic_lines.append(f"**Latest quiz score:** {_quiz_score}%")
-
-            st.info("  \n".join(_topic_lines))
-        else:
-            st.info("No active topic yet. Start from **Training Center** to set your focus.")
-
-    st.markdown("---")
-    st.subheader("📅 Study Path")
-    st.caption("Aligned with JAN 2026 FT progression plan · Updated 22 September 2026 · Checked 16 October 2026")
-
-    _today = date.today()
-    _deadline_by_code = {
-        _code: datetime.strptime(_deadline_s, "%Y-%m-%d").date()
-        for _code, _course_name, _deadline_s in PROGRAM_DEADLINES
-    }
-    _timeline = []
-    for _code, _name, _start_s, _end_s in STUDY_PATH_JAN2026:
-        _start = datetime.strptime(_start_s, "%Y-%m-%d").date()
-        _end = datetime.strptime(_end_s, "%Y-%m-%d").date()
-        _duration_days = (_end - _start).days + 1
-
-        _assessment_start = None
-        _assessment_deadline = None
-        if _name in COURSE_PROGRESSION_MAP:
-            _map_code, _assessment_start_s, _assessment_deadline_s = COURSE_PROGRESSION_MAP[_name]
-            _assessment_start = datetime.strptime(_assessment_start_s, "%Y-%m-%d").date()
-            _assessment_deadline = datetime.strptime(_assessment_deadline_s, "%Y-%m-%d").date()
-        elif _code in _deadline_by_code:
-            _assessment_deadline = _deadline_by_code[_code]
-        if _code in st.session_state.completed_courses:
-            _status = "completed"
-            _status_label = "Fullført"
-            _status_icon = "✅"
-        elif _start <= _today <= _end:
-            _status = "active"
-            _status_label = "Pågår"
-            _status_icon = "🟢"
-        elif _start > _today:
-            _status = "upcoming"
-            _status_label = "Kommer snart"
-            _status_icon = "🟡"
-        else:
-            _status = "past"
-            _status_label = "Frist passert"
-            _status_icon = "🔴"
-
-        _timeline.append({
-            "code": _code,
-            "name": _name,
-            "start": _start,
-            "end": _end,
-            "duration_days": _duration_days,
-            "status": _status,
-            "status_label": _status_label,
-            "status_icon": _status_icon,
-            "days_to_start": (_start - _today).days,
-            "days_to_end": (_end - _today).days,
-            "assessment_start": _assessment_start,
-            "assessment_deadline": _assessment_deadline,
-        })
-
-    _active_now = [item for item in _timeline if item["status"] == "active"]
-    _next_upcoming = sorted([item for item in _timeline if item["status"] == "upcoming"], key=lambda x: x["start"])
-
-    _next_30_days = [item for item in _next_upcoming if item["days_to_start"] <= 30]
-    _next_start_text = _next_upcoming[0]["start"].strftime("%d %b %Y") if _next_upcoming else "-"
-    _assessment_upcoming = sorted(
-        [
-            item for item in _timeline
-            if item["assessment_deadline"] and item["assessment_deadline"] >= _today
-        ],
-        key=lambda x: x["assessment_deadline"]
-    )
-    _assessment_critical = [item for item in _assessment_upcoming if (item["assessment_deadline"] - _today).days <= 14]
-
-    def _assessment_text(item):
-        if not item["assessment_deadline"]:
-            return ""
-        _days_left = (item["assessment_deadline"] - _today).days
-        if _days_left == 0:
-            _countdown = "🔥 DUE TODAY"
-        elif _days_left <= 7:
-            _countdown = f"🔴 {_days_left} dager igjen"
-        elif _days_left <= 14:
-            _countdown = f"🟡 {_days_left} dager igjen"
-        else:
-            _countdown = f"🟢 {_days_left} dager igjen"
-
-        if item["assessment_start"]:
-            return (
-                f"**ASSESSMENT:** {item['assessment_start'].strftime('%d %b')} → "
-                f"{item['assessment_deadline'].strftime('%d %b %Y')} · {_countdown}"
-            )
-        return f"**ASSESSMENT DEADLINE:** {item['assessment_deadline'].strftime('%d %b %Y')} · {_countdown}"
-
-    _m1, _m2, _m3, _m4 = st.columns(4)
-    _m1.metric("Pågår nå", len(_active_now))
-    _m2.metric("Neste start", _next_start_text)
-    _m3.metric("Kommende (30 dager)", len(_next_30_days))
-    _m4.metric("KRITISK assessment ≤14d", len(_assessment_critical))
-
-    if _assessment_upcoming:
-        _next_assessment = _assessment_upcoming[0]
-        _next_deadline = _next_assessment["assessment_deadline"]
-        _next_days_left = (_next_deadline - _today).days
-        _next_deadline_dt = datetime(
-            _next_deadline.year,
-            _next_deadline.month,
-            _next_deadline.day,
-            23,
-            59,
-            0,
-        )
-        _next_deadline_iso = _next_deadline_dt.strftime("%Y-%m-%dT%H:%M:%S")
-
-        st.markdown("#### ⏳ Countdown til neste assessment")
-        st.caption(
-            f"{_next_assessment['code']} — {_next_assessment['name']} · "
-            f"frist {_next_deadline.strftime('%d %b %Y')} kl. 23:59"
-        )
-
-        _top_message = f"**Neste assessment:** {_next_assessment['code']} — {_next_assessment['name']}  \n{_assessment_text(_next_assessment)}"
-        if _next_days_left <= 7:
-            st.error(_top_message)
-        elif _next_days_left <= 14:
-            st.warning(_top_message)
-        else:
-            st.info(_top_message)
-
-        html(f"""
-        <div style="
-            background:#111827;
-            border:1px solid #374151;
-            border-radius:10px;
-            padding:12px 16px;
-            color:#f9fafb;
-            font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
-            display:flex;
-            align-items:center;
-            justify-content:space-between;
-            gap:10px;
-        ">
-            <span style="font-size:13px; color:#d1d5db;">Tid igjen</span>
-            <span id="assessment-countdown-value" style="font-size:20px; font-weight:700; letter-spacing:0.5px;">--d : --h : --m : --s</span>
-        </div>
-        <script>
-            const target = new Date("{_next_deadline_iso}").getTime();
-            const valueNode = document.getElementById("assessment-countdown-value");
-
-            function pad(n) {{
-                return String(n).padStart(2, "0");
-            }}
-
-            function updateCountdown() {{
-                const now = new Date().getTime();
-                let diff = Math.floor((target - now) / 1000);
-
-                if (diff <= 0) {{
-                    valueNode.textContent = "00d : 00h : 00m : 00s";
-                    return;
-                }}
-
-                const days = Math.floor(diff / 86400);
-                diff = diff % 86400;
-                const hours = Math.floor(diff / 3600);
-                diff = diff % 3600;
-                const minutes = Math.floor(diff / 60);
-                const seconds = diff % 60;
-
-                valueNode.textContent = `${{pad(days)}}d : ${{pad(hours)}}h : ${{pad(minutes)}}m : ${{pad(seconds)}}s`;
-            }}
-
-            updateCountdown();
-            setInterval(updateCountdown, 1000);
-        </script>
-        """, height=95)
-
-        _assessment_rows = []
-        for item in _assessment_upcoming:
-            _days_left = (item["assessment_deadline"] - _today).days
-            if _days_left <= 7:
-                _priority = "KRITISK"
-            elif _days_left <= 14:
-                _priority = "SNART"
-            else:
-                _priority = "PLANLEGG"
-            _assessment_rows.append(
-                {
-                    "Prioritet": _priority,
-                    "Emne": f"{item['code']} — {item['name']}",
-                    "Assessment start": item["assessment_start"].strftime("%d %b %Y") if item["assessment_start"] else "-",
-                    "Deadline": item["assessment_deadline"].strftime("%d %b %Y"),
-                    "Dager igjen": _days_left,
-                }
-            )
-
-        st.markdown("#### 📋 Assessment-oversikt")
-        st.dataframe(pd.DataFrame(_assessment_rows), use_container_width=True, hide_index=True)
-
-    _tab_now, _tab_assessment, _tab_next, _tab_all = st.tabs(["Nå", "Assessment", "Neste 30 dager", "Hele planen"])
-
-    with _tab_now:
-        st.markdown("#### 📌 Denne uken")
-        if _active_now:
-            _current = sorted(_active_now, key=lambda x: x["start"])[0]
-            st.success(
-                f"**Nå:** {_current['code']} — {_current['name']} ({_current['status_label']})  \n"
-                f"Periode: {_current['start'].strftime('%d %b %Y')} → {_current['end'].strftime('%d %b %Y')}  \n"
-                f"Dager igjen: **{max(0, _current['days_to_end'])}**"
-            )
-            if _current["assessment_deadline"]:
-                st.warning(_assessment_text(_current))
-        else:
-            st.info("Ingen aktiv modul akkurat nå.")
-
-        if _next_upcoming:
-            _next = _next_upcoming[0]
-            st.caption(
-                f"Neste: {_next['code']} — {_next['name']} starter {_next['start'].strftime('%d %b %Y')} "
-                f"(om {_next['days_to_start']} dager)."
-            )
-
-    with _tab_assessment:
-        st.markdown("#### 🚨 Assessment-fokus")
-        if _assessment_upcoming:
-            for item in _assessment_upcoming[:5]:
-                _days_left = (item["assessment_deadline"] - _today).days
-                _message = f"**{item['code']} — {item['name']}**  \n{_assessment_text(item)}"
-                if _days_left <= 7:
-                    st.error(_message)
-                elif _days_left <= 14:
-                    st.warning(_message)
-                else:
-                    st.info(_message)
-            if any(item["code"] == "DDM" for item in _assessment_upcoming):
-                st.info(
-                    "DDM assessment note: In **Data Driven Decision-Making**, the assessment is quiz-based, while the **CA should be treated like an exam task**. "
-                    "Use the **Exam Resolver** to build answers in exam style: direct answer first, then **Why**, then **Scenario/Application**, and add a **simple visual/table/chart** where it strengthens the explanation."
-                )
-        else:
-            st.success("Ingen kommende assessments registrert.")
-
-    with _tab_next:
-        st.markdown("#### ⏭️ Neste 30 dager")
-        if _next_30_days:
-            for item in _next_30_days:
-                _assessment_line = ""
-                if item["assessment_deadline"]:
-                    _assessment_line = f"  \n{_assessment_text(item)}"
-                st.markdown(
-                    f"🟡 **{item['code']} — {item['name']}**  \n"
-                    f"Starter: {item['start'].strftime('%d %b %Y')} · om {item['days_to_start']} dager"
-                    f"{_assessment_line}"
-                )
-        else:
-            st.info("Ingen kurs starter de neste 30 dagene.")
-
-    with _tab_all:
-        st.markdown("#### 🗂️ Hele tidslinjen")
-        _active_upcoming = [item for item in _timeline if item["status"] in ("active", "upcoming")]
-        _history = [item for item in _timeline if item["status"] in ("past", "completed")]
-
-        for item in sorted(_active_upcoming, key=lambda x: x["start"]):
-            _days_text = (
-                f"{item['days_to_end']} dager igjen"
-                if item["status"] == "active"
-                else f"Starter om {item['days_to_start']} dager"
-            )
-            _assessment_line = ""
-            if item["assessment_deadline"]:
-                _assessment_line = f"  \n{_assessment_text(item)}"
-            st.markdown(
-                f"{item['status_icon']} **{item['code']} — {item['name']}** · *{item['status_label']}*  \n"
-                f"{item['start'].strftime('%d %b %Y')} → {item['end'].strftime('%d %b %Y')} "
-                f"· {item['duration_days']} dager · {_days_text}"
-                f"{_assessment_line}"
-            )
-
-        if _history:
-            with st.expander(f"Vis historikk ({len(_history)})", expanded=False):
-                for item in sorted(_history, key=lambda x: x["start"]):
-                    _assessment_line = ""
-                    if item["assessment_deadline"]:
-                        _assessment_line = f"  \n{_assessment_text(item)}"
-                    st.markdown(
-                        f"{item['status_icon']} **{item['code']} — {item['name']}** · *{item['status_label']}*  \n"
-                        f"{item['start'].strftime('%d %b %Y')} → {item['end'].strftime('%d %b %Y')}"
-                        f"{_assessment_line}"
-                    )
-    
-    st.markdown("---")
     col1, col2 = st.columns(2)
     
     with col1:
@@ -75242,40 +74914,6 @@ if page == "Overview":
         st.markdown("[📖 Study Catalog](https://studiekatalog.edutorium.no/voc/en/programme/PDAN/2025-autumn)")
 
         st.markdown("---")
-        st.subheader("⏰ Upcoming Deadlines")
-        from datetime import date as _ov_date, datetime as _ov_dt
-        _ov_today = _ov_date.today()
-        _ov_shown = 0
-        for _ov_code, _ov_cname, _ov_dl_str in PROGRAM_DEADLINES:
-            _ov_dl = _ov_dt.strptime(_ov_dl_str, "%Y-%m-%d").date()
-            _ov_days = (_ov_dl - _ov_today).days
-            if _ov_days < 0:
-                continue
-            if _ov_days == 0:
-                _ov_ic, _ov_cl = "🔥", "#e74c3c"
-                _ov_txt = "DUE TODAY"
-            elif _ov_days <= 7:
-                _ov_ic, _ov_cl = "🔴", "#e74c3c"
-                _ov_txt = f"**{_ov_days}d left**"
-            elif _ov_days <= 21:
-                _ov_ic, _ov_cl = "🟡", "#f39c12"
-                _ov_txt = f"{_ov_days}d left"
-            else:
-                _ov_ic, _ov_cl = "🟢", "#2ecc71"
-                _ov_txt = f"{_ov_days}d"
-            st.markdown(
-                f"{_ov_ic} **{_ov_code}** – {_ov_cname}  \n"
-                f"<span style='color:#aaa; font-size:12px;'>{_ov_dl.strftime('%d %b %Y')} @ 23:59 &nbsp;·&nbsp; "
-                f"<span style='color:{_ov_cl}'>{_ov_txt}</span></span>",
-                unsafe_allow_html=True
-            )
-            _ov_shown += 1
-            if _ov_shown >= 4:
-                break
-        if _ov_shown == 0:
-            st.success("🎉 All Year 1 assessments completed!")
-        st.caption("→ See full schedule in **Progression Plan**")
-    
     st.markdown("---")
     
     # Define render_mui_icon function for Overview page
@@ -75599,60 +75237,7 @@ elif page == "Training Center":
             "In the Quiz tab, review the built-in **Why**, **Scenario**, and **Visual** explanations after submitting."
         )
 
-    # ── Progression Plan reminder banner ─────────────────────────────────────
-    if topic_course in COURSE_PROGRESSION_MAP:
-        from datetime import date as _pp_date, datetime as _pp_dt
-        _pp_code, _pp_start_str, _pp_dl_str = COURSE_PROGRESSION_MAP[topic_course]
-        _pp_today = _pp_date.today()
-        _pp_start = _pp_dt.strptime(_pp_start_str, "%Y-%m-%d").date()
-        _pp_dl    = _pp_dt.strptime(_pp_dl_str,    "%Y-%m-%d").date()
-        _pp_days  = (_pp_dl - _pp_today).days
-
-        if _pp_days < 0:
-            _pp_icon  = "✅"
-            _pp_cd    = f"Submitted {abs(_pp_days)} days ago"
-            _pp_bdr   = "#2ecc71"
-            _pp_bg    = "#0d2416"
-        elif _pp_days == 0:
-            _pp_icon  = "🔥"
-            _pp_cd    = "DUE TODAY — 23:59!"
-            _pp_bdr   = "#e74c3c"
-            _pp_bg    = "#3d0000"
-        elif _pp_days <= 3:
-            _pp_icon  = "🔴"
-            _pp_cd    = f"{_pp_days} day{'s' if _pp_days != 1 else ''} left!"
-            _pp_bdr   = "#e74c3c"
-            _pp_bg    = "#3d0000"
-        elif _pp_days <= 14:
-            _pp_icon  = "🟡"
-            _pp_cd    = f"{_pp_days} days left"
-            _pp_bdr   = "#f39c12"
-            _pp_bg    = "#2d2200"
-        else:
-            _pp_icon  = "🟢"
-            _pp_cd    = f"in {_pp_days} days"
-            _pp_bdr   = "#3498db"
-            _pp_bg    = "#0d1e2d"
-
-        st.markdown(f"""
-<div style="background:{_pp_bg}; border-left:5px solid {_pp_bdr}; border-radius:8px;
-            padding:10px 16px; margin:8px 0 12px 0; display:flex; align-items:center; gap:14px;">
-  <div style="font-size:22px;">{_pp_icon}</div>
-  <div style="flex:1;">
-    <span style="font-weight:700; color:#f0f0f0;">📋 {_pp_code} Progression Reminder</span><br>
-    <span style="font-size:12px; color:#bbb;">
-      Assessment week starts <b style="color:#ddd;">{_pp_start.strftime('%a %d %b')}</b>
-      &nbsp;·&nbsp;
-      Deadline <b style="color:#ddd;">{_pp_dl.strftime('%a %d %b %Y')} @ 23:59</b>
-    </span>
-  </div>
-  <div style="text-align:right; white-space:nowrap;">
-    <span style="font-size:15px; font-weight:700; color:{_pp_bdr};">{_pp_cd}</span><br>
-    <a href="?page=Progression+Plan" style="font-size:11px; color:#888;">View full plan ↗</a>
-  </div>
-</div>
-""", unsafe_allow_html=True)
-    # ─────────────────────────────────────────────────────────────────────────
+    render_course_reminder(topic_course, courses_data)
 
     # Initialize progress for this topic
     if selected_topic not in st.session_state.training_progress:
@@ -76016,7 +75601,6 @@ elif page == "Training Center":
 
 elif page == "Course Plan":
     st.title("📚 Course Plan")
-    st.markdown("---")
 
     _study_path_by_name = {
         _name: (_code, _start_s, _end_s)
@@ -76041,88 +75625,34 @@ elif page == "Course Plan":
         "Assessment Deadline": (_assessment_by_name.get(c["name"], (None, None))[1] or "-"),
     } for c in courses_data])
 
-    st.caption("Date fields are aligned with the JAN 2026 FT progression plan (updated 22 September 2026; checked 16 October 2026). Semester numbers follow Noroff. Year 2 dates are not yet verified and remain blank.")
+    st.caption("Your next course, assessment deadlines and recorded submissions.")
     
-    col1, col2 = st.columns(2)
-    with col1:
-        _semester_options = sorted(df["Semester"].dropna().unique().tolist())
-        semester_filter = st.multiselect(
-            "Filter by semester:",
-            options=_semester_options,
-            default=[]
-        )
-    with col2:
-        search = st.text_input("Search courses:", "")
+    with st.expander("Filter courses", expanded=False):
+        col1, col2 = st.columns(2)
+        with col1:
+            _semester_options = sorted(df["Semester"].dropna().unique().tolist())
+            semester_filter = st.multiselect(
+                "Filter by semester:",
+                options=_semester_options,
+                default=[]
+            )
+        with col2:
+            search = st.text_input("Search courses:", "")
     
     filtered_df = df.copy()
     if semester_filter:
         filtered_df = filtered_df[filtered_df["Semester"].isin(semester_filter)]
     if search:
         filtered_df = filtered_df[
-            filtered_df["Course"].str.lower().str.contains(search.lower()) |
-            filtered_df["Code"].str.lower().str.contains(search.lower())
+            filtered_df["Course"].str.lower().str.contains(search.lower(), regex=False) |
+            filtered_df["Code"].str.lower().str.contains(search.lower(), regex=False)
         ]
     
-    st.dataframe(filtered_df, use_container_width=True, hide_index=True)
-
-    # ── Progression Plan reminders (Course Plan) ──────────────────────────────
-    st.markdown("---")
-    st.subheader("⏰ Assessment Deadlines")
-    from datetime import date as _cp_date, datetime as _cp_dt
-    _cp_today = _cp_date.today()
-    _cp_schedule = [
-        ('IC',  'Introduction Course',         None,           '2026-01-11'),
-        ('DAF', 'Data Analysis Fundamentals',  '2026-01-26',   '2026-02-01'),
-        ('SPF', 'Spreadsheet Fundamentals',    '2026-02-16',   '2026-02-22'),
-        ('DDM', 'Data Driven Decision-Making', '2026-03-16',   '2026-03-22'),
-        ('STT', 'Statistical Tools',           '2026-04-13',   '2026-04-19'),
-        ('SP1', 'Semester Project 1',          '2026-05-11',   '2026-05-17'),
-        ('EVO', 'Evaluation of Outcomes',      '2026-09-07',   '2026-09-13'),
-        ('DVS', 'Data Visualisation',          '2026-10-12',   '2026-10-18'),
-        ('ARP', 'Analysis Reporting',          '2026-11-02',   '2026-11-08'),
-        ('EP1', 'Exam Project 1',              '2026-12-14',   '2026-12-20'),
-    ]
-    _cp_cols = st.columns(2)
-    for _cp_i, (_cp_code, _cp_cname, _cp_start_s, _cp_dl_s) in enumerate(_cp_schedule):
-        _cp_dl    = _cp_dt.strptime(_cp_dl_s, '%Y-%m-%d').date()
-        _cp_start = _cp_dt.strptime(_cp_start_s, '%Y-%m-%d').date() if _cp_start_s else None
-        _cp_days  = (_cp_dl - _cp_today).days
-        if _cp_days < 0:
-            _cp_ic, _cp_col = '✅', '#2ecc71'
-            _cp_cd = f'{abs(_cp_days)}d ago'
-            _cp_bg, _cp_bdr = '#0d2416', '#2ecc71'
-        elif _cp_days == 0:
-            _cp_ic, _cp_col = '🔥', '#e74c3c'
-            _cp_cd = 'TODAY!'
-            _cp_bg, _cp_bdr = '#3d0000', '#e74c3c'
-        elif _cp_days <= 7:
-            _cp_ic, _cp_col = '🔴', '#e74c3c'
-            _cp_cd = f'{_cp_days}d left'
-            _cp_bg, _cp_bdr = '#3d0000', '#e74c3c'
-        elif _cp_days <= 21:
-            _cp_ic, _cp_col = '🟡', '#f39c12'
-            _cp_cd = f'{_cp_days}d left'
-            _cp_bg, _cp_bdr = '#2d2200', '#f39c12'
-        else:
-            _cp_ic, _cp_col = '🟢', '#3498db'
-            _cp_cd = f'{_cp_days}d'
-            _cp_bg, _cp_bdr = '#0d1e2d', '#3498db'
-        _cp_start_txt = f"<span style='color:#aaa;'>Assessment from {_cp_start.strftime('%d %b')} · </span>" if _cp_start else ''
-        with _cp_cols[_cp_i % 2]:
-            st.markdown(f"""
-<div style="background:{_cp_bg}; border-left:4px solid {_cp_bdr}; border-radius:6px;
-            padding:8px 12px; margin:4px 0; display:flex; align-items:center; gap:10px;">
-  <span style="background:{_cp_bdr}; color:#fff; font-size:10px; font-weight:700;
-               padding:2px 6px; border-radius:10px; min-width:32px; text-align:center;">{_cp_code}</span>
-  <div style="flex:1;">
-    <span style="font-size:13px; font-weight:600; color:#f0f0f0;">{_cp_cname}</span><br>
-    <span style="font-size:11px;">{_cp_start_txt}<span style="color:#ccc;">Deadline {_cp_dl.strftime('%d %b %Y')}</span></span>
-  </div>
-  <span style="font-size:13px; font-weight:700; color:{_cp_col}; white-space:nowrap;">{_cp_ic} {_cp_cd}</span>
-</div>
-""", unsafe_allow_html=True)
-    st.caption("→ See full schedule in **Progression Plan**")
-
+    if search or semester_filter:
+        st.caption(f"Filtered view: {len(filtered_df)} course{'s' if len(filtered_df) != 1 else ''} · Clear the filters to see the full schedule.")
+    render_schedule(courses_data, names=set(filtered_df["Course"]), key="course_plan_schedule")
+    with st.expander("Course details", expanded=False):
+        st.dataframe(filtered_df, use_container_width=True, hide_index=True)
     st.markdown("---")
     st.subheader("📊 Credits per Semester")
     
@@ -76136,6 +75666,7 @@ elif page == "Course Plan":
     semester_credits = semester_credits.sort_values("Semester")
     
     st.bar_chart(semester_credits.set_index("Semester"))
+    st.caption("Date fields are aligned with the JAN 2026 FT progression plan (updated 22 September 2026; checked 16 October 2026). Semester numbers follow Noroff. Year 2 dates are not yet verified and remain blank.")
 
 elif page == "Learn & Practice":
     st.title("📖 Learn & Practice")
@@ -76432,46 +75963,7 @@ elif page == "Learn & Practice":
     
     st.markdown("---")
     
-    # ── Progression Plan reminder (Learn & Practice) ──────────────────────────
-    _lp_cname = course['name']
-    if _lp_cname in COURSE_PROGRESSION_MAP:
-        from datetime import date as _lp_date, datetime as _lp_dt
-        _lp_code, _lp_start_str, _lp_dl_str = COURSE_PROGRESSION_MAP[_lp_cname]
-        _lp_today = _lp_date.today()
-        _lp_start = _lp_dt.strptime(_lp_start_str, "%Y-%m-%d").date()
-        _lp_dl    = _lp_dt.strptime(_lp_dl_str,    "%Y-%m-%d").date()
-        _lp_days  = (_lp_dl - _lp_today).days
-        if _lp_days < 0:
-            _lp_icon, _lp_col, _lp_txt = "✅", "#2ecc71", f"Submitted {abs(_lp_days)} days ago"
-        elif _lp_days == 0:
-            _lp_icon, _lp_col, _lp_txt = "🔥", "#e74c3c", "DUE TODAY — 23:59!"
-        elif _lp_days <= 3:
-            _lp_icon, _lp_col, _lp_txt = "🔴", "#e74c3c", f"{_lp_days} day{'s' if _lp_days != 1 else ''} left!"
-        elif _lp_days <= 14:
-            _lp_icon, _lp_col, _lp_txt = "🟡", "#f39c12", f"{_lp_days} days left"
-        else:
-            _lp_icon, _lp_col, _lp_txt = "🟢", "#3498db", f"in {_lp_days} days"
-        _lp_bg  = "#3d0000" if _lp_days >= 0 and _lp_days <= 3 else (
-                  "#2d2200" if _lp_days <= 14 else (
-                  "#0d1e2d" if _lp_days > 0 else "#0d2416"))
-        st.markdown(f"""
-<div style="background:{_lp_bg}; border-left:5px solid {_lp_col}; border-radius:8px;
-            padding:10px 16px; margin:0 0 12px 0; display:flex; align-items:center; gap:14px;">
-  <div style="font-size:22px;">{_lp_icon}</div>
-  <div style="flex:1;">
-    <span style="font-weight:700; color:#f0f0f0;">📋 {_lp_code} Progression Reminder</span><br>
-    <span style="font-size:12px; color:#bbb;">
-      Assessment week starts <b style="color:#ddd;">{_lp_start.strftime('%a %d %b')}</b>
-      &nbsp;·&nbsp; Deadline <b style="color:#ddd;">{_lp_dl.strftime('%a %d %b %Y')} @ 23:59</b>
-    </span>
-  </div>
-  <div style="text-align:right; white-space:nowrap;">
-    <span style="font-size:15px; font-weight:700; color:{_lp_col};">{_lp_txt}</span><br>
-    <span style="font-size:11px; color:#888;">→ Progression Plan page</span>
-  </div>
-</div>
-""", unsafe_allow_html=True)
-    # ─────────────────────────────────────────────────────────────────────────
+    render_course_reminder(course["name"], courses_data)
 
     # Check if this course has training modules
     course_topics_with_training = []
@@ -77962,58 +77454,9 @@ elif page == "Study Notes":
                     st.rerun()
     
     with main_col:
-        # ── Progression Plan reminder (Study Notes) ───────────────────────────────
         _sn_course_obj = next((c for c in courses_data if c['code'] == selected_course_code), None)
-        _sn_course_name = _sn_course_obj['name'] if _sn_course_obj else ''
-        _sn_pp_map = {
-            'Data Analysis Fundamentals':  ('DAF', '2025-11-03', '2025-11-09'),
-            'Spreadsheet Fundamentals':    ('SPF', '2025-11-24', '2025-11-30'),
-            'Data Driven Decision-Making': ('DDM', '2026-01-05', '2026-01-11'),
-            'Statistical Tools':           ('STT', '2026-01-26', '2026-02-01'),
-            'Semester Project 1':          ('SP1', '2026-02-23', '2026-03-01'),
-            'Evaluation of Outcomes':      ('EVO', '2026-04-27', '2026-05-03'),
-            'Data Visualisation':          ('DVS', '2026-06-01', '2026-06-07'),
-            'Analysis Reporting':          ('ARP', '2026-08-24', '2026-08-30'),
-        }
-        if _sn_course_name in _sn_pp_map:
-            from datetime import date as _sn_date, datetime as _sn_dt
-            _sn_code, _sn_start_s, _sn_dl_s = _sn_pp_map[_sn_course_name]
-            _sn_today = _sn_date.today()
-            _sn_start = _sn_dt.strptime(_sn_start_s, '%Y-%m-%d').date()
-            _sn_dl    = _sn_dt.strptime(_sn_dl_s,    '%Y-%m-%d').date()
-            _sn_days  = (_sn_dl - _sn_today).days
-            if _sn_days < 0:
-                _sn_ic, _sn_col, _sn_txt = '✅', '#2ecc71', f'Submitted {abs(_sn_days)} days ago'
-                _sn_bg = '#0d2416'
-            elif _sn_days == 0:
-                _sn_ic, _sn_col, _sn_txt = '🔥', '#e74c3c', 'DUE TODAY — 23:59!'
-                _sn_bg = '#3d0000'
-            elif _sn_days <= 3:
-                _sn_ic, _sn_col, _sn_txt = '🔴', '#e74c3c', f'{_sn_days} day{"s" if _sn_days != 1 else ""} left!'
-                _sn_bg = '#3d0000'
-            elif _sn_days <= 14:
-                _sn_ic, _sn_col, _sn_txt = '🟡', '#f39c12', f'{_sn_days} days left'
-                _sn_bg = '#2d2200'
-            else:
-                _sn_ic, _sn_col, _sn_txt = '🟢', '#3498db', f'in {_sn_days} days'
-                _sn_bg = '#0d1e2d'
-            st.markdown(f"""
-<div style="background:{_sn_bg}; border-left:5px solid {_sn_col}; border-radius:8px;
-            padding:8px 14px; margin:0 0 10px 0; display:flex; align-items:center; gap:12px;">
-  <div style="font-size:20px;">{_sn_ic}</div>
-  <div style="flex:1;">
-    <span style="font-weight:700; color:#f0f0f0; font-size:13px;">📋 {_sn_code} Assessment Reminder</span><br>
-    <span style="font-size:11px; color:#bbb;">
-      Week starts <b style="color:#ddd;">{_sn_start.strftime('%a %d %b')}</b>
-      &nbsp;·&nbsp; Deadline <b style="color:#ddd;">{_sn_dl.strftime('%a %d %b %Y')} @ 23:59</b>
-    </span>
-  </div>
-  <div style="text-align:right; white-space:nowrap;">
-    <span style="font-size:14px; font-weight:700; color:{_sn_col};">{_sn_txt}</span>
-  </div>
-</div>
-""", unsafe_allow_html=True)
-        # ─────────────────────────────────────────────────────────────────────
+        if _sn_course_obj:
+            render_course_reminder(_sn_course_obj['name'], courses_data)
 
         # Note properties
         prop_col1, prop_col2, prop_col3, prop_col4 = st.columns(4)
@@ -83962,232 +83405,11 @@ elif page == "About":
     """)
 
 elif page == "Progression Plan":
-    from datetime import date as _date, datetime as _datetime
-    st.title("📅 Progression Plan")
-    st.markdown("**JAN 2026 Full-Time Data Analyst – Year 1 Schedule**")
-    st.markdown("---")
-
-    # ── All course events for JAN 2026 FT cohort ──────────────────────────────
-    _EVENTS = [
-        # Enrollment / IC
-        {"date": "2026-01-05", "name": "Enrollment / Course Start",                   "type": "enrollment",      "course": "IC",  "course_name": "Introduction Course"},
-        {"date": "2026-01-06", "name": "Introduction Course Begins",                   "type": "module_start",    "course": "IC",  "course_name": "Introduction Course"},
-        {"date": "2026-01-11", "name": "Introduction Course Deadline",                 "type": "deadline",        "course": "IC",  "course_name": "Introduction Course"},
-        # DAF
-        {"date": "2026-01-12", "name": "DAF – Module 1 starts",                        "type": "module_start",    "course": "DAF", "course_name": "Data Analysis Fundamentals"},
-        {"date": "2026-01-19", "name": "DAF – Module 2 starts",                        "type": "module_start",    "course": "DAF", "course_name": "Data Analysis Fundamentals"},
-        {"date": "2026-01-26", "name": "DAF Assessment Week begins",                   "type": "assessment_start","course": "DAF", "course_name": "Data Analysis Fundamentals"},
-        {"date": "2026-02-01", "name": "DAF Assessment Deadline (Sun 23:59)",          "type": "deadline",        "course": "DAF", "course_name": "Data Analysis Fundamentals"},
-        # SPF
-        {"date": "2026-02-02", "name": "SPF – Module 1 starts",                        "type": "module_start",    "course": "SPF", "course_name": "Spreadsheet Fundamentals"},
-        {"date": "2026-02-09", "name": "SPF – Module 2 starts",                        "type": "module_start",    "course": "SPF", "course_name": "Spreadsheet Fundamentals"},
-        {"date": "2026-02-16", "name": "SPF Assessment Week begins",                   "type": "assessment_start","course": "SPF", "course_name": "Spreadsheet Fundamentals"},
-        {"date": "2026-02-22", "name": "SPF Assessment Deadline (Sun 23:59)",          "type": "deadline",        "course": "SPF", "course_name": "Spreadsheet Fundamentals"},
-        # DDM
-        {"date": "2026-02-23", "name": "DDM – Module 1 starts",                        "type": "module_start",    "course": "DDM", "course_name": "Data Driven Decision-Making"},
-        {"date": "2026-03-02", "name": "DDM – Module 2 starts",                        "type": "module_start",    "course": "DDM", "course_name": "Data Driven Decision-Making"},
-        {"date": "2026-03-09", "name": "DDM – Module 3 starts",                        "type": "module_start",    "course": "DDM", "course_name": "Data Driven Decision-Making"},
-        {"date": "2026-03-16", "name": "DDM Assessment Week begins",                   "type": "assessment_start","course": "DDM", "course_name": "Data Driven Decision-Making"},
-        {"date": "2026-03-22", "name": "DDM Assessment Deadline (Sun 23:59)",          "type": "deadline",        "course": "DDM", "course_name": "Data Driven Decision-Making"},
-        # STT
-        {"date": "2026-03-23", "name": "STT – Module 1 starts",                        "type": "module_start",    "course": "STT", "course_name": "Statistical Tools"},
-        {"date": "2026-04-06", "name": "STT – Module 2 starts",                        "type": "module_start",    "course": "STT", "course_name": "Statistical Tools"},
-        {"date": "2026-04-13", "name": "STT Assessment Week begins",                   "type": "assessment_start","course": "STT", "course_name": "Statistical Tools"},
-        {"date": "2026-04-19", "name": "STT Assessment Deadline (Sun 23:59)",          "type": "deadline",        "course": "STT", "course_name": "Statistical Tools"},
-        # SP1 – Semester Project
-        {"date": "2026-04-20", "name": "SP1 Semester Project – Week 1",                "type": "module_start",    "course": "SP1", "course_name": "Semester Project 1"},
-        {"date": "2026-04-27", "name": "SP1 Semester Project – Week 2",                "type": "module_start",    "course": "SP1", "course_name": "Semester Project 1"},
-        {"date": "2026-05-04", "name": "SP1 Semester Project – Week 3",                "type": "module_start",    "course": "SP1", "course_name": "Semester Project 1"},
-        {"date": "2026-05-11", "name": "SP1 Semester Project – Final Week begins",     "type": "assessment_start","course": "SP1", "course_name": "Semester Project 1"},
-        {"date": "2026-05-17", "name": "SP1 Semester Project Deadline (Sun 23:59)",    "type": "deadline",        "course": "SP1", "course_name": "Semester Project 1"},
-        # EVO
-        {"date": "2026-05-18", "name": "EVO – Module 1 starts",                        "type": "module_start",    "course": "EVO", "course_name": "Evaluation of Outcomes"},
-        {"date": "2026-05-25", "name": "EVO – Module 2 starts",                        "type": "module_start",    "course": "EVO", "course_name": "Evaluation of Outcomes"},
-        {"date": "2026-06-01", "name": "EVO – Module 3 starts",                        "type": "module_start",    "course": "EVO", "course_name": "Evaluation of Outcomes"},
-        {"date": "2026-08-10", "name": "EVO – Module 4 starts",                        "type": "module_start",    "course": "EVO", "course_name": "Evaluation of Outcomes"},
-        {"date": "2026-08-17", "name": "EVO – Module 5 starts",                        "type": "module_start",    "course": "EVO", "course_name": "Evaluation of Outcomes"},
-        {"date": "2026-08-24", "name": "EVO – Module 6 starts",                        "type": "module_start",    "course": "EVO", "course_name": "Evaluation of Outcomes"},
-        {"date": "2026-08-31", "name": "EVO – Module 7 starts",                        "type": "module_start",    "course": "EVO", "course_name": "Evaluation of Outcomes"},
-        {"date": "2026-09-07", "name": "EVO Assessment Week begins",                   "type": "assessment_start","course": "EVO", "course_name": "Evaluation of Outcomes"},
-        {"date": "2026-09-13", "name": "EVO Assessment Deadline (Sun 23:59)",          "type": "deadline",        "course": "EVO", "course_name": "Evaluation of Outcomes"},
-        # DVS
-        {"date": "2026-09-14", "name": "DVS – Module 1 starts",                        "type": "module_start",    "course": "DVS", "course_name": "Data Visualisation"},
-        {"date": "2026-09-21", "name": "DVS – Module 2 starts",                        "type": "module_start",    "course": "DVS", "course_name": "Data Visualisation"},
-        {"date": "2026-09-28", "name": "DVS – Module 3 starts",                        "type": "module_start",    "course": "DVS", "course_name": "Data Visualisation"},
-        {"date": "2026-10-05", "name": "DVS – Module 4 starts",                        "type": "module_start",    "course": "DVS", "course_name": "Data Visualisation"},
-        {"date": "2026-10-12", "name": "DVS Assessment Week begins",                   "type": "assessment_start","course": "DVS", "course_name": "Data Visualisation"},
-        {"date": "2026-10-18", "name": "DVS Assessment Deadline (Sun 23:59)",          "type": "deadline",        "course": "DVS", "course_name": "Data Visualisation"},
-        # ARP
-        {"date": "2026-10-19", "name": "ARP – Module 1 starts",                        "type": "module_start",    "course": "ARP", "course_name": "Analysis Reporting"},
-        {"date": "2026-10-26", "name": "ARP – Module 2 starts",                        "type": "module_start",    "course": "ARP", "course_name": "Analysis Reporting"},
-        {"date": "2026-11-02", "name": "ARP Assessment Week begins",                   "type": "assessment_start","course": "ARP", "course_name": "Analysis Reporting"},
-        {"date": "2026-11-08", "name": "ARP Assessment Deadline (Sun 23:59)",          "type": "deadline",        "course": "ARP", "course_name": "Analysis Reporting"},
-        # EP1 – Exam Project
-        {"date": "2026-11-09", "name": "EP1 Exam Project – Week 1",                    "type": "module_start",    "course": "EP1", "course_name": "Exam Project 1"},
-        {"date": "2026-11-16", "name": "EP1 Exam Project – Week 2",                    "type": "module_start",    "course": "EP1", "course_name": "Exam Project 1"},
-        {"date": "2026-11-23", "name": "EP1 Exam Project – Week 3",                    "type": "module_start",    "course": "EP1", "course_name": "Exam Project 1"},
-        {"date": "2026-11-30", "name": "EP1 Exam Project – Week 4",                    "type": "module_start",    "course": "EP1", "course_name": "Exam Project 1"},
-        {"date": "2026-12-07", "name": "EP1 Exam Project – Week 5",                    "type": "module_start",    "course": "EP1", "course_name": "Exam Project 1"},
-        {"date": "2026-12-14", "name": "EP1 Exam Project – Final Week begins",         "type": "assessment_start","course": "EP1", "course_name": "Exam Project 1"},
-        {"date": "2026-12-20", "name": "EP1 Exam Project 1 – FINAL DELIVERY (Sun 23:59)", "type": "deadline",    "course": "EP1", "course_name": "Exam Project 1"},
-    ]
-
-    # ── Course colour palette ─────────────────────────────────────────────────
-    _COURSE_COLOURS = {
-        "IC":  "#9b59b6", "DAF": "#3498db", "SPF": "#e67e22",
-        "DDM": "#1abc9c", "STT": "#e74c3c", "SP1": "#f39c12",
-        "EVO": "#2ecc71", "DVS": "#8e44ad", "ARP": "#16a085",
-        "EP1": "#c0392b",
-    }
-
-    _today = _date.today()
-
-    # ── Filter controls ───────────────────────────────────────────────────────
-    _col_f1, _col_f2, _col_f3 = st.columns([2, 2, 3])
-    with _col_f1:
-        _view = st.selectbox(
-            "Show",
-            ["All Events", "Upcoming Only", "Deadlines Only", "Module Starts Only", "Resit Assignments"],
-            key="pp_view"
-        )
-    with _col_f2:
-        _courses_all = ["All Courses"] + sorted(set(e["course"] for e in _EVENTS))
-        _course_filter = st.selectbox("Course", _courses_all, key="pp_course")
-    with _col_f3:
-        st.markdown("")
-
-    # ── Summary counts ────────────────────────────────────────────────────────
-    _past   = sum(1 for e in _EVENTS if _datetime.strptime(e["date"], "%Y-%m-%d").date() < _today)
-    _soon   = sum(1 for e in _EVENTS if 0 <= (_datetime.strptime(e["date"], "%Y-%m-%d").date() - _today).days <= 14)
-    _future = sum(1 for e in _EVENTS if (_datetime.strptime(e["date"], "%Y-%m-%d").date() - _today).days > 14)
-
-    _s1, _s2, _s3, _s4 = st.columns(4)
-    _s1.metric("Total Events", len(_EVENTS))
-    _s2.metric("Completed", _past)
-    _s3.metric("Due in ≤14 days", _soon)
-    _s4.metric("Upcoming (>14 days)", _future)
-
-    _resit_events = [
-        e for e in _EVENTS
-        if e["type"] == "deadline" and re.search(r"resit|resubmission|late", e["name"], flags=re.IGNORECASE)
-    ]
-    _resit_upcoming = sum(
-        1 for e in _resit_events
-        if _datetime.strptime(e["date"], "%Y-%m-%d").date() >= _today
-    )
-    _resit_completed = len(_resit_events) - _resit_upcoming
-
-    st.markdown("### 🔁 Resit Assignments")
-    _r1, _r2, _r3 = st.columns(3)
-    _r1.metric("Total Resits", len(_resit_events))
-    _r2.metric("Upcoming", _resit_upcoming)
-    _r3.metric("Completed", _resit_completed)
-
-    if _resit_events:
-        _sorted_resits = sorted(_resit_events, key=lambda x: x["date"])
-        for _resit in _sorted_resits:
-            _resit_date = _datetime.strptime(_resit["date"], "%Y-%m-%d").date()
-            _resit_days = (_resit_date - _today).days
-            if _resit_days < 0:
-                _resit_status = f"✅ Completed ({abs(_resit_days)} days ago)"
-            elif _resit_days == 0:
-                _resit_status = "🔥 Due today"
-            elif _resit_days == 1:
-                _resit_status = "🟡 1 day left"
-            else:
-                _resit_status = f"🟡 {_resit_days} days left"
-
-            st.markdown(
-                f"- **{_resit['course']}** · {_resit['name']} · {_resit_date.strftime('%d %b %Y')} · {_resit_status}"
-            )
-    else:
-        st.info("No resit assignments registered in the progression plan.")
-
-    st.markdown("---")
-
-    # ── Render each event ─────────────────────────────────────────────────────
-    _type_icons = {
-        "enrollment":      "🎓",
-        "module_start":    "📖",
-        "assessment_start":"✏️",
-        "deadline":        "⏰",
-    }
-
-    for _evt in _EVENTS:
-        _edate = _datetime.strptime(_evt["date"], "%Y-%m-%d").date()
-        _delta = (_edate - _today).days
-
-        # Apply filters
-        if _view == "Upcoming Only" and _delta < 0:
-            continue
-        if _view == "Deadlines Only" and _evt["type"] != "deadline":
-            continue
-        if _view == "Module Starts Only" and _evt["type"] not in ("module_start", "enrollment"):
-            continue
-        if _view == "Resit Assignments" and not (
-            _evt["type"] == "deadline" and re.search(r"resit|resubmission|late", _evt["name"], flags=re.IGNORECASE)
-        ):
-            continue
-        if _course_filter != "All Courses" and _evt["course"] != _course_filter:
-            continue
-
-        # Status colour & countdown text
-        if _delta < 0:
-            _status_emoji = "✅"
-            _countdown = f"{abs(_delta)} days ago"
-            _bg = "#1a1a2e"
-            _border = "#2d2d4e"
-        elif _delta == 0:
-            _status_emoji = "🔥"
-            _countdown = "TODAY!"
-            _bg = "#3d1a00"
-            _border = "#e74c3c"
-        elif _delta <= 3:
-            _status_emoji = "🔴"
-            _countdown = f"in {_delta} day{'s' if _delta != 1 else ''}"
-            _bg = "#3d0000"
-            _border = "#e74c3c"
-        elif _delta <= 14:
-            _status_emoji = "🟡"
-            _countdown = f"in {_delta} days"
-            _bg = "#2d2200"
-            _border = "#f39c12"
-        else:
-            _status_emoji = "🟢"
-            _countdown = f"in {_delta} days"
-            _bg = "#0d2d1a"
-            _border = "#2ecc71"
-
-        _course_colour = _COURSE_COLOURS.get(_evt["course"], "#555")
-        _icon = _type_icons.get(_evt["type"], "📌")
-
-        st.markdown(f"""
-<div style="
-    background:{_bg};
-    border-left: 5px solid {_border};
-    border-radius: 8px;
-    padding: 12px 16px;
-    margin-bottom: 8px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-">
-  <div style="min-width:56px; text-align:center;">
-    <span style="background:{_course_colour}; color:#fff; font-size:11px; font-weight:700;
-                 padding:3px 7px; border-radius:12px; display:inline-block;">{_evt['course']}</span>
-  </div>
-  <div style="flex:1;">
-    <div style="font-size:15px; font-weight:600; color:#f0f0f0;">{_icon} {_evt['name']}</div>
-    <div style="font-size:12px; color:#aaa; margin-top:2px;">{_evt['course_name']}</div>
-  </div>
-  <div style="text-align:right; min-width:130px;">
-    <div style="font-size:13px; color:#ddd; font-weight:600;">{_edate.strftime('%a %d %b %Y')}</div>
-    <div style="font-size:13px; color:{_border}; font-weight:700; margin-top:2px;">{_status_emoji} {_countdown}</div>
-  </div>
-</div>
-""", unsafe_allow_html=True)
-
-    st.markdown("---")
-    st.caption("📋 Source: [PROGRESSION PLAN DA1 FT](https://learning.noroff.no/mod/folder/view.php?id=28956), JAN 2026 FT sheet · Updated 22 September 2026 · Checked 16 October 2026")
+    st.title("Progression Plan")
+    st.caption("JAN 2026 Full-Time Data Analyst · Year 1 · All times Europe/Oslo")
+    render_schedule(courses_data, key="progression_schedule")
+    st.divider()
+    render_timeline(courses_data)
+    st.caption("Source: [PROGRESSION PLAN DA1 FT](https://learning.noroff.no/mod/folder/view.php?id=28956), JAN 2026 FT sheet · Updated 22 September 2026 · Checked 16 October 2026. Year 2 dates are not yet verified.")
 
 save_persisted_state(st.session_state)
