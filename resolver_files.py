@@ -158,7 +158,8 @@ Use the supplied schema and dataset IDs exactly. The executor uses ALL rows, not
 Schema:
 {"version":1,"title":"...","steps":["English action/explanation"],"assumptions":["..."],"unresolved":["..."],
 "tables":[...],"charts":[...],"images":[{"id":"illustration1","title":"...","prompt":"English image generation prompt, educational illustration, no invented data or charts","caption":"..."}],
-"context":[{"title":"...","text":"Background supported by supplied material only"}],"sources":[{"title":"...","url":"URL present in supplied brief/documents only"}]}
+"context":[{"title":"...","text":"Background supported by supplied material only"}],"sources":[{"title":"...","url":"URL present in supplied brief/documents, or a supplied dataset ID such as input1"}]}
+Uploaded datasets are credited automatically. Prefer sources: [] if there are no external references. Never invent a URL. Keep each chart explanation under 180 characters where possible; longer explanations receive separate interpretation slides.
 At most 20 tables, 12 charts, 6 images, 12 steps, 6 context slides, 12 sources. Table IDs cannot reuse input1, input2 etc. Tables execute in order; sources are input IDs or earlier table IDs.
 Table types:
 1. {"id":"derived","operation":"select","source":"input1","sort_by":["year"],"where":"col('year') >= 2000","columns":[{"name":"Year","expression":"col('year')"},{"name":"Value","expression":"number(col('value')) / 1000000000","format":"0.00"}]}
@@ -1245,7 +1246,31 @@ def build_powerpoint(plan, tables, workbook, images):
             4.1,
             18,
         )
-        text(s, spec.get("explanation", ""), 9.65, 5.1, 3.05, 1.7, 16)
+        explanation = spec.get("explanation", "")
+        if len(explanation) <= 180:
+            text(s, explanation, 9.65, 5.1, 3.05, 1.7, 16)
+        else:
+            text(
+                s,
+                "Method and interpretation follow on the next slide.",
+                9.65,
+                5.1,
+                3.05,
+                1.7,
+                16,
+            )
+            chunks = []
+            chunk = ""
+            for word in explanation.split():
+                if len(chunk) + len(word) > 650 and chunk:
+                    chunks.append(chunk)
+                    chunk = ""
+                chunk += (" " if chunk else "") + word
+            if chunk:
+                chunks.append(chunk)
+            for chunk in chunks:
+                s = slide("Interpretation: " + spec.get("title", spec["id"]))
+                text(s, chunk, 0.7, 1.5, 11.9, 4.9, 22)
     for spec in plan.get("images", []):
         if spec["id"] not in images:
             raise PlanError(
@@ -1277,7 +1302,11 @@ def build_powerpoint(plan, tables, workbook, images):
     )
     sources = (
         [f"Data: {t.label}" for key, t in tables.items() if key.startswith("input")]
-        + [f"{r['title']}: {r['url']}" for r in plan.get("sources", [])]
+        + [
+            f"{r['title']}: {r['url']}"
+            for r in plan.get("sources", [])
+            if r["url"] not in tables
+        ]
         + [
             f"Images: OpenAI imagegen, {r['created'][:10]}, model {r['model']}."
             for r in images.values()
@@ -1338,10 +1367,12 @@ def build_powerpoint(plan, tables, workbook, images):
     return packed.getvalue()
 
 
-def validate_sources(plan, brief, documents):
+def validate_sources(plan, brief, documents, datasets=()):
     supplied = brief + "\n" + "\n".join(text for _, text in documents)
     for source in plan.get("sources", []):
         url = source.get("url", "")
+        if url in {f"input{i}" for i in range(1, len(datasets) + 1)}:
+            continue
         if (
             not isinstance(url, str)
             or not url.startswith(("https://", "http://"))
@@ -1502,12 +1533,12 @@ def validate_files(plan, tables, workbook, powerpoint=None):
             }
         )
     for spec in plan["charts"]:
-        if len(spec.get("title", "")) > 90 or len(spec.get("explanation", "")) > 180:
+        if len(spec.get("title", "")) > 90:
             results.append(
                 {
                     "status": "warning",
                     "check": "Presentation text fit",
-                    "detail": f"{spec['id']}: shorten the title or explanation, or inspect its text fit in PowerPoint.",
+                    "detail": f"{spec['id']}: shorten the long title or inspect its text fit in PowerPoint.",
                 }
             )
     for context in plan.get("context", []):
@@ -1525,6 +1556,11 @@ def validate_files(plan, tables, workbook, powerpoint=None):
 def instructions(plan, tables, checks):
     text = f"# {plan.get('title','Data analysis')}\n\n"
     text += "\n".join(f"{i}. {step}" for i, step in enumerate(plan.get("steps", []), 1))
+    text += "\n\n## Source data\n" + "\n".join(
+        f"- {key}: {table.label} — {table.sheet}, {len(table.frame)} rows."
+        for key, table in tables.items()
+        if key.startswith("input")
+    )
     text += "\n\n## Calculation walkthrough\n"
     for spec in plan.get("tables", []):
         table = tables[spec["id"]]

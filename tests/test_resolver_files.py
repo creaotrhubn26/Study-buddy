@@ -419,9 +419,51 @@ class FileWorkflowTests(unittest.TestCase):
         f.validate_sources(
             plan, "brief", [("reference.md", "https://example.test/evidence")]
         )
+        plan["sources"] = [{"title": "Uploaded source", "url": "input1"}]
+        f.validate_sources(plan, "brief", [], data)
+        plan["sources"][0]["url"] = "input9"
+        with self.assertRaises(f.PlanError):
+            f.validate_sources(plan, "brief", [], data)
         plan["images"] = [{"id": "same", "prompt": "a"}, {"id": "same", "prompt": "b"}]
         with self.assertRaises(f.PlanError):
             f.parse_plan(json.dumps(plan))
+
+    def test_internal_citations_and_long_interpretations_round_trip(self):
+        data, plan = scenario()
+        plan["sources"] = [{"title": "Dataset", "url": "input1"}]
+        explanation = (
+            "These synthetic observations illustrate a comparison of levels and annual changes. "
+            * 12
+        )
+        plan["charts"][0]["explanation"] = explanation
+        f.validate_sources(plan, "brief", [], data)
+        tables, _ = f.execute_plan(plan, data)
+        workbook = f.build_excel(plan, tables)
+        deck = f.build_powerpoint(plan, tables, workbook, {})
+        checks = f.validate_files(plan, tables, workbook, deck)
+        self.assertFalse(any(c["check"] == "Presentation text fit" for c in checks))
+        prs = Presentation(BytesIO(deck))
+        texts = [
+            shape.text
+            for slide in prs.slides
+            for shape in slide.shapes
+            if shape.has_text_frame
+        ]
+        self.assertEqual(sum(t.count("Interpretation:") for t in texts), 2)
+        source_slide = next(
+            s
+            for s in prs.slides
+            if any(
+                shape.has_text_frame and shape.text == "Sources" for shape in s.shapes
+            )
+        )
+        self.assertNotIn(
+            "input1",
+            "\n".join(
+                shape.text for shape in source_slide.shapes if shape.has_text_frame
+            ),
+        )
+        self.assertIn("Source data", f.instructions(plan, tables, checks))
 
 
 if __name__ == "__main__":
