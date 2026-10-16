@@ -115,7 +115,7 @@ def render_file_workflow(brief, datasets, documents, client, model, base_key):
             return
         try:
             plan = files.parse_plan(raw)
-            files.validate_sources(plan, brief, documents)
+            files.validate_sources(plan, brief, documents, datasets)
             plan_signature = files.digest_plan(plan)
         except (files.PlanError, KeyError, TypeError, ValueError) as exc:
             st.error(f"Plan needs correction: {exc}")

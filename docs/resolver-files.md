@@ -21,7 +21,9 @@ generated explanations are in English.
 4. **Build PowerPoint and review pack** creates a native editable chart for each
    selected visualisation, with embedded workbook snapshots. It also includes
    title, agenda, executive summary, data/assumptions, supplied background,
-   summary, source references and image editing evidence. Generation prompts
+   summary, source references and image editing evidence. Long chart explanations
+   receive separate interpretation slides rather than overflowing the chart.
+   Generation prompts
    and speaker notes are not included in the presentation.
 5. Read **Automatic checks and remaining manual review**. Download the Excel,
    PowerPoint, English guide, check report or ZIP. Open the Office files yourself,
@@ -64,7 +66,9 @@ There is no Python `eval`, generated script execution, network fetch or arbitrar
 filesystem path in an analysis plan. Unknown operations, columns, zero
 denominators, malformed periods, duplicate join keys and bounds that hide data
 stop file creation. Strings from sources are written literally, not as formulas
-or hyperlinks. Citation URLs must be present in the supplied brief/documents.
+or hyperlinks. Citation URLs must be present in the supplied brief/documents;
+internal dataset citations must resolve to an actual uploaded dataset ID and
+are credited using its filename, without creating a fictitious URL.
 
 Limits are explicit: eight uploaded data tables; 20 derived tables; 20,000 rows,
 80 columns and 200,000 cells per table; 500,000 cells overall; 12 charts and six
