@@ -6,8 +6,9 @@ import sys
 import arp_lesson12
 import arp_lesson13
 import arp_lesson14
+import arp_lesson21
 
-CONTENT_REVISION = "2026-11-09-arp14"
+CONTENT_REVISION = "2026-11-09-arp21"
 COURSE_CODE = "FI1BBAR05"
 COURSE_NAME = "Analysis Reporting"
 ASSET_ROOT = Path(__file__).resolve().parent / "assets" / "arp"
@@ -303,7 +304,12 @@ def get_task_guides(number):
 
 
 # Additional lessons supply the same task material interface as Lesson 1.1.
-TASK_MATERIALS = {"1.2": arp_lesson12, "1.3": arp_lesson13, "1.4": arp_lesson14}
+TASK_MATERIALS = {
+    "1.2": arp_lesson12,
+    "1.3": arp_lesson13,
+    "1.4": arp_lesson14,
+    "2.1": arp_lesson21,
+}
 
 
 def task_material(guide=None):
@@ -409,15 +415,41 @@ def get_course_lessons():
                 diagrams=False, tables=True, highlighted_sections=True
             ),
         ),
+        dict(
+            course_code=COURSE_CODE,
+            lesson_number="2.1",
+            title="Report-generating Tools",
+            module_number=2,
+            module_title="Report-Generating Tools",
+            source_url=arp_lesson21.LESSON_URL,
+            source_checked_on=CHECKED_ON,
+            content=arp_lesson21.LESSON_CONTENT
+            + f"\n\n[Original lesson]({arp_lesson21.LESSON_URL}) · [Original task]({arp_lesson21.TASK_URL}). Checked {CHECKED_ON}.",
+            illustration=None,
+            arp_illustrations=deepcopy(arp_lesson21.ILLUSTRATIONS),
+            key_points=[
+                "Choose narrative, paginated or executable reporting for the reader",
+                "Distinguish Jupyter .ipynb, plain Markdown and R Markdown .Rmd",
+                "Trace claims to dated evidence and independent sources",
+                "Evaluate all three Task 2.1 articles in one page with qualified judgements",
+            ],
+            visual_elements=dict(
+                diagrams=False, tables=True, highlighted_sections=True
+            ),
+        ),
     ]
 
 
 def get_training_modules():
-    return {
+    modules = {
         "ARP Module 1: Report Writing": dict(
             course=COURSE_NAME,
             description="Reviewed Lessons 1.1–1.4: report writing, formatting, referencing and visual integration with guided task workflows.",
-            lessons=get_course_lessons(),
+            lessons=[
+                lesson
+                for lesson in get_course_lessons()
+                if lesson["module_number"] == 1
+            ],
             exercises=[
                 dict(
                     title="Task 1.1 Report questions",
@@ -532,3 +564,53 @@ def get_training_modules():
             ],
         )
     }
+
+    modules["ARP Module 2: Report-Generating Tools"] = dict(
+        course=COURSE_NAME,
+        description="Reviewed Lesson 2.1: reporting workflows and critical reading, with a three-article reliability task.",
+        lessons=[
+            lesson for lesson in get_course_lessons() if lesson["module_number"] == 2
+        ],
+        exercises=[
+            dict(
+                title="Task 2.1 Source reliability",
+                type="case_study",
+                question=arp_lesson21.GUIDE["deliverable"],
+                hint="Use the same evidence criteria for all three articles and distinguish verified facts from broader interpretations.",
+                answer=arp_lesson21.guide_markdown(),
+            )
+        ],
+        quiz=[
+            dict(
+                question="Original Study Buddy revision: What does Task 2.1 require?",
+                options=[
+                    "A one-page report evaluating all three supplied articles",
+                    "A 500-word Harvard overview",
+                    "A new Excel chart and PowerPoint",
+                ],
+                correct=0,
+                explanation="Task 2.1 asks for explained reliability findings on all three articles in a one-page report; the other requirements belong elsewhere.",
+            ),
+            dict(
+                question="Original Study Buddy revision: Two sites republish the same original story. What does this establish?",
+                options=[
+                    "Two independent confirmations",
+                    "A republication chain, not independent corroboration",
+                    "That every claim is false",
+                ],
+                correct=1,
+                explanation="Trace the original evidence. Neither repetition nor biased wording alone settles factual accuracy.",
+            ),
+            dict(
+                question="Original Study Buddy revision: An 846% increase means the new amount is approximately…",
+                options=[
+                    "8.46 times the baseline",
+                    "846 times the baseline",
+                    "9.46 times the baseline",
+                ],
+                correct=2,
+                explanation="The original 100% remains: 1 + 8.46 = 9.46. Check dates, geography, denominator and rounding before using the result.",
+            ),
+        ],
+    )
+    return modules
