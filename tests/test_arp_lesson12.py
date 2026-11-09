@@ -26,7 +26,8 @@ class ARPLesson12Tests(unittest.TestCase):
     def test_original_file_requirements_and_resources(self):
         guides = curriculum.all_task_guides()
         self.assertEqual(
-            [g["lesson_number"] for g in guides], ["1.1", "1.2", "1.3", "1.4", "2.1"]
+            [g["lesson_number"] for g in guides],
+            ["1.1", "1.2", "1.3", "1.4", "2.1", "2.2"],
         )
         self.assertNotEqual(guides[0]["uid"], guides[1]["uid"])
         self.assertEqual(len(lesson.STEPS), 7)

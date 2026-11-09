@@ -42,3 +42,14 @@ Generated with built-in OpenAI imagegen on 9 November 2026. Original PNG bytes a
 - `task-2-1-claim-verification.png`: A shared claim-to-evidence process for three articles, qualified judgements and the one-page deliverable.
 
 Exact prompts: `imagegen-prompts-2-1.json`. App captions provide text equivalents.
+
+## Lesson 2.2 and Task 2.2
+
+Generated with built-in OpenAI imagegen on 9 November 2026. Original final PNG bytes are preserved. Conceptual study aids, not measured data plots, software screenshots or completed reports. No official solution was opened.
+
+- `lesson-2-2-data-to-report.png`: Purpose, data, findings, interpretation, conclusion and justified action with limits.
+- `task-2-2-nice-ride-workflow.png`: Seven task steps and the four practical output requirements. The chart icon is conceptual; ticks identify requirements rather than completion.
+
+Generation and final edit prompts: `imagegen-prompts-2-2.json`. Text captions provide equivalent explanations.
+
+The chart picture inside the Task 2.2 Word template is generated programmatically from the six supplied fictional counts; it is not an imagegen illustration. Its native editable counterpart is provided in the Excel workbook. Source: Noroff Task 2.2, https://learning.noroff.no/mod/book/view.php?id=22937&chapterid=81727.

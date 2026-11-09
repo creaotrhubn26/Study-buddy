@@ -7,8 +7,9 @@ import arp_lesson12
 import arp_lesson13
 import arp_lesson14
 import arp_lesson21
+import arp_lesson22
 
-CONTENT_REVISION = "2026-11-09-arp21"
+CONTENT_REVISION = "2026-11-09-arp22"
 COURSE_CODE = "FI1BBAR05"
 COURSE_NAME = "Analysis Reporting"
 ASSET_ROOT = Path(__file__).resolve().parent / "assets" / "arp"
@@ -309,6 +310,7 @@ TASK_MATERIALS = {
     "1.3": arp_lesson13,
     "1.4": arp_lesson14,
     "2.1": arp_lesson21,
+    "2.2": arp_lesson22,
 }
 
 
@@ -432,6 +434,28 @@ def get_course_lessons():
                 "Distinguish Jupyter .ipynb, plain Markdown and R Markdown .Rmd",
                 "Trace claims to dated evidence and independent sources",
                 "Evaluate all three Task 2.1 articles in one page with qualified judgements",
+            ],
+            visual_elements=dict(
+                diagrams=False, tables=True, highlighted_sections=True
+            ),
+        ),
+        dict(
+            course_code=COURSE_CODE,
+            lesson_number="2.2",
+            title="Creating Full-length Reports",
+            module_number=2,
+            module_title="Report-Generating Tools",
+            source_url=arp_lesson22.LESSON_URL,
+            source_checked_on=CHECKED_ON,
+            content=arp_lesson22.LESSON_CONTENT
+            + f"\n\n[Original lesson]({arp_lesson22.LESSON_URL}) · [Original task]({arp_lesson22.TASK_URL}). Checked {CHECKED_ON}.",
+            illustration=None,
+            arp_illustrations=deepcopy(arp_lesson22.ILLUSTRATIONS),
+            key_points=[
+                "Connect purpose, data, findings, interpretation and conclusion",
+                "Use the six supplied fictional Nice Ride brand counts",
+                "Create a Word report with heading styles and a vertical Column plot",
+                "Place a short supported comment after the plot and inspect the saved file",
             ],
             visual_elements=dict(
                 diagrams=False, tables=True, highlighted_sections=True
@@ -567,7 +591,7 @@ def get_training_modules():
 
     modules["ARP Module 2: Report-Generating Tools"] = dict(
         course=COURSE_NAME,
-        description="Reviewed Lesson 2.1: reporting workflows and critical reading, with a three-article reliability task.",
+        description="Reviewed Lessons 2.1–2.2: reporting tools, critical reading and a Nice Ride Word report with a column chart.",
         lessons=[
             lesson for lesson in get_course_lessons() if lesson["module_number"] == 2
         ],
@@ -612,5 +636,34 @@ def get_training_modules():
                 explanation="The original 100% remains: 1 + 8.46 = 9.46. Check dates, geography, denominator and rounding before using the result.",
             ),
         ],
+    )
+    modules["ARP Module 2: Report-Generating Tools"]["exercises"].append(
+        dict(
+            title="Task 2.2 Nice Ride report",
+            type="case_study",
+            question=arp_lesson22.GUIDE["deliverable"],
+            hint="Check all six counts, identify Mercedes 220, use a vertical column chart and put the comment after it.",
+            answer=arp_lesson22.guide_markdown(),
+        )
+    )
+    modules["ARP Module 2: Report-Generating Tools"]["quiz"].extend(
+        [
+            dict(
+                question="Original Study Buddy revision: Which brand has the highest Nice Ride count?",
+                options=["Audi 180", "Mercedes 220", "Tesla 85"],
+                correct=1,
+                explanation="Mercedes has 220 of the supplied 865 cars. This describes the fictional data, not national demand or profit.",
+            ),
+            dict(
+                question="Original Study Buddy revision: What plot and comment does Task 2.2 require?",
+                options=[
+                    "A pie chart with no explanation",
+                    "A line chart and a future forecast",
+                    "A Column plot and a short comment following it",
+                ],
+                correct=2,
+                explanation="Use six vertical columns and real Word heading styles. No reporting period or shop-level breakdown is supplied.",
+            ),
+        ]
     )
     return modules

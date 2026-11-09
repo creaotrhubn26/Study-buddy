@@ -229,6 +229,24 @@ def _render_task(guide, base_key, show_images):
         st.caption(
             "One page, all three articles. The source notes are study checks, not proof of your own reading."
         )
+    elif number == "2.2":
+        with st.expander(
+            "Nice Ride source data and supported findings", expanded=False
+        ):
+            st.markdown(material.data_markdown())
+            st.write(
+                "Mercedes leads with 220 cars. Total: 865. Lead over Audi: 40. These aggregate counts do not establish causes, profit or individual shop results."
+            )
+        with st.expander("Worked short comment and final file checks", expanded=False):
+            st.caption(
+                "Original Study Buddy example to study and adapt, not the official solution or your completed report."
+            )
+            st.write(material.SAMPLE_COMMENT)
+            for title, detail in material.CHECKS:
+                st.markdown(f"- **{title}:** {detail}")
+        st.caption(
+            "The Word template has placeholder prose and a static chart picture. The Excel workbook has a native editable column chart. Replace the Word picture if inputs change."
+        )
     else:
         with st.expander("Example questions from general to specific", expanded=False):
             st.caption(
@@ -350,6 +368,7 @@ def _render_task(guide, base_key, show_images):
         "1.3": "overview and source notes",
         "1.4": "Office plan and observations",
         "2.1": "reliability report and verification notes",
+        "2.2": "Nice Ride report and file checks",
     }[number]
     draft_label = {
         "1.1": "Your report questions and evidence plan",
@@ -357,6 +376,7 @@ def _render_task(guide, base_key, show_images):
         "1.3": "Your workplace overview and source notes",
         "1.4": "Your Office workflow and observed results",
         "2.1": "Your one-page reliability report and verification notes",
+        "2.2": "Your Nice Ride report draft and file checks",
     }[number]
     with st.expander(
         f"Write your Task {number} " + draft_title,
