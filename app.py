@@ -67665,6 +67665,14 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
     }
 
     if course_code == arp_curriculum.COURSE_CODE:
+        style_profiles["Word document formatting and verification"] = {
+            "summary": "explain Word formatting steps and review written check notes",
+            "keywords": ["word", "newsprint", "pagination", "table of contents", "landscape", "page break", "lessontasks"],
+            "structure": ["Restate the five required edits to LessonTasks.docx.",
+                          "Explain the currently selected learning step and the Word edition limits.",
+                          "Flag the second-paragraph interpretation and any unverified native formatting.",
+                          "Give a saved-file checklist; distinguish observations from plans and submit nothing."],
+        }
         style_profiles["Report question planning"] = {
             "summary": "plan neutral report questions from general to specific",
             "keywords": ["report question", "question plan", "organic engagement", "handmade", "posting schedule"],
@@ -68477,8 +68485,10 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 "and formulas unchanged. Translate Norwegian study-guide wording into "
                 "English when explaining it, even if the question is in Norwegian.\n"
             )
-            if course_code == arp_curriculum.COURSE_CODE and resolver_task_number_boost(arp_curriculum.GUIDE, exam_prompt):
-                system_prompt += "\nARP Task 1.1 scope: " + arp_curriculum.BOUNDARY + " Review question order and evidence needs in English. Return feedback, suggested questions and next actions; do not invent an engagement findings report.\n"
+            if course_code == arp_curriculum.COURSE_CODE:
+                for arp_guide in arp_curriculum.all_task_guides():
+                    if resolver_task_number_boost(arp_guide, exam_prompt):
+                        system_prompt += f"\nARP Task {arp_guide['lesson_number']} scope: " + arp_guide["caution"] + " Review the selected step and student draft in English. Distinguish planned actions from observed checks.\n"
             if course_code == "FI1BBEO10":
                 system_prompt += (
                     "\n\nEVO measurement accuracy checks:\n"
@@ -70180,8 +70190,10 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 if any(resolver_task_number_boost(g, exam_prompt) for g in dvs_curriculum.get_dvs_task_guides(lesson_number)):
                     scores[style] += 100
 
-        if course_code == arp_curriculum.COURSE_CODE and resolver_task_number_boost(arp_curriculum.GUIDE, exam_prompt):
-            scores["Report question planning"] += 100
+        if course_code == arp_curriculum.COURSE_CODE:
+            for arp_guide in arp_curriculum.all_task_guides():
+                if resolver_task_number_boost(arp_guide, exam_prompt):
+                    scores["Word document formatting and verification" if arp_guide["lesson_number"] == "1.2" else "Report question planning"] += 100
 
         best_mode = max(scores.items(), key=lambda item: item[1])[0] if scores else "Broad case question"
         if scores.get(best_mode, 0) <= 0:
@@ -70368,7 +70380,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         with resources_panel:
             if course_code in GUIDED_TASK_COURSES:
                 st.markdown("### 2. Task guide and templates" if course_code in {dvs_curriculum.COURSE_CODE, arp_curriculum.COURSE_CODE} else "### 2. Task guide and workbook")
-                st.caption("Enter Task 1.1 to find the report-question guide and templates." if course_code == arp_curriculum.COURSE_CODE else "Enter a task number such as Task 2.4 to find its guide and templates." if course_code == dvs_curriculum.COURSE_CODE else "Enter a task number, for example Task 7.2, to find its guide and workbook.")
+                st.caption("Enter Task 1.1 or Task 1.2 to find its guide and templates." if course_code == arp_curriculum.COURSE_CODE else "Enter a task number such as Task 2.4 to find its guide and templates." if course_code == dvs_curriculum.COURSE_CODE else "Enter a task number, for example Task 7.2, to find its guide and workbook.")
             else:
                 st.markdown("### 2. Sources for this question")
                 st.caption("Enter a question above to find relevant course sources.")
@@ -70604,7 +70616,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             render_course_task_resources(matched_tasks, base_key)
         elif course_code in GUIDED_TASK_COURSES:
             st.markdown("### 2. Task guide and templates" if course_code in {dvs_curriculum.COURSE_CODE, arp_curriculum.COURSE_CODE} else "### 2. Task guide and workbook")
-            st.caption("Enter Task 1.1 or choose Task guides only in Advanced settings." if course_code == arp_curriculum.COURSE_CODE else "Enter an exact task number such as Task 2.4, or choose Task guides only in Advanced settings." if course_code == dvs_curriculum.COURSE_CODE else "Enter a task number, for example Task 7.2, or choose Task guides only in Advanced settings.")
+            st.caption("Enter Task 1.1 or Task 1.2, or choose Task guides only in Advanced settings." if course_code == arp_curriculum.COURSE_CODE else "Enter an exact task number such as Task 2.4, or choose Task guides only in Advanced settings." if course_code == dvs_curriculum.COURSE_CODE else "Enter a task number, for example Task 7.2, or choose Task guides only in Advanced settings.")
         else:
             st.markdown("### 2. Sources for this question")
             st.caption("The resolver connects your question to these course sources. Change them in Advanced settings if needed.")

@@ -1,0 +1,6 @@
+Requirement,Native file check,Status,Observed evidence,Issue or next action
+Newsprint design,Exact named Newsprint design/style set is selected; record Word edition and gallery name.,Not checked,,
+Top-right pagination,Dynamic page-number fields appear in the top-right header and increment on later pages.,Not checked,,
+Page break after second paragraph,Record the paragraph text anchor and interpretation; inspect the explicit Page Break marker.,Not checked,,
+Table of contents,An automatic TOC uses real headings and its entries/page numbers have been updated.,Not checked,,
+Landscape orientation,All pages/sections are landscape in the reopened saved DOCX.,Not checked,,

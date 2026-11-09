@@ -8,29 +8,32 @@ RESOLVER_BASE = "course_exam_connector_fi1bbar05_learn_practice"
 UID = curriculum.GUIDE["uid"]
 
 
-def draft(state):
-    return state.get("arp_task_drafts", {}).get(UID, curriculum.QUESTION_TEMPLATE)
+def draft(state, guide=None):
+    guide = guide or curriculum.GUIDE
+    return state.get("arp_task_drafts", {}).get(
+        guide["uid"], curriculum.task_material(guide).QUESTION_TEMPLATE
+    )
 
 
-def remember_draft(widget_key):
+def remember_draft(widget_key, uid=UID):
     saved = dict(st.session_state.get("arp_task_drafts", {}))
-    saved[UID] = st.session_state[widget_key]
+    saved[uid] = st.session_state[widget_key]
     st.session_state["arp_task_drafts"] = saved
 
 
-def remember_step(widget_key):
+def remember_step(widget_key, uid=UID):
     saved = dict(st.session_state.get("arp_task_steps", {}))
-    saved[UID] = st.session_state[widget_key]
+    saved[uid] = st.session_state[widget_key]
     st.session_state["arp_task_steps"] = saved
 
 
 def workflow_signature(state, base_key=RESOLVER_BASE):
     return json.dumps(
         {
-            "step": state.get("arp_task_steps", {}).get(UID, 0),
+            "steps": state.get("arp_task_steps", {}),
             "specific": state.get(f"{base_key}_specific_source", ""),
             "manual": state.get(f"{base_key}_selected_sources", []),
-            "draft": draft(state),
+            "drafts": {g["uid"]: draft(state, g) for g in curriculum.all_task_guides()},
             "pool": state.get(f"{base_key}_source_pool", "Lessons + learning outcomes"),
             "scope": state.get(
                 f"{base_key}_scope", "Whole course (auto-select best matches)"
@@ -41,27 +44,39 @@ def workflow_signature(state, base_key=RESOLVER_BASE):
 
 
 def step_context(guide, base_key, state):
+    material = curriculum.task_material(guide)
     index = state.get("arp_task_steps", {}).get(guide["uid"], 0)
-    if not isinstance(index, int) or not 0 <= index < len(curriculum.STEPS):
+    if not isinstance(index, int) or not 0 <= index < len(material.STEPS):
         index = 0
-    title, instruction, check = curriculum.STEPS[index]
+    title, instruction, check = material.STEPS[index]
     return (
-        f"ARP Task 1.1 current selected step: {title}\n{instruction}\nCheck: {check}\n"
-        + curriculum.BOUNDARY
-        + "\nStudent question-plan draft:\n"
-        + draft(state)[:7000]
+        f"ARP Task {guide['lesson_number']} current selected step: {title}\n{instruction}\nCheck: {check}\n"
+        + material.BOUNDARY
+        + "\nStudent draft and check notes:\n"
+        + draft(state, guide)[:7000]
         + "\n\n"
     )
 
 
-def prepare_task_in_resolver():
+def prepare_task_in_resolver(guide=None):
+    guide = guide or curriculum.GUIDE
+    material = curriculum.task_material(guide)
+    request = (
+        "Review my Word editing plan and check notes in English. Explain the selected step, "
+        "check all five requirements and flag unverified formatting, paragraph ambiguity and Word edition limits. "
+        "Do not claim to inspect or modify the DOCX from notes. I will verify the saved Word file and submit it myself."
+        if guide["lesson_number"] == "1.2"
+        else "Review my report-question plan in English. Check the general-to-specific order, all three platforms, "
+        "six-month scope, posting schedule and content type. Flag placeholders and missing definitions. "
+        "Explain the currently selected step and suggest neutral questions. Do not invent findings."
+    )
     st.session_state[f"{RESOLVER_BASE}_prompt"] = (
-        "ARP Task 1.1: Review my report-question plan in English. "
-        + curriculum.BOUNDARY
-        + " Check the general-to-specific order, all three platforms, six-month scope, posting schedule and content type. "
-        "Flag placeholders and missing definitions. Explain the currently selected step and suggest neutral questions. "
-        "Do not write an invented findings report, require paid-ad ROI, or claim to inspect platform analytics or submit work.\n\nMy draft:\n"
-        + draft(st.session_state)
+        f"ARP Task {guide['lesson_number']}: "
+        + request
+        + "\n"
+        + material.BOUNDARY
+        + "\n\nMy draft:\n"
+        + draft(st.session_state, guide)
     )
     st.session_state[f"{RESOLVER_BASE}_source_pool"] = "Lessons + task guides"
     st.session_state[f"{RESOLVER_BASE}_scope"] = (
@@ -75,8 +90,9 @@ def prepare_task_in_resolver():
     st.session_state["last_selected_course"] = curriculum.COURSE_NAME
 
 
-def render_images(base_key):
-    for index, visual in enumerate(curriculum.ILLUSTRATIONS):
+def render_images(base_key, guide=None):
+    material = curriculum.task_material(guide)
+    for index, visual in enumerate(material.ILLUSTRATIONS):
         with st.expander("Visual study guide — " + visual["title"], expanded=False):
             path = curriculum.ASSET_ROOT / visual["file"]
             if not path.is_file():
@@ -94,7 +110,7 @@ def render_images(base_key):
                 )
             st.write(visual["caption"])
             st.caption(
-                "AI-generated educational illustration made with OpenAI imagegen. No measured engagement results are depicted."
+                "AI-generated educational illustration made with OpenAI imagegen. Conceptual study aid, not a software screenshot or evidence of completed work."
             )
 
 
@@ -102,42 +118,61 @@ def render_task_resources(
     guides, base_key, heading="### 2. Task guide and templates", show_images=True
 ):
     st.markdown(heading)
-    st.markdown("**Task 1.1 · " + curriculum.GUIDE["title"] + "**")
-    st.info(
-        "Deliverable: an ordered set of report questions. No dataset or measured engagement findings are supplied."
-    )
-    st.markdown(f"[Open the original task on Noroff]({curriculum.TASK_URL})")
-    current = st.session_state.get("arp_task_steps", {}).get(UID, 0)
+    for guide in guides:
+        _render_task(guide, base_key + "_" + guide["uid"], show_images)
+
+
+def _render_task(guide, base_key, show_images):
+    material = curriculum.task_material(guide)
+    uid, number = guide["uid"], guide["lesson_number"]
+    st.markdown(f"**Task {number} · {guide['title']}**")
+    st.info("Deliverable: " + guide["deliverable"])
+    st.markdown(f"[Open the original task on Noroff]({guide['source_url']})")
+    if number == "1.2":
+        st.caption(
+            "Five required edits, explained in seven learning steps. The Word file must be edited and checked in Word."
+        )
+    current = st.session_state.get("arp_task_steps", {}).get(uid, 0)
     current = (
         current
-        if isinstance(current, int) and 0 <= current < len(curriculum.STEPS)
+        if isinstance(current, int) and 0 <= current < len(material.STEPS)
         else 0
     )
-    step_key = f"{base_key}_arp_step_{UID}"
+    step_key = f"{base_key}_arp_step_{uid}"
     if step_key in st.session_state and st.session_state[step_key] != current:
         st.session_state[step_key] = current
     step = st.selectbox(
-        "Choose a Task 1.1 step",
-        list(range(len(curriculum.STEPS))),
+        f"Choose a Task {number} step",
+        list(range(len(material.STEPS))),
         index=current,
-        format_func=lambda i: curriculum.STEPS[i][0],
+        format_func=lambda i: material.STEPS[i][0],
         key=step_key,
         on_change=remember_step,
-        args=(step_key,),
+        args=(step_key, uid),
     )
-    title, instruction, check = curriculum.STEPS[step]
+    title, instruction, check = material.STEPS[step]
     st.markdown("**" + title + "**")
     st.write(instruction)
     st.caption("Check: " + check)
-    with st.expander("Example questions from general to specific", expanded=False):
-        st.caption(
-            "Original Study Buddy examples to adapt, not the downloaded official solution. The number of questions is a suggestion, not a task requirement."
-        )
-        for title, questions in curriculum.QUESTION_GROUPS:
-            st.markdown("#### " + title)
-            for question in questions:
-                st.markdown("- " + question)
-    for name, label, mime in [
+    if number == "1.2":
+        with st.expander(
+            "Five required checks and paragraph interpretation", expanded=False
+        ):
+            for title, detail in material.CHECKS:
+                st.markdown(f"- **{title}:** {detail}")
+            st.warning(
+                "Second paragraph is ambiguous: headings and blank paragraphs count too. The second substantive body paragraph (Facilisis…) is a working interpretation to confirm if needed."
+            )
+    else:
+        with st.expander("Example questions from general to specific", expanded=False):
+            st.caption(
+                "Original Study Buddy examples to adapt, not the downloaded official solution. The number of questions is a suggestion, not a task requirement."
+            )
+            for title, questions in curriculum.QUESTION_GROUPS:
+                st.markdown("#### " + title)
+                for question in questions:
+                    st.markdown("- " + question)
+    downloads = [
         (
             "ARP Task 1.1 Report Question Plan.md",
             "Download question plan (Markdown)",
@@ -153,7 +188,32 @@ def render_task_resources(
             "Download optional report outline (Markdown)",
             "text/markdown",
         ),
-    ]:
+    ]
+    if number == "1.2":
+        downloads = [
+            (
+                guide["template_file"],
+                "Download Word editing plan (Markdown)",
+                "text/markdown",
+            ),
+            (
+                "ARP Task 1.2 Formatting Checks.csv",
+                "Download five formatting checks (CSV)",
+                "text/csv",
+            ),
+            (
+                "ARP Task 1.2 Seven Step Guide.md",
+                "Download seven-step Word guide (Markdown)",
+                "text/markdown",
+            ),
+        ]
+        st.link_button(
+            "Download original LessonTasks.docx from Noroff", material.SOURCE_URL
+        )
+        st.caption(
+            "Original working file hosted by Noroff; sign in there to download it. Edit a copy in Word. This app does not host the original file or a completed task."
+        )
+    for name, label, mime in downloads:
         path = curriculum.TEMPLATE_ROOT / name
         if path.is_file():
             st.download_button(
@@ -165,55 +225,70 @@ def render_task_resources(
             )
         else:
             st.warning("Template unavailable: " + name)
-    st.caption(
-        "The report outline is optional lesson practice. Task 1.1 asks for questions; it does not prescribe a completed report, page count or file format."
-    )
-    with st.expander("Write your Task 1.1 question plan", expanded=False):
-        editor_key = f"{base_key}_arp_draft_{UID}"
+    if number == "1.1":
+        st.caption(
+            "The report outline is optional lesson practice. Task 1.1 asks for questions; it does not prescribe a completed report, page count or file format."
+        )
+    with st.expander(
+        f"Write your Task {number} "
+        + ("Word plan and check notes" if number == "1.2" else "question plan"),
+        expanded=False,
+    ):
+        editor_key = f"{base_key}_arp_draft_{uid}"
         if editor_key in st.session_state and st.session_state[editor_key] != draft(
-            st.session_state
+            st.session_state, guide
         ):
-            st.session_state[editor_key] = draft(st.session_state)
+            st.session_state[editor_key] = draft(st.session_state, guide)
         st.text_area(
-            "Your report questions and evidence plan",
-            value=draft(st.session_state),
+            (
+                "Your Word editing plan and check notes"
+                if number == "1.2"
+                else "Your report questions and evidence plan"
+            ),
+            value=draft(st.session_state, guide),
             height=260,
             key=editor_key,
             on_change=remember_draft,
-            args=(editor_key,),
+            args=(editor_key, uid),
         )
         st.caption(
             "Apply edits with Ctrl+Enter or by leaving the field. Your draft is saved with Study Buddy state on this app instance; download a copy to keep your work."
         )
         st.download_button(
-            "Download my Task 1.1 draft",
-            draft(st.session_state).encode(),
-            file_name="My ARP Task 1.1 question plan.md",
+            f"Download my Task {number} draft",
+            draft(st.session_state, guide).encode(),
+            file_name=f"My ARP Task {number} draft.md",
             mime="text/markdown",
             key=f"{base_key}_arp_my_draft",
         )
-    with st.expander("Full Task 1.1 guide and checklist", expanded=False):
-        st.markdown(curriculum.guide_markdown())
+    with st.expander(f"Full Task {number} guide and checklist", expanded=False):
+        st.markdown(curriculum.guide_markdown(guide))
     if show_images:
-        render_images(base_key)
+        render_images(base_key, guide)
 
 
 def render_lesson_resources(lesson, context):
     if lesson.get("course_code") != curriculum.COURSE_CODE:
         return
-    base_key = f"arp_{context}_{lesson['lesson_number']}"
-    render_images(base_key)
-    with st.expander("Task 1.1 walkthrough and templates", expanded=False):
+    number = lesson["lesson_number"]
+    guides = curriculum.get_task_guides(number)
+    if not guides:
+        return
+    guide = guides[0]
+    base_key = f"arp_{context}_{number}"
+    render_images(base_key, guide)
+    with st.expander(f"Task {number} walkthrough and templates", expanded=False):
         render_task_resources(
-            curriculum.get_task_guides("1.1"),
+            guides,
             base_key,
-            heading="### Task 1.1 — seven steps",
+            heading=f"### Task {number} — seven steps",
             show_images=False,
         )
         st.button(
-            "Prepare Task 1.1 in Exam Resolver",
+            f"Prepare Task {number} in Exam Resolver",
             key=f"{base_key}_prepare",
             on_click=prepare_task_in_resolver,
+            args=(guide,),
         )
         st.caption(
             "Transfers your applied draft and selected step. Generate a review in Exam Resolver when you are ready; no Noroff task is submitted."
