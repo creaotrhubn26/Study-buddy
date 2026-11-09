@@ -4,8 +4,9 @@ from copy import deepcopy
 from pathlib import Path
 import sys
 import arp_lesson12
+import arp_lesson13
 
-CONTENT_REVISION = "2026-11-09-arp12"
+CONTENT_REVISION = "2026-11-09-arp13"
 COURSE_CODE = "FI1BBAR05"
 COURSE_NAME = "Analysis Reporting"
 ASSET_ROOT = Path(__file__).resolve().parent / "assets" / "arp"
@@ -281,8 +282,8 @@ GUIDE = dict(
 
 
 def guide_markdown(guide=None):
-    if guide and guide.get("lesson_number") == "1.2":
-        return arp_lesson12.guide_markdown()
+    if guide and guide.get("lesson_number") in TASK_MATERIALS:
+        return task_material(guide).guide_markdown()
     text = "## ARP Task 1.1 Report question planning\n\n" + BOUNDARY + "\n\n"
     for title, instruction, check in STEPS:
         text += f"### {title}\n{instruction}\n\nCheck: {check}\n\n"
@@ -293,24 +294,28 @@ def guide_markdown(guide=None):
 
 
 def get_task_guides(number):
-    if str(number) not in {"1.1", "1.2"}:
+    if str(number) != "1.1" and str(number) not in TASK_MATERIALS:
         return []
-    guide = deepcopy(arp_lesson12.GUIDE if str(number) == "1.2" else GUIDE)
+    guide = deepcopy(task_material({"lesson_number": str(number)}).GUIDE)
     guide["markdown"] = guide_markdown(guide)
     return [guide]
 
 
+# Additional lessons supply the same task material interface as Lesson 1.1.
+TASK_MATERIALS = {"1.2": arp_lesson12, "1.3": arp_lesson13}
+
+
 def task_material(guide=None):
     """Keep every task's steps, draft and assets together without sharing state."""
-    return (
-        arp_lesson12
-        if guide and guide.get("lesson_number") == "1.2"
-        else sys.modules[__name__]
-    )
+    return TASK_MATERIALS.get((guide or {}).get("lesson_number"), sys.modules[__name__])
 
 
 def all_task_guides():
-    return get_task_guides("1.1") + get_task_guides("1.2")
+    return [
+        guide
+        for number in ("1.1", *TASK_MATERIALS)
+        for guide in get_task_guides(number)
+    ]
 
 
 def get_course_lessons():
@@ -359,6 +364,28 @@ def get_course_lessons():
                 diagrams=False, tables=True, highlighted_sections=True
             ),
         ),
+        dict(
+            course_code=COURSE_CODE,
+            lesson_number="1.3",
+            title="Referencing Styles and Tools",
+            module_number=1,
+            module_title="Report Writing",
+            source_url=arp_lesson13.LESSON_URL,
+            source_checked_on=CHECKED_ON,
+            content=arp_lesson13.LESSON_CONTENT
+            + f"\n\n[Original lesson]({arp_lesson13.LESSON_URL}) · [Original task]({arp_lesson13.TASK_URL}). Checked {CHECKED_ON}.",
+            illustration=None,
+            arp_illustrations=deepcopy(arp_lesson13.ILLUSTRATIONS),
+            key_points=[
+                "Link claims, in-text citations and full references",
+                "Use Harvard consistently; confirm the required institutional variant",
+                "Find sources with Scholar, read and verify the original evidence",
+                "Plan 500 words and at least four citations for Task 1.3",
+            ],
+            visual_elements=dict(
+                diagrams=False, tables=True, highlighted_sections=True
+            ),
+        ),
     ]
 
 
@@ -366,7 +393,7 @@ def get_training_modules():
     return {
         "ARP Module 1: Report Writing": dict(
             course=COURSE_NAME,
-            description="Reviewed Lessons 1.1–1.2: report questions, writing styles and a seven-step Word formatting guide.",
+            description="Reviewed Lessons 1.1–1.3: report questions, Word formatting, referencing styles and a Harvard-cited workplace overview.",
             lessons=get_course_lessons(),
             exercises=[
                 dict(
@@ -382,6 +409,13 @@ def get_training_modules():
                     question=arp_lesson12.GUIDE["deliverable"],
                     hint="Use the original LessonTasks.docx and verify all five requirements in Word.",
                     answer=arp_lesson12.guide_markdown(),
+                ),
+                dict(
+                    title="Task 1.3 Workplace overview",
+                    type="case_study",
+                    question=arp_lesson13.GUIDE["deliverable"],
+                    hint="Plan 500 words, read sources and trace at least four Harvard citations to real evidence.",
+                    answer=arp_lesson13.guide_markdown(),
                 ),
             ],
             quiz=[
@@ -424,6 +458,26 @@ def get_training_modules():
                     ],
                     correct=0,
                     explanation="Use real heading styles and update the TOC after layout changes.",
+                ),
+                dict(
+                    question="Original Study Buddy revision: What does Task 1.3 explicitly require?",
+                    options=[
+                        "Four distinct sources and Chicago footnotes",
+                        "500 words, at least four citations and a Harvard end list",
+                        "Only a bibliography with no in-text citations",
+                    ],
+                    correct=1,
+                    explanation="The brief asks for at least four citations, not explicitly four distinct sources. Confirm the Harvard variant and counting rule.",
+                ),
+                dict(
+                    question="Original Study Buddy revision: Does an accurate paraphrase need a citation?",
+                    options=[
+                        "Yes, borrowed ideas still need attribution",
+                        "No, only direct quotations need citations",
+                        "Only when using Zotero",
+                    ],
+                    correct=0,
+                    explanation="Write the meaning in your own words and cite the original source. Tools do not remove the need to read and verify evidence.",
                 ),
             ],
         )

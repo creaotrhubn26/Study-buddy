@@ -15,3 +15,12 @@ Generated with built-in OpenAI imagegen on 9 November 2026. Original generated P
 - `task-1-2-word-checks.png`: The five required Word edits, with paragraph and Newsprint checks.
 
 Exact prompts: `imagegen-prompts-1-2.json`. Each app caption provides a text equivalent.
+
+## Lesson 1.3 and Task 1.3
+
+Made with built-in OpenAI imagegen on 9 November 2026. Original generated PNG bytes are retained. Conceptual study aids, not Noroff screenshots or proof of a completed overview. No official solution was used.
+
+- `lesson-1-3-evidence-referencing.png`: How a paraphrase, author-date citation and full reference connect. Formatting placeholders must be replaced with verified source details.
+- `task-1-3-overview-plan.png`: A suggested five-paragraph budget totalling 500 words, four citation placements and a matching Harvard list.
+
+Exact generation/edit prompts: `imagegen-prompts-1-3.json`. App captions provide equivalent text explanations.
