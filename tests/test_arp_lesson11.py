@@ -49,7 +49,7 @@ class ARPLesson11Tests(unittest.TestCase):
         self.assertEqual(lesson["source_checked_on"], "2026-11-09")
         self.assertEqual(lesson["source_url"], c.LESSON_URL)
         self.assertEqual(len(c.STEPS), 7)
-        self.assertEqual(c.get_task_guides("1.2"), [])
+        self.assertNotEqual(c.get_task_guides("1.2")[0]["uid"], c.GUIDE["uid"])
         for fact in [
             "handmade",
             "Facebook",

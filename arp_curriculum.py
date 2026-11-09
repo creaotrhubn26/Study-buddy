@@ -2,8 +2,10 @@
 
 from copy import deepcopy
 from pathlib import Path
+import sys
+import arp_lesson12
 
-CONTENT_REVISION = "2026-11-09-arp11"
+CONTENT_REVISION = "2026-11-09-arp12"
 COURSE_CODE = "FI1BBAR05"
 COURSE_NAME = "Analysis Reporting"
 ASSET_ROOT = Path(__file__).resolve().parent / "assets" / "arp"
@@ -279,6 +281,8 @@ GUIDE = dict(
 
 
 def guide_markdown(guide=None):
+    if guide and guide.get("lesson_number") == "1.2":
+        return arp_lesson12.guide_markdown()
     text = "## ARP Task 1.1 Report question planning\n\n" + BOUNDARY + "\n\n"
     for title, instruction, check in STEPS:
         text += f"### {title}\n{instruction}\n\nCheck: {check}\n\n"
@@ -289,11 +293,24 @@ def guide_markdown(guide=None):
 
 
 def get_task_guides(number):
-    if str(number) != "1.1":
+    if str(number) not in {"1.1", "1.2"}:
         return []
-    guide = deepcopy(GUIDE)
-    guide["markdown"] = guide_markdown()
+    guide = deepcopy(arp_lesson12.GUIDE if str(number) == "1.2" else GUIDE)
+    guide["markdown"] = guide_markdown(guide)
     return [guide]
+
+
+def task_material(guide=None):
+    """Keep every task's steps, draft and assets together without sharing state."""
+    return (
+        arp_lesson12
+        if guide and guide.get("lesson_number") == "1.2"
+        else sys.modules[__name__]
+    )
+
+
+def all_task_guides():
+    return get_task_guides("1.1") + get_task_guides("1.2")
 
 
 def get_course_lessons():
@@ -319,7 +336,29 @@ def get_course_lessons():
             visual_elements=dict(
                 diagrams=False, tables=True, highlighted_sections=True
             ),
-        )
+        ),
+        dict(
+            course_code=COURSE_CODE,
+            lesson_number="1.2",
+            title="Writing Styles",
+            module_number=1,
+            module_title="Report Writing",
+            source_url=arp_lesson12.LESSON_URL,
+            source_checked_on=CHECKED_ON,
+            content=arp_lesson12.LESSON_CONTENT
+            + f"\n\n[Original lesson]({arp_lesson12.LESSON_URL}) · [Original task]({arp_lesson12.TASK_URL}). Checked {CHECKED_ON}.",
+            illustration=None,
+            arp_illustrations=deepcopy(arp_lesson12.ILLUSTRATIONS),
+            key_points=[
+                "Choose report types and writing styles for the reader",
+                "Distinguish semantic styles, design sets, themes and templates",
+                "Apply the five Word edits to LessonTasks.docx",
+                "Inspect the saved file; notes alone cannot prove formatting",
+            ],
+            visual_elements=dict(
+                diagrams=False, tables=True, highlighted_sections=True
+            ),
+        ),
     ]
 
 
@@ -327,7 +366,7 @@ def get_training_modules():
     return {
         "ARP Module 1: Report Writing": dict(
             course=COURSE_NAME,
-            description="Reviewed Lesson 1.1 and Task 1.1: evidence-based reports and an organic social-media question plan.",
+            description="Reviewed Lessons 1.1–1.2: report questions, writing styles and a seven-step Word formatting guide.",
             lessons=get_course_lessons(),
             exercises=[
                 dict(
@@ -336,7 +375,14 @@ def get_training_modules():
                     question=GUIDE["deliverable"],
                     hint="Use the candle-business brief and start broad.",
                     answer=guide_markdown(),
-                )
+                ),
+                dict(
+                    title="Task 1.2 Word formatting",
+                    type="case_study",
+                    question=arp_lesson12.GUIDE["deliverable"],
+                    hint="Use the original LessonTasks.docx and verify all five requirements in Word.",
+                    answer=arp_lesson12.guide_markdown(),
+                ),
             ],
             quiz=[
                 dict(
@@ -358,6 +404,26 @@ def get_training_modules():
                     ],
                     correct=0,
                     explanation="Conclusions follow the evidence already presented. Identify recommendations and uncertainty separately.",
+                ),
+                dict(
+                    question="Original Study Buddy revision: What proves Task 1.2 formatting?",
+                    options=[
+                        "The conceptual image",
+                        "A written plan only",
+                        "Inspection of all five requirements in the saved DOCX",
+                    ],
+                    correct=2,
+                    explanation="Plans and illustrations guide the work; reopen the actual Word file and inspect the required formatting.",
+                ),
+                dict(
+                    question="Original Study Buddy revision: What feeds an automatic table of contents?",
+                    options=[
+                        "Semantic heading styles",
+                        "Bold text alone",
+                        "A screenshot of the headings",
+                    ],
+                    correct=0,
+                    explanation="Use real heading styles and update the TOC after layout changes.",
                 ),
             ],
         )
