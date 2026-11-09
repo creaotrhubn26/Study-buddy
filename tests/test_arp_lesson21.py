@@ -26,7 +26,7 @@ class ARPLesson21Tests(unittest.TestCase):
     def test_scope_evidence_templates_and_module_separation(self):
         self.assertEqual(
             [g["lesson_number"] for g in curriculum.all_task_guides()],
-            ["1.1", "1.2", "1.3", "1.4", "2.1"],
+            ["1.1", "1.2", "1.3", "1.4", "2.1", "2.2"],
         )
         self.assertEqual(len(lesson.STEPS), 7)
         self.assertTrue(lesson.TASK_URL.endswith("id=22937&chapterid=81721"))
@@ -110,7 +110,7 @@ class ARPLesson21Tests(unittest.TestCase):
                 l["lesson_number"]
                 for l in modules["ARP Module 2: Report-Generating Tools"]["lessons"]
             ],
-            ["2.1"],
+            ["2.1", "2.2"],
         )
         self.assertEqual(
             modules["ARP Module 1: Report Writing"]["exercises"][0]["title"],

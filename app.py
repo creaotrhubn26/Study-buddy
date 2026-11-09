@@ -67665,6 +67665,14 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
     }
 
     if course_code == arp_curriculum.COURSE_CODE:
+        style_profiles["Data report with a column chart"] = {
+            "summary": "review the Nice Ride Word report, six brand counts and column chart",
+            "keywords": ["nice ride", "mercedes", "volkswagen", "skoda", "cars sold", "column plot", "220", "865"],
+            "structure": ["Keep the supplied six-brand Nice Ride dataset and selected Task 2.2 step in scope.",
+                          "Verify counts, Mercedes 220, total 865 and any supported comparisons.",
+                          "Explain real Word heading styles, a vertical Column plot and a short comment following it.",
+                          "Flag unsupported causes, dates, shop breakdowns or profit claims and distinguish file checks from plans."],
+        }
         style_profiles["Critical reading and source reliability"] = {
             "summary": "review a one-page, three-article reliability report with dated evidence",
             "keywords": ["source reliability", "critical reading", "naturalnews", "beforeitsnews", "wnd", "corroboration", "846%"],
@@ -70217,7 +70225,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         if course_code == arp_curriculum.COURSE_CODE:
             for arp_guide in arp_curriculum.all_task_guides():
                 if resolver_task_number_boost(arp_guide, exam_prompt):
-                    arp_style = {"1.1": "Report question planning", "1.2": "Word document formatting and verification", "1.3": "Harvard-referenced workplace overview", "1.4": "Office chart integration and native-file verification", "2.1": "Critical reading and source reliability"}[arp_guide["lesson_number"]]
+                    arp_style = {"1.1": "Report question planning", "1.2": "Word document formatting and verification", "1.3": "Harvard-referenced workplace overview", "1.4": "Office chart integration and native-file verification", "2.1": "Critical reading and source reliability", "2.2": "Data report with a column chart"}[arp_guide["lesson_number"]]
                     scores[arp_style] += 100
 
         best_mode = max(scores.items(), key=lambda item: item[1])[0] if scores else "Broad case question"
@@ -70405,7 +70413,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         with resources_panel:
             if course_code in GUIDED_TASK_COURSES:
                 st.markdown("### 2. Task guide and templates" if course_code in {dvs_curriculum.COURSE_CODE, arp_curriculum.COURSE_CODE} else "### 2. Task guide and workbook")
-                st.caption("Enter a task number such as Task 1.4 or Task 2.1 to find its guide and templates." if course_code == arp_curriculum.COURSE_CODE else "Enter a task number such as Task 2.4 to find its guide and templates." if course_code == dvs_curriculum.COURSE_CODE else "Enter a task number, for example Task 7.2, to find its guide and workbook.")
+                st.caption("Enter a task number such as Task 2.1 or Task 2.2 to find its guide and templates." if course_code == arp_curriculum.COURSE_CODE else "Enter a task number such as Task 2.4 to find its guide and templates." if course_code == dvs_curriculum.COURSE_CODE else "Enter a task number, for example Task 7.2, to find its guide and workbook.")
             else:
                 st.markdown("### 2. Sources for this question")
                 st.caption("Enter a question above to find relevant course sources.")
@@ -70641,7 +70649,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             render_course_task_resources(matched_tasks, base_key)
         elif course_code in GUIDED_TASK_COURSES:
             st.markdown("### 2. Task guide and templates" if course_code in {dvs_curriculum.COURSE_CODE, arp_curriculum.COURSE_CODE} else "### 2. Task guide and workbook")
-            st.caption("Enter a task number such as Task 1.4 or Task 2.1, or choose Task guides only in Advanced settings." if course_code == arp_curriculum.COURSE_CODE else "Enter an exact task number such as Task 2.4, or choose Task guides only in Advanced settings." if course_code == dvs_curriculum.COURSE_CODE else "Enter a task number, for example Task 7.2, or choose Task guides only in Advanced settings.")
+            st.caption("Enter a task number such as Task 2.1 or Task 2.2, or choose Task guides only in Advanced settings." if course_code == arp_curriculum.COURSE_CODE else "Enter an exact task number such as Task 2.4, or choose Task guides only in Advanced settings." if course_code == dvs_curriculum.COURSE_CODE else "Enter a task number, for example Task 7.2, or choose Task guides only in Advanced settings.")
         else:
             st.markdown("### 2. Sources for this question")
             st.caption("The resolver connects your question to these course sources. Change them in Advanced settings if needed.")

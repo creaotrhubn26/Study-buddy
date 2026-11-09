@@ -1,0 +1,8 @@
+Check,What to verify,My observed evidence,Status
+Source data,All six brand/count pairs match the task; no invented dates or shop-level records.,,Not checked
+MS Word file,Saved DOCX reopened and all bracketed template prompts replaced.,,Not checked
+Heading styles,"A readable heading hierarchy uses real Word styles, not only direct bold formatting.",,Not checked
+Column plot,"Six vertical columns with correct labels/counts, zero baseline and no total column.",,Not checked
+Comment placement,A short explanation follows the plot and identifies Mercedes 220 with a supported comparison.,,Not checked
+Scope,"No unsupported causes, profit claims, customer motives, forecasts or population-wide popularity claims.",,Not checked
+Static chart picture,"If data changed, the Word picture and its explanation were updated and rechecked.",,Not checked
