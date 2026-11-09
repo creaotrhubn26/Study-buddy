@@ -27,7 +27,7 @@ class ARPLesson14Tests(unittest.TestCase):
     def test_four_questions_templates_and_source_boundaries(self):
         self.assertEqual(
             [g["lesson_number"] for g in curriculum.all_task_guides()],
-            ["1.1", "1.2", "1.3", "1.4", "2.1", "2.2"],
+            ["1.1", "1.2", "1.3", "1.4", "2.1", "2.2", "2.3"],
         )
         self.assertEqual(len(lesson.STEPS), 7)
         self.assertEqual(len(lesson.QUESTION_BRIEFS), 4)

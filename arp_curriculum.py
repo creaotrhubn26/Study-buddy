@@ -8,8 +8,9 @@ import arp_lesson13
 import arp_lesson14
 import arp_lesson21
 import arp_lesson22
+import arp_lesson23
 
-CONTENT_REVISION = "2026-11-09-arp22"
+CONTENT_REVISION = "2026-11-09-arp23"
 COURSE_CODE = "FI1BBAR05"
 COURSE_NAME = "Analysis Reporting"
 ASSET_ROOT = Path(__file__).resolve().parent / "assets" / "arp"
@@ -311,6 +312,7 @@ TASK_MATERIALS = {
     "1.4": arp_lesson14,
     "2.1": arp_lesson21,
     "2.2": arp_lesson22,
+    "2.3": arp_lesson23,
 }
 
 
@@ -461,6 +463,28 @@ def get_course_lessons():
                 diagrams=False, tables=True, highlighted_sections=True
             ),
         ),
+        dict(
+            course_code=COURSE_CODE,
+            lesson_number="2.3",
+            title="Generating Infographics",
+            module_number=2,
+            module_title="Report-Generating Tools",
+            source_url=arp_lesson23.LESSON_URL,
+            source_checked_on=CHECKED_ON,
+            content=arp_lesson23.LESSON_CONTENT
+            + f"\n\n[Original lesson]({arp_lesson23.LESSON_URL}) · [Original task]({arp_lesson23.TASK_URL}). Checked {CHECKED_ON}.",
+            illustration=None,
+            arp_illustrations=deepcopy(arp_lesson23.ILLUSTRATIONS),
+            key_points=[
+                "Use evidence, context and design to explain one clear message",
+                "Choose a Kaggle dataset and perform actual EDA in MS Excel",
+                "Build original GIMP layers and cite external data and visuals",
+                "Save editable .xcf and separately export .jpg; canvas size is a choice",
+            ],
+            visual_elements=dict(
+                diagrams=False, tables=True, highlighted_sections=True
+            ),
+        ),
     ]
 
 
@@ -591,7 +615,7 @@ def get_training_modules():
 
     modules["ARP Module 2: Report-Generating Tools"] = dict(
         course=COURSE_NAME,
-        description="Reviewed Lessons 2.1–2.2: reporting tools, critical reading and a Nice Ride Word report with a column chart.",
+        description="Reviewed Lessons 2.1–2.3: reporting tools, critical reading, a Word report and an EDA-based GIMP infographic.",
         lessons=[
             lesson for lesson in get_course_lessons() if lesson["module_number"] == 2
         ],
@@ -663,6 +687,39 @@ def get_training_modules():
                 ],
                 correct=2,
                 explanation="Use six vertical columns and real Word heading styles. No reporting period or shop-level breakdown is supplied.",
+            ),
+        ]
+    )
+    modules["ARP Module 2: Report-Generating Tools"]["exercises"].append(
+        dict(
+            title="Task 2.3 EDA infographic",
+            type="case_study",
+            question=arp_lesson23.GUIDE["deliverable"],
+            hint="Choose data from Kaggle, verify Excel findings and build your own GIMP infographic with source credits.",
+            answer=arp_lesson23.guide_markdown(),
+        )
+    )
+    modules["ARP Module 2: Report-Generating Tools"]["quiz"].extend(
+        [
+            dict(
+                question="Original Study Buddy revision: Which files does Task 2.3 ask you to retain/export?",
+                options=[
+                    "Only a PNG renamed as XCF",
+                    "An editable .xcf and an exported .jpg",
+                    "A Word report and a PowerPoint",
+                ],
+                correct=1,
+                explanation="Save the working GIMP project as XCF, then export JPEG separately and inspect both files. JPEG does not retain layers.",
+            ),
+            dict(
+                question="Original Study Buddy revision: Is 800 × 1200 px compulsory?",
+                options=[
+                    "Yes, every task uses that size",
+                    "Only if a dataset contains dates",
+                    "No, it is an example; choose suitable dimensions",
+                ],
+                correct=2,
+                explanation="The brief gives an example. Choose for the intended output, and verify readable text, chart labels and source credits.",
             ),
         ]
     )

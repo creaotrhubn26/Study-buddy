@@ -53,3 +53,14 @@ Generated with built-in OpenAI imagegen on 9 November 2026. Original final PNG b
 Generation and final edit prompts: `imagegen-prompts-2-2.json`. Text captions provide equivalent explanations.
 
 The chart picture inside the Task 2.2 Word template is generated programmatically from the six supplied fictional counts; it is not an imagegen illustration. Its native editable counterpart is provided in the Excel workbook. Source: Noroff Task 2.2, https://learning.noroff.no/mod/book/view.php?id=22937&chapterid=81727.
+
+## Lesson 2.3 and Task 2.3
+
+The two study illustrations were generated with built-in OpenAI imagegen on 9 November 2026. Original final PNG bytes are preserved. They explain concepts and workflow; the depicted charts/check icons are not measured data or proof of completed learner work.
+
+- `lesson-2-3-chart-and-infographic.png`: Charts and infographics can work together and can each stand alone with clear context.
+- `task-2-3-kaggle-to-gimp.png`: Kaggle → Excel EDA → GIMP, with distinct editable XCF and exported JPEG files; dimensions are an example.
+
+Exact prompts: `imagegen-prompts-2-3.json`. App captions provide text equivalents.
+
+The optional six-layer OpenRaster layout and `task-2-3-layout-preview.png` were built programmatically from original blank layout shapes/text. They contain no dataset or findings and are not imagegen output or a completed GIMP project. Raster placeholder text must be replaced with GIMP text layers. Archive/layer images and the merged preview were checked; a GIMP open/save round trip was not tested.
