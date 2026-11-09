@@ -24,3 +24,12 @@ Made with built-in OpenAI imagegen on 9 November 2026. Original generated PNG by
 - `task-1-3-overview-plan.png`: A suggested five-paragraph budget totalling 500 words, four citation placements and a matching Harvard list.
 
 Exact generation/edit prompts: `imagegen-prompts-1-3.json`. App captions provide equivalent text explanations.
+
+## Lesson 1.4 and Task 1.4
+
+Generated with built-in OpenAI imagegen on 9 November 2026. Original PNG bytes are preserved. These are conceptual educational illustrations, not Noroff/Office screenshots or evidence of completed experiments.
+
+- `lesson-1-4-linked-embedded-picture.png`: Storage and update differences between linked charts, embedded copies and pictures.
+- `task-1-4-four-question-workflow.png`: Four-question workflow, exact required Excel edits, and three separate caption-based lists. Q1 linking is the lesson-based method rather than an extra quoted task requirement.
+
+Exact prompts: `imagegen-prompts-1-4.json`. The app provides explanatory text captions.

@@ -55,6 +55,11 @@ def step_context(guide, base_key, state):
             f"{source['id']}: {source['reference']} Original: {source['url']} Status: {source['checked']}"
             for source in material.SOURCES
         )
+    if hasattr(material, "RESOURCE_LINKS"):
+        research += (
+            "\nOriginal task resources on Noroff (not native-file verification):\n"
+            + "\n".join(f"{label}: {url}" for label, url in material.RESOURCE_LINKS)
+        )
     return (
         f"ARP Task {guide['lesson_number']} current selected step: {title}\n{instruction}\nCheck: {check}\n"
         + material.BOUNDARY
@@ -146,6 +151,16 @@ def _render_task(guide, base_key, show_images):
             "Seven learning steps: research → evidence plan → 500-word overview → Harvard citation checks."
         )
         st.link_button("Find research in Google Scholar", material.SCHOLAR_URL)
+    if number == "1.4":
+        st.caption(
+            "Four questions, explained in seven learning steps. Record actual Office observations separately from expected behaviour."
+        )
+        with st.expander("Original Task 1.4 files on Noroff", expanded=False):
+            st.caption(
+                "Sign in to Noroff to download the numbered originals. This app does not host the original course documents or a completed task."
+            )
+            for label, url in material.RESOURCE_LINKS:
+                st.markdown(f"- [{label}]({url})")
     current = st.session_state.get("arp_task_steps", {}).get(uid, 0)
     current = (
         current
@@ -192,6 +207,18 @@ def _render_task(guide, base_key, show_images):
             "Harvard examples and optional research leads", expanded=False
         ):
             st.markdown(material.source_cards_markdown())
+    elif number == "1.4":
+        with st.expander("The four task questions and final checks", expanded=False):
+            for title, detail in material.QUESTION_BRIEFS:
+                st.markdown(f"**{title}**")
+                st.write(detail)
+            for title, detail in material.CHECKS:
+                st.markdown(f"- **{title}:** {detail}")
+        with st.expander("Equation image: what needs clarification", expanded=False):
+            st.warning(material.EQUATION_NOTE)
+            st.markdown(
+                f"[Open the original Q3 equation image on Noroff]({material.RESOURCE_LINKS[5][1]})"
+            )
     else:
         with st.expander("Example questions from general to specific", expanded=False):
             st.caption(
@@ -265,6 +292,30 @@ def _render_task(guide, base_key, show_images):
                 "text/markdown",
             ),
         ]
+    elif number == "1.4":
+        downloads = [
+            (
+                guide["template_file"],
+                "Download Office workflow and check log (Markdown)",
+                "text/markdown",
+            ),
+            (
+                "ARP Task 1.4 Chart Experiments.csv",
+                "Download chart experiment log (CSV)",
+                "text/csv",
+            ),
+            (
+                "ARP Task 1.4 Caption Register.csv",
+                "Download caption and list register (CSV)",
+                "text/csv",
+            ),
+            ("ARP Task 1.4 Table Data.csv", "Download Q3 table data (CSV)", "text/csv"),
+            (
+                "ARP Task 1.4 Seven Step Guide.md",
+                "Download seven-step visuals guide (Markdown)",
+                "text/markdown",
+            ),
+        ]
     for name, label, mime in downloads:
         path = curriculum.TEMPLATE_ROOT / name
         if path.is_file():
@@ -285,11 +336,13 @@ def _render_task(guide, base_key, show_images):
         "1.1": "question plan",
         "1.2": "Word plan and check notes",
         "1.3": "overview and source notes",
+        "1.4": "Office plan and observations",
     }[number]
     draft_label = {
         "1.1": "Your report questions and evidence plan",
         "1.2": "Your Word editing plan and check notes",
         "1.3": "Your workplace overview and source notes",
+        "1.4": "Your Office workflow and observed results",
     }[number]
     with st.expander(
         f"Write your Task {number} " + draft_title,
