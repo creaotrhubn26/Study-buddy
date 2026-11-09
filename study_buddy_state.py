@@ -7,6 +7,8 @@ STATE_FILE = Path(".study_buddy_state.json")
 PERSIST_KEYS = [
     "completed_courses",
     "assessment_submissions",
+    "arp_task_drafts",
+    "arp_task_steps",
     "knowledge_progress",
     "skills_progress",
     "competence_progress",
