@@ -1,0 +1,5 @@
+Question,Series,Month,Target external value,External baseline,Embedded baseline if Q2,Actual external value after edit,Observed Word chart data after edit,Paste option and source path,Refresh action,Status,Conclusion or issue
+Q1,Male users,March,45892,,,,,,,Not checked,
+Q1,Female users,December,91364,,,,,,,Not checked,
+Q2,Male users,March,45892,,,,,,,Not checked,
+Q2,Female users,December,91364,,,,,,,Not checked,

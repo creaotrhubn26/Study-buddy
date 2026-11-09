@@ -5,8 +5,9 @@ from pathlib import Path
 import sys
 import arp_lesson12
 import arp_lesson13
+import arp_lesson14
 
-CONTENT_REVISION = "2026-11-09-arp13"
+CONTENT_REVISION = "2026-11-09-arp14"
 COURSE_CODE = "FI1BBAR05"
 COURSE_NAME = "Analysis Reporting"
 ASSET_ROOT = Path(__file__).resolve().parent / "assets" / "arp"
@@ -302,7 +303,7 @@ def get_task_guides(number):
 
 
 # Additional lessons supply the same task material interface as Lesson 1.1.
-TASK_MATERIALS = {"1.2": arp_lesson12, "1.3": arp_lesson13}
+TASK_MATERIALS = {"1.2": arp_lesson12, "1.3": arp_lesson13, "1.4": arp_lesson14}
 
 
 def task_material(guide=None):
@@ -386,6 +387,28 @@ def get_course_lessons():
                 diagrams=False, tables=True, highlighted_sections=True
             ),
         ),
+        dict(
+            course_code=COURSE_CODE,
+            lesson_number="1.4",
+            title="Incorporating Visualisations",
+            module_number=1,
+            module_title="Report Writing",
+            source_url=arp_lesson14.LESSON_URL,
+            source_checked_on=CHECKED_ON,
+            content=arp_lesson14.LESSON_CONTENT
+            + f"\n\n[Original lesson]({arp_lesson14.LESSON_URL}) · [Original task]({arp_lesson14.TASK_URL}). Checked {CHECKED_ON}.",
+            illustration=None,
+            arp_illustrations=deepcopy(arp_lesson14.ILLUSTRATIONS),
+            key_points=[
+                "Distinguish linked charts, embedded copies and pictures",
+                "Record independent before/after observations for both chart experiments",
+                "Enter the exact table and inspect the source equation ambiguity",
+                "Generate three separate caption-based lists and verify saved files",
+            ],
+            visual_elements=dict(
+                diagrams=False, tables=True, highlighted_sections=True
+            ),
+        ),
     ]
 
 
@@ -393,7 +416,7 @@ def get_training_modules():
     return {
         "ARP Module 1: Report Writing": dict(
             course=COURSE_NAME,
-            description="Reviewed Lessons 1.1–1.3: report questions, Word formatting, referencing styles and a Harvard-cited workplace overview.",
+            description="Reviewed Lessons 1.1–1.4: report writing, formatting, referencing and visual integration with guided task workflows.",
             lessons=get_course_lessons(),
             exercises=[
                 dict(
@@ -416,6 +439,13 @@ def get_training_modules():
                     question=arp_lesson13.GUIDE["deliverable"],
                     hint="Plan 500 words, read sources and trace at least four Harvard citations to real evidence.",
                     answer=arp_lesson13.guide_markdown(),
+                ),
+                dict(
+                    title="Task 1.4 Office visual integration",
+                    type="case_study",
+                    question=arp_lesson14.GUIDE["deliverable"],
+                    hint="Use independent chart baselines and check the actual saved Office files.",
+                    answer=arp_lesson14.guide_markdown(),
                 ),
             ],
             quiz=[
@@ -478,6 +508,26 @@ def get_training_modules():
                     ],
                     correct=0,
                     explanation="Write the meaning in your own words and cite the original source. Tools do not remove the need to read and verify evidence.",
+                ),
+                dict(
+                    question="Original Study Buddy revision: What should an external Excel edit do to an embedded chart copy?",
+                    options=[
+                        "Always update it immediately",
+                        "Leave its internal data unchanged",
+                        "Turn it into a picture",
+                    ],
+                    correct=1,
+                    explanation="An embedded chart has a separate data copy. Actual observations still need to be checked; a pre-edited baseline makes a no-change test inconclusive.",
+                ),
+                dict(
+                    question="Original Study Buddy revision: How are the three Q4 lists generated?",
+                    options=[
+                        "Type the headings only",
+                        "Paste three screenshots",
+                        "Use matching Figure, Table and Equation captions, then insert and update each list",
+                    ],
+                    correct=2,
+                    explanation="Each caption label feeds its corresponding list. Check entries and page numbers in the saved document.",
                 ),
             ],
         )
