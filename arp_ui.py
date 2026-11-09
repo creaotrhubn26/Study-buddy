@@ -49,9 +49,16 @@ def step_context(guide, base_key, state):
     if not isinstance(index, int) or not 0 <= index < len(material.STEPS):
         index = 0
     title, instruction, check = material.STEPS[index]
+    research = ""
+    if hasattr(material, "SOURCES"):
+        research = "\nOptional research leads (not proof of student reading):\n" + "\n".join(
+            f"{source['id']}: {source['reference']} Original: {source['url']} Status: {source['checked']}"
+            for source in material.SOURCES
+        )
     return (
         f"ARP Task {guide['lesson_number']} current selected step: {title}\n{instruction}\nCheck: {check}\n"
         + material.BOUNDARY
+        + research
         + "\nStudent draft and check notes:\n"
         + draft(state, guide)[:7000]
         + "\n\n"
@@ -70,6 +77,8 @@ def prepare_task_in_resolver(guide=None):
         "six-month scope, posting schedule and content type. Flag placeholders and missing definitions. "
         "Explain the currently selected step and suggest neutral questions. Do not invent findings."
     )
+    if hasattr(material, "RESOLVER_REQUEST"):
+        request = material.RESOLVER_REQUEST
     st.session_state[f"{RESOLVER_BASE}_prompt"] = (
         f"ARP Task {guide['lesson_number']}: "
         + request
@@ -132,6 +141,11 @@ def _render_task(guide, base_key, show_images):
         st.caption(
             "Five required edits, explained in seven learning steps. The Word file must be edited and checked in Word."
         )
+    if number == "1.3":
+        st.caption(
+            "Seven learning steps: research → evidence plan → 500-word overview → Harvard citation checks."
+        )
+        st.link_button("Find research in Google Scholar", material.SCHOLAR_URL)
     current = st.session_state.get("arp_task_steps", {}).get(uid, 0)
     current = (
         current
@@ -163,6 +177,21 @@ def _render_task(guide, base_key, show_images):
             st.warning(
                 "Second paragraph is ambiguous: headings and blank paragraphs count too. The second substantive body paragraph (Facilisis…) is a working interpretation to confirm if needed."
             )
+    elif number == "1.3":
+        with st.expander(
+            "Suggested 500-word structure and final checks", expanded=False
+        ):
+            for title, words, purpose in material.PARAGRAPHS:
+                st.markdown(f"- **{title} · {words} words:** {purpose}")
+            st.caption(
+                "Suggested budget only. Confirm what counts toward 500 words; the task states no tolerance."
+            )
+            for title, detail in material.CHECKS:
+                st.markdown(f"- **{title}:** {detail}")
+        with st.expander(
+            "Harvard examples and optional research leads", expanded=False
+        ):
+            st.markdown(material.source_cards_markdown())
     else:
         with st.expander("Example questions from general to specific", expanded=False):
             st.caption(
@@ -213,6 +242,29 @@ def _render_task(guide, base_key, show_images):
         st.caption(
             "Original working file hosted by Noroff; sign in there to download it. Edit a copy in Word. This app does not host the original file or a completed task."
         )
+    elif number == "1.3":
+        downloads = [
+            (
+                guide["template_file"],
+                "Download workplace overview template (Markdown)",
+                "text/markdown",
+            ),
+            (
+                "ARP Task 1.3 Citation Evidence Matrix.csv",
+                "Download citation evidence matrix (CSV)",
+                "text/csv",
+            ),
+            (
+                "ARP Task 1.3 Seven Step Guide.md",
+                "Download seven-step referencing guide (Markdown)",
+                "text/markdown",
+            ),
+            (
+                "ARP Task 1.3 Harvard Source Starter.md",
+                "Download Harvard source starter (Markdown)",
+                "text/markdown",
+            ),
+        ]
     for name, label, mime in downloads:
         path = curriculum.TEMPLATE_ROOT / name
         if path.is_file():
@@ -229,9 +281,18 @@ def _render_task(guide, base_key, show_images):
         st.caption(
             "The report outline is optional lesson practice. Task 1.1 asks for questions; it does not prescribe a completed report, page count or file format."
         )
+    draft_title = {
+        "1.1": "question plan",
+        "1.2": "Word plan and check notes",
+        "1.3": "overview and source notes",
+    }[number]
+    draft_label = {
+        "1.1": "Your report questions and evidence plan",
+        "1.2": "Your Word editing plan and check notes",
+        "1.3": "Your workplace overview and source notes",
+    }[number]
     with st.expander(
-        f"Write your Task {number} "
-        + ("Word plan and check notes" if number == "1.2" else "question plan"),
+        f"Write your Task {number} " + draft_title,
         expanded=False,
     ):
         editor_key = f"{base_key}_arp_draft_{uid}"
@@ -240,11 +301,7 @@ def _render_task(guide, base_key, show_images):
         ):
             st.session_state[editor_key] = draft(st.session_state, guide)
         st.text_area(
-            (
-                "Your Word editing plan and check notes"
-                if number == "1.2"
-                else "Your report questions and evidence plan"
-            ),
+            draft_label,
             value=draft(st.session_state, guide),
             height=260,
             key=editor_key,
