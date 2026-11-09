@@ -9,8 +9,9 @@ import arp_lesson14
 import arp_lesson21
 import arp_lesson22
 import arp_lesson23
+import arp_lesson24
 
-CONTENT_REVISION = "2026-11-09-arp23"
+CONTENT_REVISION = "2026-11-09-arp24"
 COURSE_CODE = "FI1BBAR05"
 COURSE_NAME = "Analysis Reporting"
 ASSET_ROOT = Path(__file__).resolve().parent / "assets" / "arp"
@@ -313,6 +314,7 @@ TASK_MATERIALS = {
     "2.1": arp_lesson21,
     "2.2": arp_lesson22,
     "2.3": arp_lesson23,
+    "2.4": arp_lesson24,
 }
 
 
@@ -485,6 +487,28 @@ def get_course_lessons():
                 diagrams=False, tables=True, highlighted_sections=True
             ),
         ),
+        dict(
+            course_code=COURSE_CODE,
+            lesson_number="2.4",
+            title="Communication as a Data Analyst",
+            module_number=2,
+            module_title="Report-Generating Tools",
+            source_url=arp_lesson24.LESSON_URL,
+            source_checked_on=CHECKED_ON,
+            content=arp_lesson24.LESSON_CONTENT
+            + f"\n\n[Original lesson]({arp_lesson24.LESSON_URL}) · [Original task]({arp_lesson24.TASK_URL}). Checked {CHECKED_ON}.",
+            illustration=None,
+            arp_illustrations=deepcopy(arp_lesson24.ILLUSTRATIONS),
+            key_points=[
+                "Adapt technical detail to the audience while preserving evidence and limits",
+                "Choose clear language, active voice and tenses that match actual work",
+                "Coordinate Anna, Ben and Chris through traceable EDA/report handoffs",
+                "Choose your route; the leader's speech is at least two pages, approximately 800–1000 words",
+            ],
+            visual_elements=dict(
+                diagrams=False, tables=True, highlighted_sections=True
+            ),
+        ),
     ]
 
 
@@ -615,7 +639,7 @@ def get_training_modules():
 
     modules["ARP Module 2: Report-Generating Tools"] = dict(
         course=COURSE_NAME,
-        description="Reviewed Lessons 2.1–2.3: reporting tools, critical reading, a Word report and an EDA-based GIMP infographic.",
+        description="Reviewed Lessons 2.1–2.4: reporting tools, critical reading, a Word report, an EDA infographic and evidence-based team communication.",
         lessons=[
             lesson for lesson in get_course_lessons() if lesson["module_number"] == 2
         ],
@@ -720,6 +744,49 @@ def get_training_modules():
                 ],
                 correct=2,
                 explanation="The brief gives an example. Choose for the intended output, and verify readable text, chart labels and source credits.",
+            ),
+        ]
+    )
+    modules["ARP Module 2: Report-Generating Tools"]["exercises"].append(
+        dict(
+            title="Task 2.4 Team communication",
+            type="case_study",
+            question=arp_lesson24.GUIDE["deliverable"],
+            hint="State your route and role, define evidence handoffs and keep planned work separate from findings.",
+            answer=arp_lesson24.guide_markdown(),
+        )
+    )
+    modules["ARP Module 2: Report-Generating Tools"]["quiz"].extend(
+        [
+            dict(
+                question="Original Study Buddy revision: Who handles structure and visuals in the team report?",
+                options=[
+                    "Ben handles both; Anna writes the speech",
+                    "Anna handles structure; Chris handles visuals and explanations",
+                    "Chris handles EDA; the leader draws every chart",
+                ],
+                correct=1,
+                explanation="Anna and Chris build the report from Ben's EDA evidence; the leader coordinates and writes the stakeholder speech.",
+            ),
+            dict(
+                question="Original Study Buddy revision: What length does the leader's speech require?",
+                options=[
+                    "Exactly two pages and no more than 800 words",
+                    "Any length if there are slides",
+                    "At least two pages, approximately 800–1000 words",
+                ],
+                correct=2,
+                explanation="Check actual page layout as well as words. The speech accompanies the report; a slide deck or recording is not stated as compulsory.",
+            ),
+            dict(
+                question="Original Study Buddy revision: Can a hypothetical handoff be reported as completed analysis?",
+                options=[
+                    "No; distinguish plans from actual evidence",
+                    "Yes, if the wording is persuasive",
+                    "Yes, if an illustration is included",
+                ],
+                correct=0,
+                explanation="The learner chooses the route/role. Hypothetical assignments, actual contributions and verified findings have different statuses.",
             ),
         ]
     )

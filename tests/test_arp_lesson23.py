@@ -31,7 +31,7 @@ class ARPLesson23Tests(unittest.TestCase):
     def test_brief_blank_templates_and_layered_guide(self):
         self.assertEqual(
             [g["lesson_number"] for g in curriculum.all_task_guides()],
-            ["1.1", "1.2", "1.3", "1.4", "2.1", "2.2", "2.3"],
+            ["1.1", "1.2", "1.3", "1.4", "2.1", "2.2", "2.3", "2.4"],
         )
         self.assertEqual(len(lesson.STEPS), 7)
         self.assertTrue(lesson.LESSON_URL.endswith("id=22937&chapterid=81728"))
@@ -130,7 +130,7 @@ class ARPLesson23Tests(unittest.TestCase):
                 l["lesson_number"]
                 for l in modules["ARP Module 2: Report-Generating Tools"]["lessons"]
             ],
-            ["2.1", "2.2", "2.3"],
+            ["2.1", "2.2", "2.3", "2.4"],
         )
         self.assertEqual(
             [
@@ -141,6 +141,7 @@ class ARPLesson23Tests(unittest.TestCase):
                 "Task 2.1 Source reliability",
                 "Task 2.2 Nice Ride report",
                 "Task 2.3 EDA infographic",
+                "Task 2.4 Team communication",
             ],
         )
         g = curriculum.get_task_guides("2.3")[0]
@@ -285,7 +286,7 @@ class ARPLesson23Tests(unittest.TestCase):
             "ARP Module 2: Report-Generating Tools"
         )
         self.run_app(app)
-        for n in ["2.1", "2.2", "2.3"]:
+        for n in ["2.1", "2.2", "2.3", "2.4"]:
             self.assertIn(
                 f"Prepare Task {n} in Exam Resolver", [b.label for b in app.button]
             )

@@ -272,6 +272,27 @@ def _render_task(guide, base_key, show_images):
         st.caption(
             "Your task files are .xcf and .jpg. The optional .ora guide and imagegen study pictures are learning aids."
         )
+    elif number == "2.4":
+        st.caption(
+            "Four task questions, explained in seven learning steps. State your route/role at the top of your draft."
+        )
+        with st.expander(
+            "Choose your role and understand the team deliverables", expanded=False
+        ):
+            st.write(material.ROLE_NOTE)
+            st.warning(material.SHORTLIST_NOTE)
+            st.link_button("Explore datasets on Kaggle", material.KAGGLE_URL)
+        with st.expander(
+            "Speech requirements and communication checks", expanded=False
+        ):
+            st.write(
+                "Leader's speech: at least two pages, approximately 800–1000 words, submitted along with the report. Check actual pagination separately from word count."
+            )
+            for title, detail in material.CHECKS:
+                st.markdown(f"- **{title}:** {detail}")
+        st.caption(
+            "The Markdown and CSV downloads are blank working scaffolds. Add actual evidence and inspect your final files yourself."
+        )
     else:
         with st.expander("Example questions from general to specific", expanded=False):
             st.caption(
@@ -395,6 +416,7 @@ def _render_task(guide, base_key, show_images):
         "2.1": "reliability report and verification notes",
         "2.2": "Nice Ride report and file checks",
         "2.3": "infographic plan and EDA notes",
+        "2.4": "communication plan and speech notes",
     }[number]
     draft_label = {
         "1.1": "Your report questions and evidence plan",
@@ -404,6 +426,7 @@ def _render_task(guide, base_key, show_images):
         "2.1": "Your one-page reliability report and verification notes",
         "2.2": "Your Nice Ride report draft and file checks",
         "2.3": "Your infographic plan, EDA evidence and file checks",
+        "2.4": "Your route, team plan and speech evidence",
     }[number]
     with st.expander(
         f"Write your Task {number} " + draft_title,

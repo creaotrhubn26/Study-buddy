@@ -64,3 +64,12 @@ The two study illustrations were generated with built-in OpenAI imagegen on 9 No
 Exact prompts: `imagegen-prompts-2-3.json`. App captions provide text equivalents.
 
 The optional six-layer OpenRaster layout and `task-2-3-layout-preview.png` were built programmatically from original blank layout shapes/text. They contain no dataset or findings and are not imagegen output or a completed GIMP project. Raster placeholder text must be replaced with GIMP text layers. Archive/layer images and the merged preview were checked; a GIMP open/save round trip was not tested.
+
+## Lesson 2.4 and Task 2.4
+
+Generated with built-in OpenAI imagegen on 9 November 2026. Original generated PNG bytes are preserved. These conceptual study illustrations are not Noroff screenshots, analytical findings or evidence of completed teamwork.
+
+- `lesson-2-4-evidence-to-audience.png`: Evidence, interpretation, audience and action; language/tenses reflect actual work status.
+- `task-2-4-team-handoffs.png`: Anna, Ben, Chris and leader responsibilities; route alternatives and the leader's manuscript length.
+
+Exact prompts: `imagegen-prompts-2-4.json`. English app captions provide text equivalents. The eight Markdown/CSV templates are original blank scaffolds, not official solutions or completed team deliverables.

@@ -27,7 +27,7 @@ class ARPLesson13Tests(unittest.TestCase):
     def test_brief_templates_sources_and_illustrations(self):
         self.assertEqual(
             [g["lesson_number"] for g in curriculum.all_task_guides()],
-            ["1.1", "1.2", "1.3", "1.4", "2.1", "2.2", "2.3"],
+            ["1.1", "1.2", "1.3", "1.4", "2.1", "2.2", "2.3", "2.4"],
         )
         self.assertEqual(len(lesson.STEPS), 7)
         self.assertEqual(sum(p[1] for p in lesson.PARAGRAPHS), 500)

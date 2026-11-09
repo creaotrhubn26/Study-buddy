@@ -67665,6 +67665,14 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
     }
 
     if course_code == arp_curriculum.COURSE_CODE:
+        style_profiles["Team leadership and evidence-based presentation"] = {
+            "summary": "review role-specific team coordination, EDA/report handoffs and a stakeholder speech",
+            "keywords": ["stakeholder speech", "team leader", "anna", "ben", "chris", "communication", "handoff", "800–1000"],
+            "structure": ["Keep Task 2.4 and the selected step/role in scope; default to hypothetical leader if unspecified.",
+                          "Check Anna/Chris's shortlist, Ben's EDA and Anna's structure/Chris's visuals without inventing completed work.",
+                          "Review audience, precise language, voice, tenses, evidence, uncertainty and proportionate recommendations.",
+                          "Check the leader's at-least-two-page speech with approximate 800–1000-word guidance, report accompaniment and actual file checks; respect alternative solo roles."],
+        }
         style_profiles["EDA infographic design and GIMP export"] = {
             "summary": "review Kaggle provenance, Excel EDA evidence and an original GIMP infographic",
             "keywords": ["infographic", "kaggle", "gimp", "xcf", "jpg", "jpeg", "storyboard", "eda"],
@@ -70233,7 +70241,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         if course_code == arp_curriculum.COURSE_CODE:
             for arp_guide in arp_curriculum.all_task_guides():
                 if resolver_task_number_boost(arp_guide, exam_prompt):
-                    arp_style = {"1.1": "Report question planning", "1.2": "Word document formatting and verification", "1.3": "Harvard-referenced workplace overview", "1.4": "Office chart integration and native-file verification", "2.1": "Critical reading and source reliability", "2.2": "Data report with a column chart", "2.3": "EDA infographic design and GIMP export"}[arp_guide["lesson_number"]]
+                    arp_style = {"1.1": "Report question planning", "1.2": "Word document formatting and verification", "1.3": "Harvard-referenced workplace overview", "1.4": "Office chart integration and native-file verification", "2.1": "Critical reading and source reliability", "2.2": "Data report with a column chart", "2.3": "EDA infographic design and GIMP export", "2.4": "Team leadership and evidence-based presentation"}[arp_guide["lesson_number"]]
                     scores[arp_style] += 100
 
         best_mode = max(scores.items(), key=lambda item: item[1])[0] if scores else "Broad case question"
@@ -70421,7 +70429,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         with resources_panel:
             if course_code in GUIDED_TASK_COURSES:
                 st.markdown("### 2. Task guide and templates" if course_code in {dvs_curriculum.COURSE_CODE, arp_curriculum.COURSE_CODE} else "### 2. Task guide and workbook")
-                st.caption("Enter a task number such as Task 2.2 or Task 2.3 to find its guide and templates." if course_code == arp_curriculum.COURSE_CODE else "Enter a task number such as Task 2.4 to find its guide and templates." if course_code == dvs_curriculum.COURSE_CODE else "Enter a task number, for example Task 7.2, to find its guide and workbook.")
+                st.caption("Enter a task number such as Task 2.3 or Task 2.4 to find its guide and templates." if course_code == arp_curriculum.COURSE_CODE else "Enter a task number such as Task 2.4 to find its guide and templates." if course_code == dvs_curriculum.COURSE_CODE else "Enter a task number, for example Task 7.2, to find its guide and workbook.")
             else:
                 st.markdown("### 2. Sources for this question")
                 st.caption("Enter a question above to find relevant course sources.")
@@ -70657,7 +70665,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             render_course_task_resources(matched_tasks, base_key)
         elif course_code in GUIDED_TASK_COURSES:
             st.markdown("### 2. Task guide and templates" if course_code in {dvs_curriculum.COURSE_CODE, arp_curriculum.COURSE_CODE} else "### 2. Task guide and workbook")
-            st.caption("Enter a task number such as Task 2.2 or Task 2.3, or choose Task guides only in Advanced settings." if course_code == arp_curriculum.COURSE_CODE else "Enter an exact task number such as Task 2.4, or choose Task guides only in Advanced settings." if course_code == dvs_curriculum.COURSE_CODE else "Enter a task number, for example Task 7.2, or choose Task guides only in Advanced settings.")
+            st.caption("Enter a task number such as Task 2.3 or Task 2.4, or choose Task guides only in Advanced settings." if course_code == arp_curriculum.COURSE_CODE else "Enter an exact task number such as Task 2.4, or choose Task guides only in Advanced settings." if course_code == dvs_curriculum.COURSE_CODE else "Enter a task number, for example Task 7.2, or choose Task guides only in Advanced settings.")
         else:
             st.markdown("### 2. Sources for this question")
             st.caption("The resolver connects your question to these course sources. Change them in Advanced settings if needed.")

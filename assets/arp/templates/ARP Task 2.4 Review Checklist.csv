@@ -1,0 +1,8 @@
+Check,What to verify,Actual evidence or file,Reviewer and date,Status
+Route and contribution,Chosen route/role is explicit; hypothetical assignments and real contributions are distinguished.,,,Not checked
+Dataset shortlist,"Candidate relevance, Kaggle provenance and reuse checks are recorded; the each-member counting ambiguity is resolved or flagged.",,,Not checked
+EDA handoff,"Ben's actual findings trace to data, methods, units, filters and charts; unavailable evidence remains pending.",,,Not checked
+Report roles,Anna's structure and Chris's visuals/explanations connect to verified EDA; references and limits are included.,,,Not checked
+Audience and language,"The narrative supports the stakeholder decision, with precise language, suitable tenses and cautious interpretation.",,,Not checked
+Leader's speech,"At least two actual pages, approximately 800–1000 words, well organised and accompanying the report; alternative roles identify dependencies.",,,Not checked
+Files and rehearsal,"Actual files reopened, claims reconciled, placeholders removed; feedback/rehearsal claimed only if performed. Learner submits.",,,Not checked
