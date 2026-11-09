@@ -1,0 +1,8 @@
+Check,What to verify,My actual evidence,Status
+Dataset provenance,"Kaggle dataset URL, creator, version, original source and reuse terms are recorded.",,Not checked
+Excel profile,"Actual row/column counts, row meaning, types, units, missingness and cleaning are documented.",,Not checked
+EDA evidence,"Selected findings trace to actual ranges, methods, denominators, filters and checked calculations.",,Not checked
+Visual integrity,"Chart type, labels, units, scale and sample are suitable; no invented or unsupported claims.",,Not checked
+Original GIMP design,Own charts and content replace the guide; named layers and editable text are inspected.,,Not checked
+Credits and reading,"Data/visual credits, reuse conditions, contrast and readability are checked; prompts removed.",,Not checked
+Two actual files,The .xcf reopens with layers; the separately exported .jpg is readable and matches the project.,,Not checked

@@ -247,6 +247,31 @@ def _render_task(guide, base_key, show_images):
         st.caption(
             "The Word template has placeholder prose and a static chart picture. The Excel workbook has a native editable column chart. Replace the Word picture if inputs change."
         )
+    elif number == "2.3":
+        with st.expander(
+            "Dataset selection, Excel evidence and final checks", expanded=False
+        ):
+            st.link_button("Explore datasets on Kaggle", material.KAGGLE_URL)
+            st.write(
+                "Choose your own dataset and record actual EDA evidence. The templates contain no supplied dataset, calculations or findings."
+            )
+            for title, detail in material.CHECKS:
+                st.markdown(f"- **{title}:** {detail}")
+        with st.expander("GIMP layout guide and the two output files", expanded=False):
+            st.write(material.LAYOUT_NOTE)
+            preview = curriculum.ASSET_ROOT / "task-2-3-layout-preview.png"
+            if preview.is_file():
+                st.image(
+                    str(preview),
+                    caption="Original blank composition guide. Replace or hide all placeholders; no data or findings are supplied.",
+                    width="stretch",
+                )
+            st.markdown(
+                f"[GIMP: Save XCF]({material.SAVE_URL}) · [GIMP: Export JPEG]({material.JPEG_URL})"
+            )
+        st.caption(
+            "Your task files are .xcf and .jpg. The optional .ora guide and imagegen study pictures are learning aids."
+        )
     else:
         with st.expander("Example questions from general to specific", expanded=False):
             st.caption(
@@ -369,6 +394,7 @@ def _render_task(guide, base_key, show_images):
         "1.4": "Office plan and observations",
         "2.1": "reliability report and verification notes",
         "2.2": "Nice Ride report and file checks",
+        "2.3": "infographic plan and EDA notes",
     }[number]
     draft_label = {
         "1.1": "Your report questions and evidence plan",
@@ -377,6 +403,7 @@ def _render_task(guide, base_key, show_images):
         "1.4": "Your Office workflow and observed results",
         "2.1": "Your one-page reliability report and verification notes",
         "2.2": "Your Nice Ride report draft and file checks",
+        "2.3": "Your infographic plan, EDA evidence and file checks",
     }[number]
     with st.expander(
         f"Write your Task {number} " + draft_title,

@@ -1,0 +1,9 @@
+# Analysis Reporting Lesson 2.3
+
+Source reviewed while signed in on 9 November 2026: Noroff book 22937, Lesson 2.3 chapters 81728–81734 and Task 2.3 chapter 81735. The task requires the learner to choose a Kaggle dataset, load it into MS Excel for basic EDA, create an original infographic in GIMP, retain an editable .xcf and export a .jpg, citing external resources. It supplies no dataset or numerical findings. Chart types and 800 × 1200 px are examples, not fixed requirements. The lesson demonstration's A4 canvas is not imposed on the task.
+
+Original English lesson material, seven steps, blank planning/evidence/source templates and two built-in imagegen illustrations are registered in Lessons, Module 2 Training Center and Exam Resolver. Per-task draft/step storage remains independent. The resolver context includes the selected step, actual learner notes, source requirements and limits; preparing the task does not call AI automatically.
+
+The optional OpenRaster composition guide is an original six-layer, 800 × 1200 px layout with raster placeholder text. It has no data or findings. The guide is not a completed infographic or native XCF. Learners hide/replace guides, create actual GIMP text layers, insert their verified Excel charts, save XCF and export JPEG. Archive structure, layer images, compositing and preview are checked. No GIMP executable was available at the checked standard paths, so its open/save round trip has not been tested. A manual layout workflow is fully described and does not depend on this optional helper.
+
+The course's chart-versus-infographic distinctions are explained with appropriate limits: either can stand alone with clear context, and multiple charts are not compulsory. Official GIMP Save and JPEG documentation supports the separate-file workflow. The public app contains original guidance and templates, not the full Noroff book, course screenshots, a copied dataset or an official solution.
