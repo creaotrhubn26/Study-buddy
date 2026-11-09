@@ -60,6 +60,8 @@ def step_context(guide, base_key, state):
             "\nOriginal task resources on Noroff (not native-file verification):\n"
             + "\n".join(f"{label}: {url}" for label, url in material.RESOURCE_LINKS)
         )
+    if hasattr(material, "REVIEW_CONTEXT"):
+        research += "\n" + material.REVIEW_CONTEXT
     return (
         f"ARP Task {guide['lesson_number']} current selected step: {title}\n{instruction}\nCheck: {check}\n"
         + material.BOUNDARY
@@ -219,6 +221,14 @@ def _render_task(guide, base_key, show_images):
             st.markdown(
                 f"[Open the original Q3 equation image on Noroff]({material.RESOURCE_LINKS[5][1]})"
             )
+    elif number == "2.1":
+        with st.expander(
+            "The three articles and dated evidence checks", expanded=False
+        ):
+            st.markdown(material.source_notes_markdown())
+        st.caption(
+            "One page, all three articles. The source notes are study checks, not proof of your own reading."
+        )
     else:
         with st.expander("Example questions from general to specific", expanded=False):
             st.caption(
@@ -316,6 +326,8 @@ def _render_task(guide, base_key, show_images):
                 "text/markdown",
             ),
         ]
+    if hasattr(material, "DOWNLOADS"):
+        downloads = material.DOWNLOADS
     for name, label, mime in downloads:
         path = curriculum.TEMPLATE_ROOT / name
         if path.is_file():
@@ -337,12 +349,14 @@ def _render_task(guide, base_key, show_images):
         "1.2": "Word plan and check notes",
         "1.3": "overview and source notes",
         "1.4": "Office plan and observations",
+        "2.1": "reliability report and verification notes",
     }[number]
     draft_label = {
         "1.1": "Your report questions and evidence plan",
         "1.2": "Your Word editing plan and check notes",
         "1.3": "Your workplace overview and source notes",
         "1.4": "Your Office workflow and observed results",
+        "2.1": "Your one-page reliability report and verification notes",
     }[number]
     with st.expander(
         f"Write your Task {number} " + draft_title,

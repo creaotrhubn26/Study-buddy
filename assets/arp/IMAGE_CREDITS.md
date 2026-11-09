@@ -33,3 +33,12 @@ Generated with built-in OpenAI imagegen on 9 November 2026. Original PNG bytes a
 - `task-1-4-four-question-workflow.png`: Four-question workflow, exact required Excel edits, and three separate caption-based lists. Q1 linking is the lesson-based method rather than an extra quoted task requirement.
 
 Exact prompts: `imagegen-prompts-1-4.json`. The app provides explanatory text captions.
+
+## Lesson 2.1 and Task 2.1
+
+Generated with built-in OpenAI imagegen on 9 November 2026. Original PNG bytes are preserved. Conceptual educational illustrations, not Noroff/software screenshots, article evidence or a completed report.
+
+- `lesson-2-1-reporting-workflows.png`: Narrative, paginated, notebook and R Markdown workflows; plain Markdown does not execute analysis.
+- `task-2-1-claim-verification.png`: A shared claim-to-evidence process for three articles, qualified judgements and the one-page deliverable.
+
+Exact prompts: `imagegen-prompts-2-1.json`. App captions provide text equivalents.
