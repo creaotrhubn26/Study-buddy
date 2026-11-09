@@ -1,0 +1,434 @@
+[
+  {
+    "id": "arp-m2-practice-01",
+    "module": 2,
+    "lesson_number": "2.1",
+    "source": "arp_original_module_2",
+    "type": "knowledge",
+    "question": "A reader needs a concise explanation of findings, methods and limitations in a document. Which starting point best fits this purpose?",
+    "options": [
+      "A narrative report organised around the reader’s question",
+      "A decorative image with no sources",
+      "Raw data without explanations",
+      "A dashboard chosen only because it is interactive"
+    ],
+    "correct": 0,
+    "explanation": "A narrative report can connect the purpose, evidence, interpretation and limits for its intended reader. Choose a tool for the communication need rather than its novelty.",
+    "option_feedback": [
+      "The format supports a coherent argument and traceable evidence.",
+      "Decoration alone does not explain or substantiate findings.",
+      "Raw records need context, methods and interpretation.",
+      "Interactivity can be useful, but it is not itself a reason a tool fits this deliverable."
+    ],
+    "example": "A manager wants a readable PDF explaining a comparison. Plan the report’s purpose and evidence before choosing the authoring software.",
+    "source_url": "https://learning.noroff.no/mod/book/view.php?id=22937&chapterid=81710",
+    "source_kind": "Original Study Buddy practice based on the linked lesson; not collected Noroff quiz content.",
+    "authored_on": "2026-11-09",
+    "illustration": "practice-2-1-tools-and-sources.png"
+  },
+  {
+    "id": "arp-m2-practice-02",
+    "module": 2,
+    "lesson_number": "2.1",
+    "source": "arp_original_module_2",
+    "type": "knowledge",
+    "question": "What does plain Markdown provide on its own?",
+    "options": [
+      "An engine that runs statistical code automatically",
+      "A way to structure and format text",
+      "A guarantee that calculations are correct",
+      "A live connection to every dataset mentioned"
+    ],
+    "correct": 1,
+    "explanation": "Plain Markdown expresses document structure and formatting. Code execution requires an appropriate environment or processing engine, such as a notebook or a configured executable-report workflow.",
+    "option_feedback": [
+      "A fenced code block can display code without executing it.",
+      "Headings, lists and links are ordinary Markdown features.",
+      "Formatting cannot verify calculations.",
+      "Writing a dataset link does not create or refresh an analytical connection."
+    ],
+    "example": "A Markdown file can show a Python example; running that example requires a suitable Python execution environment.",
+    "source_url": "https://learning.noroff.no/mod/book/view.php?id=22937&chapterid=81710",
+    "source_kind": "Original Study Buddy practice based on the linked lesson; not collected Noroff quiz content.",
+    "authored_on": "2026-11-09",
+    "illustration": "practice-2-1-tools-and-sources.png"
+  },
+  {
+    "id": "arp-m2-practice-03",
+    "module": 2,
+    "lesson_number": "2.1",
+    "source": "arp_original_module_2",
+    "type": "skills",
+    "question": "Three websites repeat the same original story. How should you count this when checking a factual claim?",
+    "options": [
+      "As three independent confirmations",
+      "As proof the story is false",
+      "As a republication chain to trace back to the evidence",
+      "As sufficient evidence because many sites agree"
+    ],
+    "correct": 2,
+    "explanation": "Republication can multiply exposure without adding independent evidence. Trace the origin and compare the actual claim with relevant, independently obtained evidence.",
+    "option_feedback": [
+      "Independence depends on the evidence, not the number of URLs.",
+      "Repetition alone does not establish falsity either.",
+      "The original source and independent evidence are the useful next checks.",
+      "Agreement caused by copying is not independent corroboration."
+    ],
+    "example": "If three posts all cite one press release, check that release’s exact dates, scope and measure before treating the claim as supported.",
+    "source_url": "https://learning.noroff.no/mod/book/view.php?id=22937&chapterid=81710",
+    "source_kind": "Original Study Buddy practice based on the linked lesson; not collected Noroff quiz content.",
+    "authored_on": "2026-11-09",
+    "illustration": "practice-2-1-tools-and-sources.png"
+  },
+  {
+    "id": "arp-m2-practice-04",
+    "module": 2,
+    "lesson_number": "2.1",
+    "source": "arp_original_module_2",
+    "type": "skills",
+    "question": "An article uses loaded language but links a real event. Which reliability judgement is most defensible?",
+    "options": [
+      "Every sentence must be false",
+      "The real event proves every interpretation",
+      "The article must be fully reliable because it has a link",
+      "Check the event and the wider interpretations separately"
+    ],
+    "correct": 3,
+    "explanation": "Tone is a reason to scrutinise a source, not a substitute for checking its claims. A documented event can coexist with unsupported causal explanations or conclusions.",
+    "option_feedback": [
+      "Emotive wording does not refute every factual statement.",
+      "Evidence of an event does not establish every explanation of its cause or intent.",
+      "A link must be inspected for relevance and scope.",
+      "Separate factual assertions, evidence, interpretation and uncertainty."
+    ],
+    "example": "A report may accurately describe an incident while offering an unsupported explanation of why it happened.",
+    "source_url": "https://learning.noroff.no/mod/book/view.php?id=22937&chapterid=81710",
+    "source_kind": "Original Study Buddy practice based on the linked lesson; not collected Noroff quiz content.",
+    "authored_on": "2026-11-09",
+    "illustration": "practice-2-1-tools-and-sources.png"
+  },
+  {
+    "id": "arp-m2-practice-05",
+    "module": 2,
+    "lesson_number": "2.2",
+    "source": "arp_original_module_2",
+    "type": "general",
+    "question": "Before writing a data report, what should most directly guide its structure?",
+    "options": [
+      "The audience, purpose and decision question",
+      "The largest number of decorative charts",
+      "The software’s default template alone",
+      "A conclusion selected before analysing the evidence"
+    ],
+    "correct": 0,
+    "explanation": "The reader’s question and decision need determine what evidence, explanation and level of detail are useful. Templates support that purpose rather than deciding it.",
+    "option_feedback": [
+      "These choices give the report a clear direction and scope.",
+      "More visuals can create clutter when they do not answer the question.",
+      "A default template may need substantial adaptation.",
+      "Selecting the conclusion first risks forcing evidence to fit it."
+    ],
+    "example": "A report for an operations manager might prioritise the comparison needed for a staffing decision and explain its data limits.",
+    "source_url": "https://learning.noroff.no/mod/book/view.php?id=22937&chapterid=81722",
+    "source_kind": "Original Study Buddy practice based on the linked lesson; not collected Noroff quiz content.",
+    "authored_on": "2026-11-09",
+    "illustration": "practice-2-2-report-evidence.png"
+  },
+  {
+    "id": "arp-m2-practice-06",
+    "module": 2,
+    "lesson_number": "2.2",
+    "source": "arp_original_module_2",
+    "type": "skills",
+    "question": "A vertical column chart compares counts across categories. Which design best preserves the comparison?",
+    "options": [
+      "Unequal column widths and a hidden scale",
+      "A zero baseline, readable category labels and clear units",
+      "A 3D effect that obscures the columns",
+      "A total column mixed with its component categories without explanation"
+    ],
+    "correct": 1,
+    "explanation": "Column length encodes magnitude, so a zero baseline and clear labels help the reader compare values honestly. Totals and components should not be presented as equivalent categories without careful context.",
+    "option_feedback": [
+      "Unequal widths and missing scale information make interpretation harder.",
+      "The baseline, labels and units support a fair magnitude comparison.",
+      "Perspective can distort perceived lengths or hide information.",
+      "A total is an aggregate of the components, not another comparable component."
+    ],
+    "example": "For an original practice example with counts 12, 8 and 5, use three labelled columns from zero; show the total separately if it helps.",
+    "source_url": "https://learning.noroff.no/mod/book/view.php?id=22937&chapterid=81722",
+    "source_kind": "Original Study Buddy practice based on the linked lesson; not collected Noroff quiz content.",
+    "authored_on": "2026-11-09",
+    "illustration": "practice-2-2-report-evidence.png"
+  },
+  {
+    "id": "arp-m2-practice-07",
+    "module": 2,
+    "lesson_number": "2.2",
+    "source": "arp_original_module_2",
+    "type": "skills",
+    "question": "A dataset contains only category totals. Which statement stays within that evidence?",
+    "options": [
+      "The leading category caused higher profit",
+      "The totals establish every customer’s preference",
+      "One category has the highest recorded count in this dataset",
+      "The same ranking will certainly hold next year"
+    ],
+    "correct": 2,
+    "explanation": "Aggregate totals support a descriptive comparison within their recorded scope. They do not by themselves establish causes, profit, individual preferences or future rankings.",
+    "option_feedback": [
+      "A count alone does not measure profit or identify a cause.",
+      "Aggregate counts do not establish every individual’s preference.",
+      "This is a descriptive conclusion limited to the observed data.",
+      "A future ranking requires assumptions and additional evidence."
+    ],
+    "example": "You can identify the largest recorded category while explicitly stating that no time trend or causal explanation was analysed.",
+    "source_url": "https://learning.noroff.no/mod/book/view.php?id=22937&chapterid=81722",
+    "source_kind": "Original Study Buddy practice based on the linked lesson; not collected Noroff quiz content.",
+    "authored_on": "2026-11-09",
+    "illustration": "practice-2-2-report-evidence.png"
+  },
+  {
+    "id": "arp-m2-practice-08",
+    "module": 2,
+    "lesson_number": "2.2",
+    "source": "arp_original_module_2",
+    "type": "knowledge",
+    "question": "Why use real heading styles instead of only making text bold?",
+    "options": [
+      "Bold text guarantees a complete table of contents",
+      "Heading styles calculate all report statistics",
+      "Heading styles verify every citation automatically",
+      "Heading styles provide a consistent document hierarchy"
+    ],
+    "correct": 3,
+    "explanation": "Heading styles identify the document’s structural levels and support consistent formatting and navigation. They do not verify the report’s analysis or sources.",
+    "option_feedback": [
+      "Direct bold formatting does not reliably assign heading levels.",
+      "Document structure is separate from statistical calculations.",
+      "Sources still need checking and correct references.",
+      "Consistent structural levels help organise and navigate the report."
+    ],
+    "example": "Apply Heading 1 to main sections and Heading 2 to subsections, then inspect the resulting hierarchy.",
+    "source_url": "https://learning.noroff.no/mod/book/view.php?id=22937&chapterid=81722",
+    "source_kind": "Original Study Buddy practice based on the linked lesson; not collected Noroff quiz content.",
+    "authored_on": "2026-11-09",
+    "illustration": "practice-2-2-report-evidence.png"
+  },
+  {
+    "id": "arp-m2-practice-09",
+    "module": 2,
+    "lesson_number": "2.3",
+    "source": "arp_original_module_2",
+    "type": "knowledge",
+    "question": "How can a chart and an infographic relate to each other?",
+    "options": [
+      "A chart can support an infographic’s broader message",
+      "Every infographic must contain several charts",
+      "A chart can never be understood without a speaker",
+      "An infographic’s design guarantees its evidence is valid"
+    ],
+    "correct": 0,
+    "explanation": "A chart focuses on an analytical comparison or relationship. An infographic can combine charts, context, explanations and sources into a visual message. Either can stand alone when the context is clear.",
+    "option_feedback": [
+      "Charts can be useful evidence elements within an infographic.",
+      "There is no universal mandatory chart count.",
+      "Clear context, labels and sources can make a chart stand alone.",
+      "Visual polish cannot validate data or reasoning."
+    ],
+    "example": "One well-chosen chart, a clear headline, a short interpretation and a source may explain a focused message more effectively than many unrelated panels.",
+    "source_url": "https://learning.noroff.no/mod/book/view.php?id=22937&chapterid=81728",
+    "source_kind": "Original Study Buddy practice based on the linked lesson; not collected Noroff quiz content.",
+    "authored_on": "2026-11-09",
+    "illustration": "practice-2-3-infographic-workflow.png"
+  },
+  {
+    "id": "arp-m2-practice-10",
+    "module": 2,
+    "lesson_number": "2.3",
+    "source": "arp_original_module_2",
+    "type": "skills",
+    "question": "You want to explore the relationship between two numerical variables. Which chart is a useful starting point?",
+    "options": [
+      "A pie chart with one slice for each observation",
+      "A scatter plot, with suitable labels and attention to outliers",
+      "A table of contents",
+      "A decorative background chosen before inspecting the variables"
+    ],
+    "correct": 1,
+    "explanation": "A scatter plot places paired numerical observations on two axes and can reveal patterns and unusual points. A visible relationship still does not establish causation.",
+    "option_feedback": [
+      "Pie charts encode parts of a whole, not paired numerical relationships.",
+      "Paired positions help reveal the relationship and unusual observations.",
+      "A document-navigation aid does not explore these variables.",
+      "Decoration does not replace an appropriate analytical chart."
+    ],
+    "example": "Plot the two numerical measures, inspect units and missing pairs, and describe any observed pattern cautiously.",
+    "source_url": "https://learning.noroff.no/mod/book/view.php?id=22937&chapterid=81728",
+    "source_kind": "Original Study Buddy practice based on the linked lesson; not collected Noroff quiz content.",
+    "authored_on": "2026-11-09",
+    "illustration": "practice-2-3-infographic-workflow.png"
+  },
+  {
+    "id": "arp-m2-practice-11",
+    "module": 2,
+    "lesson_number": "2.3",
+    "source": "arp_original_module_2",
+    "type": "knowledge",
+    "question": "Which workflow preserves both a GIMP working project and a separate JPEG image?",
+    "options": [
+      "Rename a PNG file so its extension is .xcf",
+      "Export JPEG and expect all editable layers to remain",
+      "Save the project as XCF, then export JPEG separately",
+      "Use a screenshot as proof that all layers are editable"
+    ],
+    "correct": 2,
+    "explanation": "XCF stores the working GIMP project structure. JPEG is a separate flattened sharing format. Reopen both actual files and check that the exported result agrees with the project.",
+    "option_feedback": [
+      "Changing a filename extension does not convert file contents.",
+      "JPEG does not preserve an editable layer stack.",
+      "Saving the project and exporting the image serve different purposes.",
+      "A screenshot cannot establish the underlying editable structure."
+    ],
+    "example": "Keep the layered .xcf for revisions and inspect the exported .jpg for readable text, chart labels and source credits.",
+    "source_url": "https://learning.noroff.no/mod/book/view.php?id=22937&chapterid=81728",
+    "source_kind": "Original Study Buddy practice based on the linked lesson; not collected Noroff quiz content.",
+    "authored_on": "2026-11-09",
+    "illustration": "practice-2-3-infographic-workflow.png"
+  },
+  {
+    "id": "arp-m2-practice-12",
+    "module": 2,
+    "lesson_number": "2.3",
+    "source": "arp_original_module_2",
+    "type": "skills",
+    "question": "A lesson gives 800 × 1200 px as an example canvas. How should you apply it when dimensions are not fixed by your brief?",
+    "options": [
+      "Use it for every visual regardless of audience",
+      "Treat a resolution label change as adding new pixels",
+      "Ignore text and chart readability if the size matches",
+      "Choose suitable dimensions and test the intended viewing size"
+    ],
+    "correct": 3,
+    "explanation": "An example is a starting point rather than a universal rule. Select dimensions for the intended output and check readable text, labels, sources and layout.",
+    "option_feedback": [
+      "Different outputs and audiences can need different dimensions.",
+      "Changing a resolution label alone does not create more pixels.",
+      "Matching dimensions does not guarantee legibility.",
+      "Testing the actual viewing size helps assess the design."
+    ],
+    "example": "A narrow poster and a landscape presentation need different compositions even when they communicate the same supported finding.",
+    "source_url": "https://learning.noroff.no/mod/book/view.php?id=22937&chapterid=81728",
+    "source_kind": "Original Study Buddy practice based on the linked lesson; not collected Noroff quiz content.",
+    "authored_on": "2026-11-09",
+    "illustration": "practice-2-3-infographic-workflow.png"
+  },
+  {
+    "id": "arp-m2-practice-13",
+    "module": 2,
+    "lesson_number": "2.4",
+    "source": "arp_original_module_2",
+    "type": "general",
+    "question": "How should you adapt an analytical finding for a nontechnical stakeholder?",
+    "options": [
+      "Explain its meaning in plain language while preserving facts and limitations",
+      "Remove every limitation so the message sounds confident",
+      "Replace the result with a more persuasive number",
+      "Assume technical terminology needs no explanation"
+    ],
+    "correct": 0,
+    "explanation": "Adapt the level of detail and language to the audience’s decision. Keep the same evidence, units and relevant uncertainty so simplification does not distort the finding.",
+    "option_feedback": [
+      "Accessible wording can preserve the analytical meaning.",
+      "Hiding limits encourages overconfident decisions.",
+      "Changing evidence to persuade is misleading.",
+      "Unexplained jargon can prevent understanding."
+    ],
+    "example": "Give the practical meaning first, then a short explanation of the method and the limitation that matters for the proposed decision.",
+    "source_url": "https://learning.noroff.no/mod/book/view.php?id=22937&chapterid=81736",
+    "source_kind": "Original Study Buddy practice based on the linked lesson; not collected Noroff quiz content.",
+    "authored_on": "2026-11-09",
+    "illustration": "practice-2-4-team-communication.png"
+  },
+  {
+    "id": "arp-m2-practice-14",
+    "module": 2,
+    "lesson_number": "2.4",
+    "source": "arp_original_module_2",
+    "type": "skills",
+    "question": "Ben has not yet checked missing values. Which sentence correctly describes the status?",
+    "options": [
+      "Ben checked missing values and verified the results",
+      "Ben will check missing values before summarising the data",
+      "The checked values prove the report is correct",
+      "Ben’s planned check is completed evidence"
+    ],
+    "correct": 1,
+    "explanation": "Use future tense for an intended action and past tense only when the action occurred. A plan should not be described as completed analytical evidence.",
+    "option_feedback": [
+      "Past tense falsely represents the unperformed action as completed.",
+      "Future tense makes the planned status explicit.",
+      "No check has occurred, and one check would not prove the whole report correct.",
+      "Planned work and completed evidence have different statuses."
+    ],
+    "example": "After performing and documenting the check, a report can accurately describe what was checked and what was found.",
+    "source_url": "https://learning.noroff.no/mod/book/view.php?id=22937&chapterid=81736",
+    "source_kind": "Original Study Buddy practice based on the linked lesson; not collected Noroff quiz content.",
+    "authored_on": "2026-11-09",
+    "illustration": "practice-2-4-team-communication.png"
+  },
+  {
+    "id": "arp-m2-practice-15",
+    "module": 2,
+    "lesson_number": "2.4",
+    "source": "arp_original_module_2",
+    "type": "knowledge",
+    "question": "Which handoff matches the named responsibilities in the communication lesson’s team scenario?",
+    "options": [
+      "Chris supplies all EDA; Ben writes the leader’s speech",
+      "Anna performs every role without using evidence",
+      "Ben provides EDA; Anna structures the report; Chris supports visuals and explanations",
+      "The team leader treats a proposed assignment as completed teamwork"
+    ],
+    "correct": 2,
+    "explanation": "Ben leads EDA. Anna and Chris build the report using that evidence, with Anna responsible for structure/coherence and Chris for visuals and concise explanations. The leader coordinates and prepares the stakeholder speech.",
+    "option_feedback": [
+      "This reverses or reallocates the scenario’s named responsibilities.",
+      "The scenario separates contributions and requires evidence handoffs.",
+      "The responsibilities connect analysis with a coherent report.",
+      "Delegation is a plan, not proof that work occurred."
+    ],
+    "example": "Ben’s handoff should include data scope, methods, findings, chart evidence and limits so Anna and Chris can verify the report’s claims.",
+    "source_url": "https://learning.noroff.no/mod/book/view.php?id=22937&chapterid=81736",
+    "source_kind": "Original Study Buddy practice based on the linked lesson; not collected Noroff quiz content.",
+    "authored_on": "2026-11-09",
+    "illustration": "practice-2-4-team-communication.png"
+  },
+  {
+    "id": "arp-m2-practice-16",
+    "module": 2,
+    "lesson_number": "2.4",
+    "source": "arp_original_module_2",
+    "type": "skills",
+    "question": "The leader’s speech guidance says at least two pages and approximately 800–1000 words. Which check respects both statements?",
+    "options": [
+      "Exactly two pages with no more than 800 words",
+      "A word count alone proves the page count",
+      "A slide deck automatically replaces the speech manuscript",
+      "Check the formatted manuscript is at least two pages and use the word range as approximate guidance"
+    ],
+    "correct": 3,
+    "explanation": "The page requirement is a minimum; the word range is approximate guidance. Pagination depends on the actual formatting and must be checked independently. The speech accompanies the report in this scenario.",
+    "option_feedback": [
+      "This invents an exact page limit and changes the word guidance.",
+      "Words alone cannot establish pagination.",
+      "The stated speech requirement is not automatically replaced by slides.",
+      "This preserves the minimum, approximate range and need to inspect the actual manuscript."
+    ],
+    "example": "After drafting, record the actual word count, reopen the formatted manuscript and inspect its pages and readability.",
+    "source_url": "https://learning.noroff.no/mod/book/view.php?id=22937&chapterid=81736",
+    "source_kind": "Original Study Buddy practice based on the linked lesson; not collected Noroff quiz content.",
+    "authored_on": "2026-11-09",
+    "illustration": "practice-2-4-team-communication.png"
+  }
+]

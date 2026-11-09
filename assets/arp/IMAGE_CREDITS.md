@@ -73,3 +73,14 @@ Generated with built-in OpenAI imagegen on 9 November 2026. Original generated P
 - `task-2-4-team-handoffs.png`: Anna, Ben, Chris and leader responsibilities; route alternatives and the leader's manuscript length.
 
 Exact prompts: `imagegen-prompts-2-4.json`. English app captions provide text equivalents. The eight Markdown/CSV templates are original blank scaffolds, not official solutions or completed team deliverables.
+
+## Module 2 original practice bank
+
+Four conceptual revision illustrations generated with built-in OpenAI imagegen on 9 November 2026. Original PNG bytes preserved. These are study aids based on Lessons 2.1–2.4, not collected/previewed official quiz questions, screenshots, data or evidence of completed work.
+
+- `practice-2-1-tools-and-sources.png`: Reporting workflows and tracing independent evidence.
+- `practice-2-2-report-evidence.png`: Purpose, evidence, interpretation, conclusion and clear column charts.
+- `practice-2-3-infographic-workflow.png`: EDA-to-message workflow and distinct XCF/JPEG files.
+- `practice-2-4-team-communication.png`: Role handoffs, audience adaptation and tense/status distinctions.
+
+Exact prompts: `imagegen-prompts-module2-practice.json`. English captions provide text equivalents. The 16 associated questions are original Study Buddy practice, not adaptations of a collected Noroff quiz.

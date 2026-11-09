@@ -66,6 +66,9 @@ if getattr(dvs_module3, "CONTENT_REVISION", None) != "2026-10-14-dvs3-ready":
 import dvs_curriculum
 import arp_curriculum
 import arp_ui
+import arp_quiz_bank
+if getattr(arp_quiz_bank, "CONTENT_REVISION", None) != "2026-11-09-arp-module2-practice":
+    arp_quiz_bank = importlib.reload(arp_quiz_bank)
 import dvs_module4
 if getattr(dvs_module4, "CONTENT_REVISION", None) != "2026-10-15-dvs4-media":
     dvs_module4 = importlib.reload(dvs_module4)
@@ -64575,6 +64578,9 @@ def get_curated_exam_source_options(course_code):
 CURATED_EXAM_QUESTION_BANK[dvs_quiz_bank.COURSE_CODE] = dvs_quiz_bank.get_curated_questions()
 CURATED_PRACTICE_QUESTION_BANK[dvs_quiz_bank.COURSE_CODE] = dvs_quiz_bank.get_curated_questions()
 CURATED_EXAM_SOURCE_LABELS.update({f"dvs_module_{number}": f"DVS Module {number} quiz review" for number in range(1, 5)})
+CURATED_EXAM_QUESTION_BANK.setdefault(arp_quiz_bank.COURSE_CODE, []).extend(arp_quiz_bank.get_curated_questions())
+CURATED_PRACTICE_QUESTION_BANK.setdefault(arp_quiz_bank.COURSE_CODE, []).extend(arp_quiz_bank.get_curated_questions())
+CURATED_EXAM_SOURCE_LABELS["arp_original_module_2"] = "ARP Module 2 original practice"
 
 
 def build_curated_exam_questions(course_code, question_type_labels, num_questions, source_filter="all"):
@@ -64603,7 +64609,7 @@ def build_curated_exam_questions(course_code, question_type_labels, num_question
     shuffled_bank = filtered_bank[:]
     random.shuffle(shuffled_bank)
 
-    if course_code == dvs_quiz_bank.COURSE_CODE:
+    if course_code in {dvs_quiz_bank.COURSE_CODE, arp_quiz_bank.COURSE_CODE}:
         num_questions = min(num_questions, len(shuffled_bank))
     selected_questions = []
     for idx in range(num_questions):
@@ -67962,7 +67968,8 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             placeholder=f"Example: Explain how {course['name']} knowledge can be used to solve a realistic case scenario.",
             height=180,
         )
-    quiz_reference = dvs_quiz_bank.render_resolver_reference(base_key, exam_prompt) if course_code == dvs_quiz_bank.COURSE_CODE else None
+    quiz_bank = dvs_quiz_bank if course_code == dvs_quiz_bank.COURSE_CODE else arp_quiz_bank if course_code == arp_quiz_bank.COURSE_CODE else None
+    quiz_reference = quiz_bank.render_resolver_reference(base_key, exam_prompt) if quiz_bank else None
     with st.expander("Attach data or supporting documents (optional)", expanded=False):
         st.markdown("**Optional: attach files**")
         uploaded_project_files = st.file_uploader(
@@ -68364,10 +68371,11 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 lesson_context_block = ""
 
             if quiz_reference:
+                reference_label = "Original ARP practice reference" if course_code == arp_quiz_bank.COURSE_CODE else "Reviewed DVS practice quiz reference"
                 lesson_context_block += (
-                    "\n\n[Reviewed DVS practice quiz reference — explain in English. "
+                    f"\n\n[{reference_label} — explain in English. "
                     "This is a learning reference, not a claim of a new Noroff result:\n"
-                    + dvs_quiz_bank.answer_text(quiz_reference)
+                    + quiz_bank.answer_text(quiz_reference)
                     + f"\nSource: {quiz_reference['source_url']}\n]"
                 )
             user_message = (
@@ -68399,7 +68407,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                     "skip that part. Do not invent.\n"
                 )
             if strict_curriculum_mode and quiz_reference:
-                strict_clause += "- The 'Reviewed DVS practice quiz reference' block is also supplied course material for this question. Use its verified distinction and example.\n"
+                strict_clause += ("- The 'Original ARP practice reference' block is also supplied course material for this original practice question. It is not collected Noroff assessment content. Explain its distinction and example.\n" if course_code == arp_quiz_bank.COURSE_CODE else "- The 'Reviewed DVS practice quiz reference' block is also supplied course material for this question. Use its verified distinction and example.\n")
             if exam_submission_mode:
                 system_prompt = (
                     "You are producing a Noroff exam-submission report for a vocational "
@@ -76071,11 +76079,14 @@ elif page == "Learn & Practice":
     if has_lessons:
         st.success(f"📚 This course has {len(course_lessons[course_code])} detailed lesson(s) available!")
     
-    course_tabs = st.tabs(["Course Content", "Practice Questions"] + (["Module Quiz Bank"] if course_code == dvs_quiz_bank.COURSE_CODE else []))
+    course_tabs = st.tabs(["Course Content", "Practice Questions"] + (["Module Quiz Bank"] if course_code in {dvs_quiz_bank.COURSE_CODE, arp_quiz_bank.COURSE_CODE} else []))
     tab1, tab2 = course_tabs[:2]
-    if course_code == dvs_quiz_bank.COURSE_CODE:
+    if course_code in {dvs_quiz_bank.COURSE_CODE, arp_quiz_bank.COURSE_CODE}:
         with course_tabs[2]:
-            dvs_quiz_bank.render_quiz_bank()
+            if course_code == arp_quiz_bank.COURSE_CODE:
+                arp_quiz_bank.render_quiz_bank()
+            else:
+                dvs_quiz_bank.render_quiz_bank()
     
     with tab1:
         st.subheader(f"📚 {course['name']}")
@@ -78491,9 +78502,10 @@ elif page == "Exam Simulator":
             st.warning("No curated bank is available for this course, and AI question generation is disabled.")
 
         selected_course = next(c for c in courses_data if c['code'] == exam_course)
-        if exam_course == dvs_quiz_bank.COURSE_CODE:
+        if exam_course in {dvs_quiz_bank.COURSE_CODE, arp_quiz_bank.COURSE_CODE}:
             available = sum(1 for q in CURATED_EXAM_QUESTION_BANK[exam_course] if curated_exam_bank_filter == "all" or q["source"] == curated_exam_bank_filter)
-            st.caption(f"This selection contains {available} distinct DVS questions. The simulation uses at most {available} questions to avoid repeats.")
+            bank_label = "original ARP practice" if exam_course == arp_quiz_bank.COURSE_CODE else "DVS"
+            st.caption(f"This selection contains {available} distinct {bank_label} questions. The simulation uses at most {available} questions to avoid repeats.")
 
         st.markdown("### Course-aware exam support")
         st.markdown("Use the resolver below to connect the selected course to a likely exam case before you start the timed simulation.")
