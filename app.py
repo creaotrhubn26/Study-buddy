@@ -64,6 +64,8 @@ import dvs_module3
 if getattr(dvs_module3, "CONTENT_REVISION", None) != "2026-10-14-dvs3-ready":
     dvs_module3 = importlib.reload(dvs_module3)
 import dvs_curriculum
+import arp_curriculum
+import arp_ui
 import dvs_module4
 if getattr(dvs_module4, "CONTENT_REVISION", None) != "2026-10-15-dvs4-media":
     dvs_module4 = importlib.reload(dvs_module4)
@@ -82,7 +84,7 @@ import dvs_quiz_bank
 if getattr(dvs_quiz_bank, "CONTENT_REVISION", None) != "2026-10-14-dvs-quizzes":
     dvs_quiz_bank = importlib.reload(dvs_quiz_bank)
 
-GUIDED_TASK_COURSES = {"FI1BBEO10", "FI1BBDV75"}
+GUIDED_TASK_COURSES = {"FI1BBEO10", "FI1BBDV75", arp_curriculum.COURSE_CODE}
 # Reserve room for the complete English DVS guide and its source metadata.
 DVS_TASK_CONTEXT_CHAR_LIMIT = 10000
 
@@ -94,19 +96,25 @@ def resolver_task_number_boost(guide, prompt):
 
 
 def get_course_task_guides(course_code, lesson_number):
+    if course_code == arp_curriculum.COURSE_CODE:
+        return arp_curriculum.get_task_guides(lesson_number)
     if course_code == dvs_curriculum.COURSE_CODE:
         return dvs_curriculum.get_dvs_task_guides(lesson_number)
     return get_evo_task_guides(lesson_number) if course_code == "FI1BBEO10" else []
 
 
 def get_course_task_markdown(guide, selected_objectives=None):
+    if guide.get("course_code") == arp_curriculum.COURSE_CODE:
+        return arp_curriculum.guide_markdown(guide)
     if guide.get("course_code") == dvs_curriculum.COURSE_CODE:
         return dvs_curriculum.get_dvs_task_guide_markdown(guide)
     return get_resolver_task_guide_markdown(guide, selected_objectives)
 
 
 def render_course_task_resources(guides, base_key):
-    if guides and guides[0].get("course_code") == dvs_curriculum.COURSE_CODE:
+    if guides and guides[0].get("course_code") == arp_curriculum.COURSE_CODE:
+        arp_ui.render_task_resources(guides, base_key)
+    elif guides and guides[0].get("course_code") == dvs_curriculum.COURSE_CODE:
         dvs_ui.render_dvs_task_resources(guides, base_key)
     else:
         render_resolver_task_resources(guides, base_key)
@@ -62569,6 +62577,8 @@ A strong Statistical Tools answer usually:
 # Training Center topics remain available with their existing progress keys.
 course_lessons["FI1BBEO10"] = get_evo_course_lessons()
 training_modules.update(get_evo_training_modules())
+course_lessons[arp_curriculum.COURSE_CODE] = arp_curriculum.get_course_lessons()
+training_modules.update(arp_curriculum.get_training_modules())
 course_lessons[dvs_curriculum.COURSE_CODE] = dvs_curriculum.get_dvs_course_lessons()
 training_modules.update(dvs_curriculum.get_dvs_training_modules())
 
@@ -66170,6 +66180,9 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 for g in dvs_module5.GUIDES if f"{base_key}_dvs_step_{g['uid']}" in st.session_state},
         }, sort_keys=True)
 
+    if course_code == arp_curriculum.COURSE_CODE:
+        workflow_signature = arp_ui.workflow_signature(st.session_state, base_key)
+
     stopwords = {
         "the", "and", "for", "with", "that", "this", "from", "into", "using", "used", "use",
         "your", "their", "they", "them", "what", "when", "where", "which", "while", "would",
@@ -67237,8 +67250,10 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                         f"Working template (not a completed answer): {guide['template_file']}\n\n"
                         + get_course_task_markdown(guide, exam_resolver_ui.get_selected_conclusion_objectives(base_key) if course_code == "FI1BBEO10" and guide["id"] == "7.4-task" else None)
                     )
+                    if course_code == arp_curriculum.COURSE_CODE:
+                        full_context = arp_ui.step_context(guide, base_key, st.session_state) + full_context
                     units.append({
-                        "id": f"{'dvs_task' if course_code == dvs_curriculum.COURSE_CODE else 'evo_task'}::{guide['uid']}",
+                        "id": f"{'arp_task' if course_code == arp_curriculum.COURSE_CODE else ('dvs_task' if course_code == dvs_curriculum.COURSE_CODE else 'evo_task')}::{guide['uid']}",
                         "label": f"Task guide {guide['id']}: {guide['title']}",
                         "kind": "Task", "title": guide["title"],
                         "order_index": order_index, "weight": 3.0,
@@ -67649,6 +67664,16 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         },
     }
 
+    if course_code == arp_curriculum.COURSE_CODE:
+        style_profiles["Report question planning"] = {
+            "summary": "plan neutral report questions from general to specific",
+            "keywords": ["report question", "question plan", "organic engagement", "handmade", "posting schedule"],
+            "structure": ["Confirm purpose, reader and the six-month organic scope.",
+                          "Order questions from overall engagement to platforms, months, schedule, content and individual posts.",
+                          "Identify the evidence and comparable metrics needed for each question.",
+                          "Flag assumptions, missing definitions and unsupported results."],
+        }
+
     if course_code == dvs_curriculum.COURSE_CODE:
         style_profiles["GIMP image editing plan and evidence"] = {
             "summary": "plan GIMP compositions and review written editing evidence",
@@ -67872,7 +67897,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
             return data.decode("utf-8", errors="replace")
         return str(data)
 
-    st.caption("Question and brief → task guide and templates → answer and reasoning" if course_code == dvs_curriculum.COURSE_CODE else "Question and data → task guide and workbook → answer and reasoning")
+    st.caption("Question and brief → task guide and templates → answer and reasoning" if course_code in {dvs_curriculum.COURSE_CODE, arp_curriculum.COURSE_CODE} else "Question and data → task guide and workbook → answer and reasoning")
     st.markdown("### 1. Question and data")
     with st.container():
         exam_prompt = st.text_area(
@@ -68248,7 +68273,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                     )
                 if not strict_curriculum_mode and ranked:
                     task_blocks = [
-                        f"### {label}\n{full_text[:DVS_TASK_CONTEXT_CHAR_LIMIT] if course_code == dvs_curriculum.COURSE_CODE else full_text[:4000]}"
+                        f"### {label}\n{full_text[:DVS_TASK_CONTEXT_CHAR_LIMIT] if course_code in {dvs_curriculum.COURSE_CODE, arp_curriculum.COURSE_CODE} else full_text[:4000]}"
                         for _overlap, kind, label, full_text, _snippet in ranked[:12]
                         if kind == "Task"
                     ][:3]
@@ -68264,7 +68289,7 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 if strict_curriculum_mode and ranked:
                     for overlap, kind, label, full_text, _snippet in ranked[:12]:
                         truncated = full_text.strip()
-                        context_limit = (DVS_TASK_CONTEXT_CHAR_LIMIT if course_code == dvs_curriculum.COURSE_CODE else 4000) if kind == "Task" else 1500
+                        context_limit = (DVS_TASK_CONTEXT_CHAR_LIMIT if course_code in {dvs_curriculum.COURSE_CODE, arp_curriculum.COURSE_CODE} else 4000) if kind == "Task" else 1500
                         if len(truncated) > context_limit:
                             truncated = truncated[:context_limit] + " […truncated]"
                         full_lesson_blocks.append(
@@ -68452,6 +68477,8 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 "and formulas unchanged. Translate Norwegian study-guide wording into "
                 "English when explaining it, even if the question is in Norwegian.\n"
             )
+            if course_code == arp_curriculum.COURSE_CODE and resolver_task_number_boost(arp_curriculum.GUIDE, exam_prompt):
+                system_prompt += "\nARP Task 1.1 scope: " + arp_curriculum.BOUNDARY + " Review question order and evidence needs in English. Return feedback, suggested questions and next actions; do not invent an engagement findings report.\n"
             if course_code == "FI1BBEO10":
                 system_prompt += (
                     "\n\nEVO measurement accuracy checks:\n"
@@ -70153,6 +70180,9 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
                 if any(resolver_task_number_boost(g, exam_prompt) for g in dvs_curriculum.get_dvs_task_guides(lesson_number)):
                     scores[style] += 100
 
+        if course_code == arp_curriculum.COURSE_CODE and resolver_task_number_boost(arp_curriculum.GUIDE, exam_prompt):
+            scores["Report question planning"] += 100
+
         best_mode = max(scores.items(), key=lambda item: item[1])[0] if scores else "Broad case question"
         if scores.get(best_mode, 0) <= 0:
             best_mode = "Broad case question"
@@ -70337,8 +70367,8 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
     if not exam_prompt.strip() and scope_mode == "Whole course (auto-select best matches)":
         with resources_panel:
             if course_code in GUIDED_TASK_COURSES:
-                st.markdown("### 2. Task guide and templates" if course_code == dvs_curriculum.COURSE_CODE else "### 2. Task guide and workbook")
-                st.caption("Enter a task number such as Task 2.4 to find its guide and templates." if course_code == dvs_curriculum.COURSE_CODE else "Enter a task number, for example Task 7.2, to find its guide and workbook.")
+                st.markdown("### 2. Task guide and templates" if course_code in {dvs_curriculum.COURSE_CODE, arp_curriculum.COURSE_CODE} else "### 2. Task guide and workbook")
+                st.caption("Enter Task 1.1 to find the report-question guide and templates." if course_code == arp_curriculum.COURSE_CODE else "Enter a task number such as Task 2.4 to find its guide and templates." if course_code == dvs_curriculum.COURSE_CODE else "Enter a task number, for example Task 7.2, to find its guide and workbook.")
             else:
                 st.markdown("### 2. Sources for this question")
                 st.caption("Enter a question above to find relevant course sources.")
@@ -70573,8 +70603,8 @@ def render_course_exam_connector(course_code, course, context_key="default", ans
         elif matched_tasks:
             render_course_task_resources(matched_tasks, base_key)
         elif course_code in GUIDED_TASK_COURSES:
-            st.markdown("### 2. Task guide and templates" if course_code == dvs_curriculum.COURSE_CODE else "### 2. Task guide and workbook")
-            st.caption("Enter an exact task number such as Task 2.4, or choose Task guides only in Advanced settings." if course_code == dvs_curriculum.COURSE_CODE else "Enter a task number, for example Task 7.2, or choose Task guides only in Advanced settings.")
+            st.markdown("### 2. Task guide and templates" if course_code in {dvs_curriculum.COURSE_CODE, arp_curriculum.COURSE_CODE} else "### 2. Task guide and workbook")
+            st.caption("Enter Task 1.1 or choose Task guides only in Advanced settings." if course_code == arp_curriculum.COURSE_CODE else "Enter an exact task number such as Task 2.4, or choose Task guides only in Advanced settings." if course_code == dvs_curriculum.COURSE_CODE else "Enter a task number, for example Task 7.2, or choose Task guides only in Advanced settings.")
         else:
             st.markdown("### 2. Sources for this question")
             st.caption("The resolver connects your question to these course sources. Change them in Advanced settings if needed.")
@@ -75461,6 +75491,7 @@ elif page == "Training Center":
                 render_evo_illustration(lesson, "training")
                 render_evo_task_guides(lesson, "training")
                 dvs_ui.render_dvs_lesson_resources(lesson, "training")
+                arp_ui.render_lesson_resources(lesson, "training")
                 st.markdown(lesson['content'])
                 
                 st.markdown("---")
@@ -76048,6 +76079,7 @@ elif page == "Learn & Practice":
                     render_evo_illustration(lesson, "learn")
                     render_evo_task_guides(lesson, "learn")
                     dvs_ui.render_dvs_lesson_resources(lesson, "learn")
+                    arp_ui.render_lesson_resources(lesson, "learn")
                     content = lesson['content']
                     selected_explain_text = str(
                         st.session_state.get(f"lesson_selected_explain_text_{course_code}_{lesson_number}", "")
