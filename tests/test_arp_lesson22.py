@@ -29,7 +29,7 @@ class ARPLesson22Tests(unittest.TestCase):
     def test_source_scope_templates_native_chart_and_word_structure(self):
         self.assertEqual(
             [g["lesson_number"] for g in curriculum.all_task_guides()],
-            ["1.1", "1.2", "1.3", "1.4", "2.1", "2.2", "2.3"],
+            ["1.1", "1.2", "1.3", "1.4", "2.1", "2.2", "2.3", "2.4"],
         )
         self.assertEqual(
             lesson.DATA_ROWS,
@@ -154,7 +154,7 @@ class ARPLesson22Tests(unittest.TestCase):
                 l["lesson_number"]
                 for l in modules["ARP Module 2: Report-Generating Tools"]["lessons"]
             ],
-            ["2.1", "2.2", "2.3"],
+            ["2.1", "2.2", "2.3", "2.4"],
         )
         self.assertEqual(
             modules["ARP Module 2: Report-Generating Tools"]["exercises"][0]["title"],
