@@ -9,6 +9,7 @@ PERSIST_KEYS = [
     "assessment_submissions",
     "arp_task_drafts",
     "arp_task_steps",
+    "arp_quiz_responses",
     "knowledge_progress",
     "skills_progress",
     "competence_progress",

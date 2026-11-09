@@ -1,0 +1,13 @@
+# Analysis Reporting Module 2 original practice
+
+The Noroff Module 2 Quiz landing page was inspected on 9 November 2026. It describes a timed, graded attempt. No attempt was started; no official questions, answers, attempt records or quiz screenshots were collected. The Study Buddy bank is original lesson-based practice, not a reproduction, adaptation or prediction of the official question pool. It does not change Noroff grades or completion.
+
+Sixteen original multiple-choice questions cover Lessons 2.1–2.4, four per lesson. Each includes the correct practice answer, an explanation for every option, an applied example and a link to the source lesson. Four new built-in imagegen illustrations have English text captions and downloadable PNGs. Exact prompts and attribution are under assets/arp. No actual analytical findings or completed learner work are supplied.
+
+Access the bank at Learn & Practice → Analysis Reporting → Module Quiz Bank. Learners can filter by lesson, choose an option, explain their reasoning, check feedback and download English revision notes. The selected answer, checked answer and reasoning persist by stable question ID in arp_quiz_responses. Last-checked practice progress is explicitly separate from an official grade. Changing a selection shows stale-feedback guidance until checked again.
+
+The same questions are available to the normal practice generator and the simulator's ARP Module 2 original practice source. Simulations cap requested question counts to the distinct eligible pool to avoid repeats. Existing DVS references and sources remain separate.
+
+The bank's Exam Resolver handoff transfers the original practice question, chosen option and reasoning. It focuses on the linked lesson using Lessons only / Specific lesson or outcome. Preparing the question does not call AI. The reference is attached only while the complete canonical question and options remain intact; editing that block drops it. Regular and strict context explicitly identify the original learning material and request English explanations. The question reference and bank explanation use separate widget keys so both can render together.
+
+Tests cover content provenance, four image decodes, English notes, wrong/correct/unanswered feedback, changes to checked answers, per-question isolation, reload persistence, unchanged assessment-submission state, full app handoff, normal/strict mocked AI context, stale reference removal and distinct simulator questions. Browser verification uses isolated local practice state; published checks do not start a Noroff attempt or submit work.
